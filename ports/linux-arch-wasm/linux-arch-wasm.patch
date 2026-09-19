@@ -314,7 +314,7 @@ diff --git a/arch/wasm/include/asm/page.h b/arch/wasm/include/asm/page.h
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/include/asm/page.h
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,16 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Fixed-page compile placeholder; wasm linear-memory paging is undefined. */
 +#ifndef _ASM_WASM_PAGE_H
@@ -325,4 +325,52 @@ new file mode 100644
 +#define PAGE_MASK (~(PAGE_SIZE - 1))
 +#define PAGE_ALIGN(addr) (((addr) + PAGE_SIZE - 1) & PAGE_MASK)
 +
++struct page;
++typedef struct page *pgtable_t;
++typedef struct { unsigned long val; } pgprot_t;
++typedef struct { unsigned long val; } pgd_t;
++
 +#endif /* _ASM_WASM_PAGE_H */
+
+diff --git a/arch/wasm/include/asm/extable.h b/arch/wasm/include/asm/extable.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/extable.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* No faulting instruction ABI exists for this compile-only port. */
++#ifndef _ASM_WASM_EXTABLE_H
++#define _ASM_WASM_EXTABLE_H
++
++struct exception_table_entry { unsigned long insn, fixup; };
++
++#endif /* _ASM_WASM_EXTABLE_H */
+
+diff --git a/arch/wasm/include/asm/uaccess.h b/arch/wasm/include/asm/uaccess.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/uaccess.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Compile-only user-copy stubs; browser memory protection is undefined. */
++#ifndef _ASM_WASM_UACCESS_H
++#define _ASM_WASM_UACCESS_H
++
++#include <linux/string.h>
++#include <asm-generic/access_ok.h>
++
++static inline unsigned long raw_copy_to_user(void __user *to,
++        const void *from, unsigned long n)
++{
++    memcpy((void __force *)to, from, n);
++    return 0;
++}
++static inline unsigned long raw_copy_from_user(void *to,
++        const void __user *from, unsigned long n)
++{
++    memcpy(to, (const void __force *)from, n);
++    return 0;
++}
++#include <asm-generic/uaccess.h>
++
++#endif /* _ASM_WASM_UACCESS_H */

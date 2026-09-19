@@ -27,10 +27,11 @@ lock-based atomic64 ABI without requiring wasm compiler atomics. Bounds
 generation now succeeds after the minimal `arch/wasm/kernel/asm-offsets.c`
 emitter, scheduler-facing `asm/thread_info.h`, and a minimal `asm/processor.h`
 CPU-state placeholder, and a generic cache geometry wrapper are added. The
-next compile blockers are missing memory-type definitions (`unknown type name
-'pgtable_t'`, `pgprot_t`, and `pgd_t` in `include/linux/mm_types.h`), followed
-by missing `raw_copy_to_user`/`raw_copy_from_user` and `asm/extable.h` in the
-generic uaccess path. Atomic64 runtime correctness is not proven:
+The page wrapper now supplies compile-only `pgtable_t`, `pgprot_t`, and `pgd_t`
+types; extable and uaccess wrappers supply stubs only. The next blockers are
+missing `user_mode`, `__pa`, and `__va` primitives, followed by
+`fatal error: 'asm/elf.h' file not found`. Atomic64 and uaccess runtime
+correctness is not proven:
 interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was

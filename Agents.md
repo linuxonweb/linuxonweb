@@ -174,8 +174,8 @@
   native host tools, and the standalone wasm MVP probe still pass; the tracked
   `sources/linux` checkout remains unchanged.
 - Added an overlay-only `asm/cache.h` wrapper around `asm-generic/cache.h`.
-  Scheduler offset compilation now reaches the memory ABI boundary:
-  `unknown type name 'pgtable_t'`, `pgprot_t`, and `pgd_t` in
-  `include/linux/mm_types.h`; generic uaccess then reports missing
-  `raw_copy_to_user`/`raw_copy_from_user` and `asm/extable.h`. This remains
-  nonbootable; the tracked `sources/linux` checkout is unchanged.
+  The page wrapper now supplies compile-only `pgtable_t`, `pgprot_t`, and
+  `pgd_t`; extable/uaccess wrappers supply stubs. The next exact errors are
+  missing `user_mode`, `__pa`, and `__va` primitives, followed by
+  `fatal error: 'asm/elf.h' file not found` from `include/linux/elf.h`.
+  This remains nonbootable; the tracked `sources/linux` checkout is unchanged.
