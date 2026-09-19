@@ -276,6 +276,10 @@
   .../browser/config/version.txt`. This is the next bounded overlay input;
   no compiler or target result is reached and no Firefox browser WASM artifact
   exists.
+- Including pinned `browser/config/version.txt` lets direct configure continue
+  to the next version input, then fails with
+  `FileNotFoundError: .../browser/config/version_display.txt`. No compiler or
+  target result is reached and no Firefox browser WASM artifact exists.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
