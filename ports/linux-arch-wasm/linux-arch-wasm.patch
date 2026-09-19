@@ -94,3 +94,17 @@ diff --git a/scripts/Makefile.clang b/scripts/Makefile.clang
  CLANG_TARGET_FLAGS_x86		:= x86_64-linux-gnu
 +CLANG_TARGET_FLAGS_wasm		:= wasm32-unknown-unknown
  # This is only for i386 UM builds, which need the 32-bit target not -m32
+
+diff --git a/arch/wasm/include/uapi/asm/byteorder.h b/arch/wasm/include/uapi/asm/byteorder.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/uapi/asm/byteorder.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
++
++#ifndef _UAPI_ASM_WASM_BYTEORDER_H
++#define _UAPI_ASM_WASM_BYTEORDER_H
++
++#include <linux/byteorder/little_endian.h>
++
++#endif /* _UAPI_ASM_WASM_BYTEORDER_H */

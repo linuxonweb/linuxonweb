@@ -16,11 +16,12 @@ The script creates a temporary detached worktree, applies the patch there, and
 runs `make O=... ARCH=wasm olddefconfig`. A successful kconfig pass only means
 that Linux recognized `arch/wasm`; the subsequent compile probe intentionally
 stops at the first missing architecture dependency. With the temporary
-`CLANG_TARGET_FLAGS_wasm := wasm32-unknown-unknown` overlay, the current
-expected result is `No rule to make target
-'arch/wasm/include/generated/uapi/asm/byteorder.h'`. Generic UAPI header
-generation and the architecture compiler/ABI contract have not been defined
-yet, which is evidence that the skeleton is not a kernel port.
+`CLANG_TARGET_FLAGS_wasm := wasm32-unknown-unknown` overlay and the minimal
+little-endian UAPI `byteorder.h` mapping, the current expected result is
+`No rule to make target 'arch/wasm/include/generated/uapi/asm/ptrace.h'`.
+The remaining generic UAPI headers and the architecture compiler/ABI contract
+have not been defined yet, which is evidence that the skeleton is not a
+kernel port.
 
 The standalone C probe uses the same `wasm32-unknown-unknown` freestanding
 target as the browser adapter and only validates that the compiler can emit a

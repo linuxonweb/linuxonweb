@@ -97,12 +97,18 @@
 - The compile phase intentionally stops at the next missing architecture
   contract. The overlay now adds
   `CLANG_TARGET_FLAGS_wasm := wasm32-unknown-unknown`; the compile reaches UAPI
-  generation and reports `No rule to make target
-  'arch/wasm/include/generated/uapi/asm/byteorder.h'`. The standalone
-  freestanding compiler probe still emits a wasm MVP module. This is a port
-  boundary probe, not a bootable Linux kernel.
+  generation. The standalone freestanding compiler probe still emits a wasm
+  MVP module. This is a port boundary probe, not a bootable Linux kernel.
 - The probe now checks for `scripts/Kbuild.include` and
   `scripts/pahole-version.sh` in partial checkouts and materializes missing
   copies only inside the temporary worktree via `git show`; the pinned
   `sources/linux` tree remains untouched. The probe also syncs Kconfig with
   `LLVM=1` before compiling, avoiding false partial-config failures.
+- Added only to the overlay: `arch/wasm/include/uapi/asm/byteorder.h`, mapping
+  wasm32's little-endian ABI to Linux's `linux/byteorder/little_endian.h`.
+  Re-running `ports/linux-arch-wasm/build-probe.sh` now generates the
+  byteorder UAPI header and reaches the next missing mandatory header:
+  `No rule to make target 'arch/wasm/include/generated/uapi/asm/ptrace.h'`.
+  Kconfig still succeeds (with the existing EROFS range warnings), and the
+  standalone wasm compiler probe emits a wasm MVP module. The tracked
+  `sources/linux` checkout remains unchanged.
