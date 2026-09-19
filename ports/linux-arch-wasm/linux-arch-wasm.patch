@@ -122,3 +122,17 @@ new file mode 100644
 +/* Keep the mandatory UAPI header buildable until an ABI is specified. */
 +
 +#endif /* _UAPI_ASM_WASM_PTRACE_H */
+
+diff --git a/arch/wasm/include/uapi/asm/sigcontext.h b/arch/wasm/include/uapi/asm/sigcontext.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/uapi/asm/sigcontext.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
++/* Placeholder: the wasm signal-frame ABI is not defined yet. */
++#ifndef _UAPI_ASM_WASM_SIGCONTEXT_H
++#define _UAPI_ASM_WASM_SIGCONTEXT_H
++
++/* Keep the mandatory UAPI header buildable until an ABI is specified. */
++
++#endif /* _UAPI_ASM_WASM_SIGCONTEXT_H */

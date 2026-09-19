@@ -118,3 +118,9 @@
   `No rule to make target 'arch/wasm/include/generated/uapi/asm/sigcontext.h'`.
   Kconfig and the standalone wasm MVP compiler probe still pass; this remains
   a source-level port boundary check, not a bootable kernel.
+- Added an overlay-only guarded placeholder
+  `arch/wasm/include/uapi/asm/sigcontext.h`; no signal-frame ABI is claimed.
+  The next probe generates all mandatory UAPI wrappers, then reaches the
+  host-tool boundary: `scripts/mod/mk_elfconfig` is executed and reports
+  `Error: not ELF`. The wasm target flag is therefore currently affecting a
+  host utility that must remain native, before any kernel object can compile.
