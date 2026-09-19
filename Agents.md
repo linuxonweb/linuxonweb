@@ -242,6 +242,12 @@
   `sentry_sdk/transport.py`. The next exact dependency is pinned
   `third_party/python/urllib3`; no configure result or desktop Firefox WASM
   artifact exists, and `sources/firefox` remains untouched.
+- Including pinned `third_party/python/urllib3` and rerunning the offline
+  overlay advances Sentry import to its next dependency:
+  `ModuleNotFoundError: No module named 'certifi'` from
+  `sentry_sdk/transport.py`. The next exact dependency is pinned
+  `third_party/python/certifi`; no configure result or desktop Firefox WASM
+  artifact exists.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
