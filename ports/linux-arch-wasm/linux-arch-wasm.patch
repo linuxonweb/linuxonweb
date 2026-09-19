@@ -271,3 +271,27 @@ new file mode 100644
 +#define _TIF_NEED_RESCHED (1 << TIF_NEED_RESCHED)
 +
 +#endif /* _ASM_WASM_THREAD_INFO_H */
+
+diff --git a/arch/wasm/include/asm/processor.h b/arch/wasm/include/asm/processor.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/processor.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Minimal scheduler-facing CPU state; no wasm context-switch ABI is claimed. */
++#ifndef _ASM_WASM_PROCESSOR_H
++#define _ASM_WASM_PROCESSOR_H
++
++#include <linux/types.h>
++
++#define TASK_SIZE 0UL
++#define STACK_TOP TASK_SIZE
++#define STACK_TOP_MAX STACK_TOP
++
++struct thread_struct {
++    unsigned long placeholder;
++};
++
++static inline void cpu_relax(void) { }
++
++#endif /* _ASM_WASM_PROCESSOR_H */

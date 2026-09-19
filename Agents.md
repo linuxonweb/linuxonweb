@@ -135,6 +135,11 @@
   now proceeds through `kernel/sched/rq-offsets.s`; the exact next blocker is
   `fatal error: 'asm/processor.h' file not found` from `include/linux/sched.h`.
   This remains a compile-boundary probe with no task/thread ABI or boot path.
+- Added an overlay-only minimal `asm/processor.h` defining scheduler-visible
+  `thread_struct`, stack bounds, and a no-op `cpu_relax()`. Scheduler offset
+  compilation now proceeds to the next cache ABI boundary:
+  `fatal error: 'asm/cache.h' file not found` from `include/vdso/cache.h`.
+  No context-switch, cache, or boot/runtime support is implied.
 - Added an overlay-only placeholder `arch/wasm/include/uapi/asm/ptrace.h` so
   kbuild can continue without inventing a register ABI. The next probe run
   generates ptrace-related UAPI headers and stops at

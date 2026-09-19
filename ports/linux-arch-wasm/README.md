@@ -25,11 +25,11 @@ wasm32. The `asm/string.h` mapping lets device-table offsets and time constants
 generate. `GENERIC_ATOMIC64` and the `asm/atomic.h` wrapper reuse Linux's
 lock-based atomic64 ABI without requiring wasm compiler atomics. Bounds
 generation now succeeds after the minimal `arch/wasm/kernel/asm-offsets.c`
-emitter and scheduler-facing `asm/thread_info.h` layout are added. The next
-blocker is `fatal error: 'asm/processor.h' file not found` while generating
-scheduler offsets (`kernel/sched/rq-offsets.s`). Atomic64 runtime correctness
-is not proven: interrupt hooks remain no-ops and no kernel has been linked or
-booted.
+emitter, scheduler-facing `asm/thread_info.h`, and a minimal `asm/processor.h`
+CPU-state placeholder are added. The next blocker is
+`fatal error: 'asm/cache.h' file not found` while generating scheduler offsets
+(`kernel/sched/rq-offsets.s`). Atomic64 runtime correctness is not proven:
+interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was
 already native, and its original `Error: not ELF` referred to the wasm input.
