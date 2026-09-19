@@ -48,11 +48,15 @@ start -> init host ABI -> init clock/framebuffer -> scheduler_step
       -> present dirty framebuffer -> return to JS
 ```
 
-The first smoke probe exports `kernel_entry` and only exercises `log`; it intentionally does not claim to boot Linux. A real `arch/wasm` port must later supply context switching, virtual memory, atomics, and syscall plumbing behind the same boundary.
+The browser smoke module now exercises `log`, `clock_monotonic_ns`,
+`poll_events`, and `frame_present` with a 64×32 RGBA buffer and DOM keyboard /
+pointer event queue. Its Chromium test verifies one rendered pixel and a
+synthetic key event copied into wasm memory. It intentionally does not claim to
+boot Linux. A real `arch/wasm` port must later supply context switching,
+virtual memory, atomics, and syscall plumbing behind the same boundary.
 
 ## X and browser-engine boundaries
 
 Xorg should be evaluated only after the framebuffer and event ABI are stable. Its backend would translate X screen updates into `frame_present` calls and DOM events into the X input path. Keep this backend in a separate module/patch series rather than editing generic X server code.
 
 Firefox is a separate gate. Its process sandbox, filesystem, networking, graphics, and JIT assumptions need a complete target port. The host browser's own networking can be used only through an explicit adapter and normal CORS/security policy. A successful kernel/X smoke test does not imply that Firefox can be built or that a nested Firefox can load a page.
-
