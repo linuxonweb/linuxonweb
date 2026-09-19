@@ -230,6 +230,11 @@
   from `mozbuild/configure/util.py`. The next exact overlay input is pinned
   `third_party/python/looseversion`; no configure result or desktop Firefox
   WASM artifact exists, and `sources/firefox` remains untouched.
+- Added pinned `third_party/python/looseversion` and reran the target. Mach
+  completed both virtualenv setup steps, then failed in its Sentry startup hook
+  with `ModuleNotFoundError: No module named 'sentry_sdk'`. The next exact
+  overlay input is the pinned `third_party/python/sentry-sdk` package; no
+  configure result or desktop Firefox WASM artifact exists.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
