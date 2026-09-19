@@ -136,3 +136,19 @@ new file mode 100644
 +/* Keep the mandatory UAPI header buildable until an ABI is specified. */
 +
 +#endif /* _UAPI_ASM_WASM_SIGCONTEXT_H */
+
+diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
+--- a/scripts/mod/Makefile
++++ b/scripts/mod/Makefile
+@@ -1,5 +1,11 @@
+ # SPDX-License-Identifier: GPL-2.0
+ CFLAGS_REMOVE_empty.o += $(CC_FLAGS_LTO)
++# mk_elfconfig consumes empty.o as an ELF metadata sample. wasm32 has no ELF
++# object format, so keep this probe-only metadata object native while all other
++# kernel objects retain the wasm target selected by scripts/Makefile.clang.
++ifeq ($(LLVM),1)
++CFLAGS_empty.o += --target=$(shell $(HOSTCC) -dumpmachine)
++endif
+ 
+ hostprogs-always-y	+= modpost mk_elfconfig
+ always-y		+= empty.o

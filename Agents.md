@@ -120,7 +120,14 @@
   a source-level port boundary check, not a bootable kernel.
 - Added an overlay-only guarded placeholder
   `arch/wasm/include/uapi/asm/sigcontext.h`; no signal-frame ABI is claimed.
-  The next probe generates all mandatory UAPI wrappers, then reaches the
+-  The next probe generates all mandatory UAPI wrappers, then reaches the
   host-tool boundary: `scripts/mod/mk_elfconfig` is executed and reports
-  `Error: not ELF`. The wasm target flag is therefore currently affecting a
-  host utility that must remain native, before any kernel object can compile.
+  `Error: not ELF`. The wasm target flag therefore needed a host/native
+  metadata split before any kernel object could compile.
+- Added an overlay-only `scripts/mod/Makefile` rule that compiles the
+  `empty.o` ELF metadata sample with `$(HOSTCC -dumpmachine)` when `LLVM=1`;
+  host utilities remain native while normal kernel objects use wasm32. The
+  probe now passes `mk_elfconfig` and stops while generating device-table
+  offsets because the next required architecture header is missing:
+  `fatal error: 'asm/string.h' file not found`. Kconfig and the standalone wasm
+  MVP probe still pass, and `sources/linux` remains unchanged.
