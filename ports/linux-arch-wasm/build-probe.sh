@@ -12,8 +12,8 @@ printf 'Temporary source: %s\n' "$src"
 
 # A detached worktree keeps every edit outside the tracked upstream checkout.
 git -C "$repo" worktree add --detach "$src" HEAD >/dev/null
-git -C "$src" apply "$patch_file"
 trap 'git -C "$repo" worktree remove --force "$src" >/dev/null 2>&1 || true' EXIT
+git -C "$src" apply "$patch_file"
 
 printf '\n== kconfig recognition ==\n'
 make -C "$src" O="$out" ARCH=wasm olddefconfig
@@ -39,4 +39,3 @@ EOF
 file "$work/kernel-probe.wasm"
 
 echo 'kconfig recognized ARCH=wasm; compile stopped as expected at an unimplemented dependency.'
-
