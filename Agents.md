@@ -83,3 +83,19 @@
   host lacks Rust's target stdlib: `error[E0463]: can't find crate for core`.
   Installing that target would only test the helper crate and would not remove
   the full desktop Firefox port blockers.
+
+## Linux arch/wasm skeleton gate (wasm_kernel_research, 2026-09-19)
+
+- Added `ports/linux-arch-wasm/linux-arch-wasm.patch`, an out-of-tree patch
+  that adds minimal `arch/wasm` Kconfig, Makefiles, a `setup_arch` stub, and
+  generic asm Kbuild entries. The tracked `sources/linux` checkout is never
+  modified.
+- Added `ports/linux-arch-wasm/build-probe.sh`; it creates a detached temporary
+  worktree, applies the patch, and runs `make O=... ARCH=wasm olddefconfig`.
+  Kconfig succeeds (only existing EROFS range warnings), proving kbuild
+  recognizes `ARCH=wasm`.
+- The compile phase intentionally stops at the next missing architecture
+  contract: with `LLVM=1`, Linux reports
+  `scripts/Makefile.clang:21: *** add '--target=' option to scripts/Makefile.clang`.
+  The standalone freestanding compiler probe still emits a wasm MVP module.
+  This is a port boundary probe, not a bootable Linux kernel.

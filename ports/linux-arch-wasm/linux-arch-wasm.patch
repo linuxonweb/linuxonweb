@@ -1,0 +1,87 @@
+diff --git a/arch/wasm/Kconfig b/arch/wasm/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/Kconfig
+@@ -0,0 +1,26 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Minimal kconfig entry point for the experimental browser-hosted port.
++config WASM
++    def_bool y
++    select ARCH_32BIT_OFF_T
++    select GENERIC_CPU_DEVICES
++    select GENERIC_CLOCKEVENTS
++    select GENERIC_SCHED_CLOCK
++    select GENERIC_SMP_IDLE_THREAD
++    select GENERIC_IRQ_SHOW
++    select HAVE_ARCH_TRACEHOOK
++    select HAVE_ARCH_SECCOMP_FILTER
++    select HAVE_CONTEXT_TRACKING_USER
++    select HAVE_DEBUG_BUGVERBOSE
++    select HAVE_EFFICIENT_UNALIGNED_ACCESS
++    select HAVE_SYSCALL_TRACEPOINTS
++    select HAVE_KERNEL_GZIP
++    select ARCH_HAS_UBSAN
++
++config MMU
++    bool
++    default n
++
++config SMP
++    bool "Symmetric multiprocessing"
++    default n
+diff --git a/arch/wasm/Makefile b/arch/wasm/Makefile
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/Makefile
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Experimental wasm32 architecture skeleton. It is not bootable.
++KBUILD_DEFCONFIG := defconfig
++UTS_MACHINE := wasm32
++KBUILD_CFLAGS += -ffreestanding -fno-builtin
++KBUILD_AFLAGS += -D__ASSEMBLY__
++core-y += arch/wasm/kernel/
++libs-y += arch/wasm/lib/
+diff --git a/arch/wasm/Kconfig.debug b/arch/wasm/Kconfig.debug
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/Kconfig.debug
+@@ -0,0 +1,2 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# No debug options are defined until the wasm execution model exists.
+diff --git a/arch/wasm/kernel/Makefile b/arch/wasm/kernel/Makefile
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/kernel/Makefile
+@@ -0,0 +1 @@
++obj-y += init.o
+diff --git a/arch/wasm/kernel/init.c b/arch/wasm/kernel/init.c
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/kernel/init.c
+@@ -0,0 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Deliberately tiny: proves only that kbuild can enter an arch/wasm tree. */
++#include <linux/init.h>
++
++void __init setup_arch(char **cmdline_p)
++{
++    (void)cmdline_p;
++}
+diff --git a/arch/wasm/lib/Makefile b/arch/wasm/lib/Makefile
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/lib/Makefile
+@@ -0,0 +1 @@
++# Generic compiler builtins and host ABI shims will be added here.
+diff --git a/arch/wasm/include/asm/Kbuild b/arch/wasm/include/asm/Kbuild
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/Kbuild
+@@ -0,0 +1,6 @@
++# Keep this list intentionally small until the ABI is specified.
++generic-y += bug.h
++generic-y += cmpxchg.h
++generic-y += emergency-restart.h
++generic-y += mcs_spinlock.h
++generic-y += spinlock.h
