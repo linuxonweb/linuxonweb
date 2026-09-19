@@ -48,3 +48,14 @@
 ## Additional source check (wasm_kernel_research, 2026-09-19)
 
 - Firefox `build/moz.configure/init.configure` gates its WASI/wasm32 triplet parsing behind `project == "js"`; this supports the SpiderMonkey/JS shell tooling path, not a full desktop Firefox target. The browser engine therefore still needs a substantial target port beyond the adapter smoke test.
+
+## Native port gate runner (2026-09-19)
+
+- Added `tools/check-port-gates.sh` and `docs/firefox-wasm-port.md`.
+- The reproducible report currently records three real blockers: upstream
+  Linux has no `arch/wasm`, X server has no wasm display/input backend, and
+  Firefox exposes WASI target parsing only for `project=js`. The freestanding
+  wasm32 adapter still passes its Chromium smoke test.
+- The gate exits nonzero until those source-level requirements are implemented;
+  this prevents the adapter smoke test from being mistaken for a full Firefox
+  port.
