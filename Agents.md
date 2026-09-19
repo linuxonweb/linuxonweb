@@ -11,6 +11,7 @@
 - Suggested staged acceptance: (1) compile and run a tiny `arch/wasm` kernel/host ABI proof of life; (2) run a small WASI libc/userspace test with framebuffer/input/network adapters; (3) port an X server backend to the same framebuffer; (4) evaluate a browser engine separately. A browser tab cannot safely host an unmodified Firefox engine, so “Firefox opens bing.com” should be treated as a separate feasibility gate, not assumed after kernel boot.
 - Source checkout status: `sources/linux` is present at commit `40288c9206c17eb66a603262e06a58d300d0f279` (torvalds/linux `master`). `sources/firefox` now resolves to `b16f852ba66d190cacd42d0d43ac4d38bd07c4bd` (mozilla-firefox/firefox `main`), but its working tree is sparse/empty and source blobs are not yet materialized. X server is not yet present. Record exact commits and complete the checkouts before building them.
 - Added `docs/architecture.md`, which defines a small `linux_host` import ABI (clock, sleep, events, framebuffer, files, network, logging), a bounded browser event loop, and separate X/Firefox gates. Added `probes/wasm32-kernel-smoke.c` and `probes/Makefile`; `make -C probes` succeeds and `wasm-objdump -x` confirms the `linux_host.log` import plus exported `kernel_entry` and memory.
+- Existing `web/wasm_smoke/run_smoke.sh` also passes in headless Chromium: the 612-byte module instantiates through `instantiateStreaming`, reports `data-result="pass"`, and writes its adapter message to the page.
 
 ## browser_stack_probe (2026-09-19)
 
