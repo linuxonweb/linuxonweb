@@ -24,10 +24,11 @@ little-endian UAPI `byteorder.h`, placeholder `ptrace.h`, and placeholder
 wasm32. The `asm/string.h` mapping lets device-table offsets and time constants
 generate. `GENERIC_ATOMIC64` and the `asm/atomic.h` wrapper reuse Linux's
 lock-based atomic64 ABI without requiring wasm compiler atomics. Bounds
-generation now succeeds; the next blocker is
-`arch/wasm/kernel/asm-offsets.s: No such file or directory` while generating
-`include/generated/asm-offsets.h`. Atomic64 runtime correctness is not proven:
-the interrupt hooks remain no-ops and no kernel has been linked or booted.
+generation now succeeds after the minimal `arch/wasm/kernel/asm-offsets.c`
+emitter is added. The next blocker is
+`fatal error: 'asm/thread_info.h' file not found` while generating scheduler
+offsets (`kernel/sched/rq-offsets.s`). Atomic64 runtime correctness is not
+proven: interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was
 already native, and its original `Error: not ELF` referred to the wasm input.

@@ -213,3 +213,18 @@ new file mode 100644
 +#endif
 +
 +#endif /* _ASM_WASM_ATOMIC_H */
+
+diff --git a/arch/wasm/kernel/asm-offsets.c b/arch/wasm/kernel/asm-offsets.c
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/kernel/asm-offsets.c
+@@ -0,0 +1,9 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Minimal offset emitter; no wasm ABI offsets are claimed yet. */
++#define COMPILE_OFFSETS
++#include <linux/kbuild.h>
++
++int main(void)
++{
++    return 0;
++}

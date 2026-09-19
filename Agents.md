@@ -124,6 +124,12 @@
   host program; its `Error: not ELF` rejected wasm `empty.o` input. Compiling
   that input for the host is only a diagnostic bypass yielding host-sized ELF
   metadata, not a valid wasm32 modpost implementation.
+- Added an overlay-only minimal `arch/wasm/kernel/asm-offsets.c` emitter. The
+  top-level bounds and asm-offsets headers now generate; the probe reaches
+  scheduler offsets and stops at `fatal error: 'asm/thread_info.h' file not
+  found` from `kernel/sched/rq-offsets.s`. This remains a compile-boundary
+  probe: no thread ABI or boot path is defined, and upstream `sources/linux`
+  remains untouched.
 - Added an overlay-only placeholder `arch/wasm/include/uapi/asm/ptrace.h` so
   kbuild can continue without inventing a register ABI. The next probe run
   generates ptrace-related UAPI headers and stops at
