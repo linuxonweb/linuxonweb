@@ -69,3 +69,17 @@
   draws the wasm RGBA buffer to a canvas.
 - Chromium verification passes with a 1,194-byte freestanding wasm32 module:
   `PASS: native wasm32 module instantiated (ABI LWEB v1, framebuffer + events)`.
+
+## Firefox source/build gate (wasm_kernel_research, 2026-09-19)
+
+- Added `probes/firefox-wasi-helper-gate.sh`; it reads pinned files with
+  `git show` into a temporary directory and leaves `sources/firefox` untouched.
+- At Firefox revision `b16f852ba66d190cacd42d0d43ac4d38bd07c4bd`, the gate
+  confirms `allow_wasi=(project == "js")` and `if build_project == "js"`, then
+  successfully runs `cargo check --target wasm32-unknown-unknown` for the
+  small `build/rust/wasi` helper crate. This does not build Firefox or its JS
+  shell.
+- The same gate with `FIREFOX_WASM_TARGET=wasm32-wasip1` exits 101 because this
+  host lacks Rust's target stdlib: `error[E0463]: can't find crate for core`.
+  Installing that target would only test the helper crate and would not remove
+  the full desktop Firefox port blockers.
