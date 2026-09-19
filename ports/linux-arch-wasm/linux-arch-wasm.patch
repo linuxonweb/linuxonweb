@@ -309,3 +309,20 @@ new file mode 100644
 +#include <asm-generic/cache.h>
 +
 +#endif /* _ASM_WASM_CACHE_H */
+
+diff --git a/arch/wasm/include/asm/page.h b/arch/wasm/include/asm/page.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/page.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Fixed-page compile placeholder; wasm linear-memory paging is undefined. */
++#ifndef _ASM_WASM_PAGE_H
++#define _ASM_WASM_PAGE_H
++
++#define PAGE_SHIFT 12
++#define PAGE_SIZE (1UL << PAGE_SHIFT)
++#define PAGE_MASK (~(PAGE_SIZE - 1))
++#define PAGE_ALIGN(addr) (((addr) + PAGE_SIZE - 1) & PAGE_MASK)
++
++#endif /* _ASM_WASM_PAGE_H */

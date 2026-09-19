@@ -174,6 +174,8 @@
   native host tools, and the standalone wasm MVP probe still pass; the tracked
   `sources/linux` checkout remains unchanged.
 - Added an overlay-only `asm/cache.h` wrapper around `asm-generic/cache.h`.
-  Scheduler offset compilation now reaches shared-memory headers and stops at
-  `fatal error: 'asm/page.h' file not found` from `include/linux/shm.h`.
-  This remains nonbootable; the tracked `sources/linux` checkout is unchanged.
+  Scheduler offset compilation now reaches the memory ABI boundary:
+  `unknown type name 'pgtable_t'`, `pgprot_t`, and `pgd_t` in
+  `include/linux/mm_types.h`; generic uaccess then reports missing
+  `raw_copy_to_user`/`raw_copy_from_user` and `asm/extable.h`. This remains
+  nonbootable; the tracked `sources/linux` checkout is unchanged.
