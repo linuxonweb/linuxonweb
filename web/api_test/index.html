@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linux on Web · HTML5 API test bench</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">linux-on-web / browser host adapter</p>
+      <h1>HTML5 API test bench</h1>
+      <p>Run each capability from a user gesture. Permission based tests never start until you press their button.</p>
+      <div class="toolbar">
+        <button id="run-safe">Run safe checks</button>
+        <button id="clear-log" class="secondary">Clear log</button>
+        <span id="secure-context" class="pill"></span>
+      </div>
+    </header>
+
+    <section class="cards" aria-label="API tests">
+      <article><h2>Media</h2><p>Camera, microphone, recording, and screen capture.</p><button data-action="camera">Test camera</button><button data-action="microphone">Test microphone</button><button data-action="record">Record 3 seconds</button><button data-action="screen">Test screen capture</button><video id="preview" autoplay muted playsinline hidden></video><audio id="audio-preview" controls hidden></audio></article>
+      <article><h2>Clipboard & files</h2><p>Clipboard read/write and the File System Access picker.</p><button data-action="clipboard">Test clipboard</button><button data-action="file">Open a file</button><output id="file-output"></output></article>
+      <article><h2>Device services</h2><p>Location, notifications, vibration, and sharing.</p><button data-action="geolocation">Test geolocation</button><button data-action="notifications">Request notifications</button><button data-action="vibrate">Vibrate</button><button data-action="share">Test share</button></article>
+      <article><h2>Graphics & audio</h2><p>Canvas, WebGL, WebGPU, and Web Audio.</p><button data-action="graphics">Test graphics</button><button data-action="audio">Test Web Audio</button><canvas id="canvas" width="320" height="80" hidden></canvas></article>
+      <article><h2>Storage & messaging</h2><p>Local storage, IndexedDB, workers, and WebSocket reachability.</p><button data-action="storage">Test storage</button><button data-action="worker">Test worker</button><button data-action="websocket">Test WebSocket</button></article>
+      <article><h2>Runtime</h2><p>WebAssembly, timers, streams, and browser metadata.</p><button data-action="runtime">Test runtime</button><button data-action="all">Run all tests</button></article>
+    </section>
+
+    <section class="log-panel"><div class="log-header"><h2>Results</h2><span id="summary">0 checks</span></div><ol id="log" aria-live="polite"></ol></section>
+  </main>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
