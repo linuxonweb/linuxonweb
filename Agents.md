@@ -261,6 +261,15 @@
   configure output before timeout. `strace` is unavailable on this host, so
   the next blocker is build-site activation/dependency resolution rather than
   a wasm compiler result. No browser artifact was produced.
+- Source inspection confirms `MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none` is
+  the documented way to avoid the Mach virtualenv, but the build command site
+  is still activated by `mach configure`. The smallest direct probe uses an
+  object directory: `(cd obj && ../configure --target=wasm32-wasi
+  --disable-compile-environment --disable-tests)`. In a pinned temporary
+  overlay this bypasses the Mach hang and reaches configure, then fails at
+  `FileNotFoundError: .../config/milestone.txt`; stdout confirms Python setup
+  and `checking for vcs source checkout... no`. No compiler result or Firefox
+  WASM artifact is produced.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
