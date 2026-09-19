@@ -99,3 +99,7 @@
   `scripts/Makefile.clang:21: *** add '--target=' option to scripts/Makefile.clang`.
   The standalone freestanding compiler probe still emits a wasm MVP module.
   This is a port boundary probe, not a bootable Linux kernel.
+- The probe now checks for `scripts/Kbuild.include` and
+  `scripts/pahole-version.sh` in partial checkouts and materializes missing
+  copies only inside the temporary worktree via `git show`; the pinned
+  `sources/linux` tree remains untouched. Re-run result is unchanged.

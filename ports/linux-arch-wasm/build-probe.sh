@@ -15,6 +15,19 @@ git -C "$repo" worktree add --detach "$src" HEAD >/dev/null
 trap 'git -C "$repo" worktree remove --force "$src" >/dev/null 2>&1 || true' EXIT
 git -C "$src" apply "$patch_file"
 
+# A partial upstream checkout can omit helper scripts even though they are in
+# the pinned Git tree. Materialize only the files needed by Kbuild into the
+# temporary worktree; never restore them into sources/linux.
+for required in scripts/Kbuild.include scripts/pahole-version.sh; do
+    if [[ ! -f "$src/$required" ]]; then
+        mkdir -p "$src/${required%/*}"
+        git -C "$repo" show "HEAD:$required" > "$src/$required"
+        if [[ "$required" == scripts/pahole-version.sh ]]; then
+            chmod +x "$src/$required"
+        fi
+    fi
+done
+
 printf '\n== kconfig recognition ==\n'
 make -C "$src" O="$out" ARCH=wasm olddefconfig
 
