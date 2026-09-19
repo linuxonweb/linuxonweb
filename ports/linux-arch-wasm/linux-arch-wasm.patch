@@ -168,3 +168,30 @@ new file mode 100644
 +#include <asm-generic/string.h>
 +
 +#endif /* _ASM_WASM_STRING_H */
+
+diff --git a/arch/wasm/include/asm/irqflags.h b/arch/wasm/include/asm/irqflags.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/irqflags.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Placeholder IRQ state hooks; browser-host interrupt semantics are TBD. */
++#ifndef _ASM_WASM_IRQFLAGS_H
++#define _ASM_WASM_IRQFLAGS_H
++
++static inline unsigned long arch_local_save_flags(void)
++{
++    return 0;
++}
++static inline void arch_local_irq_enable(void) { }
++static inline void arch_local_irq_disable(void) { }
++static inline unsigned long arch_local_irq_save(void) { return 0; }
++static inline void arch_local_irq_restore(unsigned long flags) { (void)flags; }
++static inline int arch_irqs_disabled_flags(unsigned long flags)
++{
++    return (void)flags, 1;
++}
++static inline int arch_irqs_disabled(void) { return 1; }
++static inline void arch_safe_halt(void) { }
++
++#endif /* _ASM_WASM_IRQFLAGS_H */

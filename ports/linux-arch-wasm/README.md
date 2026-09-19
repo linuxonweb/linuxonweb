@@ -22,10 +22,11 @@ little-endian UAPI `byteorder.h`, placeholder `ptrace.h`, and placeholder
 `scripts/mod/empty.o` metadata sample native (matching `HOSTCC`) so the host
 `mk_elfconfig` tool can consume ELF metadata while kernel objects remain
 wasm32. The `asm/string.h` mapping lets device-table offsets and time constants
-generate; the current expected compile result is
-`fatal error: 'asm/irqflags.h' file not found` while compiling `kernel/bounds.s`.
-The architecture compiler/ABI contract remains undefined, which is evidence
-that the skeleton is not a kernel port.
+generate. The `asm/irqflags.h` placeholder then lets bounds compilation enter
+the generic atomic layer; the current expected result is
+`error: unknown type name 'atomic64_t'` (with missing `arch_atomic64_*` hooks)
+while compiling `kernel/bounds.s`. The architecture compiler/ABI contract
+remains undefined, which is evidence that the skeleton is not a kernel port.
 
 The standalone C probe uses the same `wasm32-unknown-unknown` freestanding
 target as the browser adapter and only validates that the compiler can emit a

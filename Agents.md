@@ -138,3 +138,10 @@
   primitive while compiling `kernel/bounds.s`:
   `fatal error: 'asm/irqflags.h' file not found`. Kconfig, native host tools,
   and the standalone wasm MVP probe pass; `sources/linux` is unchanged.
+- Added an overlay-only `arch/wasm/include/asm/irqflags.h` with explicit
+  no-op interrupt hooks (the browser interrupt ABI is not defined). Bounds
+  compilation now enters generic atomics and stops on the next missing
+  architecture contract: `error: unknown type name 'atomic64_t'`, followed by
+  missing `arch_atomic64_*` operations in `atomic-arch-fallback.h`. Kconfig,
+  native host tools, and the standalone wasm MVP probe still pass; the tracked
+  `sources/linux` checkout remains unchanged.
