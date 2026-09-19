@@ -112,3 +112,9 @@
   Kconfig still succeeds (with the existing EROFS range warnings), and the
   standalone wasm compiler probe emits a wasm MVP module. The tracked
   `sources/linux` checkout remains unchanged.
+- Added an overlay-only placeholder `arch/wasm/include/uapi/asm/ptrace.h` so
+  kbuild can continue without inventing a register ABI. The next probe run
+  generates ptrace-related UAPI headers and stops at
+  `No rule to make target 'arch/wasm/include/generated/uapi/asm/sigcontext.h'`.
+  Kconfig and the standalone wasm MVP compiler probe still pass; this remains
+  a source-level port boundary check, not a bootable kernel.

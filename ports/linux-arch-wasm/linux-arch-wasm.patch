@@ -108,3 +108,17 @@ new file mode 100644
 +#include <linux/byteorder/little_endian.h>
 +
 +#endif /* _UAPI_ASM_WASM_BYTEORDER_H */
+
+diff --git a/arch/wasm/include/uapi/asm/ptrace.h b/arch/wasm/include/uapi/asm/ptrace.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/uapi/asm/ptrace.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
++/* Placeholder: the wasm register/ptrace ABI is not defined yet. */
++#ifndef _UAPI_ASM_WASM_PTRACE_H
++#define _UAPI_ASM_WASM_PTRACE_H
++
++/* Keep the mandatory UAPI header buildable until an ABI is specified. */
++
++#endif /* _UAPI_ASM_WASM_PTRACE_H */
