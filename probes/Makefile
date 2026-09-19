@@ -1,5 +1,5 @@
 CLANG ?= clang
-TARGET ?= wasm32-unknown-wasi
+TARGET ?= wasm32-unknown-unknown
 OUT ?= wasm32-kernel-smoke.wasm
 
 CFLAGS := --target=$(TARGET) -ffreestanding -fno-builtin -fno-stack-protector -O2
@@ -14,4 +14,3 @@ $(OUT): wasm32-kernel-smoke.c
 
 clean:
 	$(RM) $(OUT)
-
