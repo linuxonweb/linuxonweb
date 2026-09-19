@@ -295,3 +295,17 @@ new file mode 100644
 +static inline void cpu_relax(void) { }
 +
 +#endif /* _ASM_WASM_PROCESSOR_H */
+
+diff --git a/arch/wasm/include/asm/cache.h b/arch/wasm/include/asm/cache.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/cache.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Generic cache geometry placeholder until a wasm memory model is defined. */
++#ifndef _ASM_WASM_CACHE_H
++#define _ASM_WASM_CACHE_H
++
++#include <asm-generic/cache.h>
++
++#endif /* _ASM_WASM_CACHE_H */

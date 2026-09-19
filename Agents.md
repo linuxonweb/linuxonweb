@@ -173,3 +173,7 @@
   missing `arch_atomic64_*` operations in `atomic-arch-fallback.h`. Kconfig,
   native host tools, and the standalone wasm MVP probe still pass; the tracked
   `sources/linux` checkout remains unchanged.
+- Added an overlay-only `asm/cache.h` wrapper around `asm-generic/cache.h`.
+  Scheduler offset compilation now reaches shared-memory headers and stops at
+  `fatal error: 'asm/page.h' file not found` from `include/linux/shm.h`.
+  This remains nonbootable; the tracked `sources/linux` checkout is unchanged.

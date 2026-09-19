@@ -26,9 +26,9 @@ generate. `GENERIC_ATOMIC64` and the `asm/atomic.h` wrapper reuse Linux's
 lock-based atomic64 ABI without requiring wasm compiler atomics. Bounds
 generation now succeeds after the minimal `arch/wasm/kernel/asm-offsets.c`
 emitter, scheduler-facing `asm/thread_info.h`, and a minimal `asm/processor.h`
-CPU-state placeholder are added. The next blocker is
-`fatal error: 'asm/cache.h' file not found` while generating scheduler offsets
-(`kernel/sched/rq-offsets.s`). Atomic64 runtime correctness is not proven:
+CPU-state placeholder, and a generic cache geometry wrapper are added. The
+next blocker is `fatal error: 'asm/page.h' file not found` while generating
+scheduler offsets (`kernel/sched/rq-offsets.s`). Atomic64 runtime correctness is not proven:
 interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was
