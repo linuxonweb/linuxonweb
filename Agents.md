@@ -112,6 +112,18 @@
   Kconfig still succeeds (with the existing EROFS range warnings), and the
   standalone wasm compiler probe emits a wasm MVP module. The tracked
   `sources/linux` checkout remains unchanged.
+- Atomic64 gate: selected `GENERIC_ATOMIC64` and added an overlay
+  `asm/atomic.h` wrapper for Linux's existing generic atomic/atomic64 ABI.
+  This uses lock-based operations, not unvalidated compiler atomics. Corrected
+  the Kconfig patch hunk length so all configuration lines are materialized.
+  `ports/linux-arch-wasm/build-probe.sh` now generates `bounds.h`, then stops at
+  `arch/wasm/kernel/asm-offsets.s: No such file or directory` while generating
+  `include/generated/asm-offsets.h`. No atomic runtime correctness is claimed
+  while the IRQ hooks are no-ops. Upstream source files remain untouched.
+- Correction to the earlier ELF diagnosis: `mk_elfconfig` was already a native
+  host program; its `Error: not ELF` rejected wasm `empty.o` input. Compiling
+  that input for the host is only a diagnostic bypass yielding host-sized ELF
+  metadata, not a valid wasm32 modpost implementation.
 - Added an overlay-only placeholder `arch/wasm/include/uapi/asm/ptrace.h` so
   kbuild can continue without inventing a register ABI. The next probe run
   generates ptrace-related UAPI headers and stops at

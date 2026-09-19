@@ -2,7 +2,7 @@ diff --git a/arch/wasm/Kconfig b/arch/wasm/Kconfig
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/Kconfig
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,29 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +# Minimal kconfig entry point for the experimental browser-hosted port.
 +config WASM
@@ -21,6 +21,7 @@ new file mode 100644
 +    select HAVE_SYSCALL_TRACEPOINTS
 +    select HAVE_KERNEL_GZIP
 +    select ARCH_HAS_UBSAN
++    select GENERIC_ATOMIC64
 +
 +source "kernel/Kconfig.hz"
 +
@@ -195,3 +196,20 @@ new file mode 100644
 +static inline void arch_safe_halt(void) { }
 +
 +#endif /* _ASM_WASM_IRQFLAGS_H */
+
+diff --git a/arch/wasm/include/asm/atomic.h b/arch/wasm/include/asm/atomic.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/atomic.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Use Linux's lock-based generic atomic64 ABI until wasm atomics are defined. */
++#ifndef _ASM_WASM_ATOMIC_H
++#define _ASM_WASM_ATOMIC_H
++
++#include <asm-generic/atomic.h>
++#ifdef CONFIG_GENERIC_ATOMIC64
++#include <asm-generic/atomic64.h>
++#endif
++
++#endif /* _ASM_WASM_ATOMIC_H */

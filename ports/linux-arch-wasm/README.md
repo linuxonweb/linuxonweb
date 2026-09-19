@@ -22,11 +22,17 @@ little-endian UAPI `byteorder.h`, placeholder `ptrace.h`, and placeholder
 `scripts/mod/empty.o` metadata sample native (matching `HOSTCC`) so the host
 `mk_elfconfig` tool can consume ELF metadata while kernel objects remain
 wasm32. The `asm/string.h` mapping lets device-table offsets and time constants
-generate. The `asm/irqflags.h` placeholder then lets bounds compilation enter
-the generic atomic layer; the current expected result is
-`error: unknown type name 'atomic64_t'` (with missing `arch_atomic64_*` hooks)
-while compiling `kernel/bounds.s`. The architecture compiler/ABI contract
-remains undefined, which is evidence that the skeleton is not a kernel port.
+generate. `GENERIC_ATOMIC64` and the `asm/atomic.h` wrapper reuse Linux's
+lock-based atomic64 ABI without requiring wasm compiler atomics. Bounds
+generation now succeeds; the next blocker is
+`arch/wasm/kernel/asm-offsets.s: No such file or directory` while generating
+`include/generated/asm-offsets.h`. Atomic64 runtime correctness is not proven:
+the interrupt hooks remain no-ops and no kernel has been linked or booted.
+
+The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was
+already native, and its original `Error: not ELF` referred to the wasm input.
+The workaround yields host-sized ELF metadata, not valid wasm32 metadata;
+modpost/object-format support remains a required port task.
 
 The standalone C probe uses the same `wasm32-unknown-unknown` freestanding
 target as the browser adapter and only validates that the compiler can emit a
