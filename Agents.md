@@ -224,6 +224,12 @@
   `python/mach/mach/logging.py`. The next overlay input is therefore pinned
   `third_party/python/blessed`; no configure result or desktop Firefox wasm
   artifact exists.
+- Added pinned `third_party/python/wcwidth` to the temporary overlay and reran
+  the same target. Mach completed its site setup, then stopped while loading
+  build commands with `ModuleNotFoundError: No module named 'looseversion'`
+  from `mozbuild/configure/util.py`. The next exact overlay input is pinned
+  `third_party/python/looseversion`; no configure result or desktop Firefox
+  WASM artifact exists, and `sources/firefox` remains untouched.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
