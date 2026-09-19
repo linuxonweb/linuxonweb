@@ -392,3 +392,52 @@ new file mode 100644
 +#define _ASM_WASM_ELF_H
 +
 +#endif /* _ASM_WASM_ELF_H */
+
+diff --git a/arch/wasm/include/asm/pgtable.h b/arch/wasm/include/asm/pgtable.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/pgtable.h
+@@ -0,0 +1,36 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Compile-only page-table shape for the MMU-less wasm skeleton.  These
++ * opaque entries and folded levels intentionally provide no mapping or
++ * translation semantics.
++ */
++#ifndef _ASM_WASM_PGTABLE_H
++#define _ASM_WASM_PGTABLE_H
++
++#include <asm/page.h>
++
++#define __PAGETABLE_P4D_FOLDED
++#define __PAGETABLE_PUD_FOLDED
++#define __PAGETABLE_PMD_FOLDED
++
++typedef struct { unsigned long val; } pte_t;
++typedef struct { unsigned long val; } pmd_t;
++typedef struct { unsigned long val; } pud_t;
++typedef struct { unsigned long val; } p4d_t;
++
++#define pte_val(x) ((x).val)
++#define pmd_val(x) ((x).val)
++#define pud_val(x) ((x).val)
++#define p4d_val(x) ((x).val)
++#define pgd_val(x) ((x).val)
++
++#define __pte(x) ((pte_t){ .val = (unsigned long)(x) })
++#define __pmd(x) ((pmd_t){ .val = (unsigned long)(x) })
++#define __pud(x) ((pud_t){ .val = (unsigned long)(x) })
++#define __p4d(x) ((p4d_t){ .val = (unsigned long)(x) })
++#define __pgd(x) ((pgd_t){ .val = (unsigned long)(x) })
++
++#define PTRS_PER_PGD 1
++#define PTRS_PER_P4D 1
++#define PTRS_PER_PUD 1
++#define PTRS_PER_PMD 1
++#define PTRS_PER_PTE 1
++#define PGDIR_SHIFT PAGE_SHIFT
++#define P4D_SHIFT PAGE_SHIFT
++#define PUD_SHIFT PAGE_SHIFT
++#define PMD_SHIFT PAGE_SHIFT
++
++#endif /* _ASM_WASM_PGTABLE_H */

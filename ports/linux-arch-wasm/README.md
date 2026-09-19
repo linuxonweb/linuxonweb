@@ -31,9 +31,12 @@ The page wrapper now supplies compile-only `pgtable_t`, `pgprot_t`, and `pgd_t`
 types plus identity `__pa`/`__va` conversions for generic type checking; the
 processor wrapper defines `user_mode(regs)` as a compile-only false result.
 An empty guarded `asm/elf.h` records that no arch ELF ABI is defined. The
-probe now reaches the next blocker, `fatal error: 'asm/pgtable.h' file not
-found` while compiling `kernel/sched/rq-offsets.s`; page-table semantics have
-not been invented. Atomic64 and uaccess runtime correctness is not proven:
+probe now reaches generic scheduler/MM code after the overlay-only
+`asm/pgtable.h` shape is added. The exact next blocker is the existing generic
+atomic fallback reporting `unknown type name 'atomic64_t'` and missing
+`arch_atomic64_*` operations (the generated configuration does not select
+`CONFIG_GENERIC_ATOMIC64` in this detached probe). Page-table and atomic
+runtime semantics have not been invented; uaccess correctness is not proven:
 interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was
