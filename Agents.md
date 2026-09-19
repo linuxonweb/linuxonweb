@@ -95,11 +95,14 @@
   Kconfig succeeds (only existing EROFS range warnings), proving kbuild
   recognizes `ARCH=wasm`.
 - The compile phase intentionally stops at the next missing architecture
-  contract: with `LLVM=1`, Linux reports
-  `scripts/Makefile.clang:21: *** add '--target=' option to scripts/Makefile.clang`.
-  The standalone freestanding compiler probe still emits a wasm MVP module.
-  This is a port boundary probe, not a bootable Linux kernel.
+  contract. The overlay now adds
+  `CLANG_TARGET_FLAGS_wasm := wasm32-unknown-unknown`; the compile reaches UAPI
+  generation and reports `No rule to make target
+  'arch/wasm/include/generated/uapi/asm/byteorder.h'`. The standalone
+  freestanding compiler probe still emits a wasm MVP module. This is a port
+  boundary probe, not a bootable Linux kernel.
 - The probe now checks for `scripts/Kbuild.include` and
   `scripts/pahole-version.sh` in partial checkouts and materializes missing
   copies only inside the temporary worktree via `git show`; the pinned
-  `sources/linux` tree remains untouched. Re-run result is unchanged.
+  `sources/linux` tree remains untouched. The probe also syncs Kconfig with
+  `LLVM=1` before compiling, avoiding false partial-config failures.

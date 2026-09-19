@@ -85,3 +85,12 @@ new file mode 100644
 +generic-y += emergency-restart.h
 +generic-y += mcs_spinlock.h
 +generic-y += spinlock.h
+diff --git a/scripts/Makefile.clang b/scripts/Makefile.clang
+--- a/scripts/Makefile.clang
++++ b/scripts/Makefile.clang
+@@ -12,4 +12,5 @@ CLANG_TARGET_FLAGS_s390		:= s390x-linux-gnu
+ CLANG_TARGET_FLAGS_s390		:= s390x-linux-gnu
+ CLANG_TARGET_FLAGS_sparc	:= sparc64-linux-gnu
+ CLANG_TARGET_FLAGS_x86		:= x86_64-linux-gnu
++CLANG_TARGET_FLAGS_wasm		:= wasm32-unknown-unknown
+ # This is only for i386 UM builds, which need the 32-bit target not -m32

@@ -18,7 +18,26 @@ git -C "$src" apply "$patch_file"
 # A partial upstream checkout can omit helper scripts even though they are in
 # the pinned Git tree. Materialize only the files needed by Kbuild into the
 # temporary worktree; never restore them into sources/linux.
-for required in scripts/Kbuild.include scripts/pahole-version.sh; do
+required_files=(
+    scripts/Kbuild.include
+    scripts/pahole-version.sh
+    scripts/kconfig/Makefile
+    scripts/kconfig/conf.c
+    scripts/kconfig/confdata.c
+    scripts/kconfig/expr.c
+    scripts/kconfig/expr.h
+    scripts/kconfig/internal.h
+    scripts/kconfig/lexer.l
+    scripts/kconfig/lkc.h
+    scripts/kconfig/lkc_proto.h
+    scripts/kconfig/menu.c
+    scripts/kconfig/parser.y
+    scripts/kconfig/preprocess.c
+    scripts/kconfig/preprocess.h
+    scripts/kconfig/symbol.c
+    scripts/kconfig/util.c
+)
+for required in "${required_files[@]}"; do
     if [[ ! -f "$src/$required" ]]; then
         mkdir -p "$src/${required%/*}"
         git -C "$repo" show "HEAD:$required" > "$src/$required"
@@ -29,12 +48,13 @@ for required in scripts/Kbuild.include scripts/pahole-version.sh; do
 done
 
 printf '\n== kconfig recognition ==\n'
-make -C "$src" O="$out" ARCH=wasm olddefconfig
+make -C "$src" O="$out" ARCH=wasm LLVM=1 olddefconfig
+make -C "$src" O="$out" ARCH=wasm LLVM=1 syncconfig
 
 printf '\n== compile probe (expected to expose next missing arch dependency) ==\n'
 set +e
-make -C "$src" O="$out" ARCH=wasm LLVM=1 CROSS_COMPILE= \
-  KCFLAGS='-Wno-error' -j1 vmlinux 2>&1 | tee "$work/compile.log"
+KCONFIG_NOSILENTUPDATE=1 make -C "$src" O="$out" ARCH=wasm LLVM=1 CROSS_COMPILE= \
+  KCFLAGS='-Wno-error' -j1 vmlinux </dev/null 2>&1 | tee "$work/compile.log"
 status=${PIPESTATUS[0]}
 set -e
 printf 'compile_exit=%s\n' "$status"
