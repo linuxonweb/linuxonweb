@@ -70,6 +70,27 @@
 - Chromium verification passes with a 1,194-byte freestanding wasm32 module:
   `PASS: native wasm32 module instantiated (ABI LWEB v1, framebuffer + events)`.
 
+## Desktop Firefox/X source gate (2026-09-19)
+
+- Read-only inspection of pinned Firefox `b16f852ba66d190cacd42d0d43ac4d38bd07c4bd`
+  confirms that `js/src/shell/moz.build` only adds a 1 MiB WASI stack, the
+  `--stack-first` linker flag, and `wasi-emulated-process-clocks` /
+  `wasi-emulated-getpid` libraries. This is a SpiderMonkey JS-shell path, not
+  a desktop Firefox target or browser host port.
+- Reproducible source gate:
+  `test -f sources/firefox/mach` -> `no`,
+  `test -f sources/firefox/browser/moz.build` -> `no`, while
+  `git -C sources/firefox cat-file -e HEAD:browser/moz.build` -> `yes`.
+  The pinned Firefox Git objects contain the browser sources, but the working
+  tree is sparse and cannot run `mach configure` or a desktop build here.
+- Read-only inspection of pinned X server
+  `306071c0b9683ef0dfadcfc2dbb78d369680542b` finds zero paths matching
+  `wasm|webgpu|webgl`; its available display backends remain native X11,
+  Xwayland, Xnest, VFB, and kdrive. There is no out-of-tree desktop Firefox
+  artifact to execute in Chromium. Remaining blockers are materializing the
+  Firefox checkout, porting Gecko process/filesystem/network/JIT services, and
+  implementing an X display/input backend for the browser host.
+
 ## Firefox source/build gate (wasm_kernel_research, 2026-09-19)
 
 - Added `probes/firefox-wasi-helper-gate.sh`; it reads pinned files with
