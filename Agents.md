@@ -224,6 +224,12 @@
   `python/mach/mach/logging.py`. The next overlay input is therefore pinned
   `third_party/python/blessed`; no configure result or desktop Firefox wasm
   artifact exists.
+- Added pinned `third_party/python/blessed` to the temporary overlay and reran
+  the same configure command. Mach now imports blessed but stops at
+  `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
+  The next exact overlay input is pinned `third_party/python/wcwidth`; no
+  configure result or browser WASM artifact exists, and `sources/firefox`
+  remains untouched.
 - Added only to the overlay: a compile-only `user_mode(regs)` false macro in
   `asm/processor.h`, identity `__pa`/`__va` conversions in `asm/page.h`, and a
   guarded empty `asm/elf.h` documenting that no wasm ELF ABI is defined.
@@ -234,3 +240,14 @@
   `fatal error: 'asm/pgtable.h' file not found`. Page-table/runtime semantics
   remain deliberately undefined; no kernel boot or emulator is claimed, and
   `sources/linux` is untouched.
+- Added only to the overlay a minimal `asm/pgtable.h` for the MMU-less shape:
+  opaque pte/pmd/pud/p4d entries, folded levels, and one-entry geometry. These
+  definitions provide only generic compile-time contracts and no translation
+  or mapping semantics. The patch passes `git -C sources/linux apply --check`.
+  `ports/linux-arch-wasm/build-probe.sh` exits 0 after its expected compile
+  failure; Kconfig, native host metadata, and the standalone wasm MVP probe
+  pass, then the scheduler-offset compile reaches generic atomic fallback and
+  stops at `unknown type name 'atomic64_t'` plus missing `arch_atomic64_*`
+  operations. This detached configuration does not emit `CONFIG_GENERIC_ATOMIC64`;
+  no atomic/page-table runtime or boot behavior is claimed, and `sources/linux`
+  remains untouched.
