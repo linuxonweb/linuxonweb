@@ -19,7 +19,7 @@
   compiles freestanding C with Clang and `wasm-ld` (no Emscripten, emulator,
   or JavaScript CPU interpreter), serves the module with the correct MIME type,
   and loads it with `WebAssembly.instantiateStreaming`. Its C adapter imports
-  only `env.host_write` and `env.host_time_ms`, and the HTML page exposes a
+  only `linux_host.log` and `linux_host.clock_monotonic_ns`, and the HTML page exposes a
   small terminal output surface.
 - Chromium 150 headless verification passed via
   `web/wasm_smoke/run_smoke.sh`; the page reported
