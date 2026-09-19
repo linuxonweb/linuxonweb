@@ -270,6 +270,12 @@
   `FileNotFoundError: .../config/milestone.txt`; stdout confirms Python setup
   and `checking for vcs source checkout... no`. No compiler result or Firefox
   WASM artifact is produced.
+- Adding pinned `config/milestone.txt` to the direct object-directory overlay
+  lets configure proceed through Python setup and VCS detection, then fails at
+  the next required source input: `FileNotFoundError:
+  .../browser/config/version.txt`. This is the next bounded overlay input;
+  no compiler or target result is reached and no Firefox browser WASM artifact
+  exists.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
