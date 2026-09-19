@@ -228,3 +228,46 @@ new file mode 100644
 +{
 +    return 0;
 +}
+
+diff --git a/arch/wasm/include/asm/thread_info.h b/arch/wasm/include/asm/thread_info.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/thread_info.h
+@@ -0,0 +1,37 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Minimal scheduler-facing layout; no wasm task/stack ABI is claimed. */
++#ifndef _ASM_WASM_THREAD_INFO_H
++#define _ASM_WASM_THREAD_INFO_H
++
++#include <linux/types.h>
++
++#define THREAD_SIZE_ORDER 1
++#define THREAD_SIZE 8192
++
++struct task_struct;
++struct thread_info {
++    struct task_struct *task;
++    unsigned long flags;
++    int preempt_count;
++};
++static inline struct thread_info *current_thread_info(void)
++{
++    return (struct thread_info *)0;
++}
++
++#define TIF_SYSCALL_TRACE 0
++#define TIF_NOTIFY_RESUME 1
++#define TIF_SIGPENDING 2
++#define TIF_NEED_RESCHED 3
++#define TIF_MEMDIE 4
++#define TIF_SECCOMP 5
++#define TIF_SYSCALL_AUDIT 6
++#define TIF_NOTIFY_SIGNAL 7
++#define TIF_POLLING_NRFLAG 16
++
++#define _TIF_SYSCALL_TRACE (1 << TIF_SYSCALL_TRACE)
++#define _TIF_NOTIFY_RESUME (1 << TIF_NOTIFY_RESUME)
++#define _TIF_SIGPENDING (1 << TIF_SIGPENDING)
++#define _TIF_NEED_RESCHED (1 << TIF_NEED_RESCHED)
++
++#endif /* _ASM_WASM_THREAD_INFO_H */

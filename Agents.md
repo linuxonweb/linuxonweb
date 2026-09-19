@@ -130,6 +130,11 @@
   found` from `kernel/sched/rq-offsets.s`. This remains a compile-boundary
   probe: no thread ABI or boot path is defined, and upstream `sources/linux`
   remains untouched.
+- Added an overlay-only minimal `asm/thread_info.h` layout plus a compile-only
+  `current_thread_info()` placeholder. Top-level and scheduler offset setup
+  now proceeds through `kernel/sched/rq-offsets.s`; the exact next blocker is
+  `fatal error: 'asm/processor.h' file not found` from `include/linux/sched.h`.
+  This remains a compile-boundary probe with no task/thread ABI or boot path.
 - Added an overlay-only placeholder `arch/wasm/include/uapi/asm/ptrace.h` so
   kbuild can continue without inventing a register ABI. The next probe run
   generates ptrace-related UAPI headers and stops at
