@@ -235,6 +235,13 @@
   with `ModuleNotFoundError: No module named 'sentry_sdk'`. The next exact
   overlay input is the pinned `third_party/python/sentry-sdk` package; no
   configure result or desktop Firefox WASM artifact exists.
+- Including pinned `third_party/python/sentry_sdk` allowed the overlay to load
+  Sentry. Running with `MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none
+  MACH_NO_UV=1` (to keep the probe offline and avoid rebuilding a virtualenv)
+  then stops at `ModuleNotFoundError: No module named 'urllib3'` from
+  `sentry_sdk/transport.py`. The next exact dependency is pinned
+  `third_party/python/urllib3`; no configure result or desktop Firefox WASM
+  artifact exists, and `sources/firefox` remains untouched.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
