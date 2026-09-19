@@ -253,6 +253,14 @@
   for more than 70 seconds without reaching configure, so the probe was
   terminated. This is the next concrete bootstrap blocker (site creation or
   dependency resolution); no configure result or browser WASM artifact exists.
+- Diagnostic rerun with the same certifi-inclusive overlay under
+  `timeout 20s env PYTHONPROFILEIMPORTTIME=1
+  MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none MACH_NO_UV=1` exits 124. The
+  only stdout remains `Creating the 'build' site ...`; import tracing shows
+  Sentry, urllib3, certifi, and `mozbuild.base` load, with no traceback or
+  configure output before timeout. `strace` is unavailable on this host, so
+  the next blocker is build-site activation/dependency resolution rather than
+  a wasm compiler result. No browser artifact was produced.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
