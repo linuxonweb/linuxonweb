@@ -276,7 +276,7 @@ diff --git a/arch/wasm/include/asm/processor.h b/arch/wasm/include/asm/processor
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/include/asm/processor.h
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,20 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Minimal scheduler-facing CPU state; no wasm context-switch ABI is claimed. */
 +#ifndef _ASM_WASM_PROCESSOR_H
@@ -293,6 +293,8 @@ new file mode 100644
 +};
 +
 +static inline void cpu_relax(void) { }
++/* No privilege transition exists in this compile-only target. */
++#define user_mode(regs) (0)
 +
 +#endif /* _ASM_WASM_PROCESSOR_H */
 
@@ -314,7 +316,7 @@ diff --git a/arch/wasm/include/asm/page.h b/arch/wasm/include/asm/page.h
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/include/asm/page.h
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,20 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Fixed-page compile placeholder; wasm linear-memory paging is undefined. */
 +#ifndef _ASM_WASM_PAGE_H
@@ -329,6 +331,10 @@ new file mode 100644
 +typedef struct page *pgtable_t;
 +typedef struct { unsigned long val; } pgprot_t;
 +typedef struct { unsigned long val; } pgd_t;
++
++/* Identity conversions only for compile-time type checking. */
++#define __pa(x) ((unsigned long)(x))
++#define __va(x) ((void *)(unsigned long)(x))
 +
 +#endif /* _ASM_WASM_PAGE_H */
 
@@ -374,3 +380,15 @@ new file mode 100644
 +#include <asm-generic/uaccess.h>
 +
 +#endif /* _ASM_WASM_UACCESS_H */
+
+diff --git a/arch/wasm/include/asm/elf.h b/arch/wasm/include/asm/elf.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/elf.h
+@@ -0,0 +1,6 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* No arch-specific ELF ABI is defined for this compile-only target. */
++#ifndef _ASM_WASM_ELF_H
++#define _ASM_WASM_ELF_H
++
++#endif /* _ASM_WASM_ELF_H */

@@ -28,10 +28,12 @@ generation now succeeds after the minimal `arch/wasm/kernel/asm-offsets.c`
 emitter, scheduler-facing `asm/thread_info.h`, and a minimal `asm/processor.h`
 CPU-state placeholder, and a generic cache geometry wrapper are added. The
 The page wrapper now supplies compile-only `pgtable_t`, `pgprot_t`, and `pgd_t`
-types; extable and uaccess wrappers supply stubs only. The next blockers are
-missing `user_mode`, `__pa`, and `__va` primitives, followed by
-`fatal error: 'asm/elf.h' file not found`. Atomic64 and uaccess runtime
-correctness is not proven:
+types plus identity `__pa`/`__va` conversions for generic type checking; the
+processor wrapper defines `user_mode(regs)` as a compile-only false result.
+An empty guarded `asm/elf.h` records that no arch ELF ABI is defined. The
+probe now reaches the next blocker, `fatal error: 'asm/pgtable.h' file not
+found` while compiling `kernel/sched/rq-offsets.s`; page-table semantics have
+not been invented. Atomic64 and uaccess runtime correctness is not proven:
 interrupt hooks remain no-ops and no kernel has been linked or booted.
 
 The native `empty.o` workaround is only a probe bypass: `mk_elfconfig` was

@@ -200,3 +200,13 @@
   missing `user_mode`, `__pa`, and `__va` primitives, followed by
   `fatal error: 'asm/elf.h' file not found` from `include/linux/elf.h`.
   This remains nonbootable; the tracked `sources/linux` checkout is unchanged.
+- Added only to the overlay: a compile-only `user_mode(regs)` false macro in
+  `asm/processor.h`, identity `__pa`/`__va` conversions in `asm/page.h`, and a
+  guarded empty `asm/elf.h` documenting that no wasm ELF ABI is defined.
+  `git -C sources/linux apply --check ports/linux-arch-wasm/linux-arch-wasm.patch`
+  passes. `ports/linux-arch-wasm/build-probe.sh` exits 0 after its expected
+  compile failure: Kconfig, native host metadata, and the standalone wasm MVP
+  probe pass, then `kernel/sched/rq-offsets.s` stops at
+  `fatal error: 'asm/pgtable.h' file not found`. Page-table/runtime semantics
+  remain deliberately undefined; no kernel boot or emulator is claimed, and
+  `sources/linux` is untouched.
