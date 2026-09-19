@@ -217,6 +217,13 @@
   configure. No Firefox browser wasm artifact was produced. Completing the
   overlay would require more Firefox Python/vendor files, after which desktop
   process, graphics, networking, and X backend blockers still remain.
+- Adding the exact `third_party/python/requirements.txt` and rerunning exposed
+  the next missing `mozshellutil` package. Adding pinned
+  `testing/mozbase/mozshellutil` advanced one step further, then stopped with
+  `ModuleNotFoundError: No module named 'blessed'` from
+  `python/mach/mach/logging.py`. The next overlay input is therefore pinned
+  `third_party/python/blessed`; no configure result or desktop Firefox wasm
+  artifact exists.
 - Added only to the overlay: a compile-only `user_mode(regs)` false macro in
   `asm/processor.h`, identity `__pa`/`__va` conversions in `asm/page.h`, and a
   guarded empty `asm/elf.h` documenting that no wasm ELF ABI is defined.
