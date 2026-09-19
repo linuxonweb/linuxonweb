@@ -200,6 +200,23 @@
   missing `user_mode`, `__pa`, and `__va` primitives, followed by
   `fatal error: 'asm/elf.h' file not found` from `include/linux/elf.h`.
   This remains nonbootable; the tracked `sources/linux` checkout is unchanged.
+
+## Firefox configure overlay probe (2026-09-19)
+
+- To avoid changing `sources/firefox`, a temporary overlay was assembled from
+  pinned Git objects (`mach`, `configure`, `configure.py`, `moz.configure`,
+  `build/`, `python/`, `testing/mozbase/mozfile`,
+  `third_party/python/{packaging,filelock}`, and project `moz.configure`
+  files). The reproducible command was:
+
+  `probe=$(mktemp -d /tmp/firefox-wasm-configure.XXXXXX); git -C sources/firefox archive HEAD mach configure configure.py moz.configure build python testing/mozbase/mozfile third_party/python/packaging third_party/python/filelock toolkit/moz.configure browser/moz.configure js/moz.configure js/src/configure > "$probe/firefox.tar"; tar -xf "$probe/firefox.tar" -C "$probe"; (cd "$probe" && ./mach configure --target=wasm32-wasi --disable-compile-environment --disable-tests)`
+
+- The command exits 1 before configure starts with
+  `FileNotFoundError: .../third_party/python/requirements.txt`. This is a
+  Mach bootstrap dependency, not evidence of a successful desktop target
+  configure. No Firefox browser wasm artifact was produced. Completing the
+  overlay would require more Firefox Python/vendor files, after which desktop
+  process, graphics, networking, and X backend blockers still remain.
 - Added only to the overlay: a compile-only `user_mode(regs)` false macro in
   `asm/processor.h`, identity `__pa`/`__va` conversions in `asm/page.h`, and a
   guarded empty `asm/elf.h` documenting that no wasm ELF ABI is defined.
