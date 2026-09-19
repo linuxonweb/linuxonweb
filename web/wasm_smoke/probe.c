@@ -22,6 +22,14 @@ extern int host_log(const unsigned char *buffer, int length, int level)
     __attribute__((import_module("linux_host"), import_name("log")));
 extern long long host_time_ns(void)
     __attribute__((import_module("linux_host"), import_name("clock_monotonic_ns")));
+extern int host_frame_present(const unsigned char *buffer, int width, int height,
+                             int stride, int format)
+    __attribute__((import_module("linux_host"), import_name("frame_present")));
+extern int host_poll_events(unsigned char *buffer, int capacity)
+    __attribute__((import_module("linux_host"), import_name("poll_events")));
+
+static unsigned char framebuffer[64 * 32 * 4];
+static unsigned char events[256];
 
 __attribute__((visibility("default")))
 int runtime_start(void) {
@@ -33,4 +41,33 @@ int runtime_start(void) {
     }
     /* Touch the clock import to prove host services are wired. */
     return (int)(host_time_ns() & 0x7fffffff);
+}
+
+__attribute__((visibility("default")))
+int runtime_frame(void) {
+    for (int y = 0; y < 32; ++y) {
+        for (int x = 0; x < 64; ++x) {
+            unsigned char *pixel = &framebuffer[(y * 64 + x) * 4];
+            pixel[0] = (unsigned char)(x * 4);
+            pixel[1] = (unsigned char)(y * 8);
+            pixel[2] = 0x9a;
+            pixel[3] = 0xff;
+        }
+    }
+    return host_frame_present(framebuffer, 64, 32, 64 * 4, 0);
+}
+
+__attribute__((visibility("default")))
+int runtime_poll(void) {
+    return host_poll_events(events, (int)sizeof(events));
+}
+
+/* Probe-only accessor so the browser test can verify that a DOM event made it
+ * through the host ABI and into wasm memory. */
+__attribute__((visibility("default")))
+int runtime_event_byte(int index) {
+    if (index < 0 || index >= (int)sizeof(events)) {
+        return -1;
+    }
+    return events[index];
 }

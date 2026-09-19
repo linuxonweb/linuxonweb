@@ -16,6 +16,7 @@ wasm_ld_bin="${WASM_LD:-wasm-ld}"
   -o "$out_dir/probe.o"
 
 "$wasm_ld_bin" --no-entry --allow-undefined --export=runtime_probe --export=runtime_start \
+  --export=runtime_frame --export=runtime_poll --export=runtime_event_byte \
   --export-memory --global-base=131072 --strip-debug \
   "$out_dir/probe.o" -o "$out_dir/probe.wasm"
 

@@ -15,7 +15,7 @@
 - Suggested staged acceptance: (1) compile and run a tiny `arch/wasm` kernel/host ABI proof of life; (2) run a small WASI libc/userspace test with framebuffer/input/network adapters; (3) port an X server backend to the same framebuffer; (4) evaluate a browser engine separately. A browser tab cannot safely host an unmodified Firefox engine, so “Firefox opens bing.com” should be treated as a separate feasibility gate, not assumed after kernel boot.
 - Source checkout status: `sources/linux` is present at commit `40288c9206c17eb66a603262e06a58d300d0f279` (torvalds/linux `master`), and `sources/xserver` is present at `306071c0b9683ef0dfadcfc2dbb78d369680542b` (xorg/xserver `master`). `sources/firefox` resolves to `b16f852ba66d190cacd42d0d43ac4d38bd07c4bd` (mozilla-firefox/firefox `main`), but its large working tree did not finish materializing in this environment. Record exact commits and complete that checkout before building Firefox.
 - Added `docs/architecture.md`, which defines a small `linux_host` import ABI (clock, sleep, events, framebuffer, files, network, logging), a bounded browser event loop, and separate X/Firefox gates. Added `probes/wasm32-kernel-smoke.c` and `probes/Makefile`; `make -C probes` succeeds and `wasm-objdump -x` confirms the `linux_host.log` import plus exported `kernel_entry` and memory.
-- Existing `web/wasm_smoke/run_smoke.sh` also passes in headless Chromium: the 623-byte module instantiates through `instantiateStreaming`, reports `data-result="pass"`, and writes its adapter message to the page.
+- Existing `web/wasm_smoke/run_smoke.sh` also passes in headless Chromium: the 1,194-byte module instantiates through `instantiateStreaming`, renders a framebuffer pixel, copies a synthetic DOM key event, reports `data-result="pass"`, and writes its adapter message to the page.
 
 ## browser_stack_probe (2026-09-19)
 
@@ -23,12 +23,14 @@
   compiles freestanding C with Clang and `wasm-ld` (no Emscripten, emulator,
   or JavaScript CPU interpreter), serves the module with the correct MIME type,
   and loads it with `WebAssembly.instantiateStreaming`. Its C adapter imports
-  only `linux_host.log` and `linux_host.clock_monotonic_ns`, and the HTML page exposes a
-  small terminal output surface.
+  `linux_host.log`, `linux_host.clock_monotonic_ns`, `linux_host.frame_present`,
+  and `linux_host.poll_events`; the HTML page exposes terminal and framebuffer
+  surfaces.
 - Chromium 150 headless verification passed via
   `web/wasm_smoke/run_smoke.sh`; the page reported
-  `PASS: native wasm32 module instantiated (ABI LWEB v1)` and the exported
-  handshake returned `0x4c574542` (`LWEB`).
+  `PASS: native wasm32 module instantiated (ABI LWEB v1, framebuffer + events)`.
+  The exported handshake returned `0x4c574542` (`LWEB`), and the test checked
+  a rendered RGBA pixel plus a synthetic keyboard event copied into wasm memory.
 - Host checks: `/usr/bin/clang` 22 and `wasm-ld` 22 work for freestanding
   wasm32; installed Emscripten remains unusable because its bundled compiler
   requires GLIBC 2.44, and the Firefox wrapper is broken because
@@ -59,3 +61,11 @@
 - The gate exits nonzero until those source-level requirements are implemented;
   this prevents the adapter smoke test from being mistaken for a full Firefox
   port.
+
+## Host display/input adapter (2026-09-19)
+
+- Extended `web/wasm_smoke` to call the documented `linux_host` clock, event,
+  and framebuffer imports. The JS host queues DOM keyboard/pointer events and
+  draws the wasm RGBA buffer to a canvas.
+- Chromium verification passes with a 1,194-byte freestanding wasm32 module:
+  `PASS: native wasm32 module instantiated (ABI LWEB v1, framebuffer + events)`.
