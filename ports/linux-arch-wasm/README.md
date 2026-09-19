@@ -21,10 +21,11 @@ little-endian UAPI `byteorder.h`, placeholder `ptrace.h`, and placeholder
 `sigcontext.h` mappings, UAPI generation completes. The overlay keeps the
 `scripts/mod/empty.o` metadata sample native (matching `HOSTCC`) so the host
 `mk_elfconfig` tool can consume ELF metadata while kernel objects remain
-wasm32. The current expected compile result is
-`fatal error: 'asm/string.h' file not found` while generating device-table
-offsets. The architecture compiler/ABI contract remains undefined, which is
-evidence that the skeleton is not a kernel port.
+wasm32. The `asm/string.h` mapping lets device-table offsets and time constants
+generate; the current expected compile result is
+`fatal error: 'asm/irqflags.h' file not found` while compiling `kernel/bounds.s`.
+The architecture compiler/ABI contract remains undefined, which is evidence
+that the skeleton is not a kernel port.
 
 The standalone C probe uses the same `wasm32-unknown-unknown` freestanding
 target as the browser adapter and only validates that the compiler can emit a

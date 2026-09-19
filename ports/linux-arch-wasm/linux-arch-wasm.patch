@@ -2,7 +2,7 @@ diff --git a/arch/wasm/Kconfig b/arch/wasm/Kconfig
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/Kconfig
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,27 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +# Minimal kconfig entry point for the experimental browser-hosted port.
 +config WASM
@@ -21,6 +21,8 @@ new file mode 100644
 +    select HAVE_SYSCALL_TRACEPOINTS
 +    select HAVE_KERNEL_GZIP
 +    select ARCH_HAS_UBSAN
++
++source "kernel/Kconfig.hz"
 +
 +config MMU
 +    bool
@@ -152,3 +154,17 @@ diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
  
  hostprogs-always-y	+= modpost mk_elfconfig
  always-y		+= empty.o
+
+diff --git a/arch/wasm/include/asm/string.h b/arch/wasm/include/asm/string.h
+new file mode 100644
+--- /dev/null
++++ b/arch/wasm/include/asm/string.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Generic string primitives are supplied by lib/string.c for now. */
++#ifndef _ASM_WASM_STRING_H
++#define _ASM_WASM_STRING_H
++
++#include <asm-generic/string.h>
++
++#endif /* _ASM_WASM_STRING_H */

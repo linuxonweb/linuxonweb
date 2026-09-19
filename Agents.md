@@ -131,3 +131,10 @@
   offsets because the next required architecture header is missing:
   `fatal error: 'asm/string.h' file not found`. Kconfig and the standalone wasm
   MVP probe still pass, and `sources/linux` remains unchanged.
+- Added an overlay-only `arch/wasm/include/asm/string.h` wrapper around
+  `asm-generic/string.h`; also sourced `kernel/Kconfig.hz` so the compile gate
+  does not loop in `timeconst.bc` with an unset HZ. The probe now generates
+  device-table offsets and time constants, then reaches the next architecture
+  primitive while compiling `kernel/bounds.s`:
+  `fatal error: 'asm/irqflags.h' file not found`. Kconfig, native host tools,
+  and the standalone wasm MVP probe pass; `sources/linux` is unchanged.
