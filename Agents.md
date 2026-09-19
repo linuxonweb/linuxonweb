@@ -248,6 +248,11 @@
   `sentry_sdk/transport.py`. The next exact dependency is pinned
   `third_party/python/certifi`; no configure result or desktop Firefox WASM
   artifact exists.
+- Including pinned `third_party/python/certifi` and rerunning the offline
+  overlay produced no traceback: Mach remains at `Creating the 'build' site`
+  for more than 70 seconds without reaching configure, so the probe was
+  terminated. This is the next concrete bootstrap blocker (site creation or
+  dependency resolution); no configure result or browser WASM artifact exists.
 - Added pinned `third_party/python/blessed` to the temporary overlay and reran
   the same configure command. Mach now imports blessed but stops at
   `ModuleNotFoundError: No module named 'wcwidth'` from `blessed/sequences.py`.
