@@ -325,3 +325,44 @@
   is to specify the wasm linear-memory page metadata and protection contract
   (including `struct page`/PFN conversions and `pgprot_t`) before adding any
   implementation; arbitrary compile stubs would hide an undefined MM ABI.
+
+## Bounded Firefox desktop configure gate (2026-09-21)
+
+- Added `probes/firefox-desktop-configure-gate.sh`. It materializes one
+  temporary, bounded configure overlay from pinned Firefox Git objects
+  (`b16f852ba66d190cacd42d0d43ac4d38bd07c4bd`), including the complete
+  `build/` and `config/` configure frontends plus the vendored Python modules
+  they import. The sparse `sources/firefox` checkout is never modified.
+- The probe seeds an isolated system-site-packages virtualenv with Firefox's
+  finalized build-site metadata, preventing Mach package resolution from
+  hanging or using the network. It runs the real top-level `configure.py` with
+  `--enable-project=browser --target=wasm32-wasi --disable-compile-environment
+  --disable-tests` under a 30-second timeout.
+- The probe verifies that `sources/firefox` is exactly pinned to
+  `b16f852ba66d190cacd42d0d43ac4d38bd07c4bd`, validates a positive timeout, and
+  rejects unsupported configure projects. Before archiving, it checks every
+  requested Git path with `git cat-file -e`; the archive pipeline, virtualenv
+  creation, metadata seeding, and configure invocation are each bounded by the
+  timeout. It prints the complete raw configure transcript, preserving the
+  upstream diagnostic `ERROR: Unknown OS: wasi` verbatim before adding any gate
+  summary.
+- The authoritative result is reached in under a second: `checking for target
+  system type...` followed by `ERROR: Unknown OS: wasi`. At
+  `build/moz.configure/init.configure`, `real_target()` calls
+  `split_triplet(config_sub(...), allow_wasi=(project == "js"))`; its
+  `split_triplet()` accepts `wasi` and `wasm32` only when `allow_wasi` is true.
+  Therefore desktop `project=browser` rejects the WASI triplet before any
+  compiler/toolchain check. The smallest genuine upstream adapter is to make
+  this target gate project-aware for a new desktop WASI host and then supply
+  the corresponding Gecko process/filesystem/graphics/network/JIT ABI; merely
+  changing the triplet or enabling the JS-shell path does not port Firefox.
+- `FIREFOX_CONFIGURE_PROJECT=js` is a diagnostic comparison only: the gate
+  recognizes the JS-only target parse (`wasm32-unknown-wasi`) and exits nonzero,
+  explicitly refusing to call it a browser result. The browser gate also exits
+  nonzero when the expected upstream rejection is observed and labels that
+  outcome `NOT PASS`, so a caller cannot confuse the rejection with a Firefox
+  browser success. It never claims an artifact or a runnable desktop browser.
+- Remaining blocker: upstream desktop configure still rejects `wasm32-wasi`
+  with the exact `ERROR: Unknown OS: wasi` diagnostic; implementing a genuine
+  desktop target requires the Gecko process/filesystem/graphics/network/JIT
+  host ABI and remains outside this bounded probe.
