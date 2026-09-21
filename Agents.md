@@ -474,3 +474,18 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   Chrome run at `http://127.0.0.1:4173/linux/index.html?firefox=1` stayed
   stable with no out-of-bounds runtime error and no Bing request; this is
   runtime-stability evidence only, not a Firefox/Bing completion.
+
+## Firefox MIME handler startup adapter (2026-09-21)
+
+- The native guest does not implement the `nsIJSEnumerator` bridge used by
+  `nsIMIMEInfo.getFileExtensions()`. The external patch in
+  `web/linux/firefox-patches/0001-ignore-unsupported-mime-extension-enumerator.patch`
+  catches only `NS_ERROR_NOT_IMPLEMENTED`, preserves existing extensions, and
+  rethrows all other failures. A dry-run applies cleanly to the unpatched
+  Firefox module at `opt/firefox/modules/ExtHandlerService.sys.mjs`.
+- The staged `web/linux/initramfs-firefox.cpio.gz` contains the patched module;
+  its SHA-256 is
+  `ddf243b260093fb2214dc29527843ee0accdbe81939c831cff398b8d3d82a3f8`.
+  The older 15:17 headless log used an unpatched image and its line-469
+  `NS_ERROR_NOT_IMPLEMENTED` is stale. The later `RuntimeError: null function`
+  remains unresolved; no Firefox rebuild or fake browser workaround was used.

@@ -1,0 +1,30 @@
+--- a/opt/firefox/modules/ExtHandlerService.sys.mjs
++++ b/opt/firefox/modules/ExtHandlerService.sys.mjs
+@@ -466,12 +466,22 @@
+ 
+     if (this._isMIMEInfo(handlerInfo)) {
+       let extensions = storedHandlerInfo.extensions || [];
+-      for (let extension of handlerInfo.getFileExtensions()) {
+-        extension = extension.toLowerCase();
+-        // If the caller stored duplicate extensions, we save them only once.
+-        if (!extensions.includes(extension)) {
+-          extensions.push(extension);
++      try {
++        for (let extension of handlerInfo.getFileExtensions()) {
++          extension = extension.toLowerCase();
++          // If the caller stored duplicate extensions, we save them only once.
++          if (!extensions.includes(extension)) {
++            extensions.push(extension);
++          }
+         }
++      } catch (ex) {
++        // The browser-hosted guest does not implement the native enumerator
++        // bridge yet. Handler persistence is optional, so retain existing
++        // extensions and continue startup when only this operation fails.
++        if (ex.result != Cr.NS_ERROR_NOT_IMPLEMENTED) {
++          throw ex;
++        }
++        console.warn("MIME extension enumeration is unavailable", ex);
+       }
+       if (extensions.length) {
+         storedHandlerInfo.extensions = extensions;
