@@ -393,3 +393,11 @@
 ### wasm page ABI milestone
 
 The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat linear-memory page ABI: `ARCH_PFN_OFFSET == 0`, `mem_map`-backed PFN/page and virtual conversions, and explicit `pgprot_val`/`__pgprot` metadata with compile-time page-size invariants. `ports/linux-arch-wasm/build-probe.sh` applies the overlay and passes all prior page ABI checks; the first remaining compile boundary is `clear_page`, followed by `switch_mm`, `copy_user_page`, `copy_page`, `page_to_phys`, and missing `asm/seccomp.h`. The standalone wasm MVP compiler probe passes.
+
+## Aurora/Xvfb browser integration (2026-09-21)
+
+- Aurora provenance remains out-of-tree: `/home/a/project/aurorawm`, upstream `https://github.com/ecooxai/aurora-wm`, commit `86a97cd910b285e30fc4b2d12497c9288eede4de`, version 0.3.0.
+- The browser entrypoint is `web/desktop/index.html?wm=1`; startup order is Xvfb display `:11`, then Aurora WM, then optional Firefox only after WM readiness (`?firefox=1`).
+- `web/wasm_smoke/aurora_startup.js` reports heartbeat and `performance.measure("wm-startup")`; generated payloads stay out-of-tree and missing Firefox artifacts are surfaced as errors.
+- Build reference: sibling `webos/scripts/build-aurora.mjs` and `build-xvfb.mjs`; run `tools/build-aurora-wasm.sh` only with an activated Emscripten SDK. Chrome and source-build validation remain pending when artifacts/toolchain are available.
+- Headless Chromium validation of `web/desktop/index.html?wm=1&firefox=1` exited 0 and visibly reported `WM startup error: Xvfb artifacts missing` followed by `Firefox was not started because WM readiness failed`; this is the expected blocker until real Xvfb/Aurora payloads are built.

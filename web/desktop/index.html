@@ -1,0 +1,9 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linux Web desktop</title>
+<style>body{font:14px system-ui,sans-serif;background:#111;color:#eee;margin:2rem}pre{background:#202020;padding:1rem;min-height:8rem}#status{color:#8fd}</style>
+<p id="status">Desktop idle. Use <code>?wm=1</code> to start Xvfb and Aurora.</p>
+<pre id="aurora-status" aria-live="polite"></pre>
+<script>window.LINUX_WEB_ARTIFACT_BASE = "../wasm_smoke/artifacts";</script>
+<script src="../wasm_smoke/aurora_startup.js"></script>
