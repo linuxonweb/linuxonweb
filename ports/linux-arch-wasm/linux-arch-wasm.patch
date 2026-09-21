@@ -397,7 +397,7 @@ diff --git a/arch/wasm/include/asm/pgtable.h b/arch/wasm/include/asm/pgtable.h
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/include/asm/pgtable.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,43 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Compile-only page-table shape for the MMU-less wasm skeleton.  These

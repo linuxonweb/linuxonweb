@@ -307,3 +307,21 @@
   operations. This detached configuration does not emit `CONFIG_GENERIC_ATOMIC64`;
   no atomic/page-table runtime or boot behavior is claimed, and `sources/linux`
   remains untouched.
+
+## Linux wasm overlay hunk validation (2026-09-21)
+
+- Corrected the `arch/wasm/include/asm/pgtable.h` patch hunk count from 36 to
+  43 added lines. The previous count caused `git apply` to truncate the
+  generated header before `PTRS_PER_PTE`, the shift definitions, and the
+  closing `#endif`; the corrected overlay passes `git apply --check` and
+  materializes the complete 43-line header in a detached worktree.
+- `ports/linux-arch-wasm/build-probe.sh` succeeds with its intentional
+  compile-boundary exit: Kconfig, UAPI/header generation, native ELF metadata,
+  bounds and asm-offset generation, and the standalone wasm MVP compiler probe
+  all pass. The first compiler error is
+  `include/linux/mm.h:1973:22: error: call to undeclared function
+  'virt_to_page'`, followed by related `page_to_pfn`, `pfn_to_page`,
+  `page_to_virt`, and `__pgprot` errors. The smallest ABI-justified next step
+  is to specify the wasm linear-memory page metadata and protection contract
+  (including `struct page`/PFN conversions and `pgprot_t`) before adding any
+  implementation; arbitrary compile stubs would hide an undefined MM ABI.
