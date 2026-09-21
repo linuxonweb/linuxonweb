@@ -23,6 +23,6 @@ socket.onopen=requestSetup; socket.onmessage=e=>{const n=new Uint8Array(e.data),
 addEventListener('keydown',e=>{if(!setupDone)return;text(e.key.length===1?e.key:'[ '+e.key+' ]',20,130);capture()});
 document.querySelector('#fetch-bing').onclick = async () => {
   network.textContent = 'Requesting allowlisted https://www.bing.com through loopback bridge…';
-  try { const r = await fetch('http://127.0.0.1:8788/fetch', { method:'POST', headers:{'content-type':'application/json','x-x11-proxy-token':token}, body:JSON.stringify({url:'https://www.bing.com/'}) }); network.textContent = `Bridge response: HTTP ${r.status} (${(await r.text()).length} bytes)`; }
+  try { const target = document.querySelector('#network-url').value; const r = await fetch('http://127.0.0.1:8788/fetch', { method:'POST', headers:{'content-type':'application/json','x-x11-proxy-token':token}, body:JSON.stringify({url:target}) }); network.textContent = `Bridge response: HTTP ${r.status} (${(await r.text()).length} bytes)`; }
   catch (e) { network.textContent = `Bridge unavailable: ${e.message}`; }
 };

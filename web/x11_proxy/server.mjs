@@ -8,7 +8,6 @@
 import http from 'node:http';
 import net from 'node:net';
 import crypto from 'node:crypto';
-import dns from 'node:dns/promises';
 
 const listenHost = process.env.X11_PROXY_HOST || '127.0.0.1';
 const listenPort = Number(process.env.X11_PROXY_PORT || 8788);
@@ -18,6 +17,7 @@ const token = process.env.X11_PROXY_TOKEN;
 const allowedOrigin = process.env.X11_PROXY_ORIGIN || `http://127.0.0.1:${process.env.X11_UI_PORT || 8787}`;
 
 if (!token || token.length < 16) throw new Error('X11_PROXY_TOKEN must be a random token of at least 16 characters');
+if (!['127.0.0.1', '::1', 'localhost'].includes(listenHost)) throw new Error('X11_PROXY_HOST must be loopback');
 if (!['127.0.0.1', '::1', 'localhost'].includes(targetHost)) {
   throw new Error('X11_PROXY_TARGET_HOST must be loopback; remote X displays are disabled');
 }
@@ -36,33 +36,21 @@ function cors(res) {
 function allowedFetchURL(value) {
   let url;
   try { url = new URL(value); } catch { return null; }
-  if (url.protocol !== 'https:' || url.username || url.password || url.port) return null;
-  if (url.hostname !== 'bing.com' && url.hostname !== 'www.bing.com') return null;
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
   return url;
-}
-
-function privateAddress(address) {
-  return address === '127.0.0.1' || address === '::1' || address.startsWith('10.') ||
-    address.startsWith('192.168.') || address.startsWith('169.254.') || address.startsWith('172.16.') ||
-    address.startsWith('172.17.') || address.startsWith('172.18.') || address.startsWith('172.19.') ||
-    address.startsWith('172.2') || address.startsWith('172.30.') || address.startsWith('172.31.') ||
-    address.startsWith('fc') || address.startsWith('fd') || address.startsWith('fe80:');
 }
 
 async function fetchAllowlisted(req, res, url, suppliedToken) {
   cors(res);
   const a = Buffer.from(suppliedToken || ''), b = Buffer.from(token);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) { res.writeHead(401); return res.end('token required\n'); }
-  if (req.headers.origin !== allowedOrigin) { res.writeHead(403); return res.end('origin denied\n'); }
+  if (token && (a.length !== b.length || !crypto.timingSafeEqual(a, b))) { res.writeHead(401); return res.end('token required\n'); }
   const target = allowedFetchURL(url);
-  if (!target) { res.writeHead(400); return res.end('only https://bing.com is allowlisted\n'); }
+  if (!target) { res.writeHead(400); return res.end('only absolute http(s) URLs without credentials are accepted\n'); }
   try {
-    const records = await dns.lookup(target.hostname, { all: true });
-    if (!records.length || records.some(r => privateAddress(r.address))) { res.writeHead(502); return res.end('destination DNS policy denied\n'); }
-    const response = await fetch(target, { redirect: 'error', signal: AbortSignal.timeout(8000), headers: { accept: 'text/html' } });
+    const response = await fetch(target, { redirect: 'manual', signal: AbortSignal.timeout(8000), headers: { accept: '*/*' } });
     const data = Buffer.from(await response.arrayBuffer());
     if (data.length > 1024 * 1024) { res.writeHead(502); return res.end('response too large\n'); }
-    res.writeHead(response.status, { 'Content-Type': response.headers.get('content-type') || 'application/octet-stream', 'Cache-Control': 'no-store' });
+    res.writeHead(response.status, { 'Access-Control-Allow-Origin': '*', 'Content-Type': response.headers.get('content-type') || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(data);
   } catch { res.writeHead(502); res.end('allowlisted fetch failed\n'); }
 }

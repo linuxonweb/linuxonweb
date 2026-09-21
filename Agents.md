@@ -109,11 +109,11 @@
   The page's `GetImage` response is drawn to the canvas and browser keys emit
   further X11 `ImageText8` requests. It is an explicit local test path; it
   does not claim Firefox/Linux integration.
-- The same relay now exposes a separate POST `/fetch` bridge with a fixed
-  `https://bing.com`/`https://www.bing.com` allowlist, exact Origin and bearer
-  token checks, DNS private-address rejection, no redirects, an 8-second
-  timeout, and a 1 MiB response cap. The page's button exercises this browser
-  security escape hatch; it is not a transparent Linux socket API.
+- The same loopback relay exposes a separate POST `/fetch` development bridge
+  for arbitrary absolute HTTP(S) URLs without embedded credentials. It keeps
+  an optional bearer token, an 8-second timeout, manual redirect handling, and
+  a 1 MiB response cap. It is deliberately loopback-only and must not be
+  exposed as a public/open proxy; the page button accepts a URL for testing.
 
 ## Firefox source/build gate (wasm_kernel_research, 2026-09-19)
 
