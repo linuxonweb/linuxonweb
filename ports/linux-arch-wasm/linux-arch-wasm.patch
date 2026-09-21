@@ -316,7 +316,7 @@ diff --git a/arch/wasm/include/asm/page.h b/arch/wasm/include/asm/page.h
 new file mode 100644
 --- /dev/null
 +++ b/arch/wasm/include/asm/page.h
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,50 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Fixed-page compile placeholder; wasm linear-memory paging is undefined. */
 +#ifndef _ASM_WASM_PAGE_H
@@ -327,14 +327,44 @@ new file mode 100644
 +#define PAGE_MASK (~(PAGE_SIZE - 1))
 +#define PAGE_ALIGN(addr) (((addr) + PAGE_SIZE - 1) & PAGE_MASK)
 +
++/*
++ * wasm has one linear address space and no hardware page tables.  Keep the
++ * Linux flatmem contract explicit: PFN zero is the first linear-memory page,
++ * and mem_map owns one metadata entry for each present page.
++ */
++#define ARCH_PFN_OFFSET 0UL
++
++_Static_assert(PAGE_SHIFT > 0, "wasm PAGE_SHIFT must be positive");
++_Static_assert((PAGE_SIZE & (PAGE_SIZE - 1)) == 0,
++               "wasm PAGE_SIZE must be a power of two");
++_Static_assert(PAGE_SIZE == (1UL << PAGE_SHIFT),
++               "wasm PAGE_SIZE/PAGE_SHIFT mismatch");
++
 +struct page;
++extern struct page *mem_map;
 +typedef struct page *pgtable_t;
 +typedef struct { unsigned long val; } pgprot_t;
 +typedef struct { unsigned long val; } pgd_t;
 +
-+/* Identity conversions only for compile-time type checking. */
++/* The ABI stores protection metadata verbatim; enforcement is platform code. */
++#define WASM_PGPROT_READ  (1UL << 0)
++#define WASM_PGPROT_WRITE (1UL << 1)
++#define WASM_PGPROT_EXEC  (1UL << 2)
++#define WASM_PGPROT_MASK  (WASM_PGPROT_READ | WASM_PGPROT_WRITE | WASM_PGPROT_EXEC)
++#define pgprot_val(prot) ((prot).val)
++#define __pgprot(value) ((pgprot_t){ .val = (unsigned long)(value) })
++
++/* Identity physical/virtual mapping for wasm linear memory. */
 +#define __pa(x) ((unsigned long)(x))
 +#define __va(x) ((void *)(unsigned long)(x))
++#define virt_to_pfn(addr) (__pa(addr) >> PAGE_SHIFT)
++#define pfn_to_virt(pfn) __va((unsigned long)(pfn) << PAGE_SHIFT)
++#define virt_to_page(addr) pfn_to_page(virt_to_pfn(addr))
++#define page_to_virt(page) pfn_to_virt(page_to_pfn(page))
++#define pfn_to_page(pfn) \
++	(mem_map + ((unsigned long)(pfn) - ARCH_PFN_OFFSET))
++#define page_to_pfn(page) \
++	((unsigned long)((page) - mem_map) + ARCH_PFN_OFFSET)
 +
 +#endif /* _ASM_WASM_PAGE_H */
 

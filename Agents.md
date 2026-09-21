@@ -366,3 +366,6 @@
   with the exact `ERROR: Unknown OS: wasi` diagnostic; implementing a genuine
   desktop target requires the Gecko process/filesystem/graphics/network/JIT
   host ABI and remains outside this bounded probe.
+### wasm page ABI milestone
+
+The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat linear-memory page ABI: `ARCH_PFN_OFFSET == 0`, `mem_map`-backed PFN/page and virtual conversions, and explicit `pgprot_val`/`__pgprot` metadata with compile-time page-size invariants. `ports/linux-arch-wasm/build-probe.sh` applies the overlay and passes all prior page ABI checks; the first remaining compile boundary is `clear_page`, followed by `switch_mm`, `copy_user_page`, `copy_page`, `page_to_phys`, and missing `asm/seccomp.h`. The standalone wasm MVP compiler probe passes.
