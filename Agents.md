@@ -91,6 +91,30 @@
   Firefox checkout, porting Gecko process/filesystem/network/JIT services, and
   implementing an X display/input backend for the browser host.
 
+## Out-of-tree Xserver browser boundary (2026-09-21)
+
+- Added `ports/xserver-wasm/build-probe.sh`, which runs a real Meson cross
+  configure against pinned Xserver `306071c0b9683ef0dfadcfc2dbb78d369680542b`
+  in a temporary directory. It never edits `sources/xserver`; the expected
+  result is the first missing host dependency/backend blocker because the
+  upstream tree has no wasm display or OS target.
+- Added `ports/xserver-wasm/x11_client.c`, a freestanding wasm32 client that
+  emits genuine core X11 `CreateWindow`, `MapWindow`, `CreateGC`,
+  `PolyFillRectangle`, and `ImageText8` requests through `x11_host.send`.
+  This is a browser host adapter for a real X server, not an X protocol or
+  CPU emulator.
+- Added `web/x11_proxy/server.mjs` and `web/x11_proxy/x11-client.js`. The
+  relay uses a fixed loopback X TCP destination, requires a 16+ character
+  token, checks an exact Origin, and forwards only binary WebSocket frames.
+  The page's `GetImage` response is drawn to the canvas and browser keys emit
+  further X11 `ImageText8` requests. It is an explicit local test path; it
+  does not claim Firefox/Linux integration.
+- The same relay now exposes a separate POST `/fetch` bridge with a fixed
+  `https://bing.com`/`https://www.bing.com` allowlist, exact Origin and bearer
+  token checks, DNS private-address rejection, no redirects, an 8-second
+  timeout, and a 1 MiB response cap. The page's button exercises this browser
+  security escape hatch; it is not a transparent Linux socket API.
+
 ## Firefox source/build gate (wasm_kernel_research, 2026-09-19)
 
 - Added `probes/firefox-wasi-helper-gate.sh`; it reads pinned files with

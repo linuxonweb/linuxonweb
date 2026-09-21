@@ -1,0 +1,8 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Linux-on-web X11 browser adapter</title>
+<style>body{background:#16181d;color:#ddd;font:14px monospace}canvas{image-rendering:pixelated;border:1px solid #555}#status{white-space:pre-wrap}</style>
+<p id="status">Connects to a real X11 server through the authenticated loopback relay.</p>
+<canvas id="screen" width="800" height="600" aria-label="X11 screen capture"></canvas>
+<button id="fetch-bing">Test allowlisted HTTPS bridge</button><pre id="network"></pre>
+<script type="module" src="./x11-client.js"></script>
