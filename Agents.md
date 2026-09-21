@@ -401,3 +401,31 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
 - `web/wasm_smoke/aurora_startup.js` reports heartbeat and `performance.measure("wm-startup")`; generated payloads stay out-of-tree and missing Firefox artifacts are surfaced as errors.
 - Build reference: sibling `webos/scripts/build-aurora.mjs` and `build-xvfb.mjs`; run `tools/build-aurora-wasm.sh` only with an activated Emscripten SDK. Chrome and source-build validation remain pending when artifacts/toolchain are available.
 - Headless Chromium validation of `web/desktop/index.html?wm=1&firefox=1` exited 0 and visibly reported `WM startup error: Xvfb artifacts missing` followed by `Firefox was not started because WM readiness failed`; this is the expected blocker until real Xvfb/Aurora payloads are built.
+
+## Real Xvfb/Aurora desktop staging (2026-09-21)
+
+- Copied the existing source-built browser payloads from the read-only sibling
+  `/mnt/p6/project/linux/webos/public/upstream` into
+  `web/desktop/artifacts/{xvfb,aurora}`. These files are byte-identical to the
+  sibling payloads; they were not rebuilt from the incomplete `vendor/aurorawm`
+  snapshot. Sibling provenance is git revision
+  `d9be82f47ea85a5a7dada8535d43010fe56095f6`.
+- Artifact checksums: `Xvfb.js` 300,974 bytes,
+  `6fa52cffc16d987249b35be4131b9b2586adbc81d2126d8c91da3f31b538ca51`;
+  `Xvfb.wasm` 3,100,011 bytes,
+  `fe86560c85c80847cb9d69fd675a72fe4fab66762fca56eb3013b1904ccb9319`;
+  `Xvfb.data` 3,345,016 bytes,
+  `ee1f4963cc56c99fbdebab6c269eb090f9edf47f90ce0a644218565330b9ac09`;
+  `aurora-wm.js` 250,061 bytes,
+  `9a3a84c3a06259dcfc1b9994ab719e97b9019332524150c3b4bb6aafc655c3fe`;
+  `aurora-wm.wasm` 8,749,181 bytes,
+  `f88aee88f9aec58c5b47370d3a3da372fa9a9708b245d6e56eed64f31ff15566`.
+- `web/desktop/index.html` now starts a worker for real Xvfb and waits for its
+  `onRuntimeInitialized` ready event before starting Aurora in a second worker.
+  Firefox is checked only after an Aurora desktop-ready log line; no Firefox
+  JavaScript/Wasm artifact exists in either tree, so `?firefox=1` reports
+  `missing-artifact` and does not claim a browser launch.
+- `web/desktop/dev-server.mjs` serves the desktop with COOP/COEP headers and
+  an EventSource reload endpoint. Its watcher is limited to `web/desktop` and
+  `vendor/aurorawm`; query flags therefore survive source-triggered reloads
+  without watching the large `sources/` trees.

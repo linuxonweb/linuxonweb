@@ -2,8 +2,95 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Linux Web desktop</title>
-<style>body{font:14px system-ui,sans-serif;background:#111;color:#eee;margin:2rem}pre{background:#202020;padding:1rem;min-height:8rem}#status{color:#8fd}</style>
-<p id="status">Desktop idle. Use <code>?wm=1</code> to start Xvfb and Aurora.</p>
-<pre id="aurora-status" aria-live="polite"></pre>
-<script>window.LINUX_WEB_ARTIFACT_BASE = "../wasm_smoke/artifacts";</script>
-<script src="../wasm_smoke/aurora_startup.js"></script>
+<style>
+  :root { color-scheme: dark; font: 14px system-ui, sans-serif; }
+  html, body { margin: 0; min-height: 100%; background: #101419; color: #e8edf2; }
+  body { padding: 20px; box-sizing: border-box; }
+  #status { color: #9be8bf; margin: 0 0 10px; }
+  #desktop { width: min(1200px, 100%); aspect-ratio: 4 / 3; background: #050608; display: block; }
+  #log { white-space: pre-wrap; background: #1c232b; padding: 12px; min-height: 10rem; max-height: 24rem; overflow: auto; }
+</style>
+<p id="status">Desktop idle. Use <code>?wm=1</code> or <code>?wm=1&amp;firefox=1</code>.</p>
+<canvas id="desktop" width="1200" height="900" aria-label="Aurora desktop framebuffer"></canvas>
+<pre id="log" aria-live="polite"></pre>
+<script src="./browser-posix-websocket.js"></script>
+<script type="module">
+  const query = new URLSearchParams(location.search);
+  const wantsWm = query.get('wm') === '1' || query.get('firefox') === '1';
+  const wantsFirefox = query.get('firefox') === '1';
+  const status = document.querySelector('#status');
+  const log = document.querySelector('#log');
+  const canvas = document.querySelector('#desktop');
+  const context = canvas.getContext('2d');
+  const base = './artifacts';
+  const channel = `linux-web-x11-${crypto.randomUUID()}`;
+  let wmReady = false;
+  let xReady = false;
+  let auroraWorker;
+  let xvfbWorker;
+  function report(source, line) {
+    const message = `[${source}] ${line}`;
+    log.textContent += message + '\n';
+    log.scrollTop = log.scrollHeight;
+    status.textContent = message;
+    console.info(message);
+  }
+  function artifact(path) {
+    return fetch(`${base}/${path}`, { method: 'HEAD', cache: 'no-store' }).then(r => r.ok);
+  }
+  function drawFrame(buffer) {
+    canvas.dataset.frameBytes = String(buffer.byteLength || 0);
+    context.fillStyle = '#101a22'; context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#8de0b5'; context.font = '24px monospace';
+    context.fillText('Aurora WM / Xvfb framebuffer ready', 36, 56);
+    context.fillStyle = '#c9d6e2'; context.font = '16px monospace';
+    context.fillText(`XWD frame bytes: ${buffer.byteLength || 0}`, 36, 88);
+    context.fillText('Display :11 · browser-local POSIX transport', 36, 116);
+  }
+  async function start() {
+    if (!wantsWm) return;
+    const xvfb = await Promise.all(['xvfb/Xvfb.js', 'xvfb/Xvfb.wasm', 'xvfb/Xvfb.data'].map(artifact));
+    const aurora = await Promise.all(['aurora/aurora-wm.js', 'aurora/aurora-wm.wasm'].map(artifact));
+    if (!xvfb.every(Boolean)) { report('xorg-error', 'Xvfb artifact unavailable; WM not started'); return; }
+    if (!aurora.every(Boolean)) { report('aurora-error', 'Aurora artifact unavailable; WM not started'); return; }
+    report('startup', 'Starting real Xvfb display :11');
+    xvfbWorker = new Worker(`./xvfb-runner.js?channel=${encodeURIComponent(channel)}&archweb-posix=${encodeURIComponent(channel)}`);
+    xvfbWorker.onmessage = event => {
+      const data = event.data || {};
+      if (data.type === 'ready') { xReady = true; report('xorg-ready', 'Xvfb runtime initialized on display :11'); startAurora(); }
+      else if (data.type === 'frame') drawFrame(data.frame);
+      else if (data.type === 'log') report(data.source || 'xorg', data.line || '');
+    };
+    xvfbWorker.onerror = event => report('xorg-error', event.message || 'Xvfb worker error');
+    function startAurora() {
+      if (auroraWorker || !xReady) return;
+      report('startup', 'Xvfb ready; starting real Aurora WM');
+      auroraWorker = new Worker(`./aurora-runner.js?channel=${encodeURIComponent(channel)}`);
+      auroraWorker.onmessage = event => {
+        const data = event.data || {};
+        const line = String(data.line || '');
+        report(data.source || 'aurora', line);
+        if (/browser desktop ready|desktop ready|aurora.*ready/i.test(line)) {
+          wmReady = true; canvas.dataset.wmReady = 'true';
+          report('wm-ready', 'Aurora WM ready on display :11');
+          if (wantsFirefox) startFirefoxAfterWm();
+        }
+      };
+      auroraWorker.onerror = event => report('aurora-error', event.message || 'Aurora worker error');
+    }
+    function startFirefoxAfterWm() {
+      if (!wmReady) return;
+      Promise.all(['firefox/firefox.js', 'firefox/firefox.wasm'].map(artifact)).then(parts => {
+        if (!parts.every(Boolean)) {
+          canvas.dataset.firefoxStatus = 'missing-artifact';
+          report('firefox', 'Firefox was not started: real Firefox WebAssembly artifact is unavailable');
+          return;
+        }
+        canvas.dataset.firefoxStatus = 'artifact-present';
+        report('firefox', 'Firefox artifact present; launch adapter not yet enabled');
+      });
+    }
+  }
+  if (wantsWm) start().catch(error => report('startup-error', error.stack || error.message));
+  if (window.EventSource) new EventSource('/__reload').onmessage = () => location.reload();
+</script>
