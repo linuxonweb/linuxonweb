@@ -454,3 +454,23 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   initialization at 4096 MB, then failed with `RuntimeError: memory access out
   of bounds`; no Bing request occurred. Screenshot:
   `/tmp/linuxwasm-su-4gb-75.png`. This is not a Firefox/Bing pass.
+
+## User-memory growth adapter (2026-09-21)
+
+- Added the out-of-tree `web/linux/dist/user-memory-growth-adapter.js` and
+  imported it from the staged `web/linux/dist/worker.js`. It grows only user
+  `WebAssembly.Memory` destinations for `write`, `write_zeroes`, and futex
+  atomic words, and grows successful `brk`, `mmap`/`mmap2`, and `mremap` ranges
+  returned by the Linux syscall import. The kernel destination used by `read`
+  remains bounded by `memory_bytes()` and is never grown.
+- Failed user growth preserves the existing copy/zero/futex failure return;
+  syscall growth failures emit a `console.debug` diagnostic and preserve the
+  syscall return. `web/linux/dist/USER_MEMORY_GROWTH_ADAPTER.md` documents the
+  boundary and provenance. No sibling checkout or `sources/` tree was changed.
+- Validation: `node --check` exited 0 for both adapter and worker. A Node ESM
+  edge test grew shared memory 1→2 pages for a boundary write and 2→5 pages
+  for an x86 `mmap` result, then rejected safe-integer overflow and an
+  8-page-maximum violation (`adapter edge tests: PASS`). A 95-second visible
+  Chrome run at `http://127.0.0.1:4173/linux/index.html?firefox=1` stayed
+  stable with no out-of-bounds runtime error and no Bing request; this is
+  runtime-stability evidence only, not a Firefox/Bing completion.

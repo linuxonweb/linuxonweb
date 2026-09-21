@@ -3,6 +3,7 @@ import { platform } from "./platform.js";
 import { assert } from "./util.js";
 import { read_wasm_memories } from "./wasm_binary.js";
 import { allocate_shared_memory, HALT_KERNEL, kernel_imports, memory_bytes, user_module_imports_supported, } from "./wasm.js";
+import { ensureUserDestination, growForSyscallResult } from "./user-memory-growth-adapter.js";
 const unavailable = () => {
     throw new Error("not available on worker thread");
 };
@@ -17,7 +18,15 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
     // One slot per nested SA_SIGINFO callback; null means its trampoline has
     // not requested the active signal payload yet.
     const siginfo_copy_results = [];
-    function copy_bytes(destination_memory, destination, source_memory, source, length) {
+    function copy_bytes(destination_memory, destination, source_memory, source, length, grow_user_destination = false) {
+        if (grow_user_destination) {
+            try {
+                ensureUserDestination(destination_memory, destination, length, "copy_bytes");
+            }
+            catch {
+                return length;
+            }
+        }
         const to = memory_bytes(destination_memory, destination, length);
         const from = memory_bytes(source_memory, source, length);
         if (!to || !from)
@@ -34,6 +43,12 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
         const address = uaddr >>> 0;
         if (!context || (address & 3) !== 0)
             return null;
+        try {
+            ensureUserDestination(context.memory, address, Int32Array.BYTES_PER_ELEMENT, "atomic");
+        }
+        catch {
+            return null;
+        }
         const bytes = memory_bytes(context.memory, address, Int32Array.BYTES_PER_ELEMENT);
         return bytes ? new Int32Array(bytes.buffer, bytes.byteOffset, 1) : null;
     }
@@ -77,6 +92,12 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                 syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
                     const original_instance = instance;
                     const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
+                    try {
+                        growForSyscallResult(context, nr, arg0, arg1, arg2, ret);
+                    }
+                    catch (error) {
+                        console.debug("[user-memory-growth] syscall range unavailable", { nr, ret, error });
+                    }
                     if (instance !== original_instance) {
                         call_entry = call_start;
                         throw HALT_USER;
@@ -256,13 +277,19 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                 const length = n >>> 0;
                 if (!context)
                     return length;
-                return copy_bytes(context.memory, to >>> 0, kernel_memory, from >>> 0, length);
+                return copy_bytes(context.memory, to >>> 0, kernel_memory, from >>> 0, length, true);
             },
             write_zeroes(to, n) {
                 const length = n >>> 0;
                 if (!context)
                     return length;
-                const destination = memory_bytes(context.memory, to >>> 0, length);
+                let destination;
+                try {
+                    destination = ensureUserDestination(context.memory, to >>> 0, length, "write_zeroes");
+                }
+                catch {
+                    return length;
+                }
                 if (!destination)
                     return length;
                 try {
