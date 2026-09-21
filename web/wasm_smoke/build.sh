@@ -12,7 +12,8 @@ clang_bin="${CLANG:-clang}"
 wasm_ld_bin="${WASM_LD:-wasm-ld}"
 
 "$clang_bin" --target=wasm32-unknown-unknown \
-  -ffreestanding -fno-builtin -nostdlib -c "$root_dir/probe.c" \
+  -ffreestanding -fno-builtin -nostdlib -I"$root_dir/../../adapter" \
+  -c "$root_dir/probe.c" \
   -o "$out_dir/probe.o"
 
 "$wasm_ld_bin" --no-entry --allow-undefined --export=runtime_probe --export=runtime_start \

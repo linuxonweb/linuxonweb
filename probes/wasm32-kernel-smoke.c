@@ -4,15 +4,12 @@
  * the future arch/wasm host layer can build around.
  */
 
-typedef unsigned int u32;
-
-__attribute__((import_module("linux_host"), import_name("log")))
-extern int host_log(const char *ptr, u32 len, u32 level);
+#include "linux_host.h"
 
 static const char message[] = "linux_host wasm32 probe\n";
 
 __attribute__((export_name("kernel_entry")))
 int kernel_entry(void) {
-    return host_log(message, (u32)(sizeof(message) - 1u), 1u);
+    return host_log((const linux_host_u8 *)message,
+                    (linux_host_i32)(sizeof(message) - 1u), 1);
 }
-

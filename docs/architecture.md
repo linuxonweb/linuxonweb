@@ -38,6 +38,21 @@ All handles are 32-bit integers. Pointers and lengths refer to the module's expo
 
 The host never fabricates CPU instructions, translates guest opcodes, or schedules a second CPU architecture. If an operation is not represented by this ABI, the wasm port must implement or reject it explicitly.
 
+The source of truth for C callers is `adapter/linux_host.h`. It is freestanding
+and names every `linux_host` import in this table, so a kernel or userspace
+shim can migrate incrementally without repeating import attributes. New code
+should include that header and use `LINUX_HOST_ABI_MAGIC`, the stable negative
+error constants, and the declared fixed-width host types. The browser adapter
+may reject an invalid pointer or length with `LINUX_HOST_EFAULT`; callers must
+treat all negative returns as errors and byte counts as partial operations.
+
+The migration path is deliberately out of tree: first replace local import
+declarations with `#include "linux_host.h"`, then route the module's existing
+clock, event, framebuffer, and log calls through the declarations. Add file or
+network calls only when their host-side capability and completion event are
+defined. The `web/wasm_smoke` module is the reference demo and continues to
+exercise the four imports that are implemented by its page.
+
 ## Kernel entry and event loop
 
 The wasm entry point initializes memory and the host table, then runs a bounded step and returns to JavaScript. JavaScript calls it again from `requestAnimationFrame` or a timer. A bounded step is required because an unbounded kernel loop would block the browser main thread.
