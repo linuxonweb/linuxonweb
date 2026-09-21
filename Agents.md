@@ -489,3 +489,24 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   The older 15:17 headless log used an unpatched image and its line-469
   `NS_ERROR_NOT_IMPLEMENTED` is stale. The later `RuntimeError: null function`
   remains unresolved; no Firefox rebuild or fake browser workaround was used.
+
+## Firefox null-function callback blocker (2026-09-21)
+
+- The captured profile run `/tmp/linuxonweb-profile-diag.FzhBDD/console.txt`
+  reports at 31 seconds: `error running user module: RuntimeError: null
+  function`, with the first frame `wasm-function[80832]:0x1983797`, followed
+  by functions `380636`, `79042`, `197402`, `197401`, `454471`, `206297`,
+  `205824`, `205352`, and `208100`. The run reached Firefox startup but made
+  no Bing request.
+- Extracting `opt/firefox/firefox` from the staged initramfs and inspecting it
+  with `wasm-objdump` shows function 80832 (signature 2) ending in
+  `call_indirect 0 (type 0)` at offset `0x1983797`; it loads the callback/table
+  index from its argument structure. This is a null indirect-table entry, not
+  an unresolved WebAssembly import (which would fail instantiation with a
+  `LinkError`).
+- The 154,316,950-byte Firefox Wasm artifact has no name or DWARF custom
+  section, only `build_id` and `target_features`, so the frame cannot be
+  mapped to a Firefox source symbol. No preference or small source adapter can
+  be selected truthfully from this evidence; fixing it requires retaining
+  symbols/source mapping and tracing the callback/table initialization in the
+  Firefox Wasm build. No source, binary, or runtime workaround was applied.
