@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wasm Linux — X11 display</title>
+    <!-- Cross-origin isolation required for shared wasm memory. -->
+    <link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css" />
+    <script src="./node_modules/@xterm/xterm/lib/xterm.js"></script>
+    <script src="./node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+    <script type="module" src="./main.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg0: #07100f;
+        --bg1: #101c1b;
+        --panel: rgba(12, 24, 23, 0.88);
+        --panel-solid: #0d1a19;
+        --fg: #eef6f4;
+        --muted: #91a8a4;
+        --accent: #4ce0c2;
+        --accent-strong: #79f3da;
+        --line: #263d39;
+        --danger: #ff8f8f;
+        --font-display: "IBM Plex Sans", "Segoe UI", sans-serif;
+        --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        background:
+          radial-gradient(900px 550px at 8% -10%, #17423d 0%, transparent 58%),
+          radial-gradient(800px 500px at 100% 0%, #152a45 0%, transparent 52%),
+          linear-gradient(180deg, var(--bg1), var(--bg0));
+        color: var(--fg);
+        font-family: var(--font-display);
+      }
+      button, select, input { font: inherit; }
+      button { color: inherit; }
+      main {
+        width: min(100%, 1660px);
+        margin: 0 auto;
+        padding: 76px 24px 48px;
+      }
+      .settings-wrap { position: fixed; z-index: 20; top: 20px; right: 24px; }
+      .icon-button {
+        display: inline-grid;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: rgba(8, 18, 17, 0.82);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+        cursor: pointer;
+        backdrop-filter: blur(14px);
+      }
+      .icon-button:hover, .icon-button[aria-expanded="true"] {
+        border-color: var(--accent);
+        background: #15312d;
+      }
+      .icon-button svg { width: 20px; height: 20px; }
+      .settings-panel {
+        position: absolute;
+        top: 52px;
+        right: 0;
+        width: min(330px, calc(100vw - 32px));
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel-solid);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+      }
+      .settings-panel[hidden] { display: none; }
+      .settings-heading { margin: 0 0 4px; font-size: 1.05rem; }
+      .settings-copy { margin: 0 0 18px; color: var(--muted); font-size: 0.82rem; }
+      .field { display: grid; gap: 7px; margin-top: 15px; }
+      .field-row { display: flex; justify-content: space-between; align-items: center; }
+      .field label { color: #c7d7d4; font-size: 0.86rem; font-weight: 650; }
+      .field output { color: var(--accent); font: 600 0.82rem var(--font-mono); }
+      select {
+        width: 100%;
+        padding: 10px 34px 10px 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #091413;
+        color: var(--fg);
+      }
+      input[type="range"] { width: 100%; accent-color: var(--accent); }
+      .settings-panel :disabled { opacity: 0.55; cursor: not-allowed; }
+      .settings-note {
+        margin: 16px 0 0;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.75rem;
+        line-height: 1.45;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .action {
+        min-height: 42px;
+        padding: 9px 15px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(14, 29, 27, 0.88);
+        color: #cfddda;
+        font-weight: 650;
+        cursor: pointer;
+      }
+      .action:hover { border-color: #55736d; color: #fff; transform: translateY(-1px); }
+      .action.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #04201a;
+      }
+      .action.primary:hover { background: var(--accent-strong); }
+      .action:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
+      #status {
+        margin-left: auto;
+        color: var(--muted);
+        font: 0.8rem var(--font-mono);
+      }
+      #status::before {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        margin-right: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        content: "";
+      }
+      .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .stage {
+        position: relative;
+        min-height: 180px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #000;
+        box-shadow: 0 22px 65px rgba(0, 0, 0, 0.3);
+      }
+      canvas#fb {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: calc(100vh - 190px);
+        object-fit: contain;
+        image-rendering: pixelated;
+        background: #000;
+      }
+      .terminal-card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #050a0a;
+      }
+      .terminal-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 13px;
+        border-bottom: 1px solid #1d2b29;
+        color: var(--muted);
+        font: 0.75rem var(--font-mono);
+      }
+      .terminal-head::before {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        content: "";
+      }
+      .terminal-hint { margin-left: auto; color: #60746f; }
+      #terminal { height: 310px; padding: 8px 6px; }
+      #terminal .xterm { height: 100%; }
+      .intro {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 3vw, 2.55rem);
+        letter-spacing: -0.035em;
+      }
+      .brand { color: var(--accent); }
+      .lead { margin: 0; color: var(--muted); max-width: 70ch; line-height: 1.55; }
+      code { color: #b9e7de; font-family: var(--font-mono); }
+      @media (max-width: 700px) {
+        main { padding: 72px 14px 34px; }
+        .settings-wrap { top: 14px; right: 14px; }
+        #status { width: 100%; margin: 3px 0 0; }
+        .action { flex: 1 1 calc(50% - 10px); }
+        #terminal { height: 270px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="settings-wrap">
+      <button id="settings-toggle" class="icon-button" type="button" aria-label="Machine settings" aria-expanded="false" aria-controls="settings-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M12 15.25A3.25 3.25 0 1 0 12 8.75a3.25 3.25 0 0 0 0 6.5Z" />
+          <path d="M19.1 13.5a7.4 7.4 0 0 0 .05-3l2-1.55-2-3.45-2.48 1a7.5 7.5 0 0 0-2.58-1.5L13.72 2h-4l-.38 3a7.5 7.5 0 0 0-2.57 1.5l-2.48-1-2 3.45 2 1.55a7.4 7.4 0 0 0 .05 3l-2.05 1.55 2 3.45 2.55-1.02A7.6 7.6 0 0 0 9.34 19l.38 3h4l.37-3a7.6 7.6 0 0 0 2.5-1.52l2.56 1.02 2-3.45-2.05-1.55Z" />
+        </svg>
+      </button>
+      <section id="settings-panel" class="settings-panel" aria-label="Machine settings" hidden>
+        <h2 class="settings-heading">Machine settings</h2>
+        <p class="settings-copy">Applied on the next boot.</p>
+        <div class="field">
+          <label for="resolution">Display resolution</label>
+          <select id="resolution">
+            <option value="1280x720" selected>1280 × 720 (HD)</option>
+            <option value="1200x900">1200 × 900</option>
+            <option value="1920x1080">1920 × 1080 (Full HD)</option>
+            <option value="2560x1440">2560 × 1440 (2K)</option>
+            <option value="3840x2160">3840 × 2160 (4K)</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-row">
+            <label for="cpu-cores">CPU cores</label>
+            <output id="cpu-value" for="cpu-cores">2 cores</output>
+          </div>
+          <input id="cpu-cores" type="range" min="1" max="2" value="2" step="1" />
+        </div>
+        <div class="field">
+          <label for="ram">Memory</label>
+          <select id="ram">
+            <option value="256">256 MB</option>
+            <option value="512">512 MB</option>
+            <option value="1024" selected>1 GB</option>
+            <option value="2048">2 GB</option>
+            <option value="4096">4 GB (maximum)</option>
+          </select>
+        </div>
+        <p id="settings-note" class="settings-note">Settings lock while the guest is running.</p>
+      </section>
+    </div>
+
+    <main>
+      <div class="toolbar" aria-label="Guest launch options">
+        <button class="action primary launch" id="boot" data-mode="guest" type="button">Boot guest</button>
+        <button class="action launch" id="start-console" data-mode="console" type="button">Start console</button>
+        <button class="action launch" id="start-x" data-mode="startx" type="button">Start X</button>
+        <button class="action launch" id="start-firefox" data-mode="firefox" type="button">Start Firefox</button>
+        <span id="status" role="status" aria-live="polite">idle</span>
+      </div>
+
+      <div class="workspace">
+        <div class="stage">
+          <canvas id="fb" width="1280" height="720" tabindex="0" aria-label="Linux guest display"></canvas>
+        </div>
+        <section class="terminal-card" aria-label="Guest console">
+          <div class="terminal-head">
+            <span>hvc0 · guest console</span>
+            <span class="terminal-hint">Click terminal to type</span>
+          </div>
+          <div id="terminal"></div>
+        </section>
+      </div>
+
+      <footer class="intro">
+        <h1><span class="brand">Wasm Linux</span> X11 display</h1>
+        <p class="lead">
+          Native wasm32 Linux with <code>/dev/fb0</code>, TinyX, aurora-wm, and
+          virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode,
+          then click the display or terminal to focus its input.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

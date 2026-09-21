@@ -429,3 +429,28 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   an EventSource reload endpoint. Its watcher is limited to `web/desktop` and
   `vendor/aurorawm`; query flags therefore survive source-triggered reloads
   without watching the large `sources/` trees.
+
+## Native Linux browser boot payload (91af974, 2026-09-21)
+
+- Commit `91af9741ecb2b849c4f01f33d4e15c50d38c4837` stages the native wasm32
+  Linux runtime under `web/linux/`: `vmlinux.wasm`, console/framebuffer/network
+  adapters, and the GUI/Firefox initramfs payloads. The Firefox initramfs is
+  locally recompressed with minimal `firefox` uid/gid 1000 records and its
+  `/init` launching `https://www.bing.com` through BusyBox `su`; this is a
+  staged boot payload, not proof that desktop Firefox is runnable.
+- The browser entrypoint is `/linux/index.html?firefox=1`. It auto-starts the
+  guest in Firefox mode, waits for the Linux/X userspace to initialize, and
+  requests the browser payload from the guest. The server must serve the page
+  with COOP/COEP/CORP headers for shared WebAssembly memory.
+- Boot caveat: this is a native wasm32 Linux boot/runtime integration and does
+  not establish a full Firefox desktop port. If the guest or its userspace
+  fails, the page remains a diagnostic framebuffer/console surface and must
+  report the failure rather than claim that Bing opened.
+- Firefox-mode caveat: the initramfs supplies only minimal `firefox` passwd/group
+  records; `/init` uses BusyBox `su` and a writable `/home/firefox` profile, and
+  Firefox mode reserves the supported 4 GiB guest-memory maximum. Whether the
+  wasm userspace transition and browser remain stable is still a runtime gate.
+- Progress validation: the 75-second visible run reached Firefox GTK/Gecko
+  initialization at 4096 MB, then failed with `RuntimeError: memory access out
+  of bounds`; no Bing request occurred. Screenshot:
+  `/tmp/linuxwasm-su-4gb-75.png`. This is not a Firefox/Bing pass.
