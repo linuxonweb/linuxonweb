@@ -1,5 +1,26 @@
 # Agent status
 
+## Arch/official Firefox Wasm artifact verification (2026-09-22)
+
+- The current staged `web/linux/initramfs-firefox.cpio.gz` contains a genuine
+  148 MiB `/opt/firefox/firefox` Wasm MVP module (SHA-256
+  `b126f4e109b8bfc74aa6cd1414449b49c12777797f390dffa1fa1b740c666d68`), not a
+  native ELF. Its imports are `linux.syscall`, `linux.get_thread_area`,
+  `linux.copy_siginfo`, and shared `env.memory`; it exports `_start` and carries
+  a `build_id` custom section. The MIME enumerator patch is present in the
+  staged archive.
+- Added `tools/build-firefox-wasm.sh`, a source-preserving Arch/official
+  toolchain path. It runs a freestanding `/usr/bin/clang` + `wasm-ld` probe,
+  extracts and validates the staged Firefox module with WABT
+  (`wasm-validate --enable-all`), checks the guest ABI records, and materializes
+  an output copy. It never binary-patches or relinks Firefox and labels the
+  result as artifact verification.
+- Arch packages are present (`clang`/`llvm`/`lld` 22.1.6, `wabt` 1.0.41,
+  `wasi-sdk-git` r140 under `/opt/wasi-sdk`). A desktop source build remains
+  unavailable: Firefox's pinned configure accepts `wasm32-wasi` only for
+  `project == "js"` and rejects the browser target with `ERROR: Unknown OS:
+  wasi`.
+
 ## wasm_kernel_research (2026-09-19)
 
 - Repository was empty when inspected (no commits or source files).

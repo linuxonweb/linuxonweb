@@ -34,3 +34,28 @@ WASI binding used by Firefox's Rust tooling; it is not the browser or the JS
 shell. Selecting `FIREFOX_WASM_TARGET=wasm32-wasip1` currently fails on this
 host because Rust's `wasm32-wasip1` standard library is not installed
 (`error[E0463]: can't find crate for core`).
+
+## Staged native module verification
+
+The Firefox guest image already contains a native Wasm executable at
+`opt/firefox/firefox`. `tools/build-firefox-wasm.sh` materializes that member
+to a caller-selected output, runs a freestanding `clang`/`wasm-ld` probe using
+the installed Arch LLVM toolchain, and validates the Firefox module with WABT
+(`wasm-validate --enable-all`). It requires the guest ABI imports
+`linux.syscall`, `linux.get_thread_area`, and `linux.copy_siginfo`, a shared
+`env.memory`, `_start`, and a `build_id` custom section. It never relinks or
+rewrites the Firefox binary and exits nonzero if the archive does not contain
+that exact native module.
+
+For example:
+
+```sh
+tools/build-firefox-wasm.sh /tmp/firefox.wasm
+```
+
+The current staged module is a 148 MiB Wasm MVP binary (SHA-256
+`b126f4e109b8bfc74aa6cd1414449b49c12777797f390dffa1fa1b740c666d68`). This is
+an artifact verification/materialization path, not evidence that upstream
+desktop Firefox can be rebuilt for Wasm: its authoritative configure rule
+still rejects `--enable-project=browser --target=wasm32-wasi` with
+`ERROR: Unknown OS: wasi`.
