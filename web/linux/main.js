@@ -10,6 +10,7 @@ import {
   attach_guest,
   wsTcpProxyNetwork,
 } from "./dist/index.js";
+import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -350,8 +351,21 @@ async function boot(mode) {
     }
   };
 
+  // Touch contacts use a short/long press gesture while mouse and pen retain
+  // their native pointerdown/up semantics below. Touch movement is delivered
+  // immediately so the guest sees the contact before a click or long press.
+  const touchGesture = createTouchGestureAdapter({
+    move: (x, y) => pointer.abs(x, y),
+    press: (down) => pointer.button(Key.BTN_LEFT, down),
+  });
+
   canvas.addEventListener("pointermove", (ev) => {
     const { x, y } = canvasCoords(ev);
+    if (ev.pointerType === "touch") {
+      touchGesture.move(ev.pointerId, x, y);
+      ev.preventDefault();
+      return;
+    }
     queuePointer(x, y);
   });
   canvas.addEventListener("pointerdown", (ev) => {
@@ -361,31 +375,51 @@ async function boot(mode) {
     } catch {
       /* ignore */
     }
+    const { x, y } = canvasCoords(ev);
+    if (ev.pointerType === "touch") {
+      touchGesture.start(ev.pointerId, x, y);
+      ev.preventDefault();
+      return;
+    }
     // Buttons flush immediately so clicks are not delayed by rAF.
     if (pointerRaf) {
       cancelAnimationFrame(pointerRaf);
       pointerRaf = 0;
     }
     pendingPointer = null;
-    const { x, y } = canvasCoords(ev);
     pointer.abs(x, y);
     const btn = mapButton(ev.button);
     if (btn != null) pointer.button(btn, true);
     ev.preventDefault();
   });
   canvas.addEventListener("pointerup", (ev) => {
+    const { x, y } = canvasCoords(ev);
+    if (ev.pointerType === "touch") {
+      touchGesture.end(ev.pointerId, x, y);
+      try {
+        canvas.releasePointerCapture(ev.pointerId);
+      } catch {
+        /* ignore */
+      }
+      ev.preventDefault();
+      return;
+    }
     if (pointerRaf) {
       cancelAnimationFrame(pointerRaf);
       pointerRaf = 0;
     }
     pendingPointer = null;
-    const { x, y } = canvasCoords(ev);
     pointer.abs(x, y);
     const btn = mapButton(ev.button);
     if (btn != null) pointer.button(btn, false);
     ev.preventDefault();
   });
   canvas.addEventListener("pointercancel", (ev) => {
+    if (ev.pointerType === "touch") {
+      touchGesture.cancel(ev.pointerId);
+      ev.preventDefault();
+      return;
+    }
     const btn = mapButton(ev.button);
     if (btn != null) pointer.button(btn, false);
   });
