@@ -1,0 +1,14 @@
+#!/bin/busybox sh
+# Minimal passwordless sudo for the single guest desktop account. BusyBox su
+# performs the actual UID transition; root itself is allowed through directly.
+if [ "$(id -u 2>/dev/null)" = 0 ]; then
+  exec "$@"
+fi
+if [ "$(id -un 2>/dev/null)" != admin ]; then
+  echo "sudo: user is not authorized" >&2
+  exit 1
+fi
+if [ "$#" -eq 0 ]; then
+  exec /bin/su -s /bin/sh root
+fi
+exec /bin/su -s /bin/sh -c 'exec "$@"' root /bin/busybox "$@"

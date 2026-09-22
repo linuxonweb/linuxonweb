@@ -510,3 +510,68 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   be selected truthfully from this evidence; fixing it requires retaining
   symbols/source mapping and tracing the callback/table initialization in the
   Firefox Wasm build. No source, binary, or runtime workaround was applied.
+
+## Firefox 128 patched rebuild probe (2026-09-21)
+
+- The exact Firefox 128.14.0esr source archive at
+  `/tmp/firefox-128.14.0esr-src.LTzEPs/firefox-128.14.0esr.source.tar.xz`
+  was extracted to a temporary directory and all 41 sibling recipe patches
+  (0001 through 0041) applied sequentially with `patch -p1 --forward`,
+  including 0036 callback adapters, 0038 wasm32 XPTCall trampolines, and 0039
+  static-runtime fixes. The archive and repository sources were not modified.
+- The local environment has no `nix`, `nix-build`, or `/nix` store, so the
+  sibling Nix derivation cannot run. A direct `mach configure` probe with the
+  system Clang 22 fails because Clang canonicalizes the target as
+  `wasm32-unknown-linux-musl`, which this non-Nix compiler does not support at
+  link time. A temporary wrapper mapping to `wasm32-unknown-unknown` and
+  adding `-D__linux__` plus `/usr/include/c++/v1` reaches the linker checks but
+  fails because `/usr/lib/clang/22/lib/wasm32-unknown-unknown/libclang_rt.builtins.a`
+  is absent and host `/lib/libc.a` members are not Wasm objects.
+- Exact probe logs are `/tmp/firefox128-mach-configure-py312.log` and
+  `/tmp/firefox128-mach-configure-wrapper3.log`. The next actionable fix is
+  to run the sibling `browser.nix` derivation in an environment containing its
+  wasm32-linux-musl cc-wrapper, musl/libc++ sysroot, compiler-rt builtins,
+  Rust target specification/stdlib, and statically built GTK/X11 inputs. No
+  rebuilt binary or Bing request can be claimed from this host-only probe.
+
+## Guest admin account and desktop startup (2026-09-22)
+
+- Added the source templates under `tools/guest-rootfs/` and the deterministic
+  `tools/repack-guest-initramfs.sh` rebuild path. The script extracts either a
+  raw or gzip `newc` archive, overlays the account/init templates, normalizes
+  generated timestamps, preserves payload ownership through `fakeroot` when
+  available, and emits a reproducible archive without modifying its input.
+- Both staged images now define `admin` as UID/GID 1000 with `/home/admin`,
+  `Desktop`, `Documents`, and `Downloads`; the historical `firefox` UID/GID
+  1000 record remains as a fallback alias. `/etc/sudoers` grants
+  `admin ALL=(ALL) NOPASSWD: ALL`, and `/usr/bin/sudo` is a small BusyBox
+  wrapper that permits only `admin` (or root) to transition through `su`.
+- `/init` now starts Xfbdev, aurora-wm, xterm, and Firefox with `su admin` and
+  `HOME=/home/admin`. If the admin Firefox invocation exits unsuccessfully,
+  it retries once through the preserved `firefox` UID-1000 account. Existing
+  network, certificate, and Firefox payload files remain in place; this change
+  does not claim a Firefox or Bing success.
+- Archive checks: `web/linux/initramfs.cpio` is 40,427,008 bytes with SHA-256
+  `519bf401bd518d3297f1f3ebe9eb9ed75cd2375e57dd8ef1f05d403c94e604d2`;
+  `web/linux/initramfs-firefox.cpio.gz` is 87,144,430 bytes with SHA-256
+  `440e223059774307eba801b1d666396e20848ed4e6bca0140cbaa8cf2b822b5b`.
+  Re-running the script against each staged image produced byte-identical
+  output. CPIO listing checks confirm `/etc/passwd`, `/etc/group`,
+  `/etc/shadow`, `/etc/sudoers`, `/usr/bin/sudo`, and all admin home
+  directories in both images. No Firefox build process was running during the
+  snapshot or archive refresh.
+
+## Touch gestures on the Linux framebuffer surface (2026-09-22)
+
+- Added `web/linux/touch-gesture.mjs`, a single-pointer adapter that moves the
+  guest pointer to touch contact, turns a short touch into a left click, and
+  turns a one-second hold plus movement into a left-button drag with a clean
+  release. `touch-action: none` remains enabled and mouse, pen, wheel, and
+  keyboard paths stay unchanged.
+- `web/linux/main.js` routes `pointerType === "touch"` through the adapter;
+  `web/linux/touch-gesture.test.mjs` covers tap, hold/drag, cancellation, and
+  multi-touch ownership. The existing `inputDevice` virtio event API is the
+  worker/guest protocol boundary; no Xvfb/Aurora worker message was changed.
+- Validation: `node --test web/linux/touch-gesture.test.mjs` passed all 4 tests;
+  `node --check web/linux/main.js` and `node --check web/linux/touch-gesture.mjs`
+  both passed. No Firefox toolchain or initramfs files were changed.

@@ -1,0 +1,2 @@
+Defaults!/usr/bin/sudo !setenv
+admin ALL=(ALL) NOPASSWD: ALL
