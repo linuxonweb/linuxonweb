@@ -12,7 +12,7 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const desktop = join(root, 'web/desktop');
 const port = Number(process.env.LINUX_WEB_PORT || 4173);
 const reloadClients = new Set();
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.cpio': 'application/octet-stream', '.gz': 'application/octet-stream', '.css': 'text/css; charset=utf-8', '.json': 'application/json' };
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.wasm': 'application/wasm', '.data': 'application/octet-stream', '.cpio': 'application/octet-stream', '.gz': 'application/octet-stream', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.map': 'application/json' };
 
 function headers(type) {
   return { 'Content-Type': type, 'Cache-Control': 'no-store', 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp', 'Cross-Origin-Resource-Policy': 'same-origin' };
