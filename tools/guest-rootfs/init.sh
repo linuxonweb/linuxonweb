@@ -27,7 +27,9 @@ mount -t ramfs -o mode=1777 ramfs /dev/shm 2>/dev/null || true
 chmod 01777 /dev/shm
 
 # Give the guest desktop account access to the devices used by TinyX/input.
-chown 1000:1000 /dev/fb0 /dev/tty1 2>/dev/null || true
+# The evdev patch opens the first available event node, while the VT patch
+# prefers tty1. Device nodes may be absent on headless boots.
+chown 1000:1000 /dev/fb0 /dev/tty1 /dev/tty0 /dev/input/event* 2>/dev/null || true
 
 if [ -x /bin/linux-guest-agent ]; then
   /bin/linux-guest-agent &
@@ -93,13 +95,13 @@ echo "display: starting Xfbdev as admin at $screen_mode" >&2
 xpid=$!
 
 i=0
-while [ "$i" -lt 50 ]; do
-  if [ -S /tmp/.X11-unix/X0 ] || [ -e /tmp/.X11-unix/X0 ]; then break; fi
+while [ "$i" -lt 100 ]; do
+  if { [ -S /tmp/.X11-unix/X0 ] || [ -e /tmp/.X11-unix/X0 ]; } && kill -0 "$xpid" 2>/dev/null; then break; fi
   i=$((i + 1))
   sleep 0.1 2>/dev/null || sleep 1
 done
 
-if ! kill -0 "$xpid" 2>/dev/null; then
+if ! kill -0 "$xpid" 2>/dev/null || ! { [ -S /tmp/.X11-unix/X0 ] || [ -e /tmp/.X11-unix/X0 ]; }; then
   echo "Xfbdev failed to start as admin" >&2
   exec setsid cttyhack sh
 fi
@@ -123,11 +125,6 @@ if grep -qw 'firefox=1' /proc/cmdline && [ -x /bin/firefox ]; then
     if [ -w /proc/sys/debug/exception-trace ]; then echo 1 > /proc/sys/debug/exception-trace; fi
     launch_firefox admin /home/admin
     firefox_status=$?
-    if [ "$firefox_status" -ne 0 ] && [ -f /etc/passwd ] && grep -q '^firefox:' /etc/passwd; then
-      echo "admin Firefox exited ($firefox_status); trying UID1000 firefox fallback" >&2
-      launch_firefox firefox /home/firefox
-      firefox_status=$?
-    fi
     echo "firefox exited with status $firefox_status" >&2
   ) &
 elif grep -qw 'firefox=1' /proc/cmdline && [ -x /bin/js ]; then

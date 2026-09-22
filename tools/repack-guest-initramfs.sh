@@ -31,9 +31,17 @@ output="$output_dir/$(basename "$output")"
 
 root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 templates=$root_dir/tools/guest-rootfs
-for template in init.sh sudo passwd group shadow sudoers; do
+for template in init.sh passwd group shadow sudoers; do
   [[ -f $templates/$template ]] || { echo "missing template: $template" >&2; exit 1; }
 done
+
+# A shell script cannot elevate on this guest. Require an independently
+# compiled wasm32-musl helper and fail closed when one is not supplied.
+sudo_helper=${SUDO_HELPER:-}
+[[ -n $sudo_helper && -f $sudo_helper ]] || {
+  echo "SUDO_HELPER must point to a compiled wasm32-musl sudo helper" >&2
+  exit 2
+}
 
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/guest-initramfs.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
@@ -51,7 +59,7 @@ init_uid=$(stat -c '%u' "$tmp/root/init" 2>/dev/null || echo 0)
 init_gid=$(stat -c '%g' "$tmp/root/init" 2>/dev/null || echo 0)
 
 install -D -m 0755 "$templates/init.sh" "$tmp/root/init"
-install -D -m 0755 "$templates/sudo" "$tmp/root/usr/bin/sudo"
+install -D -m 04755 "$sudo_helper" "$tmp/root/usr/bin/sudo"
 install -D -m 0644 "$templates/passwd" "$tmp/root/etc/passwd"
 install -D -m 0644 "$templates/group" "$tmp/root/etc/group"
 install -D -m 0600 "$templates/shadow" "$tmp/root/etc/shadow"

@@ -543,23 +543,22 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   available, and emits a reproducible archive without modifying its input.
 - Both staged images now define `admin` as UID/GID 1000 with `/home/admin`,
   `Desktop`, `Documents`, and `Downloads`; the historical `firefox` UID/GID
-  1000 record remains as a fallback alias. `/etc/sudoers` grants
-  `admin ALL=(ALL) NOPASSWD: ALL`, and `/usr/bin/sudo` is a small BusyBox
-  wrapper that permits only `admin` (or root) to transition through `su`.
-- `/init` now starts Xfbdev, aurora-wm, xterm, and Firefox with `su admin` and
-  `HOME=/home/admin`. If the admin Firefox invocation exits unsuccessfully,
-  it retries once through the preserved `firefox` UID-1000 account. Existing
-  network, certificate, and Firefox payload files remain in place; this change
-  does not claim a Firefox or Bing success.
-- Archive checks: `web/linux/initramfs.cpio` is 40,427,008 bytes with SHA-256
-  `519bf401bd518d3297f1f3ebe9eb9ed75cd2375e57dd8ef1f05d403c94e604d2`;
-  `web/linux/initramfs-firefox.cpio.gz` is 87,144,430 bytes with SHA-256
-  `440e223059774307eba801b1d666396e20848ed4e6bca0140cbaa8cf2b822b5b`.
+  1000 record remains as an alias. `/etc/sudoers` grants
+  `admin ALL=(ALL) NOPASSWD: ALL`. The setuid `/usr/bin/sudo` is a static
+  wasm32-musl helper built from `tools/guest-rootfs/sudo.c`; its validated
+  SHA-256 is `ebe3c025e50c9543b7ac03387074e8abcab40bcac24fc44ec15a7af467feb90e`.
+- `/init` starts Xfbdev, aurora-wm, xterm, and Firefox with `su admin` and
+  `HOME=/home/admin`; existing network, certificate, and Firefox payload files
+  remain in place. This change does not claim a Firefox or Bing success.
+- `tools/repack-guest-initramfs.sh` installs the helper as root:root mode
+  `04755` under fakeroot, preserving deterministic `newc` metadata. Archive
+  checks: `web/linux/initramfs.cpio` is 40,459,264 bytes with SHA-256
+  `411f644e0673c2b56cfc0fa1b85de7efce83f56bd472b66eee01e5105701d0f2`;
+  `web/linux/initramfs-firefox.cpio.gz` is 87,160,126 bytes with SHA-256
+  `c55b93b9d2eeb496ddb116a0f0e518f550c2de24897ddb52775f4ee8b20ce101`.
   Re-running the script against each staged image produced byte-identical
-  output. CPIO listing checks confirm `/etc/passwd`, `/etc/group`,
-  `/etc/shadow`, `/etc/sudoers`, `/usr/bin/sudo`, and all admin home
-  directories in both images. No Firefox build process was running during the
-  snapshot or archive refresh.
+  output. CPIO listing checks confirm root-owned `/usr/bin/sudo` mode 04755,
+  all account files, and all admin home directories in both images.
 
 ## Touch gestures on the Linux framebuffer surface (2026-09-22)
 
