@@ -59,3 +59,13 @@ an artifact verification/materialization path, not evidence that upstream
 desktop Firefox can be rebuilt for Wasm: its authoritative configure rule
 still rejects `--enable-project=browser --target=wasm32-wasi` with
 `ERROR: Unknown OS: wasi`.
+
+`probes/firefox-wasm-musl-configure-gate.sh` performs a bounded experiment
+against a temporary archive overlay. It changes only the upstream target-gate
+expression in that overlay to recognize `wasm32-unknown-linux-musl` for the
+browser project, then runs Firefox's real `configure.py` with
+`--disable-compile-environment`. The parser reaches
+`checking for target system type... wasm32-unknown-linux-musl`; configuration
+then stops because the intentionally bounded archive does not include
+`js/ffi.configure`. This proves target-triplet recognition only. It is not a
+Firefox build, and the pinned source checkout remains untouched.

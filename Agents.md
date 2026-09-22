@@ -20,6 +20,12 @@
   unavailable: Firefox's pinned configure accepts `wasm32-wasi` only for
   `project == "js"` and rejects the browser target with `ERROR: Unknown OS:
   wasi`.
+- Added `probes/firefox-wasm-musl-configure-gate.sh`, which archives the
+  bounded configure dependency closure into a temporary tree and applies a
+  local-only target-gate change for `wasm32-unknown-linux-musl`. Firefox's real
+  parser reaches `checking for target system type... wasm32-unknown-linux-musl`,
+  then stops at the expected closure boundary (`js/ffi.configure` is absent);
+  no browser object is built and `sources/firefox` is unchanged.
 
 ## wasm_kernel_research (2026-09-19)
 
