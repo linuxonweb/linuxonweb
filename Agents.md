@@ -604,3 +604,26 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
 - This is a source/configuration diagnostic only. The active sibling Firefox
   recipe, staged initramfs, and server were not modified; no rebuilt Firefox or
   browser navigation is claimed.
+## Keyboard input boundary handoff (2026-09-22)
+
+- The browser keyboard bug was in the host mapping fallback: Linux evdev letter
+  codes are not one contiguous `A + index` range (`A..L` is 30..38, punctuation
+  occupies 39..43, and `Z` is 44). The old fallback therefore emitted invalid
+  codes for most letters. `web/linux/keyboard.mjs` now uses the explicit evdev
+  table and accepts standard `code`, `key`, and legacy `keyCode`/`which` fields;
+  it also covers modifiers, navigation, keypad keys, and X Unicode composition.
+  `main.js` routes composition events through Ctrl+Shift+U sequences while
+  retaining physical key semantics and the existing touch/mouse path.
+- Focused tests are in `web/linux/keyboard.test.mjs`; the bounded test command
+  was run before the final explicit-letter correction and exposed the exact
+  contiguous-code defect. Re-run `node --test web/linux/keyboard.test.mjs
+  web/linux/touch-gesture.test.mjs` as the next local check.
+- No Firefox build, initramfs, X server process, or worker transport was
+  changed. The existing native Firefox build remains at the serial final-link
+  failure with its incomplete artifact retained for diagnosis; do not treat it
+  as a browser success. Existing server/watcher state and the admin/sudo,
+  touch-gesture, and MIME commits remain as previously recorded.
+- The command worker was given one bounded keyboard smoke test and must stop on
+  its first result; no retry or self-fix is authorized. Remaining follow-up is
+  to record that result, run the focused tests, and inspect the browser surface
+  with the new adapter if the smoke test reports an error.

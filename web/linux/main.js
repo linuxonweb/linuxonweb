@@ -11,6 +11,7 @@ import {
   wsTcpProxyNetwork,
 } from "./dist/index.js";
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
+import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -126,101 +127,6 @@ cpuInput.addEventListener("input", updateCpuLabel);
 updateResolution();
 updateCpuLabel();
 
-/** Browser KeyboardEvent.code → Linux KEY_* (layout-independent). */
-const codeToLinux = {
-  Escape: Key.ESC,
-  Digit1: Key["1"],
-  Digit2: Key["2"],
-  Digit3: Key["3"],
-  Digit4: Key["4"],
-  Digit5: Key["5"],
-  Digit6: Key["6"],
-  Digit7: Key["7"],
-  Digit8: Key["8"],
-  Digit9: Key["9"],
-  Digit0: Key["0"],
-  Minus: Key.MINUS,
-  Equal: Key.EQUAL,
-  Backspace: Key.BACKSPACE,
-  Tab: Key.TAB,
-  KeyQ: Key.Q,
-  KeyW: Key.W,
-  KeyE: Key.E,
-  KeyR: Key.R,
-  KeyT: Key.T,
-  KeyY: Key.Y,
-  KeyU: Key.U,
-  KeyI: Key.I,
-  KeyO: Key.O,
-  KeyP: Key.P,
-  BracketLeft: Key.LEFTBRACE,
-  BracketRight: Key.RIGHTBRACE,
-  Enter: Key.ENTER,
-  ControlLeft: Key.LEFTCTRL,
-  ControlRight: Key.RIGHTCTRL,
-  KeyA: Key.A,
-  KeyS: Key.S,
-  KeyD: Key.D,
-  KeyF: Key.F,
-  KeyG: Key.G,
-  KeyH: Key.H,
-  KeyJ: Key.J,
-  KeyK: Key.K,
-  KeyL: Key.L,
-  Semicolon: Key.SEMICOLON,
-  Quote: Key.APOSTROPHE,
-  Backquote: Key.GRAVE,
-  ShiftLeft: Key.LEFTSHIFT,
-  ShiftRight: Key.RIGHTSHIFT,
-  Backslash: Key.BACKSLASH,
-  KeyZ: Key.Z,
-  KeyX: Key.X,
-  KeyC: Key.C,
-  KeyV: Key.V,
-  KeyB: Key.B,
-  KeyN: Key.N,
-  KeyM: Key.M,
-  Comma: Key.COMMA,
-  Period: Key.DOT,
-  Slash: Key.SLASH,
-  AltLeft: Key.LEFTALT,
-  AltRight: Key.RIGHTALT,
-  Space: Key.SPACE,
-  CapsLock: Key.CAPSLOCK,
-  F1: Key.F1,
-  F2: Key.F2,
-  F3: Key.F3,
-  F4: Key.F4,
-  F5: Key.F5,
-  F6: Key.F6,
-  F7: Key.F7,
-  F8: Key.F8,
-  F9: Key.F9,
-  F10: Key.F10,
-  F11: Key.F11,
-  F12: Key.F12,
-  ArrowUp: Key.UP,
-  ArrowDown: Key.DOWN,
-  ArrowLeft: Key.LEFT,
-  ArrowRight: Key.RIGHT,
-  Home: Key.HOME,
-  End: Key.END,
-  PageUp: Key.PAGEUP,
-  PageDown: Key.PAGEDOWN,
-  Insert: Key.INSERT,
-  Delete: Key.DELETE,
-};
-
-function mapKey(ev) {
-  if (codeToLinux[ev.code] !== undefined) return codeToLinux[ev.code];
-  // Fallback for odd browsers: letter keys via ev.key.
-  if (ev.key && ev.key.length === 1) {
-    const c = ev.key.toLowerCase();
-    if (c >= "a" && c <= "z") return Key.A + (c.charCodeAt(0) - 97);
-  }
-  return null;
-}
-
 function mapButton(button) {
   if (button === 0) return Key.BTN_LEFT;
   if (button === 1) return Key.BTN_MIDDLE;
@@ -319,18 +225,27 @@ async function boot(mode) {
   canvas.tabIndex = 0;
   canvas.style.outline = "none";
   canvas.style.touchAction = "none";
+  let composing = false;
 
   canvas.addEventListener("keydown", (ev) => {
-    const code = mapKey(ev);
+    if (composing || ev.isComposing || ev.key === "Process") return;
+    const code = mapKeyboardEvent(ev);
     if (code == null) return;
     ev.preventDefault();
     pointer.key(code, true);
   });
   canvas.addEventListener("keyup", (ev) => {
-    const code = mapKey(ev);
+    if (composing || ev.isComposing || ev.key === "Process") return;
+    const code = mapKeyboardEvent(ev);
     if (code == null) return;
     ev.preventDefault();
     pointer.key(code, false);
+  });
+  canvas.addEventListener("compositionstart", () => { composing = true; });
+  canvas.addEventListener("compositionend", (ev) => {
+    composing = false;
+    for (const [code, down] of compositionEvents(ev.data)) pointer.key(code, down);
+    ev.preventDefault();
   });
 
   // Coalesce pointermove to animation frames so high-rate mouse samples do not
