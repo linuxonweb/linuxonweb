@@ -574,3 +574,33 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
 - Validation: `node --test web/linux/touch-gesture.test.mjs` passed all 4 tests;
   `node --check web/linux/main.js` and `node --check web/linux/touch-gesture.mjs`
   both passed. No Firefox toolchain or initramfs files were changed.
+
+## Native Firefox link resource and ABI hardening note (2026-09-22)
+
+- The latest native Firefox 128 browser build reached the final `firefox` and
+  `xpcshell` links, then failed with `clang++: error: unable to execute command:
+  Killed`; no browser artifact was produced. The captured earlier Nix log also
+  shows `mach build -j"$NIX_BUILD_CORES"` expanding to `make -f client.mk -j6`,
+  so a serial retry must constrain both layers (`NIX_BUILD_CORES=1`, `mach build
+  -j1`) and verify the generated make command. If the recursive build still
+  overlaps final links, build the browser and xpcshell link targets in separate
+  invocations.
+- `wasm-ld` emitted repeated `function signature mismatch` diagnostics for
+  libc++ constructors/destructors, NSS `sftk_FIPSEntryOK`, and Mozilla symbols.
+  These are ABI inconsistencies between input objects/archives, not harmless
+  noise and not evidence that a link succeeded. Keep the warnings visible;
+  `--fatal-warnings` is useful for a short diagnostic pass, while suppressing
+  them or forcing a mismatched indirect call would hide a runtime trap risk.
+  The fix belongs in a single consistent wasm C++ ABI/libc++ build and source
+  adapter set, followed by symbol-level revalidation.
+- Safe link-pressure diagnostics are `--disable-lto` (already selected),
+  `-Wl,-O0`, and the default `--gc-sections`; these can reduce peak linker
+  memory but cannot repair signature mismatches. Keep any debug/symbol copy of
+  a successful link before size reduction. For release processing, strip debug
+  data before running Binaryen `wasm-opt --fpcast-emu` (optionally
+  `--low-memory-unused`), write to a temporary output, validate it, and only
+  then install the result. `wasm-opt` and `strip` cannot run after a killed link
+  and must never be used to manufacture a missing artifact.
+- This is a source/configuration diagnostic only. The active sibling Firefox
+  recipe, staged initramfs, and server were not modified; no rebuilt Firefox or
+  browser navigation is claimed.
