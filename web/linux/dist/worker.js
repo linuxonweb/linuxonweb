@@ -4,6 +4,7 @@ import { assert } from "./util.js";
 import { read_wasm_memories } from "./wasm_binary.js";
 import { allocate_shared_memory, HALT_KERNEL, kernel_imports, memory_bytes, user_module_imports_supported, } from "./wasm.js";
 import { ensureUserDestination, growForSyscallResult } from "./user-memory-growth-adapter.js";
+import { installFirefoxCallbackAdapter } from "./firefox-callback-adapter.mjs";
 const unavailable = () => {
     throw new Error("not available on worker thread");
 };
@@ -86,7 +87,7 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
     let call_entry = call_start;
     function create_instance(context) {
         const kernel_instance = get_kernel_instance();
-        return new WebAssembly.Instance(context.module, {
+        const user_instance = new WebAssembly.Instance(context.module, {
             env: { memory: context.memory },
             linux: {
                 syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
@@ -114,6 +115,11 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                 },
             },
         });
+        const patched = installFirefoxCallbackAdapter(context.module, user_instance);
+        if (patched) {
+            console.debug(`[firefox-callback-adapter] filled ${patched} reserved indirect-table entries`);
+        }
+        return user_instance;
     }
     function instantiate(fresh_memory) {
         if (fresh_memory) {

@@ -1,5 +1,21 @@
 # Agent status
 
+## Firefox indirect-table adapter (2026-09-23)
+
+- Added `web/linux/dist/firefox-callback-adapter.mjs`, a browser-side bridge
+  for the staged Firefox wasm ABI. It identifies the module by its Linux
+  imports and `_start`/`__indirect_function_table` exports, then fills the
+  three reserved null table entries with a correctly typed 23×`i64` callback.
+  Firefox and Linux payloads remain unchanged.
+- Added `web/linux/firefox-callback-adapter.test.mjs`; Node tests verify the
+  exact ABI fixture is patched once and unrelated modules are ignored.
+- A live 4 GiB Chromium run now passes the earlier `RuntimeError: null
+  function` at Firefox GTK startup and reaches `wasm-gtype: class_init
+  MozContainer`. It still does not show a Firefox window or request Bing after
+  extended observation. The remaining issue is the callback's missing
+  side-effect/X11 startup semantics; the no-op bridge is a contained
+  compatibility step, not a full Firefox completion claim.
+
 ## Arch/official Firefox Wasm artifact verification (2026-09-22)
 
 - The current staged `web/linux/initramfs-firefox.cpio.gz` contains a genuine
