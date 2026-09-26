@@ -373,7 +373,7 @@ No compilation-cache change was implemented for this release.
 Firefox startup sleep after runtime acceptance. It polls a real X11 handshake:
 root `_NET_SUPPORTING_WM_CHECK` points at a window whose own property points to
 itself, and that window's UTF8 `_NET_WM_NAME` is exactly `Aurora`. A process-local
-SIGALRM timer bounds even blocking Xlib operations. Timer setup failure returns
+SIGALRM timer is intended to bound even blocking Xlib operations. Timer setup failure returns
 2 so the caller keeps the original delay. Readiness or an elapsed ten-second
 deadline returns 0; a timeout must not add a second ten-second delay.
 
@@ -388,11 +388,22 @@ The first build and WABT validation passed: 823,503 bytes, SHA-256
 `2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3`.
 The module imports shared `env.memory` and the three established
 `linux.syscall/get_thread_area/copy_siginfo` functions, and exports `_start` and
-the function table. This proves loader-shape compatibility, not guest execution.
-Required guest acceptance before the init overlay is authorized for promotion:
-`--self-test-timeout` actually exits after roughly one second; an absent display
-waits roughly ten seconds; the current Aurora desktop returns readiness quickly.
-The signal self-test must have an external test timeout so a broken guest signal
-implementation cannot stall validation. Then compare actual Firefox launch times
-across cold boots and preserve the existing delay when the helper is missing or
-fails before arming its timer. No startup speedup has yet been measured.
+the function table. That original build check established loader shape only.
+
+The subsequent isolated guest test passed 23 checks at the accepted Firefox
+memory setting (`0xffff0000` bytes) and two CPUs, verified through actual kernel
+markers. External watchdogs bounded all stages. The one-second self-test and
+missing-display deadline took 1.043 and 10.039 seconds by host observation, with
+the required deadline marker and exit 0. A helper started before Aurora remained
+pending until the recorded WM launch and then completed its handshake; its
+1.310-second stage includes a deliberate one-second delay. With Aurora already
+present, the stage completed in 0.056 seconds. See
+`evidence/runtime-graphics-20260926/aurora-ready.json` and the reproducible fixture
+at `web/linux/tests/aurora-ready/README.md`.
+
+No Firefox launch occurred in that helper test. Before promoting the init
+overlay, compare actual cold Firefox launches and window usability, preserve the
+old sleep when the helper is missing or fails before arming its timer, and run
+warm-cache/update/home-preservation gates. A stalled X server connection remains
+untested separately from an absent display. No Firefox startup speedup from this
+helper has yet been measured; production retains its existing ten-second sleep.

@@ -1,0 +1,73 @@
+<!doctype html><meta charset="utf-8"><title>Isolated Aurora readiness acceptance</title>
+<h1>Aurora readiness guest diagnostic</h1>
+<p>Tests the pinned helper in the accepted Firefox system. Firefox startup and persistent storage are separate release gates.</p>
+<button id="boot">Run isolated guest</button><button id="stop">Stop guest</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import {spawnMachine, consoleDevice, entropyDevice, inputDevice} from '../../dist/index.js';
+const report = window.auroraReadyResults = {logs:'', lines:[], bootLogs:'', bootConfigurationEvidence:[], errors:[], done:false, isolated:crossOriginIsolated};
+let machine, deadline, partial = '';
+const decoder = new TextDecoder();
+async function readBootConsole(stream) {
+  const reader=stream.getReader(), decoder=new TextDecoder();
+  let partial='';
+  const record=text=>{
+    // Keep a bounded tail for panic diagnosis and retain early configuration lines.
+    report.bootLogs=(report.bootLogs+text).slice(-131072);
+    const lines=(partial+text).split('\n');
+    partial=lines.pop().slice(-8192);
+    for (const line of lines) {
+      if (/Memory:|smp: Brought up/.test(line) && report.bootConfigurationEvidence.length<16)
+        report.bootConfigurationEvidence.push({text:line.replaceAll('\r','').slice(0,8192),hostMs:performance.now()});
+    }
+  };
+  try {
+    for (;;) {
+      const {value,done}=await reader.read();
+      if (done) {record(decoder.decode());break;}
+      record(decoder.decode(new Uint8Array(value),{stream:true}));
+    }
+  } catch(error) {report.bootConsoleError=String(error);}
+  finally {reader.releaseLock();}
+}
+const log = bytes => {
+  const text = decoder.decode(new Uint8Array(bytes), {stream:true});
+  report.logs += text;
+  partial += text;
+  const lines = partial.split('\n');
+  partial = lines.pop();
+  for (const line of lines) {
+    report.lines.push({text:line.replaceAll('\r',''), hostMs:performance.now()});
+    if (line.includes('AURORA_QA DONE')) { report.done=true; clearTimeout(deadline); document.documentElement.dataset.result='done'; }
+    if (line.includes('AURORA_QA FAIL')) { report.errors.push(line); document.documentElement.dataset.result='fail'; }
+  }
+  document.querySelector('#log').textContent=report.logs.slice(-16000);
+};
+document.querySelector('#boot').onclick = async () => {
+  document.querySelector('#boot').disabled=true;
+  report.startedMs=performance.now();
+  deadline=setTimeout(()=>{report.errors.push('page watchdog: 120 seconds');machine?.close();document.documentElement.dataset.result='fail';},120000);
+  try {
+    if (!crossOriginIsolated) throw Error('cross-origin isolation required');
+    const response=await fetch('./candidate/initramfs-firefox.cpio.gz');
+    if (!response.ok) throw Error('candidate archive unavailable');
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    const metadata=await (await fetch('./candidate/package.json')).json();
+    const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+    if (!metadata.passPackage || !metadata.testOnly || metadata.bytes!==bytes.length || metadata.archiveSha256!==sha) throw Error('candidate hash mismatch');
+    report.package=metadata;
+    // Match main.js: the runtime receives decompressed CPIO, not gzip bytes.
+    const initcpio=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+    if (initcpio.length!==metadata.uncompressedBytes) throw Error('decompressed candidate length mismatch');
+    // Match main.js ramBytes(4096): leave the final wasm32 64 KiB page unused.
+    report.configuration={cpus:2,memoryBytes:0xffff0000,cmdline:'console=hvc0 rdinit=/init',visibility:document.visibilityState};
+    machine=await spawnMachine({cpus:report.configuration.cpus,devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}},initcpio,
+      cmdline:report.configuration.cmdline, devices:[consoleDevice(null,new WritableStream({write:log})),entropyDevice(),inputDevice()],
+      framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'}});
+    window.auroraReadyMachine=machine;
+    void readBootConsole(machine.bootConsole);
+    machine.closed.catch(error=>{report.errors.push(error.message);document.documentElement.dataset.result='fail';});
+  } catch(error) {report.errors.push(error.message);clearTimeout(deadline);document.documentElement.dataset.result='fail';}
+};
+document.querySelector('#stop').onclick=()=>{clearTimeout(deadline);machine?.close();};
+</script>

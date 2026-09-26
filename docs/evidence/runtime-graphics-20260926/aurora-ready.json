@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-26T16:20:57.755622+00:00",
+  "scope": "Isolated guest Aurora readiness helper diagnostic; not production startup acceptance",
+  "repository": {
+    "path": "/mnt/p6/project/linux/linuxonweb",
+    "head": "8c2888b0b29d3349bca39012e1a9d6e5e5ade97e",
+    "sourceArtifacts": [
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/.gitignore",
+        "bytes": 11,
+        "sha256": "d0da1fef7c50a5b26a63c11364754cb304b3d0126c4c6b25b2025f6bd3ef74a6",
+        "role": "Source-control exclusion; not an executed runtime input."
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/README.md",
+        "bytes": 6672,
+        "sha256": "487af4a9c0349351b1ddad391ff147699e40116389a8c191d2557f1458ae4377",
+        "role": "Post-test documentation; root updated observed results after run2. Not an executed runtime input."
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/index.html",
+        "bytes": 4641,
+        "sha256": "42060ca907f6df691cdc1dd11f1dbdeb5fc18a889a9410a75baf9b8cbc27b1da",
+        "role": "Fixture input; root reports scripts and page unchanged since accepted run2."
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/package.py",
+        "bytes": 6885,
+        "sha256": "52dabbfb81dfe48b422b972da1df65703faf89dd171ece4928306e1e1768f17c",
+        "role": "Fixture input; root reports scripts and page unchanged since accepted run2."
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/run-browser.mjs",
+        "bytes": 9817,
+        "sha256": "00e6c74c051b69852799d62923e9482ea07482e5a999d9ec4c93cc70a29bceb3",
+        "role": "Fixture input; root reports scripts and page unchanged since accepted run2."
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/wait-for-aurora.c",
+        "bytes": 4428,
+        "sha256": "bcf244ec52d13be9fb6cefdc485915f15a2baa15b51db3c1897c6a3982f43fdf"
+      },
+      {
+        "path": "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm",
+        "bytes": 823503,
+        "sha256": "2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3"
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+        "bytes": 88186382,
+        "sha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65"
+      },
+      {
+        "path": "/mnt/p6/build/aurora-ready-20260926/package1/initramfs-firefox.cpio.gz",
+        "bytes": 89864285,
+        "sha256": "ec342ee78fd610d390e7145800391775d4136298f479b44504b8db1f67645983"
+      },
+      {
+        "path": "/mnt/p6/build/aurora-ready-20260926/package1/package.json",
+        "bytes": 796,
+        "sha256": "15eeeffb1844385081bd137cfd4d428249198306e5fb3d0214ef931861573177"
+      },
+      {
+        "path": "/mnt/p6/build/aurora-ready-20260926/package1/init.before.sh",
+        "bytes": 10267,
+        "sha256": "7364753644286b8c5670c538f3301e709f643564dbdf4cd7642476eba560e7b6"
+      },
+      {
+        "path": "/mnt/p6/build/aurora-ready-20260926/package1/init.after.sh",
+        "bytes": 11465,
+        "sha256": "8568281deacfe9404ee1509d25783fd65fb6d9cfb03e924d3f5ed2ff0477713a"
+      }
+    ],
+    "sourceHashNote": "Current bytes captured after run2. Root reports scripts and page unchanged since accepted run2; README was updated with observed results after testing and is identified separately. Fixture source may be uncommitted."
+  },
+  "storage": {
+    "filesystem": "/dev/nvme0n1p6 ext4 /mnt/p6",
+    "freeBytes": 185769820160,
+    "TMPDIR": "/mnt/p6/build/aurora-ready-20260926/tmp",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "python": "/usr/bin/python3"
+  },
+  "packageAudit": {
+    "passPackage": true,
+    "testOnly": true,
+    "sourceSha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+    "helperSha256": "2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3",
+    "archiveSha256": "ec342ee78fd610d390e7145800391775d4136298f479b44504b8db1f67645983",
+    "bytes": 89864285,
+    "uncompressedBytes": 279775112,
+    "unchangedOriginalRecords": 11468,
+    "modified": [
+      "init"
+    ],
+    "added": [
+      "bin/wait-for-aurora"
+    ],
+    "originalOrderPreserved": true,
+    "tailPreserved": true,
+    "initOutsideSubstitutionPreserved": true,
+    "productionSleepUnchanged": true,
+    "source": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+    "helper": "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm"
+  },
+  "run2": {
+    "resultArtifact": {
+      "path": "/mnt/p6/build/aurora-ready-20260926/run2/result.json",
+      "bytes": 14728,
+      "sha256": "c257a41ab8f1d793ebbc4a9d2c2e7bcf729acdbff40313b7bd24aca5d5a57c92"
+    },
+    "pageArtifact": {
+      "path": "/mnt/p6/build/aurora-ready-20260926/run2/page.png",
+      "bytes": 293452,
+      "sha256": "c0493e0c37bd42ff5e4c202044690e266b70c1df89d69f449660b368f0c51489"
+    },
+    "pass": true,
+    "startedAt": "2026-09-26T16:17:41.765Z",
+    "elapsedMs": 23931,
+    "checkCount": 23,
+    "checks": [
+      {
+        "label": "isolated, visible page with no guest errors",
+        "pass": true
+      },
+      {
+        "label": "accepted Firefox requested memory and CPU configuration",
+        "pass": true,
+        "detail": {
+          "cpus": 2,
+          "memoryBytes": 4294901760,
+          "cmdline": "console=hvc0 rdinit=/init",
+          "visibility": "visible"
+        }
+      },
+      {
+        "label": "authoritative guest memory and SMP markers observed",
+        "pass": true,
+        "detail": {
+          "memory": [
+            {
+              "line": "Memory: 3908672K/4194240K",
+              "totalKiB": 4194240
+            }
+          ],
+          "smp": [
+            {
+              "line": "smp: Brought up 1 node, 2 CPUs",
+              "cpus": 2
+            }
+          ],
+          "markersObserved": true,
+          "verified": true
+        }
+      },
+      {
+        "label": "printed guest memory matches accepted Firefox configuration",
+        "pass": true,
+        "detail": [
+          {
+            "line": "Memory: 3908672K/4194240K",
+            "totalKiB": 4194240
+          }
+        ]
+      },
+      {
+        "label": "printed guest SMP matches two CPUs",
+        "pass": true,
+        "detail": [
+          {
+            "line": "smp: Brought up 1 node, 2 CPUs",
+            "cpus": 2
+          }
+        ]
+      },
+      {
+        "label": "self: begin then exit zero",
+        "pass": true
+      },
+      {
+        "label": "self: guest elapsed window",
+        "pass": true,
+        "detail": 1.0400000000000005
+      },
+      {
+        "label": "self: independent host elapsed window",
+        "pass": true,
+        "detail": 1.0429599997997283
+      },
+      {
+        "label": "self: actual timeout marker",
+        "pass": true
+      },
+      {
+        "label": "missing: begin then exit zero",
+        "pass": true
+      },
+      {
+        "label": "missing: guest elapsed window",
+        "pass": true,
+        "detail": 10.04
+      },
+      {
+        "label": "missing: independent host elapsed window",
+        "pass": true,
+        "detail": 10.039289999961854
+      },
+      {
+        "label": "missing: actual timeout marker",
+        "pass": true
+      },
+      {
+        "label": "before: begin then exit zero",
+        "pass": true
+      },
+      {
+        "label": "before: guest elapsed window",
+        "pass": true,
+        "detail": 1.3100000000000005
+      },
+      {
+        "label": "before: independent host elapsed window",
+        "pass": true,
+        "detail": 1.3104800000190735
+      },
+      {
+        "label": "before: positive Aurora handshake",
+        "pass": true
+      },
+      {
+        "label": "helper invoked and still alive before Aurora launch",
+        "pass": true
+      },
+      {
+        "label": "ready: begin then exit zero",
+        "pass": true
+      },
+      {
+        "label": "ready: guest elapsed window",
+        "pass": true,
+        "detail": 0.0600000000000005
+      },
+      {
+        "label": "ready: independent host elapsed window",
+        "pass": true,
+        "detail": 0.05649499988555908
+      },
+      {
+        "label": "ready: positive Aurora handshake",
+        "pass": true
+      },
+      {
+        "label": "all diagnostics completed",
+        "pass": true
+      }
+    ],
+    "configuration": {
+      "cpus": 2,
+      "memoryBytes": 4294901760,
+      "cmdline": "console=hvc0 rdinit=/init",
+      "visibility": "visible"
+    },
+    "configurationEvidence": {
+      "memory": [
+        {
+          "line": "Memory: 3908672K/4194240K",
+          "totalKiB": 4194240
+        }
+      ],
+      "smp": [
+        {
+          "line": "smp: Brought up 1 node, 2 CPUs",
+          "cpus": 2
+        }
+      ],
+      "markersObserved": true,
+      "verified": true
+    },
+    "stages": {
+      "self": {
+        "elapsedGuestSeconds": 1.0400000000000005,
+        "elapsedHostSeconds": 1.0429599997997283,
+        "output": "[wm-ready] deadline elapsed; using timed fallback"
+      },
+      "missing": {
+        "elapsedGuestSeconds": 10.04,
+        "elapsedHostSeconds": 10.039289999961854,
+        "output": "[wm-ready] deadline elapsed; using timed fallback"
+      },
+      "before": {
+        "elapsedGuestSeconds": 1.3100000000000005,
+        "elapsedHostSeconds": 1.3104800000190735,
+        "output": "AURORA_QA HELPER_STARTED pid=75 uptime=14.39\nAURORA_QA HELPER_PENDING pid=75 uptime=15.44\nAURORA_QA AURORA_LAUNCH uptime=15.44\naurora-wm: light compositor disabled by setting\n[wm-ready] Aurora handshake ready after 1269 ms"
+      },
+      "ready": {
+        "elapsedGuestSeconds": 0.0600000000000005,
+        "elapsedHostSeconds": 0.05649499988555908,
+        "output": "[wm-ready] Aurora handshake ready after 18 ms"
+      }
+    },
+    "isolated": true,
+    "guestErrors": [],
+    "pageEvents": [],
+    "tabClosed": true,
+    "watchdog": {
+      "independentNodeAbsoluteSeconds": 150,
+      "hostPollSeconds": 120,
+      "perStageSeconds": {
+        "self": 8,
+        "missing": 25,
+        "before": 15,
+        "ready": 8
+      },
+      "note": "Watchdogs were installed by the recorded runner; this successful run did not trigger them."
+    }
+  },
+  "earlierAttempts": [
+    {
+      "name": "run1",
+      "resultArtifact": {
+        "path": "/mnt/p6/build/aurora-ready-20260926/run1/result.json",
+        "bytes": 1553,
+        "sha256": "7c7c56532763e4d5530dc390b48fd83eb8777109eb52a7e1b45eae99b4969eda"
+      },
+      "pass": false,
+      "elapsedMs": 3701,
+      "errors": [
+        "kernel panic"
+      ],
+      "guestLogsEmpty": true,
+      "requestedConfiguration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "cmdline": "console=hvc0 rdinit=/init",
+        "visibility": "visible"
+      },
+      "authoritativeConfigurationVerified": false,
+      "rootCause": "Unproven; requested 1 GiB is not established as the cause of the kernel panic. No boot logs were captured."
+    },
+    {
+      "name": "first attempted run2 before successful run2",
+      "executionStarted": false,
+      "reason": "Earlier owned services were already gone; blocked before execution.",
+      "provenance": "Parent task handoff; no new run performed by cleanup agent."
+    }
+  ],
+  "cleanup": {
+    "checkedAt": "2026-09-26T16:20:57.760963+00:00",
+    "listenerCommand": "ss -H -ltnp '( sport = :4182 or sport = :9396 )'",
+    "listenerOutput": "",
+    "listeningPortsAbsent": [
+      4182,
+      9396
+    ],
+    "ownedPidsAbsent": [
+      4161595,
+      4161653
+    ],
+    "userServer": {
+      "pid": 1591443,
+      "identity": "1591443 Tue Sep 22 09:08:46 2026 node web/desktop/dev-server.mjs",
+      "preserved": true
+    },
+    "priorShutdown": {
+      "source": "Parent task handoff",
+      "browser": "Browser.close completed; session 4048 exit 0",
+      "server": "TERM completed; session 48684 exit 0"
+    },
+    "earlierBindCheck": {
+      "reported": "EADDRINUSE on 4182 after shutdown",
+      "hypothesis": "TIME_WAIT may explain the bind failure, but was not established.",
+      "actualListenerInspection": "No LISTEN sockets on either port during this cleanup."
+    },
+    "candidateSymlink": {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/aurora-ready/candidate",
+      "exactTarget": "/mnt/p6/build/aurora-ready-20260926/package1",
+      "removed": true
+    },
+    "profilesAndArtifactsPreserved": true,
+    "processesKilledByThisCleanup": []
+  },
+  "reproduce": {
+    "instructions": "web/linux/tests/aurora-ready/README.md",
+    "note": "Use fresh output/profile/cache paths under disk-backed /mnt/p6/build; a sole serving agent owns services. Current evidence was not rebuilt or retested by cleanup.",
+    "runnerCommand": "export TMPDIR=/mnt/p6/build/aurora-ready-20260926/tmp; export PYTHONDONTWRITEBYTECODE=1; CDP_URL=http://127.0.0.1:9396 AURORA_QA_URL=http://127.0.0.1:4182/linux/tests/aurora-ready/index.html AURORA_QA_OUT=/mnt/p6/build/aurora-ready-20260926/FRESH_RUN /home/a/.config/nvm/versions/node/v22.22.2/bin/node web/linux/tests/aurora-ready/run-browser.mjs"
+  },
+  "limitations": [
+    "Production sleep and system images were not promoted.",
+    "Firefox was not launched; no early Firefox usability or speedup claim.",
+    "No warm-cache, update or persistent-home release acceptance in this fixture.",
+    "No native Firefox JIT, guest OpenGL/Vulkan driver, hardware video decoding or physical GPU acceleration claim.",
+    "Stage times are diagnostic acceptance observations, not matched production performance results."
+  ]
+}

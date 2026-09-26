@@ -116,7 +116,17 @@ driver enables permission checking internally and rejects the explicit
 - Storage architecture/test status: `docs/storage-performance-20260926.md`.
 - Reproducible guest test: `web/linux/tests/guest-persistence.mjs`; use its
   isolated browser profile and `ASSERT_WARM_CACHE=1 TEST_UPDATE=1` release gates.
-- The Aurora readiness helper was not promoted; existing packed startup remains.
+- The Aurora readiness helper passed 23 isolated guest checks: one-second signal
+  deadline, ten-second missing-display deadline, helper pending before WM launch
+  followed by readiness, and already-running Aurora readiness. Actual kernel
+  memory/SMP markers match the accepted Firefox configuration. See
+  `docs/evidence/runtime-graphics-20260926/aurora-ready.json` and
+  `web/linux/tests/aurora-ready/README.md`; artifacts remain under
+  `/mnt/p6/build/aurora-ready-20260926/`. The first 1 GiB fixture panicked before
+  reaching the helper without boot-console capture; the exact cause is unproven.
+  Successful run2 uses `0xffff0000` bytes/two CPUs and captures kernel output.
+  Firefox was not launched, no launch speedup is established, and the helper was
+  not promoted. Existing packed startup remains unchanged.
 - Accepted runtime commit: `f24b914113dee9132471298e5e3a97b2e69b2ceb`.
   Sites version 4 previously passed exact full-image hashes,
   isolation, actual guest write/reload, zero-image warm reload, and automatic
@@ -185,6 +195,13 @@ and `4128263` are absent. The user's existing PID `1591443` was preserved.
 Profiling evidence, browser profiles and service logs remain under
 `../.cache/runtime-profile-20260926/`. No task services remain running.
 
+The Aurora helper test's owned server/browser also exited cleanly. Final socket
+inspection found no listeners on `4182` or `9396`, both owned PIDs were absent,
+and user server PID `1591443` retained its command/start identity. Only the test
+`candidate` symlink was removed. Disk profiles, candidate archive and test logs
+remain under `/mnt/p6/build/aurora-ready-20260926/`. For future cleanup, distinguish
+an actual listening socket from a failed bare bind after connection teardown.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 5 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
@@ -219,13 +236,14 @@ constraint before another large backend port; do not invent a percentage.
 
 Bounded next implementation gates, subject to that allowance:
 
-- Guest-test `tools/guest-rootfs/wait-for-aurora.c` using the existing artifact
+- The initial guest execution gate for `tools/guest-rootfs/wait-for-aurora.c`
+  is complete using the existing artifact
   `../.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm` (SHA-256
   `2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3`).
-  Build/Wasm validation alone is insufficient: verify its one-second self-test,
-  ten-second missing-display fallback, actual Aurora handshake and starting it
-  before Aurora under an independent host watchdog. Only then replace the
-  accepted packed init's single `sleep 10`, retaining the old sleep on missing
+  One-second self-test, ten-second missing-display fallback, actual Aurora
+  handshake and starting it before Aurora passed with independent host watchdogs.
+  Next prepare an isolated candidate replacing the accepted packed init's single
+  `sleep 10`, retaining the old sleep on missing
   helper/nonzero exit. Normal deadline expiry returns zero; do not sleep twice.
   Preserve all other CPIO records and accepted init/profile/certificate fixes;
   do not substitute the generic init script. Verify actual early Firefox window
@@ -239,7 +257,9 @@ Bounded next implementation gates, subject to that allowance:
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
-All continuation work must retain the current delegated workflow, scoped Git
-staging and sole serving-agent ownership. Existing agent sessions were reused
-only after fresh-session creation hit the thread limit. There are no active
-task-owned services to reuse; preserve the user's pre-existing server.
+All continuation work must retain the current delegated workflow, fresh sessions
+for new agents, scoped Git staging and sole serving-agent ownership. The serving
+owner may continue its assigned lifecycle task across follow-up instructions.
+Earlier work reused existing sessions after fresh-session creation hit the thread
+limit. There are no active task-owned services to reuse; preserve the user's
+pre-existing server.
