@@ -10,15 +10,17 @@ workspace indiscriminately.
 User instruction: put build work under `/mnt/p6/build` or another persistent,
 disk-backed filesystem. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
 filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
-compiler scratch space, disassembly dumps, build logs, or test artifacts.
+compiler scratch space, build caches, disassembly dumps, build logs, or test
+artifacts.
 
 - Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
   subdirectory for tool scratch files. Another disk-backed project/cache
   directory is acceptable; verify its filesystem and free capacity first.
-- Set and export `TMPDIR` to that disk-backed scratch directory before every
-  build, packaging or artifact-producing test command so subprocesses and
-  `mktemp` inherit it. Set tool-specific temporary/build directories as needed;
-  do not assume every tool honors `TMPDIR`.
+- Set and export `TMPDIR`, `TMP`, and `TEMP` to that disk-backed scratch
+  directory before every build, packaging or artifact-producing test command
+  so subprocesses and `mktemp` inherit it. Set tool-specific temporary, build,
+  and cache directories as needed; do not assume every tool honors these
+  variables. Never fall back to `/tmp`; stop if compliant storage is unavailable.
 - Keep large command output and debug dumps in files under the same disk-backed
   task directory. Do not let default temporary paths fill a memory filesystem.
 - Apply this policy to all delegated agents. Do not change the system-wide
