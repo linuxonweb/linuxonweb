@@ -333,7 +333,7 @@ driver enables permission checking internally and rejects the explicit
 The graphics translator, renderer and byte protocol pass real host-browser
 execution; a separate public Vulkan application now also passes actual Linux
 guest offscreen rendering. This is a bounded, nonconformant profile, not general
-Vulkan/OpenGL or Firefox acceleration. Current uncommitted work builds on
+Vulkan/OpenGL or Firefox acceleration. The WebGL continuation started from
 parent `094d0be13fc930d139344bc7660b65ddfd280dfd`; the accepted runtime and nested
 Sites source remain unchanged. See `docs/guest-vulkan-graphics-transport-20260926.md`
 and `web/linux/tests/guest-vulkan-graphics/protocol.md` for the exact contract,
@@ -372,7 +372,7 @@ evidence and next guest integration packets.
   sole serving agent handled all command execution and browser verification.
   Do not claim a fresh delegated protocol implementation occurred.
 
-The current uncommitted guest packet adds image views, render passes,
+The guest packet committed in `094d0be` adds image views, render passes,
 framebuffers, copied graphics pipelines, vertex buffers and typed draw recording.
 Submission prevalidates the full stream and prepares pass JSON on the heap,
 then uploads current coherent vertex bytes once per used buffer. It tracks
@@ -449,6 +449,12 @@ limit. Root performed bounded validation and fixes directly after explaining
 the limitation. Resume delegation when possible; no second serving owner exists.
 Goal accounting started this continuation at 9,624,839 tokens, with no explicit
 token budget; weekly quota remains unknown.
+The translator/coordinate packet is checkpointed in
+`1cf9282b326e337ec992c993c0b15f8a74169e1e`: 24 scoped paths and 145 commit
+verification checks, with tracked tree/index clean afterward. Exact committed
+paths, commands and hashes are in the WebGL task's
+`checkpoint-run1/commit-result.json`, `commit-commands.json` and
+`staged-source-hashes.json`. This handoff note is a subsequent documentation edit.
 The full goal is not complete and has not reached an evidenced 95/100.
 
 ## Services and deployment
