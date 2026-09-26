@@ -1,10 +1,13 @@
 # Application integration boundary — 2026-09-26
 
-The next application-facing GPU step should exercise the ordinary Vulkan API
-through a statically integrated loader and driver. Adding a Linux ICD manifest
-alone does not address the installed wasm libc's dynamic-loading stubs. This is
-a proposed bounded integration experiment, not an implemented loader or a claim
-that the partial driver can run OpenGL applications.
+The application-facing static loader gate proposed below is now implemented and
+has passed actual guest execution: a separate public Vulkan client runs through
+the pinned Khronos loader, performs two exact clear/readbacks and cleans up.
+See [the completed integration and evidence](guest-vulkan-loader-integration-20260926.md).
+This remains a deliberately partial, nonconformant static profile. The port uses
+a built-in provider because an ICD manifest alone does not address the installed
+wasm libc's dynamic-loading stubs. The partial driver cannot yet run OpenGL
+applications.
 
 ## Installed toolchain evidence
 
@@ -55,7 +58,7 @@ or successful direct ICD call does not establish this integration.
 [Pinned build source](https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/v1.3.231/loader/CMakeLists.txt),
 [instance creation](https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/v1.3.231/loader/loader.c).
 
-## Concrete next experiment
+## Original experiment, now completed within its stated scope
 
 1. Resolve the loader tag to an exact commit and preserve verified, allowlisted
    sources and matching official headers on build disk. Inspect the dependency
@@ -74,7 +77,7 @@ or successful direct ICD call does not establish this integration.
    through ordinary Vulkan calls in the actual Linux guest. Include unsupported
    extension and unknown-procedure rejection.
 
-Only that execution establishes application-facing loader integration. X11
+That execution now establishes this static application-facing loader integration. X11
 presentation, shaders, general GPU buffers and broader Vulkan features remain
 subsequent requirements.
 

@@ -4,7 +4,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
-const tasks = ['/mnt/p6/build/guest-vulkan-20260926','/mnt/p6/build/guest-vulkan-clear-20260926','/mnt/p6/build/guest-vulkan-failure-20260926'];
+const tasks = ['/mnt/p6/build/guest-vulkan-20260926','/mnt/p6/build/guest-vulkan-clear-20260926','/mnt/p6/build/guest-vulkan-failure-20260926','/mnt/p6/build/guest-vulkan-loader-20260926'];
 const mode = process.argv[2];
 if (!['live','unavailable','clear','loss-transport','loss-device','exhaustion'].includes(mode) || !process.env.VK_QA_OUT)
   throw Error('usage: VK_QA_OUT=/mnt/p6/build/guest-vulkan-20260926/fresh-output node run-browser.mjs live|unavailable|clear');

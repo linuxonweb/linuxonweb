@@ -1,0 +1,364 @@
+{
+  "loaderCommit": "61187c40845c92a80bcd2216089dd01badcda7ac",
+  "headersCommit": "98f440ce6868c94f5ec6e198cc1adda4760e8849",
+  "tag": "v1.3.231",
+  "files": [
+    {
+      "group": "loader-source",
+      "path": "CMakeLists.txt",
+      "sha256": "c304141c6b98601b49399a2041a58620db82b069931997e35b8c40bdaa4261cd",
+      "bytes": 23115,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/CMakeLists.txt"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/CMakeLists.txt",
+      "sha256": "574f3296ac29b9f2f1710355fcdf7259b19c56366eb4b5d75ced29fe5d0017cb",
+      "bytes": 16210,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/CMakeLists.txt"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/loader.c",
+      "sha256": "2a83bcae69ac6dd2f8b20a76bac0acc49a4b5d50fbcab93dfb7d8d75fe92ba2f",
+      "bytes": 320315,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/loader.h",
+      "sha256": "4d51cd34d32a49e612a0838bc81847febbf1ac7d8fe549b9e4768f537233229d",
+      "bytes": 11016,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/vk_loader_platform.h",
+      "sha256": "f578d8b617bcdc69b2c23eb310319f6ad216b2407b1f57e9651f6fc11afafd44",
+      "bytes": 18455,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/vk_loader_platform.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/allocation.c",
+      "sha256": "62e9ba12f58a54d2dc15c9de8d869d74d9ccd82dcf76387a408dff3e7a7c72b2",
+      "bytes": 6743,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/allocation.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/cJSON.c",
+      "sha256": "a40032035ce4b767e7a839c5f158fec57291085e3b4e83a33525c1575c2ce13a",
+      "bytes": 39227,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/cJSON.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/debug_utils.c",
+      "sha256": "7bddf91f0cafb90d372729328b1371c331043f3d2b693a248bf6716b660bfee8",
+      "bytes": 31609,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/debug_utils.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/extension_manual.c",
+      "sha256": "ec8e7c35d76683a1a6f6839ef4e1ad83fff3a73e25d67a4606168e5ae9cd9532",
+      "bytes": 21288,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/extension_manual.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/get_environment.c",
+      "sha256": "6688339e9d68daa78c7f0d08a8e79900df477856d1a2100a47b3d2ccdc43f47a",
+      "bytes": 6466,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/get_environment.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/gpa_helper.c",
+      "sha256": "012a5fb578f998bd8162e918bfad80f3bcdb382f196b4d1f66e6d91157e37223",
+      "bytes": 20405,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/gpa_helper.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/log.c",
+      "sha256": "a152673e4825f062c7a3f407811cc6f2203e398f16ef3f4e1d261cbd8c943e22",
+      "bytes": 8445,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/log.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/terminator.c",
+      "sha256": "6c5a659c1fa23a473aff0286b0a4321be346ea6ba9ceaaa531b2d74a0359fc5a",
+      "bytes": 37248,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/terminator.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/trampoline.c",
+      "sha256": "a6f495f87f980087e2269e19f6d11f20129ee13a1d7453c62a1410302832bc00",
+      "bytes": 178033,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/trampoline.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/unknown_function_handling.c",
+      "sha256": "5d43fd133cf9657e7d160726923c7af62a56e79d7a95280f57162f1ecf65064c",
+      "bytes": 16536,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_function_handling.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/wsi.c",
+      "sha256": "8918e84d16827adfe2b08cdc86b375cf9586275a67d6219a4abb76d8010c1cfd",
+      "bytes": 161472,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/wsi.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/loader_linux.c",
+      "sha256": "50e4f9dfecae0083fba9ed4298f8e3ca79931ddc3bc35e28ab2c15e20b260eba",
+      "bytes": 22313,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_linux.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/dev_ext_trampoline.c",
+      "sha256": "7080a79242330856ca817c772d28b07cb15602c6c2b697e123efe87f7cf3b7b4",
+      "bytes": 21919,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/dev_ext_trampoline.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/phys_dev_ext.c",
+      "sha256": "bfb320d5a2e19106dae75779c0ab33e2b783b79589c13bac0e04c2ef3f9f6c0b",
+      "bytes": 50865,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/phys_dev_ext.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/unknown_ext_chain.c",
+      "sha256": "8b8b1da8ef5a57f7b73b51fd5e75ed44e26a1f3bff966006695c2799d34be055",
+      "bytes": 18611,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_ext_chain.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/allocation.h",
+      "sha256": "77e5f1f385e25acac58e32c7160a2165fe4496c5f314e220e0076dd18d3eacef",
+      "bytes": 3824,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/allocation.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/cJSON.h",
+      "sha256": "ce9f228d587509e4ae865d8d849def04e3544ddb0460224a9c7c9a38a69bb41c",
+      "bytes": 7545,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/cJSON.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/debug_utils.h",
+      "sha256": "e75adf408e9cf5fd0be750ea0129e2d8c3dedd06b0ba382e8cdc3fdaed86d998",
+      "bytes": 5441,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/debug_utils.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/get_environment.h",
+      "sha256": "adcbda1033815422829d880cfcd28c731b5cd3c34fd6738273087b025cbff530",
+      "bytes": 1606,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/get_environment.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/gpa_helper.h",
+      "sha256": "15406eff38578cf009177b94a5359842f22cca368262dbbca6ce81764dd6f260",
+      "bytes": 1018,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/gpa_helper.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/log.h",
+      "sha256": "0f2abbb683c3391d6a9c0d36acf03a65f0758ea152fa67aa833416c6ee6188ac",
+      "bytes": 1955,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/log.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/unknown_function_handling.h",
+      "sha256": "381d031f98f978cd47dc086a8da05730b2a7c3407cff2f4002e6e203bcac856e",
+      "bytes": 1528,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_function_handling.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/wsi.h",
+      "sha256": "7dac31eea296808c7c732fb0523cb27a50b4dab874ad3ec233bad132ebae8b84",
+      "bytes": 16987,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/wsi.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/loader_linux.h",
+      "sha256": "4c04f48ef8fd4598633ce7fc96f5e6f0cfb4a5d4c8e52d9349ea9e99f8a0e624",
+      "bytes": 1531,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_linux.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/loader_common.h",
+      "sha256": "faf99a47b8626e21e3058c27d3e9fd9c0a16b1c8de02907bd94553ae79686892",
+      "bytes": 16100,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_common.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/stack_allocation.h",
+      "sha256": "42cd49d7fe2e45703338df4a424537727f99d9355ecf2eb1be58af5aa3becaf9",
+      "bytes": 1474,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/stack_allocation.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/generated/vk_loader_extensions.c",
+      "sha256": "ccbd8e8f3fb3c083194c38e3aa7af05d57e418953d2852c67eb383a0bde6dea9",
+      "bytes": 535609,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_loader_extensions.c"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/generated/loader_generated_header_version.cmake",
+      "sha256": "0f30c8a0877a00a8385c8d3a48aa10ddb36ffb14852ffef921fc6419a590a1dd",
+      "bytes": 1055,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/loader_generated_header_version.cmake"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/extension_manual.h",
+      "sha256": "fa052846756d397480d0037344599fb987e4ed175be4ca3aed8d1be8d55df85a",
+      "bytes": 5387,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/extension_manual.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/vk_loader_layer.h",
+      "sha256": "e45b1577bd034e821ffc46f912c71f98928af9dcc471dc7ebef19a81c31d1d6f",
+      "bytes": 1631,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/vk_loader_layer.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/generated/vk_layer_dispatch_table.h",
+      "sha256": "e0e2c1ca61fd4fb120c140362bdca8cf2b88a958ecf537221537c9d01e16fb34",
+      "bytes": 52385,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_layer_dispatch_table.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/generated/vk_loader_extensions.h",
+      "sha256": "d4379a8ac3635afcc417b0797b961d7bfdf870f419b1c139167e20a4a033f4d5",
+      "bytes": 26531,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_loader_extensions.h"
+    },
+    {
+      "group": "loader-source",
+      "path": "loader/generated/vk_object_types.h",
+      "sha256": "21a11d48fa9d27f151ead0e2860e0121ddafd49a90ff176a109a8c04d96962c0",
+      "bytes": 24316,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_object_types.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vk_sdk_platform.h",
+      "sha256": "a4fce20b4c86dedc9e2c5f1796c42b9ee5a1f29b528a6b481cb60ae7a523db31",
+      "bytes": 1913,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_sdk_platform.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vk_layer.h",
+      "sha256": "5cb6ca5adb5ed3f260d01a1320580962371b768c61fc625dd69e3922949a5299",
+      "bytes": 7878,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_layer.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vk_platform.h",
+      "sha256": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+      "bytes": 2828,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_platform.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vulkan.h",
+      "sha256": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+      "bytes": 1449,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vulkan_core.h",
+      "sha256": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+      "bytes": 805447,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_core.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vk_icd.h",
+      "sha256": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc",
+      "bytes": 7980,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_icd.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vulkan/vulkan_beta.h",
+      "sha256": "4705b3b81c193682253cbae3f58bd3b8f1cebcac779758ac04bd385b76e144f2",
+      "bytes": 49271,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_beta.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h264std.h",
+      "sha256": "4f1df89f0d1a580348270c56ab2f67884d34607fb8e213c7f739c2fb20eff4f4",
+      "bytes": 13700,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h264std_encode.h",
+      "sha256": "57f020e7eedaeddad5f446cafd80832ed96e6b0ac4713b97c41dbfddd4d1edf7",
+      "bytes": 6015,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std_encode.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h265std.h",
+      "sha256": "321e15b0ced4e5e89ba7eb3f343b9472ee52c792e61564750381e56945f257af",
+      "bytes": 23243,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h265std_encode.h",
+      "sha256": "b4caedbaca04fa70712369bc0a00a231d22a56e385f11039c72386b83e60f54a",
+      "bytes": 7143,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std_encode.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h264std_decode.h",
+      "sha256": "87455be954d747f70b258d46297caa83b860fefb9d94408332fd8caaa59ab871",
+      "bytes": 2718,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std_decode.h"
+    },
+    {
+      "group": "headers-source",
+      "path": "include/vk_video/vulkan_video_codec_h265std_decode.h",
+      "sha256": "9700a1607532c1f7d807d18688afb4e717433251882f6b34addeb2ae3688db94",
+      "bytes": 2424,
+      "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std_decode.h"
+    }
+  ]
+}

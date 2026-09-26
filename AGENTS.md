@@ -185,8 +185,8 @@ driver enables permission checking internally and rejects the explicit
   The first live runner failed before guest boot on a null document element;
   its evidence is retained, a null-safe snapshot fixed the harness, and live
   retry 2 passed. Clear and unavailable passed their first guest attempts.
-  This partial COMPUTE|TRANSFER profile has no compute dispatch, format queries,
-  loader integration, general GPU buffers or conformance. Subsequent actual
+  At that stage the partial COMPUTE|TRANSFER profile had no compute dispatch,
+  format queries, loader integration, general GPU buffers or conformance. Subsequent actual
   guest failure/exhaustion gates now also pass on first attempts: clear 951,
   transport loss 516, native device loss 516, exhaustion 1077, live 38 and
   unavailable 11 assertions. Both losses follow a completed GPU clear and return
@@ -199,8 +199,24 @@ driver enables permission checking internally and rejects the explicit
   are under `/mnt/p6/build/guest-vulkan-failure-20260926/`, artifact SHA-256
   `c2bfea0d346dba4e0b1b493a49f29d528c48daeb6b014da1849089a1535cd0b9`.
   See `docs/guest-vulkan-failure-recovery-20260926.md` and its compact evidence.
-  All 15 source/header hashes match the tested build. Full shader/GL/Firefox
-  integration remains substantive work.
+  At that gate all 15 source/header hashes matched the tested build.
+  Static application integration now also passes: a separate public Vulkan client
+  uses the actual pinned Khronos loader's typed trampolines/terminators with an
+  explicit built-in driver provider. Its first actual guest run passes 883
+  assertions and both exact 17x3 readbacks, with every tracked native object and
+  guest allocation released. The shared ICD now answers three required bounded
+  format queries and accepts only bounded matching loader-private creation chains.
+  Updated direct live/unavailable/clear regressions pass 44/14/957 assertions;
+  cycles, oversized chains and mixed unsupported metadata are rejected.
+  Loader build-run2 is 349,179 bytes, SHA-256
+  `398747a18c68bf48b07a96cca33e829710add43be3816434eb72fcd8f64152fe`, under
+  `/mnt/p6/build/guest-vulkan-loader-20260926/`. Build-run1 failed on missing beta
+  declarations; matching official headers and the upstream loader-only compiler
+  definition fixed that build boundary without advertising video capabilities.
+  See `docs/guest-vulkan-loader-integration-20260926.md` and its compact evidence.
+  Dynamic loading, external layers, generic unknown-function trampolines, shaders,
+  general GPU buffers, GL and Firefox integration remain absent. The four current
+  guest runs use SwiftShader, actual 1 GiB/two CPUs and visible isolated pages.
   Sites version 6 is unchanged; the prototype is not deployed. No OpenGL,
   WebGL fallback, decoder, native JIT or physical GPU claim follows. Overall goal
   remains below 95/100 (approximately 80); this is progress, not goal completion.
@@ -306,6 +322,14 @@ were removed, and user PID `1591443` retained its command/start identity.
 Artifacts, profiles and the cleanup record remain under
 `/mnt/p6/build/guest-vulkan-failure-20260926/`. No task service remains active.
 
+The static-loader continuation also completed cleanup: browser PID `86503`
+closed through Browser.close and adapter PID `86358` exited on SIGTERM, both
+exit 0. Both PIDs are absent, ports `4182`/`9396` have no listeners and all four
+verified candidate links were removed. User PID `1591443` retained its exact
+command/start identity. Profiles, builds and evidence remain under
+`/mnt/p6/build/guest-vulkan-loader-20260926/`, including `qa-summary.json` and
+`cleanup.json`. No task service remains active.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
@@ -331,10 +355,10 @@ guest JIT/GPU capabilities and release gates remain unresolved.
 
 The overall goal remains active and is assessed at about 80/100, not the requested
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
-native Firefox JIT, a guest Vulkan/OpenGL driver, or hardware video decoding.
+native Firefox JIT, a generally usable Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;
-that answer is pending. At the start of the failure-test continuation, goal
-accounting reported 5,755,228 tokens with no token budget; this does not reveal weekly quota or
+that answer is pending. At the start of the loader continuation, goal
+accounting reported 6,141,978 tokens with no token budget; this does not reveal weekly quota or
 establish whether the user's 15% allowance has been reached. Resolve this
 constraint before another large backend port; do not invent a percentage.
 
@@ -360,20 +384,28 @@ Bounded next implementation gates, subject to that allowance:
   output paths that still default to `/tmp`.
 - The direct Vulkan clear/readback, mid-submit transport/native-device loss and
   allocation-exhaustion/recovery gates now pass actual guest execution. Preserve
-  both earlier clear build-run2 and the latest failure-task build-run1/packages.
-  The next application-facing step is a deliberately static loader integration
-  and a separate client using only public Vulkan APIs, as specified in
-  `docs/guest-vulkan-application-integration-20260926.md`. The installed compiler
+  the earlier clear/failure builds and the latest loader build-run2/packages.
+  Static loader integration and the separate public-only client now pass actual
+  guest execution; see `docs/guest-vulkan-loader-integration-20260926.md`.
+  The installed compiler
   sysroot's libc.a supplies weak dlopen/__dlsym stubs, confirmed by actual archive
   member/symbol inspection; an ICD manifest alone does not establish loading.
   See `guest-vulkan-libc-loading.json` for the bounded evidence and limitations.
-  Resolve an exact Khronos loader revision, inspect its closure, preserve typed
-  dispatch and reject unknown procedures; do not assume dynamic discovery or
-  generic extension trampolines work. This loader experiment has not been built.
+  Loader revision `61187c40845c92a80bcd2216089dd01badcda7ac` and matching official
+  headers `98f440ce6868c94f5ec6e198cc1adda4760e8849` are hash-locked. Preserve
+  typed dispatch and unknown-procedure rejection; dynamic discovery and generic
+  extension trampolines are deliberately disabled in this static profile.
   The partial COMPUTE|TRANSFER profile still lacks dispatch and conformance;
   it is not a generally usable Vulkan or Zink device.
+  Next shader gate: audit the archived Naga 0.20 SPIR-V-input/WGSL-output dependency
+  closure, then implement real shader translation, storage GPU buffers, compute
+  pipeline/descriptor binding, dispatch and buffer readback. A separate public
+  Vulkan client should submit two real SPIR-V programs and verify both outputs for
+  64 integers plus sentinels, rejection and cleanup. Do not substitute recognition
+  of fixed shader bytes for translation. The integration report records the
+  archived wgpu revision and missing dependencies; no translator build has run.
   The earlier Dawn ABI gate remains compile-only; native Dawn, the translator,
-  system loader integration, shaders, GL-through-Vulkan and Firefox are unported.
+  general system discovery, shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 

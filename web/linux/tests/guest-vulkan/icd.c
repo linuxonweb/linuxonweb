@@ -30,6 +30,16 @@ static struct guest_vk_audit audit = {.close_status = -1};
 struct guest_vk_audit guest_vk_get_audit(void) { return audit; }
 static int physical_valid(VkPhysicalDevice p) { return live && p == &live->physical; }
 static int device_valid(VkDevice d) { return live && d && d == live->device; }
+/* The real loader passes private link/data-callback nodes down to the ICD.
+ * This driver does not invoke those callbacks. Ignore only matching loader
+ * nodes; retain rejection of unsupported application chains. A hard bound also
+ * rejects cycles without allocating or following an unbounded list. */
+static int loader_chain_only(const void *chain, VkStructureType expected) {
+    const VkBaseInStructure *node = chain;
+    for (unsigned depth = 0; node && depth < 8; depth++, node = node->pNext)
+        if (node->sType != expected) return 0;
+    return node == NULL;
+}
 
 /* HELLO can succeed only after serveGPU has obtained a real adapter and device.
  * Preserve its observed identity verbatim; do not invent vendor/device IDs. */
@@ -47,7 +57,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
         const VkAllocationCallbacks *allocator, VkInstance *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
     *out = VK_NULL_HANDLE;
-    if (!info || info->sType != VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO || info->pNext ||
+    if (!info || info->sType != VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO ||
+        !loader_chain_only(info->pNext, VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO) ||
         info->flags || allocator || live) return VK_ERROR_INITIALIZATION_FAILED;
     if (info->enabledLayerCount) return VK_ERROR_LAYER_NOT_PRESENT;
     if (info->enabledExtensionCount) return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -117,6 +128,33 @@ static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, V
     (void)physical;
     if (out) memset(out, 0, sizeof(*out));
 }
+/* Loader-required queries describe only the existing bounded transfer profile.
+ * No sampled/storage/attachment formats, sparse images, or shader support. */
+static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out) {
+    if (!out) return;
+    memset(out, 0, sizeof(*out));
+    if (physical_valid(physical) && live->clear_supported && format == VK_FORMAT_R8G8B8A8_UNORM)
+        out->optimalTilingFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL image_format_properties(VkPhysicalDevice physical, VkFormat format,
+        VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
+        VkImageFormatProperties *out) {
+    if (!out) return VK_ERROR_FORMAT_NOT_SUPPORTED;
+    memset(out, 0, sizeof(*out));
+    if (!physical_valid(physical) || !live->clear_supported || format != VK_FORMAT_R8G8B8A8_UNORM ||
+        type != VK_IMAGE_TYPE_2D || tiling != VK_IMAGE_TILING_OPTIMAL || flags ||
+        usage != (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+        return VK_ERROR_FORMAT_NOT_SUPPORTED;
+    out->maxExtent = (VkExtent3D){128,128,1}; out->maxMipLevels = 1; out->maxArrayLayers = 1;
+    out->sampleCounts = VK_SAMPLE_COUNT_1_BIT; out->maxResourceSize = 65536;
+    return VK_SUCCESS;
+}
+static VKAPI_ATTR void VKAPI_CALL sparse_image_format_properties(VkPhysicalDevice physical, VkFormat format,
+        VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkImageTiling tiling,
+        uint32_t *count, VkSparseImageFormatProperties *out) {
+    (void)physical; (void)format; (void)type; (void)samples; (void)usage; (void)tiling; (void)out;
+    if (count) *count = 0;
+}
 static VKAPI_ATTR void VKAPI_CALL queue_properties(VkPhysicalDevice physical, uint32_t *count, VkQueueFamilyProperties *out) {
     if (!count) return;
     if (!physical_valid(physical)) { *count = 0; return; }
@@ -164,7 +202,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, c
         info->flags || allocator || live->device) return VK_ERROR_INITIALIZATION_FAILED;
     if (info->enabledLayerCount) return VK_ERROR_LAYER_NOT_PRESENT;
     if (info->enabledExtensionCount) return VK_ERROR_EXTENSION_NOT_PRESENT;
-    if (info->pNext || any_features(info->pEnabledFeatures)) return VK_ERROR_FEATURE_NOT_PRESENT;
+    if (!loader_chain_only(info->pNext, VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO) ||
+        any_features(info->pEnabledFeatures)) return VK_ERROR_FEATURE_NOT_PRESENT;
     if (info->queueCreateInfoCount != 1 || !info->pQueueCreateInfos) return VK_ERROR_INITIALIZATION_FAILED;
     const VkDeviceQueueCreateInfo *q = info->pQueueCreateInfos;
     if (q->sType != VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO || q->pNext || q->flags ||
@@ -207,6 +246,9 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
     PROC(vkEnumeratePhysicalDevices, physical_devices)
     PROC(vkGetPhysicalDeviceProperties, physical_properties)
     PROC(vkGetPhysicalDeviceFeatures, physical_features)
+    PROC(vkGetPhysicalDeviceFormatProperties, format_properties)
+    PROC(vkGetPhysicalDeviceImageFormatProperties, image_format_properties)
+    PROC(vkGetPhysicalDeviceSparseImageFormatProperties, sparse_image_format_properties)
     PROC(vkGetPhysicalDeviceMemoryProperties, memory_properties)
     PROC(vkGetPhysicalDeviceQueueFamilyProperties, queue_properties)
     PROC(vkEnumerateDeviceExtensionProperties, device_extensions)

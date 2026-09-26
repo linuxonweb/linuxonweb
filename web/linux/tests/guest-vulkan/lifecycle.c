@@ -39,6 +39,15 @@ int main(int argc, char **argv) {
     instance_info.enabledExtensionCount = 1; instance_info.ppEnabledExtensionNames = &extension;
     CHECK(create_instance(&instance_info, NULL, &instance) == VK_ERROR_EXTENSION_NOT_PRESENT && instance == VK_NULL_HANDLE);
     instance_info.enabledExtensionCount = 0; instance_info.ppEnabledExtensionNames = NULL;
+    VkBaseInStructure instance_nodes[9];
+    for (unsigned n=0;n<9;n++) instance_nodes[n]=(VkBaseInStructure){.sType=VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO,.pNext=n<8?&instance_nodes[n+1]:NULL};
+    instance_info.pNext=instance_nodes;
+    CHECK(create_instance(&instance_info,NULL,&instance)==VK_ERROR_INITIALIZATION_FAILED && !instance);
+    instance_nodes[0].pNext=&instance_nodes[0];
+    CHECK(create_instance(&instance_info,NULL,&instance)==VK_ERROR_INITIALIZATION_FAILED && !instance);
+    instance_nodes[0].pNext=&instance_nodes[1];instance_nodes[1].pNext=NULL;instance_nodes[1].sType=VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    CHECK(create_instance(&instance_info,NULL,&instance)==VK_ERROR_INITIALIZATION_FAILED && !instance);
+    instance_nodes[1].sType=VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO;
     VkResult created = create_instance(&instance_info, NULL, &instance);
     if (unavailable) {
         CHECK(created == VK_ERROR_INITIALIZATION_FAILED && instance == VK_NULL_HANDLE);
@@ -84,6 +93,15 @@ int main(int argc, char **argv) {
     device_info.pNext = NULL; queue_info.queueFamilyIndex = 1;
     CHECK(create_device(physical, &device_info, NULL, &device) == VK_ERROR_INITIALIZATION_FAILED && device == VK_NULL_HANDLE);
     queue_info.queueFamilyIndex = 0;
+    VkBaseInStructure device_nodes[9];
+    for (unsigned n=0;n<9;n++) device_nodes[n]=(VkBaseInStructure){.sType=VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO,.pNext=n<8?&device_nodes[n+1]:NULL};
+    device_info.pNext=device_nodes;
+    CHECK(create_device(physical,&device_info,NULL,&device)==VK_ERROR_FEATURE_NOT_PRESENT && !device);
+    device_nodes[0].pNext=&device_nodes[0];
+    CHECK(create_device(physical,&device_info,NULL,&device)==VK_ERROR_FEATURE_NOT_PRESENT && !device);
+    device_nodes[0].pNext=&device_nodes[1];device_nodes[1].pNext=NULL;device_nodes[1].sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    CHECK(create_device(physical,&device_info,NULL,&device)==VK_ERROR_FEATURE_NOT_PRESENT && !device);
+    device_nodes[1].sType=VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO;
     CHECK(create_device(physical, &device_info, NULL, &device) == VK_SUCCESS && device != VK_NULL_HANDLE);
     CHECK(valid_loader_magic_value(device));
     LOAD(PFN_vkGetDeviceProcAddr, device_proc, instance, "vkGetDeviceProcAddr");
