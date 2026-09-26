@@ -33,7 +33,42 @@ const cpuInput = document.getElementById("cpu-cores");
 const cpuValue = document.getElementById("cpu-value");
 const ramSelect = document.getElementById("ram");
 const settingsNote = document.getElementById("settings-note");
+const settingsApply = document.getElementById("settings-apply");
+const restartDialog = document.getElementById("restart-dialog");
+const restartContinue = document.getElementById("restart-continue");
+const displayStage = document.querySelector(".stage");
+const displayPan = document.getElementById("display-pan");
+let panDisplay = false;
+let cancelGuestGesture = () => {};
+function updateDisplayPan() {
+  const overflow = displayStage.scrollWidth > displayStage.clientWidth || displayStage.scrollHeight > displayStage.clientHeight;
+  displayPan.hidden = !overflow;
+  if (!overflow) panDisplay = false;
+  canvas.style.touchAction = panDisplay ? "pan-x pan-y" : "none";
+  displayPan.setAttribute("aria-pressed", String(panDisplay));
+}
+displayPan.addEventListener("click", () => {
+  cancelGuestGesture();
+  panDisplay = !panDisplay;
+  updateDisplayPan();
+});
+new ResizeObserver(updateDisplayPan).observe(displayStage);
 const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
+const settingsKey = "linuxonweb.machine-settings.v1";
+const resumeKey = "linuxonweb.restart-mode.v1";
+const modes = ["guest", "console", "startx", "firefox"];
+const minimumFirefoxMemory = 2048;
+let activeMachine = null;
+let currentMode = null;
+let configurationLocked = false;
+let restarting = false;
+let pendingConfiguration = null;
+let resumeMode = null;
+try {
+  const savedMode = sessionStorage.getItem(resumeKey);
+  if (modes.includes(savedMode)) resumeMode = savedMode;
+  sessionStorage.removeItem(resumeKey);
+} catch { /* Storage may be unavailable; ordinary boot remains usable. */ }
 
 let FB_W = 1280;
 let FB_H = 720;
@@ -92,9 +127,46 @@ function setStatus(message, state = "idle") {
   status.dataset.state = state;
 }
 
-const hostCores = Math.max(1, navigator.hardwareConcurrency || 2);
+// The staged kernel supports at most CONFIG_NR_CPUS=64.
+const hostCores = Math.min(64, Math.max(1, navigator.hardwareConcurrency || 2));
 cpuInput.max = String(hostCores);
 cpuInput.value = String(Math.min(2, hostCores));
+const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024 };
+function validConfiguration(value) {
+  return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
+    && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
+    && [...ramSelect.options].some(option => Number(option.value) === value.ram);
+}
+let activeConfiguration = { ...defaults };
+try {
+  const saved = JSON.parse(localStorage.getItem(settingsKey));
+  if (saved?.ram === 256) saved.ram = 512;
+  if (validConfiguration(saved)) activeConfiguration = saved;
+} catch { /* Ignore missing or malformed saved settings. */ }
+// Firefox's larger boot image needs extra headroom. Wasm32 cannot advertise
+// more than 4 GiB; console/X modes also expose smaller memory configurations.
+if ((resumeMode || (firefoxMode ? "firefox" : null)) === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
+function readConfiguration() {
+  return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value) };
+}
+function showConfiguration(value) {
+  resolutionSelect.value = value.resolution;
+  cpuInput.value = String(value.cpus);
+  ramSelect.value = String(value.ram);
+  updateCpuLabel();
+  updateSettingsState();
+}
+function updateSettingsState() {
+  const value = readConfiguration();
+  settingsApply.disabled = configurationLocked || !validConfiguration(value)
+    || (currentMode === "firefox" && value.ram < minimumFirefoxMemory)
+    || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram);
+  for (const option of ramSelect.options) option.disabled = currentMode === "firefox" && Number(option.value) < minimumFirefoxMemory;
+  settingsNote.textContent = configurationLocked ? "Please wait while the machine starts or restarts."
+    : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox requires at least 2 GB. Its default is 4 GB."
+      : activeMachine ? "Applying changes restarts the guest. You can review or cancel before anything changes."
+        : "Choose settings, then apply your changes.";
+}
 
 function updateCpuLabel() {
   const cores = Number(cpuInput.value);
@@ -103,9 +175,13 @@ function updateCpuLabel() {
 }
 
 function updateResolution() {
-  [FB_W, FB_H] = resolutionSelect.value.split("x").map(Number);
+  [FB_W, FB_H] = activeConfiguration.resolution.split("x").map(Number);
   canvas.width = FB_W;
   canvas.height = FB_H;
+  canvas.style.width = `${FB_W}px`;
+  canvas.style.height = `${FB_H}px`;
+  document.documentElement.style.setProperty("--guest-display-width", `${FB_W}px`);
+  updateDisplayPan();
 }
 
 function setSettingsOpen(open) {
@@ -120,12 +196,66 @@ settingsToggle.addEventListener("click", (ev) => {
 settingsPanel.addEventListener("click", (ev) => ev.stopPropagation());
 document.addEventListener("click", () => setSettingsOpen(false));
 document.addEventListener("keydown", (ev) => {
-  if (ev.key === "Escape") setSettingsOpen(false);
+  if (ev.key === "Escape" && !restartDialog.open) setSettingsOpen(false);
 });
-resolutionSelect.addEventListener("change", updateResolution);
-cpuInput.addEventListener("input", updateCpuLabel);
+restartDialog.addEventListener("click", (ev) => ev.stopPropagation());
+resolutionSelect.addEventListener("change", updateSettingsState);
+ramSelect.addEventListener("change", updateSettingsState);
+cpuInput.addEventListener("input", () => { updateCpuLabel(); updateSettingsState(); });
+showConfiguration(activeConfiguration);
 updateResolution();
 updateCpuLabel();
+
+function cancelConfiguration() {
+  pendingConfiguration = null;
+  restartDialog.close();
+  showConfiguration(activeConfiguration);
+  settingsToggle.focus();
+}
+document.getElementById("restart-cancel").addEventListener("click", cancelConfiguration);
+restartDialog.addEventListener("cancel", (event) => { event.preventDefault(); cancelConfiguration(); });
+settingsApply.addEventListener("click", () => {
+  const next = readConfiguration();
+  if (settingsApply.disabled || !validConfiguration(next)) return;
+  pendingConfiguration = { ...next };
+  document.getElementById("restart-error").hidden = true;
+  document.getElementById("restart-title").textContent = activeMachine ? "Restart the guest?" : "Apply machine settings?";
+  document.getElementById("restart-summary").textContent = `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`}. ${activeMachine ? "Continue saves these settings and starts a fresh guest in the same mode." : "Continue saves these settings for the next boot."}`;
+  document.getElementById("restart-warning").hidden = !activeMachine;
+  restartDialog.showModal();
+});
+restartContinue.addEventListener("click", async () => {
+  if (!pendingConfiguration || restarting) return;
+  const next = pendingConfiguration;
+  let previous;
+  try {
+    previous = localStorage.getItem(settingsKey);
+    localStorage.setItem(settingsKey, JSON.stringify(next));
+    if (activeMachine) sessionStorage.setItem(resumeKey, currentMode);
+  } catch {
+    try { if (previous === null) localStorage.removeItem(settingsKey); else if (previous !== undefined) localStorage.setItem(settingsKey, previous); } catch { /* Storage is unavailable. */ }
+    const error = document.getElementById("restart-error");
+    error.textContent = "Could not save settings in this browser. Your current session has not changed. Cancel to keep it running.";
+    error.hidden = false;
+    return;
+  }
+  pendingConfiguration = null;
+  restartDialog.close();
+  activeConfiguration = { ...next };
+  if (!activeMachine) {
+    showConfiguration(activeConfiguration);
+    updateResolution();
+    return;
+  }
+  restarting = true;
+  lockConfiguration(true);
+  setStatus("restarting…", "booting");
+  activeMachine.close();
+  await activeMachine.closed.catch(() => {});
+  // Reload releases the old guest's canvas listeners, streams, workers and
+  // network. Keep every existing query parameter (proxy, Firefox, diagnostics).
+  location.reload();
+});
 
 function mapButton(button) {
   if (button === 0) return Key.BTN_LEFT;
@@ -174,13 +304,12 @@ async function unpackGzip(bytes) {
 }
 
 function lockConfiguration(locked) {
+  configurationLocked = locked;
   for (const button of launchButtons) button.disabled = locked;
   resolutionSelect.disabled = locked;
   cpuInput.disabled = locked;
   ramSelect.disabled = locked;
-  settingsNote.textContent = locked
-    ? "Settings are locked for this running guest. Reload to create another machine."
-    : "Settings lock while the guest is running.";
+  updateSettingsState();
 }
 
 function ramBytes(mebibytes) {
@@ -189,6 +318,12 @@ function ramBytes(mebibytes) {
 }
 
 async function boot(mode) {
+  if (configurationLocked || activeMachine) return;
+  currentMode = mode;
+  if (mode === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
+  // Only confirmed configuration reaches the guest, never uncommitted drafts.
+  showConfiguration(activeConfiguration);
+  updateResolution();
   lockConfiguration(true);
   setSettingsOpen(false);
   setStatus(`booting ${mode}…`, "booting");
@@ -233,25 +368,30 @@ async function boot(mode) {
 
   canvas.tabIndex = 0;
   canvas.style.outline = "none";
-  canvas.style.touchAction = "none";
+  canvas.style.touchAction = panDisplay ? "pan-x pan-y" : "none";
+  const inputEvents = new AbortController();
+  const onCanvas = (event, listener, options = {}) => canvas.addEventListener(event, (ev) => {
+    if (panDisplay && /^(pointer|wheel|contextmenu)/.test(event)) return;
+    listener(ev);
+  }, { ...options, signal: inputEvents.signal });
   let composing = false;
 
-  canvas.addEventListener("keydown", (ev) => {
+  onCanvas("keydown", (ev) => {
     if (composing || ev.isComposing || ev.key === "Process") return;
     const code = mapKeyboardEvent(ev);
     if (code == null) return;
     ev.preventDefault();
     pointer.key(code, true);
   });
-  canvas.addEventListener("keyup", (ev) => {
+  onCanvas("keyup", (ev) => {
     if (composing || ev.isComposing || ev.key === "Process") return;
     const code = mapKeyboardEvent(ev);
     if (code == null) return;
     ev.preventDefault();
     pointer.key(code, false);
   });
-  canvas.addEventListener("compositionstart", () => { composing = true; });
-  canvas.addEventListener("compositionend", (ev) => {
+  onCanvas("compositionstart", () => { composing = true; });
+  onCanvas("compositionend", (ev) => {
     composing = false;
     for (const [code, down] of compositionEvents(ev.data)) pointer.key(code, down);
     ev.preventDefault();
@@ -282,8 +422,14 @@ async function boot(mode) {
     move: (x, y) => pointer.abs(x, y),
     press: (down) => pointer.button(Key.BTN_LEFT, down),
   });
+  cancelGuestGesture = () => {
+    if (pointerRaf) cancelAnimationFrame(pointerRaf);
+    pointerRaf = 0;
+    pendingPointer = null;
+    if (touchGesture.activePointerId !== null) touchGesture.cancel(touchGesture.activePointerId);
+  };
 
-  canvas.addEventListener("pointermove", (ev) => {
+  onCanvas("pointermove", (ev) => {
     const { x, y } = canvasCoords(ev);
     if (ev.pointerType === "touch") {
       touchGesture.move(ev.pointerId, x, y);
@@ -292,7 +438,7 @@ async function boot(mode) {
     }
     queuePointer(x, y);
   });
-  canvas.addEventListener("pointerdown", (ev) => {
+  onCanvas("pointerdown", (ev) => {
     canvas.focus();
     try {
       canvas.setPointerCapture(ev.pointerId);
@@ -316,7 +462,7 @@ async function boot(mode) {
     if (btn != null) pointer.button(btn, true);
     ev.preventDefault();
   });
-  canvas.addEventListener("pointerup", (ev) => {
+  onCanvas("pointerup", (ev) => {
     const { x, y } = canvasCoords(ev);
     if (ev.pointerType === "touch") {
       touchGesture.end(ev.pointerId, x, y);
@@ -338,7 +484,7 @@ async function boot(mode) {
     if (btn != null) pointer.button(btn, false);
     ev.preventDefault();
   });
-  canvas.addEventListener("pointercancel", (ev) => {
+  onCanvas("pointercancel", (ev) => {
     if (ev.pointerType === "touch") {
       touchGesture.cancel(ev.pointerId);
       ev.preventDefault();
@@ -347,7 +493,7 @@ async function boot(mode) {
     const btn = mapButton(ev.button);
     if (btn != null) pointer.button(btn, false);
   });
-  canvas.addEventListener(
+  onCanvas(
     "wheel",
     (ev) => {
       // Linux REL_WHEEL: positive = up. Browser deltaY: positive = down.
@@ -357,7 +503,7 @@ async function boot(mode) {
     },
     { passive: false },
   );
-  canvas.addEventListener("contextmenu", (ev) => ev.preventDefault());
+  onCanvas("contextmenu", (ev) => ev.preventDefault());
 
   const proxyUrl = proxyBaseUrl();
   const network = createNetwork(wsTcpProxyNetwork({ proxyUrl }));
@@ -385,13 +531,29 @@ async function boot(mode) {
   }
 
   const reader = output.readable.getReader();
+  const inputWriter = consoleInputWriter;
+  let bootReader = null;
+  let bootClosed = false;
+  const cleanupBoot = () => {
+    if (bootClosed) return;
+    bootClosed = true;
+    inputEvents.abort();
+    cancelGuestGesture();
+    cancelGuestGesture = () => {};
+    attached.attachment.close();
+    network.close();
+    void reader.cancel().catch(() => {});
+    void bootReader?.cancel().catch(() => {});
+    void inputWriter.abort().catch(() => {});
+    if (consoleInputWriter === inputWriter) consoleInputWriter = null;
+  };
   (async () => {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
       terminal.write(new Uint8Array(value));
     }
-  })();
+  })().catch((err) => { if (!restarting && !bootClosed) hostLog(`guest console closed: ${err}`, "error"); });
 
   try {
     const consoleMode = mode === "console";
@@ -413,12 +575,9 @@ async function boot(mode) {
       devicetree: { memory: { reg: [0, memory] } },
       framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32 },
     });
+    activeMachine = machine;
     void machine.closed
-      .finally(() => {
-        attached.attachment.close();
-        network.close();
-        consoleInputWriter = null;
-      })
+      .finally(cleanupBoot)
       .catch(() => {});
     setStatus(
       initramfs
@@ -428,22 +587,27 @@ async function boot(mode) {
           : "running · no userspace image",
       "running",
     );
+    lockConfiguration(false);
+    for (const button of launchButtons) button.disabled = true;
     if (consoleMode) terminal.focus();
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
-    const bootReader = machine.bootConsole.getReader();
+    bootReader = machine.bootConsole.getReader();
     (async () => {
       for (;;) {
         const { value, done } = await bootReader.read();
         if (done) break;
         terminal.write(new Uint8Array(value));
       }
-    })();
+    })().catch((err) => { if (!restarting && !bootClosed) hostLog(`boot console closed: ${err}`, "error"); });
     machine.closed.catch((err) => {
+      if (restarting) return;
       setStatus(`stopped: ${err}`, "error");
       hostLog(String(err), "error");
     });
   } catch (err) {
+    cleanupBoot();
+    activeMachine = null;
     setStatus("boot failed", "error");
     hostLog(String(err?.stack || err), "error");
     consoleInputWriter = null;
@@ -457,12 +621,11 @@ for (const button of launchButtons) {
 
 // Firefox mode is intended for unattended Chromium testing. Boot immediately;
 // guest init waits 10 seconds after X is ready before launching /bin/firefox.
-if (firefoxMode) {
-  // The Firefox initramfs keeps roughly 750 MiB unevictable while booting;
-  // reserve the supported 4 GiB maximum for the automatic browser path
-  // without changing the normal 1 GiB default for console/X modes.
-  if (Number(ramSelect.value) < 4096) ramSelect.value = "4096";
-  setStatus("Firefox mode: auto-booting…", "booting");
-  hostLog("?firefox=1: auto-boot enabled; Firefox starts after X is ready");
-  queueMicrotask(() => document.getElementById("start-firefox").click());
+if (resumeMode || firefoxMode) {
+  // Resume the confirmed launch mode after a clean restart. Defaults are
+  // 4 GiB for Firefox and 1 GiB otherwise; validated preferences take priority.
+  const mode = resumeMode || "firefox";
+  setStatus(`${mode}: auto-booting…`, "booting");
+  hostLog(`auto-boot enabled for ${mode}`);
+  queueMicrotask(() => void boot(mode));
 }

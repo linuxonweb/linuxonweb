@@ -1066,3 +1066,92 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   The script reproduces the deployed uncompressed CPIO byte-for-byte; gzip
   headers vary with output filename. This fixes Firefox chrome text only;
   website font coverage and long-run stability still need separate checks.
+
+### 2026-09-26 Aurora Files terminal / devpts deployment
+
+- Live `web/linux/initramfs-firefox.cpio.gz` SHA-256 is
+  `ecc14881fe6075183651324e337900b71bce57b783f20467ec1db98a57254be8`
+  (87,820,926 bytes). The previous working Firefox/font archive is preserved
+  at `web/linux/initramfs-firefox.cpio.gz.backup-pre-devpts-20260926`
+  (SHA-256 `d117b9f45b51373558ef020f9d53455772455800cda0f03dd02455d397347e7e`).
+- Root cause: boot mounted devtmpfs but never devpts. Aurora Files displayed
+  `Could not start shell` because PTY allocation had no slave-device filesystem.
+  `/init` now creates `/dev/pts`, mounts devpts with `mode=0620,ptmxmode=0666`,
+  and allows the desktop account to open `/dev/ptmx`. Exactly `/init` content
+  changed among 11,468 archive members; all other content and metadata remain
+  unchanged, including Firefox, TinyX keyboard, CA, and font fixes.
+- Reviewable source: `tools/guest-rootfs/init.sh`. Reproduce the overlay with
+  `python3 tools/guest-rootfs/package-devpts.py BASE_ARCHIVE OUTPUT_ARCHIVE`;
+  the packager hash-guards the font-fixed baseline and retains its additional
+  init adaptations. Do not replace packed Aurora binaries with vendor Rust
+  builds: the packed WM is already adapted to `/bin/sh` and guest spawning,
+  while the vendor source still contains native fork/bash paths.
+- Chrome isolation test on port 4182 reproduced the failure, then verified
+  Documents navigation, `pwd`, `ls`, typed `echo terminal-ok`, and a new terminal
+  tab retaining `/home/admin/Documents`. The same candidate rendered Firefox
+  Bing and typed navigation to X.com. Fresh live-port-4180 testing repeated pwd
+  and echo successfully, with no Wasm trap or JavaScript exception captured.
+  Evidence is `/mnt/p6/project/linux/.cache/folder-terminal-20260926/`:
+  `baseline-folder.png`, `devpts-new-tab-confirm.png`,
+  `devpts-firefox-x-loaded.png`, and `live-terminal-confirm.png`.
+- Archive gzip/member comparison, shell syntax, and diff checks passed.
+  Port 4180 serves the new SHA with HTTP 200 and matching Content-Length.
+  Terminal-fix quality score: 96/100; no long-duration terminal soak performed.
+
+### 2026-09-26 Start X / large-resolution final deployment (supersedes devpts-only hashes)
+
+- Current Firefox archive: `web/linux/initramfs-firefox.cpio.gz`, SHA-256
+  `e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25`,
+  87,821,007 bytes. Current lighter Start X/console archive:
+  `web/linux/initramfs.cpio`, SHA-256
+  `beea582d106e6454397611b8efaba1b89417269129303a981bae69978e8e5bb1`,
+  40,413,036 bytes. Both HTTP bodies were fetched from port 4180 and verified
+  against those hashes, HTTP 200, Content-Length, and COOP/COEP headers.
+- Both archives mount devpts and launch Xfbdev with `-maxbigreqsize 1`.
+  TinyX otherwise advertises requests larger than its 4 MiB receive buffer,
+  disconnecting Aurora while uploading large wallpaper images. The option
+  advertises 1,048,575 CARD32 words (4,194,300 bytes), below the 4 MiB limit,
+  allowing x11rb to split image uploads. The actual guest Xfbdev argv was
+  verified through `/proc/66/cmdline` at 1200x900.
+- The lighter archive also lacked the earlier keyboard repair. Its old
+  `bin/Xfbdev` SHA `cab3811d3b29129a2846a7c2097b6de829c56760dda2dda7a5f96895e7cda966`
+  was replaced with the exact already-validated evdev keyboard binary SHA
+  `6cce82cafaf7c86ca9704e13283ecfac3bf41cf682f56c4b0dff01b1f624e796`.
+  Final changes from the original lighter archive are exactly `/init` and
+  `/bin/Xfbdev` across 3,846 members. Firefox's original font-fixed baseline
+  changes only `/init` across 11,468 members. Other content/metadata is intact.
+- Rollback files beside each live archive use suffix
+  `.backup-pre-bigreq-20260926`; their hashes are respectively
+  `ecc14881fe6075183651324e337900b71bce57b783f20467ec1db98a57254be8`
+  and `79880130d978880df0b1c2fa217e9d59201dc0af9096dcde09695b8916ef00c1`.
+  The earlier `.backup-pre-devpts-20260926` files preserve the original
+  Firefox/font baseline and lighter baseline (SHA
+  `411f644e0673c2b56cfc0fa1b85de7efce83f56bd472b66eee01e5105701d0f2`).
+- Reproduce either final overlay using
+  `python3 tools/guest-rootfs/package-devpts.py PRE_BIGREQ_BACKUP OUTPUT --limit-x11-requests`.
+  For the original lighter baseline, also supply `--keyboard-wasm` with the
+  verified keyboard binary. The script accepts only explicit known archive
+  hashes and validates both old/new keyboard binaries. It transforms archive
+  init directly, preserving previously deployed Firefox-specific setup.
+- Chrome verified Start X at 1200x900, 1600x900, and 1920x1080: Aurora WM stayed
+  alive, Files opened Documents, `pwd` returned `/home/admin/Documents`, and
+  typed `echo terminal-ok` returned `terminal-ok`. At 1600 and 1920,
+  `pidof firefox` returned no process. Start X was launched from the plain
+  page through its button and reported `running · startx · initramfs`.
+  Evidence under `/mnt/p6/project/linux/.cache/folder-terminal-20260926/`:
+  `bigreq-1200-argv-proof.png`, `bigreq-1600-startx-terminal.png`, and
+  `bigreq-1920-startx-terminal.png`, with captured boot serial logs. The settings
+  agent separately verified Firefox/Bing on the identical frozen candidate at
+  1600x900/2 GiB/2 CPU, then confirmed restart to 1920x1080/4 GiB/2 CPU.
+- Gzip/CPIO/member comparisons, WABT validation of the reused keyboard binary,
+  shell syntax, and diff checks passed. The devpts-only Firefox package was
+  also reproduced byte-for-byte after extending the packager. Guest terminal
+  and large-resolution fix score: 97/100; no extended soak performed.
+- Port 4180 was found stopped during final promotion and restored using
+  `LINUX_WEB_PORT=4180 node web/desktop/dev-server.mjs` in retained PTY session
+  79474. Leave it running; the temporary 4182 QA service is no longer needed.
+- Final default is **1280x720**, restored at the user's request. The 1600x900
+  option remains available; explicit saved resolutions are preserved, and
+  displays retain actual CSS pixel dimensions with a Pan display control.
+  Fresh Chrome geometry checks passed at desktop, tablet, and phone sizes;
+  earlier 1600/1920 screenshots remain evidence for those selectable modes.

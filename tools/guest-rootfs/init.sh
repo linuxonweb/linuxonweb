@@ -14,6 +14,10 @@ export CURL_CA_BUNDLE=/etc/ssl/cert.pem
 export SSL_CERT_DIR=/etc/ssl/certs
 
 mount -t devtmpfs devtmpfs /dev
+# PTY-backed terminals need the slave device filesystem as well as /dev/ptmx.
+mkdir -p /dev/pts
+mount -t devpts -o mode=0620,ptmxmode=0666 devpts /dev/pts
+chmod 0666 /dev/ptmx
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 # wasm is NOMMU, so ramfs is used for writable runtime directories.
@@ -107,7 +111,8 @@ if [ -r /sys/class/graphics/fb0/virtual_size ]; then
 fi
 
 echo "display: starting Xfbdev as admin at $screen_mode" >&2
-/bin/su -s /bin/sh -c "export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/Xfbdev :0 -ac -screen '$screen_mode' -nolisten tcp -fp /share/fonts/X11/misc,/share/fonts/X11/cursor" admin &
+# Keep advertised BIG-REQUESTS within TinyX's 4 MiB input buffer.
+/bin/su -s /bin/sh -c "export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/Xfbdev :0 -ac -maxbigreqsize 1 -screen '$screen_mode' -nolisten tcp -fp /share/fonts/X11/misc,/share/fonts/X11/cursor" admin &
 xpid=$!
 
 i=0

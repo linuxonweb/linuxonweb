@@ -62,3 +62,81 @@ Validation evidence:
   after the adapter hooks, with no `RuntimeError: memory access out of bounds`
   and no observed Bing request. This validates runtime stability only; it is
   not a Firefox or Bing completion claim.
+
+## Confirmed runtime settings restart (2026-09-26)
+
+`main.js` and `index.html` now keep editable resolution/CPU/RAM drafts separate
+from the active guest. Apply opens a Continue/Cancel dialog. Only Continue saves
+preferences, closes the machine, and reloads the existing URL with its prior
+launch mode. Cancel restores the active values without resizing the canvas,
+changing storage, or stopping the guest. The dialog warns that unsaved work and
+the temporary guest filesystem are lost on restart. Settings are locked only
+during boot/restart. Failed boots release canvas listeners, pointer timers,
+console streams, and network resources before a retry.
+
+Preferences use `linuxonweb.machine-settings.v1` in localStorage, containing
+`resolution`, `cpus`, and `ram` (MiB). The one-shot sessionStorage key
+`linuxonweb.restart-mode.v1` preserves the launch mode without rewriting query
+parameters or other preferences. Invalid stored values are ignored; the removed
+256 MiB configuration is migrated in memory to 512 MiB. A real 256 MiB console
+boot exhausted guest memory with the current image. Console/X modes therefore
+start at 512 MiB; Firefox starts at 2 GiB and defaults to 4 GiB. CPU selection
+is limited to the lesser of reported host concurrency and kernel `NR_CPUS=64`.
+The 4 GiB choice advertises `0xffff0000` bytes to leave the final wasm32 page
+unused.
+
+`dist/index.js` has a narrow local staged-runtime guard: requested guest RAM
+must cover the materialized kernel/initramfs plus 64 MiB boot workspace and
+must fit the allocator's actual maximum, including reservation fallback. It
+fails clearly rather than advertising more physical RAM than can be allocated.
+This is a local adapter change; the upstream/sibling TypeScript source tree was
+not modified.
+
+Chrome CDP evidence is retained in
+`/mnt/p6/project/linux/.cache/runtime-settings-20260926/`. The apply/cancel test
+confirmed that drafts and Cancel preserve the running guest and stored settings;
+Continue preserved the URL/mode and produced guest-reported CPU online `0`,
+`MemTotal: 521984 kB`, and framebuffer `1920,1080`. Browser exception/console
+error count was zero after the restart-reader fix. Fault-injection tests verified
+reservation-limit rejection, removal of all guest canvas listeners, a successful
+512 MiB retry, and a visible storage-error dialog that leaves the guest running.
+Screenshots: `restart-dialog.png` and `applied-console.png`.
+
+Firefox was also verified with 2 GiB, 2 CPUs and 1280 × 720: AuroraWM stayed
+running, Bing rendered in Firefox, and the guest reported `2 CPUs` and
+`1817984K/2097152K` memory. Screenshot:
+`firefox-2048mb-2cpu-1280x720.png`. A 1-CPU run stayed operational but reached a
+Bing network timeout, so it is not evidence of a successful page load at that
+configuration. Separate 4 GiB/2-CPU logs confirm real SMP and the physical-memory
+limit. Larger-resolution testing exposed the guest TinyX request-limit mismatch;
+that guest fix and its artifact provenance are documented separately.
+
+New sessions default to 1280 × 720 (restored at the user's request); 1600 × 900
+remains available, and saved explicit resolutions remain unchanged.
+The canvas uses its selected resolution for both backing size and CSS pixel size.
+The surrounding stage scrolls when the viewport is smaller. Chrome geometry
+checks with 1600 × 900 selected at 1920 × 1200, 900 × 650, and 390 × 844 all reported a 1600 × 900 backing
+canvas and a 1600 × 900 CSS rectangle, with overflow in the narrower viewports.
+Reloading a saved 1280 × 720 choice preserved it. Evidence: `test-geometry.log`
+and `geometry-1920.png`, `geometry-900.png`, `geometry-390.png` in the same
+runtime-settings evidence directory.
+
+Final integration used the frozen Firefox candidate
+`e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25`
+on port 4182 (the guest request-limit fix is owned by the rootfs work). At
+1600 × 900, 2 GiB and 2 CPUs, AuroraWM stayed healthy and Firefox rendered Bing.
+The actual Apply → Cancel → Apply → Continue flow then restarted into
+1920 × 1080, 4 GiB and 2 CPUs, preserving the Firefox query and other URL
+parameters. AuroraWM and Bing remained visible after the restart, with zero
+browser exceptions. Evidence: `firefox-2048mb-2cpu-1600x900.png`,
+`test-firefox-restart.log`, and `firefox-restart-1080p.png`.
+
+An explicit **Pan display** toggle appears only when the stage overflows. It
+enables native touch/trackpad scrolling and temporarily bypasses guest pointer
+and wheel input; turning it off restores guest input. Keyboard handling stays
+with the guest. Chrome input tests observed trackpad scroll `(120, 80)` and touch
+scroll `(327, 212)` while both the backing canvas and CSS rectangle stayed
+1920 × 1080. They also verified guest wheel capture before/after pan mode.
+The settings panel scrolls on short screens: at 900 × 400, its bottom was
+376 px and the Apply button remained visible at 355 px. Evidence:
+`test-pan.log`, `pan-display-touch.png`, `settings-short-landscape.png`.

@@ -161,7 +161,14 @@ export async function spawnMachine(options) {
         const module_pages = Number(memory_type.minimum);
         const initcpio_addr = module_pages * PAGE_SIZE;
         const pages = kernel_initial_pages(memory_type, initcpio?.byteLength ?? 0);
+        const requested_memory = options.devicetree?.memory?.reg?.[1];
+        if (requested_memory !== undefined && (!Number.isSafeInteger(requested_memory) || requested_memory < pages * PAGE_SIZE + 64 * 1024 * 1024)) {
+            throw new RangeError("Selected RAM is too small for the kernel, boot image and boot workspace. Select more memory.");
+        }
         const { memory: wasm_memory, maximum_pages } = allocate_shared_memory(pages, KERNEL_MEMORY_MAXIMUM_PAGES);
+        if (requested_memory !== undefined && requested_memory > maximum_pages * PAGE_SIZE) {
+            throw new RangeError("This browser could not reserve the selected RAM. Select less memory or close other tabs.");
+        }
         assert(wasm_memory.buffer.byteLength === pages * PAGE_SIZE);
         const devicetree = {
             "#address-cells": 1,
