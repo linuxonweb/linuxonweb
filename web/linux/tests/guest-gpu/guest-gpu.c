@@ -28,7 +28,7 @@ int gpu_accept(struct gpu_session *s, unsigned port) {
   s->fd=accept(listener,NULL,NULL); close(listener); return s->fd<0 ? -1 : 0;
 }
 int gpu_call(struct gpu_session *s, enum gpu_op op, const void *data, uint32_t length, void *reply, uint32_t capacity, uint32_t *received) {
-  if(!s || s->fd<0 || op<GPU_HELLO || op>GPU_CLEAR || !received || (!reply && capacity) || length>1048576 || (!data && length) || s->sequence==0xffffffffu) { errno=EINVAL; return -1; }
+  if(!s || s->fd<0 || op<GPU_HELLO || op>GPU_STORAGE_READBACK || !received || (!reply && capacity) || length>1048576 || (!data && length) || s->sequence==0xffffffffu) { errno=EINVAL; return -1; }
   *received=0;
   unsigned char h[16]={0}, status[4]; uint32_t seq=++s->sequence;
   put32(h,MAGIC); h[4]=1; h[6]=(unsigned char)op; put32(h+8,seq); put32(h+12,length);
@@ -46,7 +46,8 @@ int gpu_call(struct gpu_session *s, enum gpu_op op, const void *data, uint32_t l
 int gpu_resource(struct gpu_session *s, enum gpu_op op, const void *bytes, uint32_t length, uint32_t *id) {
   if(!id) { errno=EINVAL; return -1; }
   unsigned char response[512]; uint32_t n=0; int r=gpu_call(s,op,bytes,length,response,sizeof(response),&n);
-  if(r || n!=4) return -1;
+  if(r) return r;
+  if(n!=4) return -1;
   *id=get32(response); return *id ? 0 : -1;
 }
 void gpu_close(struct gpu_session *s) { if(s->fd>=0) close(s->fd); s->fd=-1; }

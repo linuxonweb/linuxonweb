@@ -30,7 +30,7 @@ def main():
     sources={}
     for relative in ('guest-vulkan-loader/client.c','guest-vulkan-loader/unknown-disabled.c','guest-vulkan-loader/static-provider.inc',
             'guest-vulkan-loader/port.py','guest-vulkan-loader/build.py','guest-vulkan-loader/storage.py','guest-vulkan-loader/source-lock.json',
-            'guest-vulkan/icd.c','guest-vulkan/icd.h','guest-vulkan/transfer.inc','guest-gpu/guest-gpu.c','guest-gpu/guest-gpu.h'):
+            'guest-vulkan/icd.c','guest-vulkan/icd.h','guest-vulkan/transfer.inc', 'guest-vulkan/compute.inc','guest-gpu/guest-gpu.c','guest-gpu/guest-gpu.h'):
         data=(here.parent/relative).read_bytes();target=out/'frozen'/relative
         target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
         sources[relative]={'source':str(here.parent/relative),'sha256':digest(data)}

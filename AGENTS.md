@@ -217,9 +217,11 @@ driver enables permission checking internally and rejects the explicit
   declarations; matching official headers and the upstream loader-only compiler
   definition fixed that build boundary without advertising video capabilities.
   See `docs/guest-vulkan-loader-integration-20260926.md` and its compact evidence.
-  Dynamic loading, external layers, generic unknown-function trampolines, shaders,
-  general GPU buffers, GL and Firefox integration remain absent. The four current
-  guest runs use SwiftShader, actual 1 GiB/two CPUs and visible isolated pages.
+  At that loader gate, shaders and general GPU buffers remained absent; the
+  compute continuation below adds a bounded shader/storage profile. Dynamic
+  loading, external layers, generic unknown-function trampolines, GL and Firefox
+  integration remain absent. Guest runs use SwiftShader, actual 1 GiB/two CPUs
+  and visible isolated pages.
   The subsequent host translator gate now compiles archived Naga 0.20.0 to a
   751,237-byte standalone browser Wasm module, SHA-256
   `e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea`.
@@ -230,8 +232,26 @@ driver enables permission checking internally and rejects the explicit
   128 exact GPU output words and eight preserved sentinel words on SwiftShader.
   One device and four buffers are released. A canceled Fetch event is retained
   without an established cause; no Runtime exceptions or QA errors occurred.
-  This is host translation/compute evidence, not guest Vulkan dispatch yet.
+  This translator gate alone is host translation/compute evidence.
   See `docs/guest-vulkan-spirv-translator-20260926.md` and its compact evidence.
+  The subsequent actual guest compute gate passes 499 assertions using the
+  public static Khronos loader: two supplied SPIR-V programs, three GPU dispatches,
+  128 verified output words and sixteen sentinel checks across two rounds.
+  It verifies post-record coherent writes, consecutive dispatches retaining GPU
+  state, shader/descriptor argument lifetime, malformed shader recovery, missing
+  barrier and deleted-pipeline rejection. Guest allocations return to zero;
+  one native device and three buffers are independently counted and released.
+  Translator close is recorded, not an independent worker-lifetime audit.
+  Build `compute-build-run1` is 360,103 bytes, SHA-256
+  `ff6cc69182ff0f11f5677c64d566ebd7e1c1997128cfa5176b1e08e54ce83865`.
+  Actual guest evidence is `compute-guest-run1/result.json` in the same task root,
+  SHA-256 `b588f148bb4eadfdcd1ad68aa85ad19cd6aa9494fa101386452937d6a6780da0`.
+  No guest errors or CDP events were captured. Shared-driver regressions pass:
+  public-loader clear 883; direct lifecycle/unavailable/clear 44/14/957;
+  transport loss/device loss/exhaustion 522/522/1083. These failure regressions
+  cover the earlier image-clear path, not compute-specific injected failures.
+  Existing host regression passes 73 checks. See
+  `docs/guest-vulkan-compute-execution-20260926.md` and its compact evidence.
   Sites version 6 is unchanged; the prototype is not deployed. No OpenGL,
   WebGL fallback, decoder, native JIT or physical GPU claim follows. Overall goal
   remains below 95/100 (approximately 80); this is progress, not goal completion.
@@ -345,14 +365,15 @@ command/start identity. Profiles, builds and evidence remain under
 `/mnt/p6/build/guest-vulkan-loader-20260926/`, including `qa-summary.json` and
 `cleanup.json`. No task service remains active.
 
-The compute continuation currently holds its isolated services for the next
-integration gate: sole serving owner `cmd_compute_serving`, adapter PID `110736`
-(session `73177`, startTicks `184487676`) and Chromium PID `111111` (session
-`13393`, startTicks `184488666`) on ports `4182`/`9396`. The translator QA tab has
-closed; `translator/candidate` is still the verified task-owned link. See
-`/mnt/p6/build/guest-vulkan-compute-20260926/service-ownership.json` before any
-action. Revalidate live handles/identity; do not infer service exit from a timeout.
-User PID `1591443` remains preserved. Cleanup of these services is still pending.
+The compute continuation also completed cleanup: browser PID `111111` closed
+through Browser.close and adapter PID `110736` exited on SIGTERM, both exit 0.
+Both PIDs and listeners on `4182`/`9396` are absent; all nine exact owned candidate
+symlinks were removed. User PID `1591443` retained its command/start identity.
+Builds, browser profile, packages and raw evidence remain under
+`/mnt/p6/build/guest-vulkan-compute-20260926/`. The verified cleanup record is
+`cleanup.json`, SHA-256
+`e32dd6032eb73fd3f3fb2c82c7e85ed9b65d283f9d5217e8437fbbb310e6634b`.
+No task service remains active. Do not reuse the former service handles.
 
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
@@ -382,7 +403,7 @@ The overall goal remains active and is assessed at about 80/100, not the request
 native Firefox JIT, a generally usable Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;
 that answer is pending. At the start of the compute continuation, goal
-accounting reported 6,591,651 tokens with no token budget; this does not reveal weekly quota or
+accounting reported 7,237,075 tokens with no token budget; this does not reveal weekly quota or
 establish whether the user's 15% allowance has been reached. Resolve this
 constraint before another large backend port; do not invent a percentage.
 
@@ -419,21 +440,24 @@ Bounded next implementation gates, subject to that allowance:
   headers `98f440ce6868c94f5ec6e198cc1adda4760e8849` are hash-locked. Preserve
   typed dispatch and unknown-procedure rejection; dynamic discovery and generic
   extension trampolines are deliberately disabled in this static profile.
-  The partial COMPUTE|TRANSFER profile still lacks dispatch and conformance;
-  it is not a generally usable Vulkan or Zink device.
+  The opt-in compute profile now supports bounded dispatch but lacks graphics,
+  presentation and conformance; it is not a generally usable Vulkan or Zink device.
   The archived Naga 0.20 SPIR-V-input/WGSL-output dependency closure and host
   translator now build and pass actual worker/WebGPU formula execution. Preserve
   `translator/provenance/` and task `translator-build-run4`; the original offline
   resolver selects from the archived vendor tree, while the recorded Cargo.lock
   and per-file source-lock pin the accepted closure. Do not claim arbitrary
-  cross-environment bit reproduction. Next implement guest storage GPU buffers, compute
-  pipeline/descriptor binding, dispatch and buffer readback. A separate public
-  Vulkan client should submit two real SPIR-V programs and verify both outputs for
-  64 integers plus sentinels, rejection and cleanup. Do not substitute recognition
-  of fixed shader bytes for translation. The integration report records the
-  archived wgpu revision and dependency provenance; no guest compute dispatch has run.
-  The earlier Dawn ABI gate remains compile-only; native Dawn,
-  general system discovery, shaders, GL-through-Vulkan and Firefox are unported.
+  cross-environment bit reproduction. Guest storage buffers, compute pipeline,
+  descriptor binding and dispatch/readback now pass the separate public client's
+  actual guest execution; the shared-driver regressions also pass. Preserve
+  the compute build/package/run and regression evidence. The next graphics implementation
+  needs real vertex/fragment SPIR-V translation, graphics pipeline/render target
+  commands and application-visible readback/presentation; then measure the actual
+  Mesa/Zink requirements against supported driver capabilities. This is still
+  separate from Firefox EGL/GL and compositor integration. Do not substitute
+  fixed-shader recognition or enabled preferences for those implementations.
+  The earlier Dawn ABI gate remains compile-only; native Dawn, general system
+  discovery, graphics shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
@@ -441,5 +465,6 @@ All continuation work must retain the current delegated workflow, fresh sessions
 for new agents, scoped Git staging and sole serving-agent ownership. The serving
 owner may continue its assigned test task across follow-up instructions.
 Earlier work reused existing sessions after fresh-session creation hit the thread
-limit. Revalidate the compute task's held services above before reuse; preserve
-the user's pre-existing server.
+limit. The compute services are now stopped; any new runtime task needs one
+new serving owner and verified available ports. Preserve the user's pre-existing
+server and all retained build artifacts.

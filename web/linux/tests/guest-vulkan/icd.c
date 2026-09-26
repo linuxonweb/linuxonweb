@@ -15,7 +15,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, failed;
+    int clear_supported, compute_supported, failed;
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
 _Static_assert(offsetof(struct VkPhysicalDevice_T, loader) == 0, "physical loader prefix");
@@ -50,6 +50,7 @@ static int hello(VkInstance instance) {
     data[n] = 0;
     printf("GUEST_VK_HOST_HELLO %s\n", data); fflush(stdout);
     instance->clear_supported = strstr(data, "\"clearImage\":true") != NULL;
+    instance->compute_supported = strstr(data, "\"computeProfile\":1") != NULL;
     return 0;
 }
 static void transfer_cleanup(void);
@@ -122,7 +123,21 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
     out->apiVersion = VK_API_VERSION_1_0;
     out->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
     snprintf(out->deviceName, sizeof(out->deviceName), live->clear_supported ? "EXPERIMENTAL partial clear/copy profile; NOT conformant" : "EXPERIMENTAL WebGPU lifecycle only; not conformant");
-    /* No invented physical PCI IDs, UUID, rendering limits or driver claims. */
+    if (live->compute_supported) {
+        snprintf(out->deviceName, sizeof(out->deviceName), "EXPERIMENTAL bounded SPIR-V compute; NOT conformant");
+        out->limits.maxStorageBufferRange=65536;
+        out->limits.maxBoundDescriptorSets=1;
+        out->limits.maxPerStageDescriptorStorageBuffers=1;
+        out->limits.maxDescriptorSetStorageBuffers=1;
+        out->limits.maxPerStageResources=1;
+        out->limits.maxComputeSharedMemorySize=16384;
+        out->limits.maxComputeWorkGroupCount[0]=out->limits.maxComputeWorkGroupCount[1]=out->limits.maxComputeWorkGroupCount[2]=1;
+        out->limits.maxComputeWorkGroupInvocations=64;
+        out->limits.maxComputeWorkGroupSize[0]=64;out->limits.maxComputeWorkGroupSize[1]=out->limits.maxComputeWorkGroupSize[2]=1;
+        out->limits.minStorageBufferOffsetAlignment=256;out->limits.minMemoryMapAlignment=4;
+        out->limits.nonCoherentAtomSize=4;out->limits.maxMemoryAllocationCount=32;
+    }
+    /* No invented physical PCI IDs or physical acceleration claims. */
 }
 static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, VkPhysicalDeviceFeatures *out) {
     (void)physical;
@@ -161,9 +176,9 @@ static VKAPI_ATTR void VKAPI_CALL queue_properties(VkPhysicalDevice physical, ui
     if (!out) { *count = 1; return; }
     if (!*count) return;
     memset(out, 0, sizeof(*out)); out->queueCount = 1; *count = 1;
-    if (live->clear_supported) out->queueFlags = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    if (live->clear_supported || live->compute_supported) out->queueFlags = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
     /* ClearColorImage requires compute/graphics. The opt-in COMPUTE flag
-     * denotes only this partial command profile; dispatch remains absent.
+     * denotes a partial command profile; the compute opt-in adds bounded dispatch.
      * This is explicitly incomplete and NOT a conformant Vulkan queue. */
 }
 static VKAPI_ATTR VkResult VKAPI_CALL device_extensions(VkPhysicalDevice physical, const char *layer,
@@ -228,7 +243,8 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
     PROC(vkDestroyDevice, destroy_device)
     PROC(vkGetDeviceQueue, device_queue)
 #undef PROC
-    return live->clear_supported ? transfer_proc(name) : NULL;
+    PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
+    return compute ? compute : (live->clear_supported || live->compute_supported) ? transfer_proc(name) : NULL;
 }
 VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t *version) {
     if (!version || *version < 2) return VK_ERROR_INCOMPATIBLE_DRIVER;
@@ -257,5 +273,6 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
     PROC(vkDestroyDevice, destroy_device)
     PROC(vkGetDeviceQueue, device_queue)
 #undef PROC
-    return live->clear_supported ? transfer_proc(name) : NULL;
+    PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
+    return compute ? compute : (live->clear_supported || live->compute_supported) ? transfer_proc(name) : NULL;
 }

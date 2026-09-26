@@ -1,0 +1,726 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "scope": "Actual public Vulkan SPIR-V compute in wasm32 Linux through static Khronos loader; bounded nonconformant profile",
+  "pass": true,
+  "firstGuestAttempt": true,
+  "assertions": 499,
+  "configuration": {
+    "cpus": 2,
+    "memoryBytes": 1073741824,
+    "visibility": "visible"
+  },
+  "bootConfigurationEvidence": [
+    "smp: Brought up 1 node, 2 CPUs",
+    "Memory: 1000192K/1048576K available (42880K reserved, 0K cma-reserved)"
+  ],
+  "isolated": true,
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "description": "",
+    "isFallbackAdapter": true
+  },
+  "physicalAccelerationProven": false,
+  "compute": {
+    "programs": 2,
+    "inputWordsPerProgram": 64,
+    "finalOutputWords": 128,
+    "dispatches": 3,
+    "formulas": [
+      "x * 3 + 7",
+      "((x ^ 85) + 17) * 5; applied twice"
+    ],
+    "gpuTailWordsPerSubmission": 4,
+    "allocationTailWordsPerSubmission": 4,
+    "shaders": {
+      "a": {
+        "sha256": "a8f991d25279df875d1f51d59065a58d3aa3c076c4f03955fb6c735bdaba1e8b",
+        "bytes": 1016
+      },
+      "b": {
+        "sha256": "13dba00b9bd08e25bb027815e9636db74f2062f9aff182f77a6ffe9d707bc7a6",
+        "bytes": 1052
+      }
+    }
+  },
+  "checks": [
+    "Public-only application symbols resolved by pinned upstream loader archive",
+    "Shader caller bytes overwritten after CreateShaderModule",
+    "Shader modules destroyed after pipeline creation",
+    "Descriptor argument structures overwritten after UpdateDescriptorSets",
+    "Host-coherent input writes after recording and before submit",
+    "Missing host-write barrier rejected before effects; all 288 mapped bytes retained",
+    "Second formula repeated with compute-to-compute barrier; no stale CPU upload",
+    "Malformed SPIR-V rejected with -22 followed by valid translation/dispatch",
+    "Excess dispatch count rejected with otherwise valid pipeline and set; reset recovery",
+    "Recorded pipeline destroyed before submit; rejection and all 288 mapped bytes retained",
+    "Exact shader output and GPU/allocation suffix sentinels",
+    "Public cleanup; zero guest allocations and tracked host native objects"
+  ],
+  "host": {
+    "commands": 21,
+    "draws": 0,
+    "clears": 0,
+    "readbacks": 2,
+    "dispatches": 3,
+    "uploads": 2,
+    "translations": 2,
+    "translatorsCreated": 1,
+    "translatorsClosed": 1,
+    "released": 5,
+    "adapter": {
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "description": "",
+      "isFallbackAdapter": true
+    },
+    "error": null,
+    "ownership": {
+      "devicesCreated": 1,
+      "devicesDestroyed": 1,
+      "buffersCreated": 3,
+      "buffersDestroyed": 3,
+      "connectionsClosed": 1,
+      "liveDevices": 0,
+      "liveBuffers": 0
+    }
+  },
+  "commandEvents": [
+    {
+      "type": "adapter",
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "description": "",
+      "isFallbackAdapter": true
+    },
+    {
+      "type": "command",
+      "opcode": 0,
+      "request": 1,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 0,
+      "request": 2,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 12,
+      "request": 3,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 10,
+      "request": 4,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 11,
+      "request": 5,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 7,
+      "request": 6,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 13,
+      "request": 7,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 14,
+      "request": 8,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 15,
+      "request": 9,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 7,
+      "request": 10,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 10,
+      "request": 11,
+      "status": -22
+    },
+    {
+      "type": "command",
+      "opcode": 10,
+      "request": 12,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 11,
+      "request": 13,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 7,
+      "request": 14,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 13,
+      "request": 15,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 14,
+      "request": 16,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 14,
+      "request": 17,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 15,
+      "request": 18,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 7,
+      "request": 19,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 7,
+      "request": 20,
+      "status": 0
+    },
+    {
+      "type": "command",
+      "opcode": 8,
+      "request": 21,
+      "status": 0
+    },
+    {
+      "type": "closed",
+      "commands": 21,
+      "draws": 0,
+      "clears": 0,
+      "readbacks": 2,
+      "dispatches": 3,
+      "uploads": 2,
+      "translations": 2,
+      "translatorsCreated": 1,
+      "translatorsClosed": 1,
+      "released": 5,
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      "error": null
+    }
+  ],
+  "browserEvents": [],
+  "guestErrors": [],
+  "guestTeardown": {
+    "resources": 0,
+    "allocatedBytes": 0,
+    "closeStatus": 0
+  },
+  "build": {
+    "artifact": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/compute-build-run1/guest-vulkan-public-client.wasm",
+      "bytes": 360103,
+      "sha256": "ff6cc69182ff0f11f5677c64d566ebd7e1c1997128cfa5176b1e08e54ce83865"
+    },
+    "report": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/compute-build-run1/build.json",
+      "bytes": 25414,
+      "sha256": "56ccc0e18b6ebab00b8282a3a6e112cee78ca98bd5d450872437eb2cad265c83"
+    },
+    "publicClientSymbolCount": 47,
+    "publicClientSymbols": [
+      "vkAllocateCommandBuffers",
+      "vkAllocateDescriptorSets",
+      "vkAllocateMemory",
+      "vkBeginCommandBuffer",
+      "vkBindBufferMemory",
+      "vkCmdBindDescriptorSets",
+      "vkCmdBindPipeline",
+      "vkCmdDispatch",
+      "vkCmdPipelineBarrier",
+      "vkCreateBuffer",
+      "vkCreateCommandPool",
+      "vkCreateComputePipelines",
+      "vkCreateDescriptorPool",
+      "vkCreateDescriptorSetLayout",
+      "vkCreateDevice",
+      "vkCreateInstance",
+      "vkCreatePipelineLayout",
+      "vkCreateShaderModule",
+      "vkDestroyBuffer",
+      "vkDestroyCommandPool",
+      "vkDestroyDescriptorPool",
+      "vkDestroyDescriptorSetLayout",
+      "vkDestroyDevice",
+      "vkDestroyInstance",
+      "vkDestroyPipeline",
+      "vkDestroyPipelineLayout",
+      "vkDestroyShaderModule",
+      "vkDeviceWaitIdle",
+      "vkEndCommandBuffer",
+      "vkEnumerateInstanceExtensionProperties",
+      "vkEnumerateInstanceLayerProperties",
+      "vkEnumeratePhysicalDevices",
+      "vkFreeCommandBuffers",
+      "vkFreeMemory",
+      "vkGetBufferMemoryRequirements",
+      "vkGetDeviceProcAddr",
+      "vkGetDeviceQueue",
+      "vkGetInstanceProcAddr",
+      "vkGetPhysicalDeviceMemoryProperties",
+      "vkGetPhysicalDeviceProperties",
+      "vkGetPhysicalDeviceQueueFamilyProperties",
+      "vkMapMemory",
+      "vkQueueSubmit",
+      "vkQueueWaitIdle",
+      "vkResetCommandBuffer",
+      "vkUnmapMemory",
+      "vkUpdateDescriptorSets"
+    ],
+    "frozenSourceCount": 15,
+    "sources": {
+      "guest-vulkan-compute/client.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-compute/client.c",
+        "sha256": "82066941c1afa209c1a59c8c78eb04e47f870f182d11baaa1558cecf5bc35ee0"
+      },
+      "guest-vulkan-loader/unknown-disabled.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/unknown-disabled.c",
+        "sha256": "e4353e12eeb472f3e5c581c26cfe4802a048b2374c14387cf98fc79b0bbb9cfb"
+      },
+      "guest-vulkan-loader/static-provider.inc": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/static-provider.inc",
+        "sha256": "280e1c05d15d52b3c0b3dd5837f85f074d8ad23bd1387024f21abec0e16d796a"
+      },
+      "guest-vulkan-loader/port.py": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/port.py",
+        "sha256": "2f6aa513dbcece0afa5e535a2a151364711a490373bcceef0c792141abdd9d84"
+      },
+      "guest-vulkan-loader/build.py": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/build.py",
+        "sha256": "39876efa386a972fbff6ce45bce27f7f9376fba78210c2b7957d351b61e79d14"
+      },
+      "guest-vulkan-compute/build.py": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-compute/build.py",
+        "sha256": "0fe9f4a556cc40cd3df7f4810ab8ab5e7b614019e2d3f6fdde4d050c8e89af08"
+      },
+      "guest-vulkan-compute/storage.py": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-compute/storage.py",
+        "sha256": "11c8e9492ca52d5fca427636a35bf5922817d0307925ed382418761a58f0b46d"
+      },
+      "guest-vulkan-loader/storage.py": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/storage.py",
+        "sha256": "ace25cea4965452339ec4b525f8d4476c039d146dcbeca6138c73e9460f3a07f"
+      },
+      "guest-vulkan-loader/source-lock.json": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-loader/source-lock.json",
+        "sha256": "0014124c208f080c55597f7bf842fa5fe64c5a2b912b92b0f3f14ea84ff73ca4"
+      },
+      "guest-vulkan/icd.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/icd.c",
+        "sha256": "4a49b1c2ba8aeecf5eb92fd2a5996bd70b77312159fdba9d6f537e286f658a53"
+      },
+      "guest-vulkan/icd.h": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/icd.h",
+        "sha256": "9851faf05d52d136fff67066ea45d97f392173aa91af9791ea2dfb2472d1e87c"
+      },
+      "guest-vulkan/transfer.inc": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/transfer.inc",
+        "sha256": "9637212b65039a16f2922619cdc1302f02172c925e1fd6b5911deaa8b6d57369"
+      },
+      "guest-vulkan/compute.inc": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/compute.inc",
+        "sha256": "d8ed55c3370d4e0a920d6644d98bc0828b74e27f84a71f4d66fdade3e580e348"
+      },
+      "guest-gpu/guest-gpu.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-gpu/guest-gpu.c",
+        "sha256": "72cb85aa039b73311918828a75c078c90d3fd7d23fe44ff7307df3a07f290b3d"
+      },
+      "guest-gpu/guest-gpu.h": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-gpu/guest-gpu.h",
+        "sha256": "27daadca9e6df458224ef0f01908c796e129ba84aacd82b311d19e825497e530"
+      }
+    },
+    "hostSources": {
+      "guest-gpu/host.mjs": "812b18b55fa3562c0ffff54389a2435ca8fb6db393ddd6e7106d1a7e2652e488",
+      "guest-vulkan/host.mjs": "ad289ec6903aa7304e2adbc96d555411b8ac284255934988960fea1e09941fb5",
+      "guest-vulkan-compute/index.html": "ae2a9befbdddb04065ae645d0d730e685377505bc4782c31b1c6e5b375d18a71",
+      "guest-vulkan-compute/host.mjs": "23ad8cb3177436bf4dd2da41b99846dce05c06d9ef2843e97a7da347ff61bebf",
+      "guest-vulkan-compute/translator/index.mjs": "b58f522bc9ca33401ba0019f59fe13cb26662320318008dd35907b6625d2b948",
+      "guest-vulkan-compute/translator/worker.mjs": "202ac295a0e83a373af960004c821580c019386a95a4a8092c87d21e527b0e52"
+    },
+    "imports": [
+      "env.memory",
+      "linux.syscall",
+      "linux.get_thread_area",
+      "linux.copy_siginfo"
+    ],
+    "postBuildHelperFormatting": {
+      "path": "web/linux/tests/guest-vulkan-compute/build.py",
+      "change": "Single trailing space removed from fixture assignment; frozen source record remains original build input. All compiled C, host modules and artifact remain unchanged.",
+      "current": {
+        "path": "web/linux/tests/guest-vulkan-compute/build.py",
+        "bytes": 7930,
+        "sha256": "6ddc02e24f760dea5fb4c310d77ce6902730a8b8c7653a0f386116afc9221bb2"
+      },
+      "finalAuditRequired": "Verify exact one-space diff and Python AST equivalence against frozen build helper"
+    }
+  },
+  "package": {
+    "report": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/compute-package-run1/package.json",
+      "bytes": 27345,
+      "sha256": "de4523c167b234762e2e1b18b973b985ec4fd87d8aea7b03b91ff18f0cf0ef4a"
+    },
+    "bytes": 40855904,
+    "sha256": "3ed24fa8f87139ff66c4acd8eeb358057014e022384e0cb8fb101655a7364770",
+    "modified": [
+      "init"
+    ],
+    "added": [
+      "bin/guest-vulkan-public-client"
+    ],
+    "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be"
+  },
+  "evidence": {
+    "guest": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/compute-guest-run1/result.json",
+      "bytes": 40930,
+      "sha256": "b588f148bb4eadfdcd1ad68aa85ad19cd6aa9494fa101386452937d6a6780da0"
+    },
+    "screenshot": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/compute-guest-run1/page.png",
+      "bytes": 295598,
+      "sha256": "0a7c734f09102600eb87b23e2db0b02feb067d4df7fb896eaa68d28f2d8e9e8f"
+    }
+  },
+  "regressions": {
+    "pass": true,
+    "firstGuestAttempts": true,
+    "report": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/regression-batch.json",
+      "bytes": 17362,
+      "sha256": "070e74e57aae13a161cf5bfba3abc8ab46580961f6bb34b5325c1d0c8daa3289"
+    },
+    "guestResults": [
+      {
+        "scope": "guest-vulkan-loader",
+        "mode": "clear",
+        "pass": true,
+        "checks": 883,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/loader-regression-guest-run1/result.json",
+        "sha256": "8222a406750c30a65508b150859be298504ff6131e269eabdeead5d0b283318c",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000192K/1048576K available (42880K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "clear",
+          "injected": false,
+          "clearCompleted": 2,
+          "readbackRequests": 2,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "live",
+        "pass": true,
+        "checks": 44,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-live-run1/result.json",
+        "sha256": "d39eda29545d9b106671445cd6554599906b26191924c7d0c542f642e0c32a82",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 0,
+          "texturesDestroyed": 0,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "live",
+          "injected": false,
+          "clearCompleted": 0,
+          "readbackRequests": 0,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "unavailable",
+        "pass": true,
+        "checks": 14,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-unavailable-run1/result.json",
+        "sha256": "f6a9442bf322894be58103bf2049f068efe2e9c1a21b4b6947a60c72277fef49",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 0,
+          "devicesDestroyed": 0,
+          "connectionsClosed": 1,
+          "texturesCreated": 0,
+          "texturesDestroyed": 0,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "unavailable",
+          "injected": false,
+          "clearCompleted": 0,
+          "readbackRequests": 0,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "clear",
+        "pass": true,
+        "checks": 957,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-clear-run1/result.json",
+        "sha256": "dff3296844aa9938e1d6e514437263e59b2a590bc105ee8300b50aff6188bf32",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "clear",
+          "injected": false,
+          "clearCompleted": 2,
+          "readbackRequests": 2,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "loss-transport",
+        "pass": true,
+        "checks": 522,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-loss-transport-run1/result.json",
+        "sha256": "b10879613b1f12fd3f737030184a76a0f3e3004169cd7b3ba50666661b960a69",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "loss-transport",
+          "injected": true,
+          "clearCompleted": 1,
+          "readbackRequests": 1,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "loss-device",
+        "pass": true,
+        "checks": 522,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-loss-device-run1/result.json",
+        "sha256": "10936ade2ed2e06eb5d69ea0d1b1121a00bfab7820d5450216ef25bbbcaa87a6",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 1,
+          "buffersDestroyed": 1,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "loss-device",
+          "injected": true,
+          "clearCompleted": 1,
+          "readbackRequests": 1,
+          "nativeDeviceLost": true,
+          "readbackMapStarted": true,
+          "nativeDeviceLostReason": "destroyed"
+        },
+        "errors": [],
+        "browserEventCount": 0
+      },
+      {
+        "scope": "guest-vulkan",
+        "mode": "exhaustion",
+        "pass": true,
+        "checks": 1083,
+        "result": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-exhaustion-run1/result.json",
+        "sha256": "cafd153a3a323677fcfb2737e68e294909ae4ed83216b06d376171c32742f410",
+        "bootConfigurationEvidence": [
+          "smp: Brought up 1 node, 2 CPUs",
+          "Memory: 1000448K/1048576K available (42624K reserved, 0K cma-reserved)"
+        ],
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "exhaustion",
+          "injected": false,
+          "clearCompleted": 2,
+          "readbackRequests": 2,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        },
+        "errors": [],
+        "browserEventCount": 0
+      }
+    ],
+    "host": {
+      "checks": 73,
+      "report": {
+        "path": "/mnt/p6/build/guest-vulkan-compute-20260926/host-regression-run1/result.json",
+        "bytes": 3638,
+        "sha256": "6b40eae164162faf6f11f08a3466ab60b1259a23355d5494b2c05ee67772604d"
+      }
+    },
+    "failureScope": "Injected transport/device loss and exhaustion rerun the earlier image-clear path; compute-specific injection was not exercised",
+    "directBuild": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/direct-regression-build-run1/build.json",
+      "bytes": 4077,
+      "sha256": "82ed4050439336571c091734f9e2cffbaf3dfb78efd7495c42a48ecf840318c1"
+    }
+  },
+  "limitations": [
+    "Google SwiftShader software fallback only",
+    "One descriptor set/binding, storage buffer, offset zero, one 64x1x1 workgroup",
+    "Synchronous one-command-buffer submission, 16 recorded operations",
+    "No graphics/render passes, samplers/textures, presentation, semaphores/fences or general dispatch",
+    "No system dynamic driver discovery or conformance",
+    "No Zink, OpenGL/WebGL fallback, Firefox GPU integration, native guest JIT or hardware video decoding"
+  ],
+  "release": {
+    "prototypeDeployed": false,
+    "acceptedRuntimeChanged": false,
+    "sitesVersion": 6,
+    "overallGoalComplete": false
+  },
+  "cleanup": {
+    "pass": true,
+    "report": {
+      "path": "/mnt/p6/build/guest-vulkan-compute-20260926/cleanup.json",
+      "bytes": 3749,
+      "sha256": "e32dd6032eb73fd3f3fb2c82c7e85ed9b65d283f9d5217e8437fbbb310e6634b"
+    },
+    "browserExit": 0,
+    "adapterExit": 0,
+    "ownedPidsAbsent": true,
+    "ownedListenersAbsent": [
+      4182,
+      9396
+    ],
+    "exactOwnedLinksRemoved": 9,
+    "diskOutputsPreserved": true,
+    "userServicePreserved": true,
+    "userPid": 1591443
+  },
+  "translatorOwnership": "Wrapper created/closed counters only; no independent Worker ownership counter"
+}
