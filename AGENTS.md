@@ -618,6 +618,47 @@ forced Bing launch URL and verify actual Firefox input/startup, warm cache and
 home/update behavior before promoting anything. Resolve the pending weekly
 allowance before another large backend port; do not infer usage percentages.
 
+### Firefox homepage continuation
+
+Previous turn: progress (`428a9c2`, actual X11 presentation). This continuation
+started at 10,275,332 goal tokens; no token budget or weekly usage is exposed.
+Fresh delegation still fails at the thread limit; bounded work ran directly.
+
+The forced Bing CLI launch argument has been removed from the accepted packed
+Firefox init, preserving its explicit profile path and every other init byte.
+Package tool: `tools/guest-rootfs/package-firefox-homepage.py`. The new version is
+`89ec54c81936`, Firefox gzip 88,300,032 bytes, SHA-256
+`7ad492fe595d19e210da1a365640d5e10680d5ba4e41ae85c73e0949fc2761b0`.
+The other 11,469 CPIO records and kernel/plain inputs are unchanged. Current
+parent `web/linux/boot-manifest.json` and Firefox archive are promoted; the old
+four inputs are retained in `firefox-homepage-20260926/baseline-images`.
+The generic init source was also corrected, but not used for rootfs promotion.
+
+Finite `test-firefox-homepage.mjs` uses the existing dev server's proxy logic
+with an isolated in-process server and one Chromium. No persistent service was
+started. `guest-run2` under `/mnt/p6/build/firefox-homepage-20260926` passes real
+baseline typed navigation/input, actual Update & restart to the candidate,
+automatic saved-homepage startup/input, exact user.js and marker preservation,
+and warm reload with zero kernel/rootfs requests. `fresh-default-run1` passes
+with no seeded profile: New Tab appears, followed by real typed navigation and
+input. Screenshots were inspected. Preserve guest-run1's pre-boot harness quoting
+failure. Guest-run2's exact runner is frozen; later changes add the fresh mode
+and explicit version/config assertions, not changes to the application runtime.
+
+`acceptance-run1` verified the reports, input bindings, rollback copies and
+cleanup; `promotion-run1/result.json` records the local accepted promotion.
+Compact evidence: `docs/evidence/runtime-graphics-20260926/firefox-homepage.json`.
+Browser and server owners exited zero, and user PID1591443 retained start identity.
+See `docs/firefox-homepage-20260926.md`. Launch log timings are not first paint,
+and the baseline navigation delay prohibits claiming a speedup ratio. The
+verified behavior is honoring saved startup preferences instead of forced Bing.
+
+Sites preparation/publication is next; until a new saved deployment is verified,
+the public Site remains version 6 / `ff1ea9fc6f62`. Preserve the previous Sites
+version for rollback and change only rootfs/manifest in the pinned runtime graph.
+The full objective remains active, approximately 80/100; experimental GPU proofs
+are not general OpenGL/Firefox acceleration and no native JIT/decoder claim is added.
+
 ## Services and deployment
 
 **Current service revalidation supersedes the historical notes below.**

@@ -156,7 +156,7 @@ launch_firefox() {
   account="$1"
   home="$2"
   echo "starting /bin/firefox as $account" >&2
-  /bin/su -s /bin/sh -c "export HOME=$home USER=$account LOGNAME=$account DISPLAY=:0 XDG_CONFIG_HOME=$home/.config XDG_CACHE_HOME=$home/.cache; exec /bin/firefox --no-remote --new-instance https://www.bing.com" "$account"
+  /bin/su -s /bin/sh -c "export HOME=$home USER=$account LOGNAME=$account DISPLAY=:0 XDG_CONFIG_HOME=$home/.config XDG_CACHE_HOME=$home/.cache; exec /bin/firefox --no-remote --new-instance" "$account"
 }
 
 if grep -qw 'firefox=1' /proc/cmdline && [ -x /bin/firefox ]; then

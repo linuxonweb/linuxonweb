@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "passLocalAcceptance": true,
+  "candidateVersion": "89ec54c81936",
+  "package": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550",
+    "sourceManifestSha256": "10242a22c9ee3645e3d3d9769f21073e510d355589616d3fca38d082f85de730",
+    "archiveSha256": "7ad492fe595d19e210da1a365640d5e10680d5ba4e41ae85c73e0949fc2761b0",
+    "bytes": 88300032,
+    "uncompressedBytes": 279774264,
+    "version": "89ec54c81936",
+    "initBeforeSha256": "eb9059eac95ba115924230c63a50021606de110e904b889c56f883fd9baa6e94",
+    "initAfterSha256": "413549e4d0156d3016ad9f39a2dd83f6aebaa44b05e40d3e296361be577422c0",
+    "unchangedRecords": 11469,
+    "modified": [
+      "init"
+    ],
+    "added": [],
+    "originalOrderPreserved": true,
+    "tailPreserved": true,
+    "initMetadataExceptSizePreserved": true,
+    "profilePreferencesUnchanged": true,
+    "source": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+    "manifest": "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json",
+    "filesystems": {
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-homepage-20260926": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-homepage-20260926/tmp": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/vmlinux.wasm": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs.cpio": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      }
+    },
+    "scratch": {
+      "TMPDIR": "/mnt/p6/build/firefox-homepage-20260926/tmp",
+      "TMP": "/mnt/p6/build/firefox-homepage-20260926/tmp",
+      "TEMP": "/mnt/p6/build/firefox-homepage-20260926/tmp"
+    },
+    "releaseGatesPending": [
+      "actual-Firefox-homepage-and-input",
+      "warm-cache",
+      "update-and-profile-preservation",
+      "startup-observations"
+    ]
+  },
+  "runs": [
+    {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/guest-run2/result.json",
+      "sha256": "2bda3de1eb27f2b6a95d469a3f5f1a6121c87f36dd2ba93d9d6085785d6eb54e",
+      "phases": [
+        {
+          "label": "baseline",
+          "launchLogMs": 9033,
+          "readyBeaconMs": 52200,
+          "imageRequests": [
+            {
+              "at": 1790464810888,
+              "path": "/linux/vmlinux.wasm",
+              "variant": "baseline"
+            },
+            {
+              "at": 1790464810889,
+              "path": "/linux/initramfs-firefox.cpio.gz",
+              "variant": "baseline"
+            }
+          ],
+          "system": {
+            "bytes": 94688358,
+            "version": "ff1ea9fc6f62",
+            "previous": false
+          },
+          "inputVerified": true,
+          "home": {
+            "admin/homepage-marker.txt": {
+              "bytes": 22,
+              "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+            },
+            "admin/.mozilla/firefox/http1-profile/user.js": {
+              "bytes": 477,
+              "sha256": "f90626ec6479cf7545090052bee26ae50515a274d4f67ebb239e74a260724f49"
+            },
+            "admin/.mozilla/firefox/http1-profile/prefs.js": {
+              "bytes": 4865,
+              "sha256": "5ab6c01d30dc472950e67f33c46fd9cce1d0d305da9045a4957dc4f6056be8de"
+            }
+          },
+          "screenshot": "/mnt/p6/build/firefox-homepage-20260926/guest-run2/baseline-functional.png"
+        },
+        {
+          "label": "update",
+          "launchLogMs": 13478,
+          "readyBeaconMs": 38446,
+          "imageRequests": [
+            {
+              "at": 1790464864668,
+              "path": "/linux/initramfs.cpio",
+              "variant": "candidate"
+            },
+            {
+              "at": 1790464865762,
+              "path": "/linux/initramfs-firefox.cpio.gz",
+              "variant": "candidate"
+            }
+          ],
+          "system": {
+            "bytes": 223483946,
+            "version": "89ec54c81936",
+            "previous": true
+          },
+          "inputVerified": true,
+          "home": {
+            "admin/homepage-marker.txt": {
+              "bytes": 22,
+              "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+            },
+            "admin/.mozilla/firefox/http1-profile/user.js": {
+              "bytes": 477,
+              "sha256": "f90626ec6479cf7545090052bee26ae50515a274d4f67ebb239e74a260724f49"
+            },
+            "admin/.mozilla/firefox/http1-profile/prefs.js": {
+              "bytes": 5339,
+              "sha256": "29855d8cbada6b986f5bcd5ec21c88b6bdb5c852124f944d808439207d8b73e5"
+            }
+          },
+          "screenshot": "/mnt/p6/build/firefox-homepage-20260926/guest-run2/update-functional.png"
+        },
+        {
+          "label": "warm",
+          "launchLogMs": 10815,
+          "readyBeaconMs": 29358,
+          "imageRequests": [],
+          "system": {
+            "bytes": 223483946,
+            "version": "89ec54c81936",
+            "previous": true
+          },
+          "inputVerified": true,
+          "home": {
+            "admin/homepage-marker.txt": {
+              "bytes": 22,
+              "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+            },
+            "admin/.mozilla/firefox/http1-profile/user.js": {
+              "bytes": 477,
+              "sha256": "f90626ec6479cf7545090052bee26ae50515a274d4f67ebb239e74a260724f49"
+            },
+            "admin/.mozilla/firefox/http1-profile/prefs.js": {
+              "bytes": 5390,
+              "sha256": "e51e6645bc07c5f10596288fc77fb9910933e53f3055f3567452253a6b525450"
+            }
+          },
+          "screenshot": "/mnt/p6/build/firefox-homepage-20260926/guest-run2/warm-functional.png"
+        }
+      ],
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    },
+    {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/fresh-default-run1/result.json",
+      "sha256": "94acff45e5dbb55161633469d3cf37cae2b0ea210578ec3813f5e22d800563fb",
+      "phases": [
+        {
+          "label": "fresh-default",
+          "launchLogMs": 8880,
+          "readyBeaconMs": 43119,
+          "imageRequests": [
+            {
+              "at": 1790465007060,
+              "path": "/linux/vmlinux.wasm",
+              "variant": "candidate"
+            },
+            {
+              "at": 1790465007061,
+              "path": "/linux/initramfs-firefox.cpio.gz",
+              "variant": "candidate"
+            }
+          ],
+          "system": {
+            "bytes": 94581782,
+            "version": "89ec54c81936",
+            "previous": false
+          },
+          "inputVerified": true,
+          "home": {
+            "admin/homepage-marker.txt": {
+              "bytes": 22,
+              "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+            },
+            "admin/.mozilla/firefox/http1-profile/user.js": {
+              "bytes": 380,
+              "sha256": "e0cacde8e0fd34318aa2d7756203a84b651f27ce6228ea11812fed6e280fa785"
+            },
+            "admin/.mozilla/firefox/http1-profile/prefs.js": {
+              "bytes": 4527,
+              "sha256": "78a41b5796c938bb81076d0949129cdee676343ad36525aa78357509aa0670f1"
+            }
+          },
+          "screenshot": "/mnt/p6/build/firefox-homepage-20260926/fresh-default-run1/fresh-default-functional.png"
+        }
+      ],
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    }
+  ],
+  "auditChecks": 48,
+  "limitations": [
+    "Launch log is not first paint; baseline and fresh-default include a deliberate 30-second wait before typed navigation. No speedup ratio is established.",
+    "Saved homepage, exact user.js and marker survive update/warm reload; this packet does not newly inspect bookmark SQLite.",
+    "Default New Tab and guest typing were visually inspected.",
+    "Run1 failed before boot due to a harness string escaping error; run2 supersedes it.",
+    "Native JIT, guest OpenGL/Firefox GPU, hardware decoding and final whole-goal performance remain unfinished."
+  ],
+  "publicDeployment": "pending"
+}
