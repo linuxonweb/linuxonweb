@@ -1,0 +1,212 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "release": "Sites version 6",
+  "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+  "pass": true,
+  "scope": "Actual public version-5-to-version-6 update, warm boot, home-file preservation and guest Firefox fixture/workload/download acceptance",
+  "rawEvidenceDirectory": "/mnt/p6/build/firefox-ready-20260926/public-update",
+  "sources": [
+    "public-v5-preseed-success.json",
+    "public-v6-update-success.json",
+    "public-v6-warm-success.json",
+    "public-v6-final-functional-success.json",
+    "public-v6-js-result.json"
+  ],
+  "observer": "Page CDP and one-second guest log polling; no worker attachment, hooks, pause, tracing or profiler",
+  "outerBrowser": "Chrome/150.0.7871.114",
+  "bootObservations": [
+    {
+      "phase": "initial",
+      "launchMarkerObservedMs": 34098,
+      "host": {
+        "visibility": "visible",
+        "focus": true,
+        "isolated": true,
+        "canvas": {
+          "width": 1280,
+          "height": 720
+        },
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "activeVersion": "fa0217b54d99"
+      },
+      "actualConfiguration": [
+        "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"
+      ],
+      "readinessLines": [],
+      "systemImageRequests": 2,
+      "systemImageResourceEntries": 2
+    },
+    {
+      "phase": "update",
+      "launchMarkerObservedMs": 33948,
+      "host": {
+        "visibility": "visible",
+        "focus": true,
+        "isolated": true,
+        "canvas": {
+          "width": 1280,
+          "height": 720
+        },
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "activeVersion": "ff1ea9fc6f62"
+      },
+      "actualConfiguration": [
+        "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+      ],
+      "readinessLines": [
+        "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+        "[wm-ready] Aurora handshake ready after 438 ms"
+      ],
+      "systemImageRequests": 2,
+      "systemImageResourceEntries": 0
+    },
+    {
+      "phase": "warm",
+      "launchMarkerObservedMs": 17400,
+      "host": {
+        "visibility": "visible",
+        "focus": true,
+        "isolated": true,
+        "canvas": {
+          "width": 1280,
+          "height": 720
+        },
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "activeVersion": "ff1ea9fc6f62"
+      },
+      "actualConfiguration": [
+        "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+      ],
+      "readinessLines": [
+        "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+        "[wm-ready] Aurora handshake ready after 1060 ms"
+      ],
+      "systemImageRequests": 0,
+      "systemImageResourceEntries": 0
+    }
+  ],
+  "timingInterpretation": "The public version-5 initial observation includes downloads; the version-6 update includes update/network work; the version-6 warm boot uses cached images. These are unmatched cases and establish no speedup ratio or exact first paint. The separate local matched initial pair is documented in firefox-aurora-startup.json.",
+  "updateAndWarm": {
+    "pass": true,
+    "actualUpdateControlAndAutomaticReload": true,
+    "fromVersion": "fa0217b54d99",
+    "toVersion": "ff1ea9fc6f62",
+    "updatePreserved": true,
+    "warmPreserved": true,
+    "marker": {
+      "path": "admin/startup-ready-1790442817760.txt",
+      "sha256": "49192a5f8d69868643ee9b4d75bb08e4d48a3fe9d4c73b7dd35fabe966aa2562"
+    },
+    "fixture": {
+      "path": "admin/Downloads/runtime-qa-1790442817760.html",
+      "sha256": "291374fc7b3262e03d085c6966a59fc1a4f52435ab246bfaef1e411f996ccd25"
+    },
+    "originalDownload": {
+      "path": "admin/Downloads/guest-js-unspecified-1790443024079.json",
+      "sha256": "634e02fbbe94e7dc180f77a6408b019ed14ded889daa960d7d0c6775e66b69bd"
+    },
+    "profileFiles": [
+      {
+        "path": "admin/.mozilla/firefox/http1-profile/user.js",
+        "sha256": "e0cacde8e0fd34318aa2d7756203a84b651f27ce6228ea11812fed6e280fa785"
+      },
+      {
+        "path": "admin/.mozilla/firefox/http1-profile/startup-ready-1790442817760.txt",
+        "sha256": "ff2cff7a1c1832649f98167b42aa805dc968d7eba631d4d654077dade02f5dd8"
+      }
+    ],
+    "verification": "Exact marker, fixture, original guest download and both selected profile-file hashes matched after the real update/restart and following warm reload. This does not claim bookmark/history or SQLite integrity coverage."
+  },
+  "visualReview": {
+    "actualFirefoxWindow": true,
+    "fixtureRendered": true,
+    "review": "Root reviewed the actual Firefox window and the restored fixture tab after native Firefox Reload; the exact file fixture showed Ready.",
+    "screenshots": [
+      "public-v6-warm-later.png",
+      "public-v6-fixture-reloaded.png",
+      "public-v6-benchmark-ready.png",
+      "public-v6-download.png"
+    ]
+  },
+  "javascript": {
+    "pass": true,
+    "actualGuestRunAndDownload": true,
+    "measurement": "fixed-batch-100-v1",
+    "repetitions": 100,
+    "samples": 5,
+    "warmups": 12,
+    "done": true,
+    "timingResolutionSufficient": true,
+    "elapsedMs": 3265,
+    "runId": "1790443488155",
+    "guestUserAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+    "downloadPath": "admin/Downloads/guest-js-unspecified-1790443488155.json",
+    "downloadSHA256": "59c5006802e076e9a94850958cb6d26fb834c7b60a49c1e3de173c1a1245f97b",
+    "checks": [
+      {
+        "name": "integer loop",
+        "expected": 7998000,
+        "actual": 7998000,
+        "medianMs": 1.03,
+        "correct": true
+      },
+      {
+        "name": "object properties",
+        "expected": 67982,
+        "actual": 67982,
+        "medianMs": 1.94,
+        "correct": true
+      },
+      {
+        "name": "array callbacks",
+        "expected": 748500,
+        "actual": 748500,
+        "medianMs": 2.45,
+        "correct": true
+      },
+      {
+        "name": "JSON and strings",
+        "expected": 19900,
+        "actual": 19900,
+        "medianMs": 0.53,
+        "correct": true
+      },
+      {
+        "name": "exceptions and recursion",
+        "expected": 1700,
+        "actual": 1700,
+        "medianMs": 0.3,
+        "correct": true
+      }
+    ],
+    "interpretation": "Correctness and guest download acceptance; these workload times are not a performance comparison.",
+    "reloadPreservationTested": false,
+    "preservationLimit": "This version-6 download was created after the accepted warm reload and has not itself been reload-tested; update/warm preservation covers the original version-5 download recorded above."
+  },
+  "retainedFailures": {
+    "typedNavigation": "One attempt failed visually on version 5 and one on version 6. A settled version-5 retry passed. Version 6 recovered by selecting the restored first fixture tab and clicking native Firefox Reload. Cause remains unproven; typed-input reliability is not claimed fixed.",
+    "files": [
+      "public-v5-navigation-failed.json",
+      "public-v5-navigation-failed.png",
+      "public-v6-navigation-failed.json",
+      "public-v6-navigation-failed.png"
+    ]
+  },
+  "limitations": [
+    "Raw phase pass records completed observation; raw visualAcceptance remains pending and this compact record separately attributes subsequent visual review to root.",
+    "One-second log polling gives observed launch markers, not exact event timestamps or first paint.",
+    "No new mobile or physical-phone validation was performed in this release gate.",
+    "Native Firefox JIT, guest Vulkan/OpenGL, hardware video decoding and physical GPU acceleration are not implemented or established by these checks.",
+    "Experimental guest Vulkan lifecycle source is excluded from the release."
+  ]
+}

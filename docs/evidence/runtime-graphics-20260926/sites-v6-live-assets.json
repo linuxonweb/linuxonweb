@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "pass": true,
+  "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+  "sitesVersion": 6,
+  "manifestVersion": "ff1ea9fc6f62",
+  "workerGraphSHA256": "b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5",
+  "startedAt": "2026-09-26T17:27:01.102Z",
+  "completedAt": "2026-09-26T17:27:27.093Z",
+  "source": "/mnt/p6/build/firefox-ready-20260926/public-v6-assets-browser.json",
+  "scope": "Browser full-body GET verification of manifest, all three system images, served platform and all eight immutable worker modules against frozen accepted release inputs",
+  "routeCount": 13,
+  "fullBodyBytes": 135264738,
+  "allResponses": {
+    "status": 200,
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "Cross-Origin-Resource-Policy": "same-origin"
+  },
+  "rows": [
+    {
+      "path": "/linux/boot-manifest.json",
+      "bytes": 662,
+      "sha256": "10242a22c9ee3645e3d3d9769f21073e510d355589616d3fca38d082f85de730",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/linux/vmlinux.wasm",
+      "bytes": 6281750,
+      "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/linux/initramfs.cpio",
+      "bytes": 40495556,
+      "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/linux/initramfs-firefox.cpio.gz",
+      "bytes": 88406608,
+      "sha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/linux/dist/platform.js",
+      "bytes": 6003,
+      "sha256": "06d18dc2a431590a01f6f9163bfe05c87178a76d0c2c4fb47f6ec822fbd42d44",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/worker.js",
+      "bytes": 37557,
+      "sha256": "31b20da3c43ee73ff60a5dcc9644b52d6c3e2514468dd287d875433bdd47a034",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/audio.js",
+      "bytes": 6134,
+      "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/wasm.js",
+      "bytes": 6188,
+      "sha256": "536057f3e2df6bb68f209d9f380d8ea01e88e7c3d7611d6929d6fff2106abadf",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/platform.js",
+      "bytes": 5916,
+      "sha256": "678ea72af0d8aba868f5abd05d827ecbbe82b14d11c89dee278169511f085f85",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/util.js",
+      "bytes": 244,
+      "sha256": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/wasm_binary.js",
+      "bytes": 7036,
+      "sha256": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/user-memory-growth-adapter.js",
+      "bytes": 4842,
+      "sha256": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    },
+    {
+      "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/firefox-callback-adapter.mjs",
+      "bytes": 6242,
+      "sha256": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "matchesFrozenRelease": true
+    }
+  ],
+  "limitations": [
+    "A Python urllib preflight received HTTP 403; normal browser requests returned HTTP 200 and passed the full-body checks. No cause is established for the client-dependent preflight result.",
+    "Verification covers the listed 13 routes, not every release asset."
+  ]
+}

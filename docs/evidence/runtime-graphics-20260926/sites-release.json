@@ -2,34 +2,36 @@
   "schema": 1,
   "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
   "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
-  "version": 5,
-  "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_e476a0133e748191a46b03488991e15f",
-  "deploymentId": "appgdep_6ab7e07d39508191b9e9c5ee5390b4bd",
+  "version": 6,
+  "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_dab4dcf397488191a274dec22cdfba71",
+  "deploymentId": "appgdep_6ab7fe800a4c8191b1f5a0ee942cd66c",
+  "deploymentStatus": "succeeded",
+  "deployedAt": "2026-09-26T17:19:30.784118+00:00",
   "audience": "public",
-  "sitesSourceCommit": "b5858da1e8699215d6ef04cb24bd9111c501d3e4",
-  "runtimeSourceCommit": "f24b914113dee9132471298e5e3a97b2e69b2ceb",
+  "sitesSourceCommit": "8757a6ff2f8f0a312e7a616bb900521234395757",
+  "runtimeSourceCommit": "c1665dcc4ab199a88f74854627043e8c5ca85f4a",
   "archive": {
-    "bytes": 120052978,
-    "sha256": "7f2e156b8b76c82251f981c112d19e1d727edf972f7ebdc8ca4f8aa721bbd738"
+    "bytes": 120333938,
+    "sha256": "ac163bd197095f61046139ffed5ba4aad44daee698b32976209616d20a9c8664"
   },
   "acceptedContent": {
-    "files": 61,
-    "bytes": 151470080,
-    "tarContentSha256": "541fcd93513bcebdcd30a6448644b7d08b31266c3de7d0a4557c6e5b33ab81c4"
+    "files": 63,
+    "bytes": 151726080,
+    "tarContentSha256": "ef20760e4fa0c6081ba1efcd58e94fb7487b823ac0918a99abb8ee197c2f5a3b"
   },
   "previousRelease": {
-    "version": 4,
-    "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_18718b8b11248191ac31de63e85ae5e8",
-    "deploymentId": "appgdep_6ab7d2e9d8448191ad0cee318dca4554",
-    "sitesSourceCommit": "278d73a9e3eabec7606ab25518a4da3e54f0499e",
-    "archiveSHA256": "bcd22b533bea29f38e3345fdf0c8c9e8941528df6cc284e5b8bfa662b75f804b"
+    "version": 5,
+    "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_e476a0133e748191a46b03488991e15f",
+    "deploymentId": "appgdep_6ab7e07d39508191b9e9c5ee5390b4bd",
+    "sitesSourceCommit": "b5858da1e8699215d6ef04cb24bd9111c501d3e4",
+    "archiveSHA256": "7f2e156b8b76c82251f981c112d19e1d727edf972f7ebdc8ca4f8aa721bbd738",
+    "fullEvidence": "sites-v5-release.json"
   },
   "architecture": "Sites serves accepted static runtime assets; existing Cloudflare deployment remains the unchanged DNS/TCP network proxy.",
   "cloudflareRedeployed": false,
-  "cloudflareDeployBlocker": "CLOUDFLARE_API_TOKEN was unavailable.",
   "bootManifest": {
     "schema": 1,
-    "version": "fa0217b54d99",
+    "version": "ff1ea9fc6f62",
     "assets": {
       "kernel": {
         "url": "./vmlinux.wasm",
@@ -45,96 +47,29 @@
       },
       "firefox": {
         "url": "./initramfs-firefox.cpio.gz",
-        "bytes": 88186382,
-        "sha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+        "bytes": 88406608,
+        "sha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550",
         "label": "Firefox system"
       }
     }
   },
   "workerGraph": {
     "sha256": "b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5",
-    "routes": 66,
-    "parts": 57,
-    "change": "Derived stable platform worker URL and immutable dependency namespace; all other accepted runtime route bytes unchanged",
-    "updateSemantics": "Stable platform, boot-assets and boot-manifest remain must-revalidate; unknown immutable graph identities return 404"
+    "unchangedFromVersion5": true
   },
   "verification": {
     "sitesUnitTests": "10/10 passed",
-    "workerdIntegrationTests": "3/3 passed; all 66 route hashes plus ranges, headers and stable-update policy",
-    "localRealBrowserCandidate": "passed; shell 2.733 seconds with lean observer",
-    "publicFirstAndWarmConsoleBoot": "passed; actual 1 GiB/2 CPU, visible, secure and isolated, no page errors",
-    "publicSystemImageNetworkFetches": 0,
-    "publicVersionedWorkerRequestsFirstBoot": 65,
-    "publicVersionedWorkerRequestsWarmBoot": 67,
-    "separatePublicModuleHashesAndHeaders": "passed; exact derived platform/worker bytes, immutable versus stable revalidate policy, isolation and unchanged manifest hashes",
-    "publicModuleEvidence": "sites-v5-live-assets.json",
-    "publicFirefoxAcceptance": "passed scoped actual 4 GiB/2 CPU launch/render, five JavaScript checksums and download, update/reload exact home hashes, and Google HTTP redirect to rendered HTTPS page; Bing timeout unresolved and example.com reset recorded",
-    "publicFirefoxEvidence": "sites-v5-firefox.json",
-    "evidence": "runtime-origin-profile.json"
+    "workerdIntegrationTests": "3/3 passed",
+    "localFirefoxAcceptance": "passed; see firefox-aurora-startup.json",
+    "publicFirefoxPreseed": "version5 actual 4GiB/2CPU fixture render and five guest downloaded checksums passed",
+    "publicFirefoxUpdateAndWarm": "passed; real version-5-to-version-6 update/restart retained exact home/profile files; following warm boot fetched zero system images; see sites-v6-firefox.json",
+    "publicFirefoxWorkloadAndDownload": "passed; actual guest fixture Run/Download returned all five exact checksums with 100 repetitions; see sites-v6-firefox.json",
+    "publicAssetHashesAndHeaders": "passed; 13 full-body routes, 135264738 bytes, exact accepted hashes, isolation, stable revalidation and immutable worker headers; see sites-v6-live-assets.json"
   },
-  "timing": {
-    "observer": "Matched page-only lean observer; no worker attachment, pause, Wasm hooks or tracing",
-    "browser": "Chrome/150.0.7871.114",
-    "actualRamMiB": 1024,
-    "actualCPUs": 2,
-    "visible": true,
-    "systemImagesWarm": true,
-    "v4BaselineShellMs": 55047.74,
-    "v5FirstShellMs": 3486.165,
-    "v5WarmShellMs": 2692.885,
-    "evidenceFiles": ["../.cache/runtime-profile-20260926/site-pre-r2-report.json", "../.cache/runtime-profile-20260926/site-post-r2-report.json", "../.cache/runtime-profile-20260926/site-post-warm-r2-report.json"],
-    "interpretation": "Large measured public console boot improvement after immutable worker graph deployment. Single first/repeat observations, not a multi-run distribution or a Firefox speedup measurement."
-  },
-  "historicalV4Verification": {
-    "sitesTests": 8,
-    "localWorkerRouteHashes": 58,
-    "rangeAndIsolation": "passed",
-    "liveKernelPlainFirefoxExactHashesAndIsolation": "passed",
-    "liveGuestWriteReloadAndUpdateRestartPreservingMarker": "passed",
-    "liveWarmSystemImageRequests": 0,
-    "guestEvidence": "sites-live-storage.json",
-    "assetEvidence": "sites-live-assets.json",
-    "desktopAnd430pxMobileVisualReview": "passed: separate storage counts, 44px controls, no horizontal overflow",
-    "guestDnsTcpHttpsSmoke": "passed: wget google.com and curl https://www.google.com",
-    "timingNetworkEvidence": "sites-live-timing-network.json"
-  },
-  "historicalV4Timing": {
-    "configurationCaveat": "These earlier DOM-only reports did not establish actual configuration equality. Fresh authoritative matched measurements are recorded separately above.",
-    "initialMountSeconds": 62.6,
-    "warmMountSeconds": 53.4,
-    "afterUpdateMountSeconds": 56.4,
-    "foregroundComparison": {
-      "visibility": "visible",
-      "ramMiB": 1024,
-      "cpus": 2,
-      "stageMilliseconds": {
-        "kernel": 1027.380000114441,
-        "unpack": 34430.87000012398,
-        "freeInitrd": 34718.08500003815,
-        "init": 38079.200000047684,
-        "mount": 61022.90499997139,
-        "network": 65193.549999952316,
-        "shell": 71295.60000014305
-      },
-      "systemImageRequests": 0,
-      "finerCause": "unresolved"
-    },
-    "interpretation": "Both origins avoided system-image downloads, but production remained much slower than local in the same visible 1 GiB / 2 CPU configuration. Finer cause unresolved; no production boot-speed improvement claimed.",
-    "localForegroundComparison": {
-      "visibility": "visible",
-      "ramMiB": 1024,
-      "cpus": 2,
-      "stageMilliseconds": {
-        "kernel": 267.1399998664856,
-        "unpack": 1099.4300000667572,
-        "freeInitrd": 1380.9300000667572,
-        "init": 1384.420000076294,
-        "mount": 1979.4300000667572,
-        "network": 2167.204999923706,
-        "shell": 2654.7850000858307
-      },
-      "systemImageRequests": 0,
-      "evidence": "local-boot-timing.json"
-    }
-  }
+  "scopeLimits": [
+    "Launch-marker improvement is one matched local pair, not first paint or a distribution",
+    "Native Firefox JIT, guest Vulkan/OpenGL and hardware decoding remain unresolved",
+    "Experimental guest Vulkan lifecycle source is excluded from this release",
+    "Public initial/update/warm launch observations are unmatched cases and do not establish a speedup ratio"
+  ]
 }

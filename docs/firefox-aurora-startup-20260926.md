@@ -64,8 +64,55 @@ Local functional acceptance passes. The Firefox image and manifest are promoted
 locally, with all four original inputs preserved and verified in
 `baseline-images/`. Isolated release staging verifies exactly two changed routes,
 55 parts and 151,597,129 bytes; all other pinned runtime input bytes are retained.
-Sites publication is a separate remaining gate and is not established by this
-local evidence.
+Sites version 6 now publishes this candidate. Public release acceptance is
+recorded separately below.
+
+## Public Sites version 6
+
+Version 6 deployed successfully to the existing public Site from nested source
+`8757a6ff2f8f0a312e7a616bb900521234395757`, pinned to parent
+`c1665dcc4ab199a88f74854627043e8c5ca85f4a`. The
+[release record](evidence/runtime-graphics-20260926/sites-release.json) retains
+exact version/deployment IDs and the saved version 5 rollback record. The
+Cloudflare DNS/TCP proxy was not redeployed, and the immutable worker graph is
+unchanged from version 5. Experimental guest Vulkan source is excluded.
+
+Public acceptance passed actual version-5-to-version-6 update and automatic
+restart, followed by a zero-system-image-request warm boot. Host and guest
+markers establish the same maximum-memory configuration, two CPUs and
+1280×720 Canvas2D, with a visible focused isolated page. Exact home-marker,
+fixture, original version-5 download and two selected profile-file hashes
+survived both boots. Root reviewed the real Firefox window and the restored
+local fixture after native Firefox Reload. The subsequent version-6 Run and
+Download passed all five checksums with 100 repetitions. This new version-6
+download was created after the warm gate and has not itself been reload-tested.
+See [public Firefox evidence](evidence/runtime-graphics-20260926/sites-v6-firefox.json).
+
+Public launch-marker observations were 34.098 s for version 5 initial boot with
+downloads, 33.948 s for the version 6 update including update/network work, and
+17.400 s for the version 6 warm boot. These are unmatched cases, not a public
+speedup comparison or first-paint measurements. The public warm observation
+also remains above the local candidate's 8.403 s; this release does not establish
+why those origins differ.
+
+A separate browser verifier fetched and hashed 13 full-body routes totaling
+135,264,738 bytes: the manifest, all three system images, the served platform
+module and all eight immutable worker modules. All sizes and SHA-256 values
+match the frozen accepted release, all responses carry the isolation headers,
+and stable routes revalidate while the versioned worker routes are immutable.
+See [live asset evidence](evidence/runtime-graphics-20260926/sites-v6-live-assets.json).
+A Python urllib preflight received HTTP 403 while normal browser requests returned
+HTTP 200; the cause of that client-dependent result remains unproven.
+
+Typed fixture navigation failed visually once on version 5 and once on version
+6. A settled version-5 retry passed; version 6 recovered by selecting the
+restored first fixture tab and clicking native Firefox Reload. Both failures
+and screenshots remain under `public-update/`. This verifies a working recovery,
+not a fix to typed-input reliability. The packed startup still supplies Bing as
+a command-line URL alongside the persistent profile. Its interaction with
+startup-page loading or focus is a hypothesis, not an established cause; a
+future isolated experiment can remove that forced homepage while preserving
+profile preferences and compare startup and input stability.
 
 ## Retained failures and recovery
 
