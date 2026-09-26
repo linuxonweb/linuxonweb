@@ -65,11 +65,11 @@ module=$tmp/opt/firefox/firefox
 wasm-validate --enable-all "$module"
 metadata=$(wasm-objdump -x "$module")
 for required in \
-  'func\[0\].*<linux.syscall>' \
-  'func\[1\].*<linux.get_thread_area>' \
-  'func\[2\].*<linux.copy_siginfo>' \
+  'func\[[0-9]+\].*<- linux\.syscall' \
+  'func\[[0-9]+\].*<- linux\.get_thread_area' \
+  'func\[[0-9]+\].*<- linux\.copy_siginfo' \
   'memory\[0\].*shared.*<- env.memory' \
-  'func\[12\].*_start'; do
+  'func\[[0-9]+\].*-> "_start"'; do
   grep -Eq -- "$required" <<<"$metadata" || {
     printf 'firefox-wasm: required ABI record missing: %s\n' "$required" >&2
     exit 1

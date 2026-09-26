@@ -1,3 +1,4 @@
+import { createAudioHost } from "./audio.js";
 // SPDX-License-Identifier: MIT
 import { generate_devicetree } from "./devicetree.js";
 import { platform } from "./platform.js";
@@ -99,6 +100,7 @@ export async function spawnMachine(options) {
     let finish_error;
     let finish_promise;
     let framebuffer_host = null;
+    const audio_host = options.audio ? createAudioHost() : null;
     const framebuffer_mode = {
         width: options.framebuffer?.width ?? 1024,
         height: options.framebuffer?.height ?? 768,
@@ -123,6 +125,7 @@ export async function spawnMachine(options) {
         finish_promise = (async () => {
             framebuffer_host?.close();
             framebuffer_host = null;
+            await audio_host?.close();
             const device_closes = devices.map((device) => close_virtio_device(device));
             for (const result of await Promise.allSettled(device_closes)) {
                 if (result.status === "rejected" && !failed) {
@@ -237,6 +240,9 @@ export async function spawnMachine(options) {
                             catch (error) {
                                 void fail(error);
                             }
+                            break;
+                        case "audio_write":
+                            audio_host?.write(message);
                             break;
                         case "boot_console_write":
                             boot_console_write(message.message);
@@ -392,6 +398,8 @@ export async function spawnMachine(options) {
         instance.exports.boot();
         return {
             memory: wasm_memory,
+            resumeAudio: () => audio_host?.resume(),
+            get audioStats() { return audio_host?.stats ?? null; },
             bootConsole: boot_console.readable,
             closed: closed_promise.promise,
             close,

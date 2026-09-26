@@ -1,0 +1,240 @@
+--- a/xpcom/reflect/xptcall/md/unix/xptcall_wasm32.cpp
++++ b/xpcom/reflect/xptcall/md/unix/xptcall_wasm32.cpp
+@@ -9,6 +9,9 @@
+ #include "xptcprivate.h"
+ 
+ #include <stdint.h>
++#include <string.h>
++#include <type_traits>
++#include <utility>
+ 
+ static nsresult PrepareAndDispatchI32(nsXPTCStubBase* self,
+                                       uint32_t methodIndex,
+@@ -167,6 +170,186 @@
+   return true;
+ }
+ 
++// WebAssembly requires exact call signatures. Keep a bounded set of typed
++// mixed-width signatures for XPIDL transfer/stream callbacks and scalar calls.
++// This preserves full 64-bit progress, offsets and PRTime values; unsupported
++// signatures still fail rather than truncating values or reporting success.
++template <typename T> static uint64_t WasmBits(T value) {
++  if constexpr (std::is_same_v<T, float>) {
++    uint32_t bits; memcpy(&bits, &value, sizeof(bits)); return bits;
++  } else { return uint64_t(value); }
++}
++template <typename T> static T WasmValue(uint64_t bits) {
++  if constexpr (std::is_same_v<T, float>) {
++    uint32_t word = uint32_t(bits); float value;
++    memcpy(&value, &word, sizeof(value)); return value;
++  } else { return T(bits); }
++}
++static uint32_t WasmTag(const nsXPTType& type) {
++  if (type == nsXPTType::T_I64 || type == nsXPTType::T_U64) return 1;
++  if (type == nsXPTType::T_FLOAT) return 2;
++  if (type == nsXPTType::T_DOUBLE) return 3;
++  return 0;
++}
++template <uint32_t MethodIndex, typename... Args>
++static nsresult WasmStubMixed(nsXPTCStubBase* self, Args... values) {
++  const nsXPTMethodInfo* info = nullptr;
++  if (NS_FAILED(self->mEntry->GetMethodInfo(MethodIndex, &info)) || !info ||
++      info->ParamCount() != sizeof...(Args)) return NS_ERROR_FAILURE;
++  uint64_t args[] = {WasmBits(values)...};
++  nsXPTCMiniVariant params[sizeof...(Args)]{};
++  for (uint32_t i = 0; i < sizeof...(Args); ++i) {
++    const auto& param = info->Param(i);
++    const auto& type = param.GetType();
++    if (param.IsOut() || !type.IsArithmetic()) {
++      params[i].val.p = reinterpret_cast<void*>(uintptr_t(args[i]));
++    } else {
++      switch (type) {
++        case nsXPTType::T_I8: params[i].val.i8 = int8_t(args[i]); break;
++        case nsXPTType::T_I16: params[i].val.i16 = int16_t(args[i]); break;
++        case nsXPTType::T_I32: params[i].val.i32 = int32_t(args[i]); break;
++        case nsXPTType::T_U8: params[i].val.u8 = uint8_t(args[i]); break;
++        case nsXPTType::T_U16: params[i].val.u16 = uint16_t(args[i]); break;
++        case nsXPTType::T_U32: params[i].val.u32 = uint32_t(args[i]); break;
++        case nsXPTType::T_BOOL: params[i].val.b = bool(args[i]); break;
++        case nsXPTType::T_CHAR: params[i].val.c = char(args[i]); break;
++        case nsXPTType::T_WCHAR: params[i].val.wc = char16_t(args[i]); break;
++        case nsXPTType::T_I64: params[i].val.i64 = int64_t(args[i]); break;
++        case nsXPTType::T_U64: params[i].val.u64 = args[i]; break;
++        case nsXPTType::T_FLOAT: params[i].val.f = WasmValue<float>(args[i]); break;
++        default: return NS_ERROR_NOT_IMPLEMENTED;
++      }
++    }
++  }
++  return self->mOuter->CallMethod(MethodIndex, info, params);
++}
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uint64_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmTransferInit[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uint64_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmTransferContext[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uintptr_t, uint64_t, uint64_t, uint64_t, uint64_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmProgress64[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uintptr_t, uint64_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmDataAvailable[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uint64_t, uint64_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmProgress[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, uint64_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmSeek[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uint64_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmInt64[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, float, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmFloatPref[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubMixed<n, uintptr_t, float, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmFloatPrefDefault[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
++struct WasmMixedSignature { uint8_t count; uint32_t types; const uintptr_t* table; };
++static const WasmMixedSignature kWasmMixedSignatures[] = {
++  {12, 0x400, kWasmTransferInit},
++  {14, 0x100, kWasmTransferContext},
++  {6, 0x550, kWasmProgress64},
++  {4, 0x10, kWasmDataAvailable},
++  {3, 0x14, kWasmProgress},
++  {2, 0x4, kWasmSeek},
++  {1, 0x1, kWasmInt64},
++  {3, 0x8, kWasmFloatPref},
++  {4, 0x8, kWasmFloatPrefDefault},
++};
++static const uintptr_t* WasmMixedTable(const nsXPTMethodInfo& info) {
++  if (info.ParamCount() > 16 || info.WantsContext() || info.WantsOptArgc()) return nullptr;
++  uint32_t types = 0;
++  for (uint8_t i = 0; i < info.ParamCount(); ++i) {
++    const auto& param = info.Param(i);
++    if (!param.IsOut() && param.GetType().IsArithmetic())
++      types |= WasmTag(param.GetType()) << (2 * i);
++  }
++  for (const auto& signature : kWasmMixedSignatures)
++    if (signature.count == info.ParamCount() && signature.types == types) return signature.table;
++  return nullptr;
++}
++template <typename... Args, size_t... I>
++static nsresult WasmInvokeMixed(uintptr_t method, nsISupports* that,
++                               const uint64_t* args, std::index_sequence<I...>) {
++  return reinterpret_cast<nsresult (*)(nsISupports*, Args...)>(method)(
++      that, WasmValue<Args>(args[I])...);
++}
++static nsresult WasmInvokeMixedSignature(uintptr_t method, nsISupports* that,
++                                        uint32_t count, uint32_t types,
++                                        const uint64_t* args) {
++  if (count == 12 && types == 0x400)
++    return WasmInvokeMixed<uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uint64_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>(method, that, args, std::make_index_sequence<12>{});
++  if (count == 14 && types == 0x100)
++    return WasmInvokeMixed<uintptr_t, uintptr_t, uintptr_t, uintptr_t, uint64_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>(method, that, args, std::make_index_sequence<14>{});
++  if (count == 6 && types == 0x550)
++    return WasmInvokeMixed<uintptr_t, uintptr_t, uint64_t, uint64_t, uint64_t, uint64_t>(method, that, args, std::make_index_sequence<6>{});
++  if (count == 4 && types == 0x10)
++    return WasmInvokeMixed<uintptr_t, uintptr_t, uint64_t, uintptr_t>(method, that, args, std::make_index_sequence<4>{});
++  if (count == 3 && types == 0x14)
++    return WasmInvokeMixed<uintptr_t, uint64_t, uint64_t>(method, that, args, std::make_index_sequence<3>{});
++  if (count == 2 && types == 0x4)
++    return WasmInvokeMixed<uintptr_t, uint64_t>(method, that, args, std::make_index_sequence<2>{});
++  if (count == 1 && types == 0x1)
++    return WasmInvokeMixed<uint64_t>(method, that, args, std::make_index_sequence<1>{});
++  if (count == 3 && types == 0x8)
++    return WasmInvokeMixed<uintptr_t, float, uintptr_t>(method, that, args, std::make_index_sequence<3>{});
++  if (count == 4 && types == 0x8)
++    return WasmInvokeMixed<uintptr_t, float, uintptr_t, uintptr_t>(method, that, args, std::make_index_sequence<4>{});
++  return NS_ERROR_NOT_IMPLEMENTED;
++}
++
+ void WasmInitXPTCStub(nsXPTCStubBase* stub) {
+   constexpr size_t kVTableEntries = 253;
+   auto** objectVPtr = reinterpret_cast<uintptr_t**>(stub);
+@@ -180,6 +363,8 @@
+     const nsXPTMethodInfo& info = stub->mEntry->Method(i);
+     if (IsWasmI32Method(info)) {
+       stub->mWasmVTable[i] = kWasmStubTables[info.ParamCount()][i];
++    } else if (const auto* table = WasmMixedTable(info)) {
++      stub->mWasmVTable[i] = table[i];
+     }
+   }
+   *objectVPtr = stub->mWasmVTable;
+@@ -202,8 +387,9 @@
+                  nsXPTCVariant* params) {
+   // wasm validates the complete call_indirect signature. Most XPIDL values
+   // are i32 on wasm32, including pointers and indirect values.
+-  uintptr_t args[12]{};
+-  if (paramCount > 12) return NS_ERROR_NOT_IMPLEMENTED;
++  uint64_t args[16]{};
++  uint32_t types = 0;
++  if (paramCount > 16) return NS_ERROR_NOT_IMPLEMENTED;
+   for (uint32_t i = 0; i < paramCount; ++i) {
+     const nsXPTCVariant& param = params[i];
+     if (param.IsIndirect()) {
+@@ -221,8 +407,11 @@
+       case nsXPTType::T_CHAR: args[i] = uintptr_t(intptr_t(param.val.c)); break;
+       case nsXPTType::T_WCHAR: args[i] = param.val.wc; break;
+       case nsXPTType::T_I64:
++        args[i] = uint64_t(param.val.i64); types |= 1u << (2 * i); break;
+       case nsXPTType::T_U64:
++        args[i] = param.val.u64; types |= 1u << (2 * i); break;
+       case nsXPTType::T_FLOAT:
++        args[i] = WasmBits(param.val.f); types |= 2u << (2 * i); break;
+       case nsXPTType::T_DOUBLE:
+         return NS_ERROR_NOT_IMPLEMENTED;
+       default: args[i] = reinterpret_cast<uintptr_t>(param.val.p); break;
+@@ -230,6 +419,7 @@
+   }
+ 
+   uintptr_t method = (*reinterpret_cast<uintptr_t**>(that))[methodIndex];
++  if (types) return WasmInvokeMixedSignature(method, that, paramCount, types, args);
+   switch (paramCount) {
+     case 0: return reinterpret_cast<nsresult (*)(nsISupports*)>(method)(that);
+     case 1: return reinterpret_cast<nsresult (*)(nsISupports*, uintptr_t)>(method)(that, args[0]);

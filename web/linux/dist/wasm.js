@@ -5,6 +5,7 @@ const supported_user_module_imports = new Set([
     "linux\0syscall\0function",
     "linux\0get_thread_area\0function",
     "linux\0copy_siginfo\0function",
+    "linux\0audio_write\0function",
 ]);
 /** Whether every import can be supplied when a userspace module is instantiated. */
 export function user_module_imports_supported(module) {

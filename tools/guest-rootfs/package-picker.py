@@ -19,6 +19,12 @@ fi
 
 """
 
+MEDIA_PREFS = b'''// Decoder helpers cannot fork in the single-process Wasm guest.
+user_pref("media.rdd-process.enabled", false);
+user_pref("media.utility-process.enabled", false);
+user_pref("media.allow-audio-non-utility", true);
+'''
+
 
 def sha256(path):
     with path.open('rb') as stream:
@@ -32,7 +38,7 @@ def exact(stream, size):
     return data
 
 
-def package(source, destination, expected_sha256, files, firefox=None):
+def package(source, destination, expected_sha256, files, firefox=None, single_process_media=False):
     if source.resolve() == destination.resolve():
         raise ValueError('use a separate output path')
     if sha256(source) != expected_sha256:
@@ -74,6 +80,11 @@ def package(source, destination, expected_sha256, files, firefox=None):
                                 if data.count(anchor) != 1:
                                     raise ValueError('unexpected guest init; refusing to replace it')
                                 data = data.replace(anchor, SERVICE + anchor)
+                            if single_process_media and MEDIA_PREFS not in data:
+                                anchor = b'LOWLAND_HTTP1_PREFS\n'
+                                if data.count(anchor) != 1:
+                                    raise ValueError('unexpected Firefox profile prefs; refusing to replace init')
+                                data = data.replace(anchor, MEDIA_PREFS + anchor)
                         else:
                             data = replacements[key].read_bytes()
                         header = header[:54] + f'{len(data):08x}'.encode() + header[62:]
@@ -108,5 +119,8 @@ if __name__ == '__main__':
     parser.add_argument('--expected-sha256', required=True)
     parser.add_argument('--files', type=Path, required=True)
     parser.add_argument('--firefox', type=Path)
+    parser.add_argument('--single-process-media', action='store_true',
+                        help='keep media decoding in the NOMMU parent process')
     args = parser.parse_args()
-    package(args.source, args.destination, args.expected_sha256, args.files, args.firefox)
+    package(args.source, args.destination, args.expected_sha256, args.files, args.firefox,
+            args.single_process_media)

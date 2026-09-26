@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { createAudioWrite } from "./audio.js";
 import { platform } from "./platform.js";
 import { assert } from "./util.js";
 import { read_wasm_memories } from "./wasm_binary.js";
@@ -385,6 +386,7 @@ function create_instance(context) {
     const user_instance = new WebAssembly.Instance(context.module, {
             env: { memory: context.memory },
             linux: {
+                audio_write: createAudioWrite(context.memory, postMessage),
       syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
         const original_instance = instance;
         traceAbortWrite(nr, arg0, arg1, arg2);

@@ -10,9 +10,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifndef PAGE_SIZE
-#define PAGE_SIZE 4096
-#endif
+/* Consumers such as Rust memmap2 recover the mapping base by rounding down
+ * using sysconf(_SC_PAGESIZE). Linux Wasm reports 64 KiB, so a hard-coded
+ * 4 KiB allocation can turn a valid mapping into an invalid free at munmap. */
+static int allocate_mapping(void **address, size_t length) {
+  long page_size = sysconf(_SC_PAGESIZE);
+  if (page_size < (long)sizeof(void *) ||
+      ((unsigned long)page_size & ((unsigned long)page_size - 1))) {
+    errno = EINVAL;
+    return -1;
+  }
+  int error = posix_memalign(address, (size_t)page_size, length);
+  if (error) { errno = error; return -1; }
+  return 0;
+}
 
 /* MAP_SHARED needs aliases in one wasm address space and explicit file
  * exchange when the consumer runs in a different address space. */
@@ -110,8 +121,7 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
       unlock_maps();
     }
     void *p = NULL;
-    if (posix_memalign(&p, PAGE_SIZE, length) != 0) {
-      errno = ENOMEM;
+    if (allocate_mapping(&p, length) != 0) {
       return MAP_FAILED;
     }
     if (read_backing(fd, p, length, offset) != 0) {
@@ -142,8 +152,7 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
   }
 
   void *p = NULL;
-  if (posix_memalign(&p, PAGE_SIZE, length) != 0) {
-    errno = ENOMEM;
+  if (allocate_mapping(&p, length) != 0) {
     return MAP_FAILED;
   }
   memset(p, 0, length);

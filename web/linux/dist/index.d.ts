@@ -30,6 +30,8 @@ export interface SpawnMachineOptions {
      * When omitted the guest still gets a headless 1024×768×32 fb.
      */
     framebuffer?: FramebufferOptions;
+    /** Enable bounded browser playback of Linux guest PCM imports. */
+    audio?: boolean;
 }
 /**
  * A booted Linux machine: one shared WebAssembly memory, one Web Worker per
@@ -44,6 +46,8 @@ export interface Machine extends Disposable {
     readonly closed: Promise<void>;
     /** Idempotently shuts down the workers and owned devices. */
     close(): void;
+    resumeAudio(): void;
+    readonly audioStats: Record<string, number | string | boolean> | null;
 }
 export declare class MachinePanicError extends Error {
     constructor();

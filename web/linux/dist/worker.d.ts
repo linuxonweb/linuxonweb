@@ -1,3 +1,4 @@
+import { type AudioPacket } from "./audio.js";
 import { type MachineTerminationReason, type UserContext } from "./wasm.ts";
 export interface InitMessage {
     type: "init";
@@ -19,7 +20,7 @@ export interface ForwardedInitMessage {
     type: "forwarded_init";
     port: MessagePort;
 }
-export type WorkerMessage = {
+export type WorkerMessage = AudioPacket | {
     type: "spawn_worker";
     name: string;
     port: MessagePort;

@@ -47,6 +47,10 @@ for filename, unit, patchname, copies in units:
         shutil.copyfile(source.parent / name, sources / name)
     subprocess.run(["patch", "--batch", "-p1", "-d", str(out / "source"),
                     "-i", str(patches / patchname)], check=True)
+    if Path(filename).name == "xptcall_wasm32.cpp":
+        subprocess.run(["patch", "--batch", "-p1", "-d", str(out / "source"),
+                        "-i", str(patches / "0008-wasm-xptcall-transfer-signatures.patch")],
+                       check=True)
     output_unit = out / Path(unit).name
     if Path(unit).name.startswith("Unified_"):
         unified = (obj / (unit + ".cpp")).read_text()

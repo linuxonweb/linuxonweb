@@ -116,5 +116,8 @@ browser-controlled; automated validation covers mobile focus/input events
 and text reaching the guest, rather than a physical iOS/Android keyboard.
 
 `release.json` records the deployed asset hashes and both hosting versions.
-The release retains the guest archives staged at the beginning of deployment;
-a concurrently completed local Aurora file-picker archive update is separate.
+Always compare its archive hashes with the accepted local candidates; a local
+guest rebuild does not update the hosted snapshot until staging and publication.
+The existing Sites project streams this Worker's runtime, so a Worker asset
+release updates new boots on the same public Sites URL without changing the
+Sites proxy source.

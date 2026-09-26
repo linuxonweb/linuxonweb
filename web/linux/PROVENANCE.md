@@ -1,5 +1,37 @@
 # Native Linux browser payload provenance
 
+## Firefox reliability candidate (2026-09-26)
+
+The current reliability candidate is frozen under
+`/mnt/p6/project/linux/.cache/reliability-performance-20260926/final-v5/`.
+Its intended runtime payloads are:
+
+| asset | bytes | SHA-256 |
+| --- | ---: | --- |
+| `initramfs.cpio` | 40,494,672 | `765a1a162d827ecc2ebcba605d830f8af4ace5019b4acf29df4cdb222e1a4e34` |
+| `initramfs-firefox.cpio.gz` | 88,185,028 | `d48f8881d885814eb5614683bf4a6ed78313d1439ee4c3b6c87bb3fc4457d332` |
+| guest Firefox executable | 157,420,348 | `68b86f1dea7312483c62284fce906287afcb7f8f11b1b07697c73e6dbd49ceae` |
+
+The kernel is unchanged. Compared with the initial `b439fcac…` plain and
+`f2a08c0b…` Firefox archives, the plain image changes only Aurora WM;
+the Firefox image changes only WM, init, Firefox and its chrome stylesheet.
+All 3,847 / 11,469 CPIO records and metadata were checked. Aurora Files remains
+the previously verified `3fe947c2…` executable.
+
+The reproducible overlays add EWMH identity, repaint exposed Aurora chrome,
+opaque Firefox menus, opt-in network tracing, typed XPT transfer callbacks,
+static FFVPX registration, correct 64 KiB mmap alignment, and an output-only
+cubeb/Web Audio bridge. The media
+profile keeps decoding in the existing single-process guest. The original
+source/object trees are preserved. See
+[`firefox-reliability-20260926.md`](../../docs/firefox-reliability-20260926.md)
+and [`static-media.md`](firefox-shims/static-media.md) for build commands,
+evidence and limits. Public deployment identity is recorded separately in
+[`release.json`](../cloudflare/release.json); a local candidate alone does not
+establish that the hosted runtime has been updated.
+
+## Original staged payload
+
 This directory stages the browser boot payload from the read-only sibling
 checkout `/mnt/p6/project/linux/linuxwasm-wasm/tools/wasm`.
 

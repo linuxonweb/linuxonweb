@@ -42,8 +42,18 @@ invoker. Gecko's folder-upload confirmation has ten inputs plus a result
 pointer and otherwise returns `NS_ERROR_NOT_IMPLEMENTED`; the repair restores
 the actual confirmation dialog. Runtime evidence before this fix reported
 `PromptCollection.sys.mjs:153: NS_ERROR_NOT_IMPLEMENTED [nsIPromptService.confirmExBC]`
-after selecting a nonempty directory. Context, optional-argc, i64, and floating-point
-signatures remain excluded. No confirmation is bypassed.
+after selecting a nonempty directory. That arity-only patch leaves mixed-width
+signatures for the follow-up below. No confirmation is bypassed.
+Patch `0008-wasm-xptcall-transfer-signatures.patch` adds bounded, exact mixed-width
+Wasm call signatures for the transfer and stream interfaces. In particular,
+`nsITransfer.initWithBrowsingContext` has fourteen arguments including a 64-bit
+`PRTime`; the prior all-i32 bridge rejected it after Firefox created the target
+file, leaving a zero-byte download. The new tables also carry 64-bit progress
+and stream offsets without truncation, and support the scalar seek/int64 and
+float-preference forms in the outgoing bridge (including the explicit optional
+argument count). Unlisted signatures and doubles still return unsupported;
+incoming callbacks with implicit contexts or optional argument counts remain
+excluded.
 Firefox Close destroys the request window; the service dismisses the dialog.
 Requests are isolated by X window ID. The service rejects concurrent requests
 with a `busy` error. Save replacement returns Gecko's `returnReplace`; the
@@ -77,3 +87,6 @@ must be preserved when packaging. Test the candidate on an isolated server
 before replacing the live archive. `web/linux/tests/file-picker.html` exercises
 actual guest file bytes, multiple files, folder selection, cancellation and a
 save link. A valid Wasm module alone is not sufficient runtime verification.
+The fixture's **Verify saved bytes** input reads the downloaded guest file back
+and checks its exact 26-byte payload; opening the Save dialog or creating an
+empty target does not pass that check.

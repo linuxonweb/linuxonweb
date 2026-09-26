@@ -1,0 +1,37 @@
+--- a/dom/media/webm/WebMDemuxer.cpp
++++ b/dom/media/webm/WebMDemuxer.cpp
+@@ -4,6 +4,9 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
++#ifdef __wasm__
++#  include "opus.h"
++#endif
+ #include "nsError.h"
+ #include "MediaResource.h"
+ #ifdef MOZ_AV1
+@@ -765,6 +768,24 @@
+     }
+     sample->mOffset = holder->Offset();
+     sample->mKeyframe = isKeyframe;
++#ifdef __wasm__
++    // The final container duration may already exclude Opus discard padding.
++    // Derive the decoded packet duration before applying that padding, rather
++    // than rejecting a valid tail (Mozilla bug 1884079). Preserve all padding
++    // validation below, and never inspect encrypted payload as an Opus packet.
++    if (!next_holder && discardPadding > 0 && i == count - 1 &&
++        aType == TrackInfo::kAudioTrack && mAudioCodec == NESTEGG_CODEC_OPUS &&
++        packetEncryption == NESTEGG_PACKET_HAS_SIGNAL_BYTE_FALSE) {
++      if (length > INT32_MAX) {
++        return NS_ERROR_DOM_MEDIA_DEMUXER_ERR;
++      }
++      const int frames = opus_packet_get_nb_samples(data, int32_t(length), 48000);
++      if (frames <= 0 || frames > 5760) {
++        return NS_ERROR_DOM_MEDIA_DEMUXER_ERR;
++      }
++      sample->mDuration = TimeUnit(frames, 48000);
++    }
++#endif
+     if (discardPadding && i == count - 1) {
+       sample->mOriginalPresentationWindow =
+           Some(media::TimeInterval{sample->mTime, sample->GetEndTime()});

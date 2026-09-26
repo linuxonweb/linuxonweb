@@ -8,3 +8,25 @@
 #nav-bar .toolbarbutton-text, #PanelUI-button .toolbarbutton-text {
   font-family: "LowlandChrome", sans-serif !important;
 }
+
+/* TinyX has no compositing manager. Give browser popups an opaque surface and
+   use the bundled font rather than missing system GTK menu fonts. */
+menupopup, panel {
+  --panel-background: #f9f9fb !important;
+  --panel-color: #15141a !important;
+  --panel-border-color: #8f8f9d !important;
+}
+menupopup, menupopup::part(content), panel::part(content) {
+  background-color: #f9f9fb !important;
+  color: #15141a !important;
+  opacity: 1 !important;
+}
+menupopup menu, menupopup menuitem, menupopup label,
+panel label, panel description {
+  font-family: "LowlandChrome", sans-serif !important;
+}
+menupopup menu[_moz-menuactive="true"],
+menupopup menuitem[_moz-menuactive="true"] {
+  background-color: #0060df !important;
+  color: #ffffff !important;
+}

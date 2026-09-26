@@ -70,6 +70,7 @@ const resumeKey = "linuxonweb.restart-mode.v1";
 const modes = ["guest", "console", "startx", "firefox"];
 const minimumFirefoxMemory = 2048;
 let activeMachine = null;
+export function guestAudioStats() { return activeMachine?.audioStats ?? null; }
 let currentMode = null;
 let configurationLocked = false;
 let restarting = false;
@@ -396,6 +397,12 @@ async function boot(mode) {
   canvas.style.outline = "none";
   canvas.style.touchAction = panDisplay ? "pan-x pan-y" : "none";
   const inputEvents = new AbortController();
+  // Capture phase keeps AudioContext.resume inside the native user activation,
+  // including the mobile keyboard controls and composition input.
+  const resumeGuestAudio = ev => {
+    if (ev.isTrusted && (ev.target === canvas || ev.target.closest?.('#mobile-keyboard, #keyboard-toggle'))) activeMachine?.resumeAudio();
+  };
+  for (const event of ['pointerdown', 'keydown']) document.addEventListener(event, resumeGuestAudio, { capture: true, signal: inputEvents.signal });
   const onCanvas = (event, listener, options = {}) => canvas.addEventListener(event, (ev) => {
     if (panDisplay && /^(pointer|wheel|contextmenu)/.test(event)) return;
     listener(ev);
@@ -590,6 +597,7 @@ async function boot(mode) {
     const modeFlags = [
       `demo.mode=${mode}`,
       mode === "firefox" ? "firefox=1" : "",
+      new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
     ]
       .filter(Boolean)
       .join(" ");
@@ -600,6 +608,7 @@ async function boot(mode) {
       initcpio: initramfs ?? undefined,
       devices,
       devicetree: { memory: { reg: [0, memory] } },
+      audio: true,
       framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32 },
     });
     activeMachine = machine;

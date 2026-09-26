@@ -1265,3 +1265,58 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   Only task-owned profiles were cleaned; existing local dev service and user
   browsers were preserved. Deployment/mobile-input quality: 97/100; no long
   soak or physical iOS/Android keyboard validation.
+
+### 2026-09-26 Firefox window, media, transfer and performance repair
+
+- Checkpoint commit `5a39b34` precedes branch
+  `gpt-6-agent-firefox-window-media-filesystem-performance`. Reliability changes
+  and evidence are described in `docs/firefox-reliability-20260926.md` and
+  `docs/window-audio-performance-20260926.md`.
+- Frozen candidate: `.cache/reliability-performance-20260926/final-v5/` in the
+  parent project directory. Firefox archive SHA
+  `d48f8881d885814eb5614683bf4a6ed78313d1439ee4c3b6c87bb3fc4457d332`,
+  88,185,028 bytes; plain archive SHA
+  `765a1a162d827ecc2ebcba605d830f8af4ace5019b4acf29df4cdb222e1a4e34`,
+  40,494,672 bytes. Firefox executable SHA
+  `68b86f1dea7312483c62284fce906287afcb7f8f11b1b07697c73e6dbd49ceae`,
+  157,420,348 bytes. Kernel and Aurora Files binaries are unchanged.
+- Aurora now publishes its EWMH supporting window/name and repaints its exposed
+  chrome once after a move. Firefox chrome menus have opaque colors/fonts.
+  Default verbose blob/network logging is disabled; `firefox_trace=1` opts in.
+  A measured 97.9% reduction concerns retained log bytes, not total CPU speed.
+- Existing picker patches 0005–0007 are preserved. Patch 0008 fixes typed transfer,
+  progress and stream callbacks with full 64-bit values. Automatic download and
+  explicit Save Link As saved/reopened exactly 26 bytes. Signed AMO uBlock Origin
+  1.75.0 installed through normal confirmation; signature checks remain enabled.
+- `build-static-media.py` rebuilds preserved Firefox objects in scratch: static
+  FFVPX registration, output-only cubeb backend, patch 0009 final plaintext Opus
+  packet duration, and mmap alignment. Guest PCM crosses bounded `audio_write`
+  into browser Web Audio after a trusted gesture. Keep all runtime frontend
+  changes together with the new binary/import. No microphone or H.264/AAC added.
+- The critical teardown crash was `get_meta -> free -> munmap -> memmap2 drop`.
+  A named fpcast rebuild had identical noncustom sections to the failing binary.
+  Guest getpagesize is 65536; old mmap allocations aligned to 4096. Consumers rounded
+  down to the wrong base before freeing. The shim now uses validated sysconf
+  page size. Native ASan/UBSan/leak regression passes; the original shim fails
+  its alignment assertion. Audio IPC remains enabled in the final candidate;
+  the diagnostic direct-output preference is not included.
+- Both archive audits preserve every record and metadata: plain changes only
+  WM; Firefox changes only WM/init/Firefox/userChrome. Diagnostic trace/direct/
+  fixture-startup routes are test-only and must not be published. Explicit
+  Cloudflare staging excludes tests, sources, backups and caches. Do not add
+  unrelated untracked source trees or the nested `web/sites` repository.
+- The filesystem is still a RAM initramfs, so downloads/profiles/extensions last
+  only for the current guest session. Firefox uses `-O2`, `JS_CODEGEN_NONE=1`
+  and software X11: near-native browsing is not achieved. The framebuffer damage
+  experiment was reverted after full-frame animation regressed 15–25%.
+- Final local media QA: IPC-on v5 played the audible fixture twice to 3.01s,
+  all 30 frames/zero drops, with fresh PCM and clean teardown. Invalid Opus
+  padding still errors and valid playback recovers. Synthetic MSE reaches end
+  but exposes only 10/30 frames; keep this limitation explicit. YouTube's 19s
+  zoo clip ended cleanly and autoplay advanced to another stream, totaling
+  about 120s of delivered PCM with zero host drops and no Wasm trap. This is
+  subsequent-video evidence, not an explicit same-YouTube-clip replay claim.
+- Cloudflare release build: 45 sources, 53 routes, 50 uploaded assets. All frozen
+  frontend/archive/kernel hashes matched. Nine Worker tests passed with live
+  DNS/TCP/certificate-verified TLS enabled. Asset upload and public verification
+  are tracked by the new release.json deployment record after publication.

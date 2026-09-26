@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Guest media decoder check</title>
+<style>body{font:15px sans-serif;margin:20px;background:white;color:#182637}pre{white-space:pre-wrap;font-size:13px}video{width:240px;height:135px;background:#111}button{margin:4px}</style>
+<h1>Guest media decoder check</h1>
+<p>Generated test patterns and 440 Hz tone. Decode and audio checks are separate from YouTube/network access.</p>
+<video id="video" muted controls src="motion-vp8.webm"></video><br>
+<button id="silent">VP8, no audio track</button><button id="muted">VP8 + Opus, muted</button><button id="audible">VP8 + Opus, sound</button><button id="mse">MSE VP8 + Opus, muted</button><button id="invalid">Invalid Opus padding (must fail)</button>
+<pre id="results"></pre>
+<pre id="state"></pre>
+<script>
+const video=document.querySelector('video'), results=document.querySelector('pre');
+const lines=[];
+function report(s){lines.push(s);results.textContent=lines.slice(-20).join('\n');}
+setInterval(()=>{const q=video.getVideoPlaybackQuality();document.querySelector('#state').textContent='STATE time='+video.currentTime.toFixed(4)+' duration='+video.duration+' ended='+video.ended+' paused='+video.paused+' ready='+video.readyState+' frames='+q.totalVideoFrames+' dropped='+q.droppedVideoFrames;},500);
+for(const type of ['video/webm; codecs="vp8"','video/webm; codecs="vp9"','video/webm; codecs="av01.0.04M.08"','video/mp4; codecs="avc1.42E01E"','audio/webm; codecs="opus"','audio/mp4; codecs="mp4a.40.2"']) report(type+': '+(video.canPlayType(type)||'unsupported')+'; MSE='+Boolean(window.MediaSource&&MediaSource.isTypeSupported(type)));
+for(const event of ['loadedmetadata','playing','ended','error','stalled'])video.addEventListener(event,()=>{const q=video.getVideoPlaybackQuality();report(event+': time='+video.currentTime.toFixed(2)+' frames='+q.totalVideoFrames+' dropped='+q.droppedVideoFrames+' error='+(video.error?video.error.code+':'+video.error.message:'none'));});
+function play(){return video.play().catch(e=>report('play rejected: '+e.name+': '+e.message));}
+for(const id of ['silent','muted','audible'])document.querySelector('#'+id).onclick=()=>{report('TEST '+id);video.muted=id!=='audible';video.src=id==='silent'?'motion-vp8.webm':'motion-opus.webm';play();};
+document.querySelector('#invalid').onclick=()=>{report('TEST invalid padding: expected media error, never ended');video.muted=true;video.src='motion-opus-invalid-padding.webm';play();};
+document.querySelector('#mse').onclick=()=>{report('TEST MSE');video.muted=true;const source=new MediaSource();video.src=URL.createObjectURL(source);source.addEventListener('sourceopen',async()=>{try{report('MSE sourceopen');const buffer=source.addSourceBuffer('video/webm; codecs="vp8,opus"');buffer.addEventListener('error',()=>report('MSE source buffer error'),{once:true});buffer.addEventListener('updateend',()=>{try{report('MSE updateend');source.endOfStream();play();}catch(e){report('MSE completion failed: '+e.name+': '+e.message);}},{once:true});const data=await(await fetch('motion-opus.webm')).arrayBuffer();report('MSE append '+data.byteLength+' bytes');buffer.appendBuffer(data);}catch(e){report('MSE failed: '+e.name+': '+e.message);}},{once:true});};
+</script>

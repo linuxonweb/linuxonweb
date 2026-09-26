@@ -12,11 +12,13 @@
 <label>One text file <input id="single" type="file" accept=".txt,text/plain"></label>
 <label>Multiple files <input id="multiple" type="file" multiple></label>
 <label>A folder <input id="directory" type="file" webkitdirectory></label>
-<p><a id="download" download="picker-save-test.txt">Save a text file</a></p>
+<p><a id="download" download="picker-save-test.txt">Save a text file</a> · <a href="picker-save-source.txt">HTTP file (use Save Link As)</a></p>
+<label>Verify saved bytes <input id="saved" type="file" accept=".txt"></label>
 <button id="clear">Clear results</button>
 <pre id="results">No selection yet.</pre>
 <script>
   const results = document.querySelector('#results');
+  const expectedSavedText = 'Aurora save picker works.\n';
   for (const input of document.querySelectorAll('input')) {
     input.addEventListener('cancel', () => {
       results.textContent += '\n' + input.id + ': cancelled (previous selection retained)';
@@ -30,8 +32,14 @@
         }
       }
       results.textContent = lines.join('\n');
+      if (input.id === 'saved' && input.files.length === 1) {
+        const file = input.files[0];
+        const matches = file.size === new TextEncoder().encode(expectedSavedText).length &&
+          await file.text() === expectedSavedText;
+        results.textContent += '\nSaved bytes: ' + (matches ? 'PASS (exact match)' : 'FAIL (contents differ)');
+      }
     });
   }
   document.querySelector('#clear').onclick = () => { results.textContent = 'No selection yet.'; };
-  document.querySelector('#download').href = URL.createObjectURL(new Blob(['Aurora save picker works.\n'], {type: 'text/plain'}));
+  document.querySelector('#download').href = URL.createObjectURL(new Blob([expectedSavedText], {type: 'text/plain'}));
 </script>
