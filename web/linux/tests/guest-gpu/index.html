@@ -1,0 +1,44 @@
+<!doctype html><meta charset="utf-8"><title>Isolated guest GPU command test</title>
+<h1>Guest WebGPU transport prototype</h1>
+<p>A real C/X11 guest sends shader and draw commands. This does not provide guest GL/Vulkan or Firefox GPU support.</p>
+<button id="boot">Boot isolated triangle test</button><button id="stop">Stop</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import { spawnMachine, consoleDevice, entropyDevice, inputDevice, vsockDevice } from '../../dist/index.js';
+import { serveGPU } from './host.mjs';
+const report = window.guestGPUResults = { logs: '', host: null, events: [], pass: false, errors: [] };
+let machine, started = false, deadline;
+const output = document.querySelector('#log');
+const vsock = vsockDevice();
+const decoder = new TextDecoder();
+const log = bytes => {
+  // Virtio descriptors view shared guest memory; TextDecoder requires an owned
+  // ordinary buffer. Preserve UTF-8 sequences split across console chunks.
+  report.logs += decoder.decode(new Uint8Array(bytes), {stream:true}); output.textContent = report.logs.slice(-16000);
+  if (!started && report.logs.includes('GUEST_GPU_LISTENING')) {
+    started = true;
+    vsock.connect(4050, {timeoutMs:10000}).then(connection => serveGPU(connection, {onEvent:event=>report.events.push(event)})).then(result => { report.host=result; check(); }).catch(error=>report.errors.push(error.message));
+  }
+  check();
+};
+function check() {
+  report.pass = !!report.host && !report.host.error && report.host.draws===1 && report.host.readbacks===1 &&
+    ['GUEST_GPU_PIXELS_PASS','GUEST_GPU_X11_PRESENT_PASS','GUEST_GPU_LIFETIME_PASS'].every(s=>report.logs.includes(s));
+  if (report.pass) { clearTimeout(deadline); document.documentElement.dataset.result='pass'; }
+}
+document.querySelector('#boot').onclick = async () => {
+  document.querySelector('#boot').disabled=true;
+  deadline=setTimeout(()=>{ report.errors.push('external guest deadline'); machine?.close(); document.documentElement.dataset.result='fail'; },120000);
+  try {
+    const candidate=new URLSearchParams(location.search).get('candidate') || 'generated/qa1/initramfs.cpio';
+    if (!/^generated\/[a-zA-Z0-9_-]+\/initramfs\.cpio$/.test(candidate)) throw Error('invalid isolated candidate path');
+    const response=await fetch(candidate); if(!response.ok) throw Error('test archive is not built');
+    machine=await spawnMachine({cpus:2,devicetree:{memory:{reg:[0,1024*1024*1024]}},initcpio:new Uint8Array(await response.arrayBuffer()),
+      cmdline:'console=hvc0 rdinit=/init',devices:[consoleDevice(null,new WritableStream({write:log})),entropyDevice(),inputDevice(),vsock],
+      framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'}});
+    window.guestGPUMachine=machine;
+    machine.closed.catch(error=>{report.errors.push(error.message);document.documentElement.dataset.result='fail';});
+  } catch(error) { report.errors.push(error.message); clearTimeout(deadline); document.documentElement.dataset.result='fail'; }
+};
+document.querySelector('#stop').onclick=()=>{clearTimeout(deadline);machine?.close();};
+</script>

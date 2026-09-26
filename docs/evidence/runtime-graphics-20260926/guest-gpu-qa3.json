@@ -1,0 +1,135 @@
+{
+  "kind": "guest",
+  "pass": true,
+  "result": "pass",
+  "startedAt": 1790435346568,
+  "clickedAt": 1790435346739,
+  "elapsedMs": 3231,
+  "events": [],
+  "guest": {
+    "logs": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\r\nConsole: switching to colour frame buffer device 80x30\r\nfb0: wasm framebuffer 640x480-32 at 0e7f22b1\r\nThis architecture does not have kernel memory protection.\r\nRun /init as init process\r\nnetwork: no eth0 (host did not attach virtio-net)\r\ndisplay: starting Xfbdev as admin at 640x480x32\r\n_XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.\r\nLinuxInit: VT_ACTIVATE skipped (Operation not permitted)\r\nLinuxInit: VT_WAITACTIVE skipped (Operation not permitted)\r\nLinuxInit: KDSETMODE skipped (Operation not permitted)\r\nUsing evdev pointer /dev/input/event0\r\nGUEST_GPU_LISTENING\r\nGUEST_GPU_ADAPTER {\"version\":1,\"maxResources\":64,\"maxTarget\":512,\"shader\":\"WGSL\",\"adapter\":{\"vendor\":\"google\",\"architecture\":\"swiftshader\",\"description\":\"\",\"isFallbackAdapter\":true}}\r\nstarting /bin/aurora-wm --compositor=no as admin\r\nGUEST_GPU_PIXELS_PASS center=63,66,126,255\r\nGUEST_GPU_X11_PRESENT_PASS\r\nGPU status -22: unknown resource\r\nGUEST_GPU_LIFETIME_PASS\r\n",
+    "host": {
+      "commands": 13,
+      "draws": 1,
+      "readbacks": 1,
+      "released": 4,
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      "error": null
+    },
+    "events": [
+      {
+        "type": "adapter",
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      {
+        "type": "command",
+        "opcode": 0,
+        "request": 1,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 1,
+        "request": 2,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 2,
+        "request": 3,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 3,
+        "request": 4,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 4,
+        "request": 5,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 5,
+        "request": 6,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 6,
+        "request": 7,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 7,
+        "request": 8,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 7,
+        "request": 9,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 7,
+        "request": 10,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 7,
+        "request": 11,
+        "status": 0
+      },
+      {
+        "type": "command",
+        "opcode": 7,
+        "request": 12,
+        "status": -22
+      },
+      {
+        "type": "command",
+        "opcode": 8,
+        "request": 13,
+        "status": 0
+      },
+      {
+        "type": "closed",
+        "commands": 13,
+        "draws": 1,
+        "readbacks": 1,
+        "released": 4,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": null
+      }
+    ],
+    "pass": true,
+    "errors": []
+  },
+  "gpuAPI": true,
+  "ready": true,
+  "bootDisabled": true,
+  "sourceSha256": "80fd8fb0eb0b2f9a9912b4ec37589dd70b737945924192ea1de57c1d20ec7797",
+  "runnerSha256": "fdda87f7cfb22ec119e6694fd2ff2d56b4c10bf33b1b6c26261b2080bb958b3b",
+  "scope": "Isolated guest C/vsock/WebGPU/X11 prototype; SwiftShader software adapter. No GL/Vulkan/Firefox GPU support or production image modification.",
+  "omitted": "Repeated module resource timing entries and ephemeral CDP target ID; complete guest log, GPU events and errors retained."
+}

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "pass": true,
+  "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+  "version": 5,
+  "crossOriginIsolated": true,
+  "secureContext": true,
+  "allResponses": { "status": 200, "Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp", "Cross-Origin-Resource-Policy": "same-origin" },
+  "rows": [
+    { "path": "/linux/dist/platform.js", "bytes": 6003, "sha256": "06d18dc2a431590a01f6f9163bfe05c87178a76d0c2c4fb47f6ec822fbd42d44", "cacheControl": "public, max-age=0, must-revalidate", "matchesDerivedBuild": true },
+    { "path": "/_runtime_worker/b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5/linux/dist/worker.js", "bytes": 37557, "sha256": "31b20da3c43ee73ff60a5dcc9644b52d6c3e2514468dd287d875433bdd47a034", "cacheControl": "public, max-age=31536000, immutable", "matchesDerivedBuild": true },
+    { "path": "/linux/boot-manifest.json", "bytes": 662, "sha256": "da7e000128272a6cb9fe8931a8603c966be4148489663a93c6536b5c42bde21e", "cacheControl": "public, max-age=0, must-revalidate", "manifestVersion": "fa0217b54d99", "allAssetHashesMatchAcceptedManifest": true }
+  ],
+  "source": "../.cache/runtime-profile-20260926/sites-v5-live-assets.json",
+  "limitation": "This live check hashes the changed platform, immutable worker entry and manifest. Full kernel/rootfs GET hashes were verified on v4; v5 build verifies all unchanged accepted bytes."
+}

@@ -2,20 +2,27 @@
   "schema": 1,
   "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
   "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
-  "version": 4,
-  "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_18718b8b11248191ac31de63e85ae5e8",
-  "deploymentId": "appgdep_6ab7d2e9d8448191ad0cee318dca4554",
+  "version": 5,
+  "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_e476a0133e748191a46b03488991e15f",
+  "deploymentId": "appgdep_6ab7e07d39508191b9e9c5ee5390b4bd",
   "audience": "public",
-  "sitesSourceCommit": "278d73a9e3eabec7606ab25518a4da3e54f0499e",
+  "sitesSourceCommit": "b5858da1e8699215d6ef04cb24bd9111c501d3e4",
   "runtimeSourceCommit": "f24b914113dee9132471298e5e3a97b2e69b2ceb",
   "archive": {
-    "bytes": 120132545,
-    "sha256": "bcd22b533bea29f38e3345fdf0c8c9e8941528df6cc284e5b8bfa662b75f804b"
+    "bytes": 120052978,
+    "sha256": "7f2e156b8b76c82251f981c112d19e1d727edf972f7ebdc8ca4f8aa721bbd738"
   },
   "acceptedContent": {
-    "files": 59,
-    "bytes": 151459840,
-    "tarContentSha256": "c0f0b5067c98b6ebe7aed88fae2f4fc19bb338979f0b19da0794dd3a122af17f"
+    "files": 61,
+    "bytes": 151470080,
+    "tarContentSha256": "541fcd93513bcebdcd30a6448644b7d08b31266c3de7d0a4557c6e5b33ab81c4"
+  },
+  "previousRelease": {
+    "version": 4,
+    "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_18718b8b11248191ac31de63e85ae5e8",
+    "deploymentId": "appgdep_6ab7d2e9d8448191ad0cee318dca4554",
+    "sitesSourceCommit": "278d73a9e3eabec7606ab25518a4da3e54f0499e",
+    "archiveSHA256": "bcd22b533bea29f38e3345fdf0c8c9e8941528df6cc284e5b8bfa662b75f804b"
   },
   "architecture": "Sites serves accepted static runtime assets; existing Cloudflare deployment remains the unchanged DNS/TCP network proxy.",
   "cloudflareRedeployed": false,
@@ -44,7 +51,41 @@
       }
     }
   },
+  "workerGraph": {
+    "sha256": "b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5",
+    "routes": 66,
+    "parts": 57,
+    "change": "Derived stable platform worker URL and immutable dependency namespace; all other accepted runtime route bytes unchanged",
+    "updateSemantics": "Stable platform, boot-assets and boot-manifest remain must-revalidate; unknown immutable graph identities return 404"
+  },
   "verification": {
+    "sitesUnitTests": "10/10 passed",
+    "workerdIntegrationTests": "3/3 passed; all 66 route hashes plus ranges, headers and stable-update policy",
+    "localRealBrowserCandidate": "passed; shell 2.733 seconds with lean observer",
+    "publicFirstAndWarmConsoleBoot": "passed; actual 1 GiB/2 CPU, visible, secure and isolated, no page errors",
+    "publicSystemImageNetworkFetches": 0,
+    "publicVersionedWorkerRequestsFirstBoot": 65,
+    "publicVersionedWorkerRequestsWarmBoot": 67,
+    "separatePublicModuleHashesAndHeaders": "passed; exact derived platform/worker bytes, immutable versus stable revalidate policy, isolation and unchanged manifest hashes",
+    "publicModuleEvidence": "sites-v5-live-assets.json",
+    "publicFirefoxAcceptance": "passed scoped actual 4 GiB/2 CPU launch/render, five JavaScript checksums and download, update/reload exact home hashes, and Google HTTP redirect to rendered HTTPS page; Bing timeout unresolved and example.com reset recorded",
+    "publicFirefoxEvidence": "sites-v5-firefox.json",
+    "evidence": "runtime-origin-profile.json"
+  },
+  "timing": {
+    "observer": "Matched page-only lean observer; no worker attachment, pause, Wasm hooks or tracing",
+    "browser": "Chrome/150.0.7871.114",
+    "actualRamMiB": 1024,
+    "actualCPUs": 2,
+    "visible": true,
+    "systemImagesWarm": true,
+    "v4BaselineShellMs": 55047.74,
+    "v5FirstShellMs": 3486.165,
+    "v5WarmShellMs": 2692.885,
+    "evidenceFiles": ["../.cache/runtime-profile-20260926/site-pre-r2-report.json", "../.cache/runtime-profile-20260926/site-post-r2-report.json", "../.cache/runtime-profile-20260926/site-post-warm-r2-report.json"],
+    "interpretation": "Large measured public console boot improvement after immutable worker graph deployment. Single first/repeat observations, not a multi-run distribution or a Firefox speedup measurement."
+  },
+  "historicalV4Verification": {
     "sitesTests": 8,
     "localWorkerRouteHashes": 58,
     "rangeAndIsolation": "passed",
@@ -57,7 +98,8 @@
     "guestDnsTcpHttpsSmoke": "passed: wget google.com and curl https://www.google.com",
     "timingNetworkEvidence": "sites-live-timing-network.json"
   },
-  "timing": {
+  "historicalV4Timing": {
+    "configurationCaveat": "These earlier DOM-only reports did not establish actual configuration equality. Fresh authoritative matched measurements are recorded separately above.",
     "initialMountSeconds": 62.6,
     "warmMountSeconds": 53.4,
     "afterUpdateMountSeconds": 56.4,

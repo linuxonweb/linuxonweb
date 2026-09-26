@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8"><title>GPU protocol and real pixel tests</title><pre id="output"></pre>
+<script type="module">
+import {MAGIC, VERSION, OP, decodeHeader, serveGPU} from './host.mjs';
+const result=window.guestGPUHostTests={checks:[],errors:[],adapter:null};
+const check=(ok,label)=>{if(!ok)throw Error(label);result.checks.push(label);};
+function pipe() {
+  let queue=[], waiters=[], closed=false;
+  return {
+    put(bytes){if(closed)return;queue.push(...bytes);waiters.splice(0).forEach(fn=>fn());},
+    async readExactly(n){while(queue.length<n&&!closed)await new Promise(resolve=>waiters.push(resolve));return Uint8Array.from(queue.splice(0,n));},
+    close(){closed=true;waiters.splice(0).forEach(fn=>fn());}
+  };
+}
+function harness(options={}) {
+  const incoming=pipe(),outgoing=pipe();let sequence=0;
+  const serving=serveGPU({readExactly:n=>incoming.readExactly(n),write:async bytes=>outgoing.put(bytes),close(){incoming.close();outgoing.close();}},options);
+  return {serving, async call(op,payload=new Uint8Array()) {
+    const header=new Uint8Array(16),v=new DataView(header.buffer);v.setUint32(0,MAGIC,true);v.setUint16(4,VERSION,true);v.setUint16(6,op,true);v.setUint32(8,++sequence,true);v.setUint32(12,payload.byteLength,true);
+    // Deliberately fragment every wire header/body to exercise stream assembly.
+    incoming.put(header.subarray(0,5));incoming.put(header.subarray(5));incoming.put(payload.subarray(0,3));incoming.put(payload.subarray(3));
+    const response=await outgoing.readExactly(16);if(response.length!==16)throw Error('connection ended');
+    const rv=new DataView(response.buffer),body=await outgoing.readExactly(rv.getUint32(12,true));
+    check(rv.getUint32(8,true)===sequence,'reply sequence '+sequence);
+    return {status:new DataView(body.buffer).getInt32(0,true),body:body.subarray(4)};
+  }};
+}
+const u32=(...values)=>{const b=new Uint8Array(values.length*4),v=new DataView(b.buffer);values.forEach((n,i)=>v.setUint32(i*4,n,true));return b;};
+try {
+  for(const [label,patch] of [['version',v=>v.setUint16(4,2,true)],['oversize',v=>v.setUint32(12,1048577,true)],['opcode',v=>v.setUint16(6,99,true)]]) {
+    const b=new Uint8Array(16),v=new DataView(b.buffer);v.setUint32(0,MAGIC,true);v.setUint16(4,1,true);v.setUint32(8,1,true);patch(v);
+    let rejected=false;try{decodeHeader(b);}catch{rejected=true;}check(rejected,'reject '+label);
+  }
+  const unavailable=await serveGPU({close(){},readExactly(){throw Error('unexpected read');}},{gpu:null});check(unavailable.error.includes('unavailable'),'unavailable API explicit');
+  const h=harness();const hello=await h.call(OP.HELLO);check(hello.status===0,'real WebGPU device');result.adapter=JSON.parse(new TextDecoder().decode(hello.body)).adapter;
+  check((await h.call(OP.TARGET,u32(513,1))).status===-22,'oversize texture rejected');
+  const shader=new TextEncoder().encode('struct O{@builtin(position)p:vec4f,@location(0)c:vec3f}; @vertex fn vs(@location(0)p:vec2f,@location(1)c:vec3f)->O{return O(vec4f(p,0,1),c);} @fragment fn fs(o:O)->@location(0)vec4f{return vec4f(o.c,1);}');
+  const create=async(op,data)=>{const r=await h.call(op,data);check(r.status===0,'create '+op);return new DataView(r.body.buffer,r.body.byteOffset,4).getUint32(0,true);};
+  const module=await create(OP.SHADER,shader),buffer=await create(OP.BUFFER,new Uint8Array(new Float32Array([-.8,-.8,1,0,0,.8,-.8,0,1,0,0,.8,0,0,1]).buffer));
+  const pipeline=await create(OP.PIPELINE,u32(module)),target=await create(OP.TARGET,u32(128,128));
+  check((await h.call(OP.DRAW,u32(target,pipeline,buffer,6))).status===-22,'vertex overrun rejected');
+  check((await h.call(OP.DRAW,u32(target,pipeline,buffer,3))).status===0,'actual GPU draw');
+  const read=await h.call(OP.READBACK,u32(target));check(read.status===0&&read.body.length===65536,'packed actual readback');
+  const p=read.body.slice((64*128+64)*4,(64*128+64)*4+4);
+  check(p[0]>20&&p[1]>20&&p[2]>40&&p[3]===255,'triangle center has interpolated RGB');check(read.body.slice(0,4).join(',')==='0,0,0,255','clear corner exact');
+  for(const id of [target,pipeline,buffer,module])check((await h.call(OP.DESTROY,u32(id))).status===0,'destroy '+id);
+  check((await h.call(OP.DESTROY,u32(target))).status===-22,'stale handle rejected');await h.call(OP.CLOSE);
+  const finished=await h.serving;check(!finished.error&&finished.released===4,'session cleanup counted');
+  let testDevice;
+  const loss=harness({gpu:{async requestAdapter(){const adapter=await navigator.gpu.requestAdapter();return {info:adapter.info,async requestDevice(){testDevice=await adapter.requestDevice();return testDevice;}};}}});
+  await loss.call(OP.HELLO);testDevice.destroy();const lost=await loss.serving;check(lost.error?.startsWith('device lost:'),'device loss closes pending read');
+  document.documentElement.dataset.result='pass';
+} catch(error){result.errors.push(error.stack);document.documentElement.dataset.result='fail';}
+document.querySelector('#output').textContent=JSON.stringify(result,null,2);
+</script>

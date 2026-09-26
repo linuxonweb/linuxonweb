@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "browser": "Chrome/150.0.7871.114",
+  "scope": "Two sequential instrumented console boots; same browser profile; no production modifications",
+  "configuration": {
+    "ramMiB": 1024,
+    "guestCPUs": 2,
+    "framebuffer": "1280x720",
+    "presentation": "canvas2d",
+    "visible": true,
+    "verification": "Host boot mode/configuration plus guest Memory: 1000576K/1048576K and smp: Brought up 1 node, 2 CPUs"
+  },
+  "bothWorkerFeatures": {
+    "crossOriginIsolated": true,
+    "secureContext": true,
+    "WebAssembly.Suspending": "function",
+    "WebAssembly.promising": "function",
+    "Atomics.waitAsync": "function"
+  },
+  "local": {
+    "origin": "http://127.0.0.1:4180",
+    "report": "../.cache/runtime-profile-20260926/local-r1-report.json",
+    "pass": true,
+    "errors": 0,
+    "systemImageNetworkFetches": 0,
+    "stagesMs": { "kernel": 296.95, "unpack": 1586.785, "freeInitrd": 1933.27, "init": 1937.48, "mount": 3920.115, "network": 4195.17, "shell": 4689.39 },
+    "kernelCompileStreamingMs": 48.51,
+    "guestSyncCompile": { "count": 62, "totalMs": 152.14 },
+    "syncInstanceTotalMs": 124.11,
+    "spawnWorker": { "count": 66, "totalMs": 2203.53 },
+    "observedAtomicsWait": { "count": 29, "totalMs": 2184.24 },
+    "postBootScripts": { "count": 462, "overlappingTotalMs": 5833.65, "maxMs": 46.84 }
+  },
+  "sites": {
+    "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+    "report": "../.cache/runtime-profile-20260926/site-r1-report.json",
+    "deployedVersion": 4,
+    "pass": true,
+    "errors": 0,
+    "systemImageNetworkFetches": 0,
+    "stagesMs": { "kernel": 1257.99, "unpack": 30468.985, "freeInitrd": 30774.945, "init": 36767.32, "mount": 61017.05, "network": 69902.415, "shell": 74705.625 },
+    "kernelCompileStreamingMs": 47.41,
+    "guestSyncCompile": { "count": 62, "totalMs": 151.42 },
+    "syncInstanceTotalMs": 125.89,
+    "spawnWorker": { "count": 67, "totalMs": 39618.52 },
+    "observedAtomicsWait": { "count": 29, "totalMs": 39596.15 },
+    "postBootScripts": { "count": 469, "overlappingTotalMs": 268302.87, "maxMs": 2187.49 }
+  },
+  "interpretation": {
+    "dominantDifference": "Repeated worker JavaScript dependency loading over the public network while the guest waits for worker readiness",
+    "sourcePolicy": "All Sites logical assets used public, max-age=0, must-revalidate",
+    "capturedScriptResponses": "Status 200 and fromDiskCache=false on both origins; request durations overlap",
+    "wasmCompilation": "Measured totals essentially equal; not an explanation for the 70-second shell gap",
+    "candidate": "Content-addressed immutable worker dependency graph; stable platform and update manifest remain revalidated",
+    "candidateGraphSHA256": "b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5",
+    "candidateUnitTests": "10/10 passed",
+    "candidateWorkerdIntegrationTests": "3/3 passed",
+    "candidateBrowserAndPublicAcceptance": "Local control, Sites v5 public first/warm console boots and separate live module hash/header/manifest checks passed; scoped actual Firefox launch, five JS checksums/download, home update preservation and rendered Google HTTPS page passed (sites-v5-firefox.json)"
+  },
+  "publicV5LeanAcceptance": {
+    "observer": "Matched page-only lean observer, no worker hooks/pause/tracing",
+    "configuration": "Same profile, actual 1 GiB/2 CPU, visible,1280x720 Canvas2D; secure and isolated",
+    "baseline": { "version": 4, "report": "../.cache/runtime-profile-20260926/site-pre-r2-report.json", "pass": true, "shellMs": 55047.74, "mountMs": 46864.59 },
+    "first": { "version": 5, "report": "../.cache/runtime-profile-20260926/site-post-r2-report.json", "pass": true, "errors": 0, "kernelMs": 1123.445, "unpackMs": 1934.49, "initMs": 2399.545, "mountMs": 3024.895, "shellMs": 3486.165, "versionedWorkerRequests": 65, "systemImageNetworkFetches": 0 },
+    "warm": { "version": 5, "report": "../.cache/runtime-profile-20260926/site-post-warm-r2-report.json", "pass": true, "errors": 0, "kernelMs": 303.395, "unpackMs": 1152.19, "initMs": 1497.795, "mountMs": 2144.845, "shellMs": 2692.885, "versionedWorkerRequests": 67, "systemImageNetworkFetches": 0 },
+    "liveModuleHashHeaderEvidence": "sites-v5-live-assets.json",
+    "limitation": "Single before/first/repeat observations, not a multi-run distribution. This demonstrates public console startup improvement, not a Firefox launch speedup ratio."
+  },
+  "localCandidateAcceptance": {
+    "report": "../.cache/runtime-profile-20260926/candidate-r2-report.json",
+    "observer": "Page-only Network/Runtime and target discovery; no worker attachment, hooks, pause, tracing or CPU profiler",
+    "pass": true,
+    "errors": 0,
+    "actualRamMiB": 1024,
+    "actualGuestCPUs": 2,
+    "visible": true,
+    "crossOriginIsolated": true,
+    "secureContext": true,
+    "stagesMs": { "kernel": 255.92, "unpack": 1115.355, "freeInitrd": 1452.445, "init": 1460.135, "mount": 2070.145, "network": 2244.585, "shell": 2733.345 },
+    "versionedWorkerPageNetworkRequests": 70,
+    "workerTargetsDiscoveredWithoutAttachment": 0,
+    "stableManifest": { "status": 200, "version": "fa0217b54d99", "cacheControl": "public, max-age=0, must-revalidate", "note": "Separate GET; warm active cache did not automatically fetch a new manifest during boot" },
+    "earlierIntrusiveCandidateRun": { "pass": false, "failure": "Final worker injection timed out, followed by page evaluation timeout; no script HTTP failures or guest RuntimeError captured", "versionedWorkers": 40, "diskCachedScripts": 266, "networkScripts": 38 },
+    "limitation": "Local functional/cache correctness gate only; this is not a measured public speedup"
+  },
+  "limitations": [
+    "Constructor/import wrappers, sampled syscall timing, worker attachment and tracing add overhead; no Debugger or CPU Profiler was enabled",
+    "Worker resume precedes instrumentation evaluation; first constructor can race capture",
+    "Trace filtering did not establish a Wasm optimizing-tier policy difference",
+    "Prior 71.30-second/2.65-second observations recorded DOM settings only; their actual configuration match is unverified",
+    "Initial failed local report is preserved separately; startup-paused worker injection deadlocked the first harness attempt"
+  ]
+}

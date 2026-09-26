@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "release": "Sites version 5",
+  "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+  "scope": "Actual guest Firefox functional acceptance; no matched pre-change Firefox timing baseline",
+  "rawEvidenceDirectory": "../.cache/runtime-profile-20260926/firefox-v5",
+  "configuration": {
+    "host": "Chrome/150.0.7871.114",
+    "guestUserAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+    "ramMiB": 4096,
+    "cpus": 2,
+    "display": "1280x720",
+    "presentation": "canvas2d",
+    "visible": true,
+    "crossOriginIsolated": true,
+    "actualHostLine": "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+    "actualGuestLines": ["smp: Brought up 1 node, 2 CPUs", "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"]
+  },
+  "launch": {
+    "visualReviewPass": true,
+    "firstSerialLaunchObservedMs": 16150,
+    "firstWindowScreenshotObservedMs": 36517,
+    "limitation": "Polling/screenshot observations, not first-paint measurements. Raw state timings were replaced by the later update boot; these initial values were recorded before update. No Firefox speedup ratio is claimed."
+  },
+  "javascript": {
+    "pass": true,
+    "measurement": "fixed-batch-100-v1",
+    "repetitions": 100,
+    "samples": 5,
+    "warmups": 12,
+    "done": true,
+    "timingResolutionSufficient": true,
+    "elapsedMs": 3698,
+    "checks": [
+      {"name": "integer loop", "expected": 7998000, "actual": 7998000, "medianMs": 1.06},
+      {"name": "object properties", "expected": 67982, "actual": 67982, "medianMs": 2.1},
+      {"name": "array callbacks", "expected": 748500, "actual": 748500, "medianMs": 2.75},
+      {"name": "JSON and strings", "expected": 19900, "actual": 19900, "medianMs": 0.64},
+      {"name": "exceptions and recursion", "expected": 1700, "actual": 1700, "medianMs": 0.37}
+    ],
+    "actualGuestDownload": true,
+    "downloadBytes": 2528,
+    "downloadSHA256": "c8ccdd49562b1256c9fd849df0b4a9a54fb52a3e7b70e3d153c298814c6508c9",
+    "interpretation": "Correctness and functioning guest download; timings are not compared with a differently configured or observed prior run"
+  },
+  "updateAndRestart": {
+    "pass": true,
+    "actualReload": true,
+    "pageErrors": 0,
+    "systemImageNetworkRequests": 0,
+    "markerSHA256": "7e8fc1b2430f37c2c8cc92e0ce10a384186e5dafa3ad0b40d452962e193930b3",
+    "fixtureSHA256": "291374fc7b3262e03d085c6966a59fc1a4f52435ab246bfaef1e411f996ccd25",
+    "downloadSHA256": "c8ccdd49562b1256c9fd849df0b4a9a54fb52a3e7b70e3d153c298814c6508c9",
+    "verification": "All three existing files read through mounted guest-home interface after reload and compared with exact pre-update hashes"
+  },
+  "network": {
+    "actualFirefoxGoogleVisualPass": true,
+    "requestedURL": "http://www.google.com",
+    "observedURL": "https://www.google.com/?gws_rd=ssl",
+    "review": "Root visually confirmed rendered Google homepage and guest Firefox lock indicator",
+    "screenshot": "sites-v5-firefox-google.png",
+    "separateHTTPSNavigation": false,
+    "dnsChecks": [
+      {"name": "example.com", "status": 200, "addresses": ["172.66.147.243", "104.20.23.154"]},
+      {"name": "www.google.com", "status": 200, "addresses": ["142.251.151.119", "142.251.157.119", "142.251.152.119", "142.251.153.119", "142.251.156.119", "142.251.150.119", "142.251.155.119", "142.251.154.119"]},
+      {"name": "www.bing.com", "status": 200, "addresses": ["23.32.152.100", "23.32.152.101", "23.32.152.110", "23.32.152.115", "23.32.152.114", "23.32.152.109", "23.32.152.111", "23.32.152.106", "23.32.152.104"]}
+    ],
+    "representativeWebSockets": [
+      {"host": "142.251.151.119", "port": 80, "handshakeStatus": 101, "sentFrames": 1, "sentBytes": 334, "receivedFrames": 1, "receivedBytes": 1439},
+      {"host": "142.251.153.119", "port": 443, "handshakeStatus": 101, "sentFrames": 43, "sentBytes": 19224, "receivedFrames": 138, "receivedBytes": 449363}
+    ],
+    "privacy": "Only DNS answers and WebSocket handshake/frame counts/byte lengths retained; no TCP payloads, cookies or headers",
+    "exampleCom": "Observed reset; both returned addresses are within Cloudflare ranges, which the retained Workers raw-TCP backend blocks. Exact earlier guest-selected address was not captured, so reset attribution remains an inference.",
+    "bing": "Observed default page timeout; cause unresolved",
+    "sources": ["https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/#considerations", "https://www.cloudflare.com/ips-v4/"]
+  },
+  "observerLimitations": [
+    "Page-only CDP observation; no worker hooks, startup pause or tracing",
+    "Initial Ctrl+L navigation lost outer document focus; failed image retained and corrected observed guest address-bar click plus paced Ctrl+A passed",
+    "Raw external phase intentionally leaves pass null pending visual review; this compact evidence records the subsequent root review",
+    "Native guest JIT, guest GL/Vulkan and hardware video decoding are not established or implemented by these checks",
+    "The isolated SwiftShader guest GPU prototype remains separate and unpromoted"
+  ]
+}
