@@ -61,6 +61,21 @@ const valid = inputs.get('pair-a.vert');
 const badMagic = Buffer.from(valid); badMagic.writeUInt32LE(0, 0);
 const badBound = Buffer.from(valid); badBound.writeUInt32LE(0xffffffff, 12);
 const badInstruction = Buffer.from(valid); badInstruction.writeUInt32LE(0, 20);
+function decorateInput(source, decoration) {
+  let target, annotationOffset;
+  for (let offset = 20; offset < source.length;) {
+    const word = source.readUInt32LE(offset), count = word >>> 16, opcode = word & 65535;
+    if (opcode === 59 && count >= 4 && source.readUInt32LE(offset + 12) === 1) target ??= source.readUInt32LE(offset + 8);
+    if (opcode === 71) annotationOffset ??= offset;
+    offset += count * 4;
+  }
+  assert.ok(target !== undefined && annotationOffset !== undefined);
+  const instruction = Buffer.alloc(12);
+  instruction.writeUInt32LE((3 << 16) | 71, 0); instruction.writeUInt32LE(target, 4); instruction.writeUInt32LE(decoration, 8);
+  return Buffer.concat([source.subarray(0, annotationOffset), instruction, source.subarray(annotationOffset)]);
+}
+const centroid = decorateInput(inputs.get('pair-a.frag'), 16);
+const sample = decorateInput(inputs.get('pair-a.frag'), 17);
 let multipleEntries;
 for (let offset = 20; offset < valid.length;) {
   const word = valid.readUInt32LE(offset), bytes = (word >>> 16) * 4;
@@ -72,11 +87,13 @@ for (let offset = 20; offset < valid.length;) {
 }
 check(multipleEntries !== undefined, 'entry instruction located for negative fixture');
 for (const [name, bytes] of [['resource', inputs.get('resource.frag')], ['magic', badMagic], ['bound', badBound],
-  ['instruction', badInstruction], ['truncated', valid.subarray(0, valid.length - 4)], ['multiple-entries', multipleEntries]]) {
+  ['instruction', badInstruction], ['truncated', valid.subarray(0, valid.length - 4)], ['multiple-entries', multipleEntries],
+  ['centroid-sampling', centroid], ['sample-sampling', sample]]) {
   let diagnostic;
   try { translateGraphics(instance, bytes); } catch (error) { diagnostic = error.message; }
   check(typeof diagnostic === 'string' && diagnostic.length > 0 && diagnostic.length <= 2048, name + ' rejected');
   check(api.metadata_len() === 0, name + ' clears stale metadata');
+  if (name.endsWith('-sampling')) check(diagnostic.includes('center sampling'), name + ' explicit profile rejection');
   rejected.push({ name, diagnostic });
 }
 check(api.input_reserve(65540) === 0 && api.metadata_len() === 0 && api.output_len() === 0, 'oversize reserve clears state');

@@ -6,6 +6,20 @@
 
 #  agent team
 
+## Mandatory build storage policy
+
+All agents and subagents must use `/mnt/p6/build/<task>` or another verified
+persistent, disk-backed location with enough free space for build inputs,
+outputs, intermediates, scratch/temp files, caches, logs, test browser profiles
+and generated/test artifacts. Never use `/tmp`, `/dev/shm`, `tmpfs` or `ramfs`.
+Verify the filesystem behind the resolved destination, including symlink targets.
+Before launching build, packaging, test, browser or task-server commands, export
+`TMPDIR`, `TMP` and `TEMP` to a task-owned scratch directory on that disk and
+configure tool-specific build/cache/temp paths. Subprocesses must inherit this
+policy; stop if compliant storage is unavailable. Follow the full setup in
+`AGENTS.md` under "Mandatory build storage policy". This overrides temporary paths
+in historical commands below; preserve existing files and unrelated services.
+
 ##   control
       95    /   100              is goal score do not stop util finish task goal in high quality. 100 is perfect quality  like 3A game, stable rich features and high performace for software and easy to use both on pc and touch mobile device
       15   %                  week usage for this goal  your can use ,stop when use up this also stop other subagent write doc in agents.md to give info  let other agent continue your goal and task , also stop when weekusage is below 80% too.

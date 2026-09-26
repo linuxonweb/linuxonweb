@@ -10,8 +10,9 @@ workspace indiscriminately.
 Standing user instruction for all builds: use `/mnt/p6/build/<task>` or another
 verified persistent, disk-backed path. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
 filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
-compiler scratch space, build caches, disassembly dumps, build logs, or test
-artifacts.
+compiler scratch space, build caches, disassembly dumps, build logs, test
+browser profiles, or generated/test artifacts. This applies to every agent and
+subagent, including the build, test, browser and server processes they launch.
 
 This applies to temporary build files as well as final outputs; a tool's default
 temporary directory is not an exception.
@@ -21,12 +22,13 @@ to compliant storage; do not reuse a historical `/tmp` path.
 
 - Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
   subdirectory for tool scratch files. Another disk-backed project/cache
-  directory is acceptable; verify its filesystem and free capacity first.
+  directory is acceptable; verify its filesystem and enough free capacity for
+  the expected inputs, intermediates and outputs first.
 - Check the actual filesystem backing the resolved path, including symlink
   targets; a directory named `build` is not sufficient if it resides on tmpfs
   or ramfs. Use `/mnt/p6/build`, not `/build`, as the default build root.
 - Set and export `TMPDIR`, `TMP`, and `TEMP` to that disk-backed scratch
-  directory before every build, packaging or artifact-producing test command
+  directory before every build, packaging, test, browser or task-server command
   so subprocesses and `mktemp` inherit it. Set tool-specific temporary, build,
   and cache directories as needed; do not assume every tool honors these
   variables. Never fall back to `/tmp`; stop if compliant storage is unavailable.
@@ -36,7 +38,8 @@ to compliant storage; do not reuse a historical `/tmp` path.
   A nested `guest-service-run1/tmp` path caused its Unix singleton socket to
   exceed the path-length limit; shortening the disk-backed path is the fix,
   not falling back to `/tmp`.
-- Apply this policy to all delegated agents. Do not change the system-wide
+- Include this policy in every delegated task and preserve these environment
+  variables in launched subprocesses. Do not change the system-wide
   temporary directory or move unrelated runtime sockets, protected system
   temporary files, or active user browser profiles.
 
@@ -331,7 +334,7 @@ The graphics translator, renderer and byte protocol pass real host-browser
 execution; a separate public Vulkan application now also passes actual Linux
 guest offscreen rendering. This is a bounded, nonconformant profile, not general
 Vulkan/OpenGL or Firefox acceleration. Current uncommitted work builds on
-parent `857801f4f1f5e16650bf9c50f3e6bc6dc92f7512`; the accepted runtime and nested
+parent `094d0be13fc930d139344bc7660b65ddfd280dfd`; the accepted runtime and nested
 Sites source remain unchanged. See `docs/guest-vulkan-graphics-transport-20260926.md`
 and `web/linux/tests/guest-vulkan-graphics/protocol.md` for the exact contract,
 evidence and next guest integration packets.
@@ -408,10 +411,44 @@ read old run2 despite executing run3; the read-only audit verified actual run3
 without rerunning. Compute Worker lifetime is still a close-call counter, and
 submission execution-fault behavior remains untested.
 
-Previous goal turn classification: progress (mandatory build-storage policy
-edited and read back). This continuation adds verified actual guest graphics
-execution and reproducible build/package evidence. Goal accounting started this continuation
-at 8,799,541 tokens, with no explicit token budget; weekly quota remains unknown.
+The guest graphics packet and compute regression were checkpointed in parent
+`094d0be13fc930d139344bc7660b65ddfd280dfd`: 22 scoped paths, 206 audit checks and
+103 commit verification checks. The tracked tree and index were clean afterward.
+Previous goal turn classification: progress (the mandatory disk-backed build
+policy was strengthened in both instruction files). The current continuation
+verifies the GLSL translator and real WebGL2 shader execution under
+`/mnt/p6/build/guest-vulkan-webgl-20260926`. See
+`docs/guest-vulkan-webgl-translation-20260926.md` and the fallback plan.
+WebGL translator build-run2 passes 94 ABI/translation checks; eight independent
+SPIR-V fixtures and 185 coordinate/sampling checks pass. Direct browser run1
+passes 14 cases/50,021 mostly pixel checks, including both depth clipping
+boundaries and reciprocal-w interpolation, with no extra readback row flip.
+SwiftShader was used. All tracked native GL objects close normally before
+emergency cleanup, and the finite browser exits. No persistent service started.
+
+The first check exposed Naga's sampling normalization: implicit interpolation
+overwrites explicit centroid/sample sampling. Both graphics translator sources
+now reject unsupported raw direct/member decorations before parsing. Failed
+WebGL build/check run1 and the predecessor diagnostic are retained. Corrected
+WGSL graphics build-run3 is SHA-256
+`a530270fb7ae3099fbcf60964cff494987fdf608720ce34b936e52a545b3335b`;
+check-run4 passes 72 and the WebGL task's wgsl-sampling-check-run1 passes 31,
+including four independent rejection cases and five byte-identical old WGSL
+programs. Preserve old compute and graphics artifacts. New WGSL Worker/host/
+guest regression remains required before candidate replacement.
+
+`checkpoint-run1` under the WebGL task passes 78 checks; all frozen current
+sources match, old artifacts are unchanged, the finite browser has no owned
+process remaining, and user server PID1591443/startTicks148821663 is preserved.
+The production WebGL renderer, host selection, Worker lifecycle, actual guest
+fallback, fragment-position semantics and new-coordinate WebGPU parity are next;
+do not substitute browser-only pixels for those requirements.
+
+Fresh agent spawn and two followup attempts all failed with the platform thread
+limit. Root performed bounded validation and fixes directly after explaining
+the limitation. Resume delegation when possible; no second serving owner exists.
+Goal accounting started this continuation at 9,624,839 tokens, with no explicit
+token budget; weekly quota remains unknown.
 The full goal is not complete and has not reached an evidenced 95/100.
 
 ## Services and deployment

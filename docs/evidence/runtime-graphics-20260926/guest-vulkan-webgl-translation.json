@@ -1,0 +1,223 @@
+{
+  "pass": true,
+  "checks": 78,
+  "baseCommit": "094d0be13fc930d139344bc7660b65ddfd280dfd",
+  "artifacts": {
+    "webgl": {
+      "pass": true,
+      "artifact": "/mnt/p6/build/guest-vulkan-webgl-20260926/translator-build-run2/translator.wasm",
+      "bytes": 869592,
+      "sha256": "4fcdabf05d9e9cc0003e299739d809a7360256b405a3bb588e5a5771b410aa49",
+      "storage": {
+        "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/translator-build-run2",
+        "filesystem": "ext4",
+        "freeBytes": 178783461376
+      },
+      "sourceLockSha256": "dbcfbc02aa437989a1bf85142684395c79095607febd50d6e28decfa3b5e6fc7",
+      "scope": "Compile-only GLSL ES 300 WebGL translator; runtime translation and WebGL pixel gates remain required"
+    },
+    "wgsl": {
+      "pass": true,
+      "artifact": "/mnt/p6/build/guest-vulkan-graphics-20260926/translator-build-run3/translator.wasm",
+      "bytes": 771589,
+      "sha256": "a530270fb7ae3099fbcf60964cff494987fdf608720ce34b936e52a545b3335b",
+      "storage": {
+        "path": "/mnt/p6/build/guest-vulkan-graphics-20260926/translator-build-run3",
+        "filesystem": "ext4",
+        "freeBytes": 178558910464
+      },
+      "sourceLockSha256": "b74394f2284a8093ec3b4c06b0a07b947555d7c45c4699c55e3bf9da0bf9e53d",
+      "scope": "Compile-only independent graphics translator; runtime and GPU gates remain required"
+    }
+  },
+  "reports": {
+    "translation": {
+      "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/translator-check-run2/result.json",
+      "sha256": "9ffe70c92395f8ded1da74aea7d4de2a03bc84f3086cdb10be30c1291ad6cde8",
+      "assertions": 94
+    },
+    "coordinates": {
+      "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/coordinate-check-run1/result.json",
+      "sha256": "4b686797730ccf63130077e0168cac48726894cfb86b832b5a63a863479a5b55",
+      "assertions": 185
+    },
+    "browser": {
+      "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/coordinate-browser-run1/result.json",
+      "sha256": "9809b7d901d77b1895421061bc5df12c886e2c1c202b75db930313e602bd8c35",
+      "assertions": 50021
+    },
+    "fixtures": {
+      "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/coordinate-fixtures-run1/fixtures.json",
+      "sha256": "17297afc96dbf34334ce25a965269b69bdecc2cfa9b0a950d69f4add5d9b2602",
+      "assertions": null
+    },
+    "wgslTranslation": {
+      "path": "/mnt/p6/build/guest-vulkan-graphics-20260926/translator-check-run4/result.json",
+      "sha256": "cb59843d02fe63f0111341c8f8a1dbba81cc781e75e0ec0f2398d6e29377e183",
+      "assertions": 72
+    },
+    "wgslSampling": {
+      "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/wgsl-sampling-check-run1/result.json",
+      "sha256": "58a440b5a8aac644bce4594eb49d5b180a8f0aa76472e4164a96b6b6f350dd40",
+      "assertions": 31
+    }
+  },
+  "sources": {
+    "web/linux/tests/guest-vulkan-webgl/check-coordinate.mjs": "5da57e8de4a5f4a802c52ca3ff39282a159607ac59712eb8f5ab88031849c2bb",
+    "web/linux/tests/guest-vulkan-webgl/check-wgsl-sampling.mjs": "7194e49bc79bfcf3b84a5e7b04b26d675dd56cfd02bf94889d03cec8a1ddb87c",
+    "web/linux/tests/guest-vulkan-webgl/coordinate-browser.js": "1c05da99880d03a197c329559960ba352a6ea69fe87960a3142dd7f3f3f5dfb0",
+    "web/linux/tests/guest-vulkan-webgl/prepare-fixtures.py": "2e0dde026b2475118e7770d613ba189b73e69cdc2ece34abfea6ed0fda941d42",
+    "web/linux/tests/guest-vulkan-webgl/run-coordinate-browser.py": "ae2660c4ab26f041176ab7dda6f8c82e76ebe8b3c9a700e9bcc438706561c302",
+    "web/linux/tests/guest-vulkan-webgl/translator/Cargo.toml": "51630f6deb4cae5d2f53902126aaf394509a5281a4df2939995a3df42b208cbb",
+    "web/linux/tests/guest-vulkan-webgl/translator/README.md": "387a150db4d61b11432e76eb7c2d09f5860ca7b8f92b452ef1e162ee128bf061",
+    "web/linux/tests/guest-vulkan-webgl/translator/abi.mjs": "fde87f90d4bd6d645cc84371b18edad2e96ae99c3037ad4cb5da266100f0ef9f",
+    "web/linux/tests/guest-vulkan-webgl/translator/build.py": "60afedd86a515dc17f9d6071f175175681abf4a868da13115d6d32b9c01e120b",
+    "web/linux/tests/guest-vulkan-webgl/translator/check.mjs": "e4b2524fcd556aa3e1c5a29c5f06191a77e548a29964699886ccd6dbec3c01b1",
+    "web/linux/tests/guest-vulkan-webgl/translator/fixtures/clip-far.vert": "b7977288de03a68fb10161f8b87d84ed65c4c81ad3347232cc9f457d9bec42cf",
+    "web/linux/tests/guest-vulkan-webgl/translator/fixtures/clip-negative.vert": "f02b0e9685a8a5ce0d1220cd1305f3c708a3ffe84742fdb7d06541901e301f9f",
+    "web/linux/tests/guest-vulkan-webgl/translator/fixtures/perspective.vert": "0fa94014a743885ca8b5268e2b05ff574e1467e3fcfa481d757ab8b63cb90290",
+    "web/linux/tests/guest-vulkan-webgl/translator/fixtures/unsupported-linear.vert": "47b4431d4527061e5991c051dceee7b83a567465f8aa2886db822ff9a20565fc",
+    "web/linux/tests/guest-vulkan-webgl/translator/index.mjs": "94b9d44caa462493177d80d4ef08a1eb502c6c63c8f4d578a3dd4591e4dbe8a4",
+    "web/linux/tests/guest-vulkan-webgl/translator/src/lib.rs": "f361fe94681ff244b2ece120c9b81e75147a972e469ef44dc1f27b75256576c3",
+    "web/linux/tests/guest-vulkan-webgl/translator/worker.mjs": "291f367210e9dda9f05a2f17beaebc14680f2bd2db33dde863d39b72f2f28ef9",
+    "web/linux/tests/guest-vulkan-graphics/translator/src/lib.rs": "642d1613beeb6debf7394d363d1a821ffae263774694add2eefc851c5028b175",
+    "web/linux/tests/guest-vulkan-graphics/translator/check.mjs": "b54ce9dfd227a8ddcc39791b413b59d584d93b18a9517b04fd141430e13fcf11"
+  },
+  "browser": {
+    "cases": [
+      {
+        "label": "pair-a.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-a.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-a.vert/pair-b.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-a.vert/pair-b.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-b.vert/pair-a.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-b.vert/pair-a.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-b.vert/pair-b.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125,
+        "rowFlip": false
+      },
+      {
+        "label": "pair-b.vert/pair-b.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125,
+        "rowFlip": false
+      },
+      {
+        "label": "clip-negative.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0,
+        "rowFlip": false
+      },
+      {
+        "label": "clip-negative.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0,
+        "rowFlip": false
+      },
+      {
+        "label": "clip-far.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0,
+        "rowFlip": false
+      },
+      {
+        "label": "clip-far.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0,
+        "rowFlip": false
+      },
+      {
+        "label": "perspective.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      },
+      {
+        "label": "perspective.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301,
+        "rowFlip": false
+      }
+    ],
+    "native": {
+      "Shader": {
+        "created": 28,
+        "deleted": 28
+      },
+      "Program": {
+        "created": 14,
+        "deleted": 14
+      },
+      "Texture": {
+        "created": 14,
+        "deleted": 14
+      },
+      "Framebuffer": {
+        "created": 14,
+        "deleted": 14
+      },
+      "VertexArray": {
+        "created": 14,
+        "deleted": 14
+      },
+      "Buffer": {
+        "created": 21,
+        "deleted": 21
+      }
+    },
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "liveBeforeEmergencyCleanup": 0,
+    "ownedProcessesRemaining": []
+  },
+  "userServer": {
+    "pid": 1591443,
+    "startTicks": "148821663",
+    "preserved": true
+  },
+  "scope": "Verified translators and direct WebGL2 shader execution; renderer, Worker, host/guest fallback integration and final product requirements remain incomplete"
+}

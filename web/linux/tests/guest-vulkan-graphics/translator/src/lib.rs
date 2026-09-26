@@ -107,7 +107,20 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
         let instruction = word(offset);
         let bytes = (instruction >> 16) as usize * 4;
         if bytes == 0 || bytes > input.len() - offset { return Err("truncated SPIR-V instruction".into()); }
-        if instruction & 0xffff == 15 { entry_declarations += 1; }
+        let opcode = instruction & 0xffff;
+        if opcode == 15 { entry_declarations += 1; }
+        // Pinned Naga overwrites explicit sampling when interpolation is
+        // implicit. Enforce the center-only profile before IR normalization.
+        let decoration_offset = match opcode {
+            71 if bytes >= 12 => Some(offset + 8),
+            72 if bytes >= 16 => Some(offset + 12),
+            _ => None,
+        };
+        if let Some(position) = decoration_offset {
+            if matches!(word(position), 16 | 17) {
+                return Err("only center sampling supported (raw SPIR-V decoration)".into());
+            }
+        }
         offset += bytes;
     }
     // Naga may collapse duplicate OpEntryPoint declarations for one function.
