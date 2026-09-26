@@ -18,7 +18,8 @@ function fail(error) {
 function check() {
   if (finished || !report.host || !/^GUEST_VK_EXIT status=0 checks=\d+$/m.test(report.logs.replaceAll('\r',''))) return;
   const h = report.host, own = h.ownership;
-  const base = report.errors.length === 0 && h.draws === 0 && own.connectionsClosed === 1;
+  const base = report.errors.length === 0 && h.draws === 0 && own.connectionsClosed === 1 &&
+    own.liveDevices === 0 && own.liveTextures === 0 && own.liveBuffers === 0;
   if (report.mode === 'unavailable') {
     report.pass = base && h.readbacks === 0 && h.released === 0 && h.commands === 0 && !h.adapter && own.devicesCreated === 0 && own.devicesDestroyed === 0 &&
       h.error === 'WebGPU unavailable: no renderer fallback is implied' && report.hellos.length === 0 &&
@@ -26,16 +27,34 @@ function check() {
   } else {
     const matchingHello = report.hellos.length === 2 && report.hellos.every(item => item.version === 1 &&
       item.shader === 'WGSL' && JSON.stringify(item.adapter) === JSON.stringify(h.adapter));
-    const clear = report.mode === 'clear';
+    const loss = report.mode.startsWith('loss-');
+    const clear = report.mode === 'clear' || report.mode === 'exhaustion';
     const operations = report.events.filter(e => e.type === 'command').map(e => `${e.opcode}:${e.status}`).join(',');
     const rendering = clear ? h.clears === 2 && h.readbacks === 2 && h.released === 1 && report.hellos.every(x => x.clearImage === true) &&
       report.logs.includes('GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256') &&
       report.logs.includes('GUEST_VK_RESOURCES live=0') && operations === '0:0,0:0,4:0,9:0,6:0,9:0,6:0,7:0,8:0' :
       h.clears === 0 && h.readbacks === 0 && h.released === 0 && operations === '0:0,0:0,8:0';
-    report.pass = base && rendering && h.commands === (clear ? 9 : 3) && h.error === null && !!h.adapter && matchingHello &&
+    if(loss) {
+      const deviceLoss=report.mode === 'loss-device';
+      const fault=h.fault;
+      report.pass=base && matchingHello && report.hellos.every(x => x.clearImage === true) &&
+        h.clears === 1 && h.readbacks === 0 && h.released === 1 && !!h.adapter &&
+        own.devicesCreated === 1 && own.devicesDestroyed === 1 && own.texturesCreated === 1 && own.texturesDestroyed === 1 &&
+        own.buffersCreated === (deviceLoss?1:0) && own.buffersDestroyed === (deviceLoss?1:0) &&
+        fault.injected && fault.clearCompleted === 1 && fault.readbackRequests === 1 &&
+        fault.nativeDeviceLost === deviceLoss && fault.readbackMapStarted === deviceLoss &&
+        (deviceLoss ? h.error?.startsWith('device lost:') : h.error === 'fixture transport loss after completed clear') &&
+        operations === '0:0,0:0,4:0,9:0' && h.commands === 4 &&
+        report.events.filter(e => e.type === 'fault').length === 1 &&
+        report.logs.includes('GUEST_VK_LOSS_PASS submit=-4 queue_idle=-4 device_idle=-4 resubmit=-4 fresh_submit=-4 unchanged_bytes=212') &&
+        report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') &&
+        report.logs.includes('GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0') &&
+        report.logs.includes('GUEST_VK_CLOSE status=-1');
+    } else report.pass = base && rendering && h.commands === (clear ? 9 : 3) && h.error === null && !!h.adapter && matchingHello &&
       own.devicesCreated === 1 && own.devicesDestroyed === 1 &&
       report.logs.includes('GUEST_VK_DEVICE_PASS') && report.logs.includes('GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0') &&
-      report.logs.includes('GUEST_VK_CLOSE status=0');
+      report.logs.includes('GUEST_VK_CLOSE status=0') &&
+      (report.mode !== 'exhaustion' || report.logs.includes('GUEST_VK_EXHAUSTION_PASS heap_bytes=1048576 table_entries=32 rejected=6 recovery=2 live=0 allocated_bytes=0'));
   }
   if (!report.pass) { fail('lifecycle acceptance mismatch'); return; }
   report.hostLifetimePass = true; finished = true; clearTimeout(deadline);
@@ -83,11 +102,11 @@ document.querySelector('#boot').onclick = async () => {
   try {
     if (!crossOriginIsolated) throw Error('cross-origin isolation required');
     const candidate = new URLSearchParams(location.search).get('candidate') || 'candidate';
-    if (!/^candidate(?:-unavailable|-clear)?$/.test(candidate)) throw Error('invalid isolated candidate');
+    if (!/^candidate(?:-unavailable|-clear|-loss-transport|-loss-device|-exhaustion)?$/.test(candidate)) throw Error('invalid isolated candidate');
     const metadataResponse = await fetch(`./${candidate}/package.json`);
     if (!metadataResponse.ok) throw Error('candidate metadata unavailable');
     const metadata = await metadataResponse.json();
-    if (!metadata.testOnly || !metadata.passPackage || !['live','unavailable','clear'].includes(metadata.mode)) throw Error('invalid test package');
+    if (!metadata.testOnly || !metadata.passPackage || !['live','unavailable','clear','loss-transport','loss-device','exhaustion'].includes(metadata.mode)) throw Error('invalid test package');
     report.mode = metadata.mode; report.package = metadata;
     for (const [relative, hash] of Object.entries(metadata.guestBinary.hostSources)) {
       const response = await fetch(new URL(relative, new URL('../', location.href)));

@@ -21,6 +21,7 @@ static uint64_t pool, next_pool = 1000000;
 static unsigned resource_count;
 static size_t allocated_bytes;
 unsigned guest_vk_live_resources(void) {return resource_count;}
+VkDeviceSize guest_vk_allocated_bytes(void) {return allocated_bytes;}
 static struct resource *resource_get(uint64_t id, unsigned kind) {
     for (unsigned i=0;i<MAX_RES;i++) if (id && resources[i].id==id && resources[i].kind==kind) return &resources[i];
     return NULL;
@@ -51,7 +52,7 @@ static void transfer_cleanup(void) {
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id && resources[i].kind!=R_MEMORY) resource_drop(&resources[i]);
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id) resource_drop(&resources[i]);
     memset(&command,0,sizeof(command)); pool=0;
-    printf("GUEST_VK_RESOURCES live=%u\n",resource_count); fflush(stdout);
+    printf("GUEST_VK_RESOURCES live=%u allocated_bytes=%zu\n",resource_count,allocated_bytes); fflush(stdout);
 }
 static VKAPI_ATTR void VKAPI_CALL memory_properties(VkPhysicalDevice p, VkPhysicalDeviceMemoryProperties *out) {
     if (!out) return;

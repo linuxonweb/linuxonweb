@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-TASKS = (Path('/mnt/p6/build/guest-vulkan-20260926'), Path('/mnt/p6/build/guest-vulkan-clear-20260926'))
+TASKS = (Path('/mnt/p6/build/guest-vulkan-20260926'), Path('/mnt/p6/build/guest-vulkan-clear-20260926'), Path('/mnt/p6/build/guest-vulkan-failure-20260926'))
 
 def checked_storage(output):
     output = Path(output).resolve()

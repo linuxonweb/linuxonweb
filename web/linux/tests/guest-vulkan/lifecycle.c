@@ -8,9 +8,12 @@ static void deadline(int signal_number) { (void)signal_number; _exit(124); }
 #define CHECK(condition) do { checks++; if (!(condition)) { fprintf(stderr, "GUEST_VK_FAIL line=%d check=%s\n", __LINE__, #condition); goto done; } } while (0)
 #define LOAD(type, variable, owner, name) type variable = (type)vk_icdGetInstanceProcAddr(owner, name); CHECK(variable != NULL)
 #include "clear-test.inc"
+#include "exhaustion-test.inc"
 int main(int argc, char **argv) {
     unsigned checks = 0; int result = 1;
-    int clear = argc == 2 && !strcmp(argv[1], "--clear");
+    int loss = argc == 2 && (!strcmp(argv[1], "--loss-transport") || !strcmp(argv[1], "--loss-device"));
+    int exhaustion = argc == 2 && !strcmp(argv[1], "--exhaustion");
+    int clear = loss || exhaustion || (argc == 2 && !strcmp(argv[1], "--clear"));
     int unavailable = argc == 2 && !strcmp(argv[1], "--expect-unavailable");
     VkInstance instance = VK_NULL_HANDLE; VkDevice device = VK_NULL_HANDLE;
     PFN_vkDestroyInstance destroy_instance = NULL; PFN_vkDestroyDevice destroy_device = NULL;
@@ -91,14 +94,17 @@ int main(int argc, char **argv) {
     VkQueue queue = VK_NULL_HANDLE; get_queue(device, 0, 0, &queue);
     CHECK(queue != VK_NULL_HANDLE && valid_loader_magic_value(queue));
     VkQueue again = VK_NULL_HANDLE; get_queue(device, 0, 0, &again); CHECK(again == queue);
-    if (clear) CHECK(clear_test(instance,physical,device,queue,&checks)==0);
+    if (exhaustion) CHECK(exhaustion_test(instance,device,&checks)==0);
+    if (clear) CHECK(clear_test(instance,physical,device,queue,&checks,loss)==0);
     puts("GUEST_VK_DEVICE_PASS"); fflush(stdout);
     destroy_device(device, NULL); device = VK_NULL_HANDLE;
     destroy_instance(instance, NULL); instance = VK_NULL_HANDLE;
     struct guest_vk_audit state = guest_vk_get_audit();
     CHECK(state.instances_created == 1 && state.instances_destroyed == 1 &&
           state.devices_created == 1 && state.devices_destroyed == 1 &&
-          state.live_instances == 0 && state.live_devices == 0 && state.close_status == 0);
+          state.live_instances == 0 && state.live_devices == 0 &&
+          (loss ? state.close_status != 0 : state.close_status == 0) &&
+          guest_vk_live_resources() == 0 && guest_vk_allocated_bytes() == 0);
     puts("GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0"); result = 0;
 done:
     if (device && destroy_device) destroy_device(device, NULL);

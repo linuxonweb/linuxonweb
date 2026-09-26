@@ -194,3 +194,49 @@ For reproduction use fresh output directory names, explicit disk-backed scratch,
 --output .../package-clear-run3 --mode clear`, and the sole serving owner's
 `candidate-clear` link before `run-browser.mjs clear`. Keep `live`, `unavailable`
 and the guest-gpu host regression as release gates for this isolated profile.
+
+## Verified fault and allocation-recovery gates
+
+Three additional isolated package/runner modes use
+`/mnt/p6/build/guest-vulkan-failure-20260926/` with explicit task-local
+`TMPDIR`, `TMP`, `TEMP` and `PYTHONDONTWRITEBYTECODE=1`:
+
+- `loss-transport`: the fixture closes vsock when the first READBACK header
+  arrives, after a completed real GPU clear and its successful guest reply.
+- `loss-device`: after the real copy is submitted and staging map begins, the
+  fixture destroys the actual WebGPU device and awaits its native `lost`
+  promise. The pending map has a rejection handler before destruction.
+- `exhaustion`: actual guest allocations reach the 1 MiB byte budget, reject
+  three further allocations without handles/accounting changes, free and reuse
+  one allocation, then reach the independent 32-entry resource table limit,
+  reject three further allocations, and free/reuse a slot. Preserved bytes and
+  stale handles are checked before normal two-color clear/copy execution on the
+  same device.
+
+Fault modes reuse the clear fixture's actual recording/submission path. They
+require `VK_ERROR_DEVICE_LOST` from submit, both idle functions, re-submit and a
+newly recorded submit; all 212 mapped sentinel bytes must remain unchanged.
+Device teardown must free the remaining guest pool/image/buffer/memory state,
+leaving zero resource entries and zero allocated bytes. Fault close status is
+`-1`, explicitly separate from successful normal protocol CLOSE.
+
+Only the fixture wrapper injects faults. It tracks actual created/destroyed
+textures, staging buffers and devices, with idempotent destruction. Acceptance
+requires zero live host objects, exactly one injection after one completed
+clear, zero completed readbacks, exact command order, and no page exceptions.
+A transport fault does not allocate a staging buffer; device fault must create
+and destroy one. Neither mode returns fabricated readback pixels. These gates
+do not test arbitrary loss points, driver recovery or physical GPU behavior.
+
+Build/package/run as above with `--mode loss-transport`, `--mode loss-device`
+or `--mode exhaustion`, corresponding sole-owner candidate symlinks, and
+`run-browser.mjs MODE`. Run normal `clear`, `live`, `unavailable`, and the host
+regression from the same frozen sources. Preserve prior clear-run2 artifacts.
+All six modes passed their first actual guest attempt from frozen build-run1:
+clear 951, loss-transport 516, loss-device 516, exhaustion 1,077, live 38 and
+unavailable 11 assertions. Counts include individual bytes, not distinct
+features. Native loss reason was `destroyed`; actual guest configuration was
+1 GiB/two CPUs. Fifteen guest/host/header identities matched frozen provenance.
+The unchanged shared host's earlier 73 checks were not rerun in this task. See the
+[execution report](../../../../docs/guest-vulkan-failure-recovery-20260926.md) and
+[compact evidence](../../../../docs/evidence/runtime-graphics-20260926/guest-vulkan-failure-recovery.json).

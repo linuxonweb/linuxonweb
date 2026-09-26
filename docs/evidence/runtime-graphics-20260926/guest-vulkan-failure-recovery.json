@@ -1,0 +1,941 @@
+{
+  "date": "2026-09-26",
+  "scope": "Isolated partial nonconformant Vulkan clear/copy reliability; SwiftShader software; no loader integration, dispatch, graphics draw, GL, Firefox GPU, decoder, native JIT or physical acceleration claim",
+  "allPass": true,
+  "taskDirectory": "/mnt/p6/build/guest-vulkan-failure-20260926",
+  "artifact": {
+    "artifact": "/mnt/p6/build/guest-vulkan-failure-20260926/build-run1/guest-vulkan-lifecycle.wasm",
+    "bytes": 70375,
+    "sha256": "c2bfea0d346dba4e0b1b493a49f29d528c48daeb6b014da1849089a1535cd0b9",
+    "imports": [
+      "env.memory",
+      "linux.syscall",
+      "linux.get_thread_area",
+      "linux.copy_siginfo"
+    ]
+  },
+  "packages": {
+    "clear": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "clear",
+      "archiveSha256": "c2ca9156b38331df03cc3266cfd11132894d220da754bbddb61a0a90080c2f02",
+      "bytes": 40566176,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    },
+    "loss-transport": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "loss-transport",
+      "archiveSha256": "91681e62c704d6956c86df7cdca4a6fb8c061b7131d7ea8a87eca29aa88266c4",
+      "bytes": 40566188,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    },
+    "loss-device": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "loss-device",
+      "archiveSha256": "724ce6338163b9352b11dceffbd5de02687189b0f98f437ce2e295800dcdb05c",
+      "bytes": 40566184,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    },
+    "exhaustion": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "exhaustion",
+      "archiveSha256": "5b157a0cc32eeb6e083d0607d14d46656fda1611799bfd77e1c8f4e7a42e3974",
+      "bytes": 40566184,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    },
+    "live": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "live",
+      "archiveSha256": "b4e91a3183429f9f6326a9c7543be84098a0b899f4fac90fa9062efb4a55c48c",
+      "bytes": 40566168,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    },
+    "unavailable": {
+      "passPackage": true,
+      "testOnly": true,
+      "mode": "unavailable",
+      "archiveSha256": "d311be6e218851e3fd9bd9db59c3f09e2482f129f8470c8f4b3272f0b99760f1",
+      "bytes": 40566192,
+      "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "unchangedOriginalRecords": 3846,
+      "modified": [
+        "init"
+      ],
+      "added": [
+        "bin/guest-vulkan-lifecycle"
+      ],
+      "tailPreserved": true
+    }
+  },
+  "runnerSha256": "d6a09c7f0c4bf383f6229044a6d56fb8913e0f0def01310c83b8676f40ab38f6",
+  "sourceAuditCount": 15,
+  "sourceAudit": {
+    "guest-vulkan/icd.c": {
+      "current": "2154cd10045419e239a3086978399a9cac2170f2369fd40a18549e05a406286a",
+      "frozen": "2154cd10045419e239a3086978399a9cac2170f2369fd40a18549e05a406286a",
+      "match": true
+    },
+    "guest-vulkan/icd.h": {
+      "current": "9851faf05d52d136fff67066ea45d97f392173aa91af9791ea2dfb2472d1e87c",
+      "frozen": "9851faf05d52d136fff67066ea45d97f392173aa91af9791ea2dfb2472d1e87c",
+      "match": true
+    },
+    "guest-vulkan/lifecycle.c": {
+      "current": "0af3cbb91ffbd8498ace6d6df2f8d95f6462c371db0ce9ed574a246bdfa84b5d",
+      "frozen": "0af3cbb91ffbd8498ace6d6df2f8d95f6462c371db0ce9ed574a246bdfa84b5d",
+      "match": true
+    },
+    "guest-vulkan/transfer.inc": {
+      "current": "f539f1fb516942462ae76c4d9e9551ea116dc3f84e6803c89e9c6be24ae8ccab",
+      "frozen": "f539f1fb516942462ae76c4d9e9551ea116dc3f84e6803c89e9c6be24ae8ccab",
+      "match": true
+    },
+    "guest-vulkan/clear-test.inc": {
+      "current": "7c3901d53818f5d8ab647b6c2f1d0eaec44fe7436c764e55c53bf972fb9c7bd9",
+      "frozen": "7c3901d53818f5d8ab647b6c2f1d0eaec44fe7436c764e55c53bf972fb9c7bd9",
+      "match": true
+    },
+    "guest-vulkan/exhaustion-test.inc": {
+      "current": "3a5cf10b024482994410057e859821d593e80d17eec042f9b257b8cbcf0bee66",
+      "frozen": "3a5cf10b024482994410057e859821d593e80d17eec042f9b257b8cbcf0bee66",
+      "match": true
+    },
+    "guest-gpu/guest-gpu.c": {
+      "current": "31e128da0223c834055b6e7713eba64dd1c1e483091d3061ba9c8690e63fa77e",
+      "frozen": "31e128da0223c834055b6e7713eba64dd1c1e483091d3061ba9c8690e63fa77e",
+      "match": true
+    },
+    "guest-gpu/guest-gpu.h": {
+      "current": "3d7a7fad11c350b67bb84148f57f67171716729f7f054457af0c695f273a1e5c",
+      "frozen": "3d7a7fad11c350b67bb84148f57f67171716729f7f054457af0c695f273a1e5c",
+      "match": true
+    },
+    "guest-gpu/host.mjs": {
+      "current": "a9448b522b7a3983ca013c4c36c15393e18a81531a634e1632bb68efd76c91ab",
+      "frozen": "a9448b522b7a3983ca013c4c36c15393e18a81531a634e1632bb68efd76c91ab",
+      "match": true
+    },
+    "guest-vulkan/host.mjs": {
+      "current": "ad289ec6903aa7304e2adbc96d555411b8ac284255934988960fea1e09941fb5",
+      "frozen": "ad289ec6903aa7304e2adbc96d555411b8ac284255934988960fea1e09941fb5",
+      "match": true
+    },
+    "guest-vulkan/index.html": {
+      "current": "af69566de20feda2a58dcb03f1af0d94a08ea9596c1b053d767e47fb766953ba",
+      "frozen": "af69566de20feda2a58dcb03f1af0d94a08ea9596c1b053d767e47fb766953ba",
+      "match": true
+    },
+    "header/vulkan_core.h": {
+      "current": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+      "frozen": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+      "match": true
+    },
+    "header/vk_platform.h": {
+      "current": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+      "frozen": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+      "match": true
+    },
+    "header/vulkan.h": {
+      "current": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+      "frozen": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+      "match": true
+    },
+    "header/vk_icd.h": {
+      "current": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc",
+      "frozen": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc",
+      "match": true
+    }
+  },
+  "modes": {
+    "clear": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-clear-run1/result.json",
+      "reportSha256": "a570386243ff868dca438cc3cc2a4addefc760adea0fe1941f01cd75881bc177",
+      "pass": true,
+      "checks": 951,
+      "host": {
+        "commands": 9,
+        "draws": 0,
+        "clears": 2,
+        "readbacks": 2,
+        "released": 1,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": null,
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "clear",
+          "injected": false,
+          "clearCompleted": 2,
+          "readbackRequests": 2,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental partial clear/copy profile; no conformance, dispatch, GL or hardware claim",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL partial clear/copy profile; NOT conformant",
+        "GUEST_VK_PIXELS_PASS round=0 width=17 height=3 bytes=204 rgba=255,0,0,255",
+        "GUEST_VK_PIXELS_PASS round=1 width=17 height=3 bytes=204 rgba=0,255,0,0",
+        "GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+        "GUEST_VK_CLOSE status=0",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=951"
+      ],
+      "events": [
+        {
+          "type": "adapter",
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 4,
+          "request": 3,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 4,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 6,
+          "request": 5,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 6,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 6,
+          "request": 7,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 7,
+          "request": 8,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 8,
+          "request": 9,
+          "status": 0
+        },
+        {
+          "type": "closed",
+          "commands": 9,
+          "draws": 0,
+          "clears": 2,
+          "readbacks": 2,
+          "released": 1,
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          },
+          "error": null
+        }
+      ]
+    },
+    "loss-transport": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-loss-transport-run1/result.json",
+      "reportSha256": "9dedadee5b944cca6f309f5e2b17e184ba907300ca077dfc79bb5f3d55bd2d98",
+      "pass": true,
+      "checks": 516,
+      "host": {
+        "commands": 4,
+        "draws": 0,
+        "clears": 1,
+        "readbacks": 0,
+        "released": 1,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": "fixture transport loss after completed clear",
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "loss-transport",
+          "injected": true,
+          "clearCompleted": 1,
+          "readbackRequests": 1,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental partial clear/copy profile; no conformance, dispatch, GL or hardware claim",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL partial clear/copy profile; NOT conformant",
+        "GUEST_VK_LOSS_PASS submit=-4 queue_idle=-4 device_idle=-4 resubmit=-4 fresh_submit=-4 unchanged_bytes=212",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+        "GUEST_VK_CLOSE status=-1",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=516"
+      ],
+      "events": [
+        {
+          "type": "adapter",
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 4,
+          "request": 3,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 4,
+          "status": 0
+        },
+        {
+          "type": "fault",
+          "mode": "loss-transport",
+          "boundary": "readback-header-after-completed-clear",
+          "clearCompleted": 1
+        },
+        {
+          "type": "closed",
+          "commands": 4,
+          "draws": 0,
+          "clears": 1,
+          "readbacks": 0,
+          "released": 1,
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          },
+          "error": "fixture transport loss after completed clear"
+        }
+      ]
+    },
+    "loss-device": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-loss-device-run1/result.json",
+      "reportSha256": "624f3d84b76badf063c5901790aed53de980b32c96e447bb8bc1f902263ffc64",
+      "pass": true,
+      "checks": 516,
+      "host": {
+        "commands": 4,
+        "draws": 0,
+        "clears": 1,
+        "readbacks": 0,
+        "released": 1,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": "device lost: Device was destroyed.",
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 1,
+          "buffersDestroyed": 1,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "loss-device",
+          "injected": true,
+          "clearCompleted": 1,
+          "readbackRequests": 1,
+          "nativeDeviceLost": true,
+          "readbackMapStarted": true,
+          "nativeDeviceLostReason": "destroyed"
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental partial clear/copy profile; no conformance, dispatch, GL or hardware claim",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL partial clear/copy profile; NOT conformant",
+        "GUEST_VK_LOSS_PASS submit=-4 queue_idle=-4 device_idle=-4 resubmit=-4 fresh_submit=-4 unchanged_bytes=212",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+        "GUEST_VK_CLOSE status=-1",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=516"
+      ],
+      "events": [
+        {
+          "type": "adapter",
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 4,
+          "request": 3,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 4,
+          "status": 0
+        },
+        {
+          "type": "fault",
+          "mode": "loss-device",
+          "boundary": "readback-map-after-copy-submit",
+          "clearCompleted": 1
+        },
+        {
+          "type": "closed",
+          "commands": 4,
+          "draws": 0,
+          "clears": 1,
+          "readbacks": 0,
+          "released": 1,
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          },
+          "error": "device lost: Device was destroyed."
+        }
+      ]
+    },
+    "exhaustion": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-exhaustion-run1/result.json",
+      "reportSha256": "5b9863be6f7c162b4b7e202ded6206f99981bc173e482bfd4a35a38bbe184876",
+      "pass": true,
+      "checks": 1077,
+      "host": {
+        "commands": 9,
+        "draws": 0,
+        "clears": 2,
+        "readbacks": 2,
+        "released": 1,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": null,
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "exhaustion",
+          "injected": false,
+          "clearCompleted": 2,
+          "readbackRequests": 2,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental partial clear/copy profile; no conformance, dispatch, GL or hardware claim",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL partial clear/copy profile; NOT conformant",
+        "GUEST_VK_EXHAUSTION_PASS heap_bytes=1048576 table_entries=32 rejected=6 recovery=2 live=0 allocated_bytes=0",
+        "GUEST_VK_PIXELS_PASS round=0 width=17 height=3 bytes=204 rgba=255,0,0,255",
+        "GUEST_VK_PIXELS_PASS round=1 width=17 height=3 bytes=204 rgba=0,255,0,0",
+        "GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+        "GUEST_VK_CLOSE status=0",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=1077"
+      ],
+      "events": [
+        {
+          "type": "adapter",
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 4,
+          "request": 3,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 4,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 6,
+          "request": 5,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 9,
+          "request": 6,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 6,
+          "request": 7,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 7,
+          "request": 8,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 8,
+          "request": 9,
+          "status": 0
+        },
+        {
+          "type": "closed",
+          "commands": 9,
+          "draws": 0,
+          "clears": 2,
+          "readbacks": 2,
+          "released": 1,
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          },
+          "error": null
+        }
+      ]
+    },
+    "live": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-live-run1/result.json",
+      "reportSha256": "a0edde1a2da4b49a95a1b73fae15278745db5e12e51b80cc243a14ae258d6dfc",
+      "pass": true,
+      "checks": 38,
+      "host": {
+        "commands": 3,
+        "draws": 0,
+        "clears": 0,
+        "readbacks": 0,
+        "released": 0,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": null,
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1,
+          "texturesCreated": 0,
+          "texturesDestroyed": 0,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "live",
+          "injected": false,
+          "clearCompleted": 0,
+          "readbackRequests": 0,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL WebGPU lifecycle only; not conformant",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+        "GUEST_VK_CLOSE status=0",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=38"
+      ],
+      "events": [
+        {
+          "type": "adapter",
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 8,
+          "request": 3,
+          "status": 0
+        },
+        {
+          "type": "closed",
+          "commands": 3,
+          "draws": 0,
+          "clears": 0,
+          "readbacks": 0,
+          "released": 0,
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          },
+          "error": null
+        }
+      ]
+    },
+    "unavailable": {
+      "report": "/mnt/p6/build/guest-vulkan-failure-20260926/qa-unavailable-run1/result.json",
+      "reportSha256": "f89a5ffc2986d03ecea2d9ba99a5725d8a0911192d4de21074ca4e59c0f71b63",
+      "pass": true,
+      "checks": 11,
+      "host": {
+        "commands": 0,
+        "draws": 0,
+        "clears": 0,
+        "readbacks": 0,
+        "released": 0,
+        "adapter": null,
+        "error": "WebGPU unavailable: no renderer fallback is implied",
+        "ownership": {
+          "devicesCreated": 0,
+          "devicesDestroyed": 0,
+          "connectionsClosed": 1,
+          "texturesCreated": 0,
+          "texturesDestroyed": 0,
+          "buffersCreated": 0,
+          "buffersDestroyed": 0,
+          "liveDevices": 0,
+          "liveTextures": 0,
+          "liveBuffers": 0
+        },
+        "fault": {
+          "mode": "unavailable",
+          "injected": false,
+          "clearCompleted": 0,
+          "readbackRequests": 0,
+          "nativeDeviceLost": false,
+          "readbackMapStarted": false
+        }
+      },
+      "errors": [],
+      "runtimeExceptionCount": 0,
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "isolated": true,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim",
+        "GUEST_VK_UNAVAILABLE_PASS",
+        "GUEST_VK_EXIT status=0 checks=11"
+      ],
+      "events": [
+        {
+          "type": "closed",
+          "commands": 0,
+          "draws": 0,
+          "clears": 0,
+          "readbacks": 0,
+          "released": 0,
+          "adapter": null,
+          "error": "WebGPU unavailable: no renderer fallback is implied"
+        }
+      ]
+    }
+  },
+  "unchangedSitesHead": "8757a6ff2f8f0a312e7a616bb900521234395757",
+  "sharedHostRegression": {
+    "checks": 73,
+    "status": "Historical pass in prior clear task; unchanged shared host, not rerun in this task"
+  },
+  "assessment": {
+    "boundedGateScore": 95,
+    "overallGoalComplete": false,
+    "limitations": [
+      "Deterministic fixture destruction, not spontaneous driver failure",
+      "One loss boundary per fault mode",
+      "No partial readback, reconnect, concurrency or soak",
+      "Software SwiftShader only; no physical acceleration or performance claim",
+      "Partial nonconformant direct-call profile; no loader, dispatch, GL, Firefox GPU, decoder or native JIT"
+    ]
+  },
+  "cleanup": {
+    "status": "Passed",
+    "report": "/mnt/p6/build/guest-vulkan-failure-20260926/cleanup.json",
+    "reportSha256": "73d77cc957ec6143a697ff3bf6d650f79b907a4bc145397aba582ff016ad456a",
+    "pass": true,
+    "actions": [
+      {
+        "browser": "Browser.close",
+        "pid": 64410,
+        "identityVerified": true
+      },
+      {
+        "adapter": "SIGTERM",
+        "pid": 64263,
+        "identityVerified": true
+      }
+    ],
+    "processes": {
+      "adapter": {
+        "pid": 64263,
+        "absent": true
+      },
+      "browser": {
+        "pid": 64410,
+        "absent": true
+      }
+    },
+    "candidateLinksRemoved": 6,
+    "noListenersOnPorts": [
+      4182,
+      9396
+    ],
+    "userServicePreserved": {
+      "pid": 1591443,
+      "started": "Tue Sep 22 09:08:46 2026",
+      "command": "node web/desktop/dev-server.mjs"
+    },
+    "retained": {
+      "profile": true,
+      "cache": true,
+      "artifact": true,
+      "qaSummary": true
+    }
+  }
+}

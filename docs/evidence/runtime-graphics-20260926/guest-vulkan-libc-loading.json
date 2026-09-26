@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-26",
+  "scope": "Read-only installed libc archive and archived source audit; no linked executable or runtime loading test",
+  "rawReport": "/mnt/p6/build/guest-vulkan-failure-20260926/integration-libc-audit.json",
+  "sysroot": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot",
+  "archive": {
+    "bytes": 1329424,
+    "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b",
+    "dlopen": "Weak dlopen plus local stub_dlopen; Dynamic loading not supported diagnostic",
+    "dlsym": "Strong dlsym references weak __dlsym supplied with local stub_dlsym",
+    "dlclose": "Strong dlclose",
+    "dls2Found": false
+  },
+  "libcSo": {
+    "format": "WebAssembly module", "bytes": 1691,
+    "sha256": "60166f829c4eacd8210bc82ced83d34c51c8102d4e2df07b31b4db474513f5d7"
+  },
+  "objectSha256": {
+    "dlopen.o": "dd4ba54d6ef25acd42a8c1ef40faa359823073c4d5270c0d3530ff37d1f0050f",
+    "dlsym.o": "b54e86c1f17868400f19008d5dc9cd205065c568de77b6e55a2ce3994c729609",
+    "__dlsym.o": "028f18fa80c9e8ae4b5fec398c5c9a30598503b46fef31f04cc2e5f5bb410161",
+    "dlclose.o": "842b1c8d200537721e7f5ab3b3d072f15a9c40082ac25777147708bf10024cd2"
+  },
+  "interpretation": "Ordinary shared-library ICD discovery requires additional loading support or a deliberately static integration; weak stubs can be overridden",
+  "loaderPortBuilt": false,
+  "publicVulkanClientExecuted": false,
+  "fullGoalComplete": false
+}

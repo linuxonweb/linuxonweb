@@ -97,8 +97,9 @@ pre-existing server; no task service remains running.
 
 ## Remaining work
 
-Guest transport/device loss during a submitted command and allocation-exhaustion
-stress still need actual guest tests. The implementation lacks loader discovery,
+The bounded actual-guest transport/device-loss and allocation-exhaustion/reuse
+gates subsequently passed; see the [failure/recovery report](guest-vulkan-failure-recovery-20260926.md).
+Broader loss points, reconnection and soak remain untested. The implementation lacks loader discovery,
 format queries, shaders, dispatch, general GPU buffers, concurrency, fences,
 semaphores, aliasing and general image layouts. These are substantive driver
 requirements, not preference settings. This step establishes a reusable typed

@@ -13,6 +13,9 @@ filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
 compiler scratch space, build caches, disassembly dumps, build logs, or test
 artifacts.
 
+This applies to temporary build files as well as final outputs; a tool's default
+temporary directory is not an exception.
+
 - Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
   subdirectory for tool scratch files. Another disk-backed project/cache
   directory is acceptable; verify its filesystem and free capacity first.
@@ -183,9 +186,21 @@ driver enables permission checking internally and rejects the explicit
   its evidence is retained, a null-safe snapshot fixed the harness, and live
   retry 2 passed. Clear and unavailable passed their first guest attempts.
   This partial COMPUTE|TRANSFER profile has no compute dispatch, format queries,
-  loader integration, general GPU buffers or conformance. Guest mid-submit
-  transport-loss and allocation-exhaustion execution tests are the next bounded
-  reliability gates; full shader/GL/Firefox integration remains substantive work.
+  loader integration, general GPU buffers or conformance. Subsequent actual
+  guest failure/exhaustion gates now also pass on first attempts: clear 951,
+  transport loss 516, native device loss 516, exhaustion 1077, live 38 and
+  unavailable 11 assertions. Both losses follow a completed GPU clear and return
+  DEVICE_LOST from five guest submit/idle paths without changing 212 mapped bytes;
+  all tracked native objects and guest allocations are released. Exhaustion fills
+  the 1 MiB heap and 32-entry table, verifies six refused allocations and two
+  recoveries, then completes both exact clear/readbacks. Native device loss is an
+  explicit GPUDevice.destroy during staging map, not a spontaneous driver failure.
+  No driver failure-path repair was needed. Evidence and 70,375-byte build-run1
+  are under `/mnt/p6/build/guest-vulkan-failure-20260926/`, artifact SHA-256
+  `c2bfea0d346dba4e0b1b493a49f29d528c48daeb6b014da1849089a1535cd0b9`.
+  See `docs/guest-vulkan-failure-recovery-20260926.md` and its compact evidence.
+  All 15 source/header hashes match the tested build. Full shader/GL/Firefox
+  integration remains substantive work.
   Sites version 6 is unchanged; the prototype is not deployed. No OpenGL,
   WebGL fallback, decoder, native JIT or physical GPU claim follows. Overall goal
   remains below 95/100 (approximately 80); this is progress, not goal completion.
@@ -284,6 +299,13 @@ creation and completed-agent follow-up hit the tool's thread limit; the running
 review agent was explicitly reassigned as sole command/serving owner. No task
 service remains active.
 
+The loss/exhaustion continuation also completed cleanup: browser PID `64410`
+and adapter PID `64263` are absent after Browser.close and SIGTERM, respectively.
+Ports `4182` and `9396` have no listeners, all six verified candidate symlinks
+were removed, and user PID `1591443` retained its command/start identity.
+Artifacts, profiles and the cleanup record remain under
+`/mnt/p6/build/guest-vulkan-failure-20260926/`. No task service remains active.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
@@ -311,8 +333,8 @@ The overall goal remains active and is assessed at about 80/100, not the request
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
 native Firefox JIT, a guest Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;
-that answer is pending. Goal accounting reported 5,218,479 tokens and 18,130
-seconds, with no token budget, but these values do not reveal weekly quota or
+that answer is pending. At the start of the failure-test continuation, goal
+accounting reported 5,755,228 tokens with no token budget; this does not reveal weekly quota or
 establish whether the user's 15% allowance has been reached. Resolve this
 constraint before another large backend port; do not invent a percentage.
 
@@ -336,16 +358,20 @@ Bounded next implementation gates, subject to that allowance:
   Preserve the accepted release until any new isolated candidate passes actual
   Firefox usability, warm-cache and update/home gates. Explicitly override test
   output paths that still default to `/tmp`.
-- The direct experimental Vulkan lifecycle and opt-in clear/readback now pass
-  actual guest execution (38 live, 11 unavailable, 951 clear assertions; most
-  clear assertions are individual bytes). Real WebGPU pixels, typed ownership,
-  recorded values, layout/barrier validation and teardown pass. The next bounded
-  reliability gate should inject transport/device loss during actual guest
-  submission, verify DEVICE_LOST propagation and cleanup, and exercise allocation
-  exhaustion/recovery. Preserve the passing build-run2 and packages in
-  `/mnt/p6/build/guest-vulkan-clear-20260926/` as the baseline. See
-  `docs/guest-vulkan-clear-readback-20260926.md`. The partial COMPUTE|TRANSFER
-  profile lacks dispatch and conformance; it is not a generally usable driver.
+- The direct Vulkan clear/readback, mid-submit transport/native-device loss and
+  allocation-exhaustion/recovery gates now pass actual guest execution. Preserve
+  both earlier clear build-run2 and the latest failure-task build-run1/packages.
+  The next application-facing step is a deliberately static loader integration
+  and a separate client using only public Vulkan APIs, as specified in
+  `docs/guest-vulkan-application-integration-20260926.md`. The installed compiler
+  sysroot's libc.a supplies weak dlopen/__dlsym stubs, confirmed by actual archive
+  member/symbol inspection; an ICD manifest alone does not establish loading.
+  See `guest-vulkan-libc-loading.json` for the bounded evidence and limitations.
+  Resolve an exact Khronos loader revision, inspect its closure, preserve typed
+  dispatch and reject unknown procedures; do not assume dynamic discovery or
+  generic extension trampolines work. This loader experiment has not been built.
+  The partial COMPUTE|TRANSFER profile still lacks dispatch and conformance;
+  it is not a generally usable Vulkan or Zink device.
   The earlier Dawn ABI gate remains compile-only; native Dawn, the translator,
   system loader integration, shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;

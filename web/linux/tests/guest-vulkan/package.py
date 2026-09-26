@@ -38,7 +38,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['live', 'unavailable', 'clear'], default='live')
+    parser.add_argument('--mode', choices=['live', 'unavailable', 'clear', 'loss-transport', 'loss-device', 'exhaustion'], default='live')
     args = parser.parse_args()
     out, storage = checked_storage(args.output)
     if out.exists():
@@ -55,7 +55,7 @@ def main():
         raise ValueError('build artifact differs from verified build report')
     original = list(records(raw)); chunks = []; changes = 0
     anchor = b'# Keep the picker available without requiring Firefox to fork a helper on NOMMU.'
-    argument = b' --expect-unavailable' if args.mode == 'unavailable' else (b' --clear' if args.mode == 'clear' else b'')
+    argument = b' --expect-unavailable' if args.mode == 'unavailable' else (b'' if args.mode == 'live' else b' --' + args.mode.encode())
     for key, header, name, body, encoded in original:
         if key == 'init':
             if body.count(anchor) != 1:

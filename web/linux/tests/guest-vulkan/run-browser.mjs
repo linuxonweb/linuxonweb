@@ -4,9 +4,9 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
-const tasks = ['/mnt/p6/build/guest-vulkan-20260926','/mnt/p6/build/guest-vulkan-clear-20260926'];
+const tasks = ['/mnt/p6/build/guest-vulkan-20260926','/mnt/p6/build/guest-vulkan-clear-20260926','/mnt/p6/build/guest-vulkan-failure-20260926'];
 const mode = process.argv[2];
-if (!['live','unavailable','clear'].includes(mode) || !process.env.VK_QA_OUT)
+if (!['live','unavailable','clear','loss-transport','loss-device','exhaustion'].includes(mode) || !process.env.VK_QA_OUT)
   throw Error('usage: VK_QA_OUT=/mnt/p6/build/guest-vulkan-20260926/fresh-output node run-browser.mjs live|unavailable|clear');
 const out = path.resolve(await fs.realpath(path.dirname(process.env.VK_QA_OUT)), path.basename(process.env.VK_QA_OUT));
 const task = tasks.find(root => out.startsWith(root + '/'));
@@ -77,7 +77,7 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
   ready:!!window.guestVulkanResults && typeof document.querySelector('#boot')?.onclick === 'function',
   gpuAPI:!!navigator.gpu, visibility:document.visibilityState})`);
 let report = {mode, pass:false, startedAt:Date.now(), storage, events,
-  scope:mode === 'clear' ? 'Experimental partial guest Vulkan clear-copy profile; no dispatch, conformance, loader discovery, GL, decoder or physical acceleration proof' : 'Experimental guest Vulkan lifecycle only; no rendering, conformance, loader discovery, GL, decoder or physical acceleration proof',
+  scope:!['live','unavailable'].includes(mode) ? 'Experimental partial guest Vulkan clear-copy profile; no dispatch, conformance, loader discovery, GL, decoder or physical acceleration proof' : 'Experimental guest Vulkan lifecycle only; no rendering, conformance, loader discovery, GL, decoder or physical acceleration proof',
   runnerSha256:createHash('sha256').update(await fs.readFile(fileURLToPath(import.meta.url))).digest('hex')};
 const save = () => fs.writeFile(path.join(out,'result.json'),JSON.stringify(report,null,2)+'\n');
 try {
