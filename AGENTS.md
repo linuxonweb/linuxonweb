@@ -565,6 +565,59 @@ pixels, then evaluate Mesa/Zink requirements; this is not yet OpenGL, Firefox GP
 hardware video decoding, native JIT or Vulkan conformance. The public Site remains
 unchanged. Overall assessment remains approximately 80/100; the full goal is active.
 
+### X11 presentation continuation
+
+Previous goal turn: progress (`d4a1ed9`, real WebGL fallback and shared compute
+regression). This continuation began at 10,208,322 goal tokens with no explicit
+token budget. Fresh delegation was attempted again and rejected by the platform
+thread limit. Root performed bounded source/build and finite browser work;
+weekly usage remains unavailable and no 95/100 overall claim is warranted.
+
+Graphics builds now accept `--present-x11` with `--host-profile webgl`.
+`presentation-x11.inc` converts the actual Vulkan readback through the TrueColor
+visual into an XImage, presents in an override-redirect window, verifies server
+pixels, repaints during bounded observation holds and closes X11 resources.
+The build freezes/hashes 145 Xlib/protocol/header/archive inputs. This is an
+application CPU-copy path, not Vulkan WSI or a general OpenGL driver.
+
+Authoritative package: graphics task `x11-presentation-build-run2` and
+`x11-presentation-package-run2`. Binary: 1,285,282 bytes, SHA-256
+`8b27064c739247334863af6be7d5cd4b6cc84615b8e307a3aa9a827d78380afd`;
+51 public Vulkan symbols. Archive: 41,781,072 bytes, SHA-256
+`b03a30256684461b734b171166cb5ec5a3d0c20ce485ee0caf6f42b76604aa15`.
+Actual dual-backend guest evidence:
+`/mnt/p6/build/guest-vulkan-webgl-20260926/x11-presentation-guest-run3/result.json`.
+Both runs present all eight rounds; each passes 476,544 XGetImage pixel checks
+and 112,816 independent browser framebuffer component checks. WebGL2 guest
+checks total 232,762; WebGPU 232,754. The full target hashes match across both
+backends. Root inspected both `*-x11-framebuffer.png` captures, now showing the
+actual rendered triangle in the Linux desktop. Xlib is depth24/bpp32 here.
+
+Run1 failed framebuffer observation because the desktop cursor overlapped the
+initial window rectangle; preserve its evidence. Moving the fixture 16 pixels
+left passed strict comparisons in run2. Run3 adds full-frame PNG output, avoiding
+the earlier page screenshot's viewport clipping. Its build and app/host inputs
+match run2. No Base64 was printed. All three browsers and HTTP owners are absent
+and exited cleanly. User PID1591443/startTicks148821663/command remains unchanged.
+`x11-checkpoint-run1` passes 531 source/artifact/process checks. Compact evidence:
+`docs/evidence/runtime-graphics-20260926/guest-vulkan-x11-presentation.json`.
+
+Shared driver and host execution code did not change after the previous compute
+regression. Current changes are optional Xlib application presentation, its build
+closure, browser observation/capture and documentation. Accepted rootfs/runtime
+and public Site remain unchanged. The full goal remains active at about 80/100.
+
+See `docs/guest-vulkan-x11-presentation-20260926.md` for the actual Zink gap:
+the current ICD reports no optional features or device extensions, while upstream
+Zink needs substantially more than this triangle profile. Do not advertise
+OpenGL/Firefox acceleration by enabling preferences or compiling Mesa alone.
+Next graphics step: pin a Mesa version and inspect its requirements/startup calls,
+then implement the missing resources, graphics state and presentation contract.
+The independent bounded startup task remains available: isolate removal of the
+forced Bing launch URL and verify actual Firefox input/startup, warm cache and
+home/update behavior before promoting anything. Resolve the pending weekly
+allowance before another large backend port; do not infer usage percentages.
+
 ## Services and deployment
 
 **Current service revalidation supersedes the historical notes below.**

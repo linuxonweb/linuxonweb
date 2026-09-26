@@ -13,6 +13,9 @@
 #define H 51
 #define PIXELS (W*H*4)
 #define TOTAL (PIXELS+32)
+#ifdef GUEST_PRESENT_X11
+#include "presentation-x11.inc"
+#endif
 static unsigned checks;
 #define CHECK(c) do{checks++;if(!(c)){fprintf(stderr,"GUEST_VK_GRAPHICS_FAIL line=%d check=%s\n",__LINE__,#c);goto done;}}while(0)
 static void deadline(int n){(void)n;_exit(124);}
@@ -88,6 +91,9 @@ int main(void){
     VkRenderPass creation=VK_NULL_HANDLE,clear=VK_NULL_HANDLE,load=VK_NULL_HANDLE;VkFramebuffer framebuffer=VK_NULL_HANDLE;VkCommandPool pool=VK_NULL_HANDLE;VkCommandBuffer cb=VK_NULL_HANDLE;
     struct sigaction action={0};action.sa_handler=deadline;sigemptyset(&action.sa_mask);if(sigaction(SIGALRM,&action,NULL))return 2;alarm(110);signal(SIGPIPE,SIG_IGN);
     puts("GUEST_VK_GRAPHICS_SCOPE public static Khronos loader; application SPIR-V graphics; bounded nonconformant ICD");
+#ifdef GUEST_PRESENT_X11
+    CHECK(x11_open());
+#endif
     VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.apiVersion=VK_API_VERSION_1_0,.pApplicationName="public-graphics"};VkInstanceCreateInfo ii={.sType=VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,.pApplicationInfo=&app};
     CHECK(vkCreateInstance(&ii,NULL,&instance)==VK_SUCCESS);uint32_t count=1;VkPhysicalDevice physical;CHECK(vkEnumeratePhysicalDevices(instance,&count,&physical)==VK_SUCCESS&&count==1);
     VkQueueFamilyProperties qp;count=1;vkGetPhysicalDeviceQueueFamilyProperties(physical,&count,&qp);CHECK(qp.queueFlags&VK_QUEUE_GRAPHICS_BIT);
@@ -146,6 +152,9 @@ int main(void){
         /* Coherent writes after recording must be observed, even without a HOST barrier. */
         for(unsigned i=0;i<3;i++){if(separate){memcpy(vertex_map[0]+4+i*8,positions[i],8);memcpy(vertex_map[1]+4+i*12,colors[i],12);}else{memcpy(vertex_map[0]+4+i*20,positions[i],8);memcpy(vertex_map[0]+12+i*20,colors[i],12);}}
         CHECK(vkQueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_SUCCESS);CHECK(vkQueueWaitIdle(queue)==VK_SUCCESS);CHECK(pixels(mapped,vertex,fragment,round));
+#ifdef GUEST_PRESENT_X11
+        CHECK(x11_present(mapped,round));
+#endif
         unsigned char saved[TOTAL];memcpy(saved,mapped,TOTAL);
         CHECK(vkResetCommandBuffer(cb,0)==VK_SUCCESS);CHECK(vkBeginCommandBuffer(cb,&begin)==VK_SUCCESS);record(cb,image,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,clear,load,framebuffer,pipeline,vertices,separate,readback,0,0);CHECK(vkEndCommandBuffer(cb)==VK_SUCCESS);
         vkDestroyPipeline(device,pipeline,NULL);pipeline=VK_NULL_HANDLE;CHECK(vkQueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);CHECK(!memcmp(mapped,saved,TOTAL));CHECK(vkDeviceWaitIdle(device)==VK_SUCCESS);CHECK(vkResetCommandBuffer(cb,0)==VK_SUCCESS);
@@ -164,5 +173,9 @@ done:
         if(mapped)vkUnmapMemory(device,read_mem);if(readback)vkDestroyBuffer(device,readback,NULL);if(read_mem)vkFreeMemory(device,read_mem,NULL);
         if(view)vkDestroyImageView(device,view,NULL);if(image)vkDestroyImage(device,image,NULL);if(image_mem)vkFreeMemory(device,image_mem,NULL);vkDestroyDevice(device,NULL);
     }
-    if(instance)vkDestroyInstance(instance,NULL);printf("GUEST_VK_GRAPHICS_EXIT status=%d checks=%u\n",result,checks);fflush(stdout);alarm(0);return result;
+    if(instance)vkDestroyInstance(instance,NULL);
+#ifdef GUEST_PRESENT_X11
+    if(!x11_close())result=1;
+#endif
+    printf("GUEST_VK_GRAPHICS_EXIT status=%d checks=%u\n",result,checks);fflush(stdout);alarm(0);return result;
 }

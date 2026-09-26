@@ -47,8 +47,11 @@ do not establish native rendering. See the compact verified evidence in
 
 ## Current limits
 
-Actual guest graphics and compute pass under SwiftShader. Returned pixels are
-verified in guest memory; the screenshots show the ordinary Aurora desktop.
-X11 presentation, Mesa/Zink/OpenGL, Firefox acceleration, hardware decoding,
-native JIT and physical GPU performance remain separate unfinished work.
+Actual guest graphics and compute pass under SwiftShader. Default builds verify
+returned pixels in guest memory and show the ordinary Aurora desktop.
+Optional `--present-x11` graphics builds now present readback through Xlib and
+independently verify the displayed Linux framebuffer on both browser backends.
+See `docs/guest-vulkan-x11-presentation-20260926.md`; this is a CPU copy and not
+Vulkan WSI. Mesa/Zink/OpenGL, Firefox acceleration, hardware decoding, native
+JIT and physical GPU performance remain separate unfinished work.
 No experimental fixture is included in the public release.

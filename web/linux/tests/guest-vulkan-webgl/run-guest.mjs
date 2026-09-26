@@ -35,6 +35,7 @@ if (!metadata.passPackage || !metadata.testOnly || (!isCompute && build.hostProf
 const archive = await freeze(path.join(packageDir, 'initramfs.cpio'), path.join(out, 'initramfs.cpio'));
 if (hash(archive) !== metadata.archiveSha256 || archive.length !== metadata.bytes) throw Error('guest archive differs');
 for (const item of Object.values(build.sources)) if (hash(await freeze(item.source)) !== item.sha256) throw Error('compiled source changed: ' + item.source);
+for (const [source, expected] of Object.entries(build.x11Inputs ?? {})) if (hash(await freeze(source)) !== expected) throw Error('X11 dependency changed: ' + source);
 for (const [relative, expected] of Object.entries(build.hostSources)) {
   const source = path.join(repo, 'web/linux/tests', relative), bytes = await freeze(source, path.join(out, 'host-snapshot', relative));
   if (hash(bytes) !== expected) throw Error('compiled host binding changed: ' + relative);
@@ -138,6 +139,12 @@ try {
     await fs.writeFile(path.join(out, backend + '.json'), JSON.stringify(current, null, 2) + '\n');
     const screenshot = await call('Page.captureScreenshot', { format: 'png' });
     await fs.writeFile(path.join(out, backend + '.png'), Buffer.from(screenshot.data, 'base64'));
+    if (build.presentX11 && current.pass) {
+      // Transfer the canvas capture directly to a file; never print its Base64.
+      const captured = await evaluate("document.querySelector('#x11-captured-framebuffer').toDataURL('image/png')");
+      if (!captured.startsWith('data:image/png;base64,')) throw Error('missing X11 framebuffer capture');
+      await fs.writeFile(path.join(out, backend + '-x11-framebuffer.png'), Buffer.from(captured.slice('data:image/png;base64,'.length), 'base64'));
+    }
     await evaluate("document.querySelector('#stop').click()");
     console.log(JSON.stringify({ backend, pass: current.pass, elapsedMs: current.elapsedMs, host: current.guest?.host?.backend }));
     if (!current.pass) throw Error('guest acceptance failed: ' + backend);

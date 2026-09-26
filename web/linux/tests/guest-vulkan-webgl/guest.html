@@ -6,19 +6,24 @@
 <script type="module">
 import {spawnMachine, consoleDevice, entropyDevice, inputDevice, vsockDevice} from '../../dist/index.js';
 import {serveFallback} from './host.mjs';
+import {observeX11Framebuffer} from './x11-framebuffer.mjs';
 const report = window.guestVulkanResults = {logs:'', errors:[], events:[], host:null, hellos:[], pass:false,
   bootLogs:'', bootConfigurationEvidence:[], isolated:crossOriginIsolated, backend:new URLSearchParams(location.search).get('backend')||'webgl2'};
 const decoder = new TextDecoder(), vsock = vsockDevice();
-let machine, deadline, partial = '', connected = false, finished = false, stopping = false;
+let machine, deadline, x11Observer, partial = '', connected = false, finished = false, stopping = false;
 function fail(error) {
   if (stopping) return;
   report.errors.push(String(error)); finished = true; clearTimeout(deadline);
+  x11Observer?.stop();
   document.documentElement.dataset.result = 'fail';
 }
 function check() {
   if (finished || !report.host || !/^GUEST_VK_GRAPHICS_EXIT status=0 checks=\d+$/m.test(report.logs.replaceAll('\r',''))) return;
   const h=report.host, own=h.ownership, webgl=report.backend==='webgl2';
+  const x11Pass=!report.package.guestBinary.presentX11 || (report.x11Frames?.length===8 &&
+    report.logs.includes('GUEST_VK_X11_CLOSE frames=8 verified=476544 error=0 live=0'));
   report.pass=report.errors.length===0 && h.error===null && h.draws===0 && h.clears===0 && h.dispatches===0 &&
+    x11Pass &&
     h.graphicsPasses===16 && h.graphicsDraws===16 && h.graphicsUploads===12 && h.graphicsReadbacks===8 &&
     h.released===37 && h.graphics?.state==='closed' && h.graphics.resources===0 && h.graphics.nativeObjects===0 && h.graphics.allocatedBytes===0 &&
     h.graphics.passes===16 && h.graphics.draws===16 && h.graphics.readbacks===8 && h.graphics.uploads===12 &&
@@ -38,7 +43,7 @@ function check() {
     report.bootConfigurationEvidence.some(line=>/Memory:.*1048576K/.test(line)) &&
     report.bootConfigurationEvidence.some(line=>/smp: Brought up 1 node, 2 CPUs/.test(line));
   if (!report.pass) { fail('public-client acceptance mismatch'); return; }
-  report.hostLifetimePass=true;finished=true;clearTimeout(deadline);document.documentElement.dataset.result='pass';
+  report.hostLifetimePass=true;finished=true;clearTimeout(deadline);x11Observer?.stop();document.documentElement.dataset.result='pass';
 }
 const log = bytes => {
   const text = decoder.decode(new Uint8Array(bytes), {stream:true});
@@ -51,6 +56,8 @@ const log = bytes => {
       try { report.hellos.push(JSON.parse(line.slice('GUEST_VK_HOST_HELLO '.length))); }
       catch (error) { fail(`invalid guest HELLO JSON: ${error}`); }
     }
+    if (line.startsWith('GUEST_VK_X11_FRAME ')) x11Observer?.next(line);
+    if (line.startsWith('GUEST_VK_X11_ERROR ')) fail(line);
     if (line.includes('GUEST_VK_GRAPHICS_FAIL') || line.includes('GUEST_VK_GRAPHICS_PIXEL_FAIL') || /^GUEST_VK_GRAPHICS_EXIT status=[1-9]/.test(line)) fail(line);
   }
   document.querySelector('#log').textContent = report.logs.slice(-20000);
@@ -89,6 +96,8 @@ document.querySelector('#boot').onclick = async () => {
     const metadata = await metadataResponse.json();
     if (!metadata.testOnly || !metadata.passPackage || !['graphics'].includes(metadata.mode)) throw Error('invalid test package');
     report.mode = metadata.mode; report.package = metadata;
+    if(metadata.guestBinary.presentX11) x11Observer=observeX11Framebuffer(document.querySelector('#display'),{
+      onFailure:fail,onChange:frames=>{report.x11Frames=structuredClone(frames);check();}});
     for (const [relative, hash] of Object.entries(metadata.guestBinary.hostSources)) {
       const response = await fetch(new URL(relative, new URL('../', location.href)));
       if (!response.ok || await sha256(await response.arrayBuffer()) !== hash) throw Error('host source changed: ' + relative);
@@ -105,5 +114,5 @@ document.querySelector('#boot').onclick = async () => {
     machine.closed.catch(error => { if (!finished) fail(error); });
   } catch (error) { fail(error); }
 };
-document.querySelector('#stop').onclick = () => { stopping = true; clearTimeout(deadline); machine?.close(); window.guestWebGLCleanup?.(); };
+document.querySelector('#stop').onclick = () => { stopping = true; clearTimeout(deadline); x11Observer?.stop(); machine?.close(); window.guestWebGLCleanup?.(); };
 </script>

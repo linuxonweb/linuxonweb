@@ -1,0 +1,357 @@
+{
+  "schema": 1,
+  "pass": true,
+  "scope": "Actual guest public Vulkan graphics presented through Xlib CPU copy; no WSI/OpenGL/Firefox or hardware acceleration claim",
+  "result": "/mnt/p6/build/guest-vulkan-webgl-20260926/x11-presentation-guest-run3/result.json",
+  "resultSha256": "2a9aeb1fed7d98705378d30d61fd3a69da0f95c1152bffe6fe0f10a1e8df85c5",
+  "runs": [
+    {
+      "backend": "webgl2",
+      "pass": true,
+      "binary": {
+        "bytes": 1285282,
+        "sha256": "8b27064c739247334863af6be7d5cd4b6cc84615b8e307a3aa9a827d78380afd",
+        "publicVulkanSymbols": 51,
+        "x11InputFiles": 145
+      },
+      "archive": {
+        "bytes": 41781072,
+        "sha256": "b03a30256684461b734b171166cb5ec5a3d0c20ce485ee0caf6f42b76604aa15"
+      },
+      "guestExit": [
+        "GUEST_VK_GRAPHICS_EXIT status=0 checks=232762"
+      ],
+      "frames": [
+        {
+          "round": 0,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 59568,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "e21e9cc5"
+        },
+        {
+          "round": 1,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 119136,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "e21e9cc5"
+        },
+        {
+          "round": 2,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 178704,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "ce3ede05"
+        },
+        {
+          "round": 3,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 238272,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "ce3ede05"
+        },
+        {
+          "round": 4,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 297840,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "c777f885"
+        },
+        {
+          "round": 5,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 357408,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "c777f885"
+        },
+        {
+          "round": 6,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 416976,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "06ecb985"
+        },
+        {
+          "round": 7,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 476544,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "06ecb985"
+        }
+      ],
+      "displayedPixelChecks": 112816,
+      "x11ServerPixelChecks": 476544,
+      "capture": {
+        "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/x11-presentation-guest-run3/webgl2-x11-framebuffer.png",
+        "sha256": "15ae13becb1d8f9442e8058a9d2b86ac523a283829041f1cdb18b4ac0e3c8fbb",
+        "visuallyInspected": true
+      },
+      "adapter": {
+        "vendor": "WebKit",
+        "description": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "isFallbackAdapter": null
+      },
+      "nativeOwnership": {
+        "workersCreated": 1,
+        "workersTerminated": 1,
+        "devicesCreated": 0,
+        "devicesDestroyed": 0,
+        "buffersCreated": 0,
+        "buffersDestroyed": 0,
+        "texturesCreated": 0,
+        "texturesDestroyed": 0,
+        "contextsCreated": 1,
+        "contextsClosed": 1,
+        "connectionsClosed": 1,
+        "submits": 0,
+        "adapterRequests": 0,
+        "gl": {
+          "Buffer": {
+            "created": 20,
+            "deleted": 20
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 16,
+            "deleted": 16
+          },
+          "Program": {
+            "created": 8,
+            "deleted": 8
+          },
+          "Shader": {
+            "created": 16,
+            "deleted": 16
+          },
+          "Sync": {
+            "created": 24,
+            "deleted": 24
+          }
+        },
+        "liveWorkers": 0,
+        "liveDevices": 0,
+        "liveBuffers": 0,
+        "liveTextures": 0,
+        "liveContexts": 0,
+        "liveGL": 0,
+        "beforeEmergencyCleanup": true
+      }
+    },
+    {
+      "backend": "webgpu",
+      "pass": true,
+      "binary": {
+        "bytes": 1285282,
+        "sha256": "8b27064c739247334863af6be7d5cd4b6cc84615b8e307a3aa9a827d78380afd",
+        "publicVulkanSymbols": 51,
+        "x11InputFiles": 145
+      },
+      "archive": {
+        "bytes": 41781072,
+        "sha256": "b03a30256684461b734b171166cb5ec5a3d0c20ce485ee0caf6f42b76604aa15"
+      },
+      "guestExit": [
+        "GUEST_VK_GRAPHICS_EXIT status=0 checks=232754"
+      ],
+      "frames": [
+        {
+          "round": 0,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 59568,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "e21e9cc5"
+        },
+        {
+          "round": 1,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 119136,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "e21e9cc5"
+        },
+        {
+          "round": 2,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 178704,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "ce3ede05"
+        },
+        {
+          "round": 3,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 238272,
+          "checks": 13732,
+          "inside": 455,
+          "outside": 2978,
+          "rgbaFNV1a": "ce3ede05"
+        },
+        {
+          "round": 4,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 297840,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "c777f885"
+        },
+        {
+          "round": 5,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 357408,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "c777f885"
+        },
+        {
+          "round": 6,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 416976,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "06ecb985"
+        },
+        {
+          "round": 7,
+          "x": 20,
+          "y": 100,
+          "width": 292,
+          "height": 204,
+          "serverVerified": 476544,
+          "checks": 14472,
+          "inside": 171,
+          "outside": 3447,
+          "rgbaFNV1a": "06ecb985"
+        }
+      ],
+      "displayedPixelChecks": 112816,
+      "x11ServerPixelChecks": 476544,
+      "capture": {
+        "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/x11-presentation-guest-run3/webgpu-x11-framebuffer.png",
+        "sha256": "c891366684b8e2911dfd9fab6c31f5b2c47cf2192dfbe88174a0ee5eb6c1b3bc",
+        "visuallyInspected": true
+      },
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      "nativeOwnership": {
+        "workersCreated": 1,
+        "workersTerminated": 1,
+        "devicesCreated": 1,
+        "devicesDestroyed": 1,
+        "buffersCreated": 20,
+        "buffersDestroyed": 20,
+        "texturesCreated": 1,
+        "texturesDestroyed": 1,
+        "contextsCreated": 0,
+        "contextsClosed": 0,
+        "connectionsClosed": 1,
+        "submits": 24,
+        "adapterRequests": 1,
+        "gl": {},
+        "liveWorkers": 0,
+        "liveDevices": 0,
+        "liveBuffers": 0,
+        "liveTextures": 0,
+        "liveContexts": 0,
+        "liveGL": 0,
+        "beforeEmergencyCleanup": true
+      }
+    }
+  ],
+  "auditChecks": 531,
+  "browserExit": {
+    "code": 0,
+    "signal": null
+  },
+  "serverClosed": true,
+  "failedAttempt": {
+    "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/x11-presentation-guest-run1/result.json",
+    "reason": "Displayed cursor overlapped the strict framebuffer comparison rectangle; moved fixture left without weakening pixel acceptance."
+  },
+  "sourceHeadBeforeChanges": "d4a1ed9bbaa9b83611c7e7428d9df1f9d69fb3c6",
+  "limitations": [
+    "Static bounded nonconformant Vulkan driver; application XPutImage copy is not Vulkan WSI.",
+    "SwiftShader used for WebGPU and WebGL2; no physical GPU evidence.",
+    "Fixed observation holds prevent treating run elapsed times as performance benchmarks.",
+    "Default TrueColor depth24/bpp32 visual verified; other visual formats not execution-tested.",
+    "Mesa/Zink, GLX/EGL, Firefox GPU/decoder/native JIT and final deployment remain incomplete."
+  ]
+}
