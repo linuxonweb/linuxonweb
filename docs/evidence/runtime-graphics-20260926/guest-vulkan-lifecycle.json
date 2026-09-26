@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-26",
+  "scope": "Isolated experimental Vulkan C/ICD lifecycle executed inside native wasm32 Linux; host WebGPU software device lifecycle only",
+  "pass": true,
+  "testOnly": true,
+  "deployed": false,
+  "sourceDirectory": "web/linux/tests/guest-vulkan",
+  "acceptedSitesVersionUnchanged": 6,
+  "rawEvidence": [
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/build.json",
+      "bytes": 3055,
+      "sha256": "2ce27223dbb386164beb0846b547c7064e62db6c33f56c0a049d1cecf43965c6"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/compile.command.txt",
+      "bytes": 750,
+      "sha256": "7bbb3c877fba524f3eea8f27b1800c09cf239c8cdca54fb0b240103af67c032c"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/validate.command.txt",
+      "bytes": 102,
+      "sha256": "44b2c05f662c702f232373dcfeeb53e4ed340f2caf59fdc7366a212584c09c06"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/validate.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/abi.command.txt",
+      "bytes": 91,
+      "sha256": "7791085a7e53fbcb364af94a2962188e8934057561f08c2aa4503b85fa2bda41"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/build-run1/abi.log",
+      "bytes": 35490,
+      "sha256": "0ec85c2b2bdb419fcb5c9e5f1797cdb73378895dbdedd2fa3ac3f975ed5e5f2d"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/package-live-run1/package.json",
+      "bytes": 4002,
+      "sha256": "5ca353e7ae0e3272c22fc6373069b7a597a6f8d34ac064d2977a7ec5c2c85597"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/package-unavailable-run1/package.json",
+      "bytes": 4016,
+      "sha256": "a0ccec40ac28546d3c485dca0a3d47c1e8c8bb29495e5b02a22d89edf0bd0c9f"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/qa-live-run1/result.json",
+      "bytes": 12560,
+      "sha256": "4a43381d9953796931f58f38e96bc219a39f65ac0f1c66c516ec1038b77a62f7"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/qa-unavailable-run1/result.json",
+      "bytes": 10765,
+      "sha256": "ebc0f63c78b8f672127e12dd9597519014c25cdb7dade7bb083ccd87f9c162f7"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/browser-record.json",
+      "bytes": 899,
+      "sha256": "0f9a3fd84d46ccf8a99ce5789f76746e852362d92c4e3548f4081e5542324ebe"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/adapter-preflight.json",
+      "bytes": 219,
+      "sha256": "49b1554ed36113470fcce804c4cee93c5a7802b037bea97c2a7f9323afbca74d"
+    },
+    {
+      "path": "/mnt/p6/build/guest-vulkan-20260926/cleanup.json",
+      "bytes": 737,
+      "sha256": "8b72a253d42fc1653e09ed976d0fc2e3c4200596f534f1e97579f60219711f58"
+    }
+  ],
+  "build": {
+    "pass": true,
+    "artifact": "/mnt/p6/build/guest-vulkan-20260926/build-run1/guest-vulkan-lifecycle.wasm",
+    "bytes": 41861,
+    "sha256": "0f2b0d4b611f2a8930e343ca1d6145824d1e48d4654307d322626b15c28e3c24",
+    "headers": {
+      "scope": "Existing unmodified Khronos C headers vendored in archived Firefox 128.14.0 ANGLE source; local bytes pinned, no new upstream authenticity check",
+      "headerVersion": "1.3.231",
+      "sourceDirectory": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/var/nix/builds/nix-1-800818036/firefox-128.14.0/gfx/angle/checkout/third_party/vulkan-deps/vulkan-headers/src/include/vulkan",
+      "license": "Apache-2.0; notices retained in source headers",
+      "files": {
+        "vulkan_core.h": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+        "vk_platform.h": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+        "vulkan.h": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+        "vk_icd.h": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc"
+      }
+    },
+    "sources": {
+      "guest-vulkan/icd.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/icd.c",
+        "sha256": "5f39ea70842c8dcf9fc394fad57a4eac40c69d00d7eef9cefd00ab3abd2fe50a"
+      },
+      "guest-vulkan/icd.h": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/icd.h",
+        "sha256": "3688140d8a947975163b68d05b2a79746d8cb30d852b31947f5bad48e9cdc271"
+      },
+      "guest-vulkan/lifecycle.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan/lifecycle.c",
+        "sha256": "911ad26dddaee600e93a0aa85bcd6035d1651d9be9a0a0bef63bc709788a0423"
+      },
+      "guest-gpu/guest-gpu.c": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-gpu/guest-gpu.c",
+        "sha256": "88b5a8c13015dd6ce6632db07c5ebe7c45098e5f1ac9f711518a04bfee0028cd"
+      },
+      "guest-gpu/guest-gpu.h": {
+        "source": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-gpu/guest-gpu.h",
+        "sha256": "fc7e66cc4c250a257730c55e088149c24ae29e98ddf872346bbbc8907882dd23"
+      }
+    },
+    "hostSources": {
+      "guest-gpu/host.mjs": "657eaa3f052fa3081242276cd08766969c36275bef3393c541a4f60ed7420ad3",
+      "guest-vulkan/host.mjs": "64ca24a82089fba3af73803b7582596c033f2a36a284bf2dfd3294fc4cc9d3d1",
+      "guest-vulkan/index.html": "df06ba6293ce0b4bde31c7c9b9e37220934df240c3465424f397e5a72a07e72f"
+    },
+    "imports": [
+      "env.memory",
+      "linux.syscall",
+      "linux.get_thread_area",
+      "linux.copy_siginfo"
+    ],
+    "storage": {
+      "output": "/mnt/p6/build/guest-vulkan-20260926/build-run1",
+      "filesystem": {
+        "mount": "/mnt/p6",
+        "type": "ext4",
+        "availableBytes": 183314411520
+      },
+      "scratch": {
+        "TMPDIR": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+        "TMP": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+        "TEMP": "/mnt/p6/build/guest-vulkan-20260926/tmp"
+      }
+    }
+  },
+  "browser": {
+    "DISPLAY": ":0",
+    "profileAbsentBeforeLaunch": true,
+    "cacheAbsentBeforeLaunch": true,
+    "publicBrowserPIDAbsent": true,
+    "cdpListenerAbsent": true,
+    "softwareWebGPUFlags": [
+      "--enable-unsafe-webgpu",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader"
+    ],
+    "previousExactFlags": "Not found in scoped README/evidence lookup; using explicitly authorized software flags",
+    "browserVersion": "Chromium 150.0.7871.114",
+    "actualProcess": [
+      "  32871   32862 Sat Sep 26 10:29:21 2026 /home/a/.local/archpkg/pacman/usr/lib/chromium/chromium --user-data-dir=/mnt/p6/build/guest-vulkan-20260926/qa-profile-run1 --disk-cache-dir=/mnt/p6/build/guest-vulkan-20260926/qa-browser-cache-run1 --remote-debugging-port=9396 --no-first-run --no-default-browser-check --disable-dev-shm-usage --enable-unsafe-webgpu --use-angle=swiftshader --enable-unsafe-swiftshader about:blank"
+    ]
+  },
+  "adapterPreflight": {
+    "available": true,
+    "adapter": {
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "device": "",
+      "description": "",
+      "isFallbackAdapter": true
+    },
+    "secureContext": true,
+    "isolated": true
+  },
+  "runs": {
+    "live": {
+      "pass": true,
+      "attempt": 1,
+      "startedAtEpochMs": 1790443805157,
+      "runnerSha256": "55fca7b353c90c448bcf973f4df4971e01385b79f1edf744cbbfd18346e3db77",
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "crossOriginIsolated": true,
+      "gpuAPIAvailableInBrowser": true,
+      "hostLifetimePass": true,
+      "checks": 38,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim",
+        "GUEST_GPU_LISTENING",
+        "GUEST_VK_HOST_HELLO {\"version\":1,\"maxResources\":64,\"maxTarget\":512,\"shader\":\"WGSL\",\"adapter\":{\"vendor\":\"google\",\"architecture\":\"swiftshader\",\"description\":\"\",\"isFallbackAdapter\":true}}",
+        "GUEST_VK_DEVICE_NAME EXPERIMENTAL WebGPU lifecycle only; not conformant",
+        "GUEST_VK_HOST_HELLO {\"version\":1,\"maxResources\":64,\"maxTarget\":512,\"shader\":\"WGSL\",\"adapter\":{\"vendor\":\"google\",\"architecture\":\"swiftshader\",\"description\":\"\",\"isFallbackAdapter\":true}}",
+        "GUEST_VK_DEVICE_PASS",
+        "GUEST_VK_CLOSE status=0",
+        "GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0",
+        "GUEST_VK_EXIT status=0 checks=38"
+      ],
+      "runtimeErrors": [],
+      "host": {
+        "commands": 3,
+        "draws": 0,
+        "readbacks": 0,
+        "released": 0,
+        "adapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": "",
+          "isFallbackAdapter": true
+        },
+        "error": null,
+        "ownership": {
+          "devicesCreated": 1,
+          "devicesDestroyed": 1,
+          "connectionsClosed": 1
+        }
+      },
+      "commands": [
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 1,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 0,
+          "request": 2,
+          "status": 0
+        },
+        {
+          "type": "command",
+          "opcode": 8,
+          "request": 3,
+          "status": 0
+        }
+      ],
+      "hellos": [
+        {
+          "version": 1,
+          "maxResources": 64,
+          "maxTarget": 512,
+          "shader": "WGSL",
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          }
+        },
+        {
+          "version": 1,
+          "maxResources": 64,
+          "maxTarget": 512,
+          "shader": "WGSL",
+          "adapter": {
+            "vendor": "google",
+            "architecture": "swiftshader",
+            "description": "",
+            "isFallbackAdapter": true
+          }
+        }
+      ],
+      "package": {
+        "passPackage": true,
+        "testOnly": true,
+        "mode": "live",
+        "archiveSha256": "ca476e0e5bd55bca25d59e7e79bfc02b793827de208448b5fa812634e8e28e42",
+        "bytes": 40537640,
+        "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "unchangedOriginalRecords": 3846,
+        "modified": [
+          "init"
+        ],
+        "added": [
+          "bin/guest-vulkan-lifecycle"
+        ],
+        "tailPreserved": true,
+        "storage": {
+          "output": "/mnt/p6/build/guest-vulkan-20260926/package-live-run1",
+          "filesystem": {
+            "mount": "/mnt/p6",
+            "type": "ext4",
+            "availableBytes": 183311552512
+          },
+          "scratch": {
+            "TMPDIR": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+            "TMP": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+            "TEMP": "/mnt/p6/build/guest-vulkan-20260926/tmp"
+          }
+        }
+      },
+      "runnerElapsedMs": 4350,
+      "elapsedScope": "Runner completion observation, not a rendering or startup benchmark",
+      "commandNames": [
+        "HELLO",
+        "HELLO",
+        "CLOSE"
+      ],
+      "guestAudit": {
+        "instancesCreated": 1,
+        "instancesDestroyed": 1,
+        "devicesCreated": 1,
+        "devicesDestroyed": 1,
+        "liveInstances": 0,
+        "liveDevices": 0,
+        "closeStatus": 0
+      },
+      "negativeChecks": [
+        "ICD interface version 1 rejected; negotiation capped at 2",
+        "unknown procedure and device procedure without instance return NULL",
+        "Vulkan 1.1 instance request rejected",
+        "unsupported instance/device extensions rejected",
+        "zero-capacity physical-device enumeration returns VK_INCOMPLETE",
+        "geometryShader feature and pNext feature chain rejected",
+        "queue family 1 rejected",
+        "vkQueueSubmit and vkCreateImage return NULL"
+      ]
+    },
+    "unavailable": {
+      "pass": true,
+      "attempt": 1,
+      "startedAtEpochMs": 1790443826282,
+      "runnerSha256": "55fca7b353c90c448bcf973f4df4971e01385b79f1edf744cbbfd18346e3db77",
+      "configuration": {
+        "cpus": 2,
+        "memoryBytes": 1073741824,
+        "visibility": "visible"
+      },
+      "bootConfigurationEvidence": [
+        "smp: Brought up 1 node, 2 CPUs",
+        "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"
+      ],
+      "crossOriginIsolated": true,
+      "gpuAPIAvailableInBrowser": true,
+      "hostLifetimePass": true,
+      "checks": 11,
+      "guestMarkers": [
+        "GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim",
+        "GUEST_GPU_LISTENING",
+        "GUEST_VK_UNAVAILABLE_PASS",
+        "GUEST_VK_EXIT status=0 checks=11"
+      ],
+      "runtimeErrors": [],
+      "host": {
+        "commands": 0,
+        "draws": 0,
+        "readbacks": 0,
+        "released": 0,
+        "adapter": null,
+        "error": "WebGPU unavailable: no renderer fallback is implied",
+        "ownership": {
+          "devicesCreated": 0,
+          "devicesDestroyed": 0,
+          "connectionsClosed": 1
+        }
+      },
+      "commands": [],
+      "hellos": [],
+      "package": {
+        "passPackage": true,
+        "testOnly": true,
+        "mode": "unavailable",
+        "archiveSha256": "9a6111bd7bfa70f3b807c6827780a03fc7f9517be38ca7c345c4ca37e54aefbf",
+        "bytes": 40537660,
+        "sourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "unchangedOriginalRecords": 3846,
+        "modified": [
+          "init"
+        ],
+        "added": [
+          "bin/guest-vulkan-lifecycle"
+        ],
+        "tailPreserved": true,
+        "storage": {
+          "output": "/mnt/p6/build/guest-vulkan-20260926/package-unavailable-run1",
+          "filesystem": {
+            "mount": "/mnt/p6",
+            "type": "ext4",
+            "availableBytes": 183266959360
+          },
+          "scratch": {
+            "TMPDIR": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+            "TMP": "/mnt/p6/build/guest-vulkan-20260926/tmp",
+            "TEMP": "/mnt/p6/build/guest-vulkan-20260926/tmp"
+          }
+        }
+      },
+      "runnerElapsedMs": 3845,
+      "elapsedScope": "Runner completion observation, not a rendering or startup benchmark",
+      "negativeBehavior": {
+        "injection": "serveGPU receives gpu:null despite navigator.gpu being available",
+        "instanceResult": "VK_ERROR_INITIALIZATION_FAILED",
+        "instanceHandle": "VK_NULL_HANDLE",
+        "guestInstancesCreated": 0,
+        "guestDevicesCreated": 0,
+        "liveGuestInstances": 0,
+        "liveGuestDevices": 0,
+        "fallbackRendererInvoked": false
+      }
+    }
+  },
+  "limits": {
+    "queueCapabilityFlags": 0,
+    "renderingEntrypoints": "NULL, including vkQueueSubmit and vkCreateImage",
+    "vulkanRendering": false,
+    "systemLoaderIntegration": false,
+    "vulkanConformance": false,
+    "openGL": false,
+    "webGLFallback": false,
+    "firefoxGPUIntegration": false,
+    "hardwareVideoDecode": false,
+    "nativeGuestJIT": false,
+    "physicalGPUAccelerationProven": false,
+    "performanceBenchmark": false
+  },
+  "nextGate": "Direct guest Vulkan offscreen clear and readback with typed transport, image/buffer memory ownership, command submission, synchronization, exact pixel validation, failure/teardown coverage; implementation not yet present.",
+  "serviceCleanup": {
+    "completedAt": "2026-09-26T17:32:13.934839+00:00",
+    "ownedPIDsAbsent": [
+      4169654,
+      4169836,
+      4184825,
+      4192303,
+      14504,
+      32871
+    ],
+    "portsClosed": [
+      4182,
+      9396
+    ],
+    "listeners": "State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\n",
+    "userServerIdentityUnchanged": true,
+    "userServer": "    PID                  STARTED COMMAND\n1591443 Tue Sep 22 09:08:46 2026 node web/desktop/dev-server.mjs\n",
+    "exactCandidateSymlinksRemoved": true,
+    "serverTermination": {
+      "pid": 4184825,
+      "SIGTERMClosedListener": true,
+      "processRemainedAfterGrace": true,
+      "rootAuthorizedSIGKILLAfterExactIdentityCheck": true,
+      "sessionExitCode": 137
+    },
+    "browsersClosedGracefully": true,
+    "scope": "Post-test service cleanup; adapter exit 137 is not a guest test failure."
+  }
+}

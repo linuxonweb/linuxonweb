@@ -1,0 +1,12 @@
+{
+  "scope": "Existing unmodified Khronos C headers vendored in archived Firefox 128.14.0 ANGLE source; local bytes pinned, no new upstream authenticity check",
+  "headerVersion": "1.3.231",
+  "sourceDirectory": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/var/nix/builds/nix-1-800818036/firefox-128.14.0/gfx/angle/checkout/third_party/vulkan-deps/vulkan-headers/src/include/vulkan",
+  "license": "Apache-2.0; notices retained in source headers",
+  "files": {
+    "vulkan_core.h": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+    "vk_platform.h": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+    "vulkan.h": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+    "vk_icd.h": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc"
+  }
+}

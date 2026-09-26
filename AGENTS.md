@@ -47,6 +47,12 @@ Both repositories were checkpointed before implementation and use branch
 - Parent checkpoint: `ceec0ae63a26744e216d30610ad27cf0f895f3db`.
 - Separate `web/sites` checkpoint: `4495e993b8653e076bd3df86e7dd50c2ddc86886`.
 
+The parent repository tracks the full Firefox gzip archive; it is not ignored
+and has no LFS/filter attributes. Include its verified bytes in scoped promotion
+commits. The nested Sites repository instead locks these bytes as external build
+inputs. Version 6's archive identity is independently pinned by its runtime lock;
+the parent binary commit follows the initial source/manifest commit `c1665dcc`.
+
 This is native wasm32 Linux/userspace, not an x86 emulator. The staged kernel
 matches an archived configuration with FUSE and virtio-fs enabled. Its virtio-fs
 driver enables permission checking internally and rejects the explicit
@@ -137,10 +143,36 @@ driver enables permission checking internally and rejects the explicit
   are retained; focus setup uses real margin input, not emulation. The candidate
   is locally promoted; four old inputs are verified in the task's baseline-images.
   Frozen release staging changes exactly two routes (55 parts, 151,597,129 bytes).
-  Public Sites remains version 5 until the new build/publication is verified.
+  Sites version 6 deployed successfully from nested commit
+  `8757a6ff2f8f0a312e7a616bb900521234395757`, pinned to parent
+  `c1665dcc4ab199a88f74854627043e8c5ca85f4a`. Public version-5-to-version-6
+  update/restart and warm acceptance pass, preserving exact marker, fixture,
+  original version-5 download and selected profile files. Warm boot fetches zero
+  system images. Actual version-6 fixture Run/Download passes five checksums;
+  this newer download was created after warm and has not itself been reload-tested.
+  Full public hashes/headers pass for 13 routes totaling 135,264,738 bytes,
+  including all three images and the immutable worker graph. See
+  `sites-v6-firefox.json`, `sites-v6-live-assets.json` and `sites-release.json`;
+  version 5 remains saved for rollback. Public launch observations 34.098 s
+  initial (with downloads), 33.948 s update and 17.400 s warm are unmatched;
+  they do not establish a public speedup or exact first paint. Typed fixture
+  navigation failed once on both versions; v6 recovered via its restored first
+  fixture tab and native Reload. Cause remains unproven. Python urllib preflight
+  returned 403 while the normal browser full-body verifier returned 200.
   New subagent creation reached the thread limit; existing serving/review task
-  agents continue assigned work. The isolated direct Vulkan ICD experiment is
-  being implemented under `web/linux/tests/guest-vulkan/`, not deployed.
+  agents continue assigned work. The isolated direct Vulkan ICD lifecycle under
+  `web/linux/tests/guest-vulkan/` now executes in the real 1 GiB/2 CPU guest:
+  live 38 checks and unavailable 11 checks passed on first attempts. Live
+  HELLO/HELLO/CLOSE created/destroyed one Google SwiftShader fallback WebGPU
+  device and left zero guest instances/devices; `gpu:null` correctly rejected
+  instance creation without creating a device. The 41,861-byte guest artifact
+  SHA-256 is `0f2b0d4b611f2a8930e343ca1d6145824d1e48d4654307d322626b15c28e3c24`.
+  See `docs/guest-vulkan-lifecycle-20260926.md` and `guest-vulkan-lifecycle.json`
+  evidence. It is not deployed, conformant, loader-integrated or rendering;
+  queue flags remain zero and rendering entrypoints NULL. Next bounded slice:
+  direct Vulkan offscreen clear/readback with typed resource transport,
+  synchronization, exact pixels and failure/teardown checks. No OpenGL,
+  WebGL fallback, decoder, native JIT or physical GPU claim follows.
 - Accepted runtime commit: `f24b914113dee9132471298e5e3a97b2e69b2ceb`.
   Sites version 4 previously passed exact full-image hashes,
   isolation, actual guest write/reload, zero-image warm reload, and automatic
@@ -162,7 +194,7 @@ driver enables permission checking internally and rejects the explicit
   derived immutable worker graph has 10/10 unit and 3/3 workerd integration
   checks passing. A lean real-browser local candidate boot passes in 2.733 s,
   with actual 1 GiB/2 CPU, isolation and 70 versioned worker requests. Version 5
-  is now deployed: matched lean public console shell observations improve from
+  was then deployed: matched lean public console shell observations improve from
   version 4's 55.048 s to 3.486 s first and 2.693 s warm, with actual 1 GiB/2 CPU,
   visibility, isolation and no page errors. The first public boot observes 65
   versioned worker requests and zero image downloads; the warm repeat observes
@@ -216,15 +248,25 @@ and user server PID `1591443` retained its command/start identity. Only the test
 remain under `/mnt/p6/build/aurora-ready-20260926/`. For future cleanup, distinguish
 an actual listening socket from a failed bare bind after connection teardown.
 
+The Firefox readiness/public-v6 and Vulkan lifecycle tasks also completed cleanup.
+No owned browser/adapter PID or listener on `4182`/`9396` remains; exact Vulkan
+candidate symlinks were removed. The adapter closed its listener on SIGTERM but
+needed an explicitly authorized, identity-checked SIGKILL after its grace period
+(exit 137). Both tasks retain `cleanup.json`; user PID `1591443` was unchanged.
+All artifacts remain under `/mnt/p6/build/firefox-ready-20260926/` and
+`/mnt/p6/build/guest-vulkan-20260926/`. Root had to run the secure push harness in
+its own echo-disabled PTY because exec sessions are agent-scoped; the credential
+stayed in memory and was cleared after the successful exact-commit push.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
-project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 5 serves the
+project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
 at `https://linuxonweb.testcatty.workers.dev` remains its DNS/TCP network proxy.
 Cloudflare itself was not redeployed because its API token was unavailable.
-Sites source is `b5858da1e8699215d6ef04cb24bd9111c501d3e4`, deployment
-`appgdep_6ab7e07d39508191b9e9c5ee5390b4bd`, version ID
-`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_e476a0133e748191a46b03488991e15f`.
-The accepted archive has 61 files and 151,470,080 content bytes; preserve the
+Sites source is `8757a6ff2f8f0a312e7a616bb900521234395757`, deployment
+`appgdep_6ab7fe800a4c8191b1f5a0ee942cd66c`, version ID
+`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_dab4dcf397488191a274dec22cdfba71`.
+The accepted archive has 63 files and 151,726,080 content bytes; preserve the
 `dist/server/index.js` and `dist/client` archive paths. The separate release record is
 `docs/evidence/runtime-graphics-20260926/sites-release.json`.
 Top-level Cloudflare release metadata and sourceFiles still describe the older,
@@ -243,7 +285,7 @@ The overall goal remains active and is assessed at about 80/100, not the request
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
 native Firefox JIT, a guest Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;
-that answer is pending. Goal accounting reported 3,280,535 tokens and 10,665
+that answer is pending. Goal accounting reported 5,218,479 tokens and 18,130
 seconds, with no token budget, but these values do not reveal weekly quota or
 establish whether the user's 15% allowance has been reached. Resolve this
 constraint before another large backend port; do not invent a percentage.
@@ -256,18 +298,28 @@ Bounded next implementation gates, subject to that allowance:
   `2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3`).
   One-second self-test, ten-second missing-display fallback, actual Aurora
   handshake and starting it before Aurora passed with independent host watchdogs.
-  Next prepare an isolated candidate replacing the accepted packed init's single
-  `sleep 10`, retaining the old sleep on missing
-  helper/nonzero exit. Normal deadline expiry returns zero; do not sleep twice.
-  Preserve all other CPIO records and accepted init/profile/certificate fixes;
-  do not substitute the generic init script. Verify actual early Firefox window
-  usability, matched startup timing, warm cache and update/home preservation.
-  Explicitly override test output paths that still default to `/tmp`.
-- The official Dawn typed proc-table/future/callback compilation gate is complete.
-  A next GPU implementation needs an actual traced call inventory and typed
-  transport with asynchronous lifetime/failure handling before linked guest
-  clear/readback execution. The native-Dawn/translator closure remains unported;
-  an ANGLE WebGPU experiment does not fulfill Vulkan or GL-through-Vulkan.
+  The isolated candidate replacing the accepted packed init's single `sleep 10`
+  is now promoted and publicly accepted in Sites version 6. Missing/nonzero
+  helper fallback remains; normal deadline expiry returns zero without a second
+  sleep. All other CPIO records and accepted profile/certificate fixes remain.
+  The next bounded startup experiment can remove the forced Bing CLI homepage
+  from `launch_firefox` while preserving profile preferences, then compare input
+  stability and startup. The current packed init supplies that URL even with a
+  persistent profile; its relationship to the retained typed-navigation failures
+  is unproven. Public warm 17.400 s remains above local candidate 8.403 s.
+  Preserve the accepted release until any new isolated candidate passes actual
+  Firefox usability, warm-cache and update/home gates. Explicitly override test
+  output paths that still default to `/tmp`.
+- The direct experimental Vulkan lifecycle now passes actual guest execution
+  (38 live checks and 11 unavailable-host checks). Prefer the next direct Vulkan
+  offscreen clear/readback slice over a detached Dawn-only shim: add typed image,
+  buffer and memory ownership, command recording, layout/barrier validation and
+  real host clear/copy/readback with bounded failure handling. Compare every
+  pixel of a 17x3 image across two colors and verify complete cleanup. Current
+  queue capability flags are zero and rendering entrypoints are absent; this is
+  not a usable driver. See `docs/guest-vulkan-lifecycle-20260926.md`.
+  The earlier Dawn ABI gate remains compile-only; native Dawn, the translator,
+  system loader integration, shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
