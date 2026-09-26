@@ -1,0 +1,26 @@
+--- a/dom/html/HTMLInputElement.cpp
++++ b/dom/html/HTMLInputElement.cpp
+@@ -7198,10 +7198,21 @@
+ 
+       // Get extension list
+       nsCOMPtr<nsIUTF8StringEnumerator> extensions;
+-      mimeInfo->GetFileExtensions(getter_AddRefs(extensions));
++      nsresult extensionsRv =
++          mimeInfo->GetFileExtensions(getter_AddRefs(extensions));
++      // Some platform MIME providers cannot enumerate extensions. Keep the
++      // picker usable and use the primary extension when it is available.
++      if (NS_FAILED(extensionsRv) || !extensions) {
++        nsCString extension;
++        if (NS_SUCCEEDED(mimeInfo->GetPrimaryExtension(extension)) &&
++            !extension.IsEmpty()) {
++          extensionListStr = u"*."_ns + NS_ConvertUTF8toUTF16(extension);
++        }
++      }
+ 
+       bool hasMore;
+-      while (NS_SUCCEEDED(extensions->HasMore(&hasMore)) && hasMore) {
++      while (extensions && NS_SUCCEEDED(extensions->HasMore(&hasMore)) &&
++             hasMore) {
+         nsCString extension;
+         if (NS_FAILED(extensions->GetNext(extension))) {
+           continue;

@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Aurora file picker check</title>
+<style>
+  body { font: 18px sans-serif; margin: 32px; background: white; color: #182637; }
+  label { display: block; margin: 24px 0; }
+  input, button, a { font: inherit; }
+  pre { white-space: pre-wrap; padding: 16px; background: #eaf1f8; }
+</style>
+<h1>Aurora file picker check</h1>
+<p>Open this page inside the guest Firefox. Choose Documents/readme.txt to verify its contents.</p>
+<label>One text file <input id="single" type="file" accept=".txt,text/plain"></label>
+<label>Multiple files <input id="multiple" type="file" multiple></label>
+<label>A folder <input id="directory" type="file" webkitdirectory></label>
+<p><a id="download" download="picker-save-test.txt">Save a text file</a></p>
+<button id="clear">Clear results</button>
+<pre id="results">No selection yet.</pre>
+<script>
+  const results = document.querySelector('#results');
+  for (const input of document.querySelectorAll('input')) {
+    input.addEventListener('cancel', () => {
+      results.textContent += '\n' + input.id + ': cancelled (previous selection retained)';
+    });
+    input.addEventListener('change', async () => {
+      const lines = [input.id + ': ' + input.files.length + ' file(s)'];
+      for (const file of input.files) {
+        lines.push(file.name + ' | ' + file.size + ' bytes | ' + (file.webkitRelativePath || 'no relative path'));
+        if (file.size <= 4096 && /\.txt$/i.test(file.name)) {
+          lines.push('Contents: ' + JSON.stringify(await file.text()));
+        }
+      }
+      results.textContent = lines.join('\n');
+    });
+  }
+  document.querySelector('#clear').onclick = () => { results.textContent = 'No selection yet.'; };
+  document.querySelector('#download').href = URL.createObjectURL(new Blob(['Aurora save picker works.\n'], {type: 'text/plain'}));
+</script>

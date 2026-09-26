@@ -12,6 +12,7 @@ import {
 } from "./dist/index.js";
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
+import { createLogViewer } from "./log-viewer.mjs";
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -25,7 +26,10 @@ function proxyBaseUrl() {
 const status = document.getElementById("status");
 const launchButtons = [...document.querySelectorAll(".launch")];
 const canvas = document.getElementById("fb");
-const terminalEl = document.getElementById("terminal");
+export const guestLogs = createLogViewer({
+  toggle: document.getElementById("logs-toggle"),
+  parent: document.querySelector(".workspace"),
+});
 const settingsToggle = document.getElementById("settings-toggle");
 const settingsPanel = document.getElementById("settings-panel");
 const resolutionSelect = document.getElementById("resolution");
@@ -74,52 +78,65 @@ let FB_W = 1280;
 let FB_H = 720;
 let consoleInputWriter = null;
 
-const terminal = new globalThis.Terminal({
-  allowProposedApi: false,
-  convertEol: true,
-  cursorBlink: true,
-  cursorStyle: "block",
-  fontFamily: '"IBM Plex Mono", "SFMono-Regular", Consolas, monospace',
-  fontSize: 13,
-  lineHeight: 1.18,
-  scrollback: 5000,
-  theme: {
-    background: "#050a0a",
-    foreground: "#d8e6e3",
-    cursor: "#4ce0c2",
-    cursorAccent: "#05211c",
-    selectionBackground: "#24584e",
-    black: "#07100f",
-    brightBlack: "#61726e",
-    green: "#4ce0c2",
-    brightGreen: "#79f3da",
-    cyan: "#56bfc8",
-    brightCyan: "#80e6ee",
-  },
-});
-const fitAddon = new globalThis.FitAddon.FitAddon();
-terminal.loadAddon(fitAddon);
-terminal.open(terminalEl);
-const fitTerminal = () => {
-  try {
-    fitAddon.fit();
-  } catch {
-    /* terminal may not be measurable during initial layout */
-  }
-};
-new ResizeObserver(fitTerminal).observe(terminalEl);
-queueMicrotask(fitTerminal);
-
-terminal.onData((data) => {
-  if (!consoleInputWriter) return;
-  void consoleInputWriter.write(new TextEncoder().encode(data)).catch((err) => {
-    hostLog(`console input failed: ${err}`, "error");
+// Only an explicit console boot creates an interactive terminal. GUI boot logs
+// use a lazy, bounded plain-text viewer and never instantiate xterm.
+let terminal = null;
+function openConsole() {
+  if (terminal) return;
+  const card = document.createElement("section");
+  card.className = "terminal-card";
+  card.setAttribute("aria-label", "Interactive guest console");
+  const header = document.createElement("div");
+  header.className = "terminal-head";
+  header.textContent = "hvc0 · interactive console · click below to type";
+  const terminalEl = document.createElement("div");
+  terminalEl.id = "terminal";
+  card.append(header, terminalEl);
+  document.querySelector(".workspace").append(card);
+  terminal = new globalThis.Terminal({
+    allowProposedApi: false,
+    convertEol: true,
+    cursorBlink: true,
+    cursorStyle: "block",
+    fontFamily: '"IBM Plex Mono", "SFMono-Regular", Consolas, monospace',
+    fontSize: 13,
+    lineHeight: 1.18,
+    scrollback: 100,
+    theme: {
+      background: "#050a0a",
+      foreground: "#d8e6e3",
+      cursor: "#4ce0c2",
+      cursorAccent: "#05211c",
+      selectionBackground: "#24584e",
+      black: "#07100f",
+      brightBlack: "#61726e",
+      green: "#4ce0c2",
+      brightGreen: "#79f3da",
+      cyan: "#56bfc8",
+      brightCyan: "#80e6ee",
+    },
   });
-});
+  const fitAddon = new globalThis.FitAddon.FitAddon();
+  terminal.loadAddon(fitAddon);
+  terminal.open(terminalEl);
+  const fitTerminal = () => { try { fitAddon.fit(); } catch { /* layout pending */ } };
+  new ResizeObserver(fitTerminal).observe(terminalEl);
+  queueMicrotask(fitTerminal);
+  terminal.onData((data) => {
+    if (!consoleInputWriter) return;
+    void consoleInputWriter.write(new TextEncoder().encode(data)).catch((err) => {
+      hostLog(`console input failed: ${err}`, "error");
+    });
+  });
+}
+
+function writeConsole(value, source = "guest") {
+  guestLogs.write(value, source);
+  terminal?.write(value);
+}
 
 function hostLog(line, kind = "host") {
-  const color = kind === "error" ? "\x1b[31m" : "\x1b[36m";
-  terminal.write(`${color}[host]\x1b[0m ${line}\r\n`);
+  writeConsole(`[host${kind === "error" ? " error" : ""}] ${line}\r\n`, "host");
 }
 
 function setStatus(message, state = "idle") {
@@ -327,7 +344,9 @@ async function boot(mode) {
   lockConfiguration(true);
   setSettingsOpen(false);
   setStatus(`booting ${mode}…`, "booting");
-  terminal.clear();
+  guestLogs.clear();
+  if (mode === "console") openConsole();
+  terminal?.clear();
   hostLog(
     `boot mode=${mode}, display=${FB_W}x${FB_H}, cpus=${cpuInput.value}, ram=${ramSelect.selectedOptions[0].text}`,
   );
@@ -551,7 +570,7 @@ async function boot(mode) {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
-      terminal.write(new Uint8Array(value));
+      writeConsole(new Uint8Array(value));
     }
   })().catch((err) => { if (!restarting && !bootClosed) hostLog(`guest console closed: ${err}`, "error"); });
 
@@ -589,7 +608,7 @@ async function boot(mode) {
     );
     lockConfiguration(false);
     for (const button of launchButtons) button.disabled = true;
-    if (consoleMode) terminal.focus();
+    if (consoleMode) terminal?.focus();
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
     bootReader = machine.bootConsole.getReader();
@@ -597,7 +616,7 @@ async function boot(mode) {
       for (;;) {
         const { value, done } = await bootReader.read();
         if (done) break;
-        terminal.write(new Uint8Array(value));
+        writeConsole(new Uint8Array(value), "kernel");
       }
     })().catch((err) => { if (!restarting && !bootClosed) hostLog(`boot console closed: ${err}`, "error"); });
     machine.closed.catch((err) => {

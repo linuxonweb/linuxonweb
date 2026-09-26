@@ -1155,3 +1155,57 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   displays retain actual CSS pixel dimensions with a Pan display control.
   Fresh Chrome geometry checks passed at desktop, tablet, and phone sizes;
   earlier 1600/1920 screenshots remain evidence for those selectable modes.
+
+### 2026-09-26 Aurora Files picker and on-demand logs deployment
+
+- Rebuilt and deployed both web Linux archives. Current raw `web/linux/initramfs.cpio`
+  is 40,492,844 bytes, SHA-256
+  `b439fcac4686703ba82859eec071463daeed3441fcd90fe79e084cabc2c97138`.
+  Current Firefox gzip is 87,862,922 bytes, SHA-256
+  `f2a08c0b8d44cb1df73a087a2187abe0a25b91cd72f3fb2e1c98873cb166dfc4`.
+  Port 4180 HTTP 200 bodies match both hashes. Preserve its existing server.
+- Files binary: 3,410,843 bytes, SHA
+  `3fe947c295b993d50b6709f3814b8b2261a1d7adc821f04826eede727afb5666`.
+  `tools/build-aurora-files-guest.sh` builds only the standalone Files app using
+  the pinned Linux Wasm Rust toolchain, external Noto fonts and scratch crate
+  adaptations. The packed WM is unchanged. See vendor `PICKER_PROTOCOL.md`.
+  Open/multiple/save/directory CLI and resident X11 picker service are available.
+  Normal Files adds create/rename, recursive copy, cut/paste, location entry,
+  hidden/refresh controls and confirmed recoverable Trash. Wasm terminals use
+  openpty/posix_spawnp; hidden terminal navigation no longer snaps to old shell cwd.
+- Firefox binary: 154,631,172 bytes, SHA
+  `a86dfbd80aa8df82d82f9d3446b2a47e1ef64312c7a095f9870b43bf67796afe`.
+  Patches `0005`–`0007` add the asynchronous X11 picker bridge, defensive MIME
+  extension-enumerator fallback, and typed incoming XPT stubs up to 12 arguments.
+  The latter fixes the observed `confirmExBC` NOT_IMPLEMENTED folder-upload
+  confirmation error; normal confirmation remains required. Rebuild instructions
+  are in `web/linux/firefox-shims/aurora-file-picker.md`. Shared sources/objects
+  remain untouched. This integrates Firefox, not a general desktop portal.
+- `tools/guest-rootfs/package-picker.py` requires an explicit baseline hash and
+  retains all existing init adaptations. Raw baseline `beea582...` changed only
+  init/Files; gzip baseline `e726ede...` changed only init/Files/Firefox. CPIO
+  contents and metadata comparisons passed (3,847/11,469 records including
+  trailers). Baseline backups/candidates/evidence live under
+  `/mnt/p6/project/linux/.cache/aurora-picker-20260926/`. Do not replace packed
+  init with generic source init or lose previous keyboard/font/CA/devpts/request fixes.
+- Guest QA: 512 MiB / 1 CPU Start X passed echo/pwd, create/rename, unique copy,
+  cut/paste, Trash cancel/confirm/preserved metadata, and final hidden-terminal
+  navigation/reopen. Final Firefox passed HTTPS Bing, single and actual two-file
+  selections, cancellation retaining prior selection, and directory selection
+  with actual bytes and relative paths after explicit confirmation. Save As
+  dialog was exercised but saved bytes were not independently verified.
+  Screenshots: `files-final-show-pwd.png`, `final-two-contents.png`,
+  `final-folder-actual-result.png`, `final-cancel-retains.png`. For automation,
+  activate the correct Firefox tab and allow its confirmation delay; the second
+  privacy tab caused earlier false-negative acceptance attempts.
+- Logs: no GUI-boot log DOM or xterm instance. Show logs creates a viewer; Hide
+  logs removes it and cancels updates. At most 100 rows render; scroll edges page
+  older/newer in 50-row steps, Latest resumes tailing. Text history is bounded
+  to 10,000 lines / 2 Mi characters. An explicit console boot retains shell input.
+  Browser QA checked create/remove/reopen/older paging and a working console.
+- Eleven frontend tests (four log tests included), eleven Files tests, syntax,
+  Wasm ABI validation and diff checks passed. Default remains 1280×720. Quality
+  assessment: 97/100 for requested picker/FM/log scope; no extended soak,
+  cross-filesystem moves, universal portal integration or verified save-byte claim.
+
+- Fresh live `http://127.0.0.1:4180/linux/index.html?firefox=1` boot verified `readme.txt` (29 bytes) and its actual contents through the Aurora picker, with no log viewer or xterm DOM; evidence: `/mnt/p6/project/linux/.cache/aurora-picker-20260926/live-final-single-contents.png`. Both served archive hashes matched the deployed hashes above.

@@ -127,6 +127,11 @@ if ! kill -0 "$xpid" 2>/dev/null || ! { [ -S /tmp/.X11-unix/X0 ] || [ -e /tmp/.X
   exec setsid cttyhack sh
 fi
 
+# Keep the picker available without requiring Firefox to fork a helper on NOMMU.
+if [ -x /bin/aurora-files ]; then
+  /bin/su -s /bin/sh -c 'export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/aurora-files --picker-service' admin &
+fi
+
 launch_firefox() {
   account="$1"
   home="$2"

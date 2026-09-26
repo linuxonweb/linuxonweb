@@ -1,0 +1,222 @@
+--- a/widget/gtk/nsFilePicker.h
++++ b/widget/gtk/nsFilePicker.h
+@@ -74,6 +74,11 @@
+   nsTArray<nsCString> mFilterNames;
+ 
+  private:
++#if defined(__wasm__) && defined(MOZ_X11)
++  nsresult OpenAurora(nsIFilePickerShownCallback* aCallback);
++  gboolean PollAurora();
++  void FinishAurora(nsIFilePicker::ResultCode result);
++#endif
+   static nsIFile* mPrevDisplayDirectory;
+ 
+   void* GtkFileChooserNew(const gchar* title, GtkWindow* parent,
+--- a/widget/gtk/nsFilePicker.cpp
++++ b/widget/gtk/nsFilePicker.cpp
+@@ -30,6 +30,9 @@
+ #include "WidgetUtilsGtk.h"
+ 
+ #include "nsFilePicker.h"
++#if defined(__wasm__) && defined(MOZ_X11)
++#  include <gdk/gdkx.h>
++#endif
+ 
+ #undef LOG
+ #ifdef MOZ_LOGGING
+@@ -412,6 +415,174 @@
+   return NS_OK;
+ }
+ 
++#if defined(__wasm__) && defined(MOZ_X11)
++// The resident Aurora Files service avoids fork/exec in the Wasm guest.
++// A private X window owns each request and response (including cancellation).
++struct AuroraPickerRequest {
++  Display* display;
++  Window window;
++  Window service;
++  Atom selection;
++  Atom result;
++  Atom utf8;
++  guint timer;
++};
++
++nsresult nsFilePicker::OpenAurora(nsIFilePickerShownCallback* aCallback) {
++  Display* display = XOpenDisplay(nullptr);
++  if (!display) return NS_ERROR_NOT_AVAILABLE;
++  Atom selection = XInternAtom(display, "_AURORA_FILE_PICKER_SERVICE", false);
++  Window service = XGetSelectionOwner(display, selection);
++  if (!service) {
++    XCloseDisplay(display);
++    return NS_ERROR_NOT_AVAILABLE;
++  }
++  auto* request = new AuroraPickerRequest{
++      display, XCreateSimpleWindow(display, DefaultRootWindow(display),
++                                   0, 0, 1, 1, 0, 0, 0),
++      service, selection,
++      XInternAtom(display, "_AURORA_FILE_PICKER_RESULT", false),
++      XInternAtom(display, "UTF8_STRING", false), 0};
++  const char* mode = mMode == modeSave ? "save" :
++                     mMode == modeGetFolder ? "directory" :
++                     mMode == modeOpenMultiple ? "multiple" : "open";
++  nsAutoCString directory;
++  if (mDisplayDirectory) mDisplayDirectory->GetNativePath(directory);
++  if (directory.IsEmpty() && mPrevDisplayDirectory)
++    mPrevDisplayDirectory->GetNativePath(directory);
++  if (directory.IsEmpty()) directory.AssignLiteral("/home/admin");
++  nsAutoCString fields;
++  auto append = [&](const nsACString& field) {
++    fields.Append(field);
++    fields.Append('\0');
++  };
++  append(nsLiteralCString("1"));
++  append(nsDependentCString(mode));
++  append(directory);
++  append(NS_ConvertUTF16toUTF8(mTitle));
++  append(NS_ConvertUTF16toUTF8(mDefault));
++  nsAutoCString filter;
++  if (mSelectedType >= 0 && uint32_t(mSelectedType) < mFilters.Length())
++    filter = mFilters[mSelectedType];
++  append(filter);
++  XChangeProperty(display, request->window,
++      XInternAtom(display, "_AURORA_FILE_PICKER_REQUEST", false),
++      request->utf8, 8, PropModeReplace,
++      reinterpret_cast<const unsigned char*>(fields.get()), fields.Length());
++  XEvent event{};
++  event.xclient.type = ClientMessage;
++  event.xclient.window = service;
++  event.xclient.message_type = XInternAtom(display, "_AURORA_FILE_PICKER", false);
++  event.xclient.format = 32;
++  event.xclient.data.l[0] = request->window;
++  event.xclient.data.l[1] = 1;
++  if (mParentWidget) {
++    GtkWidget* shell = GTK_WIDGET(mParentWidget->GetNativeData(NS_NATIVE_SHELLWIDGET));
++    if (shell && gtk_widget_get_window(shell))
++      event.xclient.data.l[2] = gdk_x11_window_get_xid(gtk_widget_get_window(shell));
++  }
++  XSendEvent(display, service, false, NoEventMask, &event);
++  XFlush(display);
++  mFileURL.Truncate();
++  mFiles.Clear();
++  mCallback = aCallback;
++  mFileChooser = request;
++  NS_ADDREF_THIS();
++  request->timer = g_timeout_add(100, [](gpointer data) -> gboolean {
++    return static_cast<nsFilePicker*>(data)->PollAurora();
++  }, this);
++  return NS_OK;
++}
++
++gboolean nsFilePicker::PollAurora() {
++  auto* request = static_cast<AuroraPickerRequest*>(mFileChooser);
++  if (!request) return G_SOURCE_REMOVE;
++  Atom type;
++  int format;
++  unsigned long count = 0, remaining = 0;
++  unsigned char* data = nullptr;
++  int status = XGetWindowProperty(request->display, request->window,
++      request->result, 0, 262144, false, request->utf8,
++      &type, &format, &count, &remaining, &data);
++  if (status == Success && type == 0 &&
++      XGetSelectionOwner(request->display, request->selection) == request->service) {
++    if (data) XFree(data);
++    return G_SOURCE_CONTINUE;
++  }
++  nsIFilePicker::ResultCode result = returnCancel;
++  if (status == Success && type == request->utf8 && format == 8 &&
++      !remaining && count > 7 && data[count - 1] == 0 &&
++      memcmp(data, "accept\0", 7) == 0) {
++    bool valid = true;
++    unsigned long offset = 7;
++    while (offset < count) {
++      const char* path = reinterpret_cast<const char*>(data + offset);
++      size_t length = strnlen(path, count - offset);
++      if (!length || length == count - offset || path[0] != '/' ||
++          (mMode != modeOpenMultiple && !mFiles.IsEmpty())) {
++        valid = false;
++        break;
++      }
++      nsCOMPtr<nsIFile> file;
++      nsresult rv = NS_NewNativeLocalFile(nsDependentCString(path, length),
++                                         true, getter_AddRefs(file));
++      bool exists = false, directory = false, readable = false, regular = false;
++      if (NS_SUCCEEDED(rv)) {
++        file->Exists(&exists);
++        if (exists) {
++          file->IsDirectory(&directory);
++          file->IsFile(&regular);
++          file->IsReadable(&readable);
++        }
++      }
++      if (NS_FAILED(rv) || (mMode == modeGetFolder ? !directory :
++          mMode == modeSave ? (exists && !regular) : (!regular || !readable))) {
++        valid = false;
++        break;
++      }
++      mFiles.AppendObject(file);
++      offset += length + 1;
++    }
++    if (valid && !mFiles.IsEmpty()) {
++      nsCOMPtr<nsIURI> uri;
++      if (NS_SUCCEEDED(NS_NewFileURI(getter_AddRefs(uri), mFiles[0])) &&
++          NS_SUCCEEDED(uri->GetSpec(mFileURL))) {
++        result = returnOK;
++        bool exists = false;
++        if (mMode == modeSave && NS_SUCCEEDED(mFiles[0]->Exists(&exists)) && exists)
++          result = returnReplace;
++        nsCOMPtr<nsIFile> directory;
++        if (mMode == modeGetFolder) directory = mFiles[0];
++        else mFiles[0]->GetParent(getter_AddRefs(directory));
++        if (directory) directory.swap(mPrevDisplayDirectory);
++      }
++    }
++  }
++  if (data) XFree(data);
++  request->timer = 0;  // The source is removed by this callback's return value.
++  FinishAurora(result);
++  return G_SOURCE_REMOVE;
++}
++
++void nsFilePicker::FinishAurora(nsIFilePicker::ResultCode result) {
++  auto* request = static_cast<AuroraPickerRequest*>(mFileChooser);
++  if (!request) return;
++  mFileChooser = nullptr;
++  if (request->timer) g_source_remove(request->timer);
++  XDestroyWindow(request->display, request->window);
++  XCloseDisplay(request->display);
++  delete request;
++  if (result == returnCancel) {
++    mFiles.Clear();
++    mFileURL.Truncate();
++  }
++  mResult = result;
++  nsCOMPtr<nsIFilePickerShownCallback> callback = mCallback.forget();
++  if (callback) callback->Done(result);
++  NS_RELEASE_THIS();
++}
++#endif
++
+ NS_IMETHODIMP
+ nsFilePicker::Open(nsIFilePickerShownCallback* aCallback) {
+   // Can't show two dialogs concurrently with the same filepicker
+@@ -421,6 +592,9 @@
+     return NS_OK;
+   }
+ 
++#if defined(__wasm__) && defined(MOZ_X11)
++  return OpenAurora(aCallback);
++#endif
+   NS_ConvertUTF16toUTF8 title(mTitle);
+ 
+   GtkWindow* parent_widget =
+@@ -576,6 +750,10 @@
+ 
+ NS_IMETHODIMP
+ nsFilePicker::Close() {
++#if defined(__wasm__) && defined(MOZ_X11)
++  FinishAurora(returnCancel);
++  return NS_OK;
++#endif
+   if (mFileChooser) {
+     // Call ourself as done.
+     Done(mFileChooser, GTK_RESPONSE_CLOSE);

@@ -1,0 +1,58 @@
+--- a/xpcom/reflect/xptcall/md/unix/xptcall_wasm32.cpp
++++ b/xpcom/reflect/xptcall/md/unix/xptcall_wasm32.cpp
+@@ -20,7 +20,7 @@
+     return NS_ERROR_FAILURE;
+   }
+ 
+-  nsXPTCMiniVariant params[8]{};
++  nsXPTCMiniVariant params[12]{};
+   for (uint32_t i = 0; i < argCount; ++i) {
+     const nsXPTParamInfo& paramInfo = info->Param(i);
+     const nsXPTType& type = paramInfo.GetType();
+@@ -115,12 +115,44 @@
+ #undef STUB_ENTRY
+ #undef SENTINEL_ENTRY
+ 
++// Prompt methods such as confirmExBC need ten inputs plus a return pointer.
++// Match the twelve i32/pointer arguments already supported by NS_InvokeByIndex.
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubI32<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmStub9[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubI32<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmStub10[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubI32<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmStub11[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++#define STUB_ENTRY(n) reinterpret_cast<uintptr_t>(&WasmStubI32<n, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t>),
++#define SENTINEL_ENTRY(n)
++static const uintptr_t kWasmStub12[] = {0, 0, 0,
++#include "xptcstubsdef.inc"
++};
++#undef STUB_ENTRY
++#undef SENTINEL_ENTRY
++
+ static const uintptr_t* const kWasmStubTables[] = {
+     kWasmStub0, kWasmStub1, kWasmStub2, kWasmStub3, kWasmStub4,
+-    kWasmStub5, kWasmStub6, kWasmStub7, kWasmStub8};
++    kWasmStub5, kWasmStub6, kWasmStub7, kWasmStub8, kWasmStub9,
++    kWasmStub10, kWasmStub11, kWasmStub12};
+ 
+ static bool IsWasmI32Method(const nsXPTMethodInfo& info) {
+-  if (info.ParamCount() > 8 || info.WantsContext() || info.WantsOptArgc()) {
++  if (info.ParamCount() > 12 || info.WantsContext() || info.WantsOptArgc()) {
+     return false;
+   }
+   for (uint8_t i = 0; i < info.ParamCount(); ++i) {

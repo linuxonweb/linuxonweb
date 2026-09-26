@@ -140,3 +140,131 @@ scroll `(327, 212)` while both the backing canvas and CSS rectangle stayed
 The settings panel scrolls on short screens: at 900 × 400, its bottom was
 376 px and the Apply button remained visible at 355 px. Evidence:
 `test-pan.log`, `pan-display-touch.png`, `settings-short-landscape.png`.
+
+## On-demand guest logs (2026-09-26)
+
+GUI boots no longer create a terminal or log-viewer element. `Show logs`
+creates the viewer; `Hide logs` removes it and cancels its pending update.
+`log-viewer.mjs` retains at most 10,000 lines / 2 Mi characters, with an
+8,192-character limit per line. It decodes each console stream independently
+and strips terminal control sequences, including sequences split across chunks.
+No rendering timer or log DOM updates run while the viewer is absent.
+
+The viewer renders at most 100 lines, initially the latest. Scrolling to its
+upper/lower edge pages through older/newer history in overlapping 50-line
+steps, preserving the reading position. `Latest` resumes following output.
+Visible updates are batched at 100 ms. An explicit `Start console` still creates
+an interactive xterm for shell input; ordinary GUI boots do not instantiate it.
+
+Validation: four `node --test web/linux/log-viewer.test.mjs` tests pass.
+Chrome checked absence at startup, 350 injected lines producing only rows
+250–349, older-page loading, removal, hidden writes, and reopening at the latest
+line, with zero JavaScript exceptions. A separate 512 MiB / 1 CPU console boot
+accepted `echo console-qa-ok; pwd`, returned the marker and `/`, and kept logs
+hidden. Evidence: `/mnt/p6/project/linux/.cache/aurora-picker-20260926/`
+`log-viewer-qa.{log,png,mjs}` and `console-qa.{log,png,mjs}`.
+
+## Aurora Files and Firefox picker (2026-09-26)
+
+Aurora Files now supplies open, multiple-file, directory and save dialogs through
+its CLI and a resident X11 service. Firefox patch `0005` connects Gecko's picker
+to that service, returning real guest paths through normal `nsIFile` objects.
+Patch `0006` defensively checks MIME extension enumeration during HTML accept
+filter setup. This is a Firefox integration and documented X11 protocol, not a
+general desktop portal implementation. See
+`firefox-shims/aurora-file-picker.md` and
+`../../vendor/aurorawm/PICKER_PROTOCOL.md` for rebuild and protocol details.
+
+Normal Files adds new-folder and rename prompts, recursive copy, cut/paste,
+location entry, refresh/hidden-file shortcuts, and confirmed recoverable Trash.
+Copy preserves symlinks and chooses a unique destination; cross-filesystem
+moves report an error while retaining their source. Trash recovery uses
+cut/paste from its sidebar folder. The terminal uses the guest-compatible
+openpty/posix_spawnp path; hiding it suspends shell-to-folder synchronization,
+and reopening it sends the current folder to the shell.
+
+Build only Files with `tools/build-aurora-files-guest.sh`; the packed WM remains
+unchanged. `tools/guest-rootfs/package-picker.py` requires an explicit baseline
+SHA-256, replaces Files and optionally Firefox, and inserts picker service
+startup into the existing init. It preserves unrelated archive members and
+metadata, including the previous TinyX keyboard, request-limit, certificates,
+fonts and devpts repairs. Do not replace packed init with the generic source
+script, which would discard those accumulated image adaptations.
+
+The final Files Wasm binary has SHA-256
+`3fe947c295b993d50b6709f3814b8b2261a1d7adc821f04826eede727afb5666`.
+Its 11 native tests cover picker protocol/globs and response bounds, terminal
+behavior, recursive copy/symlinks/no-overwrite, and recoverable Trash metadata.
+An isolated 512 MiB / 1 CPU Start X guest verified terminal echo/pwd, new folder,
+rename, collision-safe copy, cut/paste to Downloads, cancelling Trash, confirming
+Trash, and preserved data plus `.trashinfo`. Screenshots and the exact smoke
+record are under `/mnt/p6/project/linux/.cache/aurora-picker-20260926/`
+(`files-guest-qa.md`, `files-guest-*.png`).
+
+Folder-upload QA exposed an independent Firefox Wasm limitation:
+`PromptCollection.sys.mjs` failed with `NS_ERROR_NOT_IMPLEMENTED` when invoking
+`nsIPromptService.confirmExBC`. That method needs 11 i32/pointer parameters,
+while the incoming XPT stub tables stopped at eight. Patch
+`0007-wasm-xptcall-prompt-arity.patch` extends those typed tables and the parameter
+buffer to 12, matching the existing outgoing call limit. It preserves the
+existing type/context restrictions and restores the normal confirmation path;
+it does not bypass folder-upload confirmation. The rebuild script compiles
+this third object alongside the GTK picker and MIME-filter objects.
+
+A fresh final raw-image boot also verified hidden-terminal navigation remains
+in Documents, then reopening the shell returns `/home/admin/Documents` from
+`pwd` and `final-files-ok` from echo. Evidence: `files-final-hidden-navigation.png`,
+`files-final-show-pwd.png`, and `files-final-cwd.log`; no trap/panic/Files error
+markers were captured. That isolated test VM was closed after verification.
+
+The picker-enabled Firefox with patches `0005`–`0007` is 154,631,172 bytes,
+SHA-256 `a86dfbd80aa8df82d82f9d3446b2a47e1ef64312c7a095f9870b43bf67796afe`.
+WABT and Node validate its Linux guest imports, shared memory and entrypoint.
+The build reuses the preserved working Firefox object tree and exact CA-aware
+link response, replacing only the three patched objects, then applies Binaryen
+fpcast emulation. Original source and shared object files are not modified.
+
+On the final combined candidate, Firefox loaded Bing over HTTPS and the local
+guest fixture, then returned a single text file and a true two-file selection
+with both names, sizes and actual text contents. Evidence:
+`final-prompts-boot.png` and `final-two-contents.png` in the same scratch directory.
+The normal folder-upload confirmation now appears (`final-folder-confirmation.png`);
+this screenshot alone does not establish successful folder enumeration.
+
+Final directory acceptance is verified by `final-folder-actual-result.png`:
+after activating the correct Firefox tab and allowing its confirmation delay,
+Upload returned two files with `Documents/` relative paths, expected sizes and
+actual text contents. Earlier attempts accidentally activated the second privacy
+tab; no further picker focus defect was established. `final-cancel-retains.png`
+records cancellation retaining the previous two-file selection.
+
+### Deployed images
+
+Both live images were replaced only after checking the preserved baseline and
+candidate hashes, using temporary files and atomic rename. Port 4180 serves
+both with HTTP 200 and matching fetched SHA-256:
+
+| Image | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `initramfs.cpio` | 40,492,844 | `b439fcac4686703ba82859eec071463daeed3441fcd90fe79e084cabc2c97138` |
+| `initramfs-firefox.cpio.gz` | 87,862,922 | `f2a08c0b8d44cb1df73a087a2187abe0a25b91cd72f3fb2e1c98873cb166dfc4` |
+
+Compared with baseline raw `beea582d106e6454397611b8efaba1b89417269129303a981bae69978e8e5bb1`,
+only `init` and `bin/aurora-files` contents changed among 3,847 CPIO records.
+Compared with baseline gzip `e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25`,
+only those two and `opt/firefox/firefox` changed among 11,469 records. Counts
+include the trailer. Other contents and all metadata except replacement sizes
+are identical. Preserved baselines and candidates are in the scratch directory's
+`baseline/` and `candidate/` folders. The default remains 1280×720.
+
+Eleven frontend tests (including the four log-history tests), eleven Files tests,
+Python/shell syntax checks and `git diff --check` passed. Save As dialog opening,
+filename/filter presentation and dismissal were exercised; saved bytes were not
+independently verified. No extended soak or cross-filesystem move support is
+claimed. Existing nonfatal Firefox CustomizableUI/getFloatPref diagnostics remain
+outside this change; the final picker tests did not reproduce the earlier
+confirmExBC error.
+
+- Fresh live `http://127.0.0.1:4180/linux/index.html?firefox=1` boot verified `readme.txt` (29 bytes) and its actual contents through the Aurora picker, with no log viewer or xterm DOM; evidence: `/mnt/p6/project/linux/.cache/aurora-picker-20260926/live-final-single-contents.png`. Both served archive hashes matched the deployed hashes above.
+
+- Staged whitespace checks passed with `core.whitespace=-blank-at-eol`; the default checker only flags the required single-space blank context lines in the three unified Firefox patch files. Source-code whitespace checks passed unchanged.

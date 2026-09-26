@@ -186,6 +186,11 @@
         background: var(--accent);
         content: "";
       }
+      .log-viewport { height: 310px; overflow: auto; padding: 8px; font: 13px/18px var(--font-mono); overflow-anchor: none; }
+      .log-line { height: 18px; white-space: pre; min-width: max-content; }
+      .log-latest { margin-left: auto; flex-shrink: 0; color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 5px; padding: 5px 9px; cursor: pointer; }
+      .log-latest:disabled { opacity: 0.45; cursor: default; }
+      #logs-toggle[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
       .terminal-hint { margin-left: auto; color: #60746f; }
       #terminal { height: 310px; padding: 8px 6px; }
       #terminal .xterm { height: 100%; }
@@ -272,6 +277,7 @@
         <button class="action launch" id="start-x" data-mode="startx" type="button">Start X</button>
         <button class="action launch" id="start-firefox" data-mode="firefox" type="button">Start Firefox</button>
         <button class="action" id="display-pan" type="button" aria-pressed="false" title="Scroll the display with touch or a trackpad. Turn off to control the guest.">Pan display</button>
+        <button class="action" id="logs-toggle" type="button" aria-expanded="false" aria-controls="guest-logs">Show logs</button>
         <span id="status" role="status" aria-live="polite">idle</span>
       </div>
 
@@ -279,13 +285,6 @@
         <div class="stage">
           <canvas id="fb" width="1280" height="720" tabindex="0" aria-label="Linux guest display"></canvas>
         </div>
-        <section class="terminal-card" aria-label="Guest console">
-          <div class="terminal-head">
-            <span>hvc0 · guest console</span>
-            <span class="terminal-hint">Click terminal to type</span>
-          </div>
-          <div id="terminal"></div>
-        </section>
       </div>
 
       <footer class="intro">
