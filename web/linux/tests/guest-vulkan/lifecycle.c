@@ -7,15 +7,17 @@
 static void deadline(int signal_number) { (void)signal_number; _exit(124); }
 #define CHECK(condition) do { checks++; if (!(condition)) { fprintf(stderr, "GUEST_VK_FAIL line=%d check=%s\n", __LINE__, #condition); goto done; } } while (0)
 #define LOAD(type, variable, owner, name) type variable = (type)vk_icdGetInstanceProcAddr(owner, name); CHECK(variable != NULL)
+#include "clear-test.inc"
 int main(int argc, char **argv) {
     unsigned checks = 0; int result = 1;
+    int clear = argc == 2 && !strcmp(argv[1], "--clear");
     int unavailable = argc == 2 && !strcmp(argv[1], "--expect-unavailable");
     VkInstance instance = VK_NULL_HANDLE; VkDevice device = VK_NULL_HANDLE;
     PFN_vkDestroyInstance destroy_instance = NULL; PFN_vkDestroyDevice destroy_device = NULL;
     struct sigaction action = {0}; action.sa_handler = deadline; sigemptyset(&action.sa_mask);
     if (sigaction(SIGALRM, &action, NULL)) return 2;
     alarm(90); signal(SIGPIPE, SIG_IGN);
-    puts("GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim");
+    puts(clear ? "GUEST_VK_SCOPE experimental partial clear/copy profile; no conformance, dispatch, GL or hardware claim" : "GUEST_VK_SCOPE experimental lifecycle only; no rendering, loader conformance, GL or hardware claim");
     uint32_t version = 1;
     CHECK(vk_icdNegotiateLoaderICDInterfaceVersion(&version) == VK_ERROR_INCOMPATIBLE_DRIVER);
     version = 99;
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
     LOAD(PFN_vkGetPhysicalDeviceQueueFamilyProperties, families, instance, "vkGetPhysicalDeviceQueueFamilyProperties");
     count = 0; families(physical, &count, NULL); CHECK(count == 1);
     VkQueueFamilyProperties family; count = 1; families(physical, &count, &family);
-    CHECK(count == 1 && family.queueCount == 1 && family.queueFlags == 0);
+    CHECK(count == 1 && family.queueCount == 1 && family.queueFlags == (clear ? (VK_QUEUE_COMPUTE_BIT|VK_QUEUE_TRANSFER_BIT) : 0));
     LOAD(PFN_vkGetPhysicalDeviceFeatures, features, instance, "vkGetPhysicalDeviceFeatures");
     VkPhysicalDeviceFeatures enabled; features(physical, &enabled);
     CHECK(!enabled.robustBufferAccess && !enabled.geometryShader && !enabled.inheritedQueries);
@@ -82,13 +84,14 @@ int main(int argc, char **argv) {
     CHECK(create_device(physical, &device_info, NULL, &device) == VK_SUCCESS && device != VK_NULL_HANDLE);
     CHECK(valid_loader_magic_value(device));
     LOAD(PFN_vkGetDeviceProcAddr, device_proc, instance, "vkGetDeviceProcAddr");
-    CHECK(device_proc(device, "vkQueueSubmit") == NULL && device_proc(device, "vkCreateImage") == NULL);
+    CHECK((device_proc(device, "vkQueueSubmit") != NULL) == clear && (device_proc(device, "vkCreateImage") != NULL) == clear);
     destroy_device = (PFN_vkDestroyDevice)device_proc(device, "vkDestroyDevice");
     PFN_vkGetDeviceQueue get_queue = (PFN_vkGetDeviceQueue)device_proc(device, "vkGetDeviceQueue");
     CHECK(destroy_device != NULL && get_queue != NULL);
     VkQueue queue = VK_NULL_HANDLE; get_queue(device, 0, 0, &queue);
     CHECK(queue != VK_NULL_HANDLE && valid_loader_magic_value(queue));
     VkQueue again = VK_NULL_HANDLE; get_queue(device, 0, 0, &again); CHECK(again == queue);
+    if (clear) CHECK(clear_test(instance,physical,device,queue,&checks)==0);
     puts("GUEST_VK_DEVICE_PASS"); fflush(stdout);
     destroy_device(device, NULL); device = VK_NULL_HANDLE;
     destroy_instance(instance, NULL); instance = VK_NULL_HANDLE;

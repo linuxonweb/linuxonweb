@@ -168,11 +168,27 @@ driver enables permission checking internally and rejects the explicit
   instance creation without creating a device. The 41,861-byte guest artifact
   SHA-256 is `0f2b0d4b611f2a8930e343ca1d6145824d1e48d4654307d322626b15c28e3c24`.
   See `docs/guest-vulkan-lifecycle-20260926.md` and `guest-vulkan-lifecycle.json`
-  evidence. It is not deployed, conformant, loader-integrated or rendering;
-  queue flags remain zero and rendering entrypoints NULL. Next bounded slice:
-  direct Vulkan offscreen clear/readback with typed resource transport,
-  synchronization, exact pixels and failure/teardown checks. No OpenGL,
-  WebGL fallback, decoder, native JIT or physical GPU claim follows.
+  evidence. That original mode keeps zero queue flags and no command entrypoints.
+  The subsequent opt-in `clear` profile now executes real guest Vulkan clear/copy
+  calls through WebGPU: two 17x3 clears return all 102 exact pixels, with recorded
+  values, layout/barrier validation, mapped-memory sentinels and full teardown.
+  Host regression 73 checks, guest live 38, unavailable 11 and clear 951 pass;
+  the latter count mostly consists of individual byte assertions. Actual guest
+  kernel markers confirm 1 GiB/two CPUs. SwiftShader is software evidence only.
+  All artifacts are under `/mnt/p6/build/guest-vulkan-clear-20260926/`; build-run2
+  is 64,334 bytes, SHA-256
+  `c0ede2c1cfb39896bcf5aafce7df2be74c96eeb2c7e08018f16d598cf6d9e730`.
+  See `docs/guest-vulkan-clear-readback-20260926.md` and its compact evidence.
+  The first live runner failed before guest boot on a null document element;
+  its evidence is retained, a null-safe snapshot fixed the harness, and live
+  retry 2 passed. Clear and unavailable passed their first guest attempts.
+  This partial COMPUTE|TRANSFER profile has no compute dispatch, format queries,
+  loader integration, general GPU buffers or conformance. Guest mid-submit
+  transport-loss and allocation-exhaustion execution tests are the next bounded
+  reliability gates; full shader/GL/Firefox integration remains substantive work.
+  Sites version 6 is unchanged; the prototype is not deployed. No OpenGL,
+  WebGL fallback, decoder, native JIT or physical GPU claim follows. Overall goal
+  remains below 95/100 (approximately 80); this is progress, not goal completion.
 - Accepted runtime commit: `f24b914113dee9132471298e5e3a97b2e69b2ceb`.
   Sites version 4 previously passed exact full-image hashes,
   isolation, actual guest write/reload, zero-image warm reload, and automatic
@@ -258,6 +274,16 @@ All artifacts remain under `/mnt/p6/build/firefox-ready-20260926/` and
 its own echo-disabled PTY because exec sessions are agent-scoped; the credential
 stayed in memory and was cleared after the successful exact-commit push.
 
+The clear/readback continuation also completed cleanup: browser PID `50490`
+closed via Browser.close and adapter PID `50178` exited on SIGTERM, both exit 0.
+Ports `4182` and `9396` have no listeners; all three verified candidate symlinks
+were removed. User PID `1591443` retained its exact command/start identity.
+Evidence and profiles remain under `/mnt/p6/build/guest-vulkan-clear-20260926/`,
+including `final-evidence-audit.json` (36 checks) and `cleanup.json`. Fresh agent
+creation and completed-agent follow-up hit the tool's thread limit; the running
+review agent was explicitly reassigned as sole command/serving owner. No task
+service remains active.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
@@ -310,14 +336,16 @@ Bounded next implementation gates, subject to that allowance:
   Preserve the accepted release until any new isolated candidate passes actual
   Firefox usability, warm-cache and update/home gates. Explicitly override test
   output paths that still default to `/tmp`.
-- The direct experimental Vulkan lifecycle now passes actual guest execution
-  (38 live checks and 11 unavailable-host checks). Prefer the next direct Vulkan
-  offscreen clear/readback slice over a detached Dawn-only shim: add typed image,
-  buffer and memory ownership, command recording, layout/barrier validation and
-  real host clear/copy/readback with bounded failure handling. Compare every
-  pixel of a 17x3 image across two colors and verify complete cleanup. Current
-  queue capability flags are zero and rendering entrypoints are absent; this is
-  not a usable driver. See `docs/guest-vulkan-lifecycle-20260926.md`.
+- The direct experimental Vulkan lifecycle and opt-in clear/readback now pass
+  actual guest execution (38 live, 11 unavailable, 951 clear assertions; most
+  clear assertions are individual bytes). Real WebGPU pixels, typed ownership,
+  recorded values, layout/barrier validation and teardown pass. The next bounded
+  reliability gate should inject transport/device loss during actual guest
+  submission, verify DEVICE_LOST propagation and cleanup, and exercise allocation
+  exhaustion/recovery. Preserve the passing build-run2 and packages in
+  `/mnt/p6/build/guest-vulkan-clear-20260926/` as the baseline. See
+  `docs/guest-vulkan-clear-readback-20260926.md`. The partial COMPUTE|TRANSFER
+  profile lacks dispatch and conformance; it is not a generally usable driver.
   The earlier Dawn ABI gate remains compile-only; native Dawn, the translator,
   system loader integration, shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
@@ -325,7 +353,7 @@ Bounded next implementation gates, subject to that allowance:
 
 All continuation work must retain the current delegated workflow, fresh sessions
 for new agents, scoped Git staging and sole serving-agent ownership. The serving
-owner may continue its assigned lifecycle task across follow-up instructions.
+owner may continue its assigned test task across follow-up instructions.
 Earlier work reused existing sessions after fresh-session creation hit the thread
 limit. There are no active task-owned services to reuse; preserve the user's
 pre-existing server.

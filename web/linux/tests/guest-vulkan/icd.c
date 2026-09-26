@@ -1,5 +1,5 @@
-/* Experimental Vulkan-shaped lifecycle only. No command execution, loader
- * integration, rendering, conformance or physical acceleration is advertised. */
+/* Experimental direct-call Vulkan-shaped lifecycle and opt-in clear/copy
+ * profile. No system loader integration, conformance or physical GPU claim. */
 #include "icd.h"
 #include "../guest-gpu/guest-gpu.h"
 #include <stddef.h>
@@ -15,6 +15,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
+    int clear_supported, failed;
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
 _Static_assert(offsetof(struct VkPhysicalDevice_T, loader) == 0, "physical loader prefix");
@@ -38,8 +39,10 @@ static int hello(VkInstance instance) {
     if (status || !n || memchr(data, '\0', n)) return -1;
     data[n] = 0;
     printf("GUEST_VK_HOST_HELLO %s\n", data); fflush(stdout);
+    instance->clear_supported = strstr(data, "\"clearImage\":true") != NULL;
     return 0;
 }
+static void transfer_cleanup(void);
 static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo *info,
         const VkAllocationCallbacks *allocator, VkInstance *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
@@ -70,6 +73,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
 static VKAPI_ATTR void VKAPI_CALL destroy_device(VkDevice device, const VkAllocationCallbacks *allocator) {
     (void)allocator;
     if (!device_valid(device)) return;
+    transfer_cleanup();
     live->device = NULL; free(device); audit.devices_destroyed++; audit.live_devices--;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_instance(VkInstance instance, const VkAllocationCallbacks *allocator) {
@@ -106,7 +110,7 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
     if (!physical_valid(physical)) return;
     out->apiVersion = VK_API_VERSION_1_0;
     out->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
-    snprintf(out->deviceName, sizeof(out->deviceName), "EXPERIMENTAL WebGPU lifecycle only; not conformant");
+    snprintf(out->deviceName, sizeof(out->deviceName), live->clear_supported ? "EXPERIMENTAL partial clear/copy profile; NOT conformant" : "EXPERIMENTAL WebGPU lifecycle only; not conformant");
     /* No invented physical PCI IDs, UUID, rendering limits or driver claims. */
 }
 static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, VkPhysicalDeviceFeatures *out) {
@@ -119,8 +123,10 @@ static VKAPI_ATTR void VKAPI_CALL queue_properties(VkPhysicalDevice physical, ui
     if (!out) { *count = 1; return; }
     if (!*count) return;
     memset(out, 0, sizeof(*out)); out->queueCount = 1; *count = 1;
-    /* This phase exposes a lifecycle handle, with NO graphics/compute/transfer
-     * capability flags. It intentionally cannot claim a complete Vulkan device. */
+    if (live->clear_supported) out->queueFlags = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    /* ClearColorImage requires compute/graphics. The opt-in COMPUTE flag
+     * denotes only this partial command profile; dispatch remains absent.
+     * This is explicitly incomplete and NOT a conformant Vulkan queue. */
 }
 static VKAPI_ATTR VkResult VKAPI_CALL device_extensions(VkPhysicalDevice physical, const char *layer,
         uint32_t *count, VkExtensionProperties *out) {
@@ -175,6 +181,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, c
 static VKAPI_ATTR void VKAPI_CALL device_queue(VkDevice device, uint32_t family, uint32_t index, VkQueue *out) {
     if (out) *out = device_valid(device) && !family && !index ? &device->queue : VK_NULL_HANDLE;
 }
+#include "transfer.inc"
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, const char *name) {
     if (!device_valid(device) || !name) return NULL;
 #define PROC(api, impl) if (!strcmp(name, #api)) return (PFN_vkVoidFunction)impl;
@@ -182,7 +189,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
     PROC(vkDestroyDevice, destroy_device)
     PROC(vkGetDeviceQueue, device_queue)
 #undef PROC
-    return NULL; /* In particular, vkQueueSubmit is not implemented. */
+    return live->clear_supported ? transfer_proc(name) : NULL;
 }
 VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t *version) {
     if (!version || *version < 2) return VK_ERROR_INCOMPATIBLE_DRIVER;
@@ -200,6 +207,7 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
     PROC(vkEnumeratePhysicalDevices, physical_devices)
     PROC(vkGetPhysicalDeviceProperties, physical_properties)
     PROC(vkGetPhysicalDeviceFeatures, physical_features)
+    PROC(vkGetPhysicalDeviceMemoryProperties, memory_properties)
     PROC(vkGetPhysicalDeviceQueueFamilyProperties, queue_properties)
     PROC(vkEnumerateDeviceExtensionProperties, device_extensions)
     PROC(vkCreateDevice, create_device)
@@ -207,5 +215,5 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
     PROC(vkDestroyDevice, destroy_device)
     PROC(vkGetDeviceQueue, device_queue)
 #undef PROC
-    return NULL;
+    return live->clear_supported ? transfer_proc(name) : NULL;
 }

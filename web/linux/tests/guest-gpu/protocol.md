@@ -36,6 +36,18 @@ typed and never reused. Disconnect/deadline/device loss destroys all resources.
 | 6 READBACK | target ID u32 | tightly packed top-to-bottom RGBA8 |
 | 7 DESTROY | resource ID u32 | empty |
 | 8 CLOSE | empty | empty; close after reply |
+| 9 CLEAR (opt-in only) | target ID u32 + RGBA float32 little-endian (20 bytes total) | empty after GPU completion |
+
+CLEAR is enabled only by the isolated host's explicit `allowClear:true` option;
+only then does HELLO include `clearImage:true`. With the default host option,
+opcode 9 is a structural error that closes the connection. Clients must inspect
+the capability before issuing it. It accepts a live TARGET ID and four finite
+components in [0,1]; wrong types, stale IDs, malformed lengths and nonfinite or
+out-of-range components are rejected. The host performs a real WebGPU render-pass
+clear, submits it, and waits for queue completion before replying. READBACK still
+performs a real texture-to-staging copy/map and removes WebGPU row padding. This
+extension supports the separate experimental Vulkan-shaped clear/copy fixture;
+it does not change the default triangle path into a Vulkan implementation.
 
 The C library closes/poisons its descriptor after framing, I/O or caller-capacity
 errors, so an unread response cannot desynchronize a subsequent call.
@@ -48,11 +60,17 @@ creates a real X11 window, checks stale-ID rejection and releases all resources.
 
 ## Build and acceptance (commands run by the command agent)
 
-After review, build into a fresh disk-backed directory:
+After review, verify the filesystem is disk-backed and has sufficient free space,
+then build into fresh directories. Stop if the storage is tmpfs/ramfs or full:
 
 ```sh
-python3 web/linux/tests/guest-gpu/build.py --output /mnt/p6/project/linux/.cache/guest-gpu-build-qa1
-python3 web/linux/tests/guest-gpu/package.py --build /mnt/p6/project/linux/.cache/guest-gpu-build-qa1/build.json --output web/linux/tests/guest-gpu/generated/qa1
+findmnt -T /mnt/p6/build -o TARGET,FSTYPE,AVAIL
+df -h /mnt/p6/build
+mkdir -p /mnt/p6/build/guest-gpu-reproduce-20260926/tmp
+export TMPDIR=/mnt/p6/build/guest-gpu-reproduce-20260926/tmp
+export TMP="$TMPDIR" TEMP="$TMPDIR" PYTHONDONTWRITEBYTECODE=1
+python3 web/linux/tests/guest-gpu/build.py --output /mnt/p6/build/guest-gpu-reproduce-20260926/build-run1
+python3 web/linux/tests/guest-gpu/package.py --build /mnt/p6/build/guest-gpu-reproduce-20260926/build-run1/build.json --output /mnt/p6/build/guest-gpu-reproduce-20260926/package-run1
 ```
 
 The package script verifies the accepted plain rootfs hash, modifies only the
@@ -71,7 +89,8 @@ Use a fresh test profile: importing the runtime can read that profile's cached
 kernel selection, although this test never opens the home database.
 
 `run-browser.mjs host|guest` is the reproducible Node 22 CDP runner. Set
-`GPU_QA_OUT` to a fresh directory; optional `CDP_URL` and `GPU_QA_BASE` select the
+`GPU_QA_OUT` to a fresh directory under the verified task disk and export
+`TMPDIR`, `TMP`, and `TEMP` there before each test invocation; optional `CDP_URL` and `GPU_QA_BASE` select the
 owned browser and server. It does not launch a browser or alter GPU flags.
 The runner records current state every poll, a 60-second checkpoint, browser
 errors and a final screenshot even on failure, then stops its guest and closes
@@ -110,7 +129,7 @@ Primary references reviewed:
 - [wgpu WebGPU backend boundary](https://wgpu.rs/doc/wgpu/struct.Backends.html)
 - [ANGLE platform support](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/README.md)
 
-Status: Wasm build/ABI and isolated archive preservation passed. The host passed
+Historical triangle baseline: Wasm build/ABI and isolated archive preservation passed. The host passed
 38 checks with Google SwiftShader (software semantics, not physical GPU use).
 Actual guest acceptance passed on the third attempt: all three guest markers,
 center RGBA `63,66,126,255`, 13 host commands, one draw, one readback, four
@@ -124,3 +143,14 @@ and [screenshot](../../../../docs/evidence/runtime-graphics-20260926/guest-gpu-q
 record the bounded prototype proof, not EGL/GL/Vulkan/Firefox support.
 See [pinned ANGLE/Dawn feasibility notes](../../../../docs/guest-gpu-angle-feasibility-20260926.md)
 for the remaining EGL/Firefox integration work.
+
+
+The later clear/readback continuation reran this host regression and passed
+**73 checks**, preserving the original real triangle gates and adding explicit
+CLEAR negotiation/default refusal, malformed input, wrong/stale resource type,
+two complete 17×3 pixel comparisons and device-loss resource cleanup. It used
+Google SwiftShader fallback, with no browser runtime exceptions. This does not
+supersede or rerun the historical X11 triangle guest: the new real guest proof is
+the separate direct Vulkan-shaped clear/copy profile. See the
+[clear/readback execution report](../../../../docs/guest-vulkan-clear-readback-20260926.md)
+for the exact scope, artifact identities and results.

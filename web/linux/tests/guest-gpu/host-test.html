@@ -45,9 +45,35 @@ try {
   for(const id of [target,pipeline,buffer,module])check((await h.call(OP.DESTROY,u32(id))).status===0,'destroy '+id);
   check((await h.call(OP.DESTROY,u32(target))).status===-22,'stale handle rejected');await h.call(OP.CLOSE);
   const finished=await h.serving;check(!finished.error&&finished.released===4,'session cleanup counted');
+  // CLEAR is opt-in: an unchanged guest-gpu session cannot accidentally accept it.
+  const legacy=harness();const legacyHello=await legacy.call(OP.HELLO);
+  check(!JSON.parse(new TextDecoder().decode(legacyHello.body)).clearImage,'legacy HELLO has no clear capability');
+  let legacyRejected=false;try{await legacy.call(OP.CLEAR,u32(1,0,0,0,0));}catch{legacyRejected=true;}
+  check(legacyRejected&&(await legacy.serving).error.includes('invalid opcode'),'legacy clear rejected and session closed');
+  const clear=harness({allowClear:true});const clearHello=await clear.call(OP.HELLO);
+  check(JSON.parse(new TextDecoder().decode(clearHello.body)).clearImage===true,'explicit clear capability');
+  const targetReply=await clear.call(OP.TARGET,u32(17,3));check(targetReply.status===0,'create padded-row clear target');
+  const clearTarget=new DataView(targetReply.body.buffer,targetReply.body.byteOffset,4).getUint32(0,true);
+  const color=(id,rgba)=>{const b=new Uint8Array(20),v=new DataView(b.buffer);v.setUint32(0,id,true);rgba.forEach((n,i)=>v.setFloat32(4+4*i,n,true));return b;};
+  check((await clear.call(OP.CLEAR,u32(clearTarget))).status===-22,'short clear rejected');
+  check((await clear.call(OP.CLEAR,color(clearTarget,[NaN,0,0,1]))).status===-22,'nonfinite clear rejected');
+  check((await clear.call(OP.CLEAR,color(clearTarget,[2,0,0,1]))).status===-22,'out-of-profile clear rejected');
+  check((await clear.call(OP.CLEAR,color(0,[1,0,0,1]))).status===-22,'unknown target rejected');
+  const wrong=await clear.call(OP.BUFFER,new Uint8Array(20));check(wrong.status===0,'create wrong-type resource');
+  const wrongId=new DataView(wrong.body.buffer,wrong.body.byteOffset,4).getUint32(0,true);
+  check((await clear.call(OP.CLEAR,color(wrongId,[1,0,0,1]))).status===-22,'wrong resource type rejected');
+  for(const rgba of [[1,0,0,1],[0,1,0,0]]) {
+    check((await clear.call(OP.CLEAR,color(clearTarget,rgba))).status===0,'real WebGPU clear');
+    const pixels=await clear.call(OP.READBACK,u32(clearTarget));
+    check(pixels.status===0&&pixels.body.length===204&&pixels.body.every((n,i)=>n===rgba[i%4]*255),'all 51 padded-row pixels exact '+rgba.join(','));
+  }
+  await clear.call(OP.DESTROY,u32(wrongId));await clear.call(OP.DESTROY,u32(clearTarget));
+  check((await clear.call(OP.CLEAR,color(clearTarget,[1,0,0,1]))).status===-22,'stale clear target rejected');
+  await clear.call(OP.CLOSE);const clearDone=await clear.serving;
+  check(!clearDone.error&&clearDone.clears===2&&clearDone.readbacks===2&&clearDone.released===2,'clear/readback cleanup exact');
   let testDevice;
   const loss=harness({gpu:{async requestAdapter(){const adapter=await navigator.gpu.requestAdapter();return {info:adapter.info,async requestDevice(){testDevice=await adapter.requestDevice();return testDevice;}};}}});
-  await loss.call(OP.HELLO);testDevice.destroy();const lost=await loss.serving;check(lost.error?.startsWith('device lost:'),'device loss closes pending read');
+  await loss.call(OP.HELLO);check((await loss.call(OP.TARGET,u32(17,3))).status===0,'live resource before device loss');testDevice.destroy();const lost=await loss.serving;check(lost.error?.startsWith('device lost:')&&lost.released===1,'device loss closes pending read and releases resource');
   document.documentElement.dataset.result='pass';
 } catch(error){result.errors.push(error.stack);document.documentElement.dataset.result='fail';}
 document.querySelector('#output').textContent=JSON.stringify(result,null,2);

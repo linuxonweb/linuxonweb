@@ -1,15 +1,15 @@
 // Experimental guest-command renderer. Not imported by the accepted runtime.
 export const MAGIC = 0x31555047, VERSION = 1, MAX_PAYLOAD = 1048576;
-export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8 });
+export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8, CLEAR: 9 });
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8', { fatal: true });
 const fail = message => { throw new Error(message); };
 const words = (...values) => { const bytes = new Uint8Array(values.length * 4), view = new DataView(bytes.buffer); values.forEach((n, i) => view.setUint32(i * 4, n, true)); return bytes; };
-export function decodeHeader(bytes) {
+export function decodeHeader(bytes, allowClear = false) {
   if (bytes.byteLength !== 16) fail('short header');
   const v = new DataView(bytes.buffer, bytes.byteOffset, 16);
   if (v.getUint32(0, true) !== MAGIC || v.getUint16(4, true) !== VERSION) fail('unsupported protocol');
   const opcode = v.getUint16(6, true), request = v.getUint32(8, true), length = v.getUint32(12, true);
-  if (opcode > OP.CLOSE || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
+  if (opcode > (allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
   return { opcode, request, length };
 }
 export function encodeReply(opcode, request, status, body = new Uint8Array()) {
@@ -20,9 +20,9 @@ export function encodeReply(opcode, request, status, body = new Uint8Array()) {
 }
 
 /** One device and resource table per connection. No guest memory/shared views. */
-export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {} } = {}) {
+export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false } = {}) {
   const resources = new Map(); let device, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
-  const report = { commands: 0, draws: 0, readbacks: 0, released: 0, adapter: null, error: null };
+  const report = { commands: 0, draws: 0, clears: 0, readbacks: 0, released: 0, adapter: null, error: null };
   const cleanup = () => {
     if (closed) return; closed = true;
     for (const entry of resources.values()) entry.object.destroy?.();
@@ -55,7 +55,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     onEvent({ type: 'adapter', ...report.adapter });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
-      const { opcode, request, length } = decodeHeader(header);
+      const { opcode, request, length } = decodeHeader(header, allowClear);
       if (request <= lastRequest) fail('non-monotonic request id'); lastRequest = request;
       const payload = await connection.readExactly(length); if (payload.length !== length) fail('truncated payload');
       const v = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
@@ -63,7 +63,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       let body = new Uint8Array(), status = 0;
       try {
         switch (opcode) {
-          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, shader: 'WGSL', adapter: report.adapter })); break;
+          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, shader: 'WGSL', ...(allowClear ? { clearImage: true } : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -103,6 +103,18 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
               pass.setPipeline(pipeline.object); pass.setVertexBuffer(0, buffer.object); pass.draw(count); pass.end();
               device.queue.submit([commands.finish()]); await device.queue.onSubmittedWorkDone();
             }); report.draws++; break;
+          }
+          case OP.CLEAR: {
+            if (!allowClear) fail('clear not negotiated');
+            exact(20); const target = get(v.getUint32(0, true), 'target');
+            const color = Array.from({length:4}, (_, i) => v.getFloat32(4 + 4*i, true));
+            if (color.some(n => !Number.isFinite(n) || n < 0 || n > 1)) fail('invalid clear color');
+            await checked(async () => {
+              const commands = device.createCommandEncoder();
+              const pass = commands.beginRenderPass({colorAttachments:[{view:target.object.createView(),
+                clearValue:{r:color[0],g:color[1],b:color[2],a:color[3]},loadOp:'clear',storeOp:'store'}]});
+              pass.end(); device.queue.submit([commands.finish()]); await device.queue.onSubmittedWorkDone();
+            }); report.clears++; break;
           }
           case OP.READBACK: {
             exact(4); const target = get(v.getUint32(0, true), 'target');

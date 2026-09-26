@@ -1,34 +1,36 @@
-# Isolated experimental Vulkan lifecycle
+# Isolated experimental Vulkan command profile
 
-This first executable slice exercises official Vulkan C signatures and ICD
-procedure lookup inside the real wasm32 Linux guest, with a live host WebGPU
-device obtained through the existing vsock HELLO bridge. The test resolves and
-calls instance/device enumeration, device/queue creation and destruction. It
-also rejects unsupported features, extensions, descriptor chains and queues.
+This fixture exercises official Vulkan C signatures through direct procedure
+lookup inside the real wasm32 Linux guest. `live` mode tests instance/device/queue
+ownership; `unavailable` verifies failure without a host WebGPU API. The new
+`clear` mode adds opt-in RGBA8 offscreen clear and exact readback using actual
+host WebGPU commands. All three guest modes and the host regression passed
+real-browser execution on 2026-09-26.
 
-It is **not** a conformant Vulkan implementation, system loader integration,
-Vulkan rendering, OpenGL-through-Vulkan, Firefox acceleration or a decoder.
-The single queue currently has zero capability flags; command submission and
-image entrypoints return NULL. Properties identify the experimental scope and
-do not invent PCI IDs, UUIDs or physical acceleration. Clear/readback remains
-the next required executable slice; no overall goal score follows from this one.
+This is **not a conformant Vulkan implementation**, system loader integration,
+OpenGL-through-Vulkan, Firefox acceleration or a decoder. Legacy mode retains a
+zero-capability queue and NULL command/image entrypoints. Clear mode exposes an
+explicitly partial COMPUTE|TRANSFER command profile: Vulkan clear requires a
+compute or graphics queue, but dispatch and the rest of compute are absent.
+Properties identify this incomplete scope without invented PCI IDs or physical
+acceleration claims. SwiftShader can prove semantics only as a software fallback.
 
-`icd.c` and the client use the existing unmodified Khronos 1.3.231 C headers in
-the archived Firefox ANGLE source. `header-provenance.json` pins each local
-header's SHA-256 and source path; it does not claim a fresh upstream authenticity
-verification. Build copies those exact headers, retaining their license notices,
-and records them with frozen input C source hashes. No new dependency downloads,
-Dawn implementation or shader compiler is required for this lifecycle phase.
+`icd.c`, `transfer.inc`, `lifecycle.c` and `clear-test.inc` use unmodified Khronos
+1.3.231 C headers from the archived Firefox ANGLE source. `header-provenance.json`
+pins each local header SHA-256 and source path; it does not claim fresh upstream
+authenticity verification. Build copies those headers with their license notices
+and freezes guest source hashes. No dependency download or shader compiler is
+required for the clear profile.
 
-The browser's `serveLifecycle` wraps the existing `guest-gpu/host.mjs` without
-changing that implementation. It records actual device creation/destruction and
-connection closure. A passing live run requires two successful HELLOs plus CLOSE,
-one real host device created and destroyed, zero graphics resources created,
-zero draw/readback operations, exact guest/host adapter identity agreement, guest
-zero-live-object audit and exit status zero. A second fixture passes `gpu:null`
-to the host and requires instance creation to fail with no device enumeration.
-SwiftShader is acceptable semantic evidence and must remain identified as a
-software fallback.
+`serveLifecycle` records host device and connection ownership while selecting the
+host's opt-in clear capability only for `clear` mode. The existing triangle/legacy
+host protocol behavior remains the default. A clear pass requires actual host
+texture clear/copy/map results, exact guest pixel comparisons, explicit guest
+cleanup, exact host operation order and one device created/destroyed. Host errors
+and malformed inputs are covered independently by the browser host regression.
+No overall goal score follows from this narrow experiment.
+
+## Historical lifecycle baseline
 
 The first build/package and both real guest runs passed on 2026-09-26: live
 38 checks and unavailable 11 checks, each on its first attempt at actual 1 GiB /
@@ -108,3 +110,87 @@ guest objects, no runtime exceptions, and successful unavailable-host failure.
 Retain the screenshots, package/build reports and logs under the task directory.
 The serving owner removes only its two exact symlinks after testing and cleans
 up owned services under the existing ownership rules. Nothing here is deployed.
+
+## Verified opt-in clear/readback continuation
+
+The new `clear` package mode (`--clear` guest argument) adds a direct-call,
+**nonconformant** Vulkan command profile. It negotiates `clearImage:true` through
+HELLO and explicitly opts the isolated host into opcode 9. Legacy sessions still
+reject that opcode, retain zero queue capability flags and expose no command
+entrypoints. The new mode exposes partial COMPUTE|TRANSFER flags because
+`vkCmdClearColorImage` requires a graphics or compute queue; **compute dispatch is
+absent**, so these flags describe an incomplete experimental profile and must
+never be represented as a usable/conformant Vulkan device.
+
+Typed monotonically allocated guest image/buffer/memory IDs enforce ownership,
+size, type and binding. Image memory owns an actual host WebGPU texture; mapped
+host-coherent buffer memory is guest storage updated from actual WebGPU staging
+buffer bytes before synchronous QueueSubmit completes. Recording copies values
+without touching GPU state. Submission validates the entire command list before
+host effects, checks image layouts and buffer host-read barriers, and poisons the
+device on a host/transport failure. State is initial→recording→executable→pending
+→executable, with reset recovery for rejected recording. Teardown releases host
+textures and guest resources. The guest table is capped at 32 entries, memory at
+1 MiB, images at 128×128, individual allocations/buffers at 64 KiB and recording
+at 16 commands. These are test-profile bounds, not advertised Vulkan limits.
+
+Supported profile: optimal RGBA8 UNORM 2D images, one mip/layer/sample, exclusive
+ownership, TRANSFER_SRC|DST image usage and TRANSFER_DST buffers; whole-image
+clears/copies with tightly packed zero-offset destination, no aliasing/offset
+binding. Colors must be finite and in [0,1] (narrower than Vulkan clamping rules).
+Only the explicit undefined/source→destination→source transitions and
+transfer-write→host-read buffer barrier are accepted. One primary command buffer,
+one pool, one submit, no fences/semaphores, no secondary buffers, no concurrent
+calls, one-time/simultaneous flags, shaders, dispatch, rendering pipelines,
+format-query implementation or loader discovery. Unsupported void commands poison
+recording; unsupported create/submit arguments fail. No OpenGL, decoder, Firefox
+GPU integration or physical acceleration follows from this test.
+
+`clear-test.inc` verifies two colors on the same 17×3 image in separate submissions,
+all 102 RGBA pixels, a preserved eight-byte buffer suffix, host 256-byte row padding
+removed into 68-byte rows, command-value snapshots, explicit cleanup, stale handle
+rejection, layout mismatch, map/bind failures, unsupported recording and reset.
+The browser also checks the exact host operation sequence, so recording/rejected
+submissions cannot silently execute additional GPU operations. Host regression
+keeps the original real triangle and adds legacy refusal, malformed length,
+nonfinite/out-of-profile color, wrong type, stale handle, exact pixels and device
+loss cleanup. Byte assertion counts are not independent capability counts.
+
+New output root is `/mnt/p6/build/guest-vulkan-clear-20260926`; the prior root
+remains accepted for reproduction. Export TMPDIR/TMP/TEMP under the chosen root
+and use fresh build/package/QA directories. Build freezes both `.inc` files.
+Package with `--mode clear`, expose only the owned `candidate-clear` symlink and
+run `run-browser.mjs clear`; also rerun `live`, `unavailable`, and the guest-gpu
+host regression. The accepted production images and deployed Site remain untouched.
+
+
+### Clear/readback acceptance on 2026-09-26
+
+The frozen `build-run2` artifact passed Wasm validation and import checks:
+64,334 bytes, SHA-256
+`c0ede2c1cfb39896bcf5aafce7df2be74c96eeb2c7e08018f16d598cf6d9e730`.
+All new artifacts are under `/mnt/p6/build/guest-vulkan-clear-20260926/`.
+`package-clear-run2` changes only the isolated init and adds the test executable;
+accepted production images remain untouched. `qa-clear-run1` passed its first
+actual guest attempt: two clears and two readbacks of the same 17×3 image,
+102 exact pixels (red RGBA 255,0,0,255; green RGBA 0,255,0,0), eight unchanged
+suffix bytes, nine ordered host commands, one texture released and one real
+Google SwiftShader fallback WebGPU device created/destroyed. Guest resources,
+instances and devices ended at zero; errors and runtime exceptions were absent.
+The 951 guest checks mostly count individual byte assertions, **not 951 GPU
+capabilities**. The observed 3.625-second fixture run is not a benchmark.
+
+`qa-host-run1` passed 73 browser checks covering the original triangle plus clear
+and failure paths. Legacy `live` passed 38 guest checks in `qa-live-run2`;
+`unavailable` passed 11 in `qa-unavailable-run1`. The first live harness attempt
+failed before guest boot because navigation briefly had a null document element;
+that retained `qa-live-run1` evidence led to a null-safe runner snapshot. The
+retry retained all acceptance gates and used the same guest/host sources.
+
+See the [clear/readback report](../../../../docs/guest-vulkan-clear-readback-20260926.md)
+and [compact evidence](../../../../docs/evidence/runtime-graphics-20260926/guest-vulkan-clear-readback.json).
+For reproduction use fresh output directory names, explicit disk-backed scratch,
+`build.py --output .../build-run3`, `package.py --build .../build-run3/build.json
+--output .../package-clear-run3 --mode clear`, and the sole serving owner's
+`candidate-clear` link before `run-browser.mjs clear`. Keep `live`, `unavailable`
+and the guest-gpu host regression as release gates for this isolated profile.

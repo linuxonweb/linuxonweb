@@ -4,12 +4,13 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
-const task = '/mnt/p6/build/guest-vulkan-20260926';
+const tasks = ['/mnt/p6/build/guest-vulkan-20260926','/mnt/p6/build/guest-vulkan-clear-20260926'];
 const mode = process.argv[2];
-if (!['live','unavailable'].includes(mode) || !process.env.VK_QA_OUT)
-  throw Error('usage: VK_QA_OUT=/mnt/p6/build/guest-vulkan-20260926/fresh-output node run-browser.mjs live|unavailable');
+if (!['live','unavailable','clear'].includes(mode) || !process.env.VK_QA_OUT)
+  throw Error('usage: VK_QA_OUT=/mnt/p6/build/guest-vulkan-20260926/fresh-output node run-browser.mjs live|unavailable|clear');
 const out = path.resolve(await fs.realpath(path.dirname(process.env.VK_QA_OUT)), path.basename(process.env.VK_QA_OUT));
-if (!out.startsWith(task + '/')) throw Error('output must be under task disk');
+const task = tasks.find(root => out.startsWith(root + '/'));
+if (!task) throw Error('output must be under task disk');
 const mounts = (await fs.readFile('/proc/self/mountinfo','utf8')).trim().split('\n').map(line => {
   const [fields, fsinfo] = line.split(' - ');
   return {mount:fields.split(' ')[4].replaceAll('\\040',' '), type:fsinfo.split(' ')[0]};
@@ -71,18 +72,18 @@ async function evaluate(expression) {
   if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails));
   return r.result.value;
 }
-const snapshot = () => evaluate(`({result:document.documentElement.dataset.result || null,
+const snapshot = () => evaluate(`({result:document.documentElement?.dataset.result || null,
   guest:window.guestVulkanResults || null,
   ready:!!window.guestVulkanResults && typeof document.querySelector('#boot')?.onclick === 'function',
   gpuAPI:!!navigator.gpu, visibility:document.visibilityState})`);
 let report = {mode, pass:false, startedAt:Date.now(), storage, events,
-  scope:'Experimental guest Vulkan lifecycle only; no rendering, loader discovery, GL, hardware decoder or physical acceleration proof',
+  scope:mode === 'clear' ? 'Experimental partial guest Vulkan clear-copy profile; no dispatch, conformance, loader discovery, GL, decoder or physical acceleration proof' : 'Experimental guest Vulkan lifecycle only; no rendering, conformance, loader discovery, GL, decoder or physical acceleration proof',
   runnerSha256:createHash('sha256').update(await fs.readFile(fileURLToPath(import.meta.url))).digest('hex')};
 const save = () => fs.writeFile(path.join(out,'result.json'),JSON.stringify(report,null,2)+'\n');
 try {
   await call('Page.enable'); await call('Runtime.enable'); await call('Network.enable');
   const url = new URL('index.html',base);
-  url.searchParams.set('candidate',mode === 'live' ? 'candidate' : 'candidate-unavailable');
+  url.searchParams.set('candidate',mode === 'live' ? 'candidate' : `candidate-${mode}`);
   await call('Page.navigate',{url:url.href}); await call('Page.bringToFront');
   const deadline = Date.now()+125000; let clicked=false;
   for (;;) {

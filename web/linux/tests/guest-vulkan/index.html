@@ -1,6 +1,6 @@
-<!doctype html><meta charset="utf-8"><title>Experimental guest Vulkan lifecycle</title>
-<h1>Guest Vulkan device lifecycle test</h1>
-<p>Isolated instance/device/queue ownership experiment. No Vulkan rendering, system-loader conformance, OpenGL, decoder or physical GPU acceleration is established.</p>
+<!doctype html><meta charset="utf-8"><title>Experimental guest Vulkan command profile</title>
+<h1>Guest Vulkan lifecycle and clear/readback test</h1>
+<p>Isolated lifecycle and opt-in offscreen clear/readback profile. This partial compute queue does not implement dispatch or Vulkan conformance. No OpenGL, Firefox acceleration, decoder or physical GPU claim.</p>
 <button id="boot">Run isolated guest</button><button id="stop">Stop guest</button>
 <canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
 <script type="module">
@@ -18,17 +18,22 @@ function fail(error) {
 function check() {
   if (finished || !report.host || !/^GUEST_VK_EXIT status=0 checks=\d+$/m.test(report.logs.replaceAll('\r',''))) return;
   const h = report.host, own = h.ownership;
-  const base = report.errors.length === 0 && h.draws === 0 && h.readbacks === 0 && h.released === 0 && own.connectionsClosed === 1;
+  const base = report.errors.length === 0 && h.draws === 0 && own.connectionsClosed === 1;
   if (report.mode === 'unavailable') {
-    report.pass = base && h.commands === 0 && !h.adapter && own.devicesCreated === 0 && own.devicesDestroyed === 0 &&
+    report.pass = base && h.readbacks === 0 && h.released === 0 && h.commands === 0 && !h.adapter && own.devicesCreated === 0 && own.devicesDestroyed === 0 &&
       h.error === 'WebGPU unavailable: no renderer fallback is implied' && report.hellos.length === 0 &&
       report.logs.includes('GUEST_VK_UNAVAILABLE_PASS') && !report.logs.includes('GUEST_VK_DEVICE_PASS');
   } else {
     const matchingHello = report.hellos.length === 2 && report.hellos.every(item => item.version === 1 &&
       item.shader === 'WGSL' && JSON.stringify(item.adapter) === JSON.stringify(h.adapter));
-    report.pass = base && h.commands === 3 && h.error === null && !!h.adapter && matchingHello &&
+    const clear = report.mode === 'clear';
+    const operations = report.events.filter(e => e.type === 'command').map(e => `${e.opcode}:${e.status}`).join(',');
+    const rendering = clear ? h.clears === 2 && h.readbacks === 2 && h.released === 1 && report.hellos.every(x => x.clearImage === true) &&
+      report.logs.includes('GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256') &&
+      report.logs.includes('GUEST_VK_RESOURCES live=0') && operations === '0:0,0:0,4:0,9:0,6:0,9:0,6:0,7:0,8:0' :
+      h.clears === 0 && h.readbacks === 0 && h.released === 0 && operations === '0:0,0:0,8:0';
+    report.pass = base && rendering && h.commands === (clear ? 9 : 3) && h.error === null && !!h.adapter && matchingHello &&
       own.devicesCreated === 1 && own.devicesDestroyed === 1 &&
-      report.events.filter(e => e.type === 'command').map(e => `${e.opcode}:${e.status}`).join(',') === '0:0,0:0,8:0' &&
       report.logs.includes('GUEST_VK_DEVICE_PASS') && report.logs.includes('GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0') &&
       report.logs.includes('GUEST_VK_CLOSE status=0');
   }
@@ -78,11 +83,11 @@ document.querySelector('#boot').onclick = async () => {
   try {
     if (!crossOriginIsolated) throw Error('cross-origin isolation required');
     const candidate = new URLSearchParams(location.search).get('candidate') || 'candidate';
-    if (!/^candidate(?:-unavailable)?$/.test(candidate)) throw Error('invalid isolated candidate');
+    if (!/^candidate(?:-unavailable|-clear)?$/.test(candidate)) throw Error('invalid isolated candidate');
     const metadataResponse = await fetch(`./${candidate}/package.json`);
     if (!metadataResponse.ok) throw Error('candidate metadata unavailable');
     const metadata = await metadataResponse.json();
-    if (!metadata.testOnly || !metadata.passPackage || !['live','unavailable'].includes(metadata.mode)) throw Error('invalid test package');
+    if (!metadata.testOnly || !metadata.passPackage || !['live','unavailable','clear'].includes(metadata.mode)) throw Error('invalid test package');
     report.mode = metadata.mode; report.package = metadata;
     for (const [relative, hash] of Object.entries(metadata.guestBinary.hostSources)) {
       const response = await fetch(new URL(relative, new URL('../', location.href)));

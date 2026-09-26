@@ -2,12 +2,13 @@
 import os
 from pathlib import Path
 
-TASK = Path('/mnt/p6/build/guest-vulkan-20260926')
+TASKS = (Path('/mnt/p6/build/guest-vulkan-20260926'), Path('/mnt/p6/build/guest-vulkan-clear-20260926'))
 
 def checked_storage(output):
     output = Path(output).resolve()
-    if not output.is_relative_to(TASK) or output == TASK:
-        raise ValueError('output must be a new child of ' + str(TASK))
+    task = next((root for root in TASKS if output.is_relative_to(root) and output != root), None)
+    if task is None:
+        raise ValueError('output must be a new child of an explicit guest-vulkan task root')
     def filesystem(path):
         path = Path(path).resolve()
         entries = []
@@ -35,8 +36,8 @@ def checked_storage(output):
         if not value:
             raise ValueError(name + ' must be exported explicitly')
         path = Path(value).resolve()
-        if not path.is_relative_to(TASK) or not path.is_dir():
-            raise ValueError(name + ' must exist under ' + str(TASK))
+        if not path.is_relative_to(task) or not path.is_dir():
+            raise ValueError(name + ' must exist under ' + str(task))
         filesystem(path)
         scratch[name] = str(path)
     return output, {'output': str(output), 'filesystem': filesystem(output), 'scratch': scratch}

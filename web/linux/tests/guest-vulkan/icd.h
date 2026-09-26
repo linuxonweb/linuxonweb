@@ -8,4 +8,5 @@ struct guest_vk_audit {
     int close_status;
 };
 struct guest_vk_audit guest_vk_get_audit(void);
+unsigned guest_vk_live_resources(void);
 #endif

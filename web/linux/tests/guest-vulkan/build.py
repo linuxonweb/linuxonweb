@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile only the isolated lifecycle guest. No execution or packaging."""
+"""Compile the isolated lifecycle/partial clear-copy guest. No execution or packaging."""
 import argparse
 import hashlib
 import json
@@ -32,7 +32,7 @@ def main():
     if b'#define VK_HEADER_VERSION 231' not in (headers / 'vulkan_core.h').read_bytes():
         raise ValueError('unexpected header version')
     sources = {}
-    for relative in ('guest-vulkan/icd.c', 'guest-vulkan/icd.h', 'guest-vulkan/lifecycle.c',
+    for relative in ('guest-vulkan/icd.c', 'guest-vulkan/icd.h', 'guest-vulkan/lifecycle.c', 'guest-vulkan/transfer.inc', 'guest-vulkan/clear-test.inc',
                      'guest-gpu/guest-gpu.c', 'guest-gpu/guest-gpu.h'):
         original = here.parent / relative
         data = original.read_bytes(); target = out / 'frozen' / relative
@@ -57,7 +57,7 @@ def main():
         raise ValueError('unexpected Wasm imports: ' + repr(imports))
     host_sources = {relative: digest((here.parent / relative).read_bytes()) for relative in
                     ('guest-gpu/host.mjs', 'guest-vulkan/host.mjs', 'guest-vulkan/index.html')}
-    report = {'pass': True, 'testOnly': True, 'scope': 'Compiled experimental lifecycle; guest execution still required',
+    report = {'pass': True, 'testOnly': True, 'scope': 'Compiled experimental lifecycle and partial clear-copy profile; guest execution still required; not conformant Vulkan',
               'artifact': str(artifact), 'bytes': artifact.stat().st_size, 'sha256': digest(artifact.read_bytes()),
               'headers': provenance, 'sources': sources, 'hostSources': host_sources, 'imports': imports, 'storage': storage}
     (out / 'build.json').write_text(json.dumps(report, indent=2) + '\n')

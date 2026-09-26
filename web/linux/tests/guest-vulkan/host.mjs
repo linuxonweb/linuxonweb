@@ -1,5 +1,5 @@
-// Own only this fixture's adapter/device/connection. Renderer implementation is
-// reused without changing the guest-gpu protocol or its existing behavior.
+// Own only this fixture's adapter/device/connection. CLEAR is an explicit
+// opt-in extension; the existing guest-gpu triangle protocol stays the default.
 import {serveGPU} from '../guest-gpu/host.mjs';
 
 export async function serveLifecycle(connection, mode, onEvent) {
@@ -31,6 +31,6 @@ export async function serveLifecycle(connection, mode, onEvent) {
       };
     },
   };
-  const result = await serveGPU(transport, {gpu, timeoutMs: 60000, onEvent});
+  const result = await serveGPU(transport, {gpu, timeoutMs: 60000, allowClear: mode === 'clear', onEvent});
   return {...result, ownership};
 }

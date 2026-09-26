@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-26",
+  "scope": "Executed isolated partial Vulkan clear/copy profile; nonconformant, not deployed, no physical acceleration claim",
+  "taskDirectory": "/mnt/p6/build/guest-vulkan-clear-20260926",
+  "filesystem": "ext4",
+  "buildReport": "build-run2/build.json",
+  "auditReport": "qa-summary.json",
+  "artifact": {
+    "bytes": 64334,
+    "sha256": "c0ede2c1cfb39896bcf5aafce7df2be74c96eeb2c7e08018f16d598cf6d9e730",
+    "imports": ["env.memory", "linux.syscall", "linux.get_thread_area", "linux.copy_siginfo"]
+  },
+  "clearArchive": {
+    "report": "package-clear-run2/package.json",
+    "bytes": 40560136,
+    "sha256": "3cd4d8e2803b04add5aef11c68842dff621f922d17cca3702266b29f6d74ce94",
+    "unchangedOriginalRecords": 3846,
+    "modified": ["init"],
+    "added": ["bin/guest-vulkan-lifecycle"],
+    "tailPreserved": true
+  },
+  "adapter": {"vendor": "google", "architecture": "swiftshader", "isFallbackAdapter": true},
+  "browser": "Chromium 150.0.7871.114",
+  "softwareFlags": ["--enable-unsafe-webgpu", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+  "guestConfiguration": {
+    "memoryBytes": 1073741824,
+    "cpus": 2,
+    "kernelMarkers": ["smp: Brought up 1 node, 2 CPUs", "Memory: 1000512K/1048576K available (42560K reserved, 0K cma-reserved)"],
+    "isolated": true
+  },
+  "runs": {
+    "host": {"report": "qa-host-run1/result.json", "pass": true, "listedChecks": 73, "runtimeExceptions": 0},
+    "live": {"report": "qa-live-run2/result.json", "pass": true, "checks": 38, "hostCommands": 3, "runtimeExceptions": 0},
+    "unavailable": {"report": "qa-unavailable-run1/result.json", "pass": true, "checks": 11, "hostCommands": 0, "devicesCreated": 0, "runtimeExceptions": 0},
+    "clear": {
+      "report": "qa-clear-run1/result.json", "pass": true, "checks": 951,
+      "checkCountNote": "Primarily individual byte assertions, not independent Vulkan features",
+      "colors": [[255, 0, 0, 255], [0, 255, 0, 0]],
+      "imageWidth": 17, "imageHeight": 3, "pixelsVerified": 102,
+      "packedRowBytes": 68, "hostRowBytes": 256, "preservedSuffixBytes": 8,
+      "hostCommands": 9, "clears": 2, "readbacks": 2, "draws": 0, "texturesReleased": 1,
+      "devicesCreated": 1, "devicesDestroyed": 1, "connectionsClosed": 1,
+      "liveGuestResources": 0, "liveGuestInstances": 0, "liveGuestDevices": 0,
+      "guestErrors": [], "hostError": null, "runtimeExceptions": 0
+    }
+  },
+  "successfulGuestRunnerSha256": "f0a435af2340bcd50d22323dd322a24ec37720a774cb276f5af9428727ca7f35",
+  "retainedFailure": {
+    "report": "qa-live-run1/result.json",
+    "stage": "before guest boot",
+    "cause": "Runner accessed dataset before document.documentElement existed during navigation",
+    "guest": null,
+    "elapsedMs": 76,
+    "fix": "Null-safe pending-document snapshot; no guest or host implementation change"
+  },
+  "verification": {"buildPass": true, "wasmValidationPass": true, "packageAuditsPass": true, "sourceHashEntriesMatched": 14, "performanceBenchmark": false},
+  "deployment": {"prototypeDeployed": false, "existingSitesVersion": 6, "sitesHead": "8757a6ff2f8f0a312e7a616bb900521234395757"},
+  "limitations": ["No Vulkan conformance or loader integration", "Partial COMPUTE queue without dispatch", "No shaders or format queries", "Guest buffers receive real staging readback; no general host GPU buffer engine", "No fences, semaphores or concurrency", "Guest mid-submit transport-loss and exhaustion tests pending", "No OpenGL, Firefox GPU APIs, WebGL fallback, decoder or physical acceleration proof", "Native Firefox JIT remains unimplemented"]
+}
