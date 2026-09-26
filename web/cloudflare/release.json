@@ -1,8 +1,8 @@
 {
   "url": "https://linuxonweb.testcatty.workers.dev",
-  "deploymentId": "779763c8-6824-4e3d-9d0e-0867b78793d0",
-  "versionId": "b3ce1769-8bdf-431a-bea8-9481998b3a0a",
-  "deployedAt": "2026-09-26T09:41:04Z",
+  "deploymentId": "ffc5b34b-bed0-4550-92e6-e02ff76f0636",
+  "versionId": "d29da783-134e-4ae4-b361-3393c18ba9c0",
+  "deployedAt": "2026-09-26T11:55:22.142998Z",
   "sites": {
     "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
     "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
@@ -10,7 +10,7 @@
     "sourceCommit": "7ee1f3a33f6f7f4ce2bc7853d1828ae65968973e",
     "audience": "public"
   },
-  "note": "Frozen guest archives staged at task start; mobile keyboard frontend added at 09:41 UTC. Concurrent local Aurora picker archive release was not included.",
+  "note": "Firefox reliability release: current Aurora Files transfer support, EWMH window controls and repaint fixes, static VP8/Opus decoding with browser audio, Opus tail duration and 64 KiB mmap alignment corrections, quieter default logs. Public Sites runtime updated through its existing same-origin proxy; the Sites proxy was not redeployed.",
   "chunkSize": 20971520,
   "sourceFiles": [
     {
@@ -77,6 +77,13 @@
       "parts": 1
     },
     {
+      "source": "web/linux/dist/audio.js",
+      "path": "/linux/dist/audio.js",
+      "size": 6134,
+      "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+      "parts": 1
+    },
+    {
       "source": "web/linux/dist/bytes.js",
       "path": "/linux/dist/bytes.js",
       "size": 7290,
@@ -114,8 +121,8 @@
     {
       "source": "web/linux/dist/index.js",
       "path": "/linux/dist/index.js",
-      "size": 17499,
-      "sha256": "9089767833cc311a394abf55cc922839bd79a6956b3a25cb51c65a9c4d25a50e",
+      "size": 17905,
+      "sha256": "e0f8391d1ecd016b152802a68007cd5fdb44781ba240b5cde52e37c906b1a531",
       "parts": 1
     },
     {
@@ -226,15 +233,15 @@
     {
       "source": "web/linux/dist/wasm.js",
       "path": "/linux/dist/wasm.js",
-      "size": 6152,
-      "sha256": "2d123566d462472fbb94981a7790443a8431b8ffe09a524f64fd9293617c7471",
+      "size": 6188,
+      "sha256": "536057f3e2df6bb68f209d9f380d8ea01e88e7c3d7611d6929d6fff2106abadf",
       "parts": 1
     },
     {
       "source": "web/linux/dist/worker.js",
       "path": "/linux/dist/worker.js",
-      "size": 37434,
-      "sha256": "969045260c37a69a02324771419945f7785d4ea53d0f421b1d43ac893226945a",
+      "size": 37557,
+      "sha256": "31b20da3c43ee73ff60a5dcc9644b52d6c3e2514468dd287d875433bdd47a034",
       "parts": 1
     },
     {
@@ -247,15 +254,15 @@
     {
       "source": "web/linux/initramfs-firefox.cpio.gz",
       "path": "/linux/initramfs-firefox.cpio.gz",
-      "size": 87821007,
-      "sha256": "e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25",
+      "size": 88185028,
+      "sha256": "d48f8881d885814eb5614683bf4a6ed78313d1439ee4c3b6c87bb3fc4457d332",
       "parts": 5
     },
     {
       "source": "web/linux/initramfs.cpio",
       "path": "/linux/initramfs.cpio",
-      "size": 40413036,
-      "sha256": "beea582d106e6454397611b8efaba1b89417269129303a981bae69978e8e5bb1",
+      "size": 40494672,
+      "sha256": "765a1a162d827ecc2ebcba605d830f8af4ace5019b4acf29df4cdb222e1a4e34",
       "parts": 2
     },
     {
@@ -275,8 +282,8 @@
     {
       "source": "web/linux/main.js",
       "path": "/linux/main.js",
-      "size": 24809,
-      "sha256": "8cdad183bf915dfc3689be215b148bb1d63f2a5901dfcd0f56a64c9cd1d1b02f",
+      "size": 25481,
+      "sha256": "61228595ab2c2cd555af9b23698433fcdb8add4f55084c8388a4e1a29d918caf",
       "parts": 1
     },
     {
@@ -322,9 +329,10 @@
       "parts": 1
     }
   ],
-  "sourceBytes": 150872844,
-  "stagedFiles": 49,
-  "stagedBytes": 150872844,
-  "routes": 52,
-  "largeFiles": 2
+  "sourceBytes": 151325872,
+  "stagedFiles": 50,
+  "stagedBytes": 151325872,
+  "routes": 53,
+  "largeFiles": 2,
+  "sourceCommit": "5e7eb6af46a24d1a2816497c4ce60d1ab27b8714"
 }

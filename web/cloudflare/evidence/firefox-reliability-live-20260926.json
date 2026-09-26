@@ -1,0 +1,162 @@
+{
+  "checkedAt": "2026-09-26T11:55:55.833Z",
+  "sourceCommit": "5e7eb6af46a24d1a2816497c4ce60d1ab27b8714",
+  "origins": [
+    {
+      "origin": "https://linuxonweb.testcatty.workers.dev",
+      "assets": [
+        {
+          "path": "/linux/initramfs-firefox.cpio.gz",
+          "status": 200,
+          "bytes": 88185028,
+          "sha256": "d48f8881d885814eb5614683bf4a6ed78313d1439ee4c3b6c87bb3fc4457d332",
+          "headers": {
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin"
+          },
+          "elapsedMs": 9214
+        },
+        {
+          "path": "/linux/initramfs.cpio",
+          "status": 200,
+          "bytes": 40494672,
+          "sha256": "765a1a162d827ecc2ebcba605d830f8af4ace5019b4acf29df4cdb222e1a4e34",
+          "headers": {
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin"
+          },
+          "elapsedMs": 7419
+        }
+      ],
+      "isolation": {
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-resource-policy": "same-origin"
+      },
+      "dns": {
+        "status": 200,
+        "addresses": [
+          "23.32.152.103",
+          "23.32.152.109",
+          "23.32.152.113",
+          "23.32.152.111",
+          "23.32.152.107",
+          "23.32.152.115",
+          "23.32.152.106",
+          "23.32.152.110",
+          "23.32.152.102"
+        ]
+      },
+      "tcp": [
+        {
+          "host": "www.bing.com",
+          "port": 80,
+          "secure": false,
+          "status": "HTTP/1.1 200 OK"
+        },
+        {
+          "host": "www.google.com",
+          "port": 443,
+          "secure": true,
+          "authorized": true,
+          "status": "HTTP/1.1 200 OK"
+        }
+      ]
+    },
+    {
+      "origin": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+      "assets": [
+        {
+          "path": "/linux/initramfs-firefox.cpio.gz",
+          "status": 200,
+          "bytes": 88185028,
+          "sha256": "d48f8881d885814eb5614683bf4a6ed78313d1439ee4c3b6c87bb3fc4457d332",
+          "headers": {
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin"
+          },
+          "elapsedMs": 11885
+        },
+        {
+          "path": "/linux/initramfs.cpio",
+          "status": 200,
+          "bytes": 40494672,
+          "sha256": "765a1a162d827ecc2ebcba605d830f8af4ace5019b4acf29df4cdb222e1a4e34",
+          "headers": {
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-embedder-policy": "require-corp",
+            "cross-origin-resource-policy": "same-origin"
+          },
+          "elapsedMs": 6363
+        }
+      ],
+      "isolation": {
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-resource-policy": "same-origin"
+      },
+      "dns": {
+        "status": 200,
+        "addresses": [
+          "23.32.152.105",
+          "23.32.152.110",
+          "23.32.152.109",
+          "23.32.152.102",
+          "23.32.152.107",
+          "23.32.152.103",
+          "23.32.152.111",
+          "23.32.152.106"
+        ]
+      },
+      "tcp": [
+        {
+          "host": "www.bing.com",
+          "port": 80,
+          "secure": false,
+          "status": "HTTP/1.1 200 OK"
+        },
+        {
+          "host": "www.google.com",
+          "port": 443,
+          "secure": true,
+          "authorized": true,
+          "status": "HTTP/1.1 302 Found"
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "browserSmoke": {
+    "url": "https://linuxonweb.exact-coot-7512.chatgpt.site/linux/index.html?firefox=1",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "guestMemoryGiB": 4,
+    "guestCPUs": 2,
+    "httpsBingRendered": true,
+    "firefoxDrag": {
+      "passed": true,
+      "screenOriginBefore": [
+        95,
+        198
+      ],
+      "screenOriginAfter": [
+        159,
+        227
+      ],
+      "screenshot": "firefox-public-drag-20260926.png"
+    },
+    "opaqueContextMenu": {
+      "passed": true,
+      "visuallyReviewed": true,
+      "screenshot": "firefox-public-context-menu-20260926.png"
+    },
+    "limitations": [
+      "Cold boot remains slow; this is a functional check, not a startup performance acceptance test."
+    ]
+  }
+}

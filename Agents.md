@@ -1320,3 +1320,19 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   frontend/archive/kernel hashes matched. Nine Worker tests passed with live
   DNS/TCP/certificate-verified TLS enabled. Asset upload and public verification
   are tracked by the new release.json deployment record after publication.
+- Published source commit `5e7eb6af46a24d1a2816497c4ce60d1ab27b8714` at
+  2026-09-26T11:55:22.142998Z. Worker version
+  `d29da783-134e-4ae4-b361-3393c18ba9c0`, deployment
+  `ffc5b34b-bed0-4550-92e6-e02ff76f0636`. Both Worker and public Site full
+  archive bodies match the accepted hashes/lengths; isolation, DNS, TCP HTTP
+  and certificate-verified TLS checks passed. Public Site remains
+  https://linuxonweb.exact-coot-7512.chatgpt.site/ using its unchanged proxy.
+  Exact metadata/evidence are in `web/cloudflare/release.json` and
+  `web/cloudflare/evidence/firefox-reliability-live-20260926.json`.
+- Final v5 saved-file regression also passed: 26-byte download reopened with
+  exact contents through Aurora Files (`media/v5-saved-bytes-pass.png`).
+- Final public UI verification passed: HTTPS Bing rendered; Firefox moved
+  from (95, 198) to (159, 227); opaque readable page context menu visually
+  confirmed. Durable PNGs and browserSmoke details are in the release
+  evidence directory. Cold startup remains slow. Existing server 4180 must
+  remain running; task-owned 4184 and QA Chrome 9382 may be stopped.

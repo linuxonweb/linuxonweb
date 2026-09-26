@@ -1,10 +1,10 @@
 # Native Linux browser payload provenance
 
-## Firefox reliability candidate (2026-09-26)
+## Firefox reliability release (2026-09-26)
 
-The current reliability candidate is frozen under
+The released reliability build is frozen under
 `/mnt/p6/project/linux/.cache/reliability-performance-20260926/final-v5/`.
-Its intended runtime payloads are:
+Its runtime payloads are:
 
 | asset | bytes | SHA-256 |
 | --- | ---: | --- |
@@ -27,8 +27,12 @@ source/object trees are preserved. See
 [`firefox-reliability-20260926.md`](../../docs/firefox-reliability-20260926.md)
 and [`static-media.md`](firefox-shims/static-media.md) for build commands,
 evidence and limits. Public deployment identity is recorded separately in
-[`release.json`](../cloudflare/release.json); a local candidate alone does not
-establish that the hosted runtime has been updated.
+[`release.json`](../cloudflare/release.json). The release was published at
+11:55:22 UTC from source commit `5e7eb6af46a24d1a2816497c4ce60d1ab27b8714`.
+Full archive downloads from both the Worker and public ChatGPT Site matched
+these hashes and lengths; isolation headers and live DNS/TCP/TLS checks passed.
+The Site continues using its existing proxy deployment and serves the new
+runtime without a proxy code change.
 
 ## Original staged payload
 

@@ -141,3 +141,17 @@ Evidence is under `/mnt/p6/project/linux/.cache/window-performance-20260926/`.
 `youtube-v5-console.jsonl` retain the counters and console record. Despite its
 filename, `youtube-v5-replay-ended.png` shows the subsequent autoplay video.
 The real graph measurement proves emitted audio, not physical speaker audibility.
+
+# Final public Site UI verification
+
+The deployed Site at `https://linuxonweb.exact-coot-7512.chatgpt.site/`
+rendered HTTPS Bing in a fresh 1280×720 session with 4 GiB guest memory and
+two guest CPUs. Firefox moved from screen origin (95, 198) to (159, 227).
+A subsequent right-click produced an opaque, readable Firefox page context
+menu, visually reviewed after capture. Durable screenshots are
+`web/cloudflare/evidence/firefox-public-drag-20260926.png` and
+`web/cloudflare/evidence/firefox-public-context-menu-20260926.png`.
+Earlier automated click attempts did not display the popup; those captures
+are not menu evidence. Only the cache test driver was adjusted to hold the
+click for 150 ms; no production input code changed during this final check.
+Cold boot remains slow, and no near-native performance claim is made.

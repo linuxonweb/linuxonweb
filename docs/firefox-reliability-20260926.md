@@ -49,6 +49,8 @@ an exact byte match, rather than merely an existing empty file.
 The signed AMO uBlock Origin 1.75.0 package completed Firefox's normal install
 flow and displayed its added confirmation; extension-signature checks remain
 enabled. This verifies installation, not every extension API.
+After the mmap correction, the final build again downloaded and reopened the
+26-byte fixture with an exact match (`v5-saved-bytes-pass.png`).
 
 The final mmap-aligned Firefox, with audio IPC still enabled, played the
 three-second VP8/Opus fixture twice to `ended` at 3.01 seconds. Both runs
@@ -89,3 +91,27 @@ The filesystem remains a RAM initramfs: files, profiles and installed extensions
 are session state and do not survive restarting the guest. H.264/AAC and
 microphone capture are not added. No certificate or extension-signature checks
 are disabled.
+
+## Published release
+
+Source commit: `5e7eb6af46a24d1a2816497c4ce60d1ab27b8714`.
+Published at 2026-09-26 11:55:22 UTC to the existing
+[public ChatGPT Site](https://linuxonweb.exact-coot-7512.chatgpt.site/)
+through its Cloudflare runtime. Worker version
+`d29da783-134e-4ae4-b361-3393c18ba9c0`, deployment
+`ffc5b34b-bed0-4550-92e6-e02ff76f0636`.
+
+Full Firefox and plain archive downloads from both public origins matched the
+accepted hashes and Content-Length. Isolation headers, live DNS, raw TCP HTTP
+and certificate-verified TLS passed on both. The existing Site proxy and its
+public access configuration are unchanged. Exact source hashes and deployment
+metadata are in `web/cloudflare/release.json`; public check results are in
+`web/cloudflare/evidence/firefox-reliability-live-20260926.json`.
+
+A fresh public Site session also rendered HTTPS Bing, moved Firefox from
+screen origin (95, 198) to (159, 227), and displayed an opaque, readable
+Firefox context menu. Screenshots are retained in
+`web/cloudflare/evidence/firefox-public-drag-20260926.png` and
+`web/cloudflare/evidence/firefox-public-context-menu-20260926.png`.
+Cold startup remains slow; this functional check does not establish a startup
+performance improvement.
