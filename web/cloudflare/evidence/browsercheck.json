@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-26",
+  "url": "https://linuxonweb.testcatty.workers.dev/",
+  "browser": "Chromium 150.0.7871.114",
+  "isolatedProfile": true,
+  "guest": {
+    "memoryMiB": 2048,
+    "cpus": 2,
+    "display": "1280x720"
+  },
+  "crossOriginIsolated": true,
+  "firefox": {
+    "url": "https://www.bing.com/",
+    "renderedPage": true,
+    "screenshot": "worker-firefox-bing.png"
+  },
+  "productionNetwork": {
+    "bingHttp80": 200,
+    "bingHttps443": 200,
+    "tlsCertificateVerified": true,
+    "crossChunkRangeMatches": true
+  },
+  "archive": {
+    "bytes": 87821007,
+    "sha256": "e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25",
+    "completeDownload": true
+  },
+  "localTests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "buildDryRun": true,
+  "environmentNote": "Host /tmp tmpfs was full; QA Chromium used disk-backed TMPDIR, profile and cache. Deployed guest default remains 4096 MiB.",
+  "sites": {
+    "url": "https://linuxonweb.exact-coot-7512.chatgpt.site/",
+    "guest": {
+      "memoryMiB": 4096,
+      "cpus": 2,
+      "display": "1280x720",
+      "settings": "deployed defaults, fresh profile"
+    },
+    "crossOriginIsolated": true,
+    "bingRendered": true,
+    "bingScreenshot": "sites-firefox-bing.png",
+    "googleRenderedAfterKeyboardNavigation": true,
+    "googleScreenshot": "sites-firefox-google-keyboard.png",
+    "keyboard": {
+      "buttonVisible": true,
+      "nativeTextareaFocused": true,
+      "inputmode": "text",
+      "mobileViewport": {
+        "width": 430,
+        "height": 932
+      },
+      "method": "Real pointer clicks on controls and CDP Input.insertText into the focused native textarea; no direct guest callback calls",
+      "initialTypedTarget": "Bing search field",
+      "typedText": "https://www.google.com",
+      "followupTypedTarget": "Firefox address bar after keyboard panel Ctrl + native l (Ctrl+L)",
+      "enterButtonSubmitted": true,
+      "typedAddressScreenshot": "sites-keyboard-google-url.png",
+      "mobileScreenshot": "sites-mobile-keyboard.png",
+      "physicalOsKeyboardObserved": false,
+      "physicalOsKeyboardLimitation": "Headless Chromium cannot show a physical Android/iOS keyboard popup."
+    }
+  }
+}

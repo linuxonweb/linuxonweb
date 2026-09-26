@@ -13,6 +13,7 @@ import {
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
 import { createLogViewer } from "./log-viewer.mjs";
+import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -26,6 +27,12 @@ function proxyBaseUrl() {
 const status = document.getElementById("status");
 const launchButtons = [...document.querySelectorAll(".launch")];
 const canvas = document.getElementById("fb");
+const mobileKeyboard = createMobileKeyboard({
+  toggle: document.getElementById("keyboard-toggle"),
+  panel: document.getElementById("mobile-keyboard"),
+  input: document.getElementById("mobile-keyboard-input"),
+  canvas,
+});
 export const guestLogs = createLogViewer({
   toggle: document.getElementById("logs-toggle"),
   parent: document.querySelector(".workspace"),
@@ -458,7 +465,7 @@ async function boot(mode) {
     queuePointer(x, y);
   });
   onCanvas("pointerdown", (ev) => {
-    canvas.focus();
+    if (!mobileKeyboard.focusDisplay()) canvas.focus();
     try {
       canvas.setPointerCapture(ev.pointerId);
     } catch {
@@ -557,6 +564,7 @@ async function boot(mode) {
     if (bootClosed) return;
     bootClosed = true;
     inputEvents.abort();
+    mobileKeyboard.setKeyHandler(null);
     cancelGuestGesture();
     cancelGuestGesture = () => {};
     attached.attachment.close();
@@ -595,6 +603,7 @@ async function boot(mode) {
       framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32 },
     });
     activeMachine = machine;
+    mobileKeyboard.setKeyHandler((code, down) => pointer.key(code, down));
     void machine.closed
       .finally(cleanupBoot)
       .catch(() => {});

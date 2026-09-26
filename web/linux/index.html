@@ -130,6 +130,14 @@
       .action.primary:hover { background: var(--accent-strong); }
       #display-pan[aria-pressed="true"] { border-color: var(--accent); background: #15312d; color: var(--accent); }
       .action:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
+      #keyboard-toggle[aria-expanded="true"], .keyboard-key[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: #15312d; }
+      .mobile-keyboard { position: relative; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
+      .mobile-keyboard[hidden] { display: none; }
+      .mobile-keyboard p { flex: 1 1 220px; margin: 0; color: var(--muted); font-size: 0.82rem; }
+      .keyboard-key { min-width: 44px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); background: #091413; }
+      /* A real, focusable edit control opens mobile keyboards. It stays inside
+         the visible panel; entered text is sent directly to the guest. */
+      #mobile-keyboard-input { position: absolute; top: 1px; left: 1px; width: 2px; height: 2px; min-width: 0; padding: 0; border: 0; opacity: 0.01; font-size: 16px; resize: none; }
       #status {
         margin-left: auto;
         color: var(--muted);
@@ -214,6 +222,9 @@
         .action { flex: 1 1 calc(50% - 10px); }
         #terminal { height: 270px; }
       }
+      @media (max-width: 600px) {
+        .mobile-keyboard p { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      }
     </style>
   </head>
   <body>
@@ -277,9 +288,20 @@
         <button class="action launch" id="start-x" data-mode="startx" type="button">Start X</button>
         <button class="action launch" id="start-firefox" data-mode="firefox" type="button">Start Firefox</button>
         <button class="action" id="display-pan" type="button" aria-pressed="false" title="Scroll the display with touch or a trackpad. Turn off to control the guest.">Pan display</button>
+        <button class="action" id="keyboard-toggle" type="button" aria-expanded="false" aria-controls="mobile-keyboard" disabled>Keyboard</button>
         <button class="action" id="logs-toggle" type="button" aria-expanded="false" aria-controls="guest-logs">Show logs</button>
         <span id="status" role="status" aria-live="polite">idle</span>
       </div>
+
+      <section id="mobile-keyboard" class="mobile-keyboard" aria-label="Linux keyboard controls" hidden>
+        <p>Tap a text field in Linux, then type with your keyboard. Ctrl and Alt apply to the next key.</p>
+        <textarea id="mobile-keyboard-input" aria-label="Type into Linux" inputmode="text" enterkeyhint="enter" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows="1"></textarea>
+        <button class="keyboard-key" type="button" data-key="Escape">Esc</button>
+        <button class="keyboard-key" type="button" data-key="Tab">Tab</button>
+        <button class="keyboard-key" type="button" data-modifier="Control" aria-pressed="false">Ctrl</button>
+        <button class="keyboard-key" type="button" data-modifier="Alt" aria-pressed="false">Alt</button>
+        <button class="keyboard-key" type="button" data-key="Enter">Enter</button>
+      </section>
 
       <div class="workspace">
         <div class="stage">

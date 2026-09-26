@@ -1,0 +1,7 @@
+node_modules/
+public/
+generated/
+.stage-tmp/
+.wrangler/
+dist/
+*.log

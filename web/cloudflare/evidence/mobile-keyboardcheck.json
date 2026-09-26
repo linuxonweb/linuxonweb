@@ -1,0 +1,27 @@
+{
+  "focus": {
+    "active": "mobile-keyboard-input",
+    "panelVisible": true,
+    "expanded": "true",
+    "inputmode": "text",
+    "disabled": false
+  },
+  "after": {
+    "active": "mobile-keyboard-input",
+    "inputText": "ahttps://www.google.com",
+    "viewport": {
+      "width": 430,
+      "height": 932
+    }
+  },
+  "physicalOsKeyboardObserved": false,
+  "method": "CDP Input.insertText into native textarea; no direct guest callbacks",
+  "initialGuestTypedTarget": "Bing search field",
+  "followup": {
+    "shortcut": "Keyboard panel Ctrl + native textarea l (Ctrl+L)",
+    "typedTarget": "Firefox address bar",
+    "typedText": "https://www.google.com",
+    "submittedUsing": "Keyboard panel Enter",
+    "googlePageRendered": true
+  }
+}

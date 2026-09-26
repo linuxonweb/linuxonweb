@@ -1,0 +1,21 @@
+HEAD 200 87821007 isolation passed
+DNS { addresses: [ '23.32.152.106', '23.32.152.114', '23.32.152.108' ] }
+TCP {
+  port: 80,
+  secure: false,
+  authorized: undefined,
+  bytes: 4096,
+  status: 'HTTP/1.1 200 OK'
+}
+TCP {
+  port: 443,
+  secure: true,
+  authorized: true,
+  bytes: 2860,
+  status: 'HTTP/1.1 200 OK'
+}
+RANGE crossing chunk boundary passed
+FULL ARCHIVE {
+  count: 87821007,
+  sha256: 'e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25'
+}

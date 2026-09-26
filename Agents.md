@@ -1209,3 +1209,59 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   cross-filesystem moves, universal portal integration or verified save-byte claim.
 
 - Fresh live `http://127.0.0.1:4180/linux/index.html?firefox=1` boot verified `readme.txt` (29 bytes) and its actual contents through the Aurora picker, with no log viewer or xterm DOM; evidence: `/mnt/p6/project/linux/.cache/aurora-picker-20260926/live-final-single-contents.png`. Both served archive hashes matched the deployed hashes above.
+
+### 2026-09-26 Cloudflare / public Sites deployment and mobile keyboard
+
+- Live Worker: https://linuxonweb.testcatty.workers.dev/ . Current Worker version
+  `b3ce1769-8bdf-431a-bea8-9481998b3a0a`, deployment
+  `779763c8-6824-4e3d-9d0e-0867b78793d0`, published 09:41:04 UTC.
+- Public Sites: https://linuxonweb.exact-coot-7512.chatgpt.site .
+  Project `appgprj_6ab78cc88a948191a1abaabd04b81fe0`; final deployment
+  `appgdep_6ab7933f2fbc8191ad12e9641af3a594` succeeded 09:41:24 UTC.
+  User explicitly requested public access; access revision 2 is public.
+  `web/sites` is its own clean Git repository, source commit
+  `7ee1f3a33f6f7f4ce2bc7853d1828ae65968973e`. Its .openai/hosting.json
+  persists the project ID. Reuse this project and preserve public access.
+- `web/cloudflare` provides the Worker, pinned Wrangler, explicit runtime
+  asset staging, direct-upload helper, tests and release.json. There are 44
+  source files, 52 routes and 49 uploaded assets. Files larger than 20 MiB
+  are stored in chunks and streamed at their original paths. No R2 required.
+  /dns uses DoH; /tcp is the existing binary WebSocket-to-raw-TCP protocol.
+  COOP/COEP/CORP enable shared Wasm memory. Cloudflare's restrictions on
+  private destinations, port 25 and Cloudflare-IP TCP destinations remain.
+- Full archive streaming MUST use native body.pipeTo rather than a JS loop
+  over every buffer. Production telemetry caught the original loop exceeding
+  CPU limits (1,628 ms, truncated response); the native pipeline used 2 ms
+  and streamed all 87,821,007 Firefox bytes with the correct SHA-256.
+- Deployed guest archives are the frozen snapshot from the beginning of this
+  task: Firefox `e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25`,
+  plain `beea582d106e6454397611b8efaba1b89417269129303a981bae69978e8e5bb1`.
+  The Aurora picker archive release completed concurrently after staging and
+  is NOT included in these hosted archives. The keyboard frontend was updated
+  separately while preserving these verified bytes. Do not confuse mutable
+  local archive contents with the frozen deployment; release.json records
+  every deployed source hash. A future full stage/build includes current
+  local archives and needs a new release and guest verification.
+- Added top-toolbar Keyboard / Hide keyboard and a native focusable textarea
+  in `web/linux/mobile-keyboard.mjs`. Input/composition changes drive the
+  existing evdev adapter; Backspace/Enter and Esc/Tab/one-shot Ctrl/Alt are
+  supported. Focus is synchronous inside the tap for mobile browsers.
+  Composition previews are deferred and final input deduplicated. Guest
+  shutdown releases modifiers and disables input. Phone controls use one row.
+- Verification: nine Worker integration/network tests passed; complete staged
+  asset hashes, HEAD/ETags/ranges, origin/private destination rejection, live
+  DNS, Bing HTTP and certificate-verified TLS passed. Keyboard unit tests and
+  real Chromium desktop/phone focus, text, IME, deletion, modifier and cleanup
+  checks passed. Actual production Firefox rendered HTTPS Bing on the Worker
+  (2 GiB) and public Sites (unchanged default 4 GiB), both 1280x720 / 2 CPU.
+  Native textarea input at 430px mobile emulation visibly entered text into
+  guest Firefox's Bing search field. The Keyboard panel's Ctrl+L, native text
+  input, and Enter then navigated guest Firefox to a fully rendered HTTPS
+  Google page. No physical phone OS keyboard was observed.
+  Reviewable evidence is under `web/cloudflare/evidence/`.
+- Test-host /tmp tmpfs was full, causing misleading Canary/GPU/renderer
+  failures. Successful fresh Chromium 150 tests used disk-backed TMPDIR,
+  profile and cache under /mnt/p6/project/linux/.cache/cloudflare-deploy-20260926.
+  Only task-owned profiles were cleaned; existing local dev service and user
+  browsers were preserved. Deployment/mobile-input quality: 97/100; no long
+  soak or physical iOS/Android keyboard validation.

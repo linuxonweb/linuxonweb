@@ -1,0 +1,46 @@
+{
+  "events": [
+    {
+      "at": "2026-09-26T09:27:32.880Z",
+      "outcome": "exceededCpu",
+      "version": "85009a3f-e54d-4832-8593-ff0ed6be8914",
+      "cpuTime": 1628,
+      "wallTime": 10538,
+      "exceptions": [
+        {
+          "name": "Error",
+          "message": "Worker exceeded CPU time limit."
+        },
+        {
+          "name": "Error",
+          "message": "Worker exceeded CPU time limit."
+        },
+        {
+          "name": "Error",
+          "message": "Worker exceeded CPU time limit."
+        }
+      ]
+    },
+    {
+      "at": "2026-09-26T09:28:57.087Z",
+      "outcome": "ok",
+      "version": "ee970f83-957b-47c2-af4e-b32af7f28090",
+      "cpuTime": 2,
+      "wallTime": 14564,
+      "status": 200,
+      "exceptions": []
+    }
+  ],
+  "oldClient": {
+    "outcome": "terminated",
+    "receivedBytes": 67022528,
+    "expectedBytes": 87821007,
+    "milliseconds": 11715
+  },
+  "nativeClient": {
+    "outcome": "complete",
+    "size": 87821007,
+    "milliseconds": 16343,
+    "sha256": "e726ede312e1164a2081f4294374774e02ac4574126ea1602889f442c477ca25"
+  }
+}
