@@ -5,6 +5,31 @@ The current user's instructions take precedence. Preserve all source clones,
 known-good build trees, and unrelated untracked files. Never stage the whole
 workspace indiscriminately.
 
+## Mandatory build storage policy
+
+User instruction: put build work under `/mnt/p6/build` or another persistent,
+disk-backed filesystem. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
+filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
+compiler scratch space, disassembly dumps, build logs, or test artifacts.
+
+- Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
+  subdirectory for tool scratch files. Another disk-backed project/cache
+  directory is acceptable; verify its filesystem and free capacity first.
+- Set and export `TMPDIR` to that disk-backed scratch directory before every
+  build, packaging or artifact-producing test command so subprocesses and
+  `mktemp` inherit it. Set tool-specific temporary/build directories as needed;
+  do not assume every tool honors `TMPDIR`.
+- Keep large command output and debug dumps in files under the same disk-backed
+  task directory. Do not let default temporary paths fill a memory filesystem.
+- Apply this policy to all delegated agents. Do not change the system-wide
+  temporary directory or move unrelated runtime sockets, protected system
+  temporary files, or active user browser profiles.
+
+Forty-five earlier Firefox build/debug artifacts were relocated from `/tmp` to
+`/mnt/p6/build/linuxonweb-tmp-20260926/`, freeing about 17.35 GB. The migration
+manifest there records the moves and metadata checks. Existing `/build`
+contents must remain unchanged.
+
 ## Active objective
 
 Improve Firefox/Linux performance, persist user home independently of system
