@@ -19,6 +19,9 @@ temporary directory is not an exception.
 - Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
   subdirectory for tool scratch files. Another disk-backed project/cache
   directory is acceptable; verify its filesystem and free capacity first.
+- Check the actual filesystem backing the resolved path, including symlink
+  targets; a directory named `build` is not sufficient if it resides on tmpfs
+  or ramfs. Use `/mnt/p6/build`, not `/build`, as the default build root.
 - Set and export `TMPDIR`, `TMP`, and `TEMP` to that disk-backed scratch
   directory before every build, packaging or artifact-producing test command
   so subprocesses and `mktemp` inherit it. Set tool-specific temporary, build,
@@ -217,6 +220,18 @@ driver enables permission checking internally and rejects the explicit
   Dynamic loading, external layers, generic unknown-function trampolines, shaders,
   general GPU buffers, GL and Firefox integration remain absent. The four current
   guest runs use SwiftShader, actual 1 GiB/two CPUs and visible isolated pages.
+  The subsequent host translator gate now compiles archived Naga 0.20.0 to a
+  751,237-byte standalone browser Wasm module, SHA-256
+  `e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea`.
+  Build-run4 and its verified dependency closure are preserved under
+  `/mnt/p6/build/guest-vulkan-compute-20260926/`; earlier metadata/helper failures
+  are retained. Real translation passes 33 Node checks. A dedicated-worker browser
+  gate passes 167 checks, including two supplied SPIR-V formula programs producing
+  128 exact GPU output words and eight preserved sentinel words on SwiftShader.
+  One device and four buffers are released. A canceled Fetch event is retained
+  without an established cause; no Runtime exceptions or QA errors occurred.
+  This is host translation/compute evidence, not guest Vulkan dispatch yet.
+  See `docs/guest-vulkan-spirv-translator-20260926.md` and its compact evidence.
   Sites version 6 is unchanged; the prototype is not deployed. No OpenGL,
   WebGL fallback, decoder, native JIT or physical GPU claim follows. Overall goal
   remains below 95/100 (approximately 80); this is progress, not goal completion.
@@ -330,6 +345,15 @@ command/start identity. Profiles, builds and evidence remain under
 `/mnt/p6/build/guest-vulkan-loader-20260926/`, including `qa-summary.json` and
 `cleanup.json`. No task service remains active.
 
+The compute continuation currently holds its isolated services for the next
+integration gate: sole serving owner `cmd_compute_serving`, adapter PID `110736`
+(session `73177`, startTicks `184487676`) and Chromium PID `111111` (session
+`13393`, startTicks `184488666`) on ports `4182`/`9396`. The translator QA tab has
+closed; `translator/candidate` is still the verified task-owned link. See
+`/mnt/p6/build/guest-vulkan-compute-20260926/service-ownership.json` before any
+action. Revalidate live handles/identity; do not infer service exit from a timeout.
+User PID `1591443` remains preserved. Cleanup of these services is still pending.
+
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
 project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
 accepted static runtime through Sites assets; the unchanged Cloudflare worker
@@ -357,8 +381,8 @@ The overall goal remains active and is assessed at about 80/100, not the request
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
 native Firefox JIT, a generally usable Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;
-that answer is pending. At the start of the loader continuation, goal
-accounting reported 6,141,978 tokens with no token budget; this does not reveal weekly quota or
+that answer is pending. At the start of the compute continuation, goal
+accounting reported 6,591,651 tokens with no token budget; this does not reveal weekly quota or
 establish whether the user's 15% allowance has been reached. Resolve this
 constraint before another large backend port; do not invent a percentage.
 
@@ -397,14 +421,18 @@ Bounded next implementation gates, subject to that allowance:
   extension trampolines are deliberately disabled in this static profile.
   The partial COMPUTE|TRANSFER profile still lacks dispatch and conformance;
   it is not a generally usable Vulkan or Zink device.
-  Next shader gate: audit the archived Naga 0.20 SPIR-V-input/WGSL-output dependency
-  closure, then implement real shader translation, storage GPU buffers, compute
+  The archived Naga 0.20 SPIR-V-input/WGSL-output dependency closure and host
+  translator now build and pass actual worker/WebGPU formula execution. Preserve
+  `translator/provenance/` and task `translator-build-run4`; the original offline
+  resolver selects from the archived vendor tree, while the recorded Cargo.lock
+  and per-file source-lock pin the accepted closure. Do not claim arbitrary
+  cross-environment bit reproduction. Next implement guest storage GPU buffers, compute
   pipeline/descriptor binding, dispatch and buffer readback. A separate public
   Vulkan client should submit two real SPIR-V programs and verify both outputs for
   64 integers plus sentinels, rejection and cleanup. Do not substitute recognition
   of fixed shader bytes for translation. The integration report records the
-  archived wgpu revision and missing dependencies; no translator build has run.
-  The earlier Dawn ABI gate remains compile-only; native Dawn, the translator,
+  archived wgpu revision and dependency provenance; no guest compute dispatch has run.
+  The earlier Dawn ABI gate remains compile-only; native Dawn,
   general system discovery, shaders, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
@@ -413,5 +441,5 @@ All continuation work must retain the current delegated workflow, fresh sessions
 for new agents, scoped Git staging and sole serving-agent ownership. The serving
 owner may continue its assigned test task across follow-up instructions.
 Earlier work reused existing sessions after fresh-session creation hit the thread
-limit. There are no active task-owned services to reuse; preserve the user's
-pre-existing server.
+limit. Revalidate the compute task's held services above before reuse; preserve
+the user's pre-existing server.

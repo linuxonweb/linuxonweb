@@ -1,0 +1,21 @@
+[package]
+name = "guest-spirv-translator"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+naga = { path = "vendor/naga", default-features = false, features = ["spv-in", "wgsl-out"] }
+
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
+
+[workspace]
+exclude = ["vendor/naga"]

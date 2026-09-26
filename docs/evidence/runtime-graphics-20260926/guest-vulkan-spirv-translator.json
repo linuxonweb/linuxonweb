@@ -1,0 +1,62 @@
+{
+  "pass": true,
+  "testOnly": true,
+  "scope": "Bounded real browser-worker SPIR-V translation and host WebGPU compute; no Linux guest/public Vulkan compute execution",
+  "taskRoot": "/mnt/p6/build/guest-vulkan-compute-20260926",
+  "translator": {
+    "artifact": "translator-build-run4/translator.wasm",
+    "bytes": 751237,
+    "sha256": "e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea",
+    "nagaVersion": "0.20.0",
+    "wgpuRevision": "c7458638d14921c7562e4197ddeefa17be413587",
+    "sourceLock": "translator-build-run4/source-lock.json",
+    "sourceLockSha256": "5ccf7efcd90cacfefc6fda26986d4d2e9d48f774ba31ad26a4d91c4a925727d9",
+    "cargoLockSha256": "b1bf844ec13b2898eed1fa33686ca22dcd382de2cbb19373d040396ecc7b7b61",
+    "imports": [],
+    "initialMemoryPages": 17,
+    "maximumMemoryPages": 2048,
+    "stackBytes": 1048576,
+    "sourceProvenance": "web/linux/tests/guest-vulkan-compute/translator/provenance"
+  },
+  "dependenciesFetched": [
+    {"crate": "petgraph-0.6.5", "bytes": 710970, "sha256": "b4c5cc86750666a3ed20bdaf5ca2a0344f9c67674cae0515bec2da16fbaa47db"},
+    {"crate": "fixedbitset-0.4.2", "bytes": 15954, "sha256": "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"}
+  ],
+  "node": {
+    "pass": true,
+    "assertions": 33,
+    "report": "translator-test-run1/check.json",
+    "reportSha256": "32b27a2982bb4d6ef7d0af45b59f158f0bed6e96a62583222b5f5a27d53aa0de",
+    "scope": "Actual Wasm instantiation, two translations, malformed/profile rejection, ABI ownership and recovery; no GPU execution"
+  },
+  "browser": {
+    "pass": true,
+    "assertions": 167,
+    "individualOutputAndSentinelComparisons": 136,
+    "report": "translator-browser-run1/result.json",
+    "reportSha256": "4a8e9322889329df5be03c63e5d13246c773b7a914f666678fb7875b06c6169e",
+    "screenshot": "translator-browser-run1/page.png",
+    "manifestSha256": "df4a7374aa509ff2beeca0bb6ae434b53ffb865a28bb2ef3b16478f9bfa5a86a",
+    "runnerSha256": "c8eb2ae7f394e96ea0a87acecccb003c9f7dd80649fb01870337a08f471c17da",
+    "isolated": true,
+    "visibility": "visible",
+    "adapter": {"vendor": "google", "architecture": "swiftshader", "description": "", "isFallbackAdapter": true},
+    "ownership": {"devicesCreated": 1, "devicesDestroyed": 1, "buffersCreated": 4, "buffersDestroyed": 4, "liveDevices": 0, "liveBuffers": 0},
+    "rejections": ["artifact hash mismatch", "zero-length SPIR-V instruction", "closed translator"],
+    "qaErrors": [],
+    "runtimeExceptions": 0,
+    "retainedNetworkEvent": {"errorText": "net::ERR_ABORTED", "type": "Fetch", "canceled": true, "urlRecorded": false, "cause": "unresolved"},
+    "independentWorkerOwnershipAudit": false,
+    "serviceCleanup": "pending; owned browser/server intentionally retained for next guest integration gate"
+  },
+  "programs": [
+    {"formula": "x * 3 + 7", "inputIntegers": 64, "unchangedSentinels": 4, "spirvBytes": 1016,
+     "spirvSha256": "a8f991d25279df875d1f51d59065a58d3aa3c076c4f03955fb6c735bdaba1e8b",
+     "wgslSha256": "75e7a696224c5de9751f251d987a4a81b394102172a0b62bd267ecf6065c2027", "entryPoint": "main", "workgroupSize": [64,1,1]},
+    {"formula": "((x ^ 85) + 17) * 5", "inputIntegers": 64, "unchangedSentinels": 4, "spirvBytes": 1052,
+     "spirvSha256": "13dba00b9bd08e25bb027815e9636db74f2062f9aff182f77a6ffe9d707bc7a6",
+     "wgslSha256": "ca385268cf955fa29d026d7db456643cace20ab387725cff9c854eb80552eeea", "entryPoint": "main", "workgroupSize": [64,1,1]}
+  ],
+  "profile": {"maxSpirvBytes": 65536, "maxIdBound": 16384, "maxWgslBytes": 262144, "storageBindings": [{"set": 0, "binding": 0, "access": "read_write"}], "specializationConstants": false},
+  "limitations": ["not guest Vulkan compute", "not Vulkan conformance", "no graphics/Zink/OpenGL", "no Firefox GPU integration", "no native Firefox JIT", "no hardware video decoding", "SwiftShader software execution only", "trap/timeout recovery implemented but not forced in this gate", "offline helper re-resolves before freezing; provenance records accepted closure", "runtime/Sites unchanged"]
+}
