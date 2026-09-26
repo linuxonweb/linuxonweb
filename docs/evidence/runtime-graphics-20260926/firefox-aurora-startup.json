@@ -1,0 +1,692 @@
+{
+  "schema": 1,
+  "scope": "Local Firefox readiness startup, functional, warm-cache and update acceptance",
+  "passLocalAcceptance": true,
+  "deployed": false,
+  "observationLimits": [
+    "One matched fresh-profile pair; not machine-cold or a distribution",
+    "Launch log observation is not first paint",
+    "Early screenshots show desktop before Firefox; later window and fixture reviewed separately",
+    "File preservation covers marker, fixture, download, existing user.js and profile marker; not SQLite or history",
+    "No native JIT, guest Vulkan/OpenGL, hardware decoder or physical GPU claim"
+  ],
+  "rawInputs": {
+    "baseline": {
+      "path": "/mnt/p6/build/firefox-ready-20260926/baseline/candidate-update-warm-success.json",
+      "sha256": "53fa7da28b1b7514d93fd3519f6a21c055917246aac70cd8e5019bd956c9e385"
+    },
+    "candidate": {
+      "path": "/mnt/p6/build/firefox-ready-20260926/candidate-run/candidate-final-gates-success.json",
+      "sha256": "4973cc804c1026c24d187116d78344e86615d442ac9ed617e5d5623c28f3a72b"
+    }
+  },
+  "package": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+    "helperSha256": "2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3",
+    "archiveSha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550",
+    "bytes": 88406608,
+    "uncompressedBytes": 279774284,
+    "compression": {
+      "format": "gzip",
+      "level": 9,
+      "mtime": 0,
+      "filename": ""
+    },
+    "sourceManifestSha256": "da7e000128272a6cb9fe8931a8603c966be4148489663a93c6536b5c42bde21e",
+    "manifestSha256": "10242a22c9ee3645e3d3d9769f21073e510d355589616d3fca38d082f85de730",
+    "sourceVersion": "fa0217b54d99",
+    "version": "ff1ea9fc6f62",
+    "initBeforeSha256": "7364753644286b8c5670c538f3301e709f643564dbdf4cd7642476eba560e7b6",
+    "initAfterSha256": "eb9059eac95ba115924230c63a50021606de110e904b889c56f883fd9baa6e94",
+    "unchangedOriginalRecords": 11468,
+    "modified": [
+      "init"
+    ],
+    "added": [
+      "bin/wait-for-aurora"
+    ],
+    "originalOrderPreserved": true,
+    "tailPreserved": true,
+    "initOutsideSubstitutionPreserved": true,
+    "initMetadataExceptSizePreserved": true,
+    "helperMode": "100755",
+    "helperUid": 0,
+    "helperGid": 0,
+    "helperInvocationAccount": "admin",
+    "helperDisplay": ":0",
+    "fallbackSleepSeconds": 10,
+    "deadlineExitZeroSkipsFallback": true,
+    "unchangedManifestAssets": [
+      "kernel",
+      "plain"
+    ],
+    "changedManifestFields": [
+      "version",
+      "assets.firefox.bytes",
+      "assets.firefox.sha256"
+    ],
+    "source": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+    "helper": "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm",
+    "sourceManifest": "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json",
+    "output": "/mnt/p6/build/firefox-ready-20260926/candidate",
+    "scratch": "/mnt/p6/build/firefox-ready-20260926/tmp",
+    "filesystems": {
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-ready-20260926": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-ready-20260926/tmp": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/vmlinux.wasm": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs.cpio": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      }
+    },
+    "freeBytesBefore": 185756790784,
+    "releaseGatesPending": [
+      "shell-fallback-tests",
+      "actual-early-Firefox-usability",
+      "matched-startup-observations",
+      "warm-cache",
+      "update-home-preservation"
+    ]
+  },
+  "runs": {
+    "baseline": {
+      "browser": "Chrome/150.0.7871.114",
+      "observations": [
+        {
+          "label": "initial",
+          "elapsedMs": {
+            "kernel": 3176,
+            "mount": 5183,
+            "x": 6187,
+            "firefoxLaunch": 17259
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "fa0217b54d99"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [],
+          "imageRequestCount": 2,
+          "resourceImageCount": 2
+        },
+        {
+          "label": "warm",
+          "elapsedMs": {
+            "kernel": 3711,
+            "mount": 6755,
+            "x": 6755,
+            "firefoxLaunch": 17861
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "fa0217b54d99"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        },
+        {
+          "label": "update",
+          "elapsedMs": {
+            "kernel": 2298,
+            "mount": 5317,
+            "x": 5317,
+            "firefoxLaunch": 16426
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": false,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "fa0217b54d99"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        },
+        {
+          "label": "warm",
+          "elapsedMs": {
+            "kernel": 2581,
+            "mount": 5598,
+            "x": 5598,
+            "firefoxLaunch": 16675
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "fa0217b54d99"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3909504K/4194240K available (279232K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        },
+        {
+          "label": "update",
+          "elapsedMs": {
+            "kernel": 2803,
+            "mount": 5817,
+            "x": 5817,
+            "auroraReady": 7825,
+            "firefoxLaunch": 7825
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "ff1ea9fc6f62"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [
+            "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+            "[wm-ready] Aurora handshake ready after 499 ms"
+          ],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        },
+        {
+          "label": "warm",
+          "elapsedMs": {
+            "kernel": 2588,
+            "mount": 5610,
+            "x": 5610,
+            "auroraReady": 7626,
+            "firefoxLaunch": 7626
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "ff1ea9fc6f62"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [
+            "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+            "[wm-ready] Aurora handshake ready after 558 ms"
+          ],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        }
+      ],
+      "phases": [
+        {
+          "phase": "boot",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:35:56.015Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:36:33.807Z"
+        },
+        {
+          "phase": "navigate",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:37:48.832Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:39:01.842Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:39:44.823Z"
+        },
+        {
+          "phase": "collect",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:39:57.797Z"
+        },
+        {
+          "phase": "warm",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:40:30.002Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:41:31.907Z"
+        },
+        {
+          "phase": "update",
+          "pass": false,
+          "error": "Error: Foreground/renderer/isolation configuration mismatch",
+          "at": "2026-09-26T16:41:59.414Z"
+        },
+        {
+          "phase": "update",
+          "pass": false,
+          "error": "Error: Foreground/renderer/isolation configuration mismatch",
+          "at": "2026-09-26T16:46:31.598Z"
+        },
+        {
+          "phase": "warm",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:55:38.126Z"
+        },
+        {
+          "phase": "update",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:56:02.979Z"
+        },
+        {
+          "phase": "warm",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:56:27.342Z"
+        }
+      ],
+      "benchmark": {
+        "sha256": "9430a6edefd56e95b7361cc8a91dafd128102c5e9e9e6b74fc04ba39859a8756",
+        "done": true,
+        "pass": true,
+        "repetitions": 100,
+        "checksums": [
+          7998000,
+          67982,
+          748500,
+          19900,
+          1700
+        ]
+      },
+      "warmPreserved": true,
+      "updatePreserved": true,
+      "profileFiles": [
+        {
+          "path": "admin/.mozilla/firefox/http1-profile/user.js",
+          "sha256": "e0cacde8e0fd34318aa2d7756203a84b651f27ce6228ea11812fed6e280fa785"
+        },
+        {
+          "path": "admin/.mozilla/firefox/http1-profile/startup-ready-1790440526090.txt",
+          "sha256": "fa6a79ec5cdc71f5bbc38f58b515c0a59492d8244462220cf8c0035906ac401f"
+        }
+      ]
+    },
+    "candidate": {
+      "browser": "Chrome/150.0.7871.114",
+      "observations": [
+        {
+          "label": "initial",
+          "elapsedMs": {
+            "kernel": 3221,
+            "mount": 5231,
+            "x": 6236,
+            "auroraReady": 8248,
+            "firefoxLaunch": 8248
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "ff1ea9fc6f62"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [
+            "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+            "[wm-ready] Aurora handshake ready after 435 ms"
+          ],
+          "imageRequestCount": 2,
+          "resourceImageCount": 2
+        },
+        {
+          "label": "warm",
+          "elapsedMs": {
+            "kernel": 2368,
+            "mount": 5388,
+            "x": 6392,
+            "auroraReady": 8403,
+            "firefoxLaunch": 8403
+          },
+          "host": {
+            "visibility": "visible",
+            "focus": true,
+            "isolated": true,
+            "canvas": {
+              "width": 1280,
+              "height": 720
+            },
+            "backend": "canvas2d",
+            "actualBackend": "canvas2d",
+            "activeVersion": "ff1ea9fc6f62"
+          },
+          "configuration": [
+            "[host] boot mode=firefox, display=1280x720, cpus=2, ram=4 GB (maximum)",
+            "smp: Brought up 1 node, 2 CPUs",
+            "Memory: 3908672K/4194240K available (280064K reserved, 0K cma-reserved)"
+          ],
+          "readinessLines": [
+            "firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin",
+            "[wm-ready] Aurora handshake ready after 525 ms"
+          ],
+          "imageRequestCount": 0,
+          "resourceImageCount": 0
+        }
+      ],
+      "phases": [
+        {
+          "phase": "boot",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:57:45.138Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:58:04.723Z"
+        },
+        {
+          "phase": "navigate",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:58:30.314Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:59:23.073Z"
+        },
+        {
+          "phase": "actions",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:59:44.183Z"
+        },
+        {
+          "phase": "collect",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T16:59:53.997Z"
+        },
+        {
+          "phase": "warm",
+          "pass": true,
+          "observationCompleted": true,
+          "completedAt": "2026-09-26T17:00:16.767Z"
+        }
+      ],
+      "benchmark": {
+        "sha256": "e8bafb335769063d3724b269b211c19a19a539fe661e6f7fecce61bdb10aeb06",
+        "done": true,
+        "pass": true,
+        "repetitions": 100,
+        "checksums": [
+          7998000,
+          67982,
+          748500,
+          19900,
+          1700
+        ]
+      },
+      "warmPreserved": true,
+      "updatePreserved": false,
+      "profileFiles": [
+        {
+          "path": "admin/.mozilla/firefox/http1-profile/user.js",
+          "sha256": "e0cacde8e0fd34318aa2d7756203a84b651f27ce6228ea11812fed6e280fa785"
+        },
+        {
+          "path": "admin/.mozilla/firefox/http1-profile/startup-ready-1790441853492.txt",
+          "sha256": "45f3b3027988bd1774a0cf9413f1ceeb6338235987c2de2f504c4523d01eff73"
+        }
+      ]
+    }
+  },
+  "rootVisualReviews": {
+    "candidateEarly": "Aurora desktop only; no Firefox window",
+    "candidateFixture": "Actual Firefox rendered controlled local HTML fixture",
+    "updatedWarm": "Actual Firefox chrome and blank New Tab",
+    "candidateWarmLater": "Actual Firefox and Bing landing page; ancillary TLS request pending"
+  },
+  "retainedFailureEvidence": [
+    "baseline/firefox-acceptance-update-failed.json",
+    "baseline/firefox-acceptance-rollback-failed.json",
+    "baseline/focus-input-control.json",
+    "baseline/stopped-guest-evidence.json",
+    "baseline-recovery-warm.log"
+  ],
+  "recovery": "Explicit normal baseline reload passed warm-cache/configuration/file gates after terminal adapter exit143 and guest machine-worker failure. Missing-env attempt failed before browser attachment.",
+  "hostShellBranches": {
+    "passHostShellBranches": true,
+    "scope": "Host-shell branching only; guest helper deadline behavior was previously verified separately. No Firefox acceptance or startup-speed claim.",
+    "exactIfLogicAndQuotingPreserved": true,
+    "substitutions": [
+      "/bin/wait-for-aurora",
+      "/bin/su"
+    ],
+    "sleepIntercept": "PATH stub records calls without waiting",
+    "originalBlockSha256": "75c05f6a0088edc8c342a93941780ac38411f233de79ce7fcfb9b3db5d549390",
+    "testedBlockSha256": "7651e0db1f6c710524715631f14c23bf39eb5e0ba5ec12840a1927fed373a118",
+    "checks": [
+      {
+        "name": "absent-helper",
+        "passCheck": true,
+        "sleepCalls": [
+          "10"
+        ],
+        "suCalled": false,
+        "suStatus": null
+      },
+      {
+        "name": "non-executable-helper",
+        "passCheck": true,
+        "sleepCalls": [
+          "10"
+        ],
+        "suCalled": false,
+        "suStatus": null
+      },
+      {
+        "name": "su-status-2",
+        "passCheck": true,
+        "sleepCalls": [
+          "10"
+        ],
+        "suCalled": true,
+        "suStatus": 2
+      },
+      {
+        "name": "su-status-0",
+        "passCheck": true,
+        "sleepCalls": [],
+        "suCalled": true,
+        "suStatus": 0
+      }
+    ]
+  },
+  "promotion": {
+    "baselineVersion": "fa0217b54d99",
+    "baseline": {
+      "boot-manifest.json": {
+        "bytes": 662,
+        "sha256": "da7e000128272a6cb9fe8931a8603c966be4148489663a93c6536b5c42bde21e"
+      },
+      "initramfs-firefox.cpio.gz": {
+        "bytes": 88186382,
+        "sha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65"
+      },
+      "vmlinux.wasm": {
+        "bytes": 6281750,
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75"
+      },
+      "initramfs.cpio": {
+        "bytes": 40495556,
+        "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be"
+      }
+    },
+    "promotion": {
+      "initramfs-firefox.cpio.gz": {
+        "bytes": 88406608,
+        "sha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550"
+      },
+      "boot-manifest.json": {
+        "bytes": 662,
+        "sha256": "10242a22c9ee3645e3d3d9769f21073e510d355589616d3fca38d082f85de730"
+      }
+    },
+    "candidateVersion": "ff1ea9fc6f62",
+    "kernelPlainUnchanged": true
+  },
+  "staging": {
+    "schema": 1,
+    "status": "staged-only",
+    "oldInput": "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/sites-hybrid-input",
+    "snapshot": "/mnt/p6/build/firefox-ready-20260926/release-src/web/cloudflare",
+    "filesystem": {
+      "type": 61267,
+      "availableBytes": 184460345344
+    },
+    "changedRoutes": [
+      "/linux/boot-manifest.json",
+      "/linux/initramfs-firefox.cpio.gz"
+    ],
+    "oldParentCommit": "f24b914113dee9132471298e5e3a97b2e69b2ceb",
+    "oldRuntimeManifestSHA256": "9e836cba4a94d1ae19154e5f5a990e53a543552900e13e09d06feb9bdaa9190e",
+    "bootVersion": "ff1ea9fc6f62",
+    "assets": {
+      "kernel": {
+        "url": "./vmlinux.wasm",
+        "bytes": 6281750,
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "label": "Linux kernel"
+      },
+      "plain": {
+        "url": "./initramfs.cpio",
+        "bytes": 40495556,
+        "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "label": "Desktop system"
+      },
+      "firefox": {
+        "url": "./initramfs-firefox.cpio.gz",
+        "bytes": 88406608,
+        "sha256": "d929b7576238a733d62d41a7bb7d4d02e4dcaf58db20ee56130994e2971a3550",
+        "label": "Firefox system"
+      }
+    },
+    "routes": 58,
+    "sourceFiles": 50,
+    "stagedFiles": 55,
+    "stagedBytes": 151597129,
+    "inputManifestSHA256": "e884f7ce463341daa1506324fca768b59b84bc5597912b4dc20b23fa4b5fa100",
+    "inputBuildReportSHA256": "62639bf72e6c152157773526ca2ce62b6657e406eb83d881f47337e8844197f8",
+    "stageScriptSHA256": "49836f4841d80d0f3863a5220f95071bf11616f8f01f4431220890c7b40250e8",
+    "expectedLaterWorkerGraphSHA256": "b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5",
+    "workerGraphVerified": false,
+    "pinned": false,
+    "sitesBuilt": false,
+    "deployed": false
+  }
+}

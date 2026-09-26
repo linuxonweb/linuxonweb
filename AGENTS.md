@@ -127,8 +127,20 @@ driver enables permission checking internally and rejects the explicit
   `/mnt/p6/build/aurora-ready-20260926/`. The first 1 GiB fixture panicked before
   reaching the helper without boot-console capture; the exact cause is unproven.
   Successful run2 uses `0xffff0000` bytes/two CPUs and captures kernel output.
-  Firefox was not launched, no launch speedup is established, and the helper was
-  not promoted. Existing packed startup remains unchanged.
+  That isolated fixture did not launch Firefox. Subsequent real Firefox testing
+  now passes for candidate `ff1ea9fc6f62`: the matched fresh-profile launch-marker
+  observations are baseline 17.259 s and candidate 8.248 s (one pair, not first
+  paint). Actual window/fixture render, five downloaded JS checksums, zero-image
+  warm boots and real update/reload preserving exact home/profile files pass.
+  See `docs/firefox-aurora-startup-20260926.md` and its compact evidence. Failed
+  focus gates, adapter termination/guest stop, and successful explicit recovery
+  are retained; focus setup uses real margin input, not emulation. The candidate
+  is locally promoted; four old inputs are verified in the task's baseline-images.
+  Frozen release staging changes exactly two routes (55 parts, 151,597,129 bytes).
+  Public Sites remains version 5 until the new build/publication is verified.
+  New subagent creation reached the thread limit; existing serving/review task
+  agents continue assigned work. The isolated direct Vulkan ICD experiment is
+  being implemented under `web/linux/tests/guest-vulkan/`, not deployed.
 - Accepted runtime commit: `f24b914113dee9132471298e5e3a97b2e69b2ceb`.
   Sites version 4 previously passed exact full-image hashes,
   isolation, actual guest write/reload, zero-image warm reload, and automatic
