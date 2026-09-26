@@ -45,6 +45,10 @@ const resources = (async () => {
         initramfs,
     };
 })();
+// Preload still overlaps the UI/guest-image download. A failed preload is
+// reported by spawnMachine; merely opening the page must not emit an unhandled
+// rejection before the user can choose Update & restart to recover.
+void resources.catch(() => {});
 const PAGE_SIZE = 0x10000;
 // Leave the final wasm32 page out so the physical-memory size fits in u32.
 const KERNEL_MEMORY_MAXIMUM_PAGES = 0xffff;

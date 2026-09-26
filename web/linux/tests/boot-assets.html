@@ -1,0 +1,130 @@
+<!doctype html><meta charset="utf-8"><title>Boot asset transactions</title><pre id="result">Running…</pre>
+<script type="module">
+import { createStoragePanel } from '../storage-panel.mjs';
+import { SYSTEM_CHUNK_BYTES } from '../boot-assets.mjs';
+const result = document.querySelector('#result'), passed = [];
+const assert = (value, label) => { if (!value) throw new Error(label); passed.push(label); };
+const activeKey = 'linuxonweb.system.active.v1', previousKey = 'linuxonweb.system.previous.v1';
+const originalActive = localStorage.getItem(activeKey), originalPrevious = localStorage.getItem(previousKey), nativeFetch = fetch;
+const payloads = new Map();
+let candidate, corrupt = '', unavailable = '', cacheFailure = false;
+const originalPut = Cache.prototype.put;
+const originalSet = Storage.prototype.setItem;
+const beforeCache = await caches.open('linuxonweb.system.v1');
+let baselineBytes = 0;
+for (const request of await beforeCache.keys()) baselineBytes += Number((await beforeCache.match(request)).headers.get('Content-Length') || 0);
+const keys = ['kernel', 'plain', 'firefox'];
+const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(value => value.toString(16).padStart(2, '0')).join('');
+async function makeManifest(version) {
+  const assets = {};
+  for (const key of keys) {
+    const bytes = key === 'firefox' && version === 'next' ? new Uint8Array(SYSTEM_CHUNK_BYTES * 2 + 123).fill(51) : new TextEncoder().encode(`test-boot-${version}-${key}`);
+    const hash = await digest(bytes);
+    payloads.set(hash, bytes);
+    assets[key] = { url: `./fixture-${key}${key === 'kernel' ? '.wasm' : '.bin'}`, sha256: hash, bytes: bytes.length, label: key };
+  }
+  return { schema: 1, version, assets };
+}
+try {
+  localStorage.removeItem(activeKey); localStorage.removeItem(previousKey);
+  const initial = await makeManifest('initial'), next = await makeManifest('next'), third = await makeManifest('third');
+  candidate = initial;
+  globalThis.fetch = async (input, options) => {
+    const url = new URL(input, location.href);
+    if (url.pathname.endsWith('boot-manifest.json')) return Response.json(candidate);
+    const hash = url.searchParams.get('sha256');
+    if (payloads.has(hash)) {
+      if (hash === unavailable) throw new TypeError('Injected network outage');
+      const bytes = payloads.get(hash).slice(); if (hash === corrupt) bytes[0] ^= 1;
+      return new Response(bytes);
+    }
+    return nativeFetch(input, options);
+  };
+  Cache.prototype.put = function (request, response) {
+    if (cacheFailure === true || (cacheFailure === 'second-chunk' && String(request).endsWith('.part/1'))) return Promise.reject(new DOMException('Injected cache quota', 'QuotaExceededError'));
+    return originalPut.call(this, request, response);
+  };
+  const store = await import('../boot-assets.mjs?asset-regression');
+  await store.activeManifest();
+  for (const key of keys) await store.systemAsset(key);
+  const initialPointer = localStorage.getItem(activeKey);
+  localStorage.setItem(activeKey, JSON.stringify({ ...initial, previous: initial }));
+  assert(!(await store.systemUsage()).previous, 'identical previous images do not offer a misleading rollback action');
+  localStorage.setItem(activeKey, initialPointer);
+  candidate = next; unavailable = next.assets.firefox.sha256;
+  try { await store.updateSystem(); throw new Error('expected network failure'); } catch (error) { assert(error.message.includes('outage'), 'late download failure reported'); }
+  assert(localStorage.getItem(activeKey) === initialPointer, 'late download failure preserves active release');
+  unavailable = ''; corrupt = next.assets.firefox.sha256;
+  try { await store.updateSystem(); throw new Error('expected integrity failure'); } catch (error) { assert(error.message.includes('verify'), 'corrupt final image rejected'); }
+  assert(localStorage.getItem(activeKey) === initialPointer, 'integrity failure preserves active release');
+  corrupt = ''; cacheFailure = true;
+  try { await store.updateSystem(); throw new Error('expected quota failure'); } catch (error) { assert(error.name === 'QuotaExceededError', 'cache quota failure reported'); }
+  assert(localStorage.getItem(activeKey) === initialPointer, 'cache quota failure preserves active release');
+  cacheFailure = 'second-chunk';
+  try { await store.updateSystem(); throw new Error('expected partial chunk failure'); } catch (error) { assert(error.name === 'QuotaExceededError', `mid-image chunk failure reported (${error.name}: ${error.message})`); }
+  assert(localStorage.getItem(activeKey) === initialPointer, 'mid-image failure preserves active release');
+  const partialStore = await caches.open('linuxonweb.system.v1');
+  const partialKeys = (await partialStore.keys()).filter(request => request.url.includes(next.assets.firefox.sha256));
+  assert(partialKeys.some(request => request.url.endsWith('.part/0')) && !partialKeys.some(request => !request.url.includes('.part/')), 'incomplete image has chunks but no committed index');
+  cacheFailure = false;
+  Storage.prototype.setItem = function (key, value) {
+    if (key === activeKey) throw new DOMException('Injected metadata quota', 'QuotaExceededError');
+    return originalSet.call(this, key, value);
+  };
+  try { await store.updateSystem(); throw new Error('expected metadata failure'); } catch (error) { assert(error.name === 'QuotaExceededError', 'activation metadata failure reported'); }
+  finally { Storage.prototype.setItem = originalSet; }
+  assert(localStorage.getItem(activeKey) === initialPointer, 'activation failure leaves active and rollback atomically unchanged');
+  await store.updateSystem();
+  assert(JSON.parse(localStorage.getItem(activeKey)).version === 'next', 'complete verified update activates candidate');
+  assert(JSON.parse(localStorage.getItem(activeKey)).previous.version === 'initial', 'last known release retained for rollback');
+  unavailable = initial.assets.kernel.sha256;
+  assert(new TextDecoder().decode(await (await store.systemAsset('kernel')).arrayBuffer()) === 'test-boot-initial-kernel', 'running loader remains pinned and cache works offline');
+  const reloaded = await import('../boot-assets.mjs?asset-regression-reloaded');
+  assert((await reloaded.activeManifest()).version === 'next', 'fresh loader sees activated release');
+  assert(new TextDecoder().decode(await (await reloaded.systemAsset('kernel')).arrayBuffer()) === 'test-boot-next-kernel', 'new loader reads verified candidate bytes');
+  candidate = { ...next, assets: Object.fromEntries(Object.entries(next.assets).reverse()) };
+  const unchanged = await reloaded.updateSystem();
+  assert(!unchanged.changed && JSON.parse(localStorage.getItem(activeKey)).previous.version === 'initial', 'unchanged update preserves distinct rollback regardless of manifest key order');
+  unavailable = next.assets.firefox.sha256;
+  assert(await digest(await (await reloaded.systemAsset('firefox')).arrayBuffer()) === next.assets.firefox.sha256, 'multi-chunk cached stream reconstructs exact bytes offline');
+  const completeKeys = await partialStore.keys();
+  const lostChunk = completeKeys.find(request => request.url.includes(next.assets.firefox.sha256) && request.url.endsWith('.part/1'));
+  await partialStore.delete(lostChunk);
+  try { await reloaded.systemAsset('firefox'); throw new Error('expected missing chunk failure offline'); } catch (error) { assert(error.message.includes('outage'), 'missing chunk is not returned as a complete cache hit'); }
+  unavailable = '';
+  assert(await digest(await (await reloaded.systemAsset('firefox')).arrayBuffer()) === next.assets.firefox.sha256, 'online repair restores a missing chunk and complete index');
+  assert((await reloaded.systemUsage()).bytes === baselineBytes + [...payloads].filter(([hash]) => [...Object.values(initial.assets), ...Object.values(next.assets)].some(asset => asset.sha256 === hash)).reduce((sum, [, bytes]) => sum + bytes.length, 0), 'usage counts physical chunks once without logical index double counting');
+  await reloaded.restorePreviousSystem();
+  assert(JSON.parse(localStorage.getItem(activeKey)).version === 'initial', 'rollback changes only system pointer');
+  candidate = third; await reloaded.updateSystem();
+  const current = await import('../boot-assets.mjs?asset-regression-third');
+  await current.confirmSystemBoot();
+  const cached = await caches.open('linuxonweb.system.v1');
+  assert(!(await cached.keys()).some(request => request.url.includes(initial.assets.kernel.sha256)), 'successful boot prunes older than rollback release');
+  let restarts = 0, deletes = 0, fail = false;
+  const parent = document.createElement('main'); document.body.append(parent);
+  createStoragePanel({ parent,
+    usage: async () => ({ home: { bytes: 0, files: 1 }, system: { bytes: 0, version: 'test' }, estimate: { usage: 0, quota: 100 } }),
+    update: async () => { if (fail) throw new Error('update failed'); },
+    restart: async () => { restarts++; }, deleteHome: async () => { deletes++; },
+    clearCache: async () => {}, persist: async () => true, rollback: async () => {},
+  });
+  const click = name => parent.querySelector(`[data-storage="${name}"]`).click();
+  const tick = () => new Promise(resolve => setTimeout(resolve, 30));
+  fail = true; click('update'); await tick(); assert(restarts === 0, 'failed update never restarts guest');
+  fail = false; click('update'); await tick(); assert(restarts === 1, 'verified update automatically restarts once');
+  click('delete'); assert(deletes === 0 && parent.querySelector('dialog').open, 'home deletion requires visible confirmation');
+  click('cancel-delete'); assert(deletes === 0, 'cancelled home deletion preserves data');
+  click('delete'); click('confirm-delete'); await tick(); assert(deletes === 1, 'confirmed deletion invokes reset once');
+  result.textContent = JSON.stringify({ status: 'passed', checks: passed }, null, 2); document.documentElement.dataset.result = 'pass';
+} catch (error) {
+  const diagnostics = (await import('../boot-assets.mjs?asset-regression')).assetCacheDiagnostics();
+  result.textContent = JSON.stringify({ status: 'failed', checks: passed, error: error.stack, diagnostics }, null, 2); document.documentElement.dataset.result = 'fail';
+} finally {
+  globalThis.fetch = nativeFetch; Cache.prototype.put = originalPut; Storage.prototype.setItem = originalSet;
+  if (originalActive === null) localStorage.removeItem(activeKey); else localStorage.setItem(activeKey, originalActive);
+  if (originalPrevious === null) localStorage.removeItem(previousKey); else localStorage.setItem(previousKey, originalPrevious);
+  const cached = await caches.open('linuxonweb.system.v1');
+  for (const request of await cached.keys()) if (request.url.includes('/fixture-')) await cached.delete(request);
+}
+</script>

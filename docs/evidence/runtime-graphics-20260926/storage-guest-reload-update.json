@@ -1,0 +1,153 @@
+{
+  "marker": "persistent-home-qa-1790428765359",
+  "pass": true,
+  "errors": [],
+  "source": "storage-release-qa/guest-persistence.json",
+  "stages": [
+    {
+      "label": "first mount",
+      "elapsedMs": 3567,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 3892.015000104904
+    },
+    {
+      "label": "first shell",
+      "elapsedMs": 1018,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 4911.450000047684
+    },
+    {
+      "label": "guest write",
+      "elapsedMs": 1018,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 5934.4400000572205
+    },
+    {
+      "label": "second mount",
+      "elapsedMs": 3577,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 3785.0499999523163
+    },
+    {
+      "label": "second shell",
+      "elapsedMs": 1013,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 4799.579999923706
+    },
+    {
+      "label": "guest reload read",
+      "elapsedMs": 510,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 5312.335000038147
+    },
+    {
+      "label": "updated mount",
+      "elapsedMs": 3558,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 3789.2300000190735
+    },
+    {
+      "label": "updated shell",
+      "elapsedMs": 1012,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 4801.680000066757
+    },
+    {
+      "label": "guest update read",
+      "elapsedMs": 510,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 5312.579999923706
+    }
+  ],
+  "durability_scope": "Guest-issued writes and sync; not unsaved application buffers."
+}

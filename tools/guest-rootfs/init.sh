@@ -30,6 +30,17 @@ mkdir -p /dev/shm
 mount -t ramfs -o mode=1777 ramfs /dev/shm 2>/dev/null || true
 chmod 01777 /dev/shm
 
+# Durable home is independent of the packaged system image. virtiofs enables
+# default_permissions internally; that option is not accepted on its mount.
+if grep -qw 'home.persistent=1' /proc/cmdline; then
+  mkdir -p /home
+  if ! mount -t virtiofs -o rw,sync,dirsync home /home; then
+    echo 'home: FAILED to mount persistent storage; desktop startup stopped' >&2
+    exec setsid cttyhack sh
+  fi
+  echo 'home: persistent storage mounted' >&2
+fi
+
 # Give the guest desktop account access to the devices used by TinyX/input.
 # The evdev patch opens the first available event node, while the VT patch
 # prefers tty1. Device nodes may be absent on headless boots.
@@ -79,8 +90,9 @@ else
 fi
 
 mkdir -p /home/admin/Desktop /home/admin/Documents /home/admin/Downloads
-chown -R 1000:1000 /home/admin
+chown 1000:1000 /home/admin /home/admin/Desktop /home/admin/Documents /home/admin/Downloads
 chmod 0700 /home/admin
+if [ ! -e /home/admin/.linuxonweb-seeded ]; then
 echo "hello from aurora-wm on wasm" > /home/admin/Documents/readme.txt
 echo "sample" > /home/admin/Downloads/note.txt
 cat > /home/admin/Documents/browse.txt <<'EOF'
@@ -89,6 +101,14 @@ Try:  wget google.com
       curl -I https://www.google.com/
 EOF
 chown 1000:1000 /home/admin/Documents/* /home/admin/Downloads/* 2>/dev/null || true
+touch /home/admin/.linuxonweb-seeded
+chown 1000:1000 /home/admin/.linuxonweb-seeded
+fi
+
+if grep -qw 'demo.mode=console' /proc/cmdline; then
+  cd /home/admin
+  exec setsid cttyhack sh
+fi
 
 if [ -r /etc/fonts/fonts.conf ]; then
   export FONTCONFIG_FILE=/etc/fonts/fonts.conf
@@ -144,7 +164,7 @@ if grep -qw 'firefox=1' /proc/cmdline && [ -x /bin/firefox ]; then
   export MOZ_DISABLE_CONTENT_SANDBOX=1
   export MOZ_ENABLE_WAYLAND=0
   mkdir -p /home/admin/.mozilla /home/admin/.cache /home/firefox/.mozilla /home/firefox/.cache
-  chown -R 1000:1000 /home/admin /home/firefox
+  chown 1000:1000 /home/admin /home/admin/.mozilla /home/admin/.cache /home/firefox /home/firefox/.mozilla /home/firefox/.cache
   echo "firefox test mode: launching as admin in 10 seconds" >&2
   (
     sleep 10

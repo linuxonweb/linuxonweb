@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { memory_bytes } from "./wasm.js";
+import { createWebGLPresenter, createWebGPUPresenter } from "./framebuffer-presenter.js";
 /**
  * Convert guest little-endian x8r8g8b8 (memory bytes B,G,R,A → u32 0xAARRGGBB)
  * into Canvas ImageData RGBA (u32 0xAABBGGRR). Alpha is forced opaque.
@@ -8,6 +9,16 @@ import { memory_bytes } from "./wasm.js";
  */
 export function swizzle_bgra_to_rgba(dst, src, width, height, stride) {
     const pixels = width * height;
+    if (dst.byteOffset % 4 || src.byteOffset % 4 || stride % 4) {
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const s = y * stride + x * 4, d = (y * width + x) * 4;
+                dst[d] = src[s + 2]; dst[d + 1] = src[s + 1];
+                dst[d + 2] = src[s]; dst[d + 3] = 255;
+            }
+        }
+        return;
+    }
     const dst32 = new Uint32Array(dst.buffer, dst.byteOffset, pixels);
     // Prefer a single tight copy when stride matches the packed row width.
     if (stride === width * 4 && src.byteOffset % 4 === 0) {
@@ -38,12 +49,14 @@ export function swizzle_bgra_to_rgba(dst, src, width, height, stride) {
 }
 /**
  * Host-side canvas presenter for the wasm framebuffer driver.
- * Kernel memory is swizzled into ImageData and painted with Canvas2D.
+ * Stable visible/input canvas, with optional GPU swizzle on a private surface.
  */
 export function createFramebufferHost(memory, options) {
     const width = options.width ?? 1024;
     const height = options.height ?? 768;
     const bpp = options.bpp ?? 32;
+    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0)
+        throw new Error("invalid framebuffer dimensions");
     if (bpp !== 32)
         throw new Error("framebuffer only supports 32bpp");
     const canvas = options.canvas;
@@ -52,13 +65,62 @@ export function createFramebufferHost(memory, options) {
     const ctx = canvas.getContext("2d");
     if (!ctx)
         throw new Error("canvas 2d context unavailable");
-    const image = ctx.createImageData(width, height);
+    let image = null;
     let closed = false;
     let raf = 0;
     let dirty = false;
     // Recycled staging buffer so present() does not allocate 3MiB per frame.
     let staging = null;
-    let present_stride = width * 4;
+    const rowBytes = width * 4;
+    let renderer = null;
+    let generation = 0;
+    const diagnostics = { backend: "canvas2d", requested: options.backend ?? "canvas2d",
+        frames: 0, presents: 0, coalesced: 0, fallbackReason: null, fallbackAdapter: null };
+    if (!["auto", "webgpu", "webgl", "canvas2d"].includes(diagnostics.requested))
+        throw new Error("unknown framebuffer backend");
+    const publish = () => {
+        if (canvas.dataset) canvas.dataset.framebufferBackend = diagnostics.backend;
+        if (canvas.dispatchEvent && globalThis.CustomEvent)
+            canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics } }));
+    };
+    const select = async (backend, reason = null) => {
+        const token = ++generation;
+        renderer?.close(); renderer = null;
+        diagnostics.backend = "canvas2d";
+        diagnostics.fallbackAdapter = null;
+        diagnostics.fallbackReason = reason;
+        publish();
+        if (backend === "canvas2d" || closed) return;
+        const lost = message => {
+            if (closed || token !== generation) return;
+            void select(diagnostics.backend === "webgpu" ? "webgl" : "canvas2d", message);
+            if (staging) { dirty = true; schedule_paint(); }
+        };
+        let candidate;
+        try {
+            if (backend === "auto" || backend === "webgpu") {
+                try { candidate = await createWebGPUPresenter(width, height, lost); }
+                catch (error) { diagnostics.fallbackReason = String(error.message ?? error); }
+            }
+            if (!candidate) candidate = createWebGLPresenter(width, height, lost);
+            if (closed || token !== generation) { candidate.close(); return; }
+            renderer = candidate;
+            diagnostics.backend = candidate.backend;
+            diagnostics.fallbackAdapter = candidate.fallbackAdapter ?? null;
+            publish();
+            if (staging) { dirty = true; schedule_paint(); }
+        } catch (error) {
+            if (!closed && token === generation) {
+                diagnostics.fallbackReason = String(error.message ?? error);
+                publish();
+            }
+        }
+    };
+    const paint2d = () => {
+        image ??= ctx.createImageData(width, height);
+        swizzle_bgra_to_rgba(image.data, staging, width, height, rowBytes);
+        ctx.putImageData(image, 0, 0);
+    };
     const schedule_paint = () => {
         if (raf || closed)
             return;
@@ -71,14 +133,30 @@ export function createFramebufferHost(memory, options) {
             dirty = false;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
-            swizzle_bgra_to_rgba(image.data, staging, width, height, present_stride);
-            ctx.putImageData(image, 0, 0);
+            // A CSS/backing-store resize must not crop or scale the guest mode.
+            if (canvas.width !== width) canvas.width = width;
+            if (canvas.height !== height) canvas.height = height;
+            try {
+                if (renderer) {
+                    const frame = renderer.draw(staging);
+                    try { ctx.drawImage(frame, 0, 0); }
+                    finally { frame.close?.(); }
+                } else paint2d();
+            } catch (error) {
+                const next = diagnostics.backend === "webgpu" ? "webgl" : "canvas2d";
+                void select(next, String(error.message ?? error));
+                paint2d();
+            }
+            diagnostics.frames++;
         });
     };
+    const ready = select(diagnostics.requested);
     return {
         width,
         height,
         bpp,
+        ready,
+        get diagnostics() { return { ...diagnostics }; },
         get_mode(width_ptr, height_ptr, bpp_ptr) {
             const view = new DataView(memory.buffer);
             view.setUint32(width_ptr >>> 0, width, true);
@@ -90,24 +168,30 @@ export function createFramebufferHost(memory, options) {
                 return;
             if (fb_width !== width || fb_height !== height || fb_bpp !== 32)
                 return;
-            if (stride < width * 4)
+            if (!Number.isSafeInteger(stride) || stride < rowBytes)
                 return;
-            const bytes = memory_bytes(memory, addr >>> 0, stride * height);
+            const bytes = memory_bytes(memory, addr >>> 0, stride * (height - 1) + rowBytes);
             if (!bytes)
                 return;
             // Snapshot out of shared memory before the guest draws again. Reuse the
             // staging allocation; only the first frame (or a mode change) allocates.
-            const need = stride * height;
+            const need = rowBytes * height;
             if (!staging || staging.byteLength !== need) {
                 staging = new Uint8Array(need);
             }
-            staging.set(bytes);
-            present_stride = stride;
+            if (stride === rowBytes) staging.set(bytes);
+            else for (let y = 0; y < height; y++)
+                staging.set(bytes.subarray(y * stride, y * stride + rowBytes), y * rowBytes);
+            diagnostics.presents++;
+            if (dirty) diagnostics.coalesced++;
             dirty = true;
             schedule_paint();
         },
         close() {
             closed = true;
+            generation++;
+            renderer?.close();
+            renderer = null;
             if (raf) {
                 (globalThis.cancelAnimationFrame ?? clearTimeout)(raf);
                 raf = 0;

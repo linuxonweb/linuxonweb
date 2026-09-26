@@ -1,0 +1,76 @@
+<!doctype html><meta charset="utf-8"><title>Persistent home regression</title><pre id="result">Running…</pre>
+<script type="module">
+import { openPersistentHome, acquireHomeLock, CHUNK_SIZE } from '../persistent-home.mjs';
+const result = document.querySelector('#result');
+const passed = [];
+const assert = (condition, label) => { if (!condition) throw new Error(label); passed.push(label); };
+const encoder = new TextEncoder(), decoder = new TextDecoder();
+const context = { mode: 0o700, uid: 1000, gid: 1000 };
+const dbName = 'linuxonweb.home.test.' + Date.now();
+let home;
+try {
+  home = await openPersistentHome({ name: dbName });
+  const directory = await home.mkdir(home.root, 'admin', context);
+  const { node, handle } = await home.create(directory, 'original', 2, { ...context, mode: 0o600 });
+  await home.write(node, handle, BigInt(CHUNK_SIZE - 2), encoder.encode('abcdef'));
+  assert(decoder.decode(await home.read(node, handle, BigInt(CHUNK_SIZE - 2), 6)) === 'abcdef', 'write spans chunk boundary');
+  assert((await home.read(node, handle, 0n, 32)).every(byte => byte === 0), 'sparse gap is zero-filled');
+  await home.setattr(node, { size: BigInt(CHUNK_SIZE) });
+  await home.setattr(node, { size: BigInt(CHUNK_SIZE + 4) });
+  assert(decoder.decode(await home.read(node, handle, BigInt(CHUNK_SIZE - 2), 6)) === 'ab\0\0\0\0', 'truncate then extend never exposes old bytes');
+  await home.setattr(node, { size: 0n });
+  await home.write(node, handle, 0n, encoder.encode('saved after reload'));
+  await home.fsync(node, handle);
+  await home.rename(directory, 'original', directory, 'renamed');
+  const link = await home.symlink(directory, 'link', 'renamed', context);
+  assert(await home.readlink(link) === 'renamed', 'symlink target round trips');
+  await home.release(node, handle);
+  await home.destroy();
+  home = await openPersistentHome({ name: dbName });
+  const admin = await home.lookup(home.root, 'admin');
+  const saved = await home.lookup(admin, 'renamed');
+  assert(decoder.decode(await home.read(saved, {}, 0n, 100)) === 'saved after reload', 'close and reopen preserves renamed bytes');
+  assert((await home.getattr(saved)).uid === 1000 && (await home.getattr(saved)).mode === 0o100600, 'ownership and mode persist');
+  const opened = await home.open(saved, 2);
+  await home.unlink(admin, 'renamed');
+  assert(await home.lookup(admin, 'renamed') === undefined, 'unlink removes the directory entry');
+  assert(decoder.decode(await home.read(saved, opened, 0n, 100)) === 'saved after reload', 'open unlinked inode remains readable');
+  await home.release(saved, opened);
+  try { await home.getattr(saved); throw new Error('expected ENOENT'); } catch (error) { assert(error.errno === 2, 'final close reclaims unlinked inode'); }
+  const source = await home.create(admin, 'source', 2, context), target = await home.create(admin, 'target', 2, context);
+  await home.write(source.node, source.handle, 0n, encoder.encode('new'));
+  await home.write(target.node, target.handle, 0n, encoder.encode('old'));
+  await home.rename(admin, 'source', admin, 'target');
+  assert(decoder.decode(await home.read(target.node, target.handle, 0n, 9)) === 'old', 'rename retains overwritten open inode');
+  assert(decoder.decode(await home.read(await home.lookup(admin, 'target'), {}, 0n, 9)) === 'new', 'atomic rename exposes replacement');
+  await home.release(target.node, target.handle);
+  const put = IDBObjectStore.prototype.put;
+  let puts = 0;
+  IDBObjectStore.prototype.put = function (...args) {
+    if (this.name === 'chunks' && ++puts === 2) throw new DOMException('Injected quota exhaustion', 'QuotaExceededError');
+    return put.apply(this, args);
+  };
+  try {
+    await home.write(source.node, source.handle, 0n, new Uint8Array(CHUNK_SIZE * 2).fill(7));
+    throw new Error('expected ENOSPC');
+  } catch (error) { assert(error.errno === 28, 'quota exhaustion maps to guest ENOSPC'); }
+  finally { IDBObjectStore.prototype.put = put; }
+  assert(decoder.decode(await home.read(source.node, source.handle, 0n, 9)) === 'new', 'failed multi-chunk write rolls back bytes and size');
+  await home.write(source.node, source.handle, 3n, encoder.encode(' recovery'));
+  assert(decoder.decode(await home.read(source.node, source.handle, 0n, 30)) === 'new recovery', 'storage accepts writes after aborted transaction');
+  const nested = await home.mkdir(admin, 'nested', context);
+  try { await home.rename(home.root, 'admin', nested, 'cycle'); throw new Error('expected EINVAL'); } catch (error) { assert(error.errno === 22, 'directory cycles rejected'); }
+  const release = await acquireHomeLock();
+  try { await acquireHomeLock(); throw new Error('expected lock rejection'); } catch (error) { assert(error.message.includes('another tab'), 'concurrent guest lease rejected'); }
+  finally { release(); }
+  await home.destroy(); home = null;
+  result.textContent = JSON.stringify({ status: 'passed', checks: passed }, null, 2);
+  document.documentElement.dataset.result = 'pass';
+} catch (error) {
+  result.textContent = JSON.stringify({ status: 'failed', checks: passed, error: error.stack }, null, 2);
+  document.documentElement.dataset.result = 'fail';
+} finally {
+  await home?.destroy();
+  indexedDB.deleteDatabase(dbName);
+}
+</script>

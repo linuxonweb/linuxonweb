@@ -1,0 +1,45 @@
+{
+  "candidateManifest": "test-pbl-6febc628d9f6f796",
+  "candidateReportLabel": "unspecified",
+  "labelNote": "Guest URL input truncated label; active manifest independently verified candidate SHA. Workload protocol identical.",
+  "measurement": "fixed-batch-100-v1",
+  "pass": true,
+  "timingResolutionSufficient": true,
+  "cases": [
+    {
+      "name": "integer loop",
+      "baselineMedianMs": 0.21,
+      "candidateMedianMs": 0.25,
+      "actual": 7998000,
+      "correct": true
+    },
+    {
+      "name": "object properties",
+      "baselineMedianMs": 0.69,
+      "candidateMedianMs": 0.79,
+      "actual": 67982,
+      "correct": true
+    },
+    {
+      "name": "array callbacks",
+      "baselineMedianMs": 1.15,
+      "candidateMedianMs": 1.03,
+      "actual": 748500,
+      "correct": true
+    },
+    {
+      "name": "JSON and strings",
+      "baselineMedianMs": 0.37,
+      "candidateMedianMs": 0.46,
+      "actual": 19900,
+      "correct": true
+    },
+    {
+      "name": "exceptions and recursion",
+      "baselineMedianMs": 0.19,
+      "candidateMedianMs": 0.3,
+      "actual": 1700,
+      "correct": true
+    }
+  ]
+}

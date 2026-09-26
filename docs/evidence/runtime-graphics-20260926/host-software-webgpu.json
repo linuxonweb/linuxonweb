@@ -1,0 +1,229 @@
+{
+  "checks": [
+    {
+      "name": "canvas2d colors/orientation/opaque alpha/padded snapshot",
+      "pass": true,
+      "detail": {
+        "actual": [
+          255,
+          0,
+          0,
+          255,
+          0,
+          255,
+          0,
+          255,
+          0,
+          0,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255
+        ],
+        "diagnostics": {
+          "backend": "canvas2d",
+          "requested": "canvas2d",
+          "frames": 1,
+          "presents": 1,
+          "coalesced": 0,
+          "fallbackReason": null,
+          "fallbackAdapter": null
+        }
+      }
+    },
+    {
+      "name": "canvas2d input identity",
+      "pass": true
+    },
+    {
+      "name": "canvas2d resize/coalescing",
+      "pass": true
+    },
+    {
+      "name": "webgl colors/orientation/opaque alpha/padded snapshot",
+      "pass": true,
+      "detail": {
+        "actual": [
+          255,
+          0,
+          0,
+          255,
+          0,
+          255,
+          0,
+          255,
+          0,
+          0,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255
+        ],
+        "diagnostics": {
+          "backend": "webgl",
+          "requested": "webgl",
+          "frames": 1,
+          "presents": 1,
+          "coalesced": 0,
+          "fallbackReason": null,
+          "fallbackAdapter": null
+        }
+      }
+    },
+    {
+      "name": "webgl input identity",
+      "pass": true
+    },
+    {
+      "name": "webgl resize/coalescing",
+      "pass": true
+    },
+    {
+      "name": "webgpu colors/orientation/opaque alpha/padded snapshot",
+      "pass": true,
+      "detail": {
+        "actual": [
+          255,
+          0,
+          0,
+          255,
+          0,
+          255,
+          0,
+          255,
+          0,
+          0,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255
+        ],
+        "diagnostics": {
+          "backend": "webgpu",
+          "requested": "webgpu",
+          "frames": 1,
+          "presents": 1,
+          "coalesced": 0,
+          "fallbackReason": null,
+          "fallbackAdapter": true
+        }
+      }
+    },
+    {
+      "name": "webgpu input identity",
+      "pass": true
+    },
+    {
+      "name": "webgpu resize/coalescing",
+      "pass": true
+    },
+    {
+      "name": "WebGL loss notification",
+      "pass": true
+    },
+    {
+      "name": "host loss falls back and repaints retained frame",
+      "pass": true,
+      "detail": {
+        "backend": "canvas2d",
+        "requested": "webgl",
+        "frames": 2,
+        "presents": 1,
+        "coalesced": 0,
+        "fallbackReason": "WebGL context lost",
+        "fallbackAdapter": null
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "width": 1024,
+      "height": 768,
+      "requested": "canvas2d",
+      "selected": "canvas2d",
+      "fallbackAdapter": null,
+      "medianFrameMs": 2.8299999237060547,
+      "p95FrameMs": 3.174999952316284
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "requested": "webgl",
+      "selected": "webgl",
+      "fallbackAdapter": null,
+      "medianFrameMs": 11.380000114440918,
+      "p95FrameMs": 13.160000085830688
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "requested": "webgpu",
+      "selected": "webgpu",
+      "fallbackAdapter": true,
+      "medianFrameMs": 25.079999923706055,
+      "p95FrameMs": 31.365000009536743
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "requested": "canvas2d",
+      "selected": "canvas2d",
+      "fallbackAdapter": null,
+      "medianFrameMs": 3.115000009536743,
+      "p95FrameMs": 3.869999885559082
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "requested": "webgl",
+      "selected": "webgl",
+      "fallbackAdapter": null,
+      "medianFrameMs": 13.424999952316284,
+      "p95FrameMs": 14.119999885559082
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "requested": "webgpu",
+      "selected": "webgpu",
+      "fallbackAdapter": true,
+      "medianFrameMs": 28.259999990463257,
+      "p95FrameMs": 33.16499996185303
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "requested": "canvas2d",
+      "selected": "canvas2d",
+      "fallbackAdapter": null,
+      "medianFrameMs": 1.2200000286102295,
+      "p95FrameMs": 2.1599998474121094
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "requested": "webgl",
+      "selected": "webgl",
+      "fallbackAdapter": null,
+      "medianFrameMs": 6.204999923706055,
+      "p95FrameMs": 7.519999980926514
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "requested": "webgpu",
+      "selected": "webgpu",
+      "fallbackAdapter": true,
+      "medianFrameMs": 14.335000038146973,
+      "p95FrameMs": 15.955000162124634
+    }
+  ],
+  "errors": [],
+  "done": true
+}

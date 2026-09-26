@@ -2,6 +2,7 @@
 export type FramebufferContext2D = {
     createImageData(sw: number, sh: number): ImageData;
     putImageData(imageData: ImageData, dx: number, dy: number): void;
+    drawImage?(image: CanvasImageSource, dx: number, dy: number): void;
 };
 export type FramebufferCanvas = {
     width: number;
@@ -17,11 +18,24 @@ export interface FramebufferOptions {
     height?: number;
     /** Bits per pixel. Only 32 (x8r8g8b8) is supported. */
     bpp?: number;
+    /** Host presentation only. Canvas2D remains the measured safe default. */
+    backend?: "auto" | "webgpu" | "webgl" | "canvas2d";
+}
+export interface FramebufferDiagnostics {
+    backend: "canvas2d" | "webgl" | "webgpu";
+    requested: string;
+    frames: number;
+    presents: number;
+    coalesced: number;
+    fallbackReason: string | null;
+    fallbackAdapter: boolean | null;
 }
 export interface FramebufferHost {
     readonly width: number;
     readonly height: number;
     readonly bpp: number;
+    readonly ready: Promise<void>;
+    readonly diagnostics: FramebufferDiagnostics;
     get_mode(width_ptr: number, height_ptr: number, bpp_ptr: number): void;
     present(addr: number, width: number, height: number, stride: number, bpp: number): void;
     close(): void;
@@ -35,7 +49,7 @@ export interface FramebufferHost {
 export declare function swizzle_bgra_to_rgba(dst: Uint8ClampedArray, src: Uint8Array, width: number, height: number, stride: number): void;
 /**
  * Host-side canvas presenter for the wasm framebuffer driver.
- * Kernel memory is swizzled into ImageData and painted with Canvas2D.
+ * Preserves the visible/input canvas; optional GPU surfaces convert guest BGRA.
  */
 export declare function createFramebufferHost(memory: WebAssembly.Memory, options: FramebufferOptions): FramebufferHost;
 /** Wasm imports for the fb module. A null host still advertises a default mode. */

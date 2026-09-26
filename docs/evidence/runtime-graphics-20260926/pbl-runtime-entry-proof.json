@@ -1,0 +1,47 @@
+{
+  "scope": "Actual guest PBL entry and checksum proof; diagnostic timings excluded",
+  "diagnosticModuleSHA256": "c99e8bd65a7404607aaafb7bb988dbf27b012035f1fb30876b0a8d97eb677a3f",
+  "sourceLog": "pbl-diagnostic-complete.txt",
+  "sourceLogSHA256": "2b834807e44ab7fea59935f101608d2dcc857b3e5c27a242ffffefa022c7d969",
+  "entryMarker": "[WASM_PBL] PortableBaselineTrampoline entered",
+  "entryMarkerCount": 1,
+  "persistentHomeMountMarkerCount": 1,
+  "runtimeErrorMentions": 0,
+  "measurement": "fixed-batch-100-v1",
+  "guestUserAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+  "downloadedReport": true,
+  "workloadPass": true,
+  "checksums": [
+    {
+      "name": "integer loop",
+      "expected": 7998000,
+      "actual": 7998000,
+      "correct": true
+    },
+    {
+      "name": "object properties",
+      "expected": 67982,
+      "actual": 67982,
+      "correct": true
+    },
+    {
+      "name": "array callbacks",
+      "expected": 748500,
+      "actual": 748500,
+      "correct": true
+    },
+    {
+      "name": "JSON and strings",
+      "expected": 19900,
+      "actual": 19900,
+      "correct": true
+    },
+    {
+      "name": "exceptions and recursion",
+      "expected": 1700,
+      "actual": 1700,
+      "correct": true
+    }
+  ],
+  "deploymentDecision": "Not promoted; uninstrumented candidate slower in four of five workloads"
+}

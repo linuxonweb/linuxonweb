@@ -1,0 +1,99 @@
+<!doctype html><meta charset="utf-8"><title>Framebuffer presentation verification</title>
+<style>body{font:14px monospace;background:#eee}canvas{width:320px;height:240px;image-rendering:pixelated}pre{white-space:pre-wrap}</style>
+<canvas id="screen"></canvas><pre id="report">Running…</pre>
+<script type="module">
+import { createFramebufferHost } from '../dist/framebuffer.js';
+import { createWebGLPresenter } from '../dist/framebuffer-presenter.js';
+const result = { checks: [], benchmarks: [], errors: [] };
+window.framebufferResults = result;
+const screen = document.querySelector('#screen');
+const tick = () => new Promise(resolve => requestAnimationFrame(resolve));
+const check = (name, pass, detail) => {
+  result.checks.push({ name, pass, detail });
+  if (!pass) throw new Error(name + ': ' + JSON.stringify(detail));
+};
+const rgba = [255,0,0,255, 0,255,0,255, 0,0,255,255, 255,255,255,255];
+try {
+  for (const backend of ['canvas2d','webgl','webgpu']) {
+    const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+    const pixels = new Uint8Array(memory.buffer);
+    pixels.set([0,0,255,0, 0,255,0,33],1);
+    pixels.set([255,0,0,128, 255,255,255,0],12);
+    const canvas = screen;
+    let inputCount=0; const input=()=>inputCount++;
+    canvas.addEventListener('pointerdown',input);
+    const host = createFramebufferHost(memory,{canvas,width:2,height:2,backend});
+    await host.ready;
+    host.present(1,2,2,11,32); pixels.fill(0);
+    await tick();
+    const actual=[...canvas.getContext('2d').getImageData(0,0,2,2).data];
+    check(backend+' colors/orientation/opaque alpha/padded snapshot',JSON.stringify(actual)===JSON.stringify(rgba),{actual,diagnostics:host.diagnostics});
+    canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerType:'touch'}));
+    check(backend+' input identity',inputCount===1);
+    canvas.width=1; canvas.height=1;
+    pixels.set([0,0,255,0, 0,255,0,0, 255,0,0,0, 255,255,255,0]);
+    host.present(0,2,2,8,32); host.present(0,2,2,8,32);
+    await tick();
+    check(backend+' resize/coalescing',canvas.width===2 && canvas.height===2 && host.diagnostics.coalesced===1);
+    host.close(); canvas.removeEventListener('pointerdown',input);
+  }
+  let loss=false, presenter=null;
+  try {
+    presenter=createWebGLPresenter(2,2,()=>loss=true);
+  } catch(error) { result.checks.push({name:'WebGL loss',skip:String(error)}); }
+  if (presenter) {
+    const gl=presenter.canvas.getContext('webgl');
+    gl.getExtension('WEBGL_lose_context').loseContext();
+    await new Promise(resolve=>setTimeout(resolve,100));
+    check('WebGL loss notification',loss);
+    presenter.close();
+  }
+  if (globalThis.OffscreenCanvas) {
+    const NativeCanvas=globalThis.OffscreenCanvas, surfaces=[];
+    globalThis.OffscreenCanvas=new Proxy(NativeCanvas,{construct(target,args){const value=new target(...args);surfaces.push(value);return value;}});
+    let host;
+    try {
+      const memory=new WebAssembly.Memory({initial:1,maximum:1,shared:true});
+      new Uint8Array(memory.buffer).set([0,0,255,0,0,255,0,0,255,0,0,0,255,255,255,0]);
+      host=createFramebufferHost(memory,{canvas:screen,width:2,height:2,backend:'webgl'});
+      await host.ready;
+      if(host.diagnostics.backend==='webgl'){
+        host.present(0,2,2,8,32);await tick();
+        surfaces.at(-1).getContext('webgl').getExtension('WEBGL_lose_context').loseContext();
+        await new Promise(resolve=>setTimeout(resolve,100));await tick();
+        const actual=[...screen.getContext('2d').getImageData(0,0,2,2).data];
+        check('host loss falls back and repaints retained frame',host.diagnostics.backend==='canvas2d'&&JSON.stringify(actual)===JSON.stringify(rgba),host.diagnostics);
+      }
+    } finally { host?.close();globalThis.OffscreenCanvas=NativeCanvas; }
+  }
+  for (const [width,height] of [[1024,768],[1280,720],[430,932]]) {
+    for (const backend of ['canvas2d','webgl','webgpu']) {
+      const memory=new WebAssembly.Memory({initial:Math.ceil(width*height*4/65536),shared:true,maximum:Math.ceil(width*height*4/65536)});
+      const bytes=new Uint8Array(memory.buffer); bytes.fill(111);
+      const canvas=document.createElement('canvas');
+      const host=createFramebufferHost(memory,{canvas,width,height,backend}); await host.ready;
+      const times=[], realRAF=globalThis.requestAnimationFrame;
+      let pending;
+      // Run the identical coalesced paint callback without measuring vsync wait.
+      globalThis.requestAnimationFrame=callback=>{pending=callback;return 1;};
+      try {
+        for(let i=0;i<40;i++) {
+          bytes[i*4]=i;
+          const start=performance.now();
+          host.present(0,width,height,width*4,32); pending();
+          // Include synchronization/readback to avoid measuring GPU enqueue alone.
+          canvas.getContext('2d').getImageData(0,0,1,1);
+          if(i>=10) times.push(performance.now()-start);
+        }
+      } finally { globalThis.requestAnimationFrame=realRAF; }
+      times.sort((a,b)=>a-b);
+      result.benchmarks.push({width,height,requested:backend,selected:host.diagnostics.backend,fallbackAdapter:host.diagnostics.fallbackAdapter,medianFrameMs:times[15],p95FrameMs:times[28]});
+      host.close();
+      await tick();
+    }
+  }
+} catch(error) { result.errors.push(String(error.stack||error)); }
+result.done=true;
+document.querySelector('#report').textContent=JSON.stringify(result,null,2);
+document.documentElement.dataset.result=result.errors.length?'fail':'pass';
+</script>

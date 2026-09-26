@@ -50,7 +50,9 @@ function current_execution_url() {
 }
 const web = {
     async load_wasm(url) {
-        const response = await fetch(url, { cache: "no-store" });
+        const response = url.pathname.endsWith('/vmlinux.wasm')
+            ? await (await import('../boot-assets.mjs')).systemAsset('kernel')
+            : await fetch(url, { cache: 'default' });
         // native code caching is only supported with the *Streaming functions, so use it:
         const module = await WebAssembly.compileStreaming(response.clone());
         const bytes = new Uint8Array(await response.arrayBuffer());

@@ -56,3 +56,30 @@ and both reference-drop orders, backing-file synchronization, private and
 anonymous allocation cleanup, and invalid page-size/allocation failures.
 This checks the supported whole-mapping lifecycle; it does not establish full
 POSIX `mmap`, partial-unmap, or `mremap` semantics.
+# Persistent browser storage
+
+Serve through `web/desktop/dev-server.mjs` so the guest receives COOP/COEP.
+In a task-owned browser profile, open `persistent-home.html` and wait for
+`document.documentElement.dataset.result === "pass"`. It exercises real
+IndexedDB, including injected quota rollback; it deletes only its uniquely
+named test database.
+
+Open `boot-assets.html` in a **separate task-owned profile with no running
+guest**. It uses real CacheStorage and temporary system metadata with controlled
+fetch/integrity/quota failures. It restores the original system metadata, but
+cache pruning intentionally exercises deletion of stale image cache entries.
+It never opens or deletes the real home database.
+
+Run the real guest test against a task-owned Chromium debugging endpoint:
+
+```sh
+CDP_URL=http://127.0.0.1:9394 TEST_UPDATE=1 \
+  node web/linux/tests/guest-persistence.mjs
+```
+
+The test writes a uniquely named file under `/home/admin`, reloads into a new
+kernel, checks exact contents and `virtiofs rw,sync,dirsync` mount output, and
+optionally clicks Update & restart and checks the saved bytes again. It closes
+its own tab; `KEEP_TEST_TAB=1` leaves it for inspection. `TEST_OUTPUT` selects
+the evidence directory. `RESET_TEST_SYSTEM=1` clears only the test profile's
+system-version preference before starting; never use that on a user profile.

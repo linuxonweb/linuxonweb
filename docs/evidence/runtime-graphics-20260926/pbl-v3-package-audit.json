@@ -1,0 +1,16 @@
+{
+  "pass": true,
+  "scope": "isolated package audit only; guest acceptance pending",
+  "sourceArchiveSHA256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+  "candidateSHA256": "319c01c2836aea58a8e63bbf00e5475bcbf33e271fd8c73804651ccabe80f197",
+  "archiveSHA256": "6febc628d9f6f7968bdb228d1590adcff83daabd8c6c4b63c8bb6a71c9afb486",
+  "archiveBytes": 88279585,
+  "records": 11469,
+  "changedMembers": [
+    "opt/firefox/firefox"
+  ],
+  "allOtherRecordsIdentical": true,
+  "initSHA256": "7364753644286b8c5670c538f3301e709f643564dbdf4cd7642476eba560e7b6",
+  "persistentInitPreserved": true,
+  "launcherURL": "/linux/tests/runtime-candidates/pbl-v3/launch.html"
+}

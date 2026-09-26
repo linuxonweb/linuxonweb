@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "test": "guest-js-comparison",
+  "measurement": "fixed-batch-100-v1",
+  "label": "unspecified",
+  "runId": "1790430173342",
+  "startedAt": "2026-09-26T13:42:53.342Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+  "warmups": 12,
+  "samples": 5,
+  "repetitions": 100,
+  "results": [
+    {
+      "name": "integer loop",
+      "expected": 7998000,
+      "actual": 7998000,
+      "repetitions": 100,
+      "sampleTotalMs": [
+        22,
+        22,
+        25,
+        26,
+        37
+      ],
+      "medianMs": 0.25,
+      "samplesMs": [
+        0.22,
+        0.22,
+        0.25,
+        0.26,
+        0.37
+      ],
+      "timingResolutionSufficient": true,
+      "correct": true
+    },
+    {
+      "name": "object properties",
+      "expected": 67982,
+      "actual": 67982,
+      "repetitions": 100,
+      "sampleTotalMs": [
+        64,
+        64,
+        79,
+        88,
+        100
+      ],
+      "medianMs": 0.79,
+      "samplesMs": [
+        0.64,
+        0.64,
+        0.79,
+        0.88,
+        1
+      ],
+      "timingResolutionSufficient": true,
+      "correct": true
+    },
+    {
+      "name": "array callbacks",
+      "expected": 748500,
+      "actual": 748500,
+      "repetitions": 100,
+      "sampleTotalMs": [
+        93,
+        97,
+        103,
+        114,
+        114
+      ],
+      "medianMs": 1.03,
+      "samplesMs": [
+        0.93,
+        0.97,
+        1.03,
+        1.14,
+        1.14
+      ],
+      "timingResolutionSufficient": true,
+      "correct": true
+    },
+    {
+      "name": "JSON and strings",
+      "expected": 19900,
+      "actual": 19900,
+      "repetitions": 100,
+      "sampleTotalMs": [
+        37,
+        42,
+        46,
+        46,
+        66
+      ],
+      "medianMs": 0.46,
+      "samplesMs": [
+        0.37,
+        0.42,
+        0.46,
+        0.46,
+        0.66
+      ],
+      "timingResolutionSufficient": true,
+      "correct": true
+    },
+    {
+      "name": "exceptions and recursion",
+      "expected": 1700,
+      "actual": 1700,
+      "repetitions": 100,
+      "sampleTotalMs": [
+        25,
+        29,
+        30,
+        30,
+        35
+      ],
+      "medianMs": 0.3,
+      "samplesMs": [
+        0.25,
+        0.29,
+        0.3,
+        0.3,
+        0.35
+      ],
+      "timingResolutionSufficient": true,
+      "correct": true
+    }
+  ],
+  "error": null,
+  "elapsedMs": 1514,
+  "done": true,
+  "completedAt": "2026-09-26T13:42:54.858Z",
+  "pass": true,
+  "timingResolutionSufficient": true
+}

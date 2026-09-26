@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "test": "guest-graphics-video",
+  "label": "baseline",
+  "runId": "1790429560852",
+  "startedAt": "2026-09-26T13:32:40.852Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+  "secureContext": false,
+  "webgl": {
+    "context": false
+  },
+  "webgpu": {
+    "api": false
+  },
+  "video": {
+    "hardwareDecoder": "not established by this page",
+    "webCodecs": false,
+    "canPlayVP8Opus": "probably",
+    "mediaCapabilities": {},
+    "event": "ended",
+    "time": 3.01,
+    "totalFrames": 30,
+    "droppedFrames": 0
+  },
+  "probesDone": true,
+  "probesCompletedAt": "2026-09-26T13:32:41.127Z",
+  "exportedAt": "2026-09-26T13:33:10.180Z"
+}

@@ -4,6 +4,7 @@ import {
   consoleDevice,
   entropyDevice,
   blockDevice,
+  fileSystemDevice,
   inputDevice,
   Key,
   createNetwork,
@@ -14,6 +15,9 @@ import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
 import { createLogViewer } from "./log-viewer.mjs";
 import { createMobileKeyboard } from "./mobile-keyboard.mjs";
+import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
+import { systemAsset, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
+import { createStoragePanel } from './storage-panel.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -43,6 +47,11 @@ const resolutionSelect = document.getElementById("resolution");
 const cpuInput = document.getElementById("cpu-cores");
 const cpuValue = document.getElementById("cpu-value");
 const ramSelect = document.getElementById("ram");
+const graphicsSelect = document.getElementById('graphics-backend');
+canvas.addEventListener('framebuffer-backend', event => {
+  const detail = event.detail;
+  document.getElementById('graphics-status').textContent = `${detail.backend}${detail.fallbackReason ? ` · fallback: ${detail.fallbackReason}` : ''}`;
+});
 const settingsNote = document.getElementById("settings-note");
 const settingsApply = document.getElementById("settings-apply");
 const restartDialog = document.getElementById("restart-dialog");
@@ -70,6 +79,61 @@ const resumeKey = "linuxonweb.restart-mode.v1";
 const modes = ["guest", "console", "startx", "firefox"];
 const minimumFirefoxMemory = 2048;
 let activeMachine = null;
+let persistentHome = null;
+let releaseHomeLock = null;
+export function guestHome() { return persistentHome; }
+const storagePanel = createStoragePanel({
+  parent: document.querySelector('main'),
+  async usage() {
+    let home;
+    if (persistentHome) home = await persistentHome.usage();
+    else {
+      const release = await acquireHomeLock();
+      try { const store = await openPersistentHome(); try { home = await store.usage(); } finally { await store.destroy(); } }
+      finally { release(); }
+    }
+    return { home, system: await systemUsage(), estimate: await navigator.storage?.estimate?.(), persistent: await navigator.storage?.persisted?.() };
+  },
+  persist: () => navigator.storage?.persist?.(),
+  clearCache: clearSystemCache,
+  async update(progress) { await updateSystem(progress); },
+  rollback: restorePreviousSystem,
+  async restart() {
+    if (currentMode) sessionStorage.setItem(resumeKey, currentMode);
+    await persistentHome?.flush();
+    restarting = true;
+    activeMachine?.close();
+    await activeMachine?.closed.catch(() => {});
+    location.reload();
+  },
+  async deleteHome() {
+    // Confirmation happens in the panel. Keep the exclusive lease through
+    // shutdown and deletion so another tab cannot open the old home halfway.
+    const release = releaseHomeLock || await acquireHomeLock();
+    lockConfiguration(true);
+    releaseHomeLock = null;
+    restarting = true;
+    try {
+      activeMachine?.close();
+      await activeMachine?.closed.catch(() => {});
+      await persistentHome?.destroy(); persistentHome = null;
+      await deletePersistentHome();
+      sessionStorage.removeItem(resumeKey);
+      const url = new URL(location.href); url.searchParams.delete('firefox');
+      location.replace(url);
+    } catch (error) {
+      activeMachine = null;
+      restarting = false;
+      lockConfiguration(false);
+      setStatus('guest stopped', 'idle');
+      throw error;
+    } finally { release(); }
+  },
+});
+onAssetNotice((message, error) => {
+  storagePanel.message(message, error);
+  if (error) storagePanel.cacheWarning(message);
+});
 export function guestAudioStats() { return activeMachine?.audioStats ?? null; }
 let currentMode = null;
 let configurationLocked = false;
@@ -141,7 +205,19 @@ function openConsole() {
 function writeConsole(value, source = "guest") {
   guestLogs.write(value, source);
   terminal?.write(value);
+  const text = typeof value === 'string' ? value : new TextDecoder().decode(value);
+  homeLogTail = (homeLogTail + text).slice(-512);
+  if (homeLogTail.includes('home: persistent storage mounted')) {
+    homeLogTail = '';
+    storagePanel.message('Home mounted · saved files persist across refresh and system updates.');
+    void confirmSystemBoot().catch(error => hostLog(`cache cleanup: ${error.message}`, 'error'));
+    void storagePanel.refresh().catch(() => {});
+  } else if (homeLogTail.includes('home: FAILED')) {
+    homeLogTail = '';
+    storagePanel.message('Persistent home could not be mounted. Desktop startup stopped; see guest logs.', true);
+  }
 }
+let homeLogTail = '';
 
 function hostLog(line, kind = "host") {
   writeConsole(`[host${kind === "error" ? " error" : ""}] ${line}\r\n`, "host");
@@ -156,7 +232,7 @@ function setStatus(message, state = "idle") {
 const hostCores = Math.min(64, Math.max(1, navigator.hardwareConcurrency || 2));
 cpuInput.max = String(hostCores);
 cpuInput.value = String(Math.min(2, hostCores));
-const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024 };
+const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'canvas2d' };
 function validConfiguration(value) {
   return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
     && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
@@ -166,18 +242,19 @@ let activeConfiguration = { ...defaults };
 try {
   const saved = JSON.parse(localStorage.getItem(settingsKey));
   if (saved?.ram === 256) saved.ram = 512;
-  if (validConfiguration(saved)) activeConfiguration = saved;
+  if (validConfiguration(saved)) activeConfiguration = { ...saved, backend: ['canvas2d', 'auto', 'webgl'].includes(saved.backend) ? saved.backend : 'canvas2d' };
 } catch { /* Ignore missing or malformed saved settings. */ }
 // Firefox's larger boot image needs extra headroom. Wasm32 cannot advertise
 // more than 4 GiB; console/X modes also expose smaller memory configurations.
 if ((resumeMode || (firefoxMode ? "firefox" : null)) === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
 function readConfiguration() {
-  return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value) };
+  return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value };
 }
 function showConfiguration(value) {
   resolutionSelect.value = value.resolution;
   cpuInput.value = String(value.cpus);
   ramSelect.value = String(value.ram);
+  graphicsSelect.value = value.backend || 'canvas2d';
   updateCpuLabel();
   updateSettingsState();
 }
@@ -185,7 +262,7 @@ function updateSettingsState() {
   const value = readConfiguration();
   settingsApply.disabled = configurationLocked || !validConfiguration(value)
     || (currentMode === "firefox" && value.ram < minimumFirefoxMemory)
-    || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram);
+    || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram && value.backend === activeConfiguration.backend);
   for (const option of ramSelect.options) option.disabled = currentMode === "firefox" && Number(option.value) < minimumFirefoxMemory;
   settingsNote.textContent = configurationLocked ? "Please wait while the machine starts or restarts."
     : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox requires at least 2 GB. Its default is 4 GB."
@@ -226,6 +303,7 @@ document.addEventListener("keydown", (ev) => {
 restartDialog.addEventListener("click", (ev) => ev.stopPropagation());
 resolutionSelect.addEventListener("change", updateSettingsState);
 ramSelect.addEventListener("change", updateSettingsState);
+graphicsSelect.addEventListener('change', updateSettingsState);
 cpuInput.addEventListener("input", () => { updateCpuLabel(); updateSettingsState(); });
 showConfiguration(activeConfiguration);
 updateResolution();
@@ -245,7 +323,7 @@ settingsApply.addEventListener("click", () => {
   pendingConfiguration = { ...next };
   document.getElementById("restart-error").hidden = true;
   document.getElementById("restart-title").textContent = activeMachine ? "Restart the guest?" : "Apply machine settings?";
-  document.getElementById("restart-summary").textContent = `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`}. ${activeMachine ? "Continue saves these settings and starts a fresh guest in the same mode." : "Continue saves these settings for the next boot."}`;
+  document.getElementById("restart-summary").textContent = `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
   document.getElementById("restart-warning").hidden = !activeMachine;
   restartDialog.showModal();
 });
@@ -275,6 +353,7 @@ restartContinue.addEventListener("click", async () => {
   restarting = true;
   lockConfiguration(true);
   setStatus("restarting…", "booting");
+  await persistentHome?.flush();
   activeMachine.close();
   await activeMachine.closed.catch(() => {});
   // Reload releases the old guest's canvas listeners, streams, workers and
@@ -299,41 +378,13 @@ function canvasCoords(ev) {
   };
 }
 
-async function loadBytes(urls) {
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) continue;
-      // Stream gzip responses directly through the browser decompressor so
-      // the compressed response is not retained alongside the decompressed
-      // initramfs. If streaming is unavailable, retain the old byte-buffer
-      // path; the caller's unpackGzip fallback remains unchanged.
-      if (/\.gz(?:[?#]|$)/i.test(url) && res.body && typeof DecompressionStream === "function") {
-        const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
-        return new Uint8Array(await new Response(stream).arrayBuffer());
-      }
-      return new Uint8Array(await res.arrayBuffer());
-    } catch {
-      /* try next */
-    }
-  }
-  return null;
-}
-
-async function unpackGzip(bytes) {
-  if (typeof DecompressionStream !== "function") {
-    throw new Error("gzip initramfs requires browser DecompressionStream support");
-  }
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
 function lockConfiguration(locked) {
   configurationLocked = locked;
   for (const button of launchButtons) button.disabled = locked;
   resolutionSelect.disabled = locked;
   cpuInput.disabled = locked;
   ramSelect.disabled = locked;
+  graphicsSelect.disabled = locked;
   updateSettingsState();
 }
 
@@ -345,6 +396,7 @@ function ramBytes(mebibytes) {
 async function boot(mode) {
   if (configurationLocked || activeMachine) return;
   currentMode = mode;
+  displayStage.hidden = mode === 'console';
   if (mode === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
   // Only confirmed configuration reaches the guest, never uncommitted drafts.
   showConfiguration(activeConfiguration);
@@ -358,31 +410,21 @@ async function boot(mode) {
   hostLog(
     `boot mode=${mode}, display=${FB_W}x${FB_H}, cpus=${cpuInput.value}, ram=${ramSelect.selectedOptions[0].text}`,
   );
-  // Prefer the GUI initramfs (Xfbdev + WM/xterm). Fall back to ext4.
-  // Firefox mode uses the larger image containing the stripped static browser
-  // and its runtime resources. Other modes keep the lightweight GUI image.
-  // Cache-bust so the browser always fetches the latest GUI image.
-  const bust = `?v=${Date.now()}`;
-  const packedInitramfs = await loadBytes([
-    ...(mode === "firefox"
-      ? [
-          `./initramfs-firefox.cpio.gz${bust}`,
-          `/demo/initramfs-firefox.cpio.gz${bust}`,
-          `./initramfs-firefox.cpio${bust}`,
-          `/demo/initramfs-firefox.cpio${bust}`,
-        ]
-      : []),
-    `./initramfs.cpio${bust}`,
-    `/demo/initramfs.cpio${bust}`,
-  ]);
-  // The kernel consumes a raw newc archive. Firefox mode stages gzip to keep
-  // the browser download bounded, so unpack it before handing it to the VM.
-  const initramfs = packedInitramfs?.[0] === 0x1f && packedInitramfs?.[1] === 0x8b
-    ? await unpackGzip(packedInitramfs)
-    : packedInitramfs;
-  const rootfs = initramfs
-    ? null
-    : await loadBytes([`./rootfs.ext4${bust}`, `/demo/rootfs.ext4${bust}`]);
+  let initramfs;
+  const rootfs = null;
+  try {
+    releaseHomeLock = await acquireHomeLock();
+    persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true) });
+    const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
+    const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
+    initramfs = new Uint8Array(await new Response(body).arrayBuffer());
+    storagePanel.message('Home ready · waiting for guest mount');
+  } catch (error) {
+    await persistentHome?.destroy().catch(() => {}); persistentHome = null;
+    releaseHomeLock?.(); releaseHomeLock = null;
+    setStatus('boot failed', 'error'); lockConfiguration(false);
+    storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
+  }
 
   const input = new TransformStream();
   const output = new TransformStream();
@@ -550,6 +592,7 @@ async function boot(mode) {
     entropyDevice(),
     pointer,
     attached.attachment.device,
+    fileSystemDevice(persistentHome, { tag: 'home', cache: true }),
   ];
   if (rootfs) {
     devices.push(
@@ -580,6 +623,9 @@ async function boot(mode) {
     void bootReader?.cancel().catch(() => {});
     void inputWriter.abort().catch(() => {});
     if (consoleInputWriter === inputWriter) consoleInputWriter = null;
+    // virtio-fs awaits in-flight operations, releases handles and awaits
+    // filesystem.destroy before spawnMachine resolves machine.closed.
+    releaseHomeLock?.(); releaseHomeLock = null;
   };
   (async () => {
     for (;;) {
@@ -593,9 +639,10 @@ async function boot(mode) {
     const consoleMode = mode === "console";
     const rootCommand = rootfs
       ? `root=/dev/vda rootfstype=ext4 rw rootwait init=${consoleMode ? "/bin/sh" : "/init"}`
-      : `rdinit=${consoleMode ? "/bin/sh" : "/init"}`;
+      : 'rdinit=/init';
     const modeFlags = [
       `demo.mode=${mode}`,
+      'home.persistent=1',
       mode === "firefox" ? "firefox=1" : "",
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
     ]
@@ -609,7 +656,7 @@ async function boot(mode) {
       devices,
       devicetree: { memory: { reg: [0, memory] } },
       audio: true,
-      framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32 },
+      framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32, backend: activeConfiguration.backend },
     });
     activeMachine = machine;
     mobileKeyboard.setKeyHandler((code, down) => pointer.key(code, down));
@@ -644,8 +691,11 @@ async function boot(mode) {
     });
   } catch (err) {
     cleanupBoot();
+    await persistentHome?.destroy().catch(() => {});
+    persistentHome = null;
     activeMachine = null;
     setStatus("boot failed", "error");
+    storagePanel.message(`Boot failed: ${err.message || err}`, true);
     hostLog(String(err?.stack || err), "error");
     consoleInputWriter = null;
     lockConfiguration(false);

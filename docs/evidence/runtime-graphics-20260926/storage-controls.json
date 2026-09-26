@@ -1,0 +1,87 @@
+{
+  "pass": true,
+  "stages": [
+    {
+      "label": "accepted-restored",
+      "marker": "persistent-home-qa-1790428765359\n",
+      "profile": true,
+      "home": {
+        "files": 643,
+        "bytes": 93257728
+      },
+      "system": {
+        "bytes": 223243273,
+        "version": "fa0217b54d99",
+        "previous": true
+      },
+      "active": "fa0217b54d99",
+      "message": "Home mounted · saved files persist across refresh and system updates.",
+      "dialog": true
+    },
+    {
+      "label": "cancel-preserves-home",
+      "marker": "persistent-home-qa-1790428765359\n",
+      "profile": true,
+      "home": {
+        "files": 643,
+        "bytes": 93257728
+      },
+      "system": {
+        "bytes": 223243273,
+        "version": "fa0217b54d99",
+        "previous": true
+      },
+      "active": "fa0217b54d99",
+      "message": "Home mounted · saved files persist across refresh and system updates.",
+      "dialog": false
+    },
+    {
+      "label": "clear-cache-preserves-home",
+      "marker": "persistent-home-qa-1790428765359\n",
+      "profile": true,
+      "home": {
+        "files": 643,
+        "bytes": 93257728
+      },
+      "system": {
+        "bytes": 0,
+        "version": "fa0217b54d99",
+        "previous": true
+      },
+      "active": "fa0217b54d99",
+      "message": "Cached images deleted. Your home is unchanged. The next boot downloads system images again.",
+      "dialog": false
+    },
+    {
+      "label": "refilled-cache",
+      "marker": "persistent-home-qa-1790428765359\n",
+      "profile": true,
+      "home": {
+        "files": 643,
+        "bytes": 93257728
+      },
+      "system": {
+        "bytes": 134963688,
+        "version": "fa0217b54d99",
+        "previous": true
+      },
+      "active": "fa0217b54d99",
+      "message": "Home ready · waiting for guest mount",
+      "dialog": false
+    },
+    {
+      "label": "delete-home-preserves-cache",
+      "home": {
+        "files": 1,
+        "bytes": 0
+      },
+      "entries": [],
+      "system": {
+        "bytes": 134963688,
+        "version": "fa0217b54d99",
+        "previous": true
+      },
+      "active": "fa0217b54d99"
+    }
+  ]
+}

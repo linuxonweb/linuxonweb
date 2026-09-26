@@ -1,0 +1,10 @@
+{
+  "source": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/var/nix/builds/nix-721784-2625232085/build/firefox-128.14.0/js/src/vm/PortableBaselineInterpret.cpp",
+  "objects": "/mnt/p6/project/linux/.cache/firefox-fresh-obj-20260924-071600",
+  "timeoutSeconds": 300,
+  "scope": "single translation unit compatibility only; not runnable JIT or Firefox",
+  "preservedSourcesAndObjects": true,
+  "exitCode": 0,
+  "pass": true,
+  "objectBytes": 9353775
+}

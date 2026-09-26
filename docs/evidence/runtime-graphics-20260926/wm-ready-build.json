@@ -1,0 +1,11 @@
+{
+  "artifact": "/mnt/p6/project/linux/.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm",
+  "bytes": 823503,
+  "sha256": "2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3",
+  "status": "built and Wasm-validated; guest deadline/handshake tests required",
+  "guestTests": [
+    "--self-test-timeout must exit after ~1 second",
+    "DISPLAY=:0 ready property handshake",
+    "DISPLAY=:99 absent server must wait ~10 seconds"
+  ]
+}

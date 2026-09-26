@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Guest Firefox graphics and video test</title>
+<style>body{font:16px sans-serif;max-width:65em;margin:2em;background:white;color:#18212b}pre{white-space:pre-wrap;word-break:break-word}canvas{border:1px solid #aaa}video{width:320px}</style>
+<h1>Guest Firefox graphics and video test</h1>
+<p>Open this page inside the Linux Firefox window. Results describe that browser, not the outer host. A successful graphics context or video playback does not prove hardware acceleration.</p>
+<canvas id="gl" width="2" height="2"></canvas>
+<button id="play">Play VP8/Opus sample</button><video id="video" controls src="motion-opus.webm"></video>
+<button id="download">Download results JSON</button>
+<pre id="report">Testing…</pre>
+<script>
+const label=new URLSearchParams(location.search).get('label')||'unspecified';
+const report={schema:1,test:'guest-graphics-video',label,runId:Date.now().toString(),startedAt:new Date().toISOString(),userAgent:navigator.userAgent,secureContext:isSecureContext,webgl:{},webgpu:{},video:{hardwareDecoder:'not established by this page'}};
+document.getElementById('download').onclick=()=>{
+ report.exportedAt=new Date().toISOString();
+ const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)+'\n'],{type:'application/json'}));
+ const link=document.createElement('a');link.href=url;link.download='guest-graphics-'+label.replace(/[^a-z0-9_-]/gi,'_')+'-'+report.runId+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+};
+const show=()=>{document.getElementById('report').textContent=JSON.stringify(report,null,2);window.guestGraphicsResults=report;};
+try {
+  const canvas=document.getElementById('gl');
+  const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');
+  report.webgl.context=!!gl;
+  if(gl){
+    report.webgl.version=gl.getParameter(gl.VERSION);
+    report.webgl.renderer=gl.getParameter(gl.RENDERER);
+    const debug=gl.getExtension('WEBGL_debug_renderer_info');
+    if(debug)report.webgl.unmaskedRenderer=gl.getParameter(debug.UNMASKED_RENDERER_WEBGL);
+    gl.clearColor(1,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);
+    const pixel=new Uint8Array(4);gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+    report.webgl.redPixel=[...pixel];report.webgl.renderPass=pixel[0]===255&&pixel[1]===0&&pixel[2]===0&&pixel[3]===255;
+  }
+}catch(error){report.webgl.error=String(error);}
+report.webgpu.api=!!navigator.gpu;
+show();
+(async()=>{
+ try{
+   if(navigator.gpu){
+     const adapter=await Promise.race([navigator.gpu.requestAdapter(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('adapter timeout')),5000))]);
+     report.webgpu.adapter=!!adapter;
+     if(adapter){report.webgpu.fallbackAdapter=adapter.info?.isFallbackAdapter??null;const device=await adapter.requestDevice();report.webgpu.device=!!device;device.destroy();}
+   }
+ }catch(error){report.webgpu.error=String(error);}
+ try{
+   report.video.webCodecs=typeof VideoDecoder!=='undefined';
+   report.video.canPlayVP8Opus=document.getElementById('video').canPlayType('video/webm; codecs="vp8, opus"');
+   if(navigator.mediaCapabilities){report.video.mediaCapabilities=await navigator.mediaCapabilities.decodingInfo({type:'file',video:{contentType:'video/webm; codecs="vp8"',width:320,height:180,bitrate:200000,framerate:10}});}
+ }catch(error){report.video.probeError=String(error);}
+ report.probesDone=true;report.probesCompletedAt=new Date().toISOString();show();
+})();
+const video=document.getElementById('video');
+document.getElementById('play').onclick=()=>video.play().catch(error=>{report.video.playError=String(error);show();});
+for(const event of ['playing','ended','error'])video.addEventListener(event,()=>{
+ report.video.event=event;report.video.time=video.currentTime;
+ const quality=video.getVideoPlaybackQuality?.();
+ if(quality){report.video.totalFrames=quality.totalVideoFrames;report.video.droppedFrames=quality.droppedVideoFrames;}
+ if(video.error)report.video.error={code:video.error.code,message:video.error.message};
+ show();
+});
+</script></html>

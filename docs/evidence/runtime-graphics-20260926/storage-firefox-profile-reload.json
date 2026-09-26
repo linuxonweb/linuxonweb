@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "scope": "Actual Firefox bookmark/profile preservation after page reload and a fresh guest.",
+  "columns": [
+    "place_id",
+    "url",
+    "visit_count",
+    "bookmark_id",
+    "bookmark_title",
+    "bookmark_guid"
+  ],
+  "before": {
+    "rows": [
+      [
+        6,
+        "http://192.0.2.1:4180/linux/tests/guest-js-benchmark.html?label=baseline",
+        0,
+        13,
+        "Guest JavaScript comparison",
+        "1S_8FSXxZ3Lj"
+      ]
+    ],
+    "integrity": "ok"
+  },
+  "after": {
+    "integrity": "ok",
+    "rows": [
+      [
+        6,
+        "http://192.0.2.1:4180/linux/tests/guest-js-benchmark.html?label=baseline",
+        0,
+        13,
+        "Guest JavaScript comparison",
+        "1S_8FSXxZ3Lj"
+      ]
+    ]
+  },
+  "limitation": "visit_count is zero; this evidence does not establish positive visit-history counts. Browser profiles and SQLite databases are intentionally excluded."
+}

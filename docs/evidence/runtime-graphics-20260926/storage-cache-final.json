@@ -1,0 +1,21 @@
+{
+  "usage": {
+    "bytes": 134963688,
+    "version": "fa0217b54d99",
+    "previous": true
+  },
+  "keyCount": 88,
+  "partCount": 85,
+  "diagnostics": {
+    "hits": 2,
+    "downloads": 0,
+    "writes": 0,
+    "chunkWrites": 0,
+    "failures": []
+  },
+  "notice": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+  "home": {
+    "files": 13,
+    "bytes": 458752
+  }
+}

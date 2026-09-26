@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { mkdir, open, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,7 +10,7 @@ const chunkSize = 20 * 1024 * 1024;
 const temporary = join(here, '.stage-tmp');
 const publicDir = join(temporary, 'public');
 const generatedDir = join(temporary, 'generated');
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.wasm': 'application/wasm' };
+const mime = { '.html': 'text/html; charset=utf-8', '.json': 'application/json', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.wasm': 'application/wasm' };
 const sources = new Map();
 
 function include(source, url) {
@@ -26,7 +26,7 @@ async function includeModules(directory) {
 }
 
 // Explicit allowlist: never copy the source tree, backups, tests, or arbitrary node_modules.
-for (const name of ['index.html', 'main.js', 'keyboard.mjs', 'mobile-keyboard.mjs', 'touch-gesture.mjs', 'log-viewer.mjs', 'vmlinux.wasm', 'initramfs.cpio', 'initramfs-firefox.cpio.gz', 'node_modules/@xterm/xterm/css/xterm.css', 'node_modules/@xterm/xterm/lib/xterm.js', 'node_modules/@xterm/addon-fit/lib/addon-fit.js']) include(`web/linux/${name}`, `/linux/${name}`);
+for (const name of ['index.html', 'main.js', 'keyboard.mjs', 'mobile-keyboard.mjs', 'touch-gesture.mjs', 'log-viewer.mjs', 'persistent-home.mjs', 'boot-assets.mjs', 'boot-manifest.json', 'storage-panel.mjs', 'vmlinux.wasm', 'initramfs.cpio', 'initramfs-firefox.cpio.gz', 'node_modules/@xterm/xterm/css/xterm.css', 'node_modules/@xterm/xterm/lib/xterm.js', 'node_modules/@xterm/addon-fit/lib/addon-fit.js']) include(`web/linux/${name}`, `/linux/${name}`);
 await includeModules('web/linux/dist');
 for (const name of ['index.html', 'browser-posix-websocket.js', 'aurora-runner.js', 'xvfb-runner.js', 'artifacts/xvfb/Xvfb.js', 'artifacts/xvfb/Xvfb.wasm', 'artifacts/xvfb/Xvfb.data', 'artifacts/aurora/aurora-wm.js', 'artifacts/aurora/aurora-wm.wasm']) include(`web/desktop/${name}`, `/desktop/${name}`);
 
@@ -93,6 +93,13 @@ for (const [url, source] of [...sources].sort(([a], [b]) => a.localeCompare(b)))
   report.sourceFiles.push({ source: relative(root, source), path: url, size: before.size, sha256, parts: parts.length });
   report.sourceBytes += before.size;
   if (parts.length > 1) report.largeFiles++;
+}
+
+// Never publish a boot manifest that points at a different archive snapshot.
+const bootManifest = JSON.parse(await readFile(join(root, 'web/linux/boot-manifest.json'), 'utf8'));
+for (const image of Object.values(bootManifest.assets)) {
+  const staged = assets[new URL(image.url, 'https://local/linux/boot-manifest.json').pathname];
+  if (!staged || staged.sha256 !== image.sha256 || staged.size !== image.bytes) throw new Error('Boot manifest is stale; regenerate it after packaging guest images');
 }
 
 // Legacy dev-server aliases reuse canonical assets without uploading duplicate bytes.

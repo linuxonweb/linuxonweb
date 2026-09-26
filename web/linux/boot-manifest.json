@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "version": "fa0217b54d99",
+  "assets": {
+    "kernel": {
+      "url": "./vmlinux.wasm",
+      "bytes": 6281750,
+      "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+      "label": "Linux kernel"
+    },
+    "plain": {
+      "url": "./initramfs.cpio",
+      "bytes": 40495556,
+      "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "label": "Desktop system"
+    },
+    "firefox": {
+      "url": "./initramfs-firefox.cpio.gz",
+      "bytes": 88186382,
+      "sha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+      "label": "Firefox system"
+    }
+  }
+}

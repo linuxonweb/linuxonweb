@@ -1,0 +1,52 @@
+<!doctype html><meta charset="utf-8"><title>Guest JavaScript comparison</title>
+<style>body{font:16px sans-serif;margin:2em}pre{white-space:pre-wrap}button{font:inherit;padding:.6em}</style>
+<h1>Guest JavaScript comparison</h1>
+<p>Run inside the Linux Firefox window on both baseline and candidate with identical guest memory, CPU, resolution and outer browser. This tests JavaScript behavior and timing; it cannot itself identify the engine tier.</p>
+<button id="run">Run bounded comparison</button>
+<button id="download" disabled>Download results JSON</button><pre id="result">Ready</pre>
+<script>
+const label=new URLSearchParams(location.search).get('label')||'unspecified';
+document.getElementById('download').onclick=()=>{
+ const report=window.guestBenchmarkResults;if(!report?.done)return;
+ const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)+'\n'],{type:'application/json'}));
+ const link=document.createElement('a');link.href=url;link.download='guest-js-'+label.replace(/[^a-z0-9_-]/gi,'_')+'-'+report.runId+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+};
+const cases=[
+ ['integer loop',()=>{let sum=0;for(let i=0;i<4000;i++)sum=(sum+i)|0;return sum;},7998000],
+ ['object properties',()=>{let sum=0;const item={x:7,y:11};for(let i=0;i<4000;i++){item.x=(i%13);sum+=item.x+item.y;}return sum;},67982],
+ ['array callbacks',()=>Array.from({length:1000},(_,i)=>i).filter(x=>x%2===0).map(x=>x*3).reduce((a,b)=>a+b,0),748500],
+ ['JSON and strings',()=>{let sum=0;for(let i=0;i<200;i++){const text=JSON.stringify({name:'sample',value:i});sum+=JSON.parse(text).value;}return sum;},19900],
+ ['exceptions and recursion',()=>{function f(n){if(n===0)throw 17;return f(n-1);}let sum=0;for(let i=0;i<100;i++){try{f(5);}catch(value){sum+=value;}}return sum;},1700],
+];
+document.getElementById('run').onclick=async()=>{
+ const button=document.getElementById('run');button.disabled=true;
+ document.getElementById('download').disabled=true;
+ const repetitions=100;
+ const report={schema:1,test:'guest-js-comparison',measurement:'fixed-batch-100-v1',label,runId:Date.now().toString(),startedAt:new Date().toISOString(),userAgent:navigator.userAgent,warmups:12,samples:5,repetitions,results:[],error:null};
+ const started=performance.now();
+ try{
+  for(const [name,fn,expected] of cases){
+   for(let i=0;i<12;i++){if(fn()!==expected)throw new Error(name+' warmup correctness');}
+   const samples=[];
+   for(let i=0;i<5;i++){
+    if(performance.now()-started>30000)throw new Error('30-second workload budget exceeded');
+    const begin=performance.now();
+    for(let repetition=0;repetition<repetitions;repetition++){
+     const value=fn();if(value!==expected)throw new Error(name+' correctness: '+value);
+    }
+    samples.push(performance.now()-begin);
+   }
+   samples.sort((a,b)=>a-b);
+   report.results.push({name,expected,actual:expected,repetitions,sampleTotalMs:samples,medianMs:Number((samples[2]/repetitions).toFixed(6)),samplesMs:samples.map(total=>Number((total/repetitions).toFixed(6))),timingResolutionSufficient:samples.every(total=>total>=10),correct:true});
+   document.getElementById('result').textContent=JSON.stringify(report,null,2);
+   if(performance.now()-started>30000)throw new Error('30-second workload budget exceeded');
+   await new Promise(resolve=>setTimeout(resolve,0));
+  }
+ }catch(error){report.error=String(error);}
+ report.elapsedMs=performance.now()-started;report.done=true;report.completedAt=new Date().toISOString();report.pass=!report.error&&report.results.length===cases.length;
+ report.timingResolutionSufficient=report.pass&&report.results.every(result=>result.timingResolutionSufficient);
+ if(!report.timingResolutionSufficient)report.timingWarning='At least one batch is below 10 ms or the run is incomplete; do not claim a speedup from this run.';
+ window.guestBenchmarkResults=report;
+ document.getElementById('result').textContent=JSON.stringify(report,null,2);button.disabled=false;document.getElementById('download').disabled=false;
+};
+</script>
