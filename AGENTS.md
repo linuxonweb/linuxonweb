@@ -457,6 +457,61 @@ paths, commands and hashes are in the WebGL task's
 `staged-source-hashes.json`. This handoff note is a subsequent documentation edit.
 The full goal is not complete and has not reached an evidenced 95/100.
 
+### Reusable WebGL renderer continuation
+
+Previous goal turn classification: progress (translator/coordinate proof and
+sampling correctness fixes, source checkpoint `1cf9282`, handoff `b9cb47a`).
+This continuation starts from `b9cb47a`, with the existing branch and clean
+tracked tree. Agent creation and the sole serving owner's followup both still
+fail with the platform thread limit. Root performed the bounded implementation
+and finite browser commands directly; do not claim these were delegated.
+
+New `web/linux/tests/guest-vulkan-webgl/renderer.mjs` implements the resource,
+recording, whole-pass validation, asynchronous PBO/fence readback, budgets and
+close/loss API. The shared WGSL renderer only adds an optional shader-validator
+argument to `validatePipelineDescriptor`, retaining the existing WGSL default.
+GLSL metadata is validated separately. Native errors after possible effects
+become terminal `-5`, including out of memory; pre-execution budget failures
+remain recoverable `-12`. Close/loss cancels confirmed pending waits.
+
+Accepted `renderer-browser-run4` under the WebGL task passes 46 pixel cases,
+84 negative/lifecycle cases and 162,287 mostly per-pixel checks. Same SPIR-V runs
+through both backends, now including fragment position x/y/z/reciprocal-w and
+flat shading. Seven WebGL contexts have zero native ownership before emergency
+cleanup; all 77 independently tracked WebGPU buffers/textures release normally.
+The finite owned browser exits zero. Both use software rendering. Preserve
+earlier successful runs1–3 as historical narrower/source snapshots.
+`renderer-checkpoint-run1/result.json` passes 71 current-source/artifact and
+process checks. All four finite renderer browsers are absent; user server
+PID1591443/startTicks148821663 remains unchanged. Compact evidence is
+`docs/evidence/runtime-graphics-20260926/guest-vulkan-webgl-renderer.json`.
+The scoped source commit is recorded by this packet's
+`renderer-checkpoint-run1/commit-result.json`; read current Git HEAD rather than
+assuming the earlier source checkpoints are still the tip.
+
+WebGL stride is limited to 252 aligned bytes and viewports to integers. Host
+HELLO and guest limits must reflect this before integration. Flat shading uses
+first-provoking-vertex extension when available, otherwise bounded cyclic
+index rotation. The current browser does not expose that extension: only the
+index implementation is pixel-verified, including firstVertex=3 and multiple
+primitives. See `web/linux/tests/guest-vulkan-webgl/RENDERER.md`.
+
+Next packet must connect the renderer to `guest-gpu/host.mjs`: prefer WebGPU,
+fall back only on initial acquisition failure with explicit pinned GLSL Worker
+options, reject private WGSL/compute operations on WebGL, release owned context
+and Worker on every exit, and preserve terminal failure status (do not mask it
+by calling abort on a closed renderer). Update the experimental C ICD to expose
+the negotiated stride and reject fractional viewports before host execution.
+Current `icd.c` HELLO buffer is 4096 bytes, not the stale 512-byte summary.
+Then run the same public Vulkan app in actual Linux and regress WebGPU/compute.
+Do not substitute the browser gate for actual guest or Firefox support.
+
+Goal accounting started this continuation at 9,737,322 tokens, without an
+explicit token budget. Weekly allowance remains unmeasurable. Overall project
+assessment remains approximately 80/100: Firefox GPU/JIT/decoder integration,
+general Vulkan/OpenGL/X11, final performance validation and redeployment are
+still incomplete. Keep the full goal active.
+
 ## Services and deployment
 
 **Current service revalidation supersedes the historical notes below.**

@@ -94,10 +94,10 @@ export function validateTranslatedShader(input, expectedStage) {
 }
 
 /** Backend-neutral profile and vertex declarations; no GPU enums/native objects here. */
-export function validatePipelineDescriptor(input) {
+export function validatePipelineDescriptor(input, validateShader = validateTranslatedShader) {
   record(input, ['vertex', 'fragment', 'vertexBuffers', 'colorFormat', 'topology', 'frontFace', 'cullMode', 'sampleCount'], 'pipeline');
-  const vertex = validateTranslatedShader(input.vertex, 'vertex');
-  const fragment = validateTranslatedShader(input.fragment, 'fragment');
+  const vertex = validateShader(input.vertex, 'vertex');
+  const fragment = validateShader(input.fragment, 'fragment');
   const colorFormat = choice(input.colorFormat ?? 'rgba8unorm', ['rgba8unorm'], 'color format');
   const topology = choice(input.topology ?? 'triangle-list', ['triangle-list'], 'primitive topology');
   const frontFace = choice(input.frontFace ?? 'ccw', ['ccw'], 'front face');

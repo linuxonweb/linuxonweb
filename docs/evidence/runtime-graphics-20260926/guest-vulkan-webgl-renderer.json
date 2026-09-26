@@ -1,0 +1,677 @@
+{
+  "pass": true,
+  "auditChecks": 71,
+  "baseCommit": "b9cb47acb996592741a45e6d7562b2f745ed4659",
+  "sources": {
+    "web/linux/tests/guest-vulkan-graphics/renderer.mjs": "264aead425c79d74cbd20c38c74eed2825137f5cb482d9c2421a21da6b47ed90",
+    "web/linux/tests/guest-vulkan-webgl/renderer.mjs": "cdfb71194b8371dd167729a5e937a4e9f9ba9280b8da9d62a44374f98f6180fc",
+    "web/linux/tests/guest-vulkan-webgl/renderer-browser.mjs": "f3ec888ab78d3e08df0e47524ff2a39f0281e1a089cc884d7dfbbd3da9eddc1b",
+    "web/linux/tests/guest-vulkan-webgl/run-renderer-browser.mjs": "f5e7fd85ca55a0bf514894aee7b17bb6d58195046287d59d7e0957834f284121",
+    "web/linux/tests/guest-vulkan-webgl/prepare-renderer-fixtures.py": "b5f21110e77dd78b75b8fd59956b7e8bf6bb54ccbe65b03d43c4f394facec9ed"
+  },
+  "browserReport": {
+    "path": "/mnt/p6/build/guest-vulkan-webgl-20260926/renderer-browser-run4/result.json",
+    "sha256": "9df87d06d1c9e495442400eba2d1c5c3861308260a63a2a252ba1641fd2e67eb",
+    "checks": 162287,
+    "cases": [
+      {
+        "label": "pair-a.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-a.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-a.vert/pair-b.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-a.vert/pair-b.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-a.vert/fragcoord.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-a.vert/fragcoord.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "pair-b.vert/pair-a.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "pair-b.vert/pair-a.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "pair-b.vert/pair-b.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "pair-b.vert/pair-b.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "pair-b.vert/fragcoord.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "pair-b.vert/fragcoord.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "clip-negative.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "clip-negative.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "clip-far.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "clip-far.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "perspective.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "perspective.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "perspective.vert/fragcoord.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "perspective.vert/fragcoord.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "flat.vert/flat.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "flat.vert/flat.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "flat-fallback/firstVertex3",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "flat-fallback/two-primitives",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/pair-b.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/pair-b.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/fragcoord.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-a.vert/fragcoord.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/pair-b.vert/pair-a.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/pair-b.vert/pair-a.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/pair-b.vert/pair-b.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/pair-b.vert/pair-b.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/pair-b.vert/fragcoord.frag/interleaved",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/pair-b.vert/fragcoord.frag/separate",
+        "interior": 173,
+        "exterior": 3425,
+        "skipped": 125
+      },
+      {
+        "label": "webgpu/clip-negative.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "webgpu/clip-negative.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "webgpu/clip-far.vert/pair-a.frag/interleaved",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "webgpu/clip-far.vert/pair-a.frag/separate",
+        "interior": 0,
+        "exterior": 3723,
+        "skipped": 0
+      },
+      {
+        "label": "webgpu/perspective.vert/pair-a.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/perspective.vert/pair-a.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/perspective.vert/fragcoord.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/perspective.vert/fragcoord.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/flat.vert/flat.frag/interleaved",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      },
+      {
+        "label": "webgpu/flat.vert/flat.frag/separate",
+        "interior": 461,
+        "exterior": 2961,
+        "skipped": 301
+      }
+    ],
+    "negatives": [
+      "compile failure recovers",
+      "interface mismatch",
+      "WebGL stride restriction",
+      "pair-a.vert/pair-a.frag/interleaved uninitialized readback",
+      "pair-a.vert/pair-a.frag/interleaved uninitialized load",
+      "fractional viewport restriction",
+      "vertex range",
+      "pair-a.vert/pair-a.frag/interleaved whole pass stale rejection",
+      "pair-a.vert/pair-a.frag/separate uninitialized readback",
+      "pair-a.vert/pair-a.frag/separate uninitialized load",
+      "pair-a.vert/pair-a.frag/separate whole pass stale rejection",
+      "pair-a.vert/pair-b.frag/interleaved uninitialized readback",
+      "pair-a.vert/pair-b.frag/interleaved uninitialized load",
+      "pair-a.vert/pair-b.frag/interleaved whole pass stale rejection",
+      "pair-a.vert/pair-b.frag/separate uninitialized readback",
+      "pair-a.vert/pair-b.frag/separate uninitialized load",
+      "pair-a.vert/pair-b.frag/separate whole pass stale rejection",
+      "pair-a.vert/fragcoord.frag/interleaved uninitialized readback",
+      "pair-a.vert/fragcoord.frag/interleaved uninitialized load",
+      "pair-a.vert/fragcoord.frag/interleaved whole pass stale rejection",
+      "pair-a.vert/fragcoord.frag/separate uninitialized readback",
+      "pair-a.vert/fragcoord.frag/separate uninitialized load",
+      "pair-a.vert/fragcoord.frag/separate whole pass stale rejection",
+      "pair-b.vert/pair-a.frag/interleaved uninitialized readback",
+      "pair-b.vert/pair-a.frag/interleaved uninitialized load",
+      "pair-b.vert/pair-a.frag/interleaved whole pass stale rejection",
+      "pair-b.vert/pair-a.frag/separate uninitialized readback",
+      "pair-b.vert/pair-a.frag/separate uninitialized load",
+      "pair-b.vert/pair-a.frag/separate whole pass stale rejection",
+      "pair-b.vert/pair-b.frag/interleaved uninitialized readback",
+      "pair-b.vert/pair-b.frag/interleaved uninitialized load",
+      "pair-b.vert/pair-b.frag/interleaved whole pass stale rejection",
+      "pair-b.vert/pair-b.frag/separate uninitialized readback",
+      "pair-b.vert/pair-b.frag/separate uninitialized load",
+      "pair-b.vert/pair-b.frag/separate whole pass stale rejection",
+      "pair-b.vert/fragcoord.frag/interleaved uninitialized readback",
+      "pair-b.vert/fragcoord.frag/interleaved uninitialized load",
+      "pair-b.vert/fragcoord.frag/interleaved whole pass stale rejection",
+      "pair-b.vert/fragcoord.frag/separate uninitialized readback",
+      "pair-b.vert/fragcoord.frag/separate uninitialized load",
+      "pair-b.vert/fragcoord.frag/separate whole pass stale rejection",
+      "clip-negative.vert/pair-a.frag/interleaved uninitialized readback",
+      "clip-negative.vert/pair-a.frag/interleaved uninitialized load",
+      "clip-negative.vert/pair-a.frag/interleaved whole pass stale rejection",
+      "clip-negative.vert/pair-a.frag/separate uninitialized readback",
+      "clip-negative.vert/pair-a.frag/separate uninitialized load",
+      "clip-negative.vert/pair-a.frag/separate whole pass stale rejection",
+      "clip-far.vert/pair-a.frag/interleaved uninitialized readback",
+      "clip-far.vert/pair-a.frag/interleaved uninitialized load",
+      "clip-far.vert/pair-a.frag/interleaved whole pass stale rejection",
+      "clip-far.vert/pair-a.frag/separate uninitialized readback",
+      "clip-far.vert/pair-a.frag/separate uninitialized load",
+      "clip-far.vert/pair-a.frag/separate whole pass stale rejection",
+      "perspective.vert/pair-a.frag/interleaved uninitialized readback",
+      "perspective.vert/pair-a.frag/interleaved uninitialized load",
+      "perspective.vert/pair-a.frag/interleaved whole pass stale rejection",
+      "perspective.vert/pair-a.frag/separate uninitialized readback",
+      "perspective.vert/pair-a.frag/separate uninitialized load",
+      "perspective.vert/pair-a.frag/separate whole pass stale rejection",
+      "perspective.vert/fragcoord.frag/interleaved uninitialized readback",
+      "perspective.vert/fragcoord.frag/interleaved uninitialized load",
+      "perspective.vert/fragcoord.frag/interleaved whole pass stale rejection",
+      "perspective.vert/fragcoord.frag/separate uninitialized readback",
+      "perspective.vert/fragcoord.frag/separate uninitialized load",
+      "perspective.vert/fragcoord.frag/separate whole pass stale rejection",
+      "flat.vert/flat.frag/interleaved uninitialized readback",
+      "flat.vert/flat.frag/interleaved uninitialized load",
+      "flat.vert/flat.frag/interleaved whole pass stale rejection",
+      "flat.vert/flat.frag/separate uninitialized readback",
+      "flat.vert/flat.frag/separate uninitialized load",
+      "flat.vert/flat.frag/separate whole pass stale rejection",
+      "resource budget",
+      "byte budget",
+      "staging budget",
+      "pending-close",
+      "pending-close no reuse",
+      "pending-loss",
+      "pending-loss no reuse",
+      "fence-timeout",
+      "fence-timeout no reuse",
+      "execution-error after effects is terminal",
+      "execution-error no reuse",
+      "execution-oom after effects is terminal",
+      "execution-oom no reuse"
+    ],
+    "ownership": [
+      {
+        "label": "failed pipeline",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Texture": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Framebuffer": {
+            "created": 0,
+            "deleted": 0
+          },
+          "VertexArray": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Sync": {
+            "created": 0,
+            "deleted": 0
+          }
+        }
+      },
+      {
+        "label": "normal close",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 166,
+            "deleted": 166
+          },
+          "Texture": {
+            "created": 38,
+            "deleted": 38
+          },
+          "Framebuffer": {
+            "created": 38,
+            "deleted": 38
+          },
+          "VertexArray": {
+            "created": 45,
+            "deleted": 45
+          },
+          "Program": {
+            "created": 44,
+            "deleted": 44
+          },
+          "Shader": {
+            "created": 89,
+            "deleted": 89
+          },
+          "Sync": {
+            "created": 112,
+            "deleted": 112
+          }
+        }
+      },
+      {
+        "label": "flat index fallback",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 5,
+            "deleted": 5
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Program": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Shader": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Sync": {
+            "created": 4,
+            "deleted": 4
+          }
+        }
+      },
+      {
+        "label": "pending-close",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Sync": {
+            "created": 2,
+            "deleted": 2
+          }
+        }
+      },
+      {
+        "label": "pending-loss",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Sync": {
+            "created": 2,
+            "deleted": 2
+          }
+        }
+      },
+      {
+        "label": "fence-timeout",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Sync": {
+            "created": 2,
+            "deleted": 2
+          }
+        }
+      },
+      {
+        "label": "execution-error",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Sync": {
+            "created": 1,
+            "deleted": 1
+          }
+        }
+      },
+      {
+        "label": "execution-oom",
+        "liveBeforeEmergencyCleanup": 0,
+        "counts": {
+          "Buffer": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Texture": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Framebuffer": {
+            "created": 1,
+            "deleted": 1
+          },
+          "VertexArray": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Program": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Shader": {
+            "created": 0,
+            "deleted": 0
+          },
+          "Sync": {
+            "created": 1,
+            "deleted": 1
+          }
+        }
+      }
+    ],
+    "webgpuOwnership": {
+      "created": 77,
+      "destroyed": 77,
+      "liveBeforeEmergencyCleanup": 0
+    },
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "webgpuAdapter": {
+      "description": "",
+      "isFallbackAdapter": true
+    },
+    "provokingExtension": false,
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    }
+  },
+  "ownedBrowsersRemaining": [],
+  "userServer": {
+    "pid": 1591443,
+    "startTicks": "148821663",
+    "preserved": true
+  },
+  "scope": "Reusable bounded renderer and same-SPIR-V backend coordinate verification; software GPUs only. Worker/protocol/guest integration remains pending."
+}
