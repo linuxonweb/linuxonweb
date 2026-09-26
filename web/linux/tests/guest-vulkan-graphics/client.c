@@ -91,6 +91,11 @@ int main(void){
     VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.apiVersion=VK_API_VERSION_1_0,.pApplicationName="public-graphics"};VkInstanceCreateInfo ii={.sType=VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,.pApplicationInfo=&app};
     CHECK(vkCreateInstance(&ii,NULL,&instance)==VK_SUCCESS);uint32_t count=1;VkPhysicalDevice physical;CHECK(vkEnumeratePhysicalDevices(instance,&count,&physical)==VK_SUCCESS&&count==1);
     VkQueueFamilyProperties qp;count=1;vkGetPhysicalDeviceQueueFamilyProperties(physical,&count,&qp);CHECK(qp.queueFlags&VK_QUEUE_GRAPHICS_BIT);
+    VkPhysicalDeviceProperties properties;vkGetPhysicalDeviceProperties(physical,&properties);
+    const unsigned max_stride=properties.limits.maxVertexInputBindingStride;
+    CHECK(max_stride==252||max_stride==2048);CHECK(!(qp.queueFlags&VK_QUEUE_COMPUTE_BIT));
+    CHECK(properties.limits.maxVertexInputAttributeOffset==(max_stride==252?244u:2040u));
+    printf("GUEST_VK_GRAPHICS_LIMITS max_stride=%u integer_viewport=%u compute=0\n",max_stride,max_stride==252);fflush(stdout);
     VkPhysicalDeviceMemoryProperties mp;vkGetPhysicalDeviceMemoryProperties(physical,&mp);CHECK(mp.memoryTypeCount==2&&(mp.memoryTypes[1].propertyFlags&VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
     float priority=1;VkDeviceQueueCreateInfo qi={.sType=VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,.queueCount=1,.pQueuePriorities=&priority};VkDeviceCreateInfo di={.sType=VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,.queueCreateInfoCount=1,.pQueueCreateInfos=&qi};
     CHECK(vkCreateDevice(physical,&di,NULL,&device)==VK_SUCCESS);VkQueue queue;vkGetDeviceQueue(device,0,0,&queue);CHECK(queue!=VK_NULL_HANDLE);
@@ -121,6 +126,9 @@ int main(void){
         VkPipelineRasterizationStateCreateInfo rs={.sType=VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,.polygonMode=VK_POLYGON_MODE_FILL,.cullMode=VK_CULL_MODE_NONE,.frontFace=VK_FRONT_FACE_COUNTER_CLOCKWISE,.lineWidth=1};
         VkPipelineMultisampleStateCreateInfo ms={.sType=VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,.rasterizationSamples=VK_SAMPLE_COUNT_1_BIT};VkPipelineColorBlendAttachmentState attachment={.colorWriteMask=15};VkPipelineColorBlendStateCreateInfo blend={.sType=VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,.attachmentCount=1,.pAttachments=&attachment};
         VkGraphicsPipelineCreateInfo pi={.sType=VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,.stageCount=2,.pStages=stages,.pVertexInputState=&vin,.pInputAssemblyState=&assembly,.pViewportState=&vs,.pRasterizationState=&rs,.pMultisampleState=&ms,.pColorBlendState=&blend,.layout=layout,.renderPass=creation,.basePipelineIndex=-1};
+        unsigned saved_stride=binds[0].stride;binds[0].stride=max_stride+4;
+        CHECK(vkCreateGraphicsPipelines(device,VK_NULL_HANDLE,1,&pi,NULL,&pipeline)==VK_ERROR_FEATURE_NOT_PRESENT&&!pipeline);binds[0].stride=saved_stride;
+        if(max_stride==252){viewport.x=0.5f;CHECK(vkCreateGraphicsPipelines(device,VK_NULL_HANDLE,1,&pi,NULL,&pipeline)==VK_ERROR_FEATURE_NOT_PRESENT&&!pipeline);viewport.x=0;}
         CHECK(vkCreateGraphicsPipelines(device,VK_NULL_HANDLE,1,&pi,NULL,&pipeline)==VK_SUCCESS);
         memset(binds,0xff,sizeof(binds));memset(attrs,0xff,sizeof(attrs));memset(stages,0xff,sizeof(stages));memset(&viewport,0xff,sizeof(viewport));memset(&scissor,0xff,sizeof(scissor));
         vkDestroyShaderModule(device,modules[0],NULL);vkDestroyShaderModule(device,modules[1],NULL);modules[0]=modules[1]=VK_NULL_HANDLE;vkDestroyPipelineLayout(device,layout,NULL);layout=VK_NULL_HANDLE;vkDestroyRenderPass(device,creation,NULL);creation=VK_NULL_HANDLE;

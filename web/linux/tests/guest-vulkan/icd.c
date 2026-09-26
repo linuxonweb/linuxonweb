@@ -15,7 +15,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, failed;
+    int clear_supported, compute_supported, graphics_supported, webgl_backend, failed;
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
 _Static_assert(offsetof(struct VkPhysicalDevice_T, loader) == 0, "physical loader prefix");
@@ -41,7 +41,7 @@ static int loader_chain_only(const void *chain, VkStructureType expected) {
     return node == NULL;
 }
 
-/* HELLO can succeed only after serveGPU has obtained a real adapter and device.
+/* HELLO can succeed only after serveGPU has obtained a device or WebGL context.
  * Preserve its observed identity verbatim; do not invent vendor/device IDs. */
 static int hello(VkInstance instance) {
     char data[4096]; uint32_t n = 0;
@@ -52,6 +52,9 @@ static int hello(VkInstance instance) {
     instance->clear_supported = strstr(data, "\"clearImage\":true") != NULL;
     instance->compute_supported = strstr(data, "\"computeProfile\":1") != NULL;
     instance->graphics_supported = strstr(data, "\"graphicsProfile\":1") != NULL;
+    instance->webgl_backend = strstr(data, "\"backend\":\"webgl2\"") != NULL;
+    if (instance->webgl_backend && (!instance->graphics_supported || instance->compute_supported || instance->clear_supported ||
+        !strstr(data, "\"maxVertexStride\":252") || !strstr(data, "\"integerViewport\":true"))) return -1;
     return 0;
 }
 static void transfer_cleanup(void);
@@ -144,7 +147,8 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
         out->limits.maxFramebufferWidth=out->limits.maxFramebufferHeight=128;out->limits.maxFramebufferLayers=1;
         out->limits.maxColorAttachments=out->limits.maxFragmentOutputAttachments=1;
         out->limits.maxVertexInputBindings=out->limits.maxVertexInputAttributes=8;
-        out->limits.maxVertexInputBindingStride=2048;out->limits.maxVertexInputAttributeOffset=2040;
+        out->limits.maxVertexInputBindingStride=live->webgl_backend?252:2048;
+        out->limits.maxVertexInputAttributeOffset=live->webgl_backend?244:2040;
         out->limits.maxVertexOutputComponents=out->limits.maxFragmentInputComponents=32;
         out->limits.maxViewports=1;out->limits.maxViewportDimensions[0]=out->limits.maxViewportDimensions[1]=128;
         out->limits.viewportBoundsRange[0]=0;out->limits.viewportBoundsRange[1]=128;

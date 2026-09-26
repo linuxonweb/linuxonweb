@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--source-audit',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--shader-dir',type=Path,required=True)
+    parser.add_argument('--host-profile',choices=['graphics','webgl'],default='graphics')
     args=parser.parse_args()
     out,storage=checked_storage(args.output);out.mkdir(parents=True,exist_ok=False)
     here=Path(__file__).resolve().parent
@@ -99,12 +100,16 @@ def main():
     imports=re.findall(r' <- (\S+)',(out/'abi.log').read_text())
     if 'env.memory' not in imports or set(imports)-{'env.memory','linux.syscall','linux.get_thread_area','linux.copy_siginfo'}:
         raise ValueError('unexpected imports: '+repr(imports))
-    host_sources={relative:digest((here.parent/relative).read_bytes()) for relative in (
+    host_files=[
         'guest-gpu/host.mjs','guest-vulkan/host.mjs','guest-vulkan-graphics/index.html','guest-vulkan-graphics/host.mjs',
-        'guest-vulkan-graphics/renderer.mjs','guest-vulkan-graphics/translator/index.mjs','guest-vulkan-graphics/translator/worker.mjs','guest-vulkan-graphics/translator/abi.mjs')}
+        'guest-vulkan-graphics/renderer.mjs','guest-vulkan-graphics/translator/index.mjs','guest-vulkan-graphics/translator/worker.mjs','guest-vulkan-graphics/translator/abi.mjs']
+    if args.host_profile=='webgl':
+        host_files += ['guest-vulkan-webgl/'+name for name in ('guest.html','host.mjs','renderer.mjs',
+            'translator/index.mjs','translator/worker.mjs','translator/abi.mjs')]
+    host_sources={relative:digest((here.parent/relative).read_bytes()) for relative in host_files}
     report={'pass':True,'testOnly':True,'artifact':str(artifact),'bytes':artifact.stat().st_size,'sha256':digest(artifact.read_bytes()),
         'scope':'Compiled public Vulkan SPIR-V graphics client; actual guest execution required; partial nonconformant ICD',
-        'upstream':lock,'shaders':shader_sources,'fixtureManifestSha256':digest(manifest),'sources':sources,'hostSources':host_sources,'imports':imports,'storage':storage,
+        'upstream':lock,'shaders':shader_sources,'fixtureManifestSha256':digest(manifest),'sources':sources,'hostSources':host_sources,'hostProfile':args.host_profile,'imports':imports,'storage':storage,
         'publicClientSymbols':public,'loaderArchive':str(archive),'loaderObjects':names+['unknown-disabled'],
         'portPatchSha256':digest((out/'static-loader-port.patch').read_bytes()),'linkMap':str(out/'link.map')}
     (out/'build.json').write_text(json.dumps(report,indent=2)+'\n')

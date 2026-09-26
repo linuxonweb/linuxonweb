@@ -512,6 +512,59 @@ assessment remains approximately 80/100: Firefox GPU/JIT/decoder integration,
 general Vulkan/OpenGL/X11, final performance validation and redeployment are
 still incomplete. Keep the full goal active.
 
+### Actual guest WebGL fallback integration
+
+This section supersedes the preceding renderer packet's proposed host integration.
+The instruction-only turn verified an existing storage rule and was no progress
+toward the active performance goal. The resumed turn made concrete implementation,
+guest regression and checkpoint progress. Goal accounting began at 10,145,470
+tokens, without a token budget; weekly quota is still unavailable. Fresh delegation
+still fails at the thread limit, so root performed bounded commands directly.
+
+`guest-gpu/host.mjs` now prefers WebGPU and permits explicit graphics-only WebGL2
+fallback on initial API/adapter/device acquisition failure. It uses the actual
+pinned GLSL Worker and renderer, advertises backend-specific limits, rejects
+private WGSL/compute/clear commands on WebGL, and releases owned context/Worker.
+Initialization deadlines stop waiting and dispose resources delivered late.
+There is no fallback after device acquisition or mid-session loss. Guest ICD
+limits expose stride 252/integer viewports on WebGL; the public app verifies
+limits and local rejection before exercising its original eight rendering rounds.
+
+Authoritative graphics result:
+`/mnt/p6/build/guest-vulkan-webgl-20260926/guest-fallback-run2/result.json`.
+The actual Linux guest passed 232,753 mostly pixel checks on WebGL2 and 232,745
+on preferred WebGPU. Each used 114 commands, 16 passes/draws/translations,
+12 uploads and eight readbacks. Independent native ownership and Worker counts
+reached zero before emergency cleanup. The public binary has 51 upstream Vulkan
+symbols, 385,266 bytes, SHA-256
+`b385309e979248414a6f52ad62285bf6adb7c75363b91844f0295c39d089845d`.
+Its graphics build/package are `webgl-integration-{build,package}-run2` under
+the graphics task. Run1 failed before boot due to a fixture adapter syntax error;
+preserve that failed attempt. Its browser/server closed through runner cleanup.
+
+Shared compute regression passed actual guest execution (501 checks, three
+dispatches, two uploads/readbacks/translations, 21 commands):
+`guest-vulkan-webgl-20260926/compute-regression-run1/result.json`, with fresh
+`guest-vulkan-compute-20260926/webgl-icd-regression-{build,package}-run1`.
+The finite `run-guest.mjs` now accepts that compute package as well as graphics;
+the older graphics run's exact runner is preserved in its evidence directory.
+No application/host input changed after the accepted graphics run.
+
+Synthetic initialization/late cleanup and wire denial/recovery pass 86 checks
+in 11 cases (`host-initialization-run3`). This uses a mock context for protocol
+checks and is not rendering evidence. Run2's mock omitted status methods and
+failed; run3 fixes the mock. The real guest runs prove rendering separately.
+`integration-checkpoint-run1` passes 109 source/artifact/process checks; compact
+evidence is `docs/evidence/runtime-graphics-20260926/guest-vulkan-webgl-integration.json`.
+Both finite browser/server pairs exited, and user PID1591443 retained its exact
+start/command identity. No persistent task service or candidate symlink was added.
+
+Both backends use SwiftShader. Inspected screenshots show Aurora, not presentation
+of the returned Vulkan pixels. Next integrate actual X11 presentation of those
+pixels, then evaluate Mesa/Zink requirements; this is not yet OpenGL, Firefox GPU,
+hardware video decoding, native JIT or Vulkan conformance. The public Site remains
+unchanged. Overall assessment remains approximately 80/100; the full goal is active.
+
 ## Services and deployment
 
 **Current service revalidation supersedes the historical notes below.**

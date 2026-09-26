@@ -20,25 +20,56 @@ export function encodeReply(opcode, request, status, body = new Uint8Array()) {
   result.set(body, 20); return result;
 }
 
+/** Ownership transfers to serveGPU; close must synchronously release the lease. */
+export function createWebGLContextLease() {
+  const canvas = typeof OffscreenCanvas === 'function' ? new OffscreenCanvas(1, 1) : globalThis.document?.createElement('canvas');
+  if (!canvas) fail('WebGL2 canvas unavailable', -19);
+  const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false });
+  if (!gl) fail('WebGL2 context unavailable', -19);
+  let closed = false;
+  return { gl, close() { if (!closed) { closed = true; gl.getExtension('WEBGL_lose_context')?.loseContext(); } } };
+}
+
 /** One device and resource table per connection. No guest memory/shared views. */
 export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
-  allowGraphics = false, graphicsTranslatorOptions, graphicsTranslatorFactory } = {}) {
+  allowGraphics = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
+  allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease } = {}) {
   const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
-  let device, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
+  let device, contextLease, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
+  const initializing = new Set();
   const report = { commands: 0, draws: 0, clears: 0, readbacks: 0, dispatches: 0, uploads: 0, translations: 0, translatorsCreated: 0, translatorsClosed: 0, released: 0, adapter: null, error: null,
     graphicsTranslations: 0, graphicsPasses: 0, graphicsDraws: 0, graphicsUploads: 0, graphicsReadbacks: 0,
-    graphicsTranslatorsCreated: 0, graphicsTranslatorsClosed: 0, graphics: null };
+    graphicsTranslatorsCreated: 0, graphicsTranslatorsClosed: 0, graphics: null,
+    backend: null, acquisitionError: null, contextsCreated: 0, contextsClosed: 0, cleanupErrors: [] };
+  const attempt = action => { try { action(); } catch (error) { report.cleanupErrors.push(String(error.message).slice(0, 512)); } };
+  const releaseContext = lease => { report.contextsClosed++; attempt(() => lease.close()); };
   const cleanup = () => {
     if (closed) return; closed = true;
-    graphicsRenderer?.close();
+    for (const cancel of [...initializing]) cancel();
+    attempt(() => graphicsRenderer?.close());
     if (graphicsRenderer) report.graphics = graphicsRenderer.getStats();
-    for (const entry of resources.values()) if (!entry.graphics) entry.object.destroy?.();
+    for (const entry of resources.values()) if (!entry.graphics) attempt(() => entry.object.destroy?.());
     report.released += resources.size; resources.clear(); allocation = 0;
-    if (translator) { translator.close(); translator = undefined; report.translatorsClosed++; }
-    if (graphicsTranslator) { graphicsTranslator.close(); graphicsTranslator = undefined; report.graphicsTranslatorsClosed++; }
-    device?.destroy(); connection.close();
+    if (translator) { attempt(() => translator.close()); translator = undefined; report.translatorsClosed++; }
+    if (graphicsTranslator) { attempt(() => graphicsTranslator.close()); graphicsTranslator = undefined; report.graphicsTranslatorsClosed++; }
+    attempt(() => device?.destroy());
+    if (contextLease) { const lease = contextLease; contextLease = undefined; releaseContext(lease); }
+    attempt(() => connection.close());
   };
   const timer = setTimeout(() => { report.error = 'session deadline'; cleanup(); }, timeoutMs);
+  // Browser acquisition APIs are not cancellable. Stop waiting on session close,
+  // while retaining a release handler for any resource they deliver afterward.
+  const initialize = (promise, releaseLate = () => {}) => new Promise((resolve, reject) => {
+    let settled = false;
+    const cancel = () => { if (!settled) { settled = true; initializing.delete(cancel); reject(Object.assign(new Error('session closed during initialization'), { status: -19 })); } };
+    initializing.add(cancel);
+    Promise.resolve(promise).then(value => {
+      initializing.delete(cancel);
+      if (settled || closed) { attempt(() => releaseLate(value)); cancel(); return; }
+      settled = true; resolve(value);
+    }, error => { initializing.delete(cancel); if (!settled) { settled = true; reject(error); } });
+    if (closed) cancel();
+  });
   const add = (kind, object, bytes = 0, extra = {}) => {
     if (closed || nextId > 0xffffffff || resources.size >= 64 || allocation + bytes > 16 * 1024 * 1024) { object.destroy?.(); fail('resource budget exceeded', -12); }
     const id = nextId++; resources.set(id, { kind, object, bytes, ...extra }); allocation += bytes;
@@ -84,29 +115,57 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     return result;
   };
   try {
-    if (!gpu) fail('WebGPU unavailable: no renderer fallback is implied');
-    const adapter = await gpu.requestAdapter(); if (!adapter || closed) fail('WebGPU adapter unavailable');
-    report.adapter = { vendor: adapter.info?.vendor, architecture: adapter.info?.architecture, description: adapter.info?.description,
-      isFallbackAdapter: adapter.info?.isFallbackAdapter ?? adapter.isFallbackAdapter ?? null };
-    device = await adapter.requestDevice(); if (closed) { device.destroy(); fail('session closed'); }
-    device.lost.then(info => { if (!closed) { lost = true; report.error = `device lost: ${info.message}`; cleanup(); } });
+    if (allowWebGL && !allowGraphics) fail('WebGL fallback requires the graphics profile');
+    let adapter;
+    try {
+      if (!gpu) fail('WebGPU API unavailable', -19);
+      adapter = await initialize(gpu.requestAdapter());
+      if (!adapter) fail('WebGPU adapter unavailable', -19);
+      device = await initialize(adapter.requestDevice(), value => value?.destroy());
+      if (!device) fail('WebGPU device unavailable', -19);
+    } catch (error) {
+      report.acquisitionError = String(error.message).slice(0, 512);
+      if (closed || !allowWebGL) throw error;
+    }
+    if (closed) fail('session closed', -19);
+    if (device) {
+      report.backend = 'webgpu';
+      report.adapter = { vendor: adapter.info?.vendor, architecture: adapter.info?.architecture, description: adapter.info?.description,
+        isFallbackAdapter: adapter.info?.isFallbackAdapter ?? adapter.isFallbackAdapter ?? null };
+      device.lost.then(info => { if (!closed) { lost = true; report.error = `device lost: ${info.message}`; cleanup(); } });
+    } else {
+      const acquireContext = async () => {
+        const lease = await webglContextFactory();
+        if (!lease?.gl || typeof lease.close !== 'function') { attempt(() => lease?.close?.()); fail('invalid WebGL context lease', -19); }
+        report.contextsCreated++; return lease;
+      };
+      contextLease = await initialize(acquireContext(), releaseContext);
+      report.backend = 'webgl2'; allowCompute = false; allowClear = false;
+      const gl = contextLease.gl, debug = gl.getExtension('WEBGL_debug_renderer_info');
+      report.adapter = { vendor: String(gl.getParameter(gl.VENDOR)).slice(0, 128),
+        description: String(gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER)).slice(0, 512), isFallbackAdapter: null };
+    }
     if (allowCompute) {
       const factory = translatorFactory ?? (await import('../guest-vulkan-compute/translator/index.mjs')).createSpirvTranslator;
-      const created = await factory(translatorOptions);
+      const created = await initialize(factory(translatorOptions), value => value.close());
       if (closed) { created.close(); fail('session closed', -19); }
       translator = created; report.translatorsCreated++;
     }
     if (allowGraphics) {
-      const factory = graphicsTranslatorFactory ?? (await import('../guest-vulkan-graphics/translator/index.mjs')).createGraphicsTranslator;
-      const created = await factory(graphicsTranslatorOptions);
+      const webgl = report.backend === 'webgl2';
+      const factory = webgl ? webglTranslatorFactory ?? (await import('../guest-vulkan-webgl/translator/index.mjs')).createWebGLGraphicsTranslator :
+        graphicsTranslatorFactory ?? (await import('../guest-vulkan-graphics/translator/index.mjs')).createGraphicsTranslator;
+      const created = await initialize(factory(webgl ? webglTranslatorOptions : graphicsTranslatorOptions), value => value.close());
       if (closed) { created.close(); fail('session closed', -19); }
       graphicsTranslator = created; report.graphicsTranslatorsCreated++;
-      const renderer = await import('../guest-vulkan-graphics/renderer.mjs');
+      const renderer = webgl ? await import('../guest-vulkan-webgl/renderer.mjs') : await import('../guest-vulkan-graphics/renderer.mjs');
       if (closed) fail('session closed', -19);
-      validateGraphicsShader = renderer.validateTranslatedShader;
-      graphicsRenderer = renderer.createGraphicsRenderer(device);
+      validateGraphicsShader = webgl ? renderer.validateWebGLShader : renderer.validateTranslatedShader;
+      graphicsRenderer = webgl ? renderer.createWebGLRenderer(contextLease.gl, { onEvent(event) {
+        if (event.type === 'lost' && !closed) { lost = true; report.error = event.message; cleanup(); }
+      } }) : renderer.createGraphicsRenderer(device);
     }
-    onEvent({ type: 'adapter', ...report.adapter });
+    onEvent({ type: 'adapter', backend: report.backend, ...report.adapter });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
       const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics);
@@ -116,8 +175,13 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       const exact = n => { if (length !== n) fail('invalid payload length'); };
       let body = new Uint8Array(), status = 0, terminal = false;
       try {
+        if (report.backend === 'webgl2' && opcode >= OP.SHADER && opcode <= OP.STORAGE_READBACK && opcode !== OP.DESTROY && opcode !== OP.CLOSE)
+          fail('operation unavailable on the WebGL graphics backend');
         switch (opcode) {
-          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, shader: 'WGSL', ...(allowClear ? { clearImage: true } : {}), ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}), ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256} : {}), adapter: report.adapter })); break;
+          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, backend: report.backend,
+            shader: report.backend === 'webgl2' ? 'SPIR-V' : 'WGSL', ...(allowClear ? { clearImage: true } : {}),
+            ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}),
+            ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:report.backend==='webgl2'} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -298,13 +362,14 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
               graphicsRenderer.begin({target:target.object,loadOp:pass.loadOp,storeOp:pass.storeOp,...(Object.hasOwn(pass,'clearColor') ? {clearColor:pass.clearColor} : {})});
               for (const draw of draws) graphicsRenderer.draw(draw);
               await graphicsRenderer.end();
-            } catch (error) { graphicsRenderer.abort(); throw error; }
+            } catch (error) { if (graphicsRenderer.getStats().state === 'open') graphicsRenderer.abort(); throw error; }
             report.graphicsPasses++; report.graphicsDraws += draws.length; break;
           }
           case OP.GRAPHICS_READBACK: {
             if (!allowGraphics) fail('graphics not negotiated');
             exact(4); const target = get(v.getUint32(0,true), 'graphics-target');
-            if (allocation + Math.ceil(target.width*4/256)*256*target.height > 16*1024*1024) fail('graphics staging exceeds budget', -12);
+            const stagingSize = report.backend === 'webgl2' ? target.width*target.height*4 : Math.ceil(target.width*4/256)*256*target.height;
+            if (allocation + stagingSize > 16*1024*1024) fail('graphics staging exceeds budget', -12);
             body = (await graphicsRenderer.readback(target.object)).pixels; report.graphicsReadbacks++; break;
           }
           case OP.DESTROY: {

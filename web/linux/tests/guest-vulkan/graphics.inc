@@ -69,7 +69,7 @@ static int graphics_vertex_layout(const VkPipelineVertexInputStateCreateInfo *i,
     p->binding_count=i->vertexBindingDescriptionCount;
     for(unsigned n=0;n<p->binding_count;n++) {
         VkVertexInputBindingDescription b=i->pVertexBindingDescriptions[n];
-        if(b.binding>=8||b.inputRate!=VK_VERTEX_INPUT_RATE_VERTEX||b.stride<4||b.stride>2048||b.stride%4)return 0;
+        if(b.binding>=8||b.inputRate!=VK_VERTEX_INPUT_RATE_VERTEX||b.stride<4||b.stride>(live->webgl_backend?252u:2048u)||b.stride%4)return 0;
         unsigned slot=n;while(slot&&p->bindings[slot-1].binding>b.binding){p->bindings[slot]=p->bindings[slot-1];slot--;}
         if((slot&&p->bindings[slot-1].binding==b.binding)||(slot<n&&p->bindings[slot].binding==b.binding))return 0;
         p->bindings[slot]=(struct graphics_binding){.binding=b.binding,.stride=b.stride};
@@ -111,7 +111,9 @@ static int graphics_viewport(const VkPipelineViewportStateCreateInfo *i,struct g
     p->viewport=i->pViewports[0];p->scissor=i->pScissors[0];const VkViewport v=p->viewport;const VkRect2D s=p->scissor;
     return v.x>=0&&v.y>=0&&v.width>0&&v.height>0&&v.x+v.width<=128&&v.y+v.height<=128&&
         v.minDepth>=0&&v.maxDepth<=1&&v.minDepth<=v.maxDepth&&s.offset.x>=0&&s.offset.y>=0&&
-        s.offset.x<=128&&s.offset.y<=128&&s.extent.width<=128-(unsigned)s.offset.x&&s.extent.height<=128-(unsigned)s.offset.y;
+        s.offset.x<=128&&s.offset.y<=128&&s.extent.width<=128-(unsigned)s.offset.x&&s.extent.height<=128-(unsigned)s.offset.y&&
+        (!live->webgl_backend||(v.x==(float)(unsigned)v.x&&v.y==(float)(unsigned)v.y&&
+         v.width==(float)(unsigned)v.width&&v.height==(float)(unsigned)v.height));
 }
 static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPipelineCache cache,uint32_t count,const VkGraphicsPipelineCreateInfo *i,const VkAllocationCallbacks *a,VkPipeline *out) {
     if(!out||count!=1)return VK_ERROR_INITIALIZATION_FAILED;
