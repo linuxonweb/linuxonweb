@@ -1,15 +1,16 @@
 // Experimental guest-command renderer. Not imported by the accepted runtime.
 export const MAGIC = 0x31555047, VERSION = 1, MAX_PAYLOAD = 1048576;
-export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8, CLEAR: 9, SPIRV_SHADER: 10, COMPUTE_PIPELINE: 11, STORAGE_BUFFER: 12, STORAGE_UPLOAD: 13, COMPUTE_DISPATCH: 14, STORAGE_READBACK: 15 });
+export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8, CLEAR: 9, SPIRV_SHADER: 10, COMPUTE_PIPELINE: 11, STORAGE_BUFFER: 12, STORAGE_UPLOAD: 13, COMPUTE_DISPATCH: 14, STORAGE_READBACK: 15,
+  GRAPHICS_SHADER: 16, GRAPHICS_PIPELINE: 17, VERTEX_BUFFER: 18, VERTEX_UPLOAD: 19, GRAPHICS_TARGET: 20, GRAPHICS_PASS: 21, GRAPHICS_READBACK: 22 });
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8', { fatal: true });
 const fail = (message, status = -22) => { throw Object.assign(new Error(message), {status}); };
 const words = (...values) => { const bytes = new Uint8Array(values.length * 4), view = new DataView(bytes.buffer); values.forEach((n, i) => view.setUint32(i * 4, n, true)); return bytes; };
-export function decodeHeader(bytes, allowClear = false, allowCompute = false) {
+export function decodeHeader(bytes, allowClear = false, allowCompute = false, allowGraphics = false) {
   if (bytes.byteLength !== 16) fail('short header');
   const v = new DataView(bytes.buffer, bytes.byteOffset, 16);
   if (v.getUint32(0, true) !== MAGIC || v.getUint16(4, true) !== VERSION) fail('unsupported protocol');
   const opcode = v.getUint16(6, true), request = v.getUint32(8, true), length = v.getUint32(12, true);
-  if (opcode > (allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
+  if (opcode > (allowGraphics ? OP.GRAPHICS_READBACK : allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
   return { opcode, request, length };
 }
 export function encodeReply(opcode, request, status, body = new Uint8Array()) {
@@ -20,15 +21,21 @@ export function encodeReply(opcode, request, status, body = new Uint8Array()) {
 }
 
 /** One device and resource table per connection. No guest memory/shared views. */
-export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory } = {}) {
-  const resources = new Map(); let translator;
+export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
+  allowGraphics = false, graphicsTranslatorOptions, graphicsTranslatorFactory } = {}) {
+  const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
   let device, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
-  const report = { commands: 0, draws: 0, clears: 0, readbacks: 0, dispatches: 0, uploads: 0, translations: 0, translatorsCreated: 0, translatorsClosed: 0, released: 0, adapter: null, error: null };
+  const report = { commands: 0, draws: 0, clears: 0, readbacks: 0, dispatches: 0, uploads: 0, translations: 0, translatorsCreated: 0, translatorsClosed: 0, released: 0, adapter: null, error: null,
+    graphicsTranslations: 0, graphicsPasses: 0, graphicsDraws: 0, graphicsUploads: 0, graphicsReadbacks: 0,
+    graphicsTranslatorsCreated: 0, graphicsTranslatorsClosed: 0, graphics: null };
   const cleanup = () => {
     if (closed) return; closed = true;
-    for (const entry of resources.values()) entry.object.destroy?.();
+    graphicsRenderer?.close();
+    if (graphicsRenderer) report.graphics = graphicsRenderer.getStats();
+    for (const entry of resources.values()) if (!entry.graphics) entry.object.destroy?.();
     report.released += resources.size; resources.clear(); allocation = 0;
     if (translator) { translator.close(); translator = undefined; report.translatorsClosed++; }
+    if (graphicsTranslator) { graphicsTranslator.close(); graphicsTranslator = undefined; report.graphicsTranslatorsClosed++; }
     device?.destroy(); connection.close();
   };
   const timer = setTimeout(() => { report.error = 'session deadline'; cleanup(); }, timeoutMs);
@@ -38,6 +45,35 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     return new Uint8Array(words(id).buffer);
   };
   const get = (id, kind) => { const r = resources.get(id); if (!r || r.kind !== kind) fail('unknown resource or wrong type'); return r; };
+  const budget = bytes => {
+    if (closed || lost) fail('device unavailable', -19);
+    if (!Number.isSafeInteger(bytes) || bytes < 0 || nextId > 0xffffffff || resources.size >= 64 || allocation + bytes > 16 * 1024 * 1024) fail('resource budget exceeded', -12);
+  };
+  const addGraphics = async (kind, bytes, create, extra = {}) => {
+    budget(bytes);
+    const object = await create();
+    // The host loop is serial; only timeout/device loss can change ownership here.
+    if (closed || lost) fail('device unavailable', -19); // renderer.close already releases its objects
+    return add(kind, object, bytes, { ...extra, graphics: true });
+  };
+  const record = (value, keys, name) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype ||
+        Object.keys(value).some(key => !keys.includes(key))) fail(`invalid ${name} record`);
+    return value;
+  };
+  const parseGraphics = payload => {
+    if (!payload.length || payload.length > 65536) fail('invalid graphics JSON size');
+    return JSON.parse(decoder.decode(payload), (key, value) => {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') fail('reserved JSON field');
+      return value;
+    });
+  };
+  const shaderReference = (reference, stage) => {
+    record(reference, ['shader', 'entryPoint'], 'shader reference');
+    const shader = get(reference.shader, 'graphics-shader');
+    if (shader.object.stage !== stage || reference.entryPoint !== shader.object.originalEntryPoint) fail('shader stage or original entry point mismatch');
+    return shader;
+  };
   const checked = async action => {
     if (closed || lost) fail('device unavailable');
     device.pushErrorScope('validation');
@@ -60,18 +96,28 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       if (closed) { created.close(); fail('session closed', -19); }
       translator = created; report.translatorsCreated++;
     }
+    if (allowGraphics) {
+      const factory = graphicsTranslatorFactory ?? (await import('../guest-vulkan-graphics/translator/index.mjs')).createGraphicsTranslator;
+      const created = await factory(graphicsTranslatorOptions);
+      if (closed) { created.close(); fail('session closed', -19); }
+      graphicsTranslator = created; report.graphicsTranslatorsCreated++;
+      const renderer = await import('../guest-vulkan-graphics/renderer.mjs');
+      if (closed) fail('session closed', -19);
+      validateGraphicsShader = renderer.validateTranslatedShader;
+      graphicsRenderer = renderer.createGraphicsRenderer(device);
+    }
     onEvent({ type: 'adapter', ...report.adapter });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
-      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute);
+      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics);
       if (request <= lastRequest) fail('non-monotonic request id'); lastRequest = request;
       const payload = await connection.readExactly(length); if (payload.length !== length) fail('truncated payload');
       const v = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
       const exact = n => { if (length !== n) fail('invalid payload length'); };
-      let body = new Uint8Array(), status = 0;
+      let body = new Uint8Array(), status = 0, terminal = false;
       try {
         switch (opcode) {
-          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, shader: 'WGSL', ...(allowClear ? { clearImage: true } : {}), ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}), adapter: report.adapter })); break;
+          case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, shader: 'WGSL', ...(allowClear ? { clearImage: true } : {}), ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}), ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -198,16 +244,86 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
               body=new Uint8Array(staging.getMappedRange()).slice();staging.unmap();report.readbacks++;
             } finally {staging?.destroy();}break;
           }
+          case OP.GRAPHICS_SHADER: {
+            if (!allowGraphics || length < 20 || length > 65536 || length % 4) fail('invalid graphics SPIR-V profile/length');
+            const translated = await graphicsTranslator.translate(payload.slice());
+            const shader = validateGraphicsShader(translated, translated.stage);
+            const bytes = encoder.encode(JSON.stringify(shader)).length;
+            budget(bytes); body = add('graphics-shader', shader, bytes, {graphics:true});
+            report.graphicsTranslations++; break;
+          }
+          case OP.GRAPHICS_PIPELINE: {
+            if (!allowGraphics) fail('graphics not negotiated');
+            const descriptor = record(parseGraphics(payload), ['vertex','fragment','vertexBuffers','colorFormat','topology','frontFace','cullMode','sampleCount'], 'graphics pipeline');
+            const vertex = shaderReference(descriptor.vertex, 'vertex'), fragment = shaderReference(descriptor.fragment, 'fragment');
+            // Charge copies retained by the pipeline even after shader IDs are destroyed.
+            const bytes = vertex.bytes + fragment.bytes + length;
+            body = await addGraphics('graphics-pipeline', bytes, () => graphicsRenderer.createPipeline({ ...descriptor, vertex:vertex.object, fragment:fragment.object }));
+            break;
+          }
+          case OP.VERTEX_BUFFER: {
+            if (!allowGraphics) fail('graphics not negotiated');
+            exact(4); const size = v.getUint32(0,true);
+            if (!size || size > 65536 || size % 4) fail('invalid vertex buffer size');
+            body = await addGraphics('graphics-vertex', size, () => graphicsRenderer.createVertexBuffer({size})); break;
+          }
+          case OP.VERTEX_UPLOAD: {
+            if (!allowGraphics || length < 12) fail('invalid graphics upload');
+            const buffer = get(v.getUint32(0,true), 'graphics-vertex'), offset = v.getUint32(4,true), size = v.getUint32(8,true);
+            if (!size || size % 4 || offset % 4 || offset > buffer.bytes || size > buffer.bytes-offset || length !== size+12) fail('invalid vertex upload bounds');
+            await graphicsRenderer.uploadVertexBuffer(buffer.object, offset, payload.subarray(12)); report.graphicsUploads++; break;
+          }
+          case OP.GRAPHICS_TARGET: {
+            if (!allowGraphics) fail('graphics not negotiated');
+            exact(8); const width = v.getUint32(0,true), height = v.getUint32(4,true);
+            if (!width || !height || width > 512 || height > 512) fail('invalid graphics target size');
+            body = await addGraphics('graphics-target', width*height*4, () => graphicsRenderer.createTarget({width,height}), {width,height}); break;
+          }
+          case OP.GRAPHICS_PASS: {
+            if (!allowGraphics) fail('graphics not negotiated');
+            const pass = record(parseGraphics(payload), ['target','loadOp','storeOp','clearColor','draws'], 'graphics pass');
+            const target = get(pass.target, 'graphics-target');
+            if (!Array.isArray(pass.draws) || pass.draws.length > 256) fail('invalid graphics draw count');
+            const draws = pass.draws.map(draw => {
+              record(draw, ['pipeline','vertexBuffers','vertexCount','firstVertex','instanceCount','firstInstance','viewport','scissor'], 'graphics draw');
+              const pipeline = get(draw.pipeline, 'graphics-pipeline');
+              if (!Array.isArray(draw.vertexBuffers) || draw.vertexBuffers.length > 8) fail('invalid graphics vertex bindings');
+              const vertexBuffers = draw.vertexBuffers.map(binding => {
+                record(binding, ['buffer','offset','size'], 'vertex binding');
+                return { ...binding, buffer:get(binding.buffer, 'graphics-vertex').object };
+              });
+              return { ...draw, pipeline:pipeline.object, vertexBuffers };
+            });
+            try {
+              graphicsRenderer.begin({target:target.object,loadOp:pass.loadOp,storeOp:pass.storeOp,...(Object.hasOwn(pass,'clearColor') ? {clearColor:pass.clearColor} : {})});
+              for (const draw of draws) graphicsRenderer.draw(draw);
+              await graphicsRenderer.end();
+            } catch (error) { graphicsRenderer.abort(); throw error; }
+            report.graphicsPasses++; report.graphicsDraws += draws.length; break;
+          }
+          case OP.GRAPHICS_READBACK: {
+            if (!allowGraphics) fail('graphics not negotiated');
+            exact(4); const target = get(v.getUint32(0,true), 'graphics-target');
+            if (allocation + Math.ceil(target.width*4/256)*256*target.height > 16*1024*1024) fail('graphics staging exceeds budget', -12);
+            body = (await graphicsRenderer.readback(target.object)).pixels; report.graphicsReadbacks++; break;
+          }
           case OP.DESTROY: {
             exact(4); const id = v.getUint32(0, true), resource = resources.get(id); if (!resource) fail('unknown resource');
-            resource.object.destroy?.(); resources.delete(id); allocation -= resource.bytes; report.released++; break;
+            if (resource.graphics && resource.kind !== 'graphics-shader') await graphicsRenderer.destroy(resource.object);
+            else resource.object.destroy?.();
+            resources.delete(id); allocation -= resource.bytes; report.released++; break;
           }
           case OP.CLOSE: exact(0); break;
         }
-      } catch (error) { status = lost || closed ? -19 : error.status === -12 ? -12 : -22; body = encoder.encode(String(error.message)).slice(0, 512); }
+      } catch (error) {
+        status = lost || closed || error.status === -19 ? -19 : error.status === -5 ? -5 : error.status === -12 ? -12 : -22;
+        terminal = status === -19 || status === -5;
+        if (terminal) report.error ??= String(error.message);
+        body = encoder.encode(String(error.message)).slice(0, 512);
+      }
       await connection.write(encodeReply(opcode, request, status, body)); report.commands++;
       onEvent({ type: 'command', opcode, request, status });
-      if (opcode === OP.CLOSE) break;
+      if (opcode === OP.CLOSE || terminal) break;
     }
   } catch (error) { report.error ??= error.message; }
   finally { clearTimeout(timer); cleanup(); onEvent({ type: 'closed', ...report }); }

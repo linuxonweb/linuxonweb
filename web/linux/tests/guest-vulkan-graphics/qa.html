@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Experimental SPIR-V graphics browser gate</title>
+<style>body{font:15px system-ui;background:#17202b;color:#e7edf5;margin:24px}button{padding:12px}canvas{width:438px;height:306px;image-rendering:pixelated;border:1px solid #9aa}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<h1>Experimental SPIR-V graphics browser gate</h1>
+<p>Dedicated Worker translation and real WebGPU readback. This gate does not run Linux or establish physical acceleration.</p>
+<button id="run">Run graphics checks</button><p><canvas id="pixels" width="73" height="51"></canvas></p><pre id="log">Ready</pre>
+<script type="module" src="./qa.mjs"></script></html>

@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "scope": "Host SPIR-V graphics renderer and byte protocol; existing actual guest compute regression",
+  "graphicsGuestExecution": false,
+  "physicalGpuAccelerationProven": false,
+  "acceptedRuntimeChanged": false,
+  "deployed": false,
+  "adapter": "Google SwiftShader fallback",
+  "taskRoot": "/mnt/p6/build/guest-vulkan-graphics-20260926",
+  "translator": {
+    "build": "translator-build-run2",
+    "bytes": 771221,
+    "sha256": "c1506c293785db309df6de17e481a9fb62ca9001823d3150f7a39cecc2575636",
+    "sourceLockSha256": "a62ae7cbbbbd4fb77d277b6d52b657c4733da60569c79bd2c233cbe8a9d03c02",
+    "nodeAssertions": 66,
+    "nodeEvidence": "translator-check-run3/result.json",
+    "nodeEvidenceSha256": "e7223ae8c0cec85122c3c666c1ac6548ea6b387bf08821c142dbd51dd544fc91"
+  },
+  "renderer": {
+    "assertions": 2585,
+    "rounds": 8,
+    "evidence": "browser-qa-run1/result.json",
+    "sha256": "f161ed64444385f3622b411810162289cf5e2aec05a4d87369ee9ba8beb76b92",
+    "canceledFetchEvents": 2,
+    "runtimeExceptions": 0
+  },
+  "protocol": {
+    "assertions": 2559,
+    "rounds": 8,
+    "rejections": 19,
+    "commands": 124,
+    "translations": 5,
+    "passes": 10,
+    "draws": 9,
+    "uploads": 3,
+    "readbacks": 11,
+    "nativeSubmissions": 21,
+    "releasedResources": 71,
+    "evidence": "protocol-browser-run1/result.json",
+    "sha256": "bd04b15e08091b181c66b37c5a6e0e0ab66bdddc2a05309c18e5c6bd286e17fc",
+    "canceledFetchEvents": 1,
+    "runtimeExceptions": 0,
+    "independentOwnership": {
+      "workersCreated": 1, "workersTerminated": 1,
+      "devicesCreated": 1, "devicesDestroyed": 1,
+      "buffersCreated": 68, "buffersDestroyed": 68,
+      "texturesCreated": 1, "texturesDestroyed": 1,
+      "liveBeforeEmergencyCleanup": 0
+    },
+    "beforeAfterSourceArtifactComparisons": 11
+  },
+  "legacyHost": {
+    "assertions": 73,
+    "evidence": "protocol-host-regression-run1/result.json",
+    "sha256": "f4e8cba270d67fd30f1042180652fe70e33b9f5d16aac7f8067b92ffd9ba73f3"
+  },
+  "actualGuestComputeRegression": {
+    "assertions": 499,
+    "memoryMiB": 1024,
+    "cpus": 2,
+    "dispatches": 3,
+    "outputWords": 128,
+    "sentinelComparisons": 16,
+    "binaryBytes": 360151,
+    "binarySha256": "08b7097387590bd9e152e8d1be087580d964c10cafcde6f8187a684c380455d5",
+    "evidence": "/mnt/p6/build/guest-vulkan-compute-20260926/graphics-protocol-regression-guest-run1/result.json",
+    "sha256": "7b8bb2d598cfbb3f1b18fd5f13c7eb8df923aed28c01da7313d5ba83671851eb",
+    "independentWorkerLifetime": false,
+    "beforeAfterSourceComparisons": 21,
+    "canceledFetchEvents": 1
+  },
+  "remaining": [
+    "Public Vulkan graphics application in actual Linux guest",
+    "Negative clip depth and non-unit clip-w verification",
+    "Graphics-specific device/transport loss and pending-close cases",
+    "Injected internal GPU failure",
+    "Combined graphics and compute negotiation",
+    "X11 presentation and general Vulkan capabilities",
+    "WebGL fallback, Mesa/Zink, Firefox GPU and hardware video decoding",
+    "Native guest JIT and full release acceptance"
+  ]
+}

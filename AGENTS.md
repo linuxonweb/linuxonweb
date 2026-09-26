@@ -15,6 +15,9 @@ artifacts.
 
 This applies to temporary build files as well as final outputs; a tool's default
 temporary directory is not an exception.
+This policy overrides temporary paths in older build notes and copied commands.
+Before running those commands, redirect their output, cache, and scratch paths
+to compliant storage; do not reuse a historical `/tmp` path.
 
 - Prefer a task-specific directory under `/mnt/p6/build`, including a `tmp`
   subdirectory for tool scratch files. Another disk-backed project/cache
@@ -32,6 +35,16 @@ temporary directory is not an exception.
 - Apply this policy to all delegated agents. Do not change the system-wide
   temporary directory or move unrelated runtime sockets, protected system
   temporary files, or active user browser profiles.
+
+Required environment setup after verifying the destination filesystem and space
+(replace `task-name` with the current task name):
+
+```sh
+mkdir -p /mnt/p6/build/task-name/tmp
+export TMPDIR=/mnt/p6/build/task-name/tmp
+export TMP="$TMPDIR"
+export TEMP="$TMPDIR"
+```
 
 Forty-five earlier Firefox build/debug artifacts were relocated from `/tmp` to
 `/mnt/p6/build/linuxonweb-tmp-20260926/`, freeing about 17.35 GB. The migration
@@ -308,7 +321,68 @@ driver enables permission checking internally and rejects the explicit
   certificate-validated `curl https://www.google.com`). Small evidence is
   `docs/evidence/runtime-graphics-20260926/sites-live-timing-network.json`.
 
+## Graphics continuation — 2026-09-26
+
+The graphics translator, renderer and byte protocol now pass real host-browser
+execution. This is still not guest Vulkan graphics. Current work builds on
+parent `375afb170dd4a4a6e37a1a5153f505c80b65af02`; the accepted runtime and nested
+Sites source remain unchanged. See `docs/guest-vulkan-graphics-transport-20260926.md`
+and `web/linux/tests/guest-vulkan-graphics/protocol.md` for the exact contract,
+evidence and next guest integration packets.
+
+- Task root: `/mnt/p6/build/guest-vulkan-graphics-20260926/`, verified ext4.
+  Accepted `translator-build-run2` is 771,221 bytes, SHA-256
+  `c1506c293785db309df6de17e481a9fb62ca9001823d3150f7a39cecc2575636`.
+  It preserves the compute run4 dependency closure/lock and rejects duplicate
+  raw OpEntryPoint declarations before Naga parsing. Node check-run3 passes 66.
+- Renderer browser gate: 2,585 assertions across two vertex × two fragment
+  programs × two vertex layouts. Byte-protocol gate: 2,559 assertions, eight
+  matching pixel rounds, 19 negative cases including whole-pass rejection and
+  resource-limit recovery. Legacy host regression remains 73 assertions.
+- Byte-protocol run records 124 requests, five translations, ten passes/nine
+  draws, three uploads and eleven readbacks. Independently counted one Worker,
+  one device, 68 buffers and one texture all close/release before emergency
+  cleanup. Eleven requested source/artifact hashes match before and after.
+  Raw result SHA-256:
+  `bd04b15e08091b181c66b37c5a6e0e0ab66bdddc2a05309c18e5c6bd286e17fc`.
+- Both graphics browser gates use SwiftShader, not physical GPU evidence.
+  QA errors and Runtime exceptions are zero; renderer/protocol gates retain
+  two/one canceled Fetch events of unestablished cause. Graphics guest execution,
+  negative clip-depth/non-unit-w, pending-close/loss, WebGL fallback, Zink,
+  Firefox GPU and hardware video decoding remain absent or unverified.
+- Shared C/host regression also passes 499 public Vulkan compute assertions
+  in actual Linux at 1 GiB/two CPUs. Build/package/guest run directories are
+  `/mnt/p6/build/guest-vulkan-compute-20260926/graphics-protocol-regression-{build,package,guest}-run1`.
+  New binary: 360,151 bytes, SHA-256
+  `08b7097387590bd9e152e8d1be087580d964c10cafcde6f8187a684c380455d5`.
+  Exact results/sentinels and guest/native GPU cleanup pass; inherited Worker
+  close remains a report counter. All 21 source/host hashes match. One canceled
+  Fetch event is retained. See the graphics task's compute-regression cross-reference.
+- Fresh protocol-agent creation hit the tool's thread limit twice. Root made
+  the bounded file edits directly under the file-edit exception; the existing
+  sole serving agent handled all command execution and browser verification.
+  Do not claim a fresh delegated protocol implementation occurred.
+
+Previous goal turn classification: progress (mandatory build-storage policy
+edited and read back). This continuation is also progress (implemented and
+tested the graphics byte protocol). Goal accounting started this continuation
+at 8,137,118 tokens, with no explicit token budget; weekly quota remains unknown.
+The full goal is not complete and has not reached an evidenced 95/100.
+
 ## Services and deployment
+
+**Current graphics services supersede the historical cleanup notes below.**
+Sole owner is `/root/cmd_graphics_serving`. Adapter PID `148453`, startTicks
+`184792429`, exec session `75590`, listens on `4182`. Chromium PID `148499`,
+startTicks `184793618`, exec session `88647`, exposes CDP `9396`. Both retained
+sessions and identities were revalidated during the protocol host gate. Do not
+create another serving owner, restart on observation timeout, or reuse a PID
+without checking its identity. Exact commands, links and ownership are in the
+graphics task's `service-ownership.json`. The current graphics candidate link is
+`web/linux/tests/guest-vulkan-graphics/candidate` to `browser-qa-inputs-run1`;
+preserve it and the frozen inputs until owned cleanup is authorized. Subsequent
+regression links must be recorded in that ownership manifest. User server PID
+`1591443`, startTicks `148821663`, must be preserved.
 
 The prior serving agent (`cmd_project_audit`) gracefully closed both task Chromium
 browsers and their guests on CDP ports `9394` and `9395`, and stopped the owned
@@ -450,14 +524,16 @@ Bounded next implementation gates, subject to that allowance:
   cross-environment bit reproduction. Guest storage buffers, compute pipeline,
   descriptor binding and dispatch/readback now pass the separate public client's
   actual guest execution; the shared-driver regressions also pass. Preserve
-  the compute build/package/run and regression evidence. The next graphics implementation
-  needs real vertex/fragment SPIR-V translation, graphics pipeline/render target
-  commands and application-visible readback/presentation; then measure the actual
+  the compute build/package/run and regression evidence. The new graphics host
+  translator, renderer and wire protocol now pass their browser gates. Next add
+  graphics resource/command APIs to the guest ICD and verify a separate public
+  Vulkan application through the actual loader and Linux guest, including
+  application-visible readback/presentation; then measure the actual
   Mesa/Zink requirements against supported driver capabilities. This is still
   separate from Firefox EGL/GL and compositor integration. Do not substitute
   fixed-shader recognition or enabled preferences for those implementations.
   The earlier Dawn ABI gate remains compile-only; native Dawn, general system
-  discovery, graphics shaders, GL-through-Vulkan and Firefox are unported.
+  discovery, guest graphics execution, GL-through-Vulkan and Firefox are unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
@@ -465,6 +541,7 @@ All continuation work must retain the current delegated workflow, fresh sessions
 for new agents, scoped Git staging and sole serving-agent ownership. The serving
 owner may continue its assigned test task across follow-up instructions.
 Earlier work reused existing sessions after fresh-session creation hit the thread
-limit. The compute services are now stopped; any new runtime task needs one
-new serving owner and verified available ports. Preserve the user's pre-existing
-server and all retained build artifacts.
+limit. The earlier compute services are stopped, but the current graphics owner
+and handles are live as recorded above. Use that owner until it explicitly
+finishes identity-checked cleanup. Preserve the user's pre-existing server and
+all retained build artifacts.
