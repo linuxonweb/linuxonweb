@@ -13,6 +13,12 @@ teardown. Actual kernel markers confirm 1 GiB/two CPUs. See the
 and [compact evidence](../../../../docs/evidence/runtime-graphics-20260926/guest-vulkan-compute-execution.json).
 This result does not establish physical GPU acceleration or full Vulkan support.
 
+The shared graphics-ICD regression subsequently passes 501 checks, retaining
+local malformed-header rejection and adding a framed invalid module that reaches
+host IR validation. The host rejection/recovery assertion remains unchanged.
+See the [graphics integration report](../../../../docs/guest-vulkan-graphics-execution-20260926.md)
+for exact regression artifacts, failed attempts and corrected provenance audit.
+
 ## Profile and ownership
 
 `host.mjs` explicitly opts into `allowCompute`. `serveGPU` initializes the pinned
@@ -55,9 +61,14 @@ Compute→host barriers read into temporary guest storage and copy mapped memory
 only after an exact successful reply. Each bounded stream must make all GPU
 writes host-visible before completion. Allocation bytes beyond the GPU buffer
 remain untouched. Invalid command recordings require reset. Invalid complete
-streams reject before effects. Recoverable -22 and -12 host errors become Vulkan
-initialization and device-memory errors; transport corruption/loss or -19 poisons
-the session with DEVICE_LOST.
+streams reject before effects. During resource creation, recoverable -22 and
+-12 host errors become Vulkan initialization and device-memory errors. Once
+submission execution starts, any failure poisons the session with DEVICE_LOST
+because earlier commands may already have changed GPU resources. Transport
+corruption/loss or -19 also poisons the session. The current shared graphics
+command packet adds this stricter submission failure behavior. Successful
+compute execution and shader-creation recovery pass the 501-check regression;
+an execution-fault-specific regression remains pending.
 
 ## Build, package, execute
 

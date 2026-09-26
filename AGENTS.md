@@ -7,8 +7,8 @@ workspace indiscriminately.
 
 ## Mandatory build storage policy
 
-User instruction: put build work under `/mnt/p6/build` or another persistent,
-disk-backed filesystem. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
+Standing user instruction for all builds: use `/mnt/p6/build/<task>` or another
+verified persistent, disk-backed path. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
 filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
 compiler scratch space, build caches, disassembly dumps, build logs, or test
 artifacts.
@@ -32,6 +32,10 @@ to compliant storage; do not reuse a historical `/tmp` path.
   variables. Never fall back to `/tmp`; stop if compliant storage is unavailable.
 - Keep large command output and debug dumps in files under the same disk-backed
   task directory. Do not let default temporary paths fill a memory filesystem.
+- Keep Chromium's scratch path short, such as the task root's `tmp` directory.
+  A nested `guest-service-run1/tmp` path caused its Unix singleton socket to
+  exceed the path-length limit; shortening the disk-backed path is the fix,
+  not falling back to `/tmp`.
 - Apply this policy to all delegated agents. Do not change the system-wide
   temporary directory or move unrelated runtime sockets, protected system
   temporary files, or active user browser profiles.
@@ -323,9 +327,11 @@ driver enables permission checking internally and rejects the explicit
 
 ## Graphics continuation — 2026-09-26
 
-The graphics translator, renderer and byte protocol now pass real host-browser
-execution. This is still not guest Vulkan graphics. Current work builds on
-parent `375afb170dd4a4a6e37a1a5153f505c80b65af02`; the accepted runtime and nested
+The graphics translator, renderer and byte protocol pass real host-browser
+execution; a separate public Vulkan application now also passes actual Linux
+guest offscreen rendering. This is a bounded, nonconformant profile, not general
+Vulkan/OpenGL or Firefox acceleration. Current uncommitted work builds on
+parent `857801f4f1f5e16650bf9c50f3e6bc6dc92f7512`; the accepted runtime and nested
 Sites source remain unchanged. See `docs/guest-vulkan-graphics-transport-20260926.md`
 and `web/linux/tests/guest-vulkan-graphics/protocol.md` for the exact contract,
 evidence and next guest integration packets.
@@ -347,8 +353,8 @@ evidence and next guest integration packets.
   `bd04b15e08091b181c66b37c5a6e0e0ab66bdddc2a05309c18e5c6bd286e17fc`.
 - Both graphics browser gates use SwiftShader, not physical GPU evidence.
   QA errors and Runtime exceptions are zero; renderer/protocol gates retain
-  two/one canceled Fetch events of unestablished cause. Graphics guest execution,
-  negative clip-depth/non-unit-w, pending-close/loss, WebGL fallback, Zink,
+  two/one canceled Fetch events of unestablished cause. Negative clip-depth/non-unit-w,
+  pending-close/loss, WebGL fallback, Zink,
   Firefox GPU and hardware video decoding remain absent or unverified.
 - Shared C/host regression also passes 499 public Vulkan compute assertions
   in actual Linux at 1 GiB/two CPUs. Build/package/guest run directories are
@@ -363,26 +369,73 @@ evidence and next guest integration packets.
   sole serving agent handled all command execution and browser verification.
   Do not claim a fresh delegated protocol implementation occurred.
 
+The current uncommitted guest packet adds image views, render passes,
+framebuffers, copied graphics pipelines, vertex buffers and typed draw recording.
+Submission prevalidates the full stream and prepares pass JSON on the heap,
+then uploads current coherent vertex bytes once per used buffer. It tracks
+stored attachment contents for LOAD/readback and poisons the device on execution
+failures that may leave partial effects. This remains a bounded, nonconformant
+profile; do not infer general Vulkan or Firefox support.
+
+`commands-compile-run1/result.json` under the graphics task records a successful
+frozen `-Wall -Wextra -Werror` compile of the complete guest ICD. Eight source
+hashes and thirteen pinned header hashes matched afterward. The object is
+99,426 bytes, SHA-256
+`bfb6911649d6e2b5d2f1dd83f9e2fd42aaa9aa2ca242420cfc81bede3a64d549`.
+This object remains compile-only evidence. Separate actual guest evidence is
+now in `guest-run1/result.json` and `guest-execution-gate-run2`: eight rounds,
+four shader programs, sixteen passes/draws, twelve uploads and eight readbacks
+passed, with 32 before/after hashes matching. Independent Worker/device/buffer/
+texture live counts are zero before emergency cleanup. Actual kernel markers
+show 1 GiB/two CPUs; adapter is SwiftShader. Zero QA/Runtime errors, one canceled
+Fetch event with cause unestablished. The 232,734 checks are mostly individual
+byte/pixel comparisons. See `docs/guest-vulkan-graphics-execution-20260926.md`
+and its compact JSON evidence. The public application is 383,945 bytes, SHA-256
+`d8955d6da382eecd5e2d2e302129ed342ad5bfb4fc431b12e9d8b05d339d0570`.
+Accepted images remain unchanged. Preserve `resource-compile-run1` as earlier
+resource-only evidence. No X11 presentation of the test image is established.
+
+Shared compute regression now passes 501 checks, three dispatches, 128 output
+words and sixteen sentinel word comparisons. The client preserves local invalid
+header rejection and adds host IR rejection; strict host assertions are unchanged.
+Root made that small test-input edit while the sole serving owner held the
+available child slot; all execution remained delegated. Accepted compute inputs
+are `graphics-icd-regression-{build,package}-run2` and guest `...-guest-run3`
+under the compute task. The graphics task's
+`compute-icd-regression-final-audit-run1` passes 39 checks, including 26 current
+hashes matching the pre-run snapshot. Preserve failed runs and the wrapper that
+read old run2 despite executing run3; the read-only audit verified actual run3
+without rerunning. Compute Worker lifetime is still a close-call counter, and
+submission execution-fault behavior remains untested.
+
 Previous goal turn classification: progress (mandatory build-storage policy
-edited and read back). This continuation is also progress (implemented and
-tested the graphics byte protocol). Goal accounting started this continuation
-at 8,137,118 tokens, with no explicit token budget; weekly quota remains unknown.
+edited and read back). This continuation adds verified actual guest graphics
+execution and reproducible build/package evidence. Goal accounting started this continuation
+at 8,799,541 tokens, with no explicit token budget; weekly quota remains unknown.
 The full goal is not complete and has not reached an evidenced 95/100.
 
 ## Services and deployment
 
-**Current graphics services supersede the historical cleanup notes below.**
-Sole owner is `/root/cmd_graphics_serving`. Adapter PID `148453`, startTicks
-`184792429`, exec session `75590`, listens on `4182`. Chromium PID `148499`,
-startTicks `184793618`, exec session `88647`, exposes CDP `9396`. Both retained
-sessions and identities were revalidated during the protocol host gate. Do not
-create another serving owner, restart on observation timeout, or reuse a PID
-without checking its identity. Exact commands, links and ownership are in the
-graphics task's `service-ownership.json`. The current graphics candidate link is
-`web/linux/tests/guest-vulkan-graphics/candidate` to `browser-qa-inputs-run1`;
-preserve it and the frozen inputs until owned cleanup is authorized. Subsequent
-regression links must be recorded in that ownership manifest. User server PID
-`1591443`, startTicks `148821663`, must be preserved.
+**Current service revalidation supersedes the historical notes below.**
+Sole owner `/root/cmd_graphics_serving` completed owned cleanup. The graphics
+task's `guest-final-cleanup-run1/cleanup.json` confirms PIDs `190505`, `201964`
+and `201959` absent and no listeners on `4182`/`9396`. Chromium closed through
+Browser.close and its exec handle returned exit 0. The final adapter/supervisor
+were already absent. All earlier service handles are retired; no task service
+remains running. User PID `1591443`, startTicks `148821663`, is unchanged.
+Cleanup SHA-256:
+`c05f048038465e84e35cf5abf1f1f41a0e3c5cc0a00b619741d39d585e3ecc65`.
+
+All four task-owned candidate links were checked against their latest identities
+and removed; every target build, profile, cache and log remains. Future testing
+requires recreating owned links from the frozen targets and starting services
+through the sole owner after authoritative PID/port checks. Preserve service
+attempts `guest-service-run1` through `run5`, the missing-process preflight and
+the connection-refused compute attempt. One Chromium attempt failed because its
+Unix socket path was too long; shorter disk-backed scratch fixed that issue.
+Other adapter exits remain unexplained, including one terminal exit 0 during
+the same active owner turn. Do not attribute them merely to agent turn endings,
+and do not restart solely because an observation times out.
 
 The prior serving agent (`cmd_project_audit`) gracefully closed both task Chromium
 browsers and their guests on CDP ports `9394` and `9395`, and stopped the owned
@@ -524,16 +577,15 @@ Bounded next implementation gates, subject to that allowance:
   cross-environment bit reproduction. Guest storage buffers, compute pipeline,
   descriptor binding and dispatch/readback now pass the separate public client's
   actual guest execution; the shared-driver regressions also pass. Preserve
-  the compute build/package/run and regression evidence. The new graphics host
-  translator, renderer and wire protocol now pass their browser gates. Next add
-  graphics resource/command APIs to the guest ICD and verify a separate public
-  Vulkan application through the actual loader and Linux guest, including
-  application-visible readback/presentation; then measure the actual
+  the compute build/package/run and regression evidence. Graphics resource and
+  command APIs now pass the separate public application's actual guest pixel
+  readback gate. Next verify graphics loss/pending-close, clip-depth/non-unit-w
+  semantics and X11 presentation of those returned pixels; then measure actual
   Mesa/Zink requirements against supported driver capabilities. This is still
   separate from Firefox EGL/GL and compositor integration. Do not substitute
   fixed-shader recognition or enabled preferences for those implementations.
   The earlier Dawn ABI gate remains compile-only; native Dawn, general system
-  discovery, guest graphics execution, GL-through-Vulkan and Firefox are unported.
+  discovery, GL-through-Vulkan and Firefox acceleration remain unported.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
@@ -541,7 +593,7 @@ All continuation work must retain the current delegated workflow, fresh sessions
 for new agents, scoped Git staging and sole serving-agent ownership. The serving
 owner may continue its assigned test task across follow-up instructions.
 Earlier work reused existing sessions after fresh-session creation hit the thread
-limit. The earlier compute services are stopped, but the current graphics owner
-and handles are live as recorded above. Use that owner until it explicitly
-finishes identity-checked cleanup. Preserve the user's pre-existing server and
-all retained build artifacts.
+limit. All graphics test services are now stopped and their owned links removed.
+The same sole owner retains responsibility for any next runtime startup. Follow
+the authoritative revalidation above, not the obsolete exec handles. Preserve
+the user's pre-existing server and all retained build artifacts.

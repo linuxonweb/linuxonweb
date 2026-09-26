@@ -72,7 +72,14 @@ int main(void){
     VkCommandBufferBeginInfo begin={.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};VkSubmitInfo submit={.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,.commandBufferCount=1,.pCommandBuffers=&cb};
     for(unsigned round=0;round<2;round++){
         if(round){uint32_t bad[5]={0};VkShaderModuleCreateInfo malformed={.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,.codeSize=sizeof(bad),.pCode=bad};
-            CHECK(vkCreateShaderModule(device,&malformed,NULL,&shader)==VK_ERROR_INITIALIZATION_FAILED&&!shader);CHECK(vkDeviceWaitIdle(device)==VK_SUCCESS);}
+            CHECK(vkCreateShaderModule(device,&malformed,NULL,&shader)==VK_ERROR_INITIALIZATION_FAILED&&!shader);CHECK(vkDeviceWaitIdle(device)==VK_SUCCESS);
+            /* The guest now rejects the zero header locally. Keep a second
+             * module with a framed Compute/main entry declaration, but no
+             * memory model or function, to exercise host IR rejection too. */
+            uint32_t invalid_ir[]={0x07230203,0x00010000,0,2,0,(5u<<16)|15,5,1,0x6e69616d,0};
+            malformed.codeSize=sizeof(invalid_ir);malformed.pCode=invalid_ir;
+            CHECK(vkCreateShaderModule(device,&malformed,NULL,&shader)==VK_ERROR_INITIALIZATION_FAILED&&!shader);CHECK(vkDeviceWaitIdle(device)==VK_SUCCESS);
+            puts("GUEST_VK_COMPUTE_REJECT_PASS raw=1 host_ir=1");}
         size_t length=round?sizeof(shader_b):sizeof(shader_a);code=malloc(length);CHECK(code!=NULL);memcpy(code,round?shader_b:shader_a,length);
         VkShaderModuleCreateInfo smi={.sType=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,.codeSize=length,.pCode=code};
         CHECK(vkCreateShaderModule(device,&smi,NULL,&shader)==VK_SUCCESS);memset(code,0,length);free(code);code=NULL;

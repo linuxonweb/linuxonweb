@@ -1,14 +1,41 @@
 /* Deliberately bounded compute profile: one set/binding/storage buffer, one
  * 64x1x1 workgroup. This is not a conformant general Vulkan implementation. */
+/* This bounded raw walk selects a translator; it does not substitute for the
+ * host's SPIR-V validation, reflection or authoritative stage check. */
+static VkShaderStageFlagBits shader_execution_stage(const unsigned char *bytes,size_t size) {
+    const uint32_t *words=(const uint32_t *)bytes;size_t count=size/4;unsigned entries=0;VkShaderStageFlagBits stage=0;
+    if(count<5||words[0]!=0x07230203)return 0;
+    for(size_t at=5;at<count;) {
+        unsigned length=words[at]>>16,op=words[at]&65535;
+        if(!length||length>count-at)return 0;
+        if(op==15) {
+            if(++entries!=1||length<4)return 0;
+            const char *name=(const char *)&words[at+3];size_t capacity=(length-3)*4;
+            const char *end=memchr(name,0,capacity);
+            if(!end||end==name||(size_t)(end-name)>128)return 0;
+            switch(words[at+1]) {case 0:stage=VK_SHADER_STAGE_VERTEX_BIT;break;case 4:stage=VK_SHADER_STAGE_FRAGMENT_BIT;break;
+                case 5:stage=VK_SHADER_STAGE_COMPUTE_BIT;break;default:return 0;}
+        }
+        at+=length;
+    }
+    return entries==1?stage:0;
+}
+static int compute_layout_valid(uint64_t id) {
+    struct resource *r=resource_get(id,R_PIPELINE_LAYOUT);return r&&!r->graphics_layout;
+}
 static VKAPI_ATTR VkResult VKAPI_CALL create_shader(VkDevice d,const VkShaderModuleCreateInfo *i,const VkAllocationCallbacks *a,VkShaderModule *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!live->compute_supported||!i||a||i->sType!=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO||i->pNext||i->flags||
+    if(!device_valid(d)||(!live->compute_supported&&!live->graphics_supported)||!i||a||i->sType!=VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO||i->pNext||i->flags||
        !i->pCode||i->codeSize<20||i->codeSize>65536||i->codeSize%4)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_SHADER);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->bytes=malloc(i->codeSize);if(!r->bytes){resource_drop(r);return VK_ERROR_OUT_OF_HOST_MEMORY;}
     r->size=i->codeSize;memcpy(r->bytes,i->pCode,i->codeSize);
-    VkResult result=compute_resource(GPU_SPIRV_SHADER,r->bytes,(uint32_t)r->size,&r->host);
+    r->shader_stage=shader_execution_stage(r->bytes,r->size);
+    if(!r->shader_stage||(r->shader_stage==VK_SHADER_STAGE_COMPUTE_BIT?!live->compute_supported:!live->graphics_supported)) {
+        resource_drop(r);return VK_ERROR_INITIALIZATION_FAILED;
+    }
+    VkResult result=compute_resource(r->shader_stage==VK_SHADER_STAGE_COMPUTE_BIT?GPU_SPIRV_SHADER:GPU_GRAPHICS_SHADER,r->bytes,(uint32_t)r->size,&r->host);
     if(result!=VK_SUCCESS){resource_drop(r);return result;}
     *out=HANDLE(VkShaderModule,r->id);return VK_SUCCESS;
 }
@@ -29,9 +56,12 @@ static VKAPI_ATTR void VKAPI_CALL destroy_set_layout(VkDevice d,VkDescriptorSetL
 static VKAPI_ATTR VkResult VKAPI_CALL create_pipeline_layout(VkDevice d,const VkPipelineLayoutCreateInfo *i,const VkAllocationCallbacks *a,VkPipelineLayout *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO||i->pNext||i->flags||i->setLayoutCount!=1||!i->pSetLayouts||
-       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||i->pushConstantRangeCount)return VK_ERROR_INITIALIZATION_FAILED;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO||i->pNext||i->flags||i->pushConstantRangeCount)return VK_ERROR_INITIALIZATION_FAILED;
+    int graphics=live->graphics_supported&&!i->setLayoutCount;
+    if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
+       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_PIPELINE_LAYOUT);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    r->graphics_layout=graphics;
     /* All supported layouts have exactly the same immutable binding shape. */
     *out=HANDLE(VkPipelineLayout,r->id);return VK_SUCCESS;
 }
@@ -40,17 +70,19 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_compute_pipelines(VkDevice d,VkPipe
     if(!out||count!=1)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||cache||!i||a||i->sType!=VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO||i->pNext||i->flags||
-       !resource_get(RID(i->layout),R_PIPELINE_LAYOUT)||i->basePipelineHandle||i->basePipelineIndex!=-1)return VK_ERROR_INITIALIZATION_FAILED;
+       !compute_layout_valid(RID(i->layout))||i->basePipelineHandle||i->basePipelineIndex!=-1)return VK_ERROR_INITIALIZATION_FAILED;
     const VkPipelineShaderStageCreateInfo stage=i->stage;
     struct resource *shader=resource_get(RID(stage.module),R_SHADER);
     if(stage.sType!=VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO||stage.pNext||stage.flags||stage.stage!=VK_SHADER_STAGE_COMPUTE_BIT||
-       !shader||!shader->host||!stage.pName||strcmp(stage.pName,"main")||stage.pSpecializationInfo)return VK_ERROR_INITIALIZATION_FAILED;
+       !shader||shader->shader_stage!=VK_SHADER_STAGE_COMPUTE_BIT||!shader->host||!stage.pName||strcmp(stage.pName,"main")||stage.pSpecializationInfo)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_COMPUTE_PIPELINE);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     VkResult result=compute_resource(GPU_COMPUTE_PIPELINE,&shader->host,4,&r->host);
     if(result!=VK_SUCCESS){resource_drop(r);return result;}
     r->link=RID(i->layout);*out=HANDLE(VkPipeline,r->id);return VK_SUCCESS;
 }
-static VKAPI_ATTR void VKAPI_CALL destroy_pipeline(VkDevice d,VkPipeline h,const VkAllocationCallbacks *a){destroy_compute_resource(d,RID(h),R_COMPUTE_PIPELINE,a);}
+static VKAPI_ATTR void VKAPI_CALL destroy_pipeline(VkDevice d,VkPipeline h,const VkAllocationCallbacks *a){
+    destroy_compute_resource(d,RID(h),R_COMPUTE_PIPELINE,a);destroy_compute_resource(d,RID(h),R_GRAPHICS_PIPELINE,a);
+}
 static VKAPI_ATTR VkResult VKAPI_CALL create_descriptor_pool(VkDevice d,const VkDescriptorPoolCreateInfo *i,const VkAllocationCallbacks *a,VkDescriptorPool *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
@@ -93,19 +125,19 @@ static VKAPI_ATTR void VKAPI_CALL update_descriptor_sets(VkDevice d,uint32_t cou
 }
 static VKAPI_ATTR void VKAPI_CALL bind_compute_pipeline(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipeline pipeline) {
     if(cb!=&command||command.state!=2)return;
-    if(point!=VK_PIPELINE_BIND_POINT_COMPUTE||!resource_get(RID(pipeline),R_COMPUTE_PIPELINE)){invalid_command(cb);return;}
+    if(command.graphics.in_pass||!live->compute_supported||point!=VK_PIPELINE_BIND_POINT_COMPUTE||!resource_get(RID(pipeline),R_COMPUTE_PIPELINE)){invalid_command(cb);return;}
     command.pipeline=RID(pipeline);
 }
 static VKAPI_ATTR void VKAPI_CALL bind_descriptor_sets(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipelineLayout layout,uint32_t first,uint32_t count,const VkDescriptorSet *sets,uint32_t dynamic_count,const uint32_t *offsets) {
     (void)offsets;if(cb!=&command||command.state!=2)return;
-    if(point!=VK_PIPELINE_BIND_POINT_COMPUTE||!resource_get(RID(layout),R_PIPELINE_LAYOUT)||first||count!=1||!sets||dynamic_count||
+    if(command.graphics.in_pass||point!=VK_PIPELINE_BIND_POINT_COMPUTE||!compute_layout_valid(RID(layout))||first||count!=1||!sets||dynamic_count||
        !resource_get(RID(sets[0]),R_DESC_SET)){invalid_command(cb);return;}
     command.set=RID(sets[0]);command.pipeline_layout=RID(layout);
 }
 static VKAPI_ATTR void VKAPI_CALL dispatch_compute(VkCommandBuffer cb,uint32_t x,uint32_t y,uint32_t z) {
     if(cb!=&command||command.state!=2)return;
     struct resource *pipeline=resource_get(command.pipeline,R_COMPUTE_PIPELINE);
-    if(x!=1||y!=1||z!=1||!pipeline||!command.set||pipeline->link!=command.pipeline_layout){invalid_command(cb);return;}
+    if(command.graphics.in_pass||x!=1||y!=1||z!=1||!pipeline||!command.set||pipeline->link!=command.pipeline_layout){invalid_command(cb);return;}
     struct recorded *r=record_command(cb,8);if(r){r->pipeline=command.pipeline;r->set=command.set;}
 }
 static int record_compute_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {

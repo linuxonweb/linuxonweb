@@ -32,7 +32,7 @@ def main():
     if b'#define VK_HEADER_VERSION 231' not in (headers / 'vulkan_core.h').read_bytes():
         raise ValueError('unexpected header version')
     sources = {}
-    for relative in ('guest-vulkan/icd.c', 'guest-vulkan/icd.h', 'guest-vulkan/lifecycle.c', 'guest-vulkan/transfer.inc', 'guest-vulkan/compute.inc', 'guest-vulkan/clear-test.inc', 'guest-vulkan/exhaustion-test.inc',
+    for relative in ('guest-vulkan/icd.c', 'guest-vulkan/icd.h', 'guest-vulkan/lifecycle.c', 'guest-vulkan/transfer.inc', 'guest-vulkan/compute.inc', 'guest-vulkan/graphics.inc', 'guest-vulkan/graphics-commands.inc', 'guest-vulkan/clear-test.inc', 'guest-vulkan/exhaustion-test.inc',
                      'guest-gpu/guest-gpu.c', 'guest-gpu/guest-gpu.h'):
         original = here.parent / relative
         data = original.read_bytes(); target = out / 'frozen' / relative

@@ -3,7 +3,10 @@
 The compute milestone is verified separately in
 [its execution report](guest-vulkan-compute-execution-20260926.md). This document
 is an implementation plan, not evidence of graphics support. The overall
-Firefox/JIT/GPU objective remains incomplete.
+Firefox/JIT/GPU objective remains incomplete. The first offscreen public graphics
+application now passes actual guest execution; see
+[the separate evidence report](guest-vulkan-graphics-execution-20260926.md).
+Clip-depth/non-unit-w, failure/loss and X11 presentation gates remain open.
 
 The next acceptance target is a separate public-Vulkan application supplying
 vertex and fragment SPIR-V, drawing from mapped vertex buffers into an image,
@@ -61,6 +64,19 @@ pipeline/render-pass/framebuffer compatibility. Preserve pipeline usability
 after shader-module destruction. Track host-write→vertex-read,
 color-write→transfer-read and transfer-write→host-read visibility explicitly.
 Unsupported format features, extensions and dispatch shapes remain disabled.
+
+For host-coherent vertex memory, queue submission itself makes preceding host
+writes available to device accesses. Copy the latest mapped bytes at submission,
+including writes after recording; accept a valid explicit HOST→VERTEX_INPUT
+barrier but do not require one for these preceding coherent writes. Test both
+forms. See [Vulkan host-write ordering and memory domains](https://docs.vulkan.org/spec/latest/chapters/synchronization.html#synchronization-submission-host-writes).
+
+Prevalidate all commands and referenced resources before starting host effects.
+Once submission has begun, a failure that cannot guarantee unchanged application
+resources must poison the device and return DEVICE_LOST, even if an underlying
+operation reported an allocation error. Recoverable allocation/validation
+errors remain appropriate during resource creation. This follows the
+[vkQueueSubmit failure guarantee](https://docs.vulkan.org/refpages/latest/refpages/source/vkQueueSubmit.html).
 
 The pinned [Naga SPIR-V frontend](https://raw.githubusercontent.com/gfx-rs/wgpu/c7458638d14921c7562e4197ddeefa17be413587/naga/src/front/spv/mod.rs)
 has coordinate adjustment and entry wrappers. Evaluate graphics translation

@@ -1,0 +1,105 @@
+<!doctype html><meta charset="utf-8"><title>Guest public SPIR-V Vulkan graphics</title>
+<h1>Application SPIR-V graphics through public Vulkan</h1>
+<p>Isolated static built-in driver integration; no manifest or dynamic loading. Bounded graphics: four real application shaders, eight layout/program rounds, vertex upload and 73×51 image readback. No Vulkan conformance. No OpenGL, Firefox acceleration, decoder or physical GPU claim.</p>
+<button id="boot">Run isolated guest</button><button id="stop">Stop guest</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import {spawnMachine, consoleDevice, entropyDevice, inputDevice, vsockDevice} from '../../dist/index.js';
+import {serveGraphics} from './host.mjs';
+const report = window.guestVulkanResults = {logs:'', errors:[], events:[], host:null, hellos:[], pass:false,
+  bootLogs:'', bootConfigurationEvidence:[], isolated:crossOriginIsolated};
+const decoder = new TextDecoder(), vsock = vsockDevice();
+let machine, deadline, partial = '', connected = false, finished = false, stopping = false;
+function fail(error) {
+  if (stopping) return;
+  report.errors.push(String(error)); finished = true; clearTimeout(deadline);
+  document.documentElement.dataset.result = 'fail';
+}
+function check() {
+  if (finished || !report.host || !/^GUEST_VK_GRAPHICS_EXIT status=0 checks=\d+$/m.test(report.logs.replaceAll('\r',''))) return;
+  const h=report.host, own=h.ownership;
+  report.pass=report.errors.length===0 && h.error===null && h.draws===0 && h.clears===0 && h.dispatches===0 &&
+    h.graphicsPasses===16 && h.graphicsDraws===16 && h.graphicsUploads===12 && h.graphicsReadbacks===8 &&
+    h.released===37 && h.graphics?.state==='closed' && h.graphics.resources===0 && h.graphics.nativeObjects===0 && h.graphics.allocatedBytes===0 &&
+    h.graphics.passes===16 && h.graphics.draws===16 && h.graphics.readbacks===8 && h.graphics.uploads===12 &&
+    h.graphicsTranslations===16 && h.graphicsTranslatorsCreated===1 && h.graphicsTranslatorsClosed===1 &&
+    own.connectionsClosed===1 && own.devicesCreated===1 && own.devicesDestroyed===1 && own.liveDevices===0 &&
+    own.workersCreated===1 && own.workersTerminated===1 && own.liveWorkers===0 &&
+    own.buffersCreated>0 && own.buffersCreated===own.buffersDestroyed && own.liveBuffers===0 &&
+    own.texturesCreated===1 && own.texturesDestroyed===1 && own.liveTextures===0 && own.beforeEmergencyCleanup===true &&
+    !!h.adapter && report.hellos.length===2 && report.hellos.every(item=>item.version===1 && item.graphicsProfile===1 && !item.computeProfile && JSON.stringify(item.adapter)===JSON.stringify(h.adapter)) &&
+    report.events.filter(e=>e.type==='command'&&e.status!==0).length===1 &&
+    report.events.some(e=>e.type==='command'&&e.opcode===16&&e.status===-22) &&
+    Array.from({length:8},(_,round)=>round).every(round=>report.logs.includes('GUEST_VK_GRAPHICS_PIXELS_PASS round='+round+' ') && report.logs.includes('GUEST_VK_GRAPHICS_ROUND_PASS round='+round+' ')) &&
+    report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') && report.logs.includes('GUEST_VK_CLOSE status=0') &&
+    report.bootConfigurationEvidence.some(line=>/Memory:.*1048576K/.test(line)) &&
+    report.bootConfigurationEvidence.some(line=>/smp: Brought up 1 node, 2 CPUs/.test(line));
+  if (!report.pass) { fail('public-client acceptance mismatch'); return; }
+  report.hostLifetimePass=true;finished=true;clearTimeout(deadline);document.documentElement.dataset.result='pass';
+}
+const log = bytes => {
+  const text = decoder.decode(new Uint8Array(bytes), {stream:true});
+  report.logs = (report.logs + text).slice(-131072);
+  partial += text;
+  const lines = partial.split('\n'); partial = lines.pop().slice(-8192);
+  for (const raw of lines) {
+    const line = raw.replaceAll('\r','');
+    if (line.startsWith('GUEST_VK_HOST_HELLO ')) {
+      try { report.hellos.push(JSON.parse(line.slice('GUEST_VK_HOST_HELLO '.length))); }
+      catch (error) { fail(`invalid guest HELLO JSON: ${error}`); }
+    }
+    if (line.includes('GUEST_VK_GRAPHICS_FAIL') || line.includes('GUEST_VK_GRAPHICS_PIXEL_FAIL') || /^GUEST_VK_GRAPHICS_EXIT status=[1-9]/.test(line)) fail(line);
+  }
+  document.querySelector('#log').textContent = report.logs.slice(-20000);
+  if (!connected && report.logs.includes('GUEST_GPU_LISTENING')) {
+    connected = true;
+    vsock.connect(4050, {timeoutMs:10000})
+      .then(connection => serveGraphics(connection, report.mode, event => { if (report.events.length < 512) report.events.push(event); }))
+      .then(host => { report.host = host; check(); }).catch(fail);
+  }
+  check();
+};
+async function captureBoot(stream) {
+  const reader = stream.getReader(), decoder = new TextDecoder(); let pending = '';
+  try {
+    for (;;) {
+      const {value, done} = await reader.read(); if (done) break;
+      const text = decoder.decode(new Uint8Array(value), {stream:true}); report.bootLogs = (report.bootLogs + text).slice(-131072);
+      const lines = (pending + text).split('\n'); pending = lines.pop().slice(-8192);
+      for (const line of lines) if (/Memory:|smp: Brought up/.test(line) && report.bootConfigurationEvidence.length < 16)
+        report.bootConfigurationEvidence.push(line.replaceAll('\r',''));
+    }
+  } catch (error) { if (!stopping) report.bootConsoleError = String(error); }
+  finally { reader.releaseLock(); }
+}
+const sha256 = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2,'0')).join('');
+document.querySelector('#boot').onclick = async () => {
+  document.querySelector('#boot').disabled = true;
+  deadline = setTimeout(() => { fail('page watchdog: 135 seconds'); machine?.close(); }, 135000);
+  try {
+    if (!crossOriginIsolated) throw Error('cross-origin isolation required');
+    const candidate = new URLSearchParams(location.search).get('candidate') || 'candidate-guest';
+    if (!/^candidate-guest$/.test(candidate)) throw Error('invalid isolated candidate');
+    const metadataResponse = await fetch(`./${candidate}/package.json`);
+    if (!metadataResponse.ok) throw Error('candidate metadata unavailable');
+    const metadata = await metadataResponse.json();
+    if (!metadata.testOnly || !metadata.passPackage || !['graphics'].includes(metadata.mode)) throw Error('invalid test package');
+    report.mode = metadata.mode; report.package = metadata;
+    for (const [relative, hash] of Object.entries(metadata.guestBinary.hostSources)) {
+      const response = await fetch(new URL(relative, new URL('../', location.href)));
+      if (!response.ok || await sha256(await response.arrayBuffer()) !== hash) throw Error('host source changed: ' + relative);
+    }
+    const response = await fetch(`./${candidate}/initramfs.cpio`);
+    if (!response.ok) throw Error('candidate archive unavailable');
+    const initcpio = new Uint8Array(await response.arrayBuffer());
+    if (initcpio.length !== metadata.bytes || await sha256(initcpio) !== metadata.archiveSha256) throw Error('candidate hash mismatch');
+    report.configuration = {cpus:2, memoryBytes:1073741824, visibility:document.visibilityState};
+    machine = await spawnMachine({cpus:2, devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}}, initcpio,
+      cmdline:'console=hvc0 rdinit=/init', devices:[consoleDevice(null,new WritableStream({write:log})), entropyDevice(), inputDevice(), vsock],
+      framebuffer:{canvas:document.querySelector('#display'), width:640, height:480, backend:'canvas2d'}});
+    window.guestVulkanMachine = machine; void captureBoot(machine.bootConsole);
+    machine.closed.catch(error => { if (!finished) fail(error); });
+  } catch (error) { fail(error); }
+};
+document.querySelector('#stop').onclick = () => { stopping = true; clearTimeout(deadline); machine?.close(); window.guestGraphicsCleanup?.(); };
+</script>
