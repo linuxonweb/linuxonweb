@@ -1,0 +1,38 @@
+{
+  "start": 2670.25,
+  "hostStartedAt": "2026-09-26T14:21:18.481Z",
+  "visibility": "visible",
+  "settings": {
+    "ram": "1024",
+    "cpus": "2"
+  },
+  "stages": {
+    "kernel": 1027.380000114441,
+    "unpack": 34430.87000012398,
+    "freeInitrd": 34718.08500003815,
+    "init": 38079.200000047684,
+    "mount": 61022.90499997139,
+    "network": 65193.549999952316,
+    "shell": 71295.60000014305
+  },
+  "elapsed": 71551.74500012398,
+  "visibilityNow": "visible",
+  "status": "running \u00b7 console \u00b7 initramfs",
+  "resources": [],
+  "tail": [
+    "virtiofs virtio4: discovered new tag: home",
+    "Console: switching to colour frame buffer device 160x45",
+    "fb0: wasm framebuffer 1280x720-32 at 131d4e37",
+    "This architecture does not have kernel memory protection.",
+    "Run /init as init process",
+    "home: persistent storage mounted",
+    "network: eth0 192.0.2.2/24 gw 192.0.2.1",
+    "~ # "
+  ],
+  "pass": true,
+  "networkSmokeLines": [
+    "network: wget google.com ok",
+    "network: curl https://www.google.com ok"
+  ],
+  "interpretation": "Visible 1 GiB / 2 CPU run reproduced slow warm boot with zero system-image fetches. Fine-grained cause unresolved; no fast overall boot claim."
+}

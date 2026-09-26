@@ -1,0 +1,33 @@
+{
+  "start": 1507.7200000286102,
+  "hostStartedAt": "2026-09-26T14:24:19.328Z",
+  "visibility": "visible",
+  "settings": {
+    "ram": "1024",
+    "cpus": "2"
+  },
+  "stages": {
+    "kernel": 267.1399998664856,
+    "unpack": 1099.4300000667572,
+    "freeInitrd": 1380.9300000667572,
+    "init": 1384.420000076294,
+    "mount": 1979.4300000667572,
+    "network": 2167.204999923706,
+    "shell": 2654.7850000858307
+  },
+  "elapsed": 3057.7549998760223,
+  "visibilityNow": "visible",
+  "status": "running \u00b7 console \u00b7 initramfs",
+  "resources": [],
+  "tail": [
+    "Console: switching to colour frame buffer device 160x45",
+    "fb0: wasm framebuffer 1280x720-32 at a9008c48",
+    "Freeing initrd memory: 39488K",
+    "This architecture does not have kernel memory protection.",
+    "Run /init as init process",
+    "home: persistent storage mounted",
+    "network: eth0 192.0.2.2/24 gw 192.0.2.1",
+    "~ # "
+  ],
+  "pass": true
+}

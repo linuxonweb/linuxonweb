@@ -47,7 +47,7 @@ driver enables permission checking internally and rejects the explicit
   clearing image cache retained home; update refilled 134,963,688 bytes; confirmed
   home deletion removed all entries/chunks while retaining those image bytes.
   An empty root-only database may be recreated by the idle usage reader.
-  Local storage scope is assessed at 95/100; deployment/live checks remain.
+  Local storage scope is assessed at 95/100; live functional checks also passed.
 - Host rendering: Node tests and real pixel tests pass for Canvas2D, WebGL, and
   software WebGPU, including fallback/repaint. WebGPU needs explicit offscreen
   bitmap transfer. The test environment uses SwiftShader; it proves no physical
@@ -63,7 +63,7 @@ driver enables permission checking internally and rejects the explicit
   initial timings were quantized, so use the revised fixed-batch-100-v1 fixture.
   Its result JSON was saved in the actual persistent Downloads directory.
 
-## Artifacts and pending release gates
+## Artifacts and remaining work
 
 - Preserved rootfs baselines and CPIO audits:
   `../.cache/persistent-home-20260926/`.
@@ -77,21 +77,45 @@ driver enables permission checking internally and rejects the explicit
 - Reproducible guest test: `web/linux/tests/guest-persistence.mjs`; use its
   isolated browser profile and `ASSERT_WARM_CACHE=1 TEST_UPDATE=1` release gates.
 - The Aurora readiness helper was not promoted; existing packed startup remains.
-- Still required for the accepted release: reviewed commits, deployment and live
-  checks. Runtime and storage task agents coordinate
-  read/edit work; the command agent owns acceptance commands and services.
+- Accepted runtime commit: `f24b914113dee9132471298e5e3a97b2e69b2ceb`.
+  Sites version 4 is deployed publicly and passed exact full-image hashes,
+  isolation, actual guest write/reload, zero-image warm reload, and automatic
+  update/restart preserving the marker. Initial live mount timings were 62.6 s,
+  53.4 s warm and 56.4 s after update. A visible 1 GiB/2 CPU repeat reached the
+  kernel at 1.0 s, unpack at 34.4 s, `/init` at 38.1 s, home mount at 61.0 s,
+  and shell at 71.3 s with zero system-image fetches. The finer cause remains
+  unresolved; do not claim fast overall boot from the local 2.5 s observation.
+  The final matched visible local run reached home at 1.98 s and shell at 2.65 s
+  with zero image fetches. This confirms a large deployed-origin/runtime
+  difference, without identifying its cause; no further QA matrix was run.
+  A read-only browser check found JavaScript and V8 optimization allowed by
+  default for both origins, no relevant preference exceptions, and no jitless
+  launch flags. Do not attribute the slowdown to disabled browser optimization.
+  Follow-up performance work should measure compilation and kernel/guest
+  execution across the two origins before changing CPU or timing parameters.
+  Actual guest DNS/TCP/HTTPS smoke checks passed (`wget google.com` and
+  certificate-validated `curl https://www.google.com`). Small evidence is
+  `docs/evidence/runtime-graphics-20260926/sites-live-timing-network.json`.
 
 ## Services and deployment
 
-One serving agent (`cmd_project_audit`) owns the task's local dev server on
-`127.0.0.1:4180` and test Chromium CDP ports `9394` and `9395`. Coordinate with
-that agent; do not start duplicate services or terminate the user's unrelated
-pre-existing server. The tool's thread limit required reusing the existing
-command agent; its command tasks remain isolated and stop on errors.
+The serving agent (`cmd_project_audit`) gracefully closed both task Chromium
+browsers and their guests on CDP ports `9394` and `9395`, and stopped the owned
+dev server PID `4051151` on `127.0.0.1:4180` after final verification. All three
+ports were confirmed closed. Browser profiles, frozen build inputs and evidence
+remain on disk. The user's pre-existing server PID `1591443` was preserved and
+still existed at cleanup. Do not terminate unrelated user services.
 
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
-project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. It proxies the versioned
-Cloudflare runtime at `https://linuxonweb.testcatty.workers.dev`. Preserve the
+project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 4 serves the
+accepted static runtime through Sites assets; the unchanged Cloudflare worker
+at `https://linuxonweb.testcatty.workers.dev` remains its DNS/TCP network proxy.
+Cloudflare itself was not redeployed because its API token was unavailable.
+Sites source is `278d73a9e3eabec7606ab25518a4da3e54f0499e`, deployment
+`appgdep_6ab7d2e9d8448191ad0cee318dca4554`. The separate release record is
+`docs/evidence/runtime-graphics-20260926/sites-release.json`.
+Top-level Cloudflare release metadata and sourceFiles still describe the older,
+unchanged Cloudflare deployment; do not replace them with Sites hashes. Preserve the
 public audience. Read `web/sites/.openai/hosting.json` and its README; push the
 exact nested-repository source commit before saving/deploying a Sites version.
 Never print or persist source-repository write tokens.

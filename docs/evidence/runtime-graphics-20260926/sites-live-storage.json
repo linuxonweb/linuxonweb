@@ -1,0 +1,173 @@
+{
+  "marker": "persistent-home-qa-1790432098225",
+  "pass": true,
+  "errors": [],
+  "source": "sites-live-storage/guest-persistence.json",
+  "stages": [
+    {
+      "label": "first mount",
+      "elapsedMs": 62577,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 1,
+        "downloads": 1,
+        "writes": 1,
+        "chunkWrites": 39,
+        "failures": []
+      },
+      "resources": [
+        {
+          "name": "https://linuxonweb.exact-coot-7512.chatgpt.site/linux/initramfs.cpio?sha256=3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+          "duration": 8961.639999866486,
+          "transferSize": 40495856,
+          "encodedBodySize": 40495556
+        }
+      ],
+      "timeSinceNavigation": 64827.28000020981
+    },
+    {
+      "label": "first shell",
+      "elapsedMs": 20660,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 1,
+        "downloads": 1,
+        "writes": 1,
+        "chunkWrites": 39,
+        "failures": []
+      },
+      "resources": [
+        {
+          "name": "https://linuxonweb.exact-coot-7512.chatgpt.site/linux/initramfs.cpio?sha256=3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+          "duration": 8961.639999866486,
+          "transferSize": 40495856,
+          "encodedBodySize": 40495556
+        }
+      ],
+      "timeSinceNavigation": 85488.96500015259
+    },
+    {
+      "label": "guest write",
+      "elapsedMs": 3529,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 1,
+        "downloads": 1,
+        "writes": 1,
+        "chunkWrites": 39,
+        "failures": []
+      },
+      "resources": [
+        {
+          "name": "https://linuxonweb.exact-coot-7512.chatgpt.site/linux/initramfs.cpio?sha256=3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+          "duration": 8961.639999866486,
+          "transferSize": 40495856,
+          "encodedBodySize": 40495556
+        }
+      ],
+      "timeSinceNavigation": 89020.625
+    },
+    {
+      "label": "second mount",
+      "elapsedMs": 53416,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 55619.78999996185
+    },
+    {
+      "label": "second shell",
+      "elapsedMs": 8064,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 63684.05500006676
+    },
+    {
+      "label": "guest reload read",
+      "elapsedMs": 2017,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 65703.68000006676
+    },
+    {
+      "label": "updated mount",
+      "elapsedMs": 56419,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 58930.80500006676
+    },
+    {
+      "label": "updated shell",
+      "elapsedMs": 9580,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 68511.49499988556
+    },
+    {
+      "label": "guest update read",
+      "elapsedMs": 1008,
+      "status": "running \u00b7 console \u00b7 initramfs",
+      "storage": "Home mounted \u00b7 saved files persist across refresh and system updates.",
+      "cacheWarning": "",
+      "cache": {
+        "hits": 2,
+        "downloads": 0,
+        "writes": 0,
+        "chunkWrites": 0,
+        "failures": []
+      },
+      "resources": [],
+      "timeSinceNavigation": 69523.08500003815
+    }
+  ]
+}

@@ -6,9 +6,13 @@
   "sites": {
     "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
     "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
-    "deploymentId": "appgdep_6ab7933f2fbc8191ad12e9641af3a594",
-    "sourceCommit": "7ee1f3a33f6f7f4ce2bc7853d1828ae65968973e",
-    "audience": "public"
+    "deploymentId": "appgdep_6ab7d2e9d8448191ad0cee318dca4554",
+    "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_18718b8b11248191ac31de63e85ae5e8",
+    "version": 4,
+    "sourceCommit": "278d73a9e3eabec7606ab25518a4da3e54f0499e",
+    "runtimeSourceCommit": "f24b914113dee9132471298e5e3a97b2e69b2ceb",
+    "audience": "public",
+    "evidence": "../../docs/evidence/runtime-graphics-20260926/sites-release.json"
   },
   "note": "Firefox reliability release: current Aurora Files transfer support, EWMH window controls and repaint fixes, static VP8/Opus decoding with browser audio, Opus tail duration and 64 KiB mmap alignment corrections, quieter default logs. Public Sites runtime updated through its existing same-origin proxy; the Sites proxy was not redeployed.",
   "chunkSize": 20971520,
@@ -334,5 +338,7 @@
   "stagedBytes": 151325872,
   "routes": 53,
   "largeFiles": 2,
-  "sourceCommit": "5e7eb6af46a24d1a2816497c4ce60d1ab27b8714"
+  "sourceCommit": "5e7eb6af46a24d1a2816497c4ce60d1ab27b8714",
+  "currentArchitecture": "Sites serves accepted static runtime assets; existing Cloudflare deployment remains the unchanged DNS/TCP network proxy.",
+  "cloudflareRecordScope": "Top-level deploymentId, versionId, deployedAt and sourceFiles describe the unchanged earlier Cloudflare deployment, not the current Sites static runtime."
 }

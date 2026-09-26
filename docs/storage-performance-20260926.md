@@ -92,7 +92,12 @@ python3 tools/guest-rootfs/package-persistent-home.py --manifest web/linux
 
 Cloudflare's explicit source allowlist includes the storage modules and
 manifest. Staging rejects a manifest whose hashes or lengths differ from the
-actual snapshot. The public Sites proxy already permits `/linux/` assets.
+actual snapshot. The accepted release is served by Sites version 4 assets;
+the existing Cloudflare worker remains the unchanged DNS/TCP network proxy.
+Cloudflare deployment credentials were unavailable. Exact source commits,
+bundle identities and deployment IDs are in
+`docs/evidence/runtime-graphics-20260926/sites-release.json`; the older
+Cloudflare release record retains its original deployment and source hashes.
 
 ## Verification status
 
@@ -163,10 +168,33 @@ Completed:
   root inode (one metadata node, zero data bytes), as expected. Evidence:
   `docs/evidence/runtime-graphics-20260926/storage-controls.json`.
 
-All local storage acceptance gates have passed. Storage-scope quality assessment:
+- Public Sites version 4 passed full kernel/plain/Firefox hash and isolation
+  checks, actual guest write/reload, zero-image warm reload, and Update & restart
+  with exact marker preservation and no captured page errors. Sanitized live
+  evidence is `docs/evidence/runtime-graphics-20260926/sites-live-storage.json`.
+  Production desktop and 430px mobile screenshots were visually reviewed:
+  separate storage counts and 44px controls fit without horizontal overflow.
+  Observed mount times were 62.6 s initially, 53.4 s warm and 56.4 s after update;
+  a visible 1 GiB/2 CPU repeat reached kernel startup at 1.0 s, unpack at 34.4 s,
+  `/init` at 38.1 s, home mount at 61.0 s and shell at 71.3 s with zero image
+  fetches. Slow warm boot reproduced in the foreground; its finer cause remains
+  unresolved. Image reuse works, but fast overall boot is not established.
+  A final visible local run with the same 1 GiB/2 CPU settings and zero image
+  fetches reached kernel startup at 0.267 s, unpack at 1.099 s, `/init` at
+  1.384 s, home mount at 1.979 s and shell at 2.655 s. The origin/runtime
+  difference is real in these observations; this trace does not identify its
+  cause. Both unpack-to-free-initrd intervals were about 0.28 s, so caching an
+  expanded rootfs is not supported as a solution to the dominant observed delay.
+  Local evidence is `docs/evidence/runtime-graphics-20260926/local-boot-timing.json`.
+- Actual production guest DNS/TCP/HTTPS smoke checks passed: init logged
+  successful `wget google.com` and certificate-validated
+  `curl https://www.google.com`. Compact timing and network evidence is
+  `docs/evidence/runtime-graphics-20260926/sites-live-timing-network.json`.
+
+All local storage acceptance and live functional gates have passed. Storage-scope quality assessment:
 95/100, based on transactional failure coverage, real guest and SQLite reload,
 update/restart preservation, deletion isolation and responsive UI review.
-This is a scope assessment, not a benchmark or overall project score. Final
-deployment and live-origin checks remain pending. The verified persistence work
+This is a scope assessment, not a benchmark or overall project score. Further
+boot performance diagnosis is unresolved. The verified persistence work
 does not provide guest native JIT, GPU APIs, hardware decoding or near-native
 execution speed.

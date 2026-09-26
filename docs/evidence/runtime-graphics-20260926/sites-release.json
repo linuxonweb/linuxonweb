@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+  "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+  "version": 4,
+  "versionId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_18718b8b11248191ac31de63e85ae5e8",
+  "deploymentId": "appgdep_6ab7d2e9d8448191ad0cee318dca4554",
+  "audience": "public",
+  "sitesSourceCommit": "278d73a9e3eabec7606ab25518a4da3e54f0499e",
+  "runtimeSourceCommit": "f24b914113dee9132471298e5e3a97b2e69b2ceb",
+  "archive": {
+    "bytes": 120132545,
+    "sha256": "bcd22b533bea29f38e3345fdf0c8c9e8941528df6cc284e5b8bfa662b75f804b"
+  },
+  "acceptedContent": {
+    "files": 59,
+    "bytes": 151459840,
+    "tarContentSha256": "c0f0b5067c98b6ebe7aed88fae2f4fc19bb338979f0b19da0794dd3a122af17f"
+  },
+  "architecture": "Sites serves accepted static runtime assets; existing Cloudflare deployment remains the unchanged DNS/TCP network proxy.",
+  "cloudflareRedeployed": false,
+  "cloudflareDeployBlocker": "CLOUDFLARE_API_TOKEN was unavailable.",
+  "bootManifest": {
+    "schema": 1,
+    "version": "fa0217b54d99",
+    "assets": {
+      "kernel": {
+        "url": "./vmlinux.wasm",
+        "bytes": 6281750,
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "label": "Linux kernel"
+      },
+      "plain": {
+        "url": "./initramfs.cpio",
+        "bytes": 40495556,
+        "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "label": "Desktop system"
+      },
+      "firefox": {
+        "url": "./initramfs-firefox.cpio.gz",
+        "bytes": 88186382,
+        "sha256": "6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65",
+        "label": "Firefox system"
+      }
+    }
+  },
+  "verification": {
+    "sitesTests": 8,
+    "localWorkerRouteHashes": 58,
+    "rangeAndIsolation": "passed",
+    "liveKernelPlainFirefoxExactHashesAndIsolation": "passed",
+    "liveGuestWriteReloadAndUpdateRestartPreservingMarker": "passed",
+    "liveWarmSystemImageRequests": 0,
+    "guestEvidence": "sites-live-storage.json",
+    "assetEvidence": "sites-live-assets.json",
+    "desktopAnd430pxMobileVisualReview": "passed: separate storage counts, 44px controls, no horizontal overflow",
+    "guestDnsTcpHttpsSmoke": "passed: wget google.com and curl https://www.google.com",
+    "timingNetworkEvidence": "sites-live-timing-network.json"
+  },
+  "timing": {
+    "initialMountSeconds": 62.6,
+    "warmMountSeconds": 53.4,
+    "afterUpdateMountSeconds": 56.4,
+    "foregroundComparison": {
+      "visibility": "visible",
+      "ramMiB": 1024,
+      "cpus": 2,
+      "stageMilliseconds": {
+        "kernel": 1027.380000114441,
+        "unpack": 34430.87000012398,
+        "freeInitrd": 34718.08500003815,
+        "init": 38079.200000047684,
+        "mount": 61022.90499997139,
+        "network": 65193.549999952316,
+        "shell": 71295.60000014305
+      },
+      "systemImageRequests": 0,
+      "finerCause": "unresolved"
+    },
+    "interpretation": "Both origins avoided system-image downloads, but production remained much slower than local in the same visible 1 GiB / 2 CPU configuration. Finer cause unresolved; no production boot-speed improvement claimed.",
+    "localForegroundComparison": {
+      "visibility": "visible",
+      "ramMiB": 1024,
+      "cpus": 2,
+      "stageMilliseconds": {
+        "kernel": 267.1399998664856,
+        "unpack": 1099.4300000667572,
+        "freeInitrd": 1380.9300000667572,
+        "init": 1384.420000076294,
+        "mount": 1979.4300000667572,
+        "network": 2167.204999923706,
+        "shell": 2654.7850000858307
+      },
+      "systemImageRequests": 0,
+      "evidence": "local-boot-timing.json"
+    }
+  }
+}
