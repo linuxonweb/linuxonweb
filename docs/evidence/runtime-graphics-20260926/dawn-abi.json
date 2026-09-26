@@ -1,0 +1,279 @@
+{
+  "pass": true,
+  "scope": "compile-only C source/type ABI gate; no linking, guest execution, GPU driver, physical acceleration or native JIT",
+  "recordedAt": "2026-09-26T16:01:34.982365+00:00",
+  "workingDirectory": "/mnt/p6/project/linux/linuxonweb",
+  "storage": {
+    "path": "/mnt/p6/build/dawn-abi-20260926",
+    "filesystem": "ext4",
+    "mount": "/mnt/p6",
+    "availableAtCheck": "174 GiB (df -h rounded)",
+    "environment": {
+      "TMPDIR": "/mnt/p6/build/dawn-abi-20260926/tmp",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    }
+  },
+  "compiler": {
+    "executable": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+    "versionCommand": [
+      "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "--version"
+    ],
+    "versionOutput": "clang version 22.1.8\nTarget: wasm32-unknown-linux-musl\nThread model: posix\nInstalledDir: /mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin"
+  },
+  "python": {
+    "executable": "/usr/bin/python3",
+    "version": "3.14.6 (main, Jun 23 2026, 18:14:05) [GCC 16.1.1 20260430]",
+    "dependencies": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3"
+    }
+  },
+  "syntaxCheck": {
+    "pass": true,
+    "command": [
+      "/usr/bin/python3",
+      "-c",
+      "import pathlib; p=pathlib.Path('tools/guest-gpu/dawn-headers.py'); compile(p.read_text(),str(p),'exec')"
+    ],
+    "executionNote": "Equivalent source compiled using compile(source, path, exec) inside the preceding /usr/bin/python3 stdin metadata check; no pyc output."
+  },
+  "inputs": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/guest-gpu/dawn-headers.py",
+      "bytes": 7002,
+      "sha256": "893559e4aed2d117f78354b02be62db707080b9960d2be2f6a4d93b47c332511"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-gpu/dawn-abi/probe.c",
+      "bytes": 6070,
+      "sha256": "965abb87c531def36fa865c0d84d58ef0798236cce9a838ae87653b7148edeba"
+    }
+  ],
+  "positive": {
+    "pass": true,
+    "command": [
+      "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pthread",
+      "-matomics",
+      "-mbulk-memory",
+      "-O0",
+      "-I/mnt/p6/build/dawn-abi-20260926/run1/generated/include",
+      "-c",
+      "web/linux/tests/guest-gpu/dawn-abi/probe.c",
+      "-o",
+      "/mnt/p6/build/dawn-abi-20260926/run1/probe.o"
+    ],
+    "reportedExitCode": 0,
+    "provenance": "Completed successfully in the previous agent run; not rerun here. Existing empty compile.log and Wasm object verified.",
+    "log": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "object": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/probe.o",
+      "bytes": 3423,
+      "sha256": "a441db2015c577974ff48cf7bf57140b43c54f9a944826a028c884eb667a2a95"
+    },
+    "wasmMagicAndVersionVerified": true
+  },
+  "negative": {
+    "pass": true,
+    "command": [
+      "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pthread",
+      "-matomics",
+      "-mbulk-memory",
+      "-O0",
+      "-I/mnt/p6/build/dawn-abi-20260926/run1/generated/include",
+      "-DDAWN_ABI_NEGATIVE_CALLBACK",
+      "-c",
+      "web/linux/tests/guest-gpu/dawn-abi/probe.c",
+      "-o",
+      "/mnt/p6/build/dawn-abi-20260926/run1/negative.o"
+    ],
+    "exitCode": 1,
+    "expected": "Reject callback missing second userdata argument as incompatible WGPUBufferMapCallback",
+    "diagnostic": "web/linux/tests/guest-gpu/dawn-abi/probe.c:68:27: error: incompatible function pointer types initializing 'WGPUBufferMapCallback' (aka 'void (*)(enum WGPUMapAsyncStatus, struct WGPUStringView, void *, void *)') with an expression of type 'void (WGPUMapAsyncStatus, WGPUStringView, void *)' (aka 'void (enum WGPUMapAsyncStatus, struct WGPUStringView, void *)') [-Wincompatible-function-pointer-types]\n   68 |     WGPUBufferMapCallback callback = mapped;\n      |                           ^          ~~~~~~\n1 error generated.\n",
+    "log": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/negative-callback.log",
+      "bytes": 524,
+      "sha256": "8f0d0a49f79729c26ef4854efbd431dc1a9952222db92f83e7a61c9e90d166e8"
+    },
+    "objectAbsent": true
+  },
+  "priorNegativeAttempt": {
+    "command": [
+      "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pthread",
+      "-matomics",
+      "-mbulk-memory",
+      "-O0",
+      "-I/mnt/p6/build/dawn-abi-20260926/run1/generated/include",
+      "-DDAWN_ABI_NEGATIVE_CALLBACK",
+      "-fsyntax-only",
+      "web/linux/tests/guest-gpu/dawn-abi/probe.c"
+    ],
+    "outcome": "Blocked before callback checking by wrapper-injected -L flags unused under -fsyntax-only and -Werror; not ABI rejection evidence",
+    "diagnostic": "clang: error: argument unused during compilation: '-L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib' [-Werror,-Wunused-command-line-argument]\nclang: error: argument unused during compilation: '-L/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/wasm32-unknown-linux-musl/lib' [-Werror,-Wunused-command-line-argument]\n",
+    "log": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/negative.log",
+      "bytes": 342,
+      "sha256": "4a17fc49d17c3946ea5cf84010659d29894e3516e5d3fb2a59ebb61b6dd64079"
+    },
+    "preserved": true
+  },
+  "generatedHeaders": [
+    {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/generated/include/dawn/webgpu.h",
+      "bytes": 257507,
+      "sha256": "31dab439905b58521acaec4981d0ca324c4ed1670fde8aa539a6e1634c545f09"
+    },
+    {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/generated/include/dawn/dawn_proc_table.h",
+      "bytes": 17606,
+      "sha256": "06e158929631f6a7e05dd79d31684a4a87b6360723eb6b5912046ddd99e7672d"
+    },
+    {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/generated/include/dawn/wire/client/webgpu.h",
+      "bytes": 44247,
+      "sha256": "f6bb8f8fbdf2c99133e480aa6ed635038ce3ff9b2188180d618801fc6e7f5a21"
+    }
+  ],
+  "sourceProvenance": {
+    "headersManifest": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/headers.json",
+      "bytes": 890,
+      "sha256": "be9c274c7980daa9ea6b670df3a9b6e63f87210f8f8e38e4f3013bec4b4e78cf"
+    },
+    "sourcesManifest": {
+      "path": "/mnt/p6/build/dawn-abi-20260926/run1/sources.json",
+      "bytes": 62575,
+      "sha256": "2e77fdf2ac4b7a6bb15b7049896463d7896de9da78d37f456f472754c37f9519"
+    },
+    "generationCommand": [
+      "/usr/bin/python3",
+      "/mnt/p6/build/dawn-abi-20260926/run1/dawn/generator/dawn_json_generator.py",
+      "--dawn-json",
+      "/mnt/p6/build/dawn-abi-20260926/run1/dawn/src/dawn/dawn.json",
+      "--targets",
+      "headers",
+      "--template-dir",
+      "/mnt/p6/build/dawn-abi-20260926/run1/dawn/generator/templates",
+      "--output-dir",
+      "/mnt/p6/build/dawn-abi-20260926/run1/generated",
+      "--expected-outputs-file",
+      "/mnt/p6/build/dawn-abi-20260926/run1/expected-outputs.txt"
+    ],
+    "repositories": [
+      {
+        "repository": "dawn",
+        "commit": "c3d35d65fb2f087c425ba20050c5ff03d32f1114",
+        "rootTree": "2918364b74bb3e45e9564c6e77429096fed46f8b",
+        "files": [
+          {
+            "path": "LICENSE",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/LICENSE",
+            "gitBlob": "08e7ccc4f95d780198170d8fa50aece5826b71c7",
+            "sha256": "0493f897193af1796d5054659f45ec7d4c5af648fa67a99f01d30e55cc805abc",
+            "bytes": 11829
+          },
+          {
+            "path": "generator/dawn_json_generator.py",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/dawn_json_generator.py",
+            "gitBlob": "1900b02d6e0340adcd29f06d14337768d96906ff",
+            "sha256": "6e44a4588ebe9fb0f7731decfb91f011b42b80ec5127129001675d561b60a18b",
+            "bytes": 81870
+          },
+          {
+            "path": "generator/generator_lib.py",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/generator_lib.py",
+            "gitBlob": "e9f8c2e2ab91a14c2ed3787f025a9a67d78c4bd8",
+            "sha256": "a9912a516231a058513d4737335510bae69aba90420fd2409b03a352804131c2",
+            "bytes": 15234
+          },
+          {
+            "path": "generator/webgpu_docs_utility.py",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/webgpu_docs_utility.py",
+            "gitBlob": "388951ef6fd5312af33a26db643215d337d149e5",
+            "sha256": "c45a38c75faabaa67a1ea05f6b26b0d3b18e9eb422670321669b8ae65d1db495",
+            "bytes": 24107
+          },
+          {
+            "path": "generator/templates/api.h",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/templates/api.h",
+            "gitBlob": "71ab2cb86c7d2478a0281aae2d485a8de3d0221e",
+            "sha256": "cab6da66ca1625d953d78773455b8ea12250305444ca03f61d776d41a379ddef",
+            "bytes": 15279
+          },
+          {
+            "path": "generator/templates/dawn_proc_table.h",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/templates/dawn_proc_table.h",
+            "gitBlob": "03695e36cee7bd46765939910945fd1bbd040d3f",
+            "sha256": "aff18ec9f56250876bf0693ecf01bffec021621f7aa983d0fe8d34ba47ed2853",
+            "bytes": 2347
+          },
+          {
+            "path": "generator/templates/BSD_LICENSE",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/templates/BSD_LICENSE",
+            "gitBlob": "eaef87a510d110e7c1a5dd10950ca4c9274deaec",
+            "sha256": "92b6ea59a7483a46bff5fc34d3debfbd304110f1b06e6e4ba1ba1e454405a43f",
+            "bytes": 1648
+          },
+          {
+            "path": "generator/templates/dawn/wire/client/api.h",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/generator/templates/dawn/wire/client/api.h",
+            "gitBlob": "f61ba7be79a90e59c069a3ed8cd325836b57519c",
+            "sha256": "3eb1b8f176b329edd0b0144ed5c79a968d6054a0ccdc7b61fc1fe3a2d1aa007e",
+            "bytes": 2959
+          },
+          {
+            "path": "src/dawn/dawn.json",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/src/dawn/dawn.json",
+            "gitBlob": "b5ec9a25723a1653f548acefd09f8a13d6e7a1b3",
+            "sha256": "30890e61238826cd15e1e1918c65423cf634bf12352f67f83b80b81fb5b602e0",
+            "bytes": 195901
+          },
+          {
+            "path": "include/webgpu/webgpu.h",
+            "url": "https://raw.githubusercontent.com/google/dawn/c3d35d65fb2f087c425ba20050c5ff03d32f1114/include/webgpu/webgpu.h",
+            "gitBlob": "aa36bc1b0350ef8e66fa33c166e021f2ae66d45b",
+            "sha256": "5316d9fd241e604b3260fa8d4398a458a3dc88ee69c540ac959260b444bdfae3",
+            "bytes": 1686
+          }
+        ],
+        "networkBytes": 384206
+      },
+      {
+        "repository": "angle",
+        "commit": "c2fbfadacf8679abe316941d1ac5310f6c1645a1",
+        "rootTree": "b28581aaf24406316c38534ae8a740092a5b8389",
+        "files": [
+          {
+            "path": "DEPS",
+            "url": "https://raw.githubusercontent.com/google/angle/c2fbfadacf8679abe316941d1ac5310f6c1645a1/DEPS",
+            "gitBlob": "f0779c5b82da536a3be96c426447d78e6ee83866",
+            "sha256": "9df7a81c5d29bf0ac97e2c7fe4175f0b699cc67d4b5aec2faae1c1594ffb3c40",
+            "bytes": 200350
+          }
+        ],
+        "networkBytes": 213403
+      }
+    ],
+    "trustBoundary": "Pinned HTTPS Git commit metadata, verified Git tree/blob identities and source SHA-256; not signed-commit verification."
+  },
+  "changes": "Only negative-callback.log and this abi.json created by this continuation; no repository edits, fetches, services or production changes."
+}

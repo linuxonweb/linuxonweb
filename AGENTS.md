@@ -83,6 +83,15 @@ driver enables permission checking internally and rejects the explicit
   evidence. The agent's 95/100 assessment applies only to that narrow prototype;
   it is not deployed and does not implement guest GL/Vulkan, Firefox GPU APIs,
   hardware video decoding or physical acceleration. It is not a 95/100 goal score.
+- Pinned official Dawn headers were generated from eleven verified source blobs
+  (597,609 downloaded bytes). The wasm32 C proc-table probe compiles, and an
+  intentionally incorrect map callback is rejected for its incompatible type.
+  This is compile-only evidence, not a linked driver or guest GPU execution.
+  See `docs/guest-gpu-dawn-abi-20260926.md` and its `dawn-abi.json` evidence.
+  Outputs and logs are in `/mnt/p6/build/dawn-abi-20260926/run1`.
+  Use `/usr/bin/python3` for the pinned installed generator dependencies, and
+  use `-c` for the negative callback gate: this compiler wrapper's injected
+  library-search flags fail under `-fsyntax-only -Werror` before checking types.
 - Portable baseline interpreter coherent rebuild passed all 83 compilation
   units, linking and Wasm validation. It was guest-tested and rejected for this
   release because it was slower. The accepted baseline was restored. This is
@@ -210,11 +219,23 @@ constraint before another large backend port; do not invent a percentage.
 
 Bounded next implementation gates, subject to that allowance:
 
-- Guest-test the already built Aurora readiness helper before replacing the
-  fixed startup delay. Preserve every other rootfs record and test the update.
-- Generate the pinned official Dawn headers and verify the typed proc-table,
-  future and callback ABI before attempting an ANGLE EGL/GLES bridge. The
-  feasibility document records the native-Dawn dependency that must be removed.
+- Guest-test `tools/guest-rootfs/wait-for-aurora.c` using the existing artifact
+  `../.cache/runtime-graphics-20260926/wm-ready/wait-for-aurora.wasm` (SHA-256
+  `2c54b0b87a88366086672b3e199f886863082951a54c34ef01c2dcc6a015a2c3`).
+  Build/Wasm validation alone is insufficient: verify its one-second self-test,
+  ten-second missing-display fallback, actual Aurora handshake and starting it
+  before Aurora under an independent host watchdog. Only then replace the
+  accepted packed init's single `sleep 10`, retaining the old sleep on missing
+  helper/nonzero exit. Normal deadline expiry returns zero; do not sleep twice.
+  Preserve all other CPIO records and accepted init/profile/certificate fixes;
+  do not substitute the generic init script. Verify actual early Firefox window
+  usability, matched startup timing, warm cache and update/home preservation.
+  Explicitly override test output paths that still default to `/tmp`.
+- The official Dawn typed proc-table/future/callback compilation gate is complete.
+  A next GPU implementation needs an actual traced call inventory and typed
+  transport with asynchronous lifetime/failure handling before linked guest
+  clear/readback execution. The native-Dawn/translator closure remains unported;
+  an ANGLE WebGPU experiment does not fulfill Vulkan or GL-through-Vulkan.
 - Keep native JIT and Vulkan capability claims gated on actual guest execution;
   portable baseline interpretation and host Wasm compilation are not guest JIT.
 
