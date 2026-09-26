@@ -1,0 +1,81 @@
+--- a/security/manager/ssl/nsNSSComponent.cpp
++++ b/security/manager/ssl/nsNSSComponent.cpp
+@@ -779,6 +779,78 @@
+       return NS_OK;
+     }
+   }
++#ifdef __wasm__
++  // Static Wasm builds cannot dlopen CKBI. Accept the profile's NSS roots only
++  // when it contains an SSL-trusted CA; normal chain verification still runs.
++  UniqueCERTCertList certs(PK11_ListCerts(PK11CertListUnique, nullptr));
++  unsigned certCount = 0;
++  unsigned trustReadable = 0;
++  unsigned sslTrusted = 0;
++  if (certs) {
++    for (CERTCertListNode* node = CERT_LIST_HEAD(certs.get());
++         !CERT_LIST_END(node, certs.get()); node = CERT_LIST_NEXT(node)) {
++      ++certCount;
++      CERTCertTrust trust = {};
++      if (CERT_GetCertTrust(node->cert, &trust) == SECSuccess) {
++        ++trustReadable;
++        if (certCount <= 3) {
++          MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
++                  ("[LOWLAND_NSS_ROOTS] cert=%u sslFlags=0x%x", certCount,
++                   trust.sslFlags));
++        }
++        if (trust.sslFlags & CERTDB_TRUSTED_CA) {
++          ++sslTrusted;
++        }
++      }
++    }
++  }
++  MOZ_LOG(gPIPNSSLog, LogLevel::Error,
++          ("[LOWLAND_NSS_ROOTS] list=%d certs=%u trust=%u sslCA=%u",
++           certs ? 1 : 0, certCount, trustReadable, sslTrusted));
++  if (sslTrusted) {
++    return NS_OK;
++  }
++  // Host-created SQL trust objects are not read as trusted by this Wasm NSS.
++  // Reapply trust inside the target only to CA certificates deliberately
++  // imported into this dedicated profile from the shipped system CA bundle.
++  unsigned eligible = 0;
++  unsigned updated = 0;
++  int firstError = 0;
++  if (certs) {
++    for (CERTCertListNode* node = CERT_LIST_HEAD(certs.get());
++         !CERT_LIST_END(node, certs.get()); node = CERT_LIST_NEXT(node)) {
++      const char* nickname = node->cert->nickname;
++      const char* label = nickname ? strrchr(nickname, ':') : nullptr;
++      label = label ? label + 1 : nickname;
++      if (!label || strncmp(label, "lowland-ca-", 11) != 0 ||
++          !CERT_IsCACert(node->cert, nullptr)) {
++        continue;
++      }
++      ++eligible;
++      CERTCertTrust wanted = {};
++      if (CERT_DecodeTrustString(&wanted, "C,,") != SECSuccess ||
++          CERT_ChangeCertTrust(nullptr, node->cert, &wanted) != SECSuccess) {
++        if (!firstError) firstError = PR_GetError();
++        continue;
++      }
++      CERTCertTrust actual = {};
++      if (CERT_GetCertTrust(node->cert, &actual) == SECSuccess &&
++          (actual.sslFlags & CERTDB_TRUSTED_CA)) {
++        ++updated;
++      } else if (!firstError) {
++        firstError = PR_GetError();
++      }
++    }
++  }
++  MOZ_LOG(gPIPNSSLog, LogLevel::Error,
++          ("[LOWLAND_NSS_ROOTS] target trust eligible=%u updated=%u error=%d",
++           eligible, updated, firstError));
++  if (eligible && eligible == updated) {
++    return NS_OK;
++  }
++  MOZ_LOG(gPIPNSSLog, LogLevel::Error,
++          ("[LOWLAND_NSS_ROOTS] no SSL-trusted profile CA"));
++#endif
+   MOZ_LOG(gPIPNSSLog, LogLevel::Debug, ("could not load loadable roots"));
+   return NS_ERROR_FAILURE;
+ }

@@ -1,0 +1,75 @@
+--- a/gfx/layers/wr/IpcResourceUpdateQueue.cpp
++++ b/gfx/layers/wr/IpcResourceUpdateQueue.cpp
+@@ -5,6 +5,10 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #include "IpcResourceUpdateQueue.h"
++#ifdef __wasm__
++#  include <sys/mman.h>
++extern "C" int lowland_mmap_refresh(void*, size_t);
++#endif
+ #include <string.h>
+ #include <algorithm>
+ #include "mozilla/Maybe.h"
+@@ -142,6 +146,16 @@
+                               nsTArray<ipc::Shmem>& aLargeAllocs) {
+   MOZ_ASSERT(aSmallAllocs.IsEmpty());
+   MOZ_ASSERT(aLargeAllocs.IsEmpty());
++#ifdef __wasm__
++  for (const auto& shm : mSmallAllocs) {
++    MOZ_RELEASE_ASSERT(msync(shm.buffer().get<uint8_t>(),
++                             shm.buffer().Size<uint8_t>(), MS_SYNC) == 0);
++  }
++  for (const auto& shm : mLargeAllocs) {
++    MOZ_RELEASE_ASSERT(
++        msync(shm.get<uint8_t>(), shm.Size<uint8_t>(), MS_SYNC) == 0);
++  }
++#endif
+   aSmallAllocs = std::move(mSmallAllocs);
+   aLargeAllocs = std::move(mLargeAllocs);
+   mCursor = 0;
+@@ -201,6 +215,9 @@
+   }
+ 
+   uint8_t* srcPtr = shm.get<uint8_t>();
++#ifdef __wasm__
++  if (lowland_mmap_refresh(srcPtr, shm.Size<uint8_t>()) != 0) return false;
++#endif
+   aInto.PushBytes(Range<uint8_t>(srcPtr, aRange.length()));
+ 
+   return true;
+@@ -235,6 +252,11 @@
+         std::min(remainingBytesToCopy, mChunkSize - ptrOffset);
+     uint8_t* srcPtr =
+         RefCountedShm::GetBytes(mSmallAllocs[shm_idx]) + ptrOffset;
++#ifdef __wasm__
++    const auto& shm = mSmallAllocs[shm_idx].buffer();
++    if (lowland_mmap_refresh(shm.get<uint8_t>(), shm.Size<uint8_t>()) != 0)
++      return false;
++#endif
+ 
+     aInto.PushBytes(Range<uint8_t>(srcPtr, copyRange));
+ 
+@@ -259,6 +281,10 @@
+   }
+ 
+   uint8_t* srcPtr = shm.get<uint8_t>();
++#ifdef __wasm__
++  if (lowland_mmap_refresh(srcPtr, shm.Size<uint8_t>()) != 0)
++    return Nothing();
++#endif
+   return Some(Range<uint8_t>(srcPtr, aRange.length()));
+ }
+ 
+@@ -286,6 +312,11 @@
+     return Nothing();
+   }
+   uint8_t* srcPtr = RefCountedShm::GetBytes(mSmallAllocs[shm_idx]) + ptrOffset;
++#ifdef __wasm__
++  const auto& shm = mSmallAllocs[shm_idx].buffer();
++  if (lowland_mmap_refresh(shm.get<uint8_t>(), shm.Size<uint8_t>()) != 0)
++    return Nothing();
++#endif
+   return Some(Range<uint8_t>(srcPtr, remainingBytesToCopy));
+ }
+ 

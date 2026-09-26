@@ -278,7 +278,14 @@ export async function spawnMachine(options) {
                             unreachable(message);
                     }
                 },
-                on_error: fail,
+                on_error: (error) => {
+                    const stack = error && typeof error.stack === "string"
+                        ? error.stack.slice(0, 8192)
+                        : "";
+                    if (stack)
+                        console.error("[linux-worker] error stack", stack);
+                    fail(error);
+                },
             });
             workers.add(worker);
             worker.post(init, init.type === "forwarded_init" ? [init.port] : undefined);

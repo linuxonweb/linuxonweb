@@ -60,11 +60,202 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
         new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setUint32(0, value, true);
         return true;
     }
+    function firefox_diagnostics_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "").searchParams.get("firefox_diagnostics") === "1";
+        }
+        catch {
+            return false;
+        }
+    }
+    function firefox_memory_pregrow_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_memory_pregrow") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function firefox_memory_pregrow_before_start(memory) {
+        if (!firefox_memory_pregrow_enabled() || !firefox_memory_pregrow_allowed || !memory?.buffer)
+            return null;
+        try {
+            const pageSize = 65536;
+            const oldPages = memory.buffer.byteLength / pageSize;
+            const targetPages = 1024;
+            if (oldPages >= targetPages) {
+                console.warn("[FIREFOX_MEMORY_PREGROW]", JSON.stringify({ moduleGate: firefox_strict_module_allowed, oldPages, newPages: oldPages, delta: 0 }));
+                return oldPages;
+            }
+            const delta = targetPages - oldPages;
+            const grownFrom = memory.grow(delta);
+            const newPages = memory.buffer.byteLength / pageSize;
+            console.warn("[FIREFOX_MEMORY_PREGROW]", JSON.stringify({ moduleGate: firefox_strict_module_allowed, oldPages: grownFrom, newPages, delta }));
+            return newPages;
+        } catch (error) {
+            console.warn("[FIREFOX_MEMORY_PREGROW] grow failed", JSON.stringify({ moduleGate: firefox_strict_module_allowed, error: String(error) }));
+            return null;
+        }
+    }
+
+    function firefox_guard_memory_diag_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_guard_memory_diag") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function firefox_guard_memory_diag_before_start(memory) {
+        if (!firefox_guard_memory_diag_enabled() || !firefox_strict_module_allowed || !memory?.buffer)
+            return null;
+        const addresses = {
+            mutex: 46209940,
+            cond: 46209920,
+            guardA: 45757056,
+            guardB: 45757072,
+        };
+        const values = {};
+        try {
+            const view = new DataView(memory.buffer);
+            for (const [name, address] of Object.entries(addresses)) {
+                if (name === "guardA" || name === "guardB") {
+                    values[name] = address < view.byteLength ? view.getUint8(address) : null;
+                } else {
+                    values[name] = address + 4 <= view.byteLength ? view.getUint32(address, true) : null;
+                }
+            }
+            console.warn("[FIREFOX_GUARD_MEMORY_DIAG]", JSON.stringify({ moduleGate: firefox_strict_module_allowed, values }));
+            return values;
+        } catch (error) {
+            console.warn("[FIREFOX_GUARD_MEMORY_DIAG] read failed", JSON.stringify({ moduleGate: firefox_strict_module_allowed, error: String(error), values }));
+            return null;
+        }
+    }
+
+    function firefox_guard_bypass_all_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_guard_bypass_all") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function firefox_guard_bypass_all_before_start(memory) {
+        if (!firefox_guard_bypass_all_enabled() || !firefox_strict_module_allowed || !memory?.buffer)
+            return null;
+        const addresses = [45757056, 45757072];
+        const writes = [];
+        try {
+            const buffer = memory.buffer;
+            const shared = typeof SharedArrayBuffer !== "undefined" && buffer instanceof SharedArrayBuffer;
+            for (const address of addresses) {
+                if (address + 1 > buffer.byteLength)
+                    continue;
+                const bytes = new Uint8Array(buffer, address, 1);
+                const oldValue = shared ? Atomics.load(bytes, 0) : bytes[0];
+                if (shared)
+                    Atomics.store(bytes, 0, 1);
+                else
+                    bytes[0] = 1;
+                writes.push({ address, old: oldValue, new: 1 });
+            }
+            console.warn("[FIREFOX_GUARD_BYPASS_ALL]", JSON.stringify({ moduleGate: firefox_strict_module_allowed, writes }));
+            return writes;
+        } catch (error) {
+            console.warn("[FIREFOX_GUARD_BYPASS_ALL] write failed", JSON.stringify({ moduleGate: firefox_strict_module_allowed, error: String(error), writes }));
+            return null;
+        }
+    }
+
+    function firefox_guard_bypass_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_guard_bypass") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function firefox_guard_bypass_before_start(memory) {
+        if (!firefox_guard_bypass_enabled() || !memory?.buffer)
+            return null;
+        const address = 0x02ba0000;
+        try {
+            const buffer = memory.buffer;
+            if (address + 1 > buffer.byteLength)
+                return null;
+            const shared = typeof SharedArrayBuffer !== "undefined" && buffer instanceof SharedArrayBuffer;
+            const bytes = new Uint8Array(buffer, address, 1);
+            const oldValue = shared ? Atomics.load(bytes, 0) : bytes[0];
+            if (shared)
+                Atomics.store(bytes, 0, 1);
+            else
+                bytes[0] = 1;
+            console.warn("[FIREFOX_GUARD_BYPASS]", JSON.stringify({ address, old: oldValue, new: 1 }));
+            return oldValue;
+        } catch (error) {
+            console.warn("[FIREFOX_GUARD_BYPASS] write failed", JSON.stringify({ address, error: String(error) }));
+            return null;
+        }
+    }
+
+    function firefox_start_guard_enabled() {
+        try {
+            return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_start_guard") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function firefox_start_guard_snapshot(memory, phase) {
+        if (!firefox_start_guard_enabled() || !memory?.buffer)
+            return null;
+        const address = 37277824;
+        try {
+            const buffer = memory.buffer;
+            if (address + 4 > buffer.byteLength)
+                return null;
+            let value;
+            if (typeof SharedArrayBuffer !== "undefined" && buffer instanceof SharedArrayBuffer)
+                value = Atomics.load(new Uint32Array(buffer, address, 1), 0);
+            else
+                value = new DataView(buffer).getUint32(address, true);
+            console.warn("[FIREFOX_START_GUARD] memory", JSON.stringify({ phase, address, value }));
+            return value;
+        } catch (error) {
+            console.warn("[FIREFOX_START_GUARD] memory read failed", JSON.stringify({ phase, address, error: String(error) }));
+            return null;
+        }
+    }
+
     function call_start() {
         assert(instance);
         const { _start } = instance.exports;
         assert(typeof _start === "function", "_start not found");
-        _start();
+        if (firefox_diagnostics_enabled())
+            console.error("[firefox-callback-adapter] before _start");
+        firefox_memory_pregrow_before_start(firefox_start_guard_memory);
+        firefox_guard_memory_diag_before_start(firefox_start_guard_memory);
+        firefox_guard_bypass_before_start(firefox_start_guard_memory);
+        firefox_guard_bypass_all_before_start(firefox_start_guard_memory);
+        firefox_start_guard_snapshot(firefox_start_guard_memory, "before-start");
+        try {
+            _start();
+        } catch (error) {
+            if (firefox_abort_trace_instances.has(instance)) {
+                try {
+                    console.warn("[FIREFOX_ABORT_TRACE] start error", JSON.stringify({
+                        message: String(error?.message ?? error).slice(0, 1024),
+                        stack: String(error?.stack ?? "").slice(0, 8192),
+                    }));
+                } catch {
+                    // Diagnostics must not replace the original guest error.
+                }
+            }
+            firefox_start_guard_snapshot(firefox_start_guard_memory, "after-start-error");
+            throw error;
+        }
+        firefox_start_guard_snapshot(firefox_start_guard_memory, "after-start");
         throw new Error("_start reached the end without exiting");
     }
     // Binaryen's fpcast-emu pass gives every indirect-table entry one uniform
@@ -85,14 +276,143 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
         return f(...abi_args);
     }
     let call_entry = call_start;
-    function create_instance(context) {
-        const kernel_instance = get_kernel_instance();
-        const user_instance = new WebAssembly.Instance(context.module, {
+let firefox_start_guard_memory = null;
+const firefox_abort_trace_instances = new WeakSet();
+
+function firefox_abort_trace_enabled() {
+    try {
+        return new URL(globalThis.location.href).searchParams.get("firefox_abort_trace") === "1";
+    } catch {
+        return false;
+    }
+}
+let firefox_memory_pregrow_allowed = false;
+let firefox_strict_module_allowed = false;
+
+function firefox_syscall_trace_enabled() {
+    try {
+        return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_syscall_trace") === "1";
+    } catch {
+        return false;
+    }
+}
+
+function firefox_tls_adapter_enabled() {
+    try {
+        return new URL(globalThis.location?.href ?? "", globalThis.location?.origin).searchParams.get("firefox_tls_adapter") === "1";
+    } catch {
+        return false;
+    }
+}
+
+function isFirefoxSyscallTraceModule(module) {
+    try {
+        const hasStart = WebAssembly.Module.exports(module).some(({ name }) => name === "_start");
+        const hasLinuxSyscalls = WebAssembly.Module.imports(module).some(({ module: name, name: field }) => name === "linux" && field === "syscall");
+        return hasStart && hasLinuxSyscalls;
+    } catch {
+        return false;
+    }
+}
+
+function isFirefoxTlsModule(module) {
+    try {
+        const exports = WebAssembly.Module.exports(module);
+        return exports.some(({ name }) => name === "_start") &&
+            exports.some(({ name }) => name === "__indirect_function_table");
+    } catch {
+        return false;
+    }
+}
+
+function create_instance(context) {
+  firefox_start_guard_memory = context.memory;
+  firefox_strict_module_allowed = isFirefoxSyscallTraceModule(context.module);
+  firefox_memory_pregrow_allowed = firefox_strict_module_allowed;
+  const kernel_instance = get_kernel_instance();
+  const traceSyscalls = firefox_syscall_trace_enabled() && isFirefoxSyscallTraceModule(context.module);
+  const tlsAdapter = firefox_tls_adapter_enabled() &&
+    (isFirefoxSyscallTraceModule(context.module) || isFirefoxTlsModule(context.module));
+  let tracedSyscalls = 0;
+  let threadAreaPointer = null;
+  let threadAreaLogged = false;
+  let threadAreaGetLogged = false;
+    firefox_start_guard_snapshot(context.memory, "before-instance");
+    const abortTrace = firefox_abort_trace_enabled() && isFirefoxSyscallTraceModule(context.module);
+    if (abortTrace) Error.stackTraceLimit = 64;
+    let abortTraceWrites = 0;
+    let abortTraceBytes = 0;
+    function traceAbortWrite(nr, fd, pointer, length) {
+        if (!abortTrace || abortTraceWrites >= 16 || abortTraceBytes >= 4096)
+            return;
+        const callNumber = Number(nr);
+        const descriptor = Number(fd);
+        // The guest uses the Linux i386 ABI: write=4, writev=146.
+        if ((callNumber !== 4 && callNumber !== 146) || (descriptor !== 1 && descriptor !== 2))
+            return;
+        abortTraceWrites += 1;
+        try {
+            const buffer = context.memory.buffer;
+            const view = new DataView(buffer);
+            const limit = Math.min(512, 4096 - abortTraceBytes);
+            const captured = [];
+            function copyRange(address, count) {
+                if (!Number.isSafeInteger(address) || !Number.isSafeInteger(count) || address < 0 || count < 0 || address + count > buffer.byteLength)
+                    return;
+                const take = Math.min(count, limit - captured.length);
+                const bytes = new Uint8Array(buffer, address, take);
+                for (const byte of bytes) captured.push(byte);
+            }
+            const address = Number(pointer);
+            const count = Number(length);
+            if (callNumber === 4) {
+                copyRange(address, count);
+            } else if (Number.isSafeInteger(address) && Number.isSafeInteger(count) && address >= 0 && count >= 0 && address + Math.min(count, 8) * 8 <= buffer.byteLength) {
+                for (let i = 0; i < Math.min(count, 8) && captured.length < limit; i += 1) {
+                    copyRange(view.getUint32(address + i * 8, true), view.getUint32(address + i * 8 + 4, true));
+                }
+            }
+            abortTraceBytes += captured.length;
+            console.warn("[FIREFOX_ABORT_TRACE] write attempt", JSON.stringify({
+                nr: callNumber, fd: descriptor, bytes: captured.length,
+                text: new TextDecoder().decode(new Uint8Array(captured)),
+                stack: String(new Error().stack ?? "").slice(0, 4096),
+            }));
+        } catch {
+            // Observing a bad guest pointer must not change syscall behavior.
+        }
+    }
+    const user_instance = new WebAssembly.Instance(context.module, {
             env: { memory: context.memory },
             linux: {
-                syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
-                    const original_instance = instance;
-                    const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
+      syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
+        const original_instance = instance;
+        traceAbortWrite(nr, arg0, arg1, arg2);
+        const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
+        if (tlsAdapter && (nr === 244 || nr === 244n)) {
+          let descriptorValue = null;
+          try {
+            const descriptor = Number(arg0);
+            const buffer = firefox_start_guard_memory?.buffer;
+            if (Number.isSafeInteger(descriptor) && buffer && descriptor >= 0 && descriptor + 8 <= buffer.byteLength)
+              descriptorValue = new DataView(buffer).getUint32(descriptor + 4, true);
+          } catch {
+            descriptorValue = null;
+          }
+          if (descriptorValue !== null)
+            threadAreaPointer = typeof arg0 === "bigint" ? BigInt(descriptorValue) : descriptorValue;
+          else
+            threadAreaPointer = null;
+          if (!threadAreaLogged) {
+            threadAreaLogged = true;
+            console.warn("[FIREFOX_TLS_ADAPTER]", JSON.stringify({ nr: String(nr), descriptor: String(arg0), pointer: descriptorValue === null ? null : String(threadAreaPointer) }));
+          }
+        }
+        if (traceSyscalls && tracedSyscalls < 128) {
+          tracedSyscalls += 1;
+          const marker = nr === 60 ? "exit" : nr === 231 ? "exit_group" : nr === 1 ? "write" : null;
+          console.warn("[FIREFOX_SYSCALL_TRACE]", JSON.stringify({ call: tracedSyscalls, nr, args: [arg0, arg1, arg2], result: ret, marker }));
+        }
                     try {
                         growForSyscallResult(context, nr, arg0, arg1, arg2, ret);
                     }
@@ -105,7 +425,21 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                     }
                     return ret;
                 },
-                get_thread_area: kernel_instance.exports.get_thread_area,
+      get_thread_area: (addr) => {
+        const original = kernel_instance.exports.get_thread_area(addr);
+        const returned = tlsAdapter && threadAreaPointer !== null ? threadAreaPointer : original;
+        if (tlsAdapter && !threadAreaGetLogged) {
+          threadAreaGetLogged = true;
+          console.warn("[FIREFOX_TLS_ADAPTER] get_thread_area", JSON.stringify({
+            addr: String(addr),
+            original: String(original),
+            returned: String(returned),
+            returnedType: typeof returned,
+            cached: threadAreaPointer !== null,
+          }));
+        }
+        return returned;
+      },
                 copy_siginfo: (to) => {
                     const result = kernel_instance.exports.copy_siginfo(to);
                     const current = siginfo_copy_results.length - 1;
@@ -115,7 +449,14 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                 },
             },
         });
-        const patched = installFirefoxCallbackAdapter(context.module, user_instance);
+        const diagnostics = firefox_diagnostics_enabled();
+        if (diagnostics)
+            console.error("[firefox-callback-adapter] before install");
+    firefox_start_guard_snapshot(context.memory, "after-instance");
+    if (abortTrace) firefox_abort_trace_instances.add(user_instance);
+    const patched = installFirefoxCallbackAdapter(context.module, user_instance);
+        if (diagnostics)
+            console.error("[firefox-callback-adapter] after install", { patched });
         if (patched) {
             console.debug(`[firefox-callback-adapter] filled ${patched} reserved indirect-table entries`);
         }
@@ -226,7 +567,38 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
                             continue;
                         if (error === HALT_KERNEL)
                             throw error;
-                        console.error("error running user module:", error);
+                        // A trap from the guest Wasm module is expected to arrive
+                        // here through call_start/call_entry.  Keep the existing
+                        // return/status behaviour, but identify it as a guest
+                        // failure so it is not confused with a worker/JS bug.
+                        const wasm_runtime_error = typeof WebAssembly !== "undefined" &&
+                            typeof WebAssembly.RuntimeError === "function" &&
+                            error instanceof WebAssembly.RuntimeError;
+                        if (wasm_runtime_error) {
+                            let exports = [];
+                            try {
+                                exports = context?.module ?
+                                    WebAssembly.Module.exports(context.module).map(({ name }) => name) : [];
+                            }
+                            catch {
+                                // Module metadata is diagnostic only; preserve the
+                                // original trap handling if it cannot be read.
+                            }
+                            console.error("[user-module] WebAssembly runtime trap", {
+                                name: error?.name,
+                                message: error?.message,
+                                entry: call_entry === call_start ? "_start" : "indirect",
+                                exports,
+                                stack: error?.stack,
+                            });
+                            if (firefox_abort_trace_enabled()) {
+                                const stack = typeof error?.stack === "string" ? error.stack : String(error);
+                                console.error("[FIREFOX_ABORT_TRACE] RuntimeError.stack\n" + stack.slice(0, 8192));
+                            }
+                        }
+                        else {
+                            console.error("[user-module] bridge exception", error);
+                        }
                         return;
                     }
                 }

@@ -1,3 +1,77 @@
+
+
+
+
+
+
+#  agent team
+
+##   control
+      95    /   100              is goal score do not stop util finish task goal in high quality. 100 is perfect quality  like 3A game, stable rich features and high performace for software and easy to use both on pc and touch mobile device
+      15   %                  week usage for this goal  your can use ,stop when use up this also stop other subagent write doc in agents.md to give info  let other agent continue your goal and task , also stop when weekusage is below 80% too.
+       git for manage version
+       use <3 subagents at same time and < 2 cmd-agents for each agent , wait them finish if there are too many subagent
+       same model as mainagent      for  normal subagent model for subtask.
+       same model as main agent     for cmd-subagent model to running cmd.
+       test task and coding task should give to subagent
+       subagent should start a new agent for test  if it can
+       cmd for read and edit files should run in current agent not cmd-agent.
+
+## main agent's work
+     think yourself as project manager cto, you need not write code or test by your self in most time, you should evaluate current project goal and quality, find best plan and tech solution.
+     then give tasks to subagents, divide goal to sub tasks for subagents to implement, give subagent the  goal ,plan , its subtask and  other necessary  context, let them implment sub tasks and test debug and deploy, check results and summary includes  evaluate a score n/100, if result not good find why then improve plan and  give new task to new subagents again, tell subagent do not do anything outside its subtask, if something not wrong tell main agent to decide continue or not.
+give meaningful name to each sub agent, add cmd- prefix for cmd subagnet
+
+## improve context
+   when run cmd like bash,python,node,do not run in main agent.  (the cmd for read or editing files still should and prefer to be run by none-cmd agent)
+    run cmd in  a new  cmd subagent run cmd  and send back the summary of output so the cmd output will not pollute the main context . cmd subagent should send a summary what have done,result, including original cmd runned  and only important  raw output to main agent, for very long output like full file base64 str (only first 50 and last 50chars of base64 string if this really need).
+    for serving cmd like dev server run in a serving agent, serving agent should manage running server acceptnew server or stop, restart current,there should only one serving agent.
+    tell cmd agent stop after cmd finished or error occure, do not try to fix, report to main agent immediatly and let main agent fix and  start new new cmd agent
+
+    when start new subagent , do not fork the thread, always fresh session with necessary context and goal, test, subagent should use same score rule to stop or not
+the cmd  subagent  is for run cmd is not include in the 2 subagent limit, each normal agent can run 2  saperated subagent for cmd,none-cmd subagent can use cmd agent for run cmd too.
+     do not run cmd that ouput large base64 string into output like stdout and other place that will output full base64 str, only do convert when output base64 str into a file or pipe, if you really need verify output base64 directly try only get first 50 char and last 50 char to output for verify is enough
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Firefox wasm crash handoff (2026-09-23)
+
+- Current artifact: `web/linux/initramfs-firefox.cpio.gz`, repacked with relative cpio paths from the rebuilt Binaryen `fpcast-emu` module (`firefox-fpcast.wasm`, 137,368,965 bytes before compression). Current initramfs SHA-256: `65da08b4ad50a5c70b6429f8600260e9e8d1afafb50b3d7cbc237781f489ee29`.
+- The module imports three `linux.*` functions plus shared `env.memory` (initial 704 pages, maximum 65536), exports `_start` and `__indirect_function_table`, and has the three reserved null table entries filled by `web/linux/dist/firefox-callback-adapter.mjs`. Reproduce the Binaryen step with:
+
+  ```sh
+  wasm-opt --all-features firefox-shared-exported.wasm \
+    --pass-arg=max-func-params@23 --fpcast-emu -o firefox-fpcast.wasm
+  ```
+
+- The source-side ABI fix is recorded in `web/linux/firefox-patches/0002-wasm-mozcontainer-callback-abi.patch`. Under the wasm conditional, `widget/gtk/MozContainer.cpp/.h` accepts GLib's `(gpointer, gpointer)` class callback and `(GTypeInstance *, gpointer)` instance callback, then uses the existing typed implementation body.
+- Rebuild notes: the browser link needed `--import-memory`, the sysroot C++ ABI library, and temporary static-library symlinks under `.tmp-firefox-build/linklib`. Archived build sources/objects are under `.tmp-firefox-build/nix-local-store/nix/var/nix/builds/`; `/build/firefox-128.14.0` and `/nix` are temporary symlinks. The archived `tools/wasm/userspace/firefox/browser.nix` post-fixup is the authoritative `wasm-opt` recipe.
+- Live verification must use `web/desktop/dev-server.mjs` for cross-origin isolation (`LINUX_WEB_PORT=4180 node web/desktop/dev-server.mjs`). A fresh Chromium CDP probe of `http://127.0.0.1:4180/linux/index.html?firefox=1` reaches AuroraWM, network checks, and `/bin/firefox`, but Firefox exits with status **139**. No Firefox window or Bing request appears. The worker still reports `RuntimeError: unreachable`; the adapter removed the earlier null-function trap but has not completed callback/X11 startup semantics.
+- Next agent: inspect the guest wasm crash/runtime stack and callback/XPTCall path around `wasm-gtype: class_init MozContainer`. Filling table slots 0–2 with a no-op 23×`i64` callback is only a compatibility shim; trace or implement required callback dispatch and side effects before treating Firefox startup as complete. Reuse `.tmp-firefox-build/cdp_probe.py`.
+
 # Agent status
 
 ## Firefox indirect-table adapter (2026-09-23)
@@ -670,3 +744,325 @@ The out-of-tree `ports/linux-arch-wasm/linux-arch-wasm.patch` now defines a flat
   its first result; no retry or self-fix is authorized. Remaining follow-up is
   to record that result, run the focused tests, and inspect the browser surface
   with the new adapter if the smoke test reports an error.
+
+## Firefox callback adapter launch handoff (2026-09-23)
+
+- Current goal remains a native Linux Firefox launch that reaches a visible
+  browser page (Bing first, then x.com) through the existing Wasm/Xfbdev path.
+  The browser adapter was installed in `web/linux/dist/worker.js` and
+  `web/linux/dist/firefox-callback-adapter.mjs`; the staged payload is
+  `web/linux/initramfs-firefox.cpio.gz`.
+- Successful evidence: the adapter fills the three initially-null reserved
+  indirect-table entries with a type-correct 23 x `i64` callback, removing the
+  earlier null-function trap. The guest reaches Xfbdev/AuroraWM and starts
+  `/bin/firefox`.
+- Failure evidence: Firefox exits with status **139**, the worker reports
+  `RuntimeError: unreachable`, and no Firefox window, Bing request, or X11
+  surface appears. A no-op callback only proves table ABI compatibility; it
+  does not perform the GLib/GType class or instance initialization side effects.
+- Reproduce with `LINUX_WEB_PORT=4180 node web/desktop/dev-server.mjs`, then
+  run `python /mnt/p6/project/linux/.tmp-firefox-build/cdp_probe.py` against
+  Chromium CDP on port 9230. The probe navigates to
+  `http://127.0.0.1:4180/linux/index.html?firefox=1` and reports console,
+  exception, and status diagnostics.
+- Highest-priority next investigation: trace the callback/table index and the
+  post-callback trap in the Firefox Wasm/XPTCall/GType startup path, retaining
+  symbols or source mapping from the archived build. Determine whether the
+  required callback is a real MozContainer/GTK function (requiring a typed
+  adapter with its side effects) or whether the trap is a later syscall/X11
+  runtime failure. Do not treat filling slots 0--2 with a no-op as a Firefox
+  startup fix.
+
+## Firefox launch final handoff (2026-09-23)
+
+- Goal remains incomplete. Default adapter mode fills reserved table slots
+  0--2; the `firefox_no_adapter=1` A/B path produced the same Firefox
+  `--version`/normal status **139**. The preflight produced no output, and no
+  Bing request or X11 Firefox surface appeared.
+- The worker reaches adapter installation and `_start`, then reports
+  `RuntimeError: unreachable`. Temporary `MOZ_LOG`/preflight changes were
+  removed; the clean repacked artifact is SHA-256
+  `7c7f57cc525519cb5ffb395a40fbf287aeb43302427778e7d15d3026e623bf59`,
+  86,130,286 bytes.
+- Browser diagnostics remain opt-in in the adapter/platform/worker files.
+  Syscall import wrappers were reverted after causing machine-worker failure.
+  The retained recipe already includes patches 0036--0040; no omitted
+  TLS/syscall patch is known. The original Nix launcher/rebuild environment is
+  unavailable; a serial retry requires recovering the exact invocation and
+  constraining both layers with `NIX_BUILD_CORES=1` and `mach build -j1`.
+- Recommended next action: capture one diagnostics-enabled A/B run and then
+  recover a symbol/relocation-preserving Firefox link (or its exact low-memory
+  serial recipe) to map the failing callback/table index. Until that mapping or
+  a retained syscall/TLS trace exists, no source or adapter semantics change is
+  justified; this is the current blocker.
+
+## Firefox resumed trap handoff (2026-09-23)
+
+- The latest bounded probe identifies the exact Wasm failure as
+  `wasm-function[7]:0xcef60` in `_start`. Adapter and `firefox_no_adapter=1`
+  runs are identical, so the reserved-slot shim is not the distinguishing
+  factor.
+- One retry experiment was run and failed, then reverted. Built-in terminal
+  keyboard input is verified; X11/Firefox input remains unverified.
+- Recommended next action is either to add a source-map guard for function 7
+  at offset `0xcef60` or recover the exact serial Firefox build to produce
+  symbol/relocation mapping. Current status: **blocked**, score remains
+  incomplete; no Firefox/Bing/X11 success claim is justified.
+- Address correction: the exact immediate guard address is decimal 37277824,
+  hexadecimal `0x0238d080`.
+
+## Final Firefox baseline handoff (2026-09-23)
+
+- The dev server at `127.0.0.1:4180` remains running. Current Firefox baseline
+  and `firefox_no_adapter=1` both trap at `wasm-function[7]:0xcef60` in
+  `_start`, with guard immediate 37277824 (`0x0238d080`), status **139**, and
+  no Bing request or X11 Firefox surface.
+- The retry experiment was tested in Chrome and reverted. Built-in hvc0
+  keyboard `echo hi` works. The X canvas receives key events, but the captured
+  screenshot showed AuroraWM Settings with no focused terminal, so X11 keyboard
+  delivery remains unverified. Source audit found no obvious JS mapping defect.
+- Current score: **12/100**. Next agent should source-map the guard or recover
+  the exact serial Firefox rebuild, then run one Chrome verification cycle.
+
+- Final name-section audit did not map `0x0238d080` or nearby function indices;
+  no safe patch is justified. Preserve the existing dev-server PID/session and
+  continue with source mapping or the exact serial rebuild before another
+  Chrome verification.
+
+## Firefox guard/build handoff (2026-09-24)
+
+- Guard tracing observed the exact `0 -> 1` transition before the trap.
+  Opt-in worker diagnostics remain in place; no callback semantics changed.
+- Serial reuse builds remain diagnostic only: the first attempt used a stale
+  host probe; a fixed `TMPDIR` still used the Wasm wrapper for host tools; and
+  explicit `HOST_CC`/`HOST_CXX` compiler probes reached but failed at the host
+  linker. No artifact changed; current artifact SHA is
+  `1484f318...2e365`.
+- Next action is to recover the host linker from the saved `buildPhase`/Nix
+  environment before any rebuild. Do not claim Firefox is fixed.
+
+## Firefox build environment handoff (2026-09-24)
+
+- Purity is fixed and a fresh canonical objdir configure now succeeds. The
+  exact mmap/unwind shims are fixed; disk cleanup recovered approximately
+  6.2 GiB.
+- An incremental build progressed through C++ DOM/WebIDL after multiple 600 s
+  windows, but has not reached a successful link or produced a new artifact.
+  The deployed Firefox payload remains unchanged.
+- Next agent should resume the same objdir with the same environment and shims;
+  do not clean or reconfigure. Continue through link inspection, preserve any
+  symbol-bearing output, and only then test a newly produced payload.
+
+## Firefox incremental build handoff (2026-09-24)
+
+- The repaired fresh objdir/environment/shims were resumed. Multiple serial and
+  `-j2` incremental windows progressed deep through C++ DOM, WebIDL, and media,
+  but no linker run or Firefox artifact has completed.
+- Last bounded log: `/tmp/firefox-fresh-build-shim-j2-final-20260924.log`;
+  it ended with RC124 at `dom/media/mediacontrol`. Approximately 5.7 GiB
+  remains free in `/tmp`.
+- Next agent must resume the same objdir/environment/shims; do not clean,
+  reconfigure, or deploy. Preserve any link/symbol output when it appears.
+
+## Firefox incremental build progress (2026-09-24)
+
+- Subsequent incremental `-j2`/`-j4` windows advanced C++ from DOM media
+  through gfx, harfbuzz, GL, layers, Skia, Thebes, VR, WebRender bindings,
+  image, and intl. No linker or Firefox artifact exists yet.
+- Last bounded log: `/tmp/firefox-fresh-build-shim-j4-final-20260924.log`,
+  ending RC124. Approximately 4.9 GiB remains free in `/tmp`.
+- Next agent resumes the same objdir/environment/shims; do not clean,
+  reconfigure, or deploy.
+
+## cmd-kernel-tls-patch handoff (2026-09-24)
+- Investigated deployed `web/linux/vmlinux.wasm` `func[210] <sys_set_thread_area>` at file offsets `0x27b60..0x27b7b` (body-size byte `0x27b5f = 0x1c`); original sequence loads `arg0+4` before storing to `current_task+24`.
+- Created opt-in candidate only at `/mnt/p6/project/linux/.cache/vmlinux-sys-set-thread-area-arg-candidate-20260924.wasm`; deployed kernel file was not modified.
+- Candidate replaces exactly offsets `0x27b63..0x27b68` (`41 04 6a 28 02 00`) with six NOP bytes (`01 01 01 01 01 01`), preserving `local.get 0` / `local.set 0`, body length and all other bytes. Candidate SHA256 `5475073d4e0bc3cd91d0f98527173f42e86befce3cba24a4df01516ba45385b3`; original SHA256 `21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75`.
+- `wasm-validate --enable-all` passes; byte diff confirms six bytes only. Candidate should be packed into a separate archive for browser A/B before making any default deployment decision.
+
+## 2026-09-24 cmd-kernel-tls-test handoff
+- Tested candidate `/mnt/p6/project/linux/.cache/vmlinux-sys-set-thread-area-arg-candidate-20260924.wasm` (SHA256 `5475073d4e0bc3cd91d0f98527173f42e86befce3cba24a4df01516ba45385b3`) in `web/linux/vmlinux.wasm` with backup `web/linux/vmlinux.wasm.backup-kernel-tls-test-20260924` (original SHA256 `21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75`).
+- Chrome Canary CDP probes on ports 9286/9287: archive/vmlinux HTTP 200; candidate progressed past TLS setup (syscalls nr245,244,96,167,174,172,173,17,160,56,25,135,134,63), then Firefox failed `RuntimeError: memory access out of bounds` (wasm fn 466), guest ended in kernel panic `Attempted to kill init! exitcode=0x0000000b`; no Firefox UI/Bing/X.
+- Restored original vmlinux and validated with `wasm-validate --enable-all`; dev server left running. Candidate is rejected pending a fuller TLS ABI fix.
+
+### 2026-09-24 TLS adapter handoff
+
+- The opt-in `firefox_tls_adapter=1` path now caches syscall 244's pthread pointer from arg0 before the kernel syscall and returns it through the one-argument `get_thread_area` import, preserving number/BigInt types.
+- `platform.js` propagates Firefox diagnostic flags and falls back to `globalThis.location.href` when no execution URL is supplied; the explicit TLS gate accepts Firefox-shaped modules exporting `_start` and `__indirect_function_table`.
+- A one-time opt-in `get_thread_area` readback marker reports the original result, returned cached pointer, and type. Chrome confirmed the adapter activates, but the Firefox startup trap remains unchanged.
+
+### 2026-09-24 TLS descriptor ABI correction
+
+- The opt-in TLS adapter no longer returns raw syscall-244 arg0. After the kernel call, it reads the little-endian i32 at guest memory `arg0 + 4` with bounds/type checks and caches that value for `get_thread_area`; on failure it delegates the original result.
+- The marker now records descriptor and decoded pointer values. Default behavior remains untouched.
+
+### 2026-09-24 guard address correction
+
+- Disassembly confirms the two abort-guard constants at decimal `45757056` and `45757072` (`i32.const` at the trap site and the next guard). Opt-in `firefox_guard_bypass_all` and `firefox_guard_memory_diag` now use those addresses under the strict Firefox module gate.
+
+### 2026-09-24 initramfs root-agent gate
+
+- `tools/guest-rootfs/init.sh` now starts `linux-guest-agent` only when a
+  `/dev/vd[a-z]` disk exists or the embedding explicitly passes
+  `lowland.root.agent=1`. Firefox boots this archive as an initramfs without a
+  LOWLAND_ROOT disk, so the previous unconditional launch produced the
+  misleading `preparing system root: No such device` message.
+- `bash -n`, BusyBox `sh -n` (when available), and `git diff --check` pass.
+  Repack the staged archive before browser verification; no worker.js or
+  Firefox payload was changed by this fix.
+
+### 2026-09-25 root-agent gate deployment
+
+- Repacked and deployed `web/linux/initramfs-firefox.cpio.gz` with the gate;
+  deployed SHA-256 is `b8ece6ebb061f93447858a49405cb7b999ed2ccf03783ee59876852a5d37f9ef`
+  (86,455,381 bytes). The pre-change backup is
+  `web/linux/initramfs-firefox.cpio.gz.backup-before-root-agent-gate-20260925`
+  with SHA-256 `5b79ba33fc9767edf85f64b14a378af7e206802ba0e50c067975c44611f9b02f`.
+- `gzip -t` passed; CPIO listing retains `/bin/linux-guest-agent`, and the
+  archived `/init` contains the `/dev/vd[a-z]`/`lowland.root.agent=1` gate.
+  Firefox initramfs has no LOWLAND_ROOT disk, so the agent is skipped and its
+  `No such device` diagnostic should disappear. `worker.js` line 505 remains
+  intentional guest-Wasm trap reporting, not a JavaScript syntax failure.
+
+### 2026-09-25 Firefox Bing/X working deployment (supersedes older crash handoffs)
+
+- Live archive `web/linux/initramfs-firefox.cpio.gz` is now the validated
+  Firefox/CA candidate, SHA-256
+  `e274c8073fa1522356013dc25e540cfba956b7fbf39c7afede193fd53330b1c2`
+  (87,733,610 bytes). Port 4180 serves it with HTTP 200, matching
+  `Content-Length`, `Cache-Control: no-store`, COOP/COEP. Open
+  `http://127.0.0.1:4180/linux/index.html?firefox=1` in Chrome. The preceding
+  root-agent-gated baseline is preserved at
+  `/mnt/p6/project/linux/.cache/gtk-icon-bypass-20260925/x11-detect/baseline-b8ece6-preserved.cpio.gz`
+  (SHA-256 `b8ece6ebb061f93447858a49405cb7b999ed2ccf03783ee59876852a5d37f9ef`).
+- Chrome screenshots `screenshot-ca-fallback-bing.png` and
+  `screenshot-ca-x.png` under
+  `/mnt/p6/project/linux/.cache/gtk-icon-bypass-20260925/x11-detect/`
+  show Firefox drawing the Bing home page and the X.com landing page.
+  Corresponding CDP logs report successful HTTPS responses and no
+  `SEC_ERROR`, `SSL_ERROR`, or guest Wasm trap. The Firefox toolbar and
+  some page text still show tofu/hex boxes; X's webfont body text is readable.
+  Keyboard usability and long-run stability remain to be checked.
+- Do not replace the live working archive for font experiments. Use an
+  isolated server port/candidate path, or restore this exact SHA after any
+  reversible test. Two DejaVu TTFs and one OpenSans TTF with minimal
+  Fontconfig XML each stalled Firefox before window/NSS initialization,
+  just after `Fontconfig warning: using without calling FcInit()`; neither
+  produced a Wasm trap. The single-font log/screenshot are
+  `cdp-ca-onefont.log` / `screenshot-ca-onefont.png` in the scratch directory.
+  A separate dev-server root on port 4181 confirmed the one-font stall without
+  changing the live 4180 archive. `FC_DEBUG=4` proves OpenSans is parsed and
+  reaches `FcConfigSubstitute donePattern`; removing all family aliases from
+  the Fontconfig XML still stalls before NSS/window/Bing after 80 seconds.
+  Neither isolated run trapped. See `cdp-onefont-isolated-debug2.log` and
+  `cdp-onefont-minimal.log`; next diagnosis should add bounded markers around
+  Gecko's Fontconfig font-list initialization/matching, rather than adding
+  more fonts or changing TLS.
+- A fresh, read-only Chrome profile against the deployed port 4180 produced
+  `screenshot-persistent-live-bing.png` and `cdp-persistent-live.log`: 54
+  Bing URL references, three successful NSS certificate completion markers,
+  zero `[user-module] WebAssembly runtime trap` and zero `RuntimeError:
+  unreachable`. This checks the actual live artifact after deployment.
+- The reviewable source changes are `web/linux/firefox-shims/mmap-shim.c`,
+  `sys/mman.h`, `unwind-stubs.c`, and
+  `web/linux/firefox-patches/0002` through `0004`. Patch `0003` plus the
+  shim restores coherence for Firefox's shared-memory WebRender blob;
+  patch `0004` loads trusted profile CAs when static Wasm lacks dynamic CKBI.
+  It requires actual `lowland-ca-*` CA certificates in the SQL profile,
+  checks CA status, and retains normal chain/hostname verification.
+- To regenerate `/nss-ca-profile`, extract `etc/ssl/cert.pem` from the
+  initramfs and run `python3 web/linux/firefox-shims/build-nss-ca-profile.py
+  GUEST_CERT_PEM EMPTY_OUTPUT_DIR`. This imports the 119 PEM CAs using NSS
+  `certutil` and rewrites `pkcs11.txt` for guest path
+  `/home/admin/.mozilla/firefox/http1-profile`. Package `cert9.db`,
+  `key4.db`, and `pkcs11.txt` as `/nss-ca-profile/*`; the guest `/init`
+  copies them into the admin profile and uses HTTP/1.1 preferences.
+- Build scratch and exact command captures are at
+  `/mnt/p6/project/linux/.cache/gtk-icon-bypass-20260925/x11-detect/`:
+  `compile-ca-command.txt`, `link-ca-command.txt`, `firefox-ca.list`,
+  `firefox-ca-fpcast-named.wasm`, `package-bing-ca.py`, and
+  `package-ca-fallback.py`. Link with Wasm ABI-matched libc++/libc++abi,
+  16 MiB stack, 64 MiB initial memory; apply Binaryen
+  `--all-features --disable-compact-imports --pass-arg=max-func-params@23
+  --fpcast-emu` and validate with WABT and Node `WebAssembly.Module`.
+  The candidate also contains scratch-only Wasm direct-X11 detection,
+  optional icon-load skip, and GTK SVG-support fallback. Promote those
+  source changes into reviewable patches before expecting a clean rebuild
+  from tracked files alone. Rust trace hooks are diagnostic and should be
+  removed or gated in a release build.
+
+### 2026-09-25 TinyX evdev keyboard deployment (current live artifact)
+
+- Live `web/linux/initramfs-firefox.cpio.gz` SHA-256 is now
+  `e3b194e6c4c6aa144c4b57d3d06f3b9ee3d8c351bfba6284d9f9aa3423f363cc`
+  (87,735,764 bytes). The previous working Firefox/Bing/X archive is preserved
+  at `web/linux/initramfs-firefox.cpio.gz.backup-pre-evdev-keyboard-20260925`
+  (SHA-256 `e274c8073fa1522356013dc25e540cfba956b7fbf39c7afede193fd53330b1c2`).
+  The new archive replaces only CPIO member `bin/Xfbdev`, retaining the same
+  Firefox, CA profile, init, fonts, and shared-memory repair. Port 4180 serves
+  it with HTTP 200, matching `Content-Length`, `Cache-Control: no-store`, and
+  COOP/COEP. URL: `http://127.0.0.1:4180/linux/index.html?firefox=1`.
+- Cause: packed TinyX's `LinuxKeyboardRead` read K_MEDIUMRAW bytes from the VT
+  fd, while the browser's virtio-input delivers EV_KEY records on
+  `/dev/input/event0`. Host canvas keydowns and all virtio descriptors were
+  already reaching the guest, but X/Firefox did not receive the keys. The
+  deployed Xfbdev opens event0 nonblocking, converts its 16-byte records to
+  the original KDrive keyboard path, and preserves the VT fallback.
+- Fresh isolated Chrome QA on port 4181 loaded Bing, typed `x.com` in Firefox,
+  and showed the X.com sign-in page with zero WebAssembly traps. Fresh live
+  Chrome QA on port 4180 repeated the navigation by clicking the actual
+  Firefox address field at `(570,211)`, Ctrl+A, typing `x.com`, and Enter;
+  `screenshot-evdev-live-address-after.png` shows X.com. The live CDP log
+  reports Firefox still running and zero Wasm traps/JS exceptions. QA logs
+  and screenshots are in
+  `/mnt/p6/project/linux/.cache/gtk-icon-bypass-20260925/x11-detect/`.
+  The guest hvc0 console is log-heavy under current `MOZ_LOG`; prior hvc0
+  typing was verified separately. This deployment fixes X/Firefox input.
+- Canonical source patch:
+  `tools/wasm/userspace/tinyx/0001-wasm-evdev-keyboard.patch`. Build provenance,
+  exact WABT fallback commands, and the hash-guarded transform script are in
+  `tools/wasm/userspace/tinyx/README.md` and
+  `patch-packed-xfbdev-keyboard.py`. The full source rebuild could not run in
+  this workspace because the Nix executable and target `libXfont.a` /
+  `libfontenc.a` are absent; the deployed binary-specific transform was
+  validated with `wasm-validate` and Node `WebAssembly.Module`. Do not apply
+  it to any other Xfbdev build. The Firefox toolbar and some page text still
+  render as tofu/hex boxes; font diagnosis remains separate.
+
+### 2026-09-25 Firefox chrome-font deployment (current live artifact)
+
+- Live `web/linux/initramfs-firefox.cpio.gz` SHA-256 is now
+  `d117b9f45b51373558ef020f9d53455772455800cda0f03dd02455d397347e7e`
+  (87,821,011 bytes). The keyboard-fixed no-font archive is preserved at
+  `web/linux/initramfs-firefox.cpio.gz.backup-pre-userchrome-font-20260925`
+  (SHA-256 `e3b194e6c4c6aa144c4b57d3d06f3b9ee3d8c351bfba6284d9f9aa3423f363cc`).
+  Port 4180 serves the new archive with HTTP 200, matching `Content-Length`,
+  `Cache-Control: no-store`, and COOP/COEP. The earlier pre-keyboard backup
+  remains available as recorded above.
+- Relative to the keyboard-fixed archive, CPIO changes exactly `/init` and
+  adds `/lowland-OpenSans-Regular.ttf` and `/lowland-userChrome.css`. `/init`
+  copies the TTF to `/opt/firefox/fonts/OpenSans-Regular.ttf`, installs the CSS
+  in the admin Firefox profile `chrome/userChrome.css`, and enables
+  `toolkit.legacyUserProfileCustomizations.stylesheets`. The font is outside
+  Fontconfig's standard scan paths, so the earlier Fontconfig startup stall
+  is avoided. CSS narrowly targets Firefox tabs, address bar, and toolbar
+  text; a broad `:root` override was rejected in isolated testing because
+  Bing/X timed out. The deployed CSS has no diagnostic green border.
+- Fresh isolated and live Chrome profiles both showed readable tab/address
+  text, Bing home, and typed navigation to the X.com sign-in page with zero
+  `[user-module]` WebAssembly traps or JS exceptions. Live evidence is
+  `screenshot-userchrome-live-before.png`,
+  `screenshot-userchrome-live-confirm-after.png`,
+  `cdp-userchrome-live.log`, and `cdp-userchrome-live-confirm.log` under
+  `/mnt/p6/project/linux/.cache/gtk-icon-bypass-20260925/x11-detect/`.
+  Click the actual Firefox address field around canvas coordinate `(570,211)`
+  before Ctrl+A/type/Enter in CDP automation; `(350,205)` hits toolbar reload.
+- Reviewable sources are `web/linux/firefox-shims/userChrome.css` and
+  `web/linux/firefox-shims/package-userchrome-font.py`. Rebuild from the
+  preserved keyboard archive with host
+  `/usr/share/fonts/TTF/OpenSans-Regular.ttf` (font SHA-256
+  `c53aceea2dcf5b4098099c0c4d0a061d17e178a049317b42a422b1a9f7f8eb59`):
+  `python3 web/linux/firefox-shims/package-userchrome-font.py BASE_FONTLESS_ARCHIVE OPEN_SANS_TTF OUTPUT_ARCHIVE`.
+  The script reproduces the deployed uncompressed CPIO byte-for-byte; gzip
+  headers vary with output filename. This fixes Firefox chrome text only;
+  website font coverage and long-run stability still need separate checks.

@@ -31,7 +31,23 @@ chmod 01777 /dev/shm
 # prefers tty1. Device nodes may be absent on headless boots.
 chown 1000:1000 /dev/fb0 /dev/tty1 /dev/tty0 /dev/input/event* 2>/dev/null || true
 
-if [ -x /bin/linux-guest-agent ]; then
+# The generic guest agent expects a separate EROFS/ext4 disk labelled
+# LOWLAND_ROOT.  Firefox boots this archive directly as an initramfs, so it
+# has no virtio block disk and starting the agent only produces a misleading
+# "No such device" error.  Keep the agent for disk-backed boots, or allow an
+# embedding to request it explicitly when its block device appears later.
+root_agent_requested=0
+for root_disk in /dev/vd[a-z]; do
+  if [ -e "$root_disk" ]; then
+    root_agent_requested=1
+    break
+  fi
+done
+if [ "$root_agent_requested" -eq 0 ] && [ -r /proc/cmdline ] && \
+  grep -Eq '(^|[[:space:]])lowland\.root\.agent=1([[:space:]]|$)' /proc/cmdline 2>/dev/null; then
+  root_agent_requested=1
+fi
+if [ "$root_agent_requested" -eq 1 ] && [ -x /bin/linux-guest-agent ]; then
   /bin/linux-guest-agent &
 fi
 

@@ -3,8 +3,8 @@ import { createServer } from 'node:http';
 import crypto from 'node:crypto';
 import dns from 'node:dns/promises';
 import net from 'node:net';
-import { readFile, stat } from 'node:fs/promises';
-import { watch } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import { createReadStream, watch } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -119,9 +119,20 @@ const server = createServer(async (request, response) => {
   try {
     const info = await stat(target);
     if (!info.isFile()) throw new Error('not file');
-    const body = await readFile(target);
-    response.writeHead(200, headers(mime[extname(target)] || 'application/octet-stream'));
-    response.end(body);
+    response.writeHead(200, {
+      ...headers(mime[extname(target)] || 'application/octet-stream'),
+      'Content-Length': String(info.size),
+    });
+    const stream = createReadStream(target);
+    stream.once('error', () => {
+      if (response.headersSent) {
+        response.destroy();
+        return;
+      }
+      response.writeHead(404);
+      response.end('not found');
+    });
+    stream.pipe(response);
   } catch { response.writeHead(404); response.end('not found'); }
 });
 server.on('upgrade', (request, socket, head) => {

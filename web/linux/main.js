@@ -148,7 +148,16 @@ async function loadBytes(urls) {
   for (const url of urls) {
     try {
       const res = await fetch(url, { cache: "no-store" });
-      if (res.ok) return new Uint8Array(await res.arrayBuffer());
+      if (!res.ok) continue;
+      // Stream gzip responses directly through the browser decompressor so
+      // the compressed response is not retained alongside the decompressed
+      // initramfs. If streaming is unavailable, retain the old byte-buffer
+      // path; the caller's unpackGzip fallback remains unchanged.
+      if (/\.gz(?:[?#]|$)/i.test(url) && res.body && typeof DecompressionStream === "function") {
+        const stream = res.body.pipeThrough(new DecompressionStream("gzip"));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      }
+      return new Uint8Array(await res.arrayBuffer());
     } catch {
       /* try next */
     }

@@ -6,11 +6,43 @@ import { assert } from "./util.js";
 /** @internal */
 export function worker_script_url(module_url, execution_url) {
     const url = new URL("./worker.js", module_url);
-    if (!execution_url)
-        return url;
-    const run = new URL(execution_url).searchParams.get("run");
+    if (!execution_url) {
+        try {
+            execution_url = globalThis.location?.href;
+        } catch {
+            execution_url = null;
+        }
+        if (!execution_url)
+            return url;
+    }
+    const execution = new URL(execution_url);
+    const run = execution.searchParams.get("run");
     if (run)
         url.searchParams.set("run", run);
+    if (execution.searchParams.get("firefox_diagnostics") === "1")
+        url.searchParams.set("firefox_diagnostics", "1");
+    if (execution.searchParams.get("firefox_start_guard") === "1")
+        url.searchParams.set("firefox_start_guard", "1");
+    if (execution.searchParams.get("firefox_guard_bypass") === "1")
+        url.searchParams.set("firefox_guard_bypass", "1");
+    if (execution.searchParams.get("firefox_guard_bypass_all") === "1")
+        url.searchParams.set("firefox_guard_bypass_all", "1");
+    if (execution.searchParams.get("firefox_guard_memory_diag") === "1")
+        url.searchParams.set("firefox_guard_memory_diag", "1");
+    if (execution.searchParams.get("firefox_memory_pregrow") === "1")
+        url.searchParams.set("firefox_memory_pregrow", "1");
+    if (execution.searchParams.get("firefox_syscall_trace") === "1")
+        url.searchParams.set("firefox_syscall_trace", "1");
+    if (execution.searchParams.get("firefox_abort_trace") === "1")
+        url.searchParams.set("firefox_abort_trace", "1");
+    if (execution.searchParams.get("firefox_tls_adapter") === "1")
+        url.searchParams.set("firefox_tls_adapter", "1");
+    const firefoxDiagnostics = new URL(execution_url).searchParams.get("firefox_diagnostics");
+    if (firefoxDiagnostics === "1")
+        url.searchParams.set("firefox_diagnostics", "1");
+    const firefoxNoAdapter = new URL(execution_url).searchParams.get("firefox_no_adapter");
+    if (firefoxNoAdapter === "1")
+        url.searchParams.set("firefox_no_adapter", "1");
     return url;
 }
 function current_execution_url() {
