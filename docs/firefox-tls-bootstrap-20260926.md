@@ -1,14 +1,15 @@
 # Firefox trust bootstrap diagnosis and candidate
 
-The deployed v8 Firefox can retain a partially initialized certificate store.
+The previously deployed v8 Firefox can retain a partially initialized certificate store.
 Its Wasm NSS fallback returns as soon as **any** SSL-trusted CA exists. A reload
 during the first initialization therefore leaves missing roots unrepaired on
 later boots. The observed failing profile has 119 certificates but only 11
 guest-format trust records and shows `SEC_ERROR_UNKNOWN_ISSUER` for Bing.
 
-The corrected key-free candidate is locally promoted after update acceptance,
-**not yet a deployed fix or whole-goal completion**. Public version 8 and its
-rollback versions remain unchanged until Sites deployment is verified.
+The corrected key-free image is published as Sites version 9 after local update
+acceptance. Public assets, cold/warm startup and TLS navigation checks pass.
+This is **not whole-goal completion**. Version 8
+and earlier saved versions remain available for rollback.
 
 ## Evidence
 
@@ -182,9 +183,27 @@ exposed automatic downloads-panel focus capture. Only fixture preferences now
 disable that popup; production preferences are unchanged. Preserve both failed
 runs, rather than treating this evidence as proof of every blank-tab cause.
 
-Version `29331a186e50` is now promoted locally. The staged Sites snapshot changes
+Version `29331a186e50` is now promoted and published. The staged Sites snapshot changes
 only the Firefox image and boot manifest: 58 routes, 55 parts, 151,569,304 bytes.
-Build/test the pinned Sites archive, deploy, and repeat public acceptance next.
+The Sites archive passes 10 unit and 3 built-Worker integration tests, and all
+66 live runtime routes match the build. Public cold/warm input, JavaScript, home
+preservation and zero-image warm boot pass. The first public URL-entry check
+becomes a Bing search and remains inconclusive. Separate-tab checks verify the
+typed addresses before Enter, reject self-signed.badssl.com without an exception,
+and render the Bing homepage with an HTTPS lock. Public cold/warm launch markers
+are 24,170/8,020 ms; fixture-ready observations are 51,945/31,581 ms. Neither is
+a first-paint benchmark, and these single observations establish no speed ratio.
+See
+[firefox-tls-sites-release.json](evidence/runtime-graphics-20260926/firefox-tls-sites-release.json)
+for exact source, archive, deployment and public evidence. The ingested tar
+wrapper hash differs from the local tar hash; all 63 packaged file payloads were
+audited locally, and all 66 live runtime routes were verified independently.
+
+The additional `example.org` attempt reports `PR_CONNECT_RESET_ERROR`, not an
+unknown-issuer error. App DNS resolves it to `172.66.157.237` and `104.20.26.136`,
+both in Cloudflare's published IP ranges. That is consistent with the existing
+provider's documented restriction on [outbound TCP to Cloudflare IP ranges](https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/#considerations).
+This reachability limitation remains; the test is not relabeled a pass.
 All fixture images and owned profiles remain excluded from deployment.
 
 No owned service remains running. User PID 1591443 retains startTicks 148821663

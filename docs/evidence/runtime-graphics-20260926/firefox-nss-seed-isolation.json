@@ -277,9 +277,8 @@
     "keyDatabaseByteChangeReason": "108 newly initialized trust records add authentication metadata"
   },
   "artifactRoot": "/mnt/p6/build/firefox-tls-20260926",
-  "deployed": false,
+  "deployed": true,
   "remaining": [
-    "Sites build/deploy/public acceptance",
     "Full-goal native JIT/general GL/Vulkan/Firefox GPU and hardware decoder work"
   ],
   "readinessHarness": {
@@ -292,5 +291,7 @@
     "observedGuestReadyAfterNSSSeconds": 15.146,
     "priorFailureCause": "Premature Escape is supported by later timing; first ready-download run also exposed downloads-panel focus race. Both failed runs retained."
   },
-  "locallyPromoted": true
+  "locallyPromoted": true,
+  "sitesVersion": 9,
+  "releaseEvidence": "firefox-tls-sites-release.json"
 }

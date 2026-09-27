@@ -62,10 +62,11 @@ contents must remain unchanged.
 ## Latest continuation: key-free NSS seed and local release acceptance
 
 The build-policy turn made progress: scoped documentation commit `bcc59c7`.
-The following seed audit also makes concrete progress; the full goal remains
-incomplete (approximately 75/100), and the public v8 release is unchanged.
+The following seed audit and release make concrete progress; the full goal
+remains incomplete (approximately 75/100). Sites v9 is now published at the
+existing public URL, with public TLS navigation acceptance now passed.
 Fresh agent creation still fails with `agent thread limit reached`; root handled
-this bounded audit directly. No new backend port or deployment occurred yet.
+this bounded audit and release directly. No new backend port was added.
 
 - **Never promote `prepared-seed-run1` or `fast-candidate-run1`** under
   `/mnt/p6/build/firefox-tls-20260926`. The former contains the owned diagnostic
@@ -109,12 +110,28 @@ this bounded audit directly. No new backend port or deployment occurred yet.
   preferences suppress the automatic downloads panel. Keep both failed runs.
 - A reviewed Sites snapshot is frozen at task `release-run1/release-src/web/cloudflare`:
   58 routes, 55 parts, 151,569,304 bytes; only Firefox and boot-manifest routes
-  change. Public Sites is authoritatively still v8 at the existing public URL.
-- Next: pin/build/test Sites from the promoted parent commit, deploy, and verify
-  public behavior. Native JIT, general GL/Vulkan,
+  change. Parent runtime commit is `ae1648539f394d557ff067902599b002ec587c5d`;
+  nested Sites source is `0f4067fbe8bf73a556029dd4f6b28d948c4e7390`.
+- Sites v9 deployment `appgdep_6ab880ade3b081919ba3764beb7362df` succeeded.
+  Saved version is
+  `appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_cf968ad34f24819190124c2591ce2bbc`.
+  All 10 unit and 3 built-Worker tests pass. All 66 public routes verify against
+  the build (167,395,980 logical bytes), normalizing only the exact reviewed
+  hosting script in two HTML responses. Public cold/warm guest input, JavaScript,
+  home preservation and zero-image warm boot pass. The first public URL-entry
+  test becomes a Bing search, so it does not prove certificate rejection.
+- Separate-tab public navigation verifies the exact typed addresses, rejects
+  self-signed.badssl.com without an exception, and renders the Bing homepage
+  with an HTTPS lock. `example.org` instead yields PR_CONNECT_RESET_ERROR;
+  current app DNS resolves both addresses inside Cloudflare ranges, which the
+  existing Workers TCP provider blocks. Keep this documented reachability
+  limitation and the failed/misdirected tests; do not call them successful.
+- This release's acceptance is recorded in
+  `docs/evidence/runtime-graphics-20260926/firefox-tls-sites-release.json`.
+  Keep Sites v8 as rollback. Continue the full goal: native JIT, general GL/Vulkan,
   Firefox GPU and hardware-decoder requirements remain incomplete.
-- All newly owned browser/server runs are terminal and cleaned up. Preserve
-  user PID 1591443/startTicks 148821663. No serving process needs resuming.
+- All owned public browser/server runs are now terminal and cleaned up. User
+  PID 1591443/startTicks 148821663 and its original command remain unchanged.
   Exact build/test provenance and limitations are in
   `docs/firefox-tls-bootstrap-20260926.md` and
   `docs/evidence/runtime-graphics-20260926/firefox-nss-seed-isolation.json`.

@@ -1,5 +1,5 @@
 {
-  "scope": "local candidate TLS bootstrap; not release acceptance",
+  "scope": "Historical candidate TLS bootstrap, including rejected seed; accepted replacement release is documented separately. Full goal incomplete.",
   "partialTrustRowsBefore": 11,
   "partialTrustRowsAfter": 119,
   "existingTrustRowsByteIdentical": true,
@@ -178,8 +178,7 @@
     "runtimeVerified": false,
     "distributionStatus": "rejected: replace with key-free seed; never promote this archive"
   },
-  "releaseGatesPending": [
-    "Sites rebuild, deployment and public acceptance"
-  ],
-  "replacementEvidence": "firefox-nss-seed-isolation.json"
+  "releaseGatesPending": [],
+  "replacementEvidence": "firefox-nss-seed-isolation.json",
+  "acceptedReplacementRelease": "firefox-tls-sites-release.json"
 }
