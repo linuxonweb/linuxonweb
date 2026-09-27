@@ -59,6 +59,55 @@ Forty-five earlier Firefox build/debug artifacts were relocated from `/tmp` to
 manifest there records the moves and metadata checks. Existing `/build`
 contents must remain unchanged.
 
+## Latest continuation: unpublished NSS seed audit
+
+The build-policy turn made progress: scoped documentation commit `bcc59c7`.
+The following seed audit also makes concrete progress; the full goal remains
+incomplete (approximately 75/100), and the public v8 release is unchanged.
+Fresh agent creation still fails with `agent thread limit reached`; root handled
+this bounded audit directly. No new backend port or deployment occurred.
+
+- **Never promote `prepared-seed-run1` or `fast-candidate-run1`** under
+  `/mnt/p6/build/firefox-tls-20260926`. The former contains the owned diagnostic
+  profile's default SDR/password-encryption key. Earlier descriptions of it as
+  merely an NSS database secret were insufficient. Neither artifact was deployed.
+- `tools/guest-rootfs/prepare-firefox-nss-seed.py` creates a new CA-only seed:
+  remove the SDR object and its authentication metadata, secure-delete/vacuum,
+  preserve all 119 native trust rows and remaining metadata, reject unexpected
+  secret/private objects, and refuse to overwrite an output directory. Never
+  use this preparation helper on an existing user's profile.
+- `prepared-seed-run2` has zero private objects. `fast-candidate-run2` version
+  `29331a186e50` is 88,378,783 bytes, SHA-256
+  `7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a`.
+  It uses the same resumable NSS module as the prior candidate; only that
+  Firefox module and two seed databases differ from v8. It is not promoted.
+- `safe-seed-warm-run2` and `safe-seed-warm-run3` pass cold/warm guest input,
+  JavaScript, home preservation, all 119 native trust records, warm HTTPS Bing,
+  and zero warm boot-image requests. Two independently guest-generated SDR
+  keys each decrypt their own test ciphertext and reject the other's through
+  host NSS 3.125; host checks preserve the guest key objects unchanged.
+- `safe-seed-media-run1` passes valid/replay/invalid/recovery software-media
+  checks on the exact replacement image: valid clips each render 30 frames
+  without drops, invalid padding yields decode error 3, host audio drops zero
+  frames. This does not establish hardware decoding.
+- Release gates remain: the run3 invalid-certificate screenshot shows pending
+  navigation, not a warning. `safe-seed-update-run1` fails before updating:
+  the v8 baseline opens a blank file homepage and times out on guest input.
+  Preserve its `guest-failure.json`, screenshots and result; investigate before
+  claiming exact replacement update acceptance. Prior `partial-update-run1`
+  passed with the rejected seed and same module, preserving 11 trust records
+  while adding 108; its key DB adds 756 authentication rows, so only existing
+  keys/metadata, not the whole key DB bytes, remain identical.
+- Next: resolve the baseline/negative-navigation acceptance gaps, exercise the
+  actual update/reload control on the exact replacement, then stage/build/test
+  Sites, deploy and verify public behavior. Native JIT, general GL/Vulkan,
+  Firefox GPU and hardware-decoder requirements remain incomplete.
+- All newly owned browser/server runs are terminal and cleaned up. Preserve
+  user PID 1591443/startTicks 148821663. No serving process needs resuming.
+  Exact build/test provenance and limitations are in
+  `docs/firefox-tls-bootstrap-20260926.md` and
+  `docs/evidence/runtime-graphics-20260926/firefox-nss-seed-isolation.json`.
+
 ## Active objective
 
 Improve Firefox/Linux performance, persist user home independently of system

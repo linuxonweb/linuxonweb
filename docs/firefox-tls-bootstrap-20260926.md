@@ -53,8 +53,9 @@ signature and chain verification policies are unchanged. The fallback writes
 trust only for missing `lowland-ca-*` CA records, and requires every eligible CA
 to be either preserved or successfully initialized before reporting success.
 In particular, it does not use nonzero trust flags as a substitute for record
-presence: explicit zero-flag decisions must also be preserved. That case still
-needs a runtime negative test before promotion.
+presence: explicit zero-flag decisions must also be preserved. The subsequent
+`distrust-update-run4` test creates both zero-flag and explicit-distrust choices
+through guest NSS, then verifies their native rows survive a real update.
 
 The candidate was compiled from the preserved unified NSS source unit, linked,
 processed by Binaryen fpcast emulation, validated by WABT, and executed by the
@@ -79,10 +80,23 @@ not a user's profile. `prepare-seed.py` verifies all 119 original root DER value
 and matching native trust hashes, rejects unexpected object classes/client
 private keys, removes 15 incidental website intermediate certificates, and
 preserves the native authenticated trust objects and matching NSS key database.
-It includes the NSS database secret key; this is not a client certificate key.
-The subsequent fresh candidate run validates this database with guest NSS.
+**Rejected seed: do not publish `prepared-seed-run1` or `fast-candidate-run1`.**
+Further review identified its secret object as the default SDR/password-encryption
+key: class `00000004`, type `00000015`, ID `F8000000000000000000000000000001`,
+matching the build's `security/nss/lib/pk11wrap/pk11sdr.c`. It is not a client
+certificate key, but it must still never be shared between user profiles.
+Earlier runtime checks did not establish seed suitability for distribution.
 
-The fast candidate `fast-candidate-run1` changes exactly three CPIO members:
+`tools/guest-rootfs/prepare-firefox-nss-seed.py` prepares a replacement from the
+owned stopped diagnostic profile. It rejects unexpected private objects, removes
+the SDR object and its `sig_key_<object>_*` authentication metadata, then uses
+SQLite secure deletion and vacuum to remove deleted payloads from free pages.
+The 119 native trust rows and all remaining authentication/password metadata are
+verified unchanged. `prepared-seed-run2` contains zero private objects. Existing
+user databases are never passed to this preparation tool. Fresh-profile key
+independence and runtime trust acceptance remain required before promotion.
+
+The rejected fast candidate `fast-candidate-run1` changes exactly three CPIO members:
 Firefox, `/nss-ca-profile/cert9.db`, and `/nss-ca-profile/key4.db`. All other
 11,467 records, member metadata except lengths, and ordering are preserved.
 Guest init only copies a profile file when it is absent; it does not replace an
@@ -101,15 +115,61 @@ Each run freezes its runner and input hashes. The diagnostic's `pass` covers its
 lifecycle; screenshots and NSS records supply the TLS evidence. It is not an
 automated whole-release acceptance test. Do not reuse output directories.
 
-## Required next checks
+## Later release checks and replacement seed
 
-Before promotion, test explicit distrust/zero-flag record preservation through
-guest NSS, warm HTTPS with zero image requests, and the real update/reload path
-from an existing partial profile while preserving home and keys. Repeat clean
-controls, reject an invalid certificate without accepting an exception, and run
-startup/media regressions. Then promote only verified inputs, rebuild and check
-the Sites archive, deploy, and repeat public acceptance. The v8 diagnostic's
-unexpected signal requires a clean repeat; do not relabel it a pass.
+The unpublished old seed passed several functional checks but remains rejected
+for distribution. `partial-update-run1` used the actual update/reload control to
+repair 108 missing trust records and preserve the 11 existing rows. It retained
+the home marker, downloaded file, user preferences, existing private-key rows,
+and existing key-database metadata. The key database is not byte-identical:
+repair adds 756 authentication metadata records. `distrust-update-run4` preserves
+all 119 native trust rows, including the two deliberately changed choices, and
+rejects a self-signed certificate. Its positive navigation rendered Google after
+a synthetic typing error; it is not evidence of Bing acceptance.
+
+`media-regression-run5` completes three 3.01-second valid playbacks with 30 frames
+and zero dropped frames each, rejects the malformed clip with decode error 3,
+and plays correctly afterward. Host audio receives 473,016 frames without drops.
+This verifies software decoding and Web Audio delivery, not hardware decoding.
+`fresh-control-run1` supplies the missing clean v8 control: its driver/browser
+exit zero, server closes, all 119 roots initialize, and Bing renders over HTTPS.
+The original diagnostic's exit 143 remains a failed lifecycle observation.
+
+Replacement `fast-candidate-run2`, version `29331a186e50`, uses the same native
+module and the key-free `prepared-seed-run2`. Its archive is 88,378,783 bytes,
+SHA-256 `7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a`.
+Exactly the Firefox module and two seed databases change; 11,467 other CPIO
+records remain unchanged. `safe-seed-warm-run2` passes actual guest input and
+JavaScript, preserves home, initializes zero additional trust rows, and renders
+Bing over HTTPS after warm reload with zero boot-image requests. Cold/warm
+launch markers are 7,443/6,090 ms; these are not first-paint measurements.
+
+Two independent guest profiles (`safe-seed-warm-run2` and `safe-seed-warm-run3`)
+each generated their own default SDR key from the key-free seed. Host NSS 3.125
+successfully encrypted/decrypted a fixed test string with each profile and
+rejected cross-profile decryption in both directions. The guest-generated key
+objects remained byte-identical during these checks. This establishes key
+independence, not a test of the guest password-manager UI. The preparation helper
+also rejects unexpected secret objects and refuses to overwrite an existing
+output. See [firefox-nss-seed-isolation.json](evidence/runtime-graphics-20260926/firefox-nss-seed-isolation.json).
+
+The replacement's first invalid-certificate screenshot is inconclusive: it
+shows pending navigation over the previous Bing page. A subsequent update test,
+`safe-seed-update-run1`, fails on the **v8 baseline before clicking update**:
+the file homepage remains blank and cannot produce the input-result download.
+It closes its browser/server cleanly. Retain its screenshot and guest logs;
+do not count the old image's failure as replacement update acceptance or as
+proof of a replacement regression. The cause remains unproven.
+
+`safe-seed-media-run1` repeats the media gate on the exact replacement image:
+three valid playbacks end at 3.01 seconds with 30 frames and no drops, malformed
+padding produces decode error 3, and playback works afterward. Host audio
+receives 473,528 frames without drops. Its browser/server close cleanly.
+
+Before promotion, resolve and repeat update and invalid-certificate checks
+against the exact replacement image. Then promote
+only verified inputs, rebuild and check the Sites archive, deploy, and repeat
+public acceptance. All previous fixture images remain test-only artifacts.
 
 No owned service remains running. User PID 1591443 retains startTicks 148821663
 and its original command. The wider JIT, general GL/Vulkan, and Firefox hardware

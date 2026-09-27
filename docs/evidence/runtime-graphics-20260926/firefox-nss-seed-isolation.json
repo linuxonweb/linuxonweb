@@ -1,0 +1,251 @@
+{
+  "scope": "Unpublished Firefox CA seed preparation and profile-key isolation; not whole release acceptance",
+  "candidate": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+    "archiveSha256": "7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a",
+    "bytes": 88378783,
+    "version": "29331a186e50",
+    "modified": [
+      "opt/firefox/firefox",
+      "nss-ca-profile/cert9.db",
+      "nss-ca-profile/key4.db"
+    ],
+    "unchangedRecords": 11467,
+    "moduleSha256": "644ab48f01a8a588706d1ec1c3a97006469964c705edc0f5d599286c890c610f",
+    "preparedSeed": true,
+    "runtimeVerified": false
+  },
+  "seed": {
+    "candidateOnly": true,
+    "runtimeVerified": false,
+    "certificates": 119,
+    "nativeTrustRecords": 119,
+    "removedSDRKeys": 1,
+    "privateObjects": 0,
+    "droppedIntermediates": 15,
+    "secureDeleteAndVacuum": true,
+    "authenticatedTrustUnchanged": true,
+    "passwordMetadataUnchanged": true,
+    "files": {
+      "pkcs11.txt": "e15f24b7fea8146f7fc15cfece5fb48b609909abde7481d94bb5adcea06df198",
+      "cert9.db": "a7d2c5cd95ad5f38576f598b7065dfc1a9d47e384836053c73c15960611c9a67",
+      "key4.db": "b7f482f8f322b99b4489e8adfdf187db9a942dd777448f8156834cfe480b408e"
+    }
+  },
+  "preparationSource": "tools/guest-rootfs/prepare-firefox-nss-seed.py",
+  "preparationSourceSha256": "65bc8c3a8e006b0deced4125a3294547e94c6754e2ab1a4f9160115b42fb5984",
+  "negativePreparationChecks": {
+    "pass": true,
+    "unexpectedSecretKeyRejectedBeforeWriting": true,
+    "existingOutputRejected": true,
+    "removedEncryptedPayloadAbsent": true
+  },
+  "keyIsolation": {
+    "a-own-decrypt": {
+      "decryptStatus": 0,
+      "plaintextMatches": true
+    },
+    "b-own-decrypt": {
+      "decryptStatus": 0,
+      "plaintextMatches": true
+    },
+    "a-cross-decrypt": {
+      "decryptStatus": -1,
+      "plaintextMatches": false
+    },
+    "b-cross-decrypt": {
+      "decryptStatus": -1,
+      "plaintextMatches": false
+    },
+    "passIsolation": true,
+    "guestGeneratedKeysUnchangedByHostCheck": true,
+    "plaintext": "fixed non-sensitive test string",
+    "scope": "Host NSS cryptographic comparison of two independently guest-generated profile keys; no guest password-manager UI claim",
+    "hostNSSVersion": "3.125",
+    "helperSha256": "fe787fa6914f8200b50f0ee964a926965eb15d92c3aa7149d22d188c57ac16ee"
+  },
+  "runs": {
+    "safe-seed-warm-run2": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "visualReview": {
+        "bingHTTPS": true,
+        "invalidCertificate": "not requested"
+      },
+      "resultSha256": "6d2f1be478916be8be1f141ee31f92c7b63356d477ec9b904b80847ee42bf7eb",
+      "phases": [
+        {
+          "label": "cold",
+          "launchMs": 7443,
+          "bootImageRequests": 2,
+          "trust": [
+            "2026-09-27 02:08:40.080900 UTC - [Parent 99: StreamTrans #3]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=0 preserved=119 error=0"
+          ]
+        },
+        {
+          "label": "warm",
+          "launchMs": 6090,
+          "bootImageRequests": 0,
+          "trust": [
+            "2026-09-27 02:09:17.669800 UTC - [Parent 91: StreamTrans #5]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=0 preserved=119 error=0"
+          ]
+        }
+      ]
+    },
+    "safe-seed-warm-run3": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "visualReview": {
+        "bingHTTPS": true,
+        "invalidCertificate": "inconclusive: screenshot shows navigation pending over prior Bing content"
+      },
+      "resultSha256": "c64c923c8e158148d228abbd7518c45546a26eb294b07a98123e940b9ef4c046",
+      "phases": [
+        {
+          "label": "cold",
+          "launchMs": 7722,
+          "bootImageRequests": 2,
+          "trust": [
+            "2026-09-27 02:10:52.072755 UTC - [Parent 100: StreamTrans #5]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=0 preserved=119 error=0"
+          ]
+        },
+        {
+          "label": "warm",
+          "launchMs": 6928,
+          "bootImageRequests": 0,
+          "trust": [
+            "2026-09-27 02:11:34.849565 UTC - [Parent 91: StreamTrans #5]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=0 preserved=119 error=0"
+          ]
+        }
+      ]
+    },
+    "safe-seed-update-run1": {
+      "pass": false,
+      "activePhase": "baseline",
+      "failureState": {
+        "url": "http://127.0.0.1:42465/linux/index.html?firefox=1&renderer=canvas2d&firefox_trace=1",
+        "status": "running \u00b7 firefox \u00b7 initramfs",
+        "message": "Home mounted \u00b7 saved files persist across refresh and system updates."
+      },
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "reason": "v8 baseline file homepage remained blank; guest-generated input result timed out before update was attempted",
+      "resultSha256": "bc781e6d9e89f54e03e2e375e5b0e133e1e5ecf76627635d3b786ba513e3f86b"
+    },
+    "safe-seed-media-run1": {
+      "pass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "media": {
+        "schema": 1,
+        "tag": "tls-media-regression",
+        "createdAt": 1790475421509,
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+        "url": "file:///home/admin/sites-probe.html",
+        "runs": [
+          {
+            "name": "first",
+            "invalid": false,
+            "event": "ended",
+            "time": 3.01,
+            "duration": 3.01,
+            "frames": 30,
+            "dropped": 0,
+            "errorCode": 0,
+            "error": null
+          },
+          {
+            "name": "replay",
+            "invalid": false,
+            "event": "ended",
+            "time": 3.01,
+            "duration": 3.01,
+            "frames": 30,
+            "dropped": 0,
+            "errorCode": 0,
+            "error": null
+          },
+          {
+            "name": "invalid-padding",
+            "invalid": true,
+            "event": "error",
+            "time": 0.796791,
+            "duration": 3.01,
+            "frames": 7,
+            "dropped": 0,
+            "errorCode": 3,
+            "error": "Failed to decode media"
+          },
+          {
+            "name": "after-invalid",
+            "invalid": false,
+            "event": "ended",
+            "time": 3.01,
+            "duration": 3.01,
+            "frames": 30,
+            "dropped": 0,
+            "errorCode": 0,
+            "error": null
+          }
+        ],
+        "pass": true
+      },
+      "audio": {
+        "packets": 925,
+        "frames": 473528,
+        "dropped": 0,
+        "stops": 5,
+        "peak": 0.0894310474395752,
+        "available": true,
+        "state": "running",
+        "streams": 0
+      },
+      "resultSha256": "61756d7628a06f8b763f3a06f8349cb08ed5eab88f5a02bc27149de8847bb90a"
+    }
+  },
+  "priorCandidatePartialUpdate": {
+    "partialTrustBefore": 11,
+    "after": 119,
+    "oldTrustRowsIdentical": true,
+    "exactFilePreservation": {
+      "key4.db": false,
+      "pkcs11.txt": true,
+      "user.js": true
+    },
+    "harnessPass": true,
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "serverClosed": true,
+    "priorDownloadPreserved": true,
+    "existingKeyObjectsIdentical": true,
+    "existingKeyMetadataIdentical": true,
+    "newKeyMetadataRows": 756,
+    "keyDatabaseByteChangeReason": "108 newly initialized trust records add authentication metadata"
+  },
+  "artifactRoot": "/mnt/p6/build/firefox-tls-20260926",
+  "deployed": false,
+  "remaining": [
+    "Update/reload exact replacement image",
+    "Invalid-certificate visual acceptance exact replacement image",
+    "Sites build/deploy/public acceptance",
+    "Full-goal native JIT/general GL/Vulkan/Firefox GPU and hardware decoder work"
+  ]
+}

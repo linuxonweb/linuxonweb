@@ -157,7 +157,8 @@
       "pkcs11.txt": "e15f24b7fea8146f7fc15cfece5fb48b609909abde7481d94bb5adcea06df198",
       "cert9.db": "393a623645fd24f7d9dab4d1d20247f1809d9e097d7b7b7ec5f13d4df9a5e5df",
       "key4.db": "af53e49077426694452ed38913814f3dd8f33715a69f40c6492539a0d71aeec1"
-    }
+    },
+    "distributionStatus": "rejected: contains an SDR/password-encryption key"
   },
   "candidate": {
     "passPackage": true,
@@ -174,14 +175,13 @@
     "unchangedRecords": 11467,
     "moduleSha256": "644ab48f01a8a588706d1ec1c3a97006469964c705edc0f5d599286c890c610f",
     "preparedSeed": true,
-    "runtimeVerified": false
+    "runtimeVerified": false,
+    "distributionStatus": "rejected: replace with key-free seed; never promote this archive"
   },
   "releaseGatesPending": [
-    "explicit-distrust preservation",
-    "warm HTTPS and zero image requests",
-    "update existing profile with prepared seed",
-    "repeat clean controls",
-    "media/startup regression",
-    "public deployment and acceptance"
-  ]
+    "exact replacement image update/reload acceptance after blank legacy baseline failure",
+    "exact replacement invalid-certificate visual acceptance",
+    "Sites rebuild, deployment and public acceptance"
+  ],
+  "replacementEvidence": "firefox-nss-seed-isolation.json"
 }
