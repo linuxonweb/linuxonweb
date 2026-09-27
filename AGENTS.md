@@ -749,13 +749,32 @@ Raw live report/screenshots are `session-release-run1/public-firefox-run1` in th
 task directory. All owners exited zero, server closed, no outer exceptions.
 Preserve v7 and v6 saved versions and all failed controls for rollback/diagnosis.
 
-Next: inspect the exact certificate error, then compare cold versus warm Bing
-with an owned profile and audit persisted NSS trust data. The copied profile must
-not reuse its stale `DevToolsActivePort`; remove that file only in the new copy.
-`build-nss-ca-profile.py` imports `lowland-ca-*` roots and rewrites pkcs11's guest
-profile path. Its referenced Wasm fallback patch 0004 is not in the preserved
-native source search; locate the actual replacement/link provenance before
-changing trust handling. A successful curl probe is not Firefox TLS evidence.
+**TLS investigation now has a locally tested candidate, not a deployment.**
+See `docs/firefox-tls-bootstrap-20260926.md` and the compact evidence
+`docs/evidence/runtime-graphics-20260926/firefox-tls-bootstrap.json`.
+The exact error is `SEC_ERROR_UNKNOWN_ISSUER`. The v8 fallback returns after any
+SSL-trusted root: the failing owned profile has 11 native trust records out of
+119 roots. A fresh diagnostic completes all 119 after about 58 seconds and
+renders Bing securely, but its driver exited 143 before reporting; recovery
+artifacts and cleanup are preserved, and that run is not a clean pass.
+
+Tracked patch 0004 now preserves existing native trust records and resumes only
+missing shipped roots. `resume-partial-run1` reports 108 updated, 11 preserved;
+all 11 old rows are byte-identical and Bing renders over HTTPS. A prepared-store
+candidate `952d3cb770e4` passes fresh Firefox HTTPS with zero trust writes and a
+2.123-second trust phase. That is not a whole-boot benchmark. Both candidate
+drivers/browsers exit zero and close their servers. Artifacts and exact build
+commands are under `/mnt/p6/build/firefox-tls-20260926`; the preserved
+`firefox-mmap-aligned` media build exactly matches the deployed Firefox binary.
+All builds used disk-backed scratch; the legacy unwind object was copied into
+the new build directory, leaving its shared original for a separate usage audit.
+
+Next: explicit distrust/zero-flag preservation, warm HTTPS/cache behavior, real
+update/reload from a partial profile with home/key preservation, clean controls,
+invalid-certificate rejection, startup/media regression, then promotion and
+public deployment/acceptance. Candidate assets have not replaced live assets.
+The copied browser profile must not reuse stale `DevToolsActivePort`; remove that
+file only in the new copy. A successful curl probe is not Firefox TLS evidence.
 General multi-tab recovery and the original JIT/GL/decoder requirements remain.
 Current whole-goal estimate: 75/100, below the requested 95, with the HTTPS gate
 now explicitly unresolved. Resolve the unknown weekly allowance before another

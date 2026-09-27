@@ -1,12 +1,20 @@
 --- a/security/manager/ssl/nsNSSComponent.cpp
 +++ b/security/manager/ssl/nsNSSComponent.cpp
-@@ -779,6 +779,78 @@
+@@ -71,6 +71,7 @@
+ #include "nss.h"
+ #include "p12plcy.h"
+ #include "pk11pub.h"
++#include "pkcs11n.h"
+ #include "prmem.h"
+ #include "secerr.h"
+ #include "secmod.h"
+@@ -779,6 +780,115 @@
        return NS_OK;
      }
    }
 +#ifdef __wasm__
-+  // Static Wasm builds cannot dlopen CKBI. Accept the profile's NSS roots only
-+  // when it contains an SSL-trusted CA; normal chain verification still runs.
++  // Static Wasm builds cannot dlopen CKBI. Complete the shipped profile's
++  // trust bootstrap after interrupted starts; normal verification still runs.
 +  UniqueCERTCertList certs(PK11_ListCerts(PK11CertListUnique, nullptr));
 +  unsigned certCount = 0;
 +  unsigned trustReadable = 0;
@@ -32,14 +40,39 @@
 +  MOZ_LOG(gPIPNSSLog, LogLevel::Error,
 +          ("[LOWLAND_NSS_ROOTS] list=%d certs=%u trust=%u sslCA=%u",
 +           certs ? 1 : 0, certCount, trustReadable, sslTrusted));
-+  if (sslTrusted) {
-+    return NS_OK;
++  // A single trusted root does not mean bootstrap finished. Snapshot native
++  // trust objects before making changes, preserving explicit user trust and
++  // distrust decisions, including records with zero CERTCertTrust flags.
++  UniquePK11SlotInfo profileSlot(PK11_GetInternalKeySlot());
++  if (!profileSlot) {
++    return NS_ERROR_FAILURE;
++  }
++  PR_SetError(0, 0);
++  PK11GenericObject* nativeObjects =
++      PK11_FindGenericObjects(profileSlot.get(), CKO_NSS_TRUST);
++  if (!nativeObjects && PR_GetError()) {
++    return NS_ERROR_FAILURE;
++  }
++  auto releaseObjects = MakeScopeExit([&] {
++    if (nativeObjects) PK11_DestroyGenericObjects(nativeObjects);
++  });
++  nsTArray<nsCString> nativeTrustHashes;
++  for (auto* object = nativeObjects; object;
++       object = PK11_GetNextGenericObject(object)) {
++    ScopedAutoSECItem hash;
++    if (PK11_ReadRawAttribute(PK11_TypeGeneric, object, CKA_CERT_SHA1_HASH,
++                             &hash) != SECSuccess || hash.len != 20) {
++      return NS_ERROR_FAILURE;
++    }
++    nativeTrustHashes.AppendElement(nsCString(
++        reinterpret_cast<const char*>(hash.data), hash.len));
 +  }
 +  // Host-created SQL trust objects are not read as trusted by this Wasm NSS.
 +  // Reapply trust inside the target only to CA certificates deliberately
 +  // imported into this dedicated profile from the shipped system CA bundle.
 +  unsigned eligible = 0;
 +  unsigned updated = 0;
++  unsigned preserved = 0;
 +  int firstError = 0;
 +  if (certs) {
 +    for (CERTCertListNode* node = CERT_LIST_HEAD(certs.get());
@@ -52,6 +85,18 @@
 +        continue;
 +      }
 +      ++eligible;
++      // SHA-1 is the NSS trust-object lookup key, not a signature policy.
++      unsigned char digest[20];
++      if (PK11_HashBuf(SEC_OID_SHA1, digest, node->cert->derCert.data,
++                       node->cert->derCert.len) != SECSuccess) {
++        if (!firstError) firstError = PR_GetError();
++        continue;
++      }
++      if (nativeTrustHashes.Contains(nsDependentCSubstring(
++              reinterpret_cast<const char*>(digest), sizeof(digest)))) {
++        ++preserved;
++        continue;
++      }
 +      CERTCertTrust wanted = {};
 +      if (CERT_DecodeTrustString(&wanted, "C,,") != SECSuccess ||
 +          CERT_ChangeCertTrust(nullptr, node->cert, &wanted) != SECSuccess) {
@@ -68,9 +113,9 @@
 +    }
 +  }
 +  MOZ_LOG(gPIPNSSLog, LogLevel::Error,
-+          ("[LOWLAND_NSS_ROOTS] target trust eligible=%u updated=%u error=%d",
-+           eligible, updated, firstError));
-+  if (eligible && eligible == updated) {
++          ("[LOWLAND_NSS_ROOTS] target trust eligible=%u updated=%u preserved=%u error=%d",
++           eligible, updated, preserved, firstError));
++  if (eligible && eligible == updated + preserved) {
 +    return NS_OK;
 +  }
 +  MOZ_LOG(gPIPNSSLog, LogLevel::Error,

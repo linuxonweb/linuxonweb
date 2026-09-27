@@ -1,0 +1,187 @@
+{
+  "scope": "local candidate TLS bootstrap; not release acceptance",
+  "partialTrustRowsBefore": 11,
+  "partialTrustRowsAfter": 119,
+  "existingTrustRowsByteIdentical": true,
+  "runs": {
+    "persisted-trace-run1": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "launchMs": 8396,
+      "trace": [
+        {
+          "elapsedMs": 19490,
+          "id": 198,
+          "text": "2026-09-27 00:53:24.840640 UTC - [Parent 89: StreamTrans #8]: D/pipnss [LOWLAND_NSS_ROOTS] cert=1 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 19491,
+          "id": 199,
+          "text": "2026-09-27 00:53:24.841395 UTC - [Parent 89: StreamTrans #8]: D/pipnss [LOWLAND_NSS_ROOTS] cert=2 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 19492,
+          "id": 200,
+          "text": "2026-09-27 00:53:24.842865 UTC - [Parent 89: StreamTrans #8]: D/pipnss [LOWLAND_NSS_ROOTS] cert=3 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 19494,
+          "id": 201,
+          "text": "2026-09-27 00:53:24.843385 UTC - [Parent 89: StreamTrans #8]: E/pipnss [LOWLAND_NSS_ROOTS] list=1 certs=119 trust=119 sslCA=11"
+        }
+      ],
+      "visualReview": {
+        "action": "finish",
+        "observedError": "SEC_ERROR_UNKNOWN_ISSUER",
+        "exceptionAccepted": false
+      },
+      "resultSha256": "45377145c5077b8c070c7b5f0e046b88557c32b95f6f4a29cea8f6ff48544d22"
+    },
+    "resume-partial-run1": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "launchMs": 7427,
+      "trace": [
+        {
+          "elapsedMs": 17460,
+          "id": 166,
+          "text": "2026-09-27 01:05:53.377165 UTC - [Parent 96: StreamTrans #3]: D/pipnss [LOWLAND_NSS_ROOTS] cert=1 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 17460,
+          "id": 167,
+          "text": "2026-09-27 01:05:53.379160 UTC - [Parent 96: StreamTrans #3]: D/pipnss [LOWLAND_NSS_ROOTS] cert=2 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 17461,
+          "id": 168,
+          "text": "2026-09-27 01:05:53.379600 UTC - [Parent 96: StreamTrans #3]: D/pipnss [LOWLAND_NSS_ROOTS] cert=3 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 17461,
+          "id": 169,
+          "text": "2026-09-27 01:05:53.380010 UTC - [Parent 96: StreamTrans #3]: E/pipnss [LOWLAND_NSS_ROOTS] list=1 certs=119 trust=119 sslCA=11"
+        },
+        {
+          "elapsedMs": 73724,
+          "id": 1053,
+          "text": "2026-09-27 01:06:49.033660 UTC - [Parent 96: StreamTrans #3]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=108 preserved=11 error=0"
+        }
+      ],
+      "visualReview": {
+        "action": "finish",
+        "observedResult": "Bing rendered with HTTPS lock; bootstrap updated 108 and preserved 11",
+        "exceptionAccepted": false
+      },
+      "resultSha256": "49e2d835a2afcf5cdf62de9fb277831c56437da9762b57b1be3ffd1c5de00103"
+    },
+    "fast-fresh-run1": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "launchMs": 8453,
+      "trace": [
+        {
+          "elapsedMs": 27551,
+          "id": 417,
+          "text": "2026-09-27 01:09:39.934665 UTC - [Parent 99: StreamTrans #5]: D/pipnss [LOWLAND_NSS_ROOTS] cert=1 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 27552,
+          "id": 418,
+          "text": "2026-09-27 01:09:39.935120 UTC - [Parent 99: StreamTrans #5]: D/pipnss [LOWLAND_NSS_ROOTS] cert=2 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 27553,
+          "id": 419,
+          "text": "2026-09-27 01:09:39.936225 UTC - [Parent 99: StreamTrans #5]: D/pipnss [LOWLAND_NSS_ROOTS] cert=3 sslFlags=0x18"
+        },
+        {
+          "elapsedMs": 27554,
+          "id": 420,
+          "text": "2026-09-27 01:09:39.936645 UTC - [Parent 99: StreamTrans #5]: E/pipnss [LOWLAND_NSS_ROOTS] list=1 certs=119 trust=119 sslCA=119"
+        },
+        {
+          "elapsedMs": 29572,
+          "id": 421,
+          "text": "2026-09-27 01:09:42.059200 UTC - [Parent 99: StreamTrans #5]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=0 preserved=119 error=0"
+        }
+      ],
+      "visualReview": {
+        "action": "finish",
+        "observedResult": "Bing rendered with HTTPS lock; all 119 roots preinitialized; zero trust writes",
+        "exceptionAccepted": false
+      },
+      "resultSha256": "17ee305295b8cff32894c6a75bd6249ecbd8f20cce79ee063ac7afb79e786190"
+    }
+  },
+  "freshV8Diagnostic": {
+    "driverExit": 143,
+    "harnessPass": false,
+    "recoveredBrowserClosed": true,
+    "all119TrustCompleted": true,
+    "bingVisuallyRendered": true
+  },
+  "preparedSeed": {
+    "candidateOnly": true,
+    "runtimeVerified": false,
+    "certificates": 119,
+    "nativeTrustRecords": 119,
+    "droppedIntermediates": 15,
+    "classes": [
+      [
+        "00000001",
+        119
+      ],
+      [
+        "0000000B",
+        119
+      ],
+      [
+        "CE534353",
+        119
+      ]
+    ],
+    "files": {
+      "pkcs11.txt": "e15f24b7fea8146f7fc15cfece5fb48b609909abde7481d94bb5adcea06df198",
+      "cert9.db": "393a623645fd24f7d9dab4d1d20247f1809d9e097d7b7b7ec5f13d4df9a5e5df",
+      "key4.db": "af53e49077426694452ed38913814f3dd8f33715a69f40c6492539a0d71aeec1"
+    }
+  },
+  "candidate": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+    "archiveSha256": "3b9eb48ad5bb0fbbbab518abc687485cb45db4c38c4a2574a6049d91187665b7",
+    "bytes": 88398039,
+    "version": "952d3cb770e4",
+    "modified": [
+      "opt/firefox/firefox",
+      "nss-ca-profile/cert9.db",
+      "nss-ca-profile/key4.db"
+    ],
+    "unchangedRecords": 11467,
+    "moduleSha256": "644ab48f01a8a588706d1ec1c3a97006469964c705edc0f5d599286c890c610f",
+    "preparedSeed": true,
+    "runtimeVerified": false
+  },
+  "releaseGatesPending": [
+    "explicit-distrust preservation",
+    "warm HTTPS and zero image requests",
+    "update existing profile with prepared seed",
+    "repeat clean controls",
+    "media/startup regression",
+    "public deployment and acceptance"
+  ]
+}
