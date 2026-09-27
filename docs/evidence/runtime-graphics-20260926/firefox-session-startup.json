@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "passColdWarmRegression": true,
+  "passUpdate": true,
+  "updateStatus": "passed",
+  "publicDeployment": "v7 remains live; new candidate not yet deployed",
+  "package": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "7ad492fe595d19e210da1a365640d5e10680d5ba4e41ae85c73e0949fc2761b0",
+    "sourceManifestSha256": "0d3fd6063362027f0a992562017809a7636fe6a1b9f3e03e66df1376b67d9f7b",
+    "archiveSha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+    "bytes": 88406516,
+    "uncompressedBytes": 279774480,
+    "version": "b354310fe03e",
+    "memberBeforeSha256": "15d62a56c85a4f254871064e230d648c7f3837d9f414bfa6029d502f4948b848",
+    "memberAfterSha256": "0cd34d0077c643cae085556e95ce5bbe2e1a4f70b5fa8b757330bd3a65837d90",
+    "unchangedRecords": 11469,
+    "modified": [
+      "opt/firefox/browser/chrome/browser/content/browser/tabbrowser/tabbrowser.js"
+    ],
+    "added": [],
+    "originalOrderPreserved": true,
+    "tailPreserved": true,
+    "metadataExceptSizePreserved": true,
+    "profilePreferencesUnchanged": true,
+    "source": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+    "manifest": "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json",
+    "filesystems": {
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-homepage-20260926": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-homepage-20260926/tmp": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/vmlinux.wasm": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs.cpio": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      }
+    },
+    "scratch": {
+      "TMPDIR": "/mnt/p6/build/firefox-homepage-20260926/tmp",
+      "TMP": "/mnt/p6/build/firefox-homepage-20260926/tmp",
+      "TEMP": "/mnt/p6/build/firefox-homepage-20260926/tmp"
+    },
+    "releaseGatesPending": [
+      "cold-and-automatic-warm-input",
+      "real-session-restoration",
+      "update-and-home-preservation",
+      "public-acceptance"
+    ]
+  },
+  "control": {
+    "report": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-control-run1/result.json",
+      "sha256": "335a38951103d66597318cf49c1cf170a29d47b29472239e1ee78c1f7811f86b"
+    },
+    "coldPass": true,
+    "warmPass": false,
+    "failure": "Guest result deadline; screenshot shows blank restored tab"
+  },
+  "candidate": {
+    "report": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-startup-run3/result.json",
+      "sha256": "a7a171b28f1f72289f702ca0742a49dd62833f42ab02208df9350da5530cdc62"
+    },
+    "phases": [
+      {
+        "label": "cold",
+        "launchLogMs": 7385,
+        "observedResultMs": 40405,
+        "version": "b354310fe03e",
+        "imageRequests": 2,
+        "guestResult": {
+          "schema": 1,
+          "tag": "sites-v7-guest",
+          "input": "wasmperf",
+          "checksum": 7998000,
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+          "createdAt": 1790468069053,
+          "url": "file:///home/admin/sites-probe.html"
+        }
+      },
+      {
+        "label": "warm",
+        "launchLogMs": 6358,
+        "observedResultMs": 38884,
+        "version": "b354310fe03e",
+        "imageRequests": 0,
+        "guestResult": {
+          "schema": 1,
+          "tag": "sites-v7-guest",
+          "input": "wasmperf",
+          "checksum": 7998000,
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+          "createdAt": 1790468108077,
+          "url": "file:///home/admin/sites-probe.html"
+        }
+      }
+    ]
+  },
+  "sourceAudit": {
+    "path": "/mnt/p6/build/firefox-homepage-20260926/session-source-audit.json",
+    "sha256": "caa982decc4e0cff5cad5d4c14663a29bd48cc5753e96c873ba13e13bec25ed0"
+  },
+  "priorExperiments": {
+    "path": "/mnt/p6/build/firefox-homepage-20260926/session-investigation.json",
+    "sha256": "58c6a9b014c9f582d4b3d1a04b9e1f95d0501d04cefc79ea5c0c015eb18859ca"
+  },
+  "testOnlyPreferences": [
+    "datareporting.policy.firstRunURL empty; avoids a delayed first-run privacy tab changing selected test content",
+    "download destination and JSON automatic save configured for an owned profile",
+    "explicit local file homepage; no Home/navigation command during warm restore"
+  ],
+  "limitations": [
+    "One controlled cold/warm pair; launch logs are not first paint and fixed waits prohibit speedup ratios.",
+    "The page title mentions Sites because the fixture originated in public QA; these candidate/control tests run locally.",
+    "General multi-tab restoration, production public acceptance and guest HTTPS remain separate gates.",
+    "No native JIT, general OpenGL/Firefox GPU or hardware decoder capability is added."
+  ],
+  "updateRuns": [
+    {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-update-run1/result.json",
+      "sha256": "3dbd5ff6c881550e25a9ef0d469708dee07a5e97efc2d97005099cb692be7fbc",
+      "priorDownloadPreserved": true,
+      "phases": [
+        {
+          "label": "baseline",
+          "version": "89ec54c81936",
+          "launchLogMs": 7556,
+          "result": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790468318184,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        },
+        {
+          "label": "update",
+          "version": "b354310fe03e",
+          "launchLogMs": 8311,
+          "result": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790468359428,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        }
+      ],
+      "cleanup": {
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      }
+    },
+    {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-update-run2/result.json",
+      "sha256": "c179a9f699e6ca4afe4323c630ea97c461d14f38a49a0ac845e1ed6546aeab18",
+      "priorDownloadPreserved": true,
+      "phases": [
+        {
+          "label": "baseline",
+          "version": "89ec54c81936",
+          "launchLogMs": 7885,
+          "result": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790468473095,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        },
+        {
+          "label": "update",
+          "version": "b354310fe03e",
+          "launchLogMs": 8509,
+          "result": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790468514609,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        }
+      ],
+      "cleanup": {
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      }
+    }
+  ],
+  "replayRunnerSha256": "adc3bc7abb244794184c7595fd12790acdd2858413edfdf1dfd09412254d41f1",
+  "localPromotion": {
+    "record": "/mnt/p6/build/firefox-homepage-20260926/session-promotion-run1/result.json",
+    "sha256": "8923a3a9a013bed656a534642c72344b5bbf4b6db96a25815a9849cad8c0b767",
+    "result": {
+      "pass": true,
+      "version": "b354310fe03e",
+      "archiveSha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+      "bytes": 88406516,
+      "previousVersion": "89ec54c81936",
+      "backup": "/mnt/p6/build/firefox-homepage-20260926/session-baseline-images",
+      "filesystems": {
+        "/mnt/p6/project/linux/linuxonweb/web/linux": {
+          "mount": "/mnt/p6",
+          "type": "ext4"
+        },
+        "/mnt/p6/build/firefox-homepage-20260926/session-startup-candidate-run1": {
+          "mount": "/mnt/p6",
+          "type": "ext4"
+        },
+        "/mnt/p6/build/firefox-homepage-20260926/session-promotion-run1": {
+          "mount": "/mnt/p6",
+          "type": "ext4"
+        },
+        "/mnt/p6/build/firefox-homepage-20260926/session-baseline-images": {
+          "mount": "/mnt/p6",
+          "type": "ext4"
+        }
+      },
+      "publicDeploymentUnchanged": true
+    }
+  }
+}

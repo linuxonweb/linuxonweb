@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "passPublicAcceptance": false,
+  "deployment": {
+    "id": "appgdep_6ab8566b78b8819198870bd7939e570a",
+    "project_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+    "version_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_38c6842a13d48191afadf08d8f3b9e94",
+    "status": "succeeded",
+    "url": "https://linuxonweb.exact-coot-7512.chatgpt.site"
+  },
+  "savedVersion": {
+    "id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_38c6842a13d48191afadf08d8f3b9e94",
+    "project_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+    "version_number": 7,
+    "source_commit": "6c68ffb494ae7381581891c9a33593a22e2faf93",
+    "sediment_file_id": "file_0000000013cc81fbb2459cc07d7a7eca",
+    "archive_tar_sha256": "fa70745ef84efa81258d23be6509c615c5f1899359d39081ce2f170b6151c03f",
+    "archive_tar_bytes": 151613440,
+    "archive_file_count": 63
+  },
+  "sourceCommit": "6c68ffb494ae7381581891c9a33593a22e2faf93",
+  "rootfsVersion": "89ec54c81936",
+  "publicAssets": {
+    "pass": true,
+    "routeCount": 66,
+    "report": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/public-assets-run3/result.json",
+      "sha256": "d4c302b452e05cd0200ce728e7e598527113ee889210dcedd3e5914ef698dc4c"
+    },
+    "htmlNormalization": "One exact Cloudflare challenge template with validated ray/timestamp; full HTML content hash after removal.",
+    "archiveWrapperIdentity": false,
+    "scope": "All binary/module contents, isolation headers and cache policy; full archive hash."
+  },
+  "runs": [
+    {
+      "report": {
+        "path": "/mnt/p6/build/firefox-homepage-20260926/public-run3/result.json",
+        "sha256": "91a6b1745fb58ba69df4dbf7420617125c120dbb196b4f80a09c03d20c1a0c9e"
+      },
+      "passScopedHarness": false,
+      "phases": [
+        {
+          "label": "cold",
+          "launchLogMs": 21534,
+          "imageRequests": 2,
+          "guestResult": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790466199843,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        }
+      ],
+      "error": "Error: guest-generated result file deadline",
+      "intervention": null,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    },
+    {
+      "report": {
+        "path": "/mnt/p6/build/firefox-homepage-20260926/public-recovery-run2/result.json",
+        "sha256": "0e42a123168f0cb17554bcf8cc69d23f1bad3cf9a2b3996a5a096bf6767af8f8"
+      },
+      "passScopedHarness": true,
+      "phases": [
+        {
+          "label": "warm",
+          "launchLogMs": 17190,
+          "imageRequests": 0,
+          "guestResult": {
+            "schema": 1,
+            "tag": "sites-v7-guest",
+            "input": "wasmperf",
+            "checksum": 7998000,
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+            "createdAt": 1790466549511,
+            "url": "file:///home/admin/sites-probe.html"
+          }
+        }
+      ],
+      "error": "",
+      "intervention": "Explicit Firefox Alt+Home after startup, using copied prior test profile; not automatic restoration evidence",
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    },
+    {
+      "report": {
+        "path": "/mnt/p6/build/firefox-homepage-20260926/profile-inspect-run1/result.json",
+        "sha256": "94cc356c78f69b13526c92b276d50e17e3b78a1fb903ad6e5986f9305e4c425e"
+      },
+      "passScopedHarness": true,
+      "phases": [],
+      "error": "",
+      "intervention": null,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    },
+    {
+      "report": {
+        "path": "/mnt/p6/build/firefox-homepage-20260926/public-crash-disabled-run1/result.json",
+        "sha256": "8f8bd76fea55dd003569ac91be3f9094c58d70f0affb838afc2a37c3405ad316"
+      },
+      "passScopedHarness": false,
+      "phases": [],
+      "error": "Error: guest-generated result file deadline",
+      "intervention": null,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true
+    }
+  ],
+  "httpsScreenshot": {
+    "path": "/mnt/p6/build/firefox-homepage-20260926/public-recovery-run2/public-https.png",
+    "sha256": "af9031eaeecbb66da3b9f91ef8a1f2af6651b4f883a3bbb7b685b2df873ec937",
+    "pass": false,
+    "observed": "Firefox Secure Connection Failed: PR_CONNECT_RESET_ERROR for https://example.com"
+  },
+  "limitations": [
+    "Automatic public warm restoration fails; explicit Alt+Home is an intervention, not acceptance.",
+    "Test-only crash recovery disabling did not fix automatic startup.",
+    "Decoded saved recovery file contains expected URL and one recent crash; no missing-file conclusion beyond that case.",
+    "No performance speedup ratio; no new JIT, general GL/Firefox GPU, or hardware decoding claim."
+  ],
+  "evidence": {
+    "public-assets-run3/result.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/public-assets-run3/result.json",
+      "sha256": "d4c302b452e05cd0200ce728e7e598527113ee889210dcedd3e5914ef698dc4c"
+    },
+    "public-run3/result.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/public-run3/result.json",
+      "sha256": "91a6b1745fb58ba69df4dbf7420617125c120dbb196b4f80a09c03d20c1a0c9e"
+    },
+    "public-recovery-run2/result.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/public-recovery-run2/result.json",
+      "sha256": "0e42a123168f0cb17554bcf8cc69d23f1bad3cf9a2b3996a5a096bf6767af8f8"
+    },
+    "profile-inspect-run1/result.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/profile-inspect-run1/result.json",
+      "sha256": "94cc356c78f69b13526c92b276d50e17e3b78a1fb903ad6e5986f9305e4c425e"
+    },
+    "public-crash-disabled-run1/result.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/public-crash-disabled-run1/result.json",
+      "sha256": "8f8bd76fea55dd003569ac91be3f9094c58d70f0affb838afc2a37c3405ad316"
+    },
+    "archive-audit.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/archive-audit.json",
+      "sha256": "212f27f22117a60126f027b007d01118733927b7643cce1f3e29cfb04b2e6e86"
+    },
+    "sites-saved-version.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/sites-saved-version.json",
+      "sha256": "a01253a961a3b3636f83fa12daae7096df3d1ca09efb3ef2705dbeb0461bfe89"
+    },
+    "sites-deployment.json": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/sites-deployment.json",
+      "sha256": "a4cfcb92d34e9cb21c9c3e06863e02446a2667a416d5fe7a584d2c84be549c78"
+    }
+  }
+}

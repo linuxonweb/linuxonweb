@@ -653,11 +653,85 @@ See `docs/firefox-homepage-20260926.md`. Launch log timings are not first paint,
 and the baseline navigation delay prohibits claiming a speedup ratio. The
 verified behavior is honoring saved startup preferences instead of forced Bing.
 
-Sites preparation/publication is next; until a new saved deployment is verified,
-the public Site remains version 6 / `ff1ea9fc6f62`. Preserve the previous Sites
-version for rollback and change only rootfs/manifest in the pinned runtime graph.
+Sites version 7 / `89ec54c81936` is now deployed. Exact nested source is
+`6c68ffb494ae7381581891c9a33593a22e2faf93`, saved version
+`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_38c6842a13d48191afadf08d8f3b9e94`,
+deployment `appgdep_6ab8566b78b8819198870bd7939e570a` (succeeded, rechecked).
+All 66 public routes pass full content/header verification in
+`firefox-homepage-20260926/public-assets-run3/result.json`. Two HTML documents
+require exact, bounded normalization of the hosting-injected challenge script;
+preserve the preceding failed checks. Only rootfs/manifest routes changed.
+The saved tar wrapper differs from the local tar; route content equality was
+verified instead. Preserve version 6 for rollback.
+
+**Public acceptance remains incomplete.** Cold guest JavaScript/input passes,
+but `public-run2` and `public-run3` fail automatic warm file-homepage restoration.
+`public-recovery-run2` passes only after explicit Alt+Home, using a copy of the
+failed profile, with zero image requests and exact home/user.js preservation.
+Its HTTPS screenshot shows example.com `PR_CONNECT_RESET_ERROR`, not success.
+The recovery runner's narrow `pass` does not mean the whole release passed.
+`profile-inspect-run1` decodes the saved session successfully (correct URL, one
+recent crash). The test-only `public-crash-disabled-run1` also fails automatic
+homepage/input; do not disable crash recovery in production as a workaround.
+All those finite browser/server owners closed cleanly. See the homepage document
+for scope and artifacts; diagnostic packages are never production candidates.
 The full objective remains active, approximately 80/100; experimental GPU proofs
 are not general OpenGL/Firefox acceleration and no native JIT/decoder claim is added.
+
+### Single-process session startup continuation
+
+This continuation made progress: it reproduced the public blank-restored-tab
+failure locally, identified the process-selection defect, and validated a fix.
+Fresh agent creation still fails at the platform thread limit; bounded commands
+ran directly. Weekly usage remains unavailable; do not invent a percentage.
+
+Packed `tabbrowser.js` selects a privileged remote process when its startup URL
+is a pending session promise, even though this Wasm build disables remote
+content processes. Diagnostic logs show `remote=true` and a rejected
+`restoreDocShellState` (`NS_ERROR_FAILURE`). The matching preserved native source
+is under `.tmp-firefox-build/.../firefox-128.14.0`; exact paths/hashes are recorded
+in `firefox-homepage-20260926/session-source-audit.json`. Extra remote/fission
+preferences and disabling crash recovery did not fix the bug; none were shipped.
+
+`tools/guest-rootfs/package-firefox-session-startup.py` changes only that pending
+URL fallback to `NOT_REMOTE` when `gMultiProcessBrowser` is false. It pins the
+v7 rootfs/manifest and exact JS member, preserving all 11,469 other CPIO records,
+init, profile preferences, member metadata except size, order and tail.
+Version `b354310fe03e`, 88,406,516 bytes, SHA-256
+`9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0`
+is now promoted locally. Four preceding v7 inputs are preserved in
+`/mnt/p6/build/firefox-homepage-20260926/session-baseline-images/`; promotion
+record is `session-promotion-run1/result.json` in the same task root.
+
+`test-firefox-session-startup.mjs OUTPUT CANDIDATE [update] [BASELINE]` owns one
+finite server/browser, with every artifact on disk-backed task storage. It uses
+real guest typing and downloaded JS result files, exact home/user.js checks,
+actual Update & restart, and zero-image warm boot. Its final runner accepts an
+explicit immutable baseline, so later rootfs promotion does not invalidate replay.
+The optional baseline defaults to the preserved `candidate-run1` v7 package.
+Test-only `datareporting.policy.firstRunURL` is empty to avoid a delayed privacy
+tab changing the selected fixture. Production privacy/crash preferences are unchanged.
+
+`session-startup-run3` passes cold/warm; `session-control-run1` reproduces the
+blank warm tab using exact unmodified v7 bytes with the same deterministic test.
+`session-update-run1` and final-runner `session-update-run2` pass baseline/update
+and preserve the exact earlier guest download. Screenshots were inspected and
+all owners exited normally. Earlier failed tests, including a fixed click point
+invalidated by a notification banner and a delayed privacy tab, remain preserved.
+Compact evidence: `docs/evidence/runtime-graphics-20260926/firefox-session-startup.json`.
+No first-paint or speedup ratio is claimed. User PID1591443/startTicks148821663
+retains its original identity. No finite test owner remains running.
+
+**Publication is next.** The public Site is still v7, not this local candidate.
+A verified snapshot is already frozen at
+`/mnt/p6/build/firefox-homepage-20260926/session-release-run1/release-src/web/cloudflare`:
+58 logical routes, 55 parts, 151,597,037 staged bytes; exactly rootfs and manifest
+routes changed. Read its `stage-reviewed-inputs.evidence.json` before pinning.
+Checkpoint parent source/assets, pin Sites inputs to that parent commit, run
+Sites unit/built-worker tests, push the exact nested source, save/deploy a new
+version, then verify complete public route hashes and actual cold/warm Firefox.
+Retain v7 and v6 saved versions for rollback. General multi-tab recovery and
+guest HTTPS remain separate acceptance limitations; JIT/GL/decoder scope is intact.
 
 ## Services and deployment
 
@@ -748,14 +822,14 @@ Builds, browser profile, packages and raw evidence remain under
 No task service remains active. Do not reuse the former service handles.
 
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
-project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 6 serves the
-accepted static runtime through Sites assets; the unchanged Cloudflare worker
+project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 7 serves the
+static runtime through Sites assets (acceptance limitations above); the unchanged Cloudflare worker
 at `https://linuxonweb.testcatty.workers.dev` remains its DNS/TCP network proxy.
 Cloudflare itself was not redeployed because its API token was unavailable.
-Sites source is `8757a6ff2f8f0a312e7a616bb900521234395757`, deployment
+The preceding version 6 rollback source is `8757a6ff2f8f0a312e7a616bb900521234395757`, deployment
 `appgdep_6ab7fe800a4c8191b1f5a0ee942cd66c`, version ID
 `appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_dab4dcf397488191a274dec22cdfba71`.
-The accepted archive has 63 files and 151,726,080 content bytes; preserve the
+That preceding archive has 63 files and 151,726,080 content bytes; preserve the
 `dist/server/index.js` and `dist/client` archive paths. The separate release record is
 `docs/evidence/runtime-graphics-20260926/sites-release.json`.
 Top-level Cloudflare release metadata and sourceFiles still describe the older,
@@ -791,14 +865,11 @@ Bounded next implementation gates, subject to that allowance:
   is now promoted and publicly accepted in Sites version 6. Missing/nonzero
   helper fallback remains; normal deadline expiry returns zero without a second
   sleep. All other CPIO records and accepted profile/certificate fixes remain.
-  The next bounded startup experiment can remove the forced Bing CLI homepage
-  from `launch_firefox` while preserving profile preferences, then compare input
-  stability and startup. The current packed init supplies that URL even with a
-  persistent profile; its relationship to the retained typed-navigation failures
-  is unproven. Public warm 17.400 s remains above local candidate 8.403 s.
-  Preserve the accepted release until any new isolated candidate passes actual
-  Firefox usability, warm-cache and update/home gates. Explicitly override test
-  output paths that still default to `/tmp`.
+  The forced Bing CLI homepage has now been removed in version 7. Local update,
+  saved homepage, input and warm-cache gates pass. Investigate the public warm
+  restoration failure documented above before claiming full release acceptance;
+  retain version 6 for rollback. Explicitly override test output paths that still
+  default to `/tmp`.
 - The direct Vulkan clear/readback, mid-submit transport/native-device loss and
   allocation-exhaustion/recovery gates now pass actual guest execution. Preserve
   the earlier clear/failure builds and the latest loader build-run2/packages.

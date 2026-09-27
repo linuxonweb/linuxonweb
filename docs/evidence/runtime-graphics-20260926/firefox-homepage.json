@@ -235,5 +235,9 @@
     "Run1 failed before boot due to a harness string escaping error; run2 supersedes it.",
     "Native JIT, guest OpenGL/Firefox GPU, hardware decoding and final whole-goal performance remain unfinished."
   ],
-  "publicDeployment": "pending"
+  "publicDeployment": {
+    "status": "deployed-acceptance-incomplete",
+    "version": 7,
+    "evidence": "firefox-homepage-public.json"
+  }
 }
