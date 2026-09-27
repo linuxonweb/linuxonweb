@@ -179,8 +179,6 @@
     "distributionStatus": "rejected: replace with key-free seed; never promote this archive"
   },
   "releaseGatesPending": [
-    "exact replacement image update/reload acceptance after blank legacy baseline failure",
-    "exact replacement invalid-certificate visual acceptance",
     "Sites rebuild, deployment and public acceptance"
   ],
   "replacementEvidence": "firefox-nss-seed-isolation.json"

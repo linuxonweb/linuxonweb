@@ -6,8 +6,9 @@ during the first initialization therefore leaves missing roots unrepaired on
 later boots. The observed failing profile has 119 certificates but only 11
 guest-format trust records and shows `SEC_ERROR_UNKNOWN_ISSUER` for Bing.
 
-This is a locally verified candidate, **not a deployed fix or whole-release
-acceptance**. Version 8 and its rollback versions remain unchanged.
+The corrected key-free candidate is locally promoted after update acceptance,
+**not yet a deployed fix or whole-goal completion**. Public version 8 and its
+rollback versions remain unchanged until Sites deployment is verified.
 
 ## Evidence
 
@@ -166,10 +167,25 @@ three valid playbacks end at 3.01 seconds with 30 frames and no drops, malformed
 padding produces decode error 3, and playback works afterward. Host audio
 receives 473,528 frames without drops. Its browser/server close cleanly.
 
-Before promotion, resolve and repeat update and invalid-certificate checks
-against the exact replacement image. Then promote
-only verified inputs, rebuild and check the Sites archive, deploy, and repeat
-public acceptance. All previous fixture images remain test-only artifacts.
+`ready-update-run2` completes those local gates against the exact replacement:
+real Update & restart, repair of 108 missing trust records while preserving the
+existing 11, home/old-download preservation, HTTPS Bing, and rejection of
+self-signed.badssl.com without accepting an exception. Existing private objects
+and key-database metadata remain identical; new trust authentication metadata is
+added. Its browser exits zero and test server closes.
+
+The test now waits for a JSON readiness download emitted by actual guest page
+JavaScript before sending Escape or typing. In the diagnostic run the page was
+ready 15.146 seconds after NSS initialization, later than the old 10-second
+wait; an early Escape can cancel navigation. The first readiness run additionally
+exposed automatic downloads-panel focus capture. Only fixture preferences now
+disable that popup; production preferences are unchanged. Preserve both failed
+runs, rather than treating this evidence as proof of every blank-tab cause.
+
+Version `29331a186e50` is now promoted locally. The staged Sites snapshot changes
+only the Firefox image and boot manifest: 58 routes, 55 parts, 151,569,304 bytes.
+Build/test the pinned Sites archive, deploy, and repeat public acceptance next.
+All fixture images and owned profiles remain excluded from deployment.
 
 No owned service remains running. User PID 1591443 retains startTicks 148821663
 and its original command. The wider JIT, general GL/Vulkan, and Firefox hardware

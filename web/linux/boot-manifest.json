@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "b354310fe03e",
+  "version": "29331a186e50",
   "assets": {
     "kernel": {
       "url": "./vmlinux.wasm",
@@ -16,8 +16,8 @@
     },
     "firefox": {
       "url": "./initramfs-firefox.cpio.gz",
-      "bytes": 88406516,
-      "sha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+      "bytes": 88378783,
+      "sha256": "7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a",
       "label": "Firefox system"
     }
   }

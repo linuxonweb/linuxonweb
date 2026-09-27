@@ -217,6 +217,42 @@
         "streams": 0
       },
       "resultSha256": "61756d7628a06f8b763f3a06f8349cb08ed5eab88f5a02bc27149de8847bb90a"
+    },
+    "ready-update-run2": {
+      "harnessPass": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "serverClosed": true,
+      "priorDownloadPreserved": true,
+      "visualReview": {
+        "bingHTTPS": true,
+        "selfSignedCertificateRejected": true,
+        "exceptionAccepted": false
+      },
+      "trustBefore": 11,
+      "trustAfter": 119,
+      "existingTrustRowsIdentical": true,
+      "existingPrivateObjectsAndMetadataIdentical": true,
+      "preferencesAndPKCS11BytesIdentical": true,
+      "resultSha256": "de67a45cc4de35b96644475f7c4f08d4075c9eb6cfe3e124b24862f7c8e9b59d",
+      "phases": [
+        {
+          "label": "baseline",
+          "launchMs": 7455,
+          "imageRequests": 2,
+          "nss": []
+        },
+        {
+          "label": "update",
+          "launchMs": 8953,
+          "imageRequests": 0,
+          "nss": [
+            "2026-09-27 02:25:17.596265 UTC - [Parent 91: StreamTrans #9]: E/pipnss [LOWLAND_NSS_ROOTS] target trust eligible=119 updated=108 preserved=11 error=0"
+          ]
+        }
+      ]
     }
   },
   "priorCandidatePartialUpdate": {
@@ -243,9 +279,18 @@
   "artifactRoot": "/mnt/p6/build/firefox-tls-20260926",
   "deployed": false,
   "remaining": [
-    "Update/reload exact replacement image",
-    "Invalid-certificate visual acceptance exact replacement image",
     "Sites build/deploy/public acceptance",
     "Full-goal native JIT/general GL/Vulkan/Firefox GPU and hardware decoder work"
-  ]
+  ],
+  "readinessHarness": {
+    "signal": "JSON download emitted by actual guest page JavaScript before sending Escape or typing",
+    "fixtureOnlyPreferences": [
+      "browser.download.alwaysOpenPanel=false",
+      "browser.download.panel.shown=true"
+    ],
+    "priorFixedWaitSeconds": 10,
+    "observedGuestReadyAfterNSSSeconds": 15.146,
+    "priorFailureCause": "Premature Escape is supported by later timing; first ready-download run also exposed downloads-panel focus race. Both failed runs retained."
+  },
+  "locallyPromoted": true
 }

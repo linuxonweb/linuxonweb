@@ -59,13 +59,13 @@ Forty-five earlier Firefox build/debug artifacts were relocated from `/tmp` to
 manifest there records the moves and metadata checks. Existing `/build`
 contents must remain unchanged.
 
-## Latest continuation: unpublished NSS seed audit
+## Latest continuation: key-free NSS seed and local release acceptance
 
 The build-policy turn made progress: scoped documentation commit `bcc59c7`.
 The following seed audit also makes concrete progress; the full goal remains
 incomplete (approximately 75/100), and the public v8 release is unchanged.
 Fresh agent creation still fails with `agent thread limit reached`; root handled
-this bounded audit directly. No new backend port or deployment occurred.
+this bounded audit directly. No new backend port or deployment occurred yet.
 
 - **Never promote `prepared-seed-run1` or `fast-candidate-run1`** under
   `/mnt/p6/build/firefox-tls-20260926`. The former contains the owned diagnostic
@@ -80,7 +80,8 @@ this bounded audit directly. No new backend port or deployment occurred.
   `29331a186e50` is 88,378,783 bytes, SHA-256
   `7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a`.
   It uses the same resumable NSS module as the prior candidate; only that
-  Firefox module and two seed databases differ from v8. It is not promoted.
+  Firefox module and two seed databases differ from v8. It is now promoted
+  locally after the `ready-update-run2` acceptance described below.
 - `safe-seed-warm-run2` and `safe-seed-warm-run3` pass cold/warm guest input,
   JavaScript, home preservation, all 119 native trust records, warm HTTPS Bing,
   and zero warm boot-image requests. Two independently guest-generated SDR
@@ -90,7 +91,7 @@ this bounded audit directly. No new backend port or deployment occurred.
   checks on the exact replacement image: valid clips each render 30 frames
   without drops, invalid padding yields decode error 3, host audio drops zero
   frames. This does not establish hardware decoding.
-- Release gates remain: the run3 invalid-certificate screenshot shows pending
+- Historical failed gates: the run3 invalid-certificate screenshot shows pending
   navigation, not a warning. `safe-seed-update-run1` fails before updating:
   the v8 baseline opens a blank file homepage and times out on guest input.
   Preserve its `guest-failure.json`, screenshots and result; investigate before
@@ -98,9 +99,19 @@ this bounded audit directly. No new backend port or deployment occurred.
   passed with the rejected seed and same module, preserving 11 trust records
   while adding 108; its key DB adds 756 authentication rows, so only existing
   keys/metadata, not the whole key DB bytes, remain identical.
-- Next: resolve the baseline/negative-navigation acceptance gaps, exercise the
-  actual update/reload control on the exact replacement, then stage/build/test
-  Sites, deploy and verify public behavior. Native JIT, general GL/Vulkan,
+- `ready-update-run2` passes the real update/reload control on the exact key-free
+  replacement: 108 roots repaired, 11 existing trust rows retained, existing key
+  objects/metadata and home/download retained, HTTPS Bing rendered and a
+  self-signed certificate rejected without an exception. Its browser/server
+  close cleanly. The harness now waits for actual guest-page readiness; observed
+  readiness was 15.146 seconds after NSS, beyond the former 10-second wait before
+  Escape. The readiness download itself initially stole focus; only fixture
+  preferences suppress the automatic downloads panel. Keep both failed runs.
+- A reviewed Sites snapshot is frozen at task `release-run1/release-src/web/cloudflare`:
+  58 routes, 55 parts, 151,569,304 bytes; only Firefox and boot-manifest routes
+  change. Public Sites is authoritatively still v8 at the existing public URL.
+- Next: pin/build/test Sites from the promoted parent commit, deploy, and verify
+  public behavior. Native JIT, general GL/Vulkan,
   Firefox GPU and hardware-decoder requirements remain incomplete.
 - All newly owned browser/server runs are terminal and cleaned up. Preserve
   user PID 1591443/startTicks 148821663. No serving process needs resuming.
