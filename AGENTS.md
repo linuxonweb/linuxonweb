@@ -7,8 +7,9 @@ workspace indiscriminately.
 
 ## Mandatory build storage policy
 
-Standing user instruction for all builds: use `/mnt/p6/build/<task>` or another
-verified persistent, disk-backed path. Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
+Standing user instruction for all builds: **default to `/mnt/p6/build/<task>`**.
+Use another location only after verifying it is persistent and disk-backed.
+Never use `/tmp`, `/dev/shm`, or any `tmpfs`/`ramfs`
 filesystem for build inputs, intermediates, outputs, extracted rootfs trees,
 compiler scratch space, build caches, disassembly dumps, build logs, test
 browser profiles, or generated/test artifacts. This applies to every agent and

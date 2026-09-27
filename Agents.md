@@ -8,8 +8,8 @@
 
 ## Mandatory build storage policy
 
-All agents and subagents must use `/mnt/p6/build/<task>` or another verified
-persistent, disk-backed location with enough free space for build inputs,
+All agents and subagents must default to `/mnt/p6/build/<task>`. An alternative
+must first be verified as persistent and disk-backed, with enough free space for build inputs,
 outputs, intermediates, scratch/temp files, caches, logs, test browser profiles
 and generated/test artifacts. Never use `/tmp`, `/dev/shm`, `tmpfs` or `ramfs`.
 Verify the filesystem behind the resolved destination, including symlink targets.
