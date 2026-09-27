@@ -1,24 +1,31 @@
-# Current work and handoff — 2026-09-26
+# Current work and handoff — 2026-09-27 UTC
 
 Read `Agents.md` for the existing project instructions and historical build notes.
 The current user's instructions take precedence. Preserve all source clones,
 known-good build trees, and unrelated untracked files. Never stage the whole
 workspace indiscriminately.
 
-## Budget stop — 2026-09-26 local time
+## Budget stop — latest check 2026-09-27 UTC and local time
 
 Stop condition is now established from the current Codex session's own
 `token_count.rate_limits` metadata, not inferred from goal token totals.
-The record at `2026-09-27T02:52:17.316Z` reports `limit_id=codex`,
-`window_minutes=10080`, `used_percent=60.0`, and `resets_at=1791046687`.
-That is a seven-day window with **40% remaining**, below the user's standing
+The latest record at `2026-09-27T07:14:48.308Z` reports `limit_id=codex`,
+`window_minutes=10080`, `used_percent=96.0`, and `resets_at=1791046687`.
+That is a seven-day window with **4% remaining**, below the user's standing
 80%-remaining stop floor in `Agents.md`. The separate 15% task allowance cannot
 be calculated without a starting quota reading; the remaining-quota floor alone
 requires stopping. Do not infer weekly quota from the goal token counter.
+The earlier `2026-09-27T02:52:17.316Z` reading was 60% used/40% remaining;
+the latest reading supersedes it and the historical claims below that weekly
+usage was unavailable.
 
-All listed subagents are completed; none needs interruption. No task browser or
-server was started during this continuation. Preserve the user's existing server.
-The active goal is paused under the user's conditional stop instruction. Resume
+All implementation subagents are completed; none needs interruption. No task
+browser or server was started during this documentation continuation. No fresh
+service inventory was taken; cleanup and server-identity observations below
+belong to the earlier acceptance runs. Preserve the user's existing server.
+The development goal is paused under the user's conditional stop instruction.
+The user authorized only this documentation and
+Git handoff; that authorization does not resume implementation. Resume
 only on a subsequent user resume/budget instruction, and recheck fresh quota
 metadata before starting a large port. Read only quota fields from the current
 session; do not dump conversation logs or credentials.
@@ -33,6 +40,62 @@ is not a Zink-capable Vulkan implementation. On resumption, pin actual Mesa
 requirements before selecting a bounded implementation task. Native JIT,
 general Vulkan/OpenGL, Firefox GPU support and hardware decoding remain
 incomplete; do not mark the full goal achieved.
+
+## Next agent: current state and continuation checklist
+
+**Paused and incomplete, approximately 75/100 overall.** The objective remains
+Wasm Linux/Firefox performance, native JIT and guest GPU support, persistent
+home, verified image caching/updates, usable desktop/mobile controls and public
+Sites deployment. The current deployed release is **Sites v9** at
+https://linuxonweb.exact-coot-7512.chatgpt.site . The release identities immediately
+above and the detailed v9 evidence below are authoritative over older handoffs.
+
+Completed and accepted: separate persistent `/home`; compressed, verified boot
+image caching; automatic refresh and update/reload preserving home/profile data;
+storage controls; warm boots with zero system-image requests; startup fixes;
+and the key-free Firefox NSS seed retaining all 119 native trust records. Public
+TLS navigation and local software-media acceptance pass. These are bounded
+acceptance results, not proof that every performance or mobile goal is complete.
+
+Still incomplete: native Firefox JIT, general Vulkan/OpenGL and Mesa/Zink,
+Firefox GPU integration, and hardware video decoding. The isolated graphics,
+compute and X11 presentation prototypes use SwiftShader software evidence;
+they do not establish physical GPU acceleration or deployed Firefox GPU support.
+
+On a subsequent explicit resume/budget instruction:
+
+1. Read fresh session quota fields and apply the standing stop floor before
+   implementation. Do not derive quota from goal-token totals or assume the
+   separate 15% allowance without a starting reading. Review root and nested
+   `web/sites` Git state before changing either repository. This documentation
+   turn began on `gpt-6-agent-persistent-linux-performance` at root commit
+   `1ce96847807f323b30b7198ab99ae01ad7528101`, with tracked files clean and 24
+   unrelated untracked entries; preserve those entries and stage only scoped files.
+2. Preserve the user's server, last recorded as PID `1591443`, startTicks
+   `148821663`. Revalidate its identity before any process action; never stop it
+   or reuse obsolete task service handles. Preserve source clones, known-good
+   build trees, failed-run evidence, and existing `/build` contents.
+3. Review `docs/guest-vulkan-x11-presentation-20260926.md` and
+   `docs/guest-gpu-angle-feasibility-20260926.md`. Inspect the graphics translator's
+   rejection of resource bindings/private-global-only boundary, then pin actual
+   Mesa requirements before choosing a bounded implementation task. No Mesa
+   version or new graphics port has been selected by this handoff.
+4. Before any build, test, browser or task server, verify persistent disk backing
+   and capacity under `/mnt/p6/build/<task>` and export `TMPDIR`, `TMP`, and
+   `TEMP` to its short `tmp` directory. Apply the full storage policy below to
+   caches, profiles, logs and generated artifacts; never use `/tmp` or tmpfs.
+5. Preserve v9 and keep v8 as rollback. Read
+   `docs/firefox-tls-bootstrap-20260926.md` and
+   `docs/evidence/runtime-graphics-20260926/firefox-tls-sites-release.json`
+   before a release. Never promote `prepared-seed-run1` or `fast-candidate-run1`:
+   they contain the rejected diagnostic SDR-key seed; safe run2 is deployed.
+   Retain the documented Cloudflare TCP destination restriction and
+   `PR_CONNECT_RESET_ERROR` reachability limitation.
+
+Fresh-agent thread-limit failures recorded below are historical: two fresh
+read-only command agents succeeded during this documentation turn. Follow
+`Agents.md` delegation limits for future authorized work; no implementation
+agents or services were started for this handoff.
 
 ## Mandatory build storage policy
 
@@ -94,8 +157,9 @@ The build-policy turn made progress: scoped documentation commit `bcc59c7`.
 The following seed audit and release make concrete progress; the full goal
 remains incomplete (approximately 75/100). Sites v9 is now published at the
 existing public URL, with public TLS navigation acceptance now passed.
-Fresh agent creation still fails with `agent thread limit reached`; root handled
-this bounded audit and release directly. No new backend port was added.
+Fresh agent creation failed with `agent thread limit reached` during that release;
+root handled its bounded audit and release directly. This is historical, as
+updated in the current continuation checklist above. No new backend port was added.
 
 - **Never promote `prepared-seed-run1` or `fast-candidate-run1`** under
   `/mnt/p6/build/firefox-tls-20260926`. The former contains the owned diagnostic
@@ -976,8 +1040,9 @@ Builds, browser profile, packages and raw evidence remain under
 No task service remains active. Do not reuse the former service handles.
 
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
-project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 8 serves the
-static runtime through Sites assets (acceptance limitations above); the unchanged Cloudflare worker
+project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 9 now serves the
+static runtime through Sites assets (current acceptance is recorded at the top
+of this file); version 8 is retained for rollback. The unchanged Cloudflare worker
 at `https://linuxonweb.testcatty.workers.dev` remains its DNS/TCP network proxy.
 Cloudflare itself was not redeployed because its API token was unavailable.
 The preceding version 6 rollback source is `8757a6ff2f8f0a312e7a616bb900521234395757`, deployment
@@ -992,11 +1057,17 @@ public audience. Read `web/sites/.openai/hosting.json` and its README; push the
 exact nested-repository source commit before saving/deploying a Sites version.
 Never print or persist source-repository write tokens.
 
-The requested weekly usage percentage is not exposed by available tools. Do
-not claim a measured allowance or a 95/100 overall result while the requested
-guest JIT/GPU capabilities and release gates remain unresolved.
+Historical continuations did not expose the requested weekly usage percentage.
+The current session quota reading and required pause are now recorded at the
+top of this file. Do not claim a 95/100 overall result while the requested guest
+JIT/GPU capabilities remain unresolved.
 
-## Next continuation
+## Historical continuation plan — superseded by the checklist above
+
+The following preserves the earlier implementation plan and its then-current
+status. Its active-goal, unavailable-quota, pending-question, older-release and
+unfinished-gate statements are historical; use the paused v9 handoff above and
+later gate evidence elsewhere in this file for current status.
 
 The overall goal remains active and is assessed at about 75/100, not the requested
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
