@@ -1,0 +1,18 @@
+{
+  "source": "Current Codex session event_msg token_count.rate_limits; quota fields only",
+  "recordTimestamp": "2026-09-27T02:52:17.316Z",
+  "observedAtUTC": "2026-09-27T02:52:37.234551+00:00",
+  "limitId": "codex",
+  "windowMinutes": 10080,
+  "usedPercent": 60.0,
+  "remainingPercent": 40.0,
+  "resetsAtUnix": 1791046687,
+  "standingRemainingFloorPercent": 80,
+  "stopConditionMet": true,
+  "taskAllowancePercent": 15,
+  "taskAllowanceConsumedPercent": null,
+  "taskAllowanceNote": "No starting quota reading established; stop is independently required by the remaining-quota floor.",
+  "activeSubagents": 0,
+  "newBuildsOrServicesStartedThisContinuation": false,
+  "fullGoalComplete": false
+}

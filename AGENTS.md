@@ -5,6 +5,35 @@ The current user's instructions take precedence. Preserve all source clones,
 known-good build trees, and unrelated untracked files. Never stage the whole
 workspace indiscriminately.
 
+## Budget stop — 2026-09-26 local time
+
+Stop condition is now established from the current Codex session's own
+`token_count.rate_limits` metadata, not inferred from goal token totals.
+The record at `2026-09-27T02:52:17.316Z` reports `limit_id=codex`,
+`window_minutes=10080`, `used_percent=60.0`, and `resets_at=1791046687`.
+That is a seven-day window with **40% remaining**, below the user's standing
+80%-remaining stop floor in `Agents.md`. The separate 15% task allowance cannot
+be calculated without a starting quota reading; the remaining-quota floor alone
+requires stopping. Do not infer weekly quota from the goal token counter.
+
+All listed subagents are completed; none needs interruption. No task browser or
+server was started during this continuation. Preserve the user's existing server.
+The active goal is paused under the user's conditional stop instruction. Resume
+only on a subsequent user resume/budget instruction, and recheck fresh quota
+metadata before starting a large port. Read only quota fields from the current
+session; do not dump conversation logs or credentials.
+
+Last completed release is public Sites v9, root runtime commit
+`ae1648539f394d557ff067902599b002ec587c5d`, Sites source
+`0f4067fbe8bf73a556029dd4f6b28d948c4e7390`; acceptance/handoff commit `df08f2f`.
+The graphics review remains read-only: no Mesa version has been pinned and no
+new graphics implementation/build has started. The graphics translator explicitly
+rejects resource bindings and accepts only private globals; the current driver
+is not a Zink-capable Vulkan implementation. On resumption, pin actual Mesa
+requirements before selecting a bounded implementation task. Native JIT,
+general Vulkan/OpenGL, Firefox GPU support and hardware decoding remain
+incomplete; do not mark the full goal achieved.
+
 ## Mandatory build storage policy
 
 Standing user instruction for all builds: **default to `/mnt/p6/build/<task>`**.
