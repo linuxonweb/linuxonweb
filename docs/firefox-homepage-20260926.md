@@ -51,7 +51,8 @@ Firefox GPU acceleration and hardware video decoding are unaffected.
 
 ## Public deployment and unresolved acceptance
 
-Sites version 7 is deployed at https://linuxonweb.exact-coot-7512.chatgpt.site.
+Sites version 7 was deployed at https://linuxonweb.exact-coot-7512.chatgpt.site;
+the version 8 publication below now supersedes it.
 Its source commit is `6c68ffb494ae7381581891c9a33593a22e2faf93`, saved version
 `appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_38c6842a13d48191afadf08d8f3b9e94`,
 deployment `appgdep_6ab8566b78b8819198870bd7939e570a` (succeeded). Only the
@@ -66,7 +67,7 @@ entire original document. The first two checks failed on that injection and
 remain preserved. The Sites-ingested tar wrapper differs from the local tar;
 content was verified through published routes, not by claiming archive equality.
 
-Public release acceptance is **incomplete**. `public-run3` passes cold startup,
+Version 7 public release acceptance was **incomplete**. `public-run3` passes cold startup,
 guest JavaScript and typed input, but automatic warm restoration leaves a blank
 tab and does not produce the guest-generated result file. `public-run2` also
 failed that gate. A copy of the failed profile (`public-recovery-run2`) loads
@@ -104,7 +105,7 @@ case remains the same. Only that CPIO member changes; init, user preferences,
 Candidate `b354310fe03e` is 88,406,516 bytes, SHA-256
 `9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0`.
 Its package is preserved under `session-startup-candidate-run1`; it is now
-promoted locally, but not deployed. The preceding v7 inputs are preserved in
+promoted locally and deployed as version 8 below. The preceding v7 inputs are preserved in
 `session-baseline-images`, with `session-promotion-run1/result.json` recording
 verified replacement of the local archive and manifest.
 The first candidate test visually restored the real page but failed its input
@@ -137,5 +138,37 @@ the blank tab. All these owners exited normally. Compact evidence is
 
 The Sites snapshot is frozen in `session-release-run1/release-src/web/cloudflare`:
 exactly two changed routes, 58 logical routes, 55 parts, 151,597,037 staged bytes.
-It is staged only; pinning, Sites tests, source push, publication and public
-acceptance remain required. The public deployment is still version 7.
+This snapshot was pinned and published as version 8 below.
+
+## Version 8 publication
+
+Parent implementation/assets commit `82f91eaae30ef9c090ac7e072b88ffa13489aa58`
+and Sites source `81c8230c80686809ced84aa84084deb1b964ab06` are checkpointed.
+Sites passed 10 unit tests and three built-worker tests. The exact nested source
+was pushed before saving the audited 63-file archive. Saved version
+`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_1398701e6ae081919bace1a4fda02289`
+was published by deployment `appgdep_6ab863d67d88819192aef8dcf5b0c517` (succeeded).
+The public URL and audience remain unchanged.
+
+All 66 live route contents, isolation headers and cache policies passed. The
+Firefox archive matches the candidate's complete hash and length. The two HTML
+documents required the same exact hosting-script normalization as v7. The
+Sites-ingested tar wrapper differs from the local tar hash; published content
+verification is recorded separately rather than claiming archive equality.
+
+Actual public Firefox cold and automatic warm page/input/JavaScript checks pass.
+Warm startup requests zero kernel/rootfs images and retains exact user.js and
+home marker data. Launch logs were 26.748 s cold and 7.626 s warm; fixed typing
+waits mean these are not first-paint measurements or a speedup ratio. Both owned
+processes exited normally, and the outer browser reported no exceptions.
+
+**Whole-release acceptance remains incomplete:** the subsequent real guest
+Bing HTTPS navigation displays a certificate warning. No exception was accepted.
+The exact certificate error still needs to be expanded and diagnosed, including
+a cold/warm comparison of NSS trust data. Startup success does not prove TLS
+success. General multi-tab recovery and the original native JIT, general guest
+OpenGL/Firefox GPU and hardware decoding scope remain unfinished.
+
+Compact public evidence is `docs/evidence/runtime-graphics-20260926/firefox-session-release.json`.
+Raw release inputs, hashes, logs, profiles and screenshots are under
+`/mnt/p6/build/firefox-homepage-20260926/session-release-run1/`.

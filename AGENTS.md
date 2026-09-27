@@ -653,7 +653,7 @@ See `docs/firefox-homepage-20260926.md`. Launch log timings are not first paint,
 and the baseline navigation delay prohibits claiming a speedup ratio. The
 verified behavior is honoring saved startup preferences instead of forced Bing.
 
-Sites version 7 / `89ec54c81936` is now deployed. Exact nested source is
+Sites version 7 / `89ec54c81936` was deployed in that step (superseded by v8 below). Its exact nested source is
 `6c68ffb494ae7381581891c9a33593a22e2faf93`, saved version
 `appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_38c6842a13d48191afadf08d8f3b9e94`,
 deployment `appgdep_6ab8566b78b8819198870bd7939e570a` (succeeded, rechecked).
@@ -664,7 +664,7 @@ preserve the preceding failed checks. Only rootfs/manifest routes changed.
 The saved tar wrapper differs from the local tar; route content equality was
 verified instead. Preserve version 6 for rollback.
 
-**Public acceptance remains incomplete.** Cold guest JavaScript/input passes,
+**Version 7's public acceptance was incomplete.** Cold guest JavaScript/input passes,
 but `public-run2` and `public-run3` fail automatic warm file-homepage restoration.
 `public-recovery-run2` passes only after explicit Alt+Home, using a copy of the
 failed profile, with zero image requests and exact home/user.js preservation.
@@ -722,16 +722,44 @@ Compact evidence: `docs/evidence/runtime-graphics-20260926/firefox-session-start
 No first-paint or speedup ratio is claimed. User PID1591443/startTicks148821663
 retains its original identity. No finite test owner remains running.
 
-**Publication is next.** The public Site is still v7, not this local candidate.
-A verified snapshot is already frozen at
+**Version 8 is now deployed; whole-release acceptance remains incomplete.**
+Parent implementation/assets: `82f91eaae30ef9c090ac7e072b88ffa13489aa58`.
+Exact pushed Sites source: `81c8230c80686809ced84aa84084deb1b964ab06`.
+Saved version:
+`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_1398701e6ae081919bace1a4fda02289`.
+Deployment `appgdep_6ab863d67d88819192aef8dcf5b0c517` succeeded, preserving public
+access at `https://linuxonweb.exact-coot-7512.chatgpt.site`.
+The verified snapshot is frozen at
 `/mnt/p6/build/firefox-homepage-20260926/session-release-run1/release-src/web/cloudflare`:
 58 logical routes, 55 parts, 151,597,037 staged bytes; exactly rootfs and manifest
-routes changed. Read its `stage-reviewed-inputs.evidence.json` before pinning.
-Checkpoint parent source/assets, pin Sites inputs to that parent commit, run
-Sites unit/built-worker tests, push the exact nested source, save/deploy a new
-version, then verify complete public route hashes and actual cold/warm Firefox.
-Retain v7 and v6 saved versions for rollback. General multi-tab recovery and
-guest HTTPS remain separate acceptance limitations; JIT/GL/decoder scope is intact.
+routes changed. Sites unit tests (10) and actual built-worker tests (3) passed.
+Worker graph remains `b9207315592456247cf13efe70142a51a33012871d2865117ff287bbafc09ee5`.
+All 66 live routes passed full content/header checks (167,423,713 logical bytes),
+with exact bounded hosting-script normalization for two HTML pages. The ingested
+tar wrapper hash differs from the local tar; do not claim archive byte equality.
+The public Firefox run passes cold and automatic warm page/input/JS checks and
+exact home/user.js preservation; warm requests zero kernel/rootfs images.
+Launch logs: 26.748 s cold and 7.626 s warm, not first paint or a speedup ratio.
+
+The subsequent Bing HTTPS screenshot shows a certificate warning. No exception
+was accepted; its exact error code is not yet expanded. The harness `pass=true`
+refers to startup/input, not TLS or whole-release acceptance. Compact release
+record: `docs/evidence/runtime-graphics-20260926/firefox-session-release.json`.
+Raw live report/screenshots are `session-release-run1/public-firefox-run1` in the
+task directory. All owners exited zero, server closed, no outer exceptions.
+Preserve v7 and v6 saved versions and all failed controls for rollback/diagnosis.
+
+Next: inspect the exact certificate error, then compare cold versus warm Bing
+with an owned profile and audit persisted NSS trust data. The copied profile must
+not reuse its stale `DevToolsActivePort`; remove that file only in the new copy.
+`build-nss-ca-profile.py` imports `lowland-ca-*` roots and rewrites pkcs11's guest
+profile path. Its referenced Wasm fallback patch 0004 is not in the preserved
+native source search; locate the actual replacement/link provenance before
+changing trust handling. A successful curl probe is not Firefox TLS evidence.
+General multi-tab recovery and the original JIT/GL/decoder requirements remain.
+Current whole-goal estimate: 75/100, below the requested 95, with the HTTPS gate
+now explicitly unresolved. Resolve the unknown weekly allowance before another
+large backend port; bounded correctness work has continued without inventing quota.
 
 ## Services and deployment
 
@@ -822,7 +850,7 @@ Builds, browser profile, packages and raw evidence remain under
 No task service remains active. Do not reuse the former service handles.
 
 The public Site is `https://linuxonweb.exact-coot-7512.chatgpt.site` with exact
-project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 7 serves the
+project ID `appgprj_6ab78cc88a948191a1abaabd04b81fe0`. Version 8 serves the
 static runtime through Sites assets (acceptance limitations above); the unchanged Cloudflare worker
 at `https://linuxonweb.testcatty.workers.dev` remains its DNS/TCP network proxy.
 Cloudflare itself was not redeployed because its API token was unavailable.
@@ -844,7 +872,7 @@ guest JIT/GPU capabilities and release gates remain unresolved.
 
 ## Next continuation
 
-The overall goal remains active and is assessed at about 80/100, not the requested
+The overall goal remains active and is assessed at about 75/100, not the requested
 95/100. The delivered startup/storage work and isolated GPU proof do not supply
 native Firefox JIT, a generally usable Vulkan/OpenGL driver, or hardware video decoding.
 The user has been asked asynchronously for the remaining weekly allowance;

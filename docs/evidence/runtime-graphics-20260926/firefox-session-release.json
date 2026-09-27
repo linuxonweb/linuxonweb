@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "passPublicStartupAcceptance": true,
+  "passWholeReleaseAcceptance": false,
+  "deployment": {
+    "id": "appgdep_6ab863d67d88819192aef8dcf5b0c517",
+    "project_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+    "title": "Linux on Web",
+    "version_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_1398701e6ae081919bace1a4fda02289",
+    "type": "publish",
+    "status": "succeeded",
+    "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+    "screenshot_asset_pointer": null,
+    "provider_deployment_id": "site---6ab78cc88a948191a1abaabd04b81fe0",
+    "failure_message": null,
+    "env_set_revision": 0,
+    "updated_at": "2026-09-27T00:31:50.104351+00:00"
+  },
+  "savedVersion": {
+    "id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_1398701e6ae081919bace1a4fda02289",
+    "project_id": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+    "version_number": 8,
+    "source": {
+      "commit_sha": "81c8230c80686809ced84aa84084deb1b964ab06"
+    },
+    "archive_storage": {
+      "archive_format": "tar",
+      "sediment_file_id": "file_00000000c3ec81fb8e739a8ad899c2f7",
+      "content_hash": "sha256:497d2930dcb98d61cb72a0b4989b9e307a2b6fb152e67dad525eee54f7a655b5",
+      "size_bytes": 151726080,
+      "file_count": 63
+    },
+    "screenshot_url": null,
+    "deployment_id": null
+  },
+  "parentSource": "82f91eaae30ef9c090ac7e072b88ffa13489aa58",
+  "sitesSource": "81c8230c80686809ced84aa84084deb1b964ab06",
+  "rootfsVersion": "b354310fe03e",
+  "archiveSha256": "9a651dee0be08e6a0ffe0b2ee5b49376310d57c9b66fe72fc58959034f4ef2a0",
+  "archiveBytes": 88406516,
+  "sitesTests": {
+    "unitPassed": 10,
+    "runtimePassed": 3,
+    "unitLog": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/sites-unit.log",
+      "sha256": "f35c1263a4e2f96029c8e38617b88f5ec2e793234dfe5fd2826765fea816c8c0"
+    },
+    "runtimeLog": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/sites-runtime.log",
+      "sha256": "b250ba8858a272bf6908f99208bc21b9d018cfbe1aa5ea314b53d2f36b1730f5"
+    }
+  },
+  "publicAssets": {
+    "report": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/public-assets-run1/result.json",
+      "sha256": "77e1b5965b2a79c4b4f686e3247424f1f2d7214f3531290f59561f99fce4a99f"
+    },
+    "routes": 66,
+    "sourceBytes": 167423713,
+    "htmlNormalization": "One exact hosting challenge script with validated ray and timestamp, followed by full source hash comparison."
+  },
+  "archiveAudit": {
+    "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/archive-audit.json",
+    "sha256": "03e3891b572a057b53f65728abc955f3495b29ed1f2f0296e288be474b55dc9a"
+  },
+  "archiveWrapperComparison": {
+    "localTarSha256": "20b8c0434fdc353bcf1f1dd9ef8ff69edc5f87100fd1b8cdb17fc37103c6c74b",
+    "localTarBytes": 151726080,
+    "ingestedTarSha256": "sha256:497d2930dcb98d61cb72a0b4989b9e307a2b6fb152e67dad525eee54f7a655b5",
+    "ingestedTarBytes": 151726080,
+    "equal": false
+  },
+  "publicFirefox": {
+    "report": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/public-firefox-run1/result.json",
+      "sha256": "4f57c9d716d7a42569db087395c11d97f7de72454a4bd9ceaf5afff1755bc966"
+    },
+    "phases": [
+      {
+        "label": "cold",
+        "launchLogMs": 26748,
+        "observedResultMs": 60554,
+        "version": "b354310fe03e",
+        "imageRequests": 2,
+        "guestResult": {
+          "schema": 1,
+          "tag": "sites-v8-guest",
+          "input": "wasmperf",
+          "checksum": 7998000,
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+          "createdAt": 1790469273842,
+          "url": "file:///home/admin/sites-probe.html"
+        },
+        "preserved": {
+          "admin/homepage-marker.txt": {
+            "bytes": 22,
+            "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+          },
+          "admin/.mozilla/firefox/http1-profile/user.js": {
+            "bytes": 703,
+            "sha256": "1cb18dd3e50a2673efc87c4cebe940a8d3059bd1ea64e76958a851c4d1431606"
+          },
+          "admin/.mozilla/firefox/http1-profile/prefs.js": {
+            "bytes": 5336,
+            "sha256": "93f70663cd55c3905780a5afc7e91a47e0f85ea9da5c842a3d68f12b54ce75c4"
+          }
+        }
+      },
+      {
+        "label": "warm",
+        "launchLogMs": 7626,
+        "observedResultMs": 40132,
+        "version": "b354310fe03e",
+        "imageRequests": 0,
+        "guestResult": {
+          "schema": 1,
+          "tag": "sites-v8-guest",
+          "input": "wasmperf",
+          "checksum": 7998000,
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0",
+          "createdAt": 1790469315136,
+          "url": "file:///home/admin/sites-probe.html"
+        },
+        "preserved": {
+          "admin/homepage-marker.txt": {
+            "bytes": 22,
+            "sha256": "1d0b565f0dd0d59f8aaa6b0af2c2fd815820eadb870f3587f8beea5d146c84e7"
+          },
+          "admin/.mozilla/firefox/http1-profile/user.js": {
+            "bytes": 703,
+            "sha256": "1cb18dd3e50a2673efc87c4cebe940a8d3059bd1ea64e76958a851c4d1431606"
+          },
+          "admin/.mozilla/firefox/http1-profile/prefs.js": {
+            "bytes": 5919,
+            "sha256": "74d5896faeefc5e632e516098a66f2c3985f5ae571ed6e73b9d3815a52893b9f"
+          }
+        }
+      }
+    ],
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "serverClosed": true,
+    "outerExceptions": 0
+  },
+  "https": {
+    "pass": false,
+    "url": "https://www.bing.com/",
+    "screenshot": {
+      "path": "/mnt/p6/build/firefox-homepage-20260926/session-release-run1/public-firefox-run1/public-https-bing.png",
+      "sha256": "3b699a8f382ed9f3f635a9d9bc475b296b0f90b815d4de8ea65ef62c8b6c7cf0"
+    },
+    "observed": "Warning: Potential Security Risk Ahead; no exception accepted. Exact certificate error code has not yet been expanded."
+  },
+  "limitations": [
+    "Public startup/input/JS and warm cached boot pass; this is not whole-release acceptance.",
+    "Guest HTTPS certificate handling needs investigation; v7 also retained HTTPS failures.",
+    "The test-only profile suppresses a delayed first-run privacy tab; production preferences are unchanged.",
+    "Observed log times are not first paint and do not establish a speedup ratio.",
+    "General multi-tab recovery, native JIT, general OpenGL/Firefox GPU and hardware decoding remain unverified or unfinished."
+  ]
+}

@@ -3,7 +3,13 @@
   "passColdWarmRegression": true,
   "passUpdate": true,
   "updateStatus": "passed",
-  "publicDeployment": "v7 remains live; new candidate not yet deployed",
+  "publicDeployment": {
+    "version": 8,
+    "status": "deployed",
+    "passPublicStartup": true,
+    "passWholeRelease": false,
+    "evidence": "firefox-session-release.json"
+  },
   "package": {
     "passPackage": true,
     "candidateOnly": true,
