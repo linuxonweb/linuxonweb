@@ -17,7 +17,14 @@ Current packets (update as they finish):
   `/mnt/p6/build/guest-jit-20260928`, ports 4191/9401).
 - Running: Vulkan A1+A2 (1.1 plumbing, fences/semaphores; task dir
   `/mnt/p6/build/guest-vulkan-a1a2-20260928`, ports 4192/9402).
+Queued (next free slot): Firefox DevTools opens blank — diagnose and fix so
+the web console works (user request 2026-09-28).
 Next: Vulkan A3-A7 (UBO, textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
+
+User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
+code (host runtime adapters, guest shims, link wrappers, packed JS/pref
+overrides, new files) over modifying upstream Firefox/Mesa/kernel source; patch
+upstream only when unavoidable, as minimal hook points, and justify it.
 
 # Current work and handoff — 2026-09-27 UTC
 
