@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-28",
+  "scope": "Experimental guest Vulkan ICD core 1.1 queries and guest-only fence/binary-semaphore sync; SwiftShader software evidence; nonconformant; not deployed",
+  "head": "7f27426307c70341716111f9a0b1404315481a49",
+  "taskRoot": "/mnt/p6/build/guest-vulkan-a1a2-20260928",
+  "runner": {"path": "web/linux/tests/guest-vulkan/run-finite.mjs", "sha256": "78e82d7651d24fe1ba24da055d39cbe18db4e207fefc2431ddc815deb67d56b8", "httpPort": 4192, "cdpPort": 9402},
+  "result": {"path": "guest-run3/result.json", "sha256": "50fb6d407c8d89028e15dbdd8e61fa703222e5c6bad2ae2c38b9a1a566eb55fa", "pass": true, "browserExit": 0, "serverClosed": true},
+  "guestConfiguration": ["smp: Brought up 1 node, 2 CPUs", "Memory: .../1048576K available"],
+  "checks": {
+    "direct-live": {"before": 44, "now": 140},
+    "direct-unavailable": {"before": 14, "now": 17},
+    "direct-clear": {"before": 957, "now": 1087},
+    "direct-loss-transport": {"before": 522, "now": 640},
+    "direct-loss-device": {"before": 522, "now": 640},
+    "direct-exhaustion": {"before": 1083, "now": 1213},
+    "loader-clear": {"before": 883, "now": 901},
+    "compute-api1.0": {"before": 501, "now": 501},
+    "graphics-webgl2-api1.0": {"before": 232753, "now": 232753},
+    "graphics-webgpu-api1.0": {"before": 232745, "now": 232745}
+  },
+  "artifacts": {
+    "direct-build-run6": {"bytes": 123600, "sha256": "f905f4cc5aa3b5e152926c3805c7ff6531f4660cb4eec2e338d55fd7370e5895"},
+    "loader-build-run1": {"bytes": 386845, "sha256": "62bdeceb0f655ab2567ee02e3ad22134c7bc449ba2b78455533c25a276440f63", "publicSymbols": 57},
+    "compute-build-run1": {"bytes": 383897, "sha256": "7d9e88468e243299d9e98dcf654b1b170b53e7fea3d8a9cdb17cf85d973e0002"},
+    "graphics-build-run1": {"bytes": 392688, "sha256": "906d5fc9b8365cbcf89334b5752740ff3a03f2a892fb8021c7ec3959bc571297", "hostProfile": "webgl"}
+  },
+  "sourceSha256": {
+    "guest-vulkan/icd.c": "59b03f8540a4b271cfd93799381f055ab7e94f4609e3200afabe2253e1ac00e3",
+    "guest-vulkan/transfer.inc": "5605561c3ee14273e53007f750c7f5e96c6139494005e776461a0ca136468815",
+    "guest-vulkan/clear-test.inc": "511a83994dcf38b604d1e8717bce5bc787f4d094de06dc8bb812c7ac9337d934",
+    "guest-vulkan/lifecycle.c": "50394ed1edbe1472b6df79be4219306c46656dbd14b723e924d2c84a6b84c818",
+    "guest-vulkan/index.html": "ae34eb6522ac8a3a87a1ccc157b7d59822b83855a91df0bf363501df2e024fed",
+    "guest-vulkan-loader/client.c": "312016bad21c99d096da0ad81422b60ad91d21354c3118d4fdf2161a3cf88333",
+    "guest-vulkan-loader/static-provider.inc": "8cbb9f622b950e1ace28c77328eee1a4ac3738deb7b93386f2ad1419d5224cb4",
+    "guest-vulkan-loader/index.html": "58ffb4b6fe2eb5c00676eeb1449b09af5b1664567a6b66a04d4d00ec7cd4f9a2"
+  },
+  "retainedFailures": ["direct-build-run3 (pointer-type -Werror)", "guest-run2 (stale unavailable host-error expectation, fixed)", "direct-package-*-run2-attempt1-wrongarg.log"],
+  "limitations": ["all Vulkan 1.1 features false (multiview required by spec)", "no extensions/WSI", "no timeline semaphores or external handles", "graphics runs retain one net::ERR_ABORTED fetch each, cause unestablished"]
+}

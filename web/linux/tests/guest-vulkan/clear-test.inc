@@ -9,6 +9,7 @@ static int clear_test(VkInstance instance,VkPhysicalDevice physical,VkDevice dev
     D(CreateCommandPool);D(DestroyCommandPool);D(AllocateCommandBuffers);D(FreeCommandBuffers);D(ResetCommandBuffer);
     D(BeginCommandBuffer);D(EndCommandBuffer);D(CmdPipelineBarrier);D(CmdClearColorImage);D(CmdCopyImageToBuffer);
     D(QueueSubmit);D(QueueWaitIdle);D(DeviceWaitIdle);D(GetPhysicalDeviceMemoryProperties);
+    D(CreateFence);D(DestroyFence);D(ResetFences);D(GetFenceStatus);D(WaitForFences);D(CreateSemaphore);D(DestroySemaphore);
     T(vk_icdGetInstanceProcAddr(instance,"vkCmdDispatch")==NULL);
     VkPhysicalDeviceMemoryProperties props;GetPhysicalDeviceMemoryProperties(physical,&props);
     T(props.memoryTypeCount==2&&props.memoryTypes[1].propertyFlags==(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
@@ -56,6 +57,28 @@ static int clear_test(VkInstance instance,VkPhysicalDevice physical,VkDevice dev
     T(EndCommandBuffer(cb)==VK_ERROR_INITIALIZATION_FAILED);
     T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);
     T(ResetCommandBuffer(cb,0)==VK_SUCCESS);
+    /* Guest-only core sync objects: no host request, so host op order is unchanged. */
+    VkBaseInStructure unknown_node={.sType=(VkStructureType)1000999000};
+    VkFenceCreateInfo fi={.sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,.flags=VK_FENCE_CREATE_SIGNALED_BIT};
+    VkFence fence=VK_NULL_HANDLE,spare=VK_NULL_HANDLE;VkSemaphore sem[2]={VK_NULL_HANDLE,VK_NULL_HANDLE};
+    T(CreateFence(device,&fi,NULL,&fence)==VK_SUCCESS&&fence);
+    T(GetFenceStatus(device,fence)==VK_SUCCESS&&WaitForFences(device,1,&fence,VK_TRUE,0)==VK_SUCCESS);
+    T(QueueSubmit(queue,0,NULL,fence)==VK_ERROR_INITIALIZATION_FAILED); /* signaled fence cannot be resubmitted */
+    fi.flags=2;T(CreateFence(device,&fi,NULL,&spare)==VK_ERROR_INITIALIZATION_FAILED&&!spare);
+    fi.flags=0;fi.pNext=&unknown_node;T(CreateFence(device,&fi,NULL,&spare)==VK_SUCCESS&&spare&&spare!=fence);fi.pNext=NULL;
+    T(GetFenceStatus(device,spare)==VK_NOT_READY);
+    VkFence both[2]={fence,spare};
+    T(WaitForFences(device,2,both,VK_FALSE,0)==VK_SUCCESS&&WaitForFences(device,2,both,VK_TRUE,1000)==VK_TIMEOUT);
+    T(ResetFences(device,1,&fence)==VK_SUCCESS&&GetFenceStatus(device,fence)==VK_NOT_READY&&WaitForFences(device,1,&fence,VK_TRUE,0)==VK_TIMEOUT);
+    VkSemaphoreCreateInfo semi={.sType=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,.flags=1};
+    T(CreateSemaphore(device,&semi,NULL,&sem[0])==VK_ERROR_INITIALIZATION_FAILED&&!sem[0]);semi.flags=0;
+    VkSemaphoreTypeCreateInfo timeline={.sType=VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,.semaphoreType=VK_SEMAPHORE_TYPE_TIMELINE};
+    semi.pNext=&timeline;T(CreateSemaphore(device,&semi,NULL,&sem[0])==VK_ERROR_INITIALIZATION_FAILED&&!sem[0]);
+    semi.pNext=&unknown_node;T(CreateSemaphore(device,&semi,NULL,&sem[0])==VK_SUCCESS&&sem[0]);semi.pNext=NULL;
+    T(CreateSemaphore(device,&semi,NULL,&sem[1])==VK_SUCCESS&&sem[1]&&sem[1]!=sem[0]);
+    T(guest_vk_live_sync()==4&&guest_vk_live_resources()==4);
+    VkPipelineStageFlags stage=VK_PIPELINE_STAGE_TRANSFER_BIT;
+    VkSubmitInfo empty={.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO};
     for(unsigned round=0;round<2;round++) {
         T(BeginCommandBuffer(cb,&begin)==VK_SUCCESS);
         barrier.oldLayout=round?VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:VK_IMAGE_LAYOUT_UNDEFINED;
@@ -75,7 +98,11 @@ static int clear_test(VkInstance instance,VkPhysicalDevice physical,VkDevice dev
         for(unsigned p=0;p<204;p++)T(((unsigned char *)mapped)[p]==(round?expected[0][p%4]:0xa5));
         submit.signalSemaphoreCount=1;T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);submit.signalSemaphoreCount=0;
         if(loss) {
-            T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_DEVICE_LOST);
+            /* The lost submission commits neither its signal semaphore nor its fence. */
+            submit.signalSemaphoreCount=1;submit.pSignalSemaphores=&sem[0];
+            T(QueueSubmit(queue,1,&submit,fence)==VK_ERROR_DEVICE_LOST);submit.signalSemaphoreCount=0;submit.pSignalSemaphores=NULL;
+            T(GetFenceStatus(device,fence)==VK_ERROR_DEVICE_LOST&&WaitForFences(device,1,&fence,VK_TRUE,0)==VK_ERROR_DEVICE_LOST);
+            T(QueueSubmit(queue,0,NULL,spare)==VK_ERROR_DEVICE_LOST);
             T(QueueWaitIdle(queue)==VK_ERROR_DEVICE_LOST);
             T(DeviceWaitIdle(device)==VK_ERROR_DEVICE_LOST);
             T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_DEVICE_LOST);
@@ -86,11 +113,40 @@ static int clear_test(VkInstance instance,VkPhysicalDevice physical,VkDevice dev
             T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_ERROR_DEVICE_LOST);
             for(unsigned p=0;p<212;p++)T(((unsigned char *)mapped)[p]==0xa5);
             /* DestroyDevice deliberately owns remaining pool/image/buffer/memory cleanup. */
-            T(guest_vk_live_resources()==4&&guest_vk_allocated_bytes()==416);
+            T(guest_vk_live_resources()==4&&guest_vk_allocated_bytes()==416&&guest_vk_live_sync()==4);
             puts("GUEST_VK_LOSS_PASS submit=-4 queue_idle=-4 device_idle=-4 resubmit=-4 fresh_submit=-4 unchanged_bytes=212");
             *total+=checks;return 0;
         }
-        T(QueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_SUCCESS);
+        if(!round) {
+            /* Round 0: one batch executes, signals sem[0] and the unsignaled fence. */
+            submit.signalSemaphoreCount=1;submit.pSignalSemaphores=&sem[0];
+            T(QueueSubmit(queue,1,&submit,fence)==VK_SUCCESS);submit.signalSemaphoreCount=0;submit.pSignalSemaphores=NULL;
+            T(GetFenceStatus(device,fence)==VK_SUCCESS&&WaitForFences(device,1,&fence,VK_TRUE,UINT64_MAX)==VK_SUCCESS);
+            /* Rejected without effects: double signal, unsignaled wait, missing stage mask, signaled fence. */
+            empty.signalSemaphoreCount=1;empty.pSignalSemaphores=&sem[0];T(QueueSubmit(queue,1,&empty,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);
+            empty.signalSemaphoreCount=0;empty.pSignalSemaphores=NULL;
+            empty.waitSemaphoreCount=1;empty.pWaitSemaphores=&sem[1];empty.pWaitDstStageMask=&stage;
+            T(QueueSubmit(queue,1,&empty,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);
+            empty.pWaitSemaphores=&sem[0];empty.pWaitDstStageMask=NULL;T(QueueSubmit(queue,1,&empty,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);
+            empty.pWaitDstStageMask=&stage;T(QueueSubmit(queue,1,&empty,fence)==VK_ERROR_INITIALIZATION_FAILED);
+            empty.waitSemaphoreCount=0;empty.pWaitSemaphores=NULL;empty.pWaitDstStageMask=NULL;
+        } else {
+            /* Round 1 reuses the reset fence across two batches: batch 0 consumes
+             * sem[0] and signals sem[1]; batch 1 consumes sem[1] and executes. */
+            T(ResetFences(device,1,&fence)==VK_SUCCESS&&GetFenceStatus(device,fence)==VK_NOT_READY);
+            VkSubmitInfo batches[2]={submit,submit};
+            T(QueueSubmit(queue,2,batches,fence)==VK_ERROR_INITIALIZATION_FAILED); /* two command buffers */
+            batches[0]=(VkSubmitInfo){.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO,.waitSemaphoreCount=1,.pWaitSemaphores=&sem[0],.pWaitDstStageMask=&stage,
+                .signalSemaphoreCount=1,.pSignalSemaphores=&sem[1]};
+            batches[1].waitSemaphoreCount=1;batches[1].pWaitSemaphores=&sem[1];batches[1].pWaitDstStageMask=&stage;
+            batches[1].pNext=&unknown_node;
+            T(QueueSubmit(queue,2,batches,fence)==VK_SUCCESS);
+            T(GetFenceStatus(device,fence)==VK_SUCCESS);
+            /* Both semaphores were consumed; a further wait on either is rejected. */
+            empty.waitSemaphoreCount=1;empty.pWaitDstStageMask=&stage;
+            for(unsigned k=0;k<2;k++){empty.pWaitSemaphores=&sem[k];T(QueueSubmit(queue,1,&empty,VK_NULL_HANDLE)==VK_ERROR_INITIALIZATION_FAILED);}
+            empty.waitSemaphoreCount=0;empty.pWaitSemaphores=NULL;empty.pWaitDstStageMask=NULL;
+        }
         T(QueueWaitIdle(queue)==VK_SUCCESS&&DeviceWaitIdle(device)==VK_SUCCESS);
         for(unsigned p=0;p<204;p++)T(((unsigned char *)mapped)[p]==expected[round][p%4]);
         for(unsigned p=204;p<212;p++)T(((unsigned char *)mapped)[p]==0xa5);
@@ -115,6 +171,14 @@ static int clear_test(VkInstance instance,VkPhysicalDevice physical,VkDevice dev
     for(unsigned p=0;p<8;p++)T(((unsigned char *)mapped)[p]==0xa5);
     UnmapMemory(device,bm);DestroyBuffer(device,buffer,NULL);FreeMemory(device,im,NULL);FreeMemory(device,bm,NULL);
     T(guest_vk_live_resources()==0);
+    /* Fence-only submission (no batches) signals at completion. */
+    T(QueueSubmit(queue,0,NULL,spare)==VK_SUCCESS&&GetFenceStatus(device,spare)==VK_SUCCESS);
+    T(WaitForFences(device,2,both,VK_TRUE,UINT64_MAX)==VK_SUCCESS);
+    T(ResetFences(device,2,both)==VK_SUCCESS&&GetFenceStatus(device,fence)==VK_NOT_READY&&GetFenceStatus(device,spare)==VK_NOT_READY);
+    DestroyFence(device,VK_NULL_HANDLE,NULL);DestroySemaphore(device,VK_NULL_HANDLE,NULL);
+    DestroyFence(device,fence,NULL);DestroyFence(device,spare,NULL);DestroySemaphore(device,sem[0],NULL);DestroySemaphore(device,sem[1],NULL);
+    T(guest_vk_live_sync()==0&&GetFenceStatus(device,fence)==VK_ERROR_INITIALIZATION_FAILED);
+    puts("GUEST_VK_SYNC_PASS fences=2 semaphores=2 two_batch=1 fence_reuse=2 fence_only=1 rejected_submits=8");
     puts("GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256");*total+=checks;return 0;
 #undef T
 #undef D

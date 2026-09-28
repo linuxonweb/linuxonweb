@@ -89,7 +89,9 @@ static void resource_drop(struct resource *r) {
     if (r->kind==R_MEMORY) allocated_bytes-=r->size;
     free(r->bytes); memset(r,0,sizeof(*r)); resource_count--;
 }
+static void sync_cleanup(void);
 static void transfer_cleanup(void) {
+    sync_cleanup();
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id && resources[i].kind!=R_MEMORY) resource_drop(&resources[i]);
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id) resource_drop(&resources[i]);
     memset(&command,0,sizeof(command)); pool=0;
@@ -259,10 +261,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL end_command(VkCommandBuffer cb) {
     if(cb!=&command||command.state!=2||!command.count||command.graphics.in_pass)return VK_ERROR_INITIALIZATION_FAILED;
     command.state=3;return VK_SUCCESS;
 }
-static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,const VkSubmitInfo *info,VkFence fence) {
-    if(!live||!live->device||q!=&live->device->queue||live->failed)return VK_ERROR_DEVICE_LOST;
-    if(count!=1||!info||fence||info->sType!=VK_STRUCTURE_TYPE_SUBMIT_INFO||info->pNext||info->waitSemaphoreCount||info->signalSemaphoreCount||
-       info->commandBufferCount!=1||!info->pCommandBuffers||info->pCommandBuffers[0]!=&command||command.state!=3)return VK_ERROR_INITIALIZATION_FAILED;
+/* Executes the single recorded primary buffer. The public queue_submit wrapper
+ * validates batches/semaphores/fence first and commits sync state only after
+ * this returns VK_SUCCESS. */
+static VkResult execute_submit(void) {
+    if(command.state!=3)return VK_ERROR_INITIALIZATION_FAILED;
     /* Heap-owned, bounded prepared passes avoid exceeding the 256 KiB guest
      * stack. All allocation/serialization/validation completes before effects.
      * The single cleanup path covers every validation/execution failure. */
@@ -361,6 +364,102 @@ submit_lost:
 submit_done:
     free(prepared);return result;
 }
+/* Guest-only synchronization objects. Submission completes synchronously, so
+ * semaphores/fences are signaled at completion and never involve the host.
+ * They use a separate table so resource/exhaustion accounting is unchanged. */
+#define MAX_SYNC 32
+enum sync_kind { S_FENCE=1, S_SEMAPHORE };
+struct sync_object { uint64_t id; unsigned kind, signaled; };
+static struct sync_object syncs[MAX_SYNC];
+static uint64_t next_sync = 2000000;
+static unsigned sync_count;
+unsigned guest_vk_live_sync(void) {return sync_count;}
+static struct sync_object *sync_get(uint64_t id,unsigned kind) {
+    for(unsigned i=0;i<MAX_SYNC;i++)if(id&&syncs[i].id==id&&syncs[i].kind==kind)return &syncs[i];
+    return NULL;
+}
+static struct sync_object *sync_new(unsigned kind,unsigned signaled) {
+    if(next_sync==UINT64_MAX)return NULL;
+    for(unsigned i=0;i<MAX_SYNC;i++)if(!syncs[i].id){syncs[i]=(struct sync_object){.id=next_sync++,.kind=kind,.signaled=signaled};sync_count++;return &syncs[i];}
+    return NULL;
+}
+static void sync_cleanup(void) {
+    printf("GUEST_VK_SYNC teardown_released=%u\n",sync_count);fflush(stdout);
+    memset(syncs,0,sizeof(syncs));sync_count=0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL create_fence(VkDevice d,const VkFenceCreateInfo *i,const VkAllocationCallbacks *a,VkFence *out) {
+    if(!out)return VK_ERROR_INITIALIZATION_FAILED;
+    *out=VK_NULL_HANDLE;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO||!chain_valid(i->pNext,NULL,0)||
+       (i->flags&~(VkFenceCreateFlags)VK_FENCE_CREATE_SIGNALED_BIT))return VK_ERROR_INITIALIZATION_FAILED;
+    struct sync_object *f=sync_new(S_FENCE,(i->flags&VK_FENCE_CREATE_SIGNALED_BIT)!=0);if(!f)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    *out=HANDLE(VkFence,f->id);return VK_SUCCESS;
+}
+static VKAPI_ATTR void VKAPI_CALL destroy_fence(VkDevice d,VkFence h,const VkAllocationCallbacks *a) {
+    (void)a;struct sync_object *f=device_valid(d)?sync_get(RID(h),S_FENCE):NULL;
+    if(f){memset(f,0,sizeof(*f));sync_count--;}
+}
+static VKAPI_ATTR VkResult VKAPI_CALL reset_fences(VkDevice d,uint32_t count,const VkFence *fences) {
+    if(!device_valid(d)||!count||!fences)return VK_ERROR_INITIALIZATION_FAILED;
+    for(uint32_t n=0;n<count;n++)if(!sync_get(RID(fences[n]),S_FENCE))return VK_ERROR_INITIALIZATION_FAILED;
+    for(uint32_t n=0;n<count;n++)sync_get(RID(fences[n]),S_FENCE)->signaled=0;
+    return VK_SUCCESS;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL fence_status(VkDevice d,VkFence h) {
+    if(!device_valid(d)||live->failed)return VK_ERROR_DEVICE_LOST;
+    struct sync_object *f=sync_get(RID(h),S_FENCE);if(!f)return VK_ERROR_INITIALIZATION_FAILED;
+    return f->signaled?VK_SUCCESS:VK_NOT_READY;
+}
+/* Nothing is ever pending, so an unsignaled fence cannot become signaled
+ * while this single-threaded profile waits: return VK_TIMEOUT immediately. */
+static VKAPI_ATTR VkResult VKAPI_CALL wait_fences(VkDevice d,uint32_t count,const VkFence *fences,VkBool32 all,uint64_t timeout) {
+    (void)timeout;
+    if(!device_valid(d)||live->failed)return VK_ERROR_DEVICE_LOST;
+    if(!count||!fences)return VK_ERROR_INITIALIZATION_FAILED;
+    unsigned signaled=0;
+    for(uint32_t n=0;n<count;n++){struct sync_object *f=sync_get(RID(fences[n]),S_FENCE);if(!f)return VK_ERROR_INITIALIZATION_FAILED;signaled+=f->signaled!=0;}
+    return (all?signaled==count:signaled>0)?VK_SUCCESS:VK_TIMEOUT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL create_semaphore(VkDevice d,const VkSemaphoreCreateInfo *i,const VkAllocationCallbacks *a,VkSemaphore *out) {
+    if(!out)return VK_ERROR_INITIALIZATION_FAILED;
+    *out=VK_NULL_HANDLE;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO||!chain_valid(i->pNext,NULL,0)||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
+    const VkSemaphoreTypeCreateInfo *type=chain_find(i->pNext,VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO);
+    if(type&&type->semaphoreType!=VK_SEMAPHORE_TYPE_BINARY)return VK_ERROR_INITIALIZATION_FAILED; /* timeline is not a 1.1 feature */
+    struct sync_object *s=sync_new(S_SEMAPHORE,0);if(!s)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    *out=HANDLE(VkSemaphore,s->id);return VK_SUCCESS;
+}
+static VKAPI_ATTR void VKAPI_CALL destroy_semaphore(VkDevice d,VkSemaphore h,const VkAllocationCallbacks *a) {
+    (void)a;struct sync_object *s=device_valid(d)?sync_get(RID(h),S_SEMAPHORE):NULL;
+    if(s){memset(s,0,sizeof(*s));sync_count--;}
+}
+/* Batches are validated in order against simulated binary-semaphore state:
+ * waits consume a signaled semaphore, signals require an unsignaled one. At
+ * most one command buffer (the single primary) per call. Nothing commits
+ * unless execution succeeds; DEVICE_LOST leaves semaphores/fence unchanged. */
+static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,const VkSubmitInfo *info,VkFence fence) {
+    if(!live||!live->device||q!=&live->device->queue||live->failed)return VK_ERROR_DEVICE_LOST;
+    struct sync_object *f=NULL;
+    if(fence){f=sync_get(RID(fence),S_FENCE);if(!f||f->signaled)return VK_ERROR_INITIALIZATION_FAILED;}
+    if(count&&!info)return VK_ERROR_INITIALIZATION_FAILED;
+    unsigned state[MAX_SYNC],commands=0;
+    for(unsigned i=0;i<MAX_SYNC;i++)state[i]=syncs[i].signaled;
+    for(uint32_t b=0;b<count;b++) {
+        const VkSubmitInfo *s=&info[b];
+        if(s->sType!=VK_STRUCTURE_TYPE_SUBMIT_INFO||!chain_valid(s->pNext,NULL,0)||
+           (s->waitSemaphoreCount&&(!s->pWaitSemaphores||!s->pWaitDstStageMask))||
+           (s->signalSemaphoreCount&&!s->pSignalSemaphores)||(s->commandBufferCount&&!s->pCommandBuffers))return VK_ERROR_INITIALIZATION_FAILED;
+        for(uint32_t w=0;w<s->waitSemaphoreCount;w++){struct sync_object *x=sync_get(RID(s->pWaitSemaphores[w]),S_SEMAPHORE);
+            if(!x||!state[x-syncs]||!s->pWaitDstStageMask[w])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=0;}
+        for(uint32_t c=0;c<s->commandBufferCount;c++)if(s->pCommandBuffers[c]!=&command||++commands>1)return VK_ERROR_INITIALIZATION_FAILED;
+        for(uint32_t g=0;g<s->signalSemaphoreCount;g++){struct sync_object *x=sync_get(RID(s->pSignalSemaphores[g]),S_SEMAPHORE);
+            if(!x||state[x-syncs])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=1;}
+    }
+    if(commands){VkResult result=execute_submit();if(result!=VK_SUCCESS)return result;}
+    for(unsigned i=0;i<MAX_SYNC;i++)if(syncs[i].kind==S_SEMAPHORE)syncs[i].signaled=state[i];
+    if(f)f->signaled=1;
+    return VK_SUCCESS;
+}
 static VKAPI_ATTR VkResult VKAPI_CALL queue_idle(VkQueue q) {return live&&live->device&&q==&live->device->queue&&!live->failed?VK_SUCCESS:VK_ERROR_DEVICE_LOST;}
 static VKAPI_ATTR VkResult VKAPI_CALL device_idle(VkDevice d) {return device_valid(d)&&!live->failed?VK_SUCCESS:VK_ERROR_DEVICE_LOST;}
 static PFN_vkVoidFunction transfer_proc(const char *name) {
@@ -373,6 +472,8 @@ static PFN_vkVoidFunction transfer_proc(const char *name) {
     P(vkBeginCommandBuffer,begin_command) P(vkEndCommandBuffer,end_command) P(vkCmdPipelineBarrier,pipeline_barrier)
     P(vkCmdClearColorImage,clear_image) P(vkCmdCopyImageToBuffer,copy_image) P(vkQueueSubmit,queue_submit)
     P(vkQueueWaitIdle,queue_idle) P(vkDeviceWaitIdle,device_idle)
+    P(vkCreateFence,create_fence) P(vkDestroyFence,destroy_fence) P(vkResetFences,reset_fences) P(vkGetFenceStatus,fence_status)
+    P(vkWaitForFences,wait_fences) P(vkCreateSemaphore,create_semaphore) P(vkDestroySemaphore,destroy_semaphore)
 #undef P
     return NULL;
 }

@@ -10,7 +10,7 @@
     }
     struct loader_scanned_icd *icd = &icd_tramp_list->scanned_list[0];
     memset(icd, 0, sizeof(*icd));
-    icd->api_version = VK_API_VERSION_1_0;
+    icd->api_version = VK_API_VERSION_1_1;
     icd->interface_version = version;
     icd->GetInstanceProcAddr = vk_icdGetInstanceProcAddr;
     icd->CreateInstance = (PFN_vkCreateInstance)icd->GetInstanceProcAddr(NULL, "vkCreateInstance");

@@ -16,16 +16,21 @@ int main(void) {
     VkDeviceMemory image_memory=VK_NULL_HANDLE, buffer_memory=VK_NULL_HANDLE;
     VkCommandPool pool=VK_NULL_HANDLE; VkCommandBuffer command=VK_NULL_HANDLE;
     void *mapped=NULL;
+    VkFence fence=VK_NULL_HANDLE; VkSemaphore semaphore=VK_NULL_HANDLE;
     struct sigaction action={0}; action.sa_handler=deadline; sigemptyset(&action.sa_mask);
     if (sigaction(SIGALRM,&action,NULL)) return 2;
     alarm(90); signal(SIGPIPE,SIG_IGN);
-    puts("GUEST_VK_LOADER_SCOPE upstream static loader; partial clear/copy ICD; not conformant; no shaders, GL or physical GPU claim");
+    puts("GUEST_VK_LOADER_SCOPE upstream static loader; core 1.1 queries and fence/binary-semaphore sync; partial clear/copy ICD; not conformant; no shaders, GL or physical GPU claim");
     CHECK(vkGetInstanceProcAddr(VK_NULL_HANDLE,"vkGuestUnknownProcedure")==NULL);
     CHECK(vkGetInstanceProcAddr(VK_NULL_HANDLE,"vkCreateInstance")==(PFN_vkVoidFunction)vkCreateInstance);
     uint32_t count=0;
     CHECK(vkEnumerateInstanceLayerProperties(&count,NULL)==VK_SUCCESS && count==0);
     CHECK(vkEnumerateInstanceExtensionProperties(NULL,&count,NULL)==VK_SUCCESS);
-    VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.pApplicationName="public-vulkan-client",.apiVersion=VK_API_VERSION_1_0};
+    uint32_t loader_version=0;
+    CHECK(vkEnumerateInstanceVersion(&loader_version)==VK_SUCCESS && loader_version>=VK_API_VERSION_1_1);
+    /* Core 1.1 application: the loader forwards the *2 queries to the ICD's
+     * core entry points instead of emulating them through 1.0 calls. */
+    VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.pApplicationName="public-vulkan-client",.apiVersion=VK_API_VERSION_1_1};
     VkInstanceCreateInfo ii={.sType=VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,.pApplicationInfo=&app};
     const char *unsupported="VK_GUEST_unsupported_extension";
     ii.enabledExtensionCount=1;ii.ppEnabledExtensionNames=&unsupported;
@@ -38,10 +43,45 @@ int main(void) {
     VkPhysicalDevice physical=VK_NULL_HANDLE;
     CHECK(vkEnumeratePhysicalDevices(instance,&count,&physical)==VK_SUCCESS && count==1 && physical);
     VkPhysicalDeviceProperties properties;vkGetPhysicalDeviceProperties(physical,&properties);
-    CHECK(properties.apiVersion==VK_API_VERSION_1_0 && properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_OTHER);
+    CHECK(properties.apiVersion==VK_API_VERSION_1_1 && properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_OTHER);
     printf("GUEST_VK_LOADER_DEVICE %s\n",properties.deviceName);
     VkPhysicalDeviceFeatures features;vkGetPhysicalDeviceFeatures(physical,&features);
     VkPhysicalDeviceFeatures no_features={0};CHECK(!memcmp(&features,&no_features,sizeof(features)));
+    {   /* Core 1.1 queries through the loader: chained ID/Vulkan11 output plus an unknown node. */
+        struct { VkBaseOutStructure base; unsigned char body[24]; } unknown={.base={.sType=(VkStructureType)1000999000}},unknown_copy;
+        memset(unknown.body,0x5a,sizeof(unknown.body));
+        VkPhysicalDeviceVulkan11Properties v11={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES};
+        unknown.base.pNext=(VkBaseOutStructure *)&v11;unknown_copy=unknown;
+        VkPhysicalDeviceIDProperties id={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,.pNext=&unknown};
+        memset(id.deviceUUID,0xcc,VK_UUID_SIZE);v11.subgroupSize=0xcccccccc;
+        VkPhysicalDeviceProperties2 p2={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,.pNext=&id};
+        vkGetPhysicalDeviceProperties2(physical,&p2);
+        CHECK(!memcmp(&p2.properties,&properties,sizeof(properties)) && !memcmp(&unknown,&unknown_copy,sizeof(unknown)));
+        CHECK(!memcmp(id.deviceUUID,"GUESTVK-EXP-DEV1",VK_UUID_SIZE) && !memcmp(id.driverUUID,"GUESTVK-EXP-DRV1",VK_UUID_SIZE) && !id.deviceLUIDValid);
+        CHECK(!memcmp(v11.deviceUUID,id.deviceUUID,VK_UUID_SIZE) && v11.subgroupSize==1 && v11.maxMemoryAllocationSize==1048576);
+        VkPhysicalDeviceVulkan11Features f11={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,.multiview=VK_TRUE,.shaderDrawParameters=VK_TRUE};
+        VkPhysicalDeviceFeatures2 f2={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,.pNext=&f11};memset(&f2.features,0xcc,sizeof(f2.features));
+        vkGetPhysicalDeviceFeatures2(physical,&f2);
+        CHECK(!memcmp(&f2.features,&no_features,sizeof(no_features)) && !f11.multiview && !f11.shaderDrawParameters);
+        VkFormat formats[2]={VK_FORMAT_R8G8B8A8_UNORM,VK_FORMAT_B8G8R8A8_UNORM};
+        for(unsigned n=0;n<2;n++) {
+            VkFormatProperties a;vkGetPhysicalDeviceFormatProperties(physical,formats[n],&a);
+            VkFormatProperties2 b={.sType=VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2};memset(&b.formatProperties,0xcc,sizeof(b.formatProperties));
+            vkGetPhysicalDeviceFormatProperties2(physical,formats[n],&b);
+            CHECK(!memcmp(&a,&b.formatProperties,sizeof(a)) && (a.optimalTilingFeatures!=0)==(n==0));
+        }
+        VkPhysicalDeviceMemoryProperties m1;vkGetPhysicalDeviceMemoryProperties(physical,&m1);
+        VkPhysicalDeviceMemoryProperties2 m2={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
+        vkGetPhysicalDeviceMemoryProperties2(physical,&m2);CHECK(!memcmp(&m1,&m2.memoryProperties,sizeof(m1)));
+        VkQueueFamilyProperties q1;count=1;vkGetPhysicalDeviceQueueFamilyProperties(physical,&count,&q1);
+        VkQueueFamilyProperties2 q2={.sType=VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2};count=0;
+        vkGetPhysicalDeviceQueueFamilyProperties2(physical,&count,NULL);CHECK(count==1);
+        vkGetPhysicalDeviceQueueFamilyProperties2(physical,&count,&q2);CHECK(count==1 && !memcmp(&q1,&q2.queueFamilyProperties,sizeof(q1)));
+        VkPhysicalDeviceGroupProperties group={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES};count=0;
+        CHECK(vkEnumeratePhysicalDeviceGroups(instance,&count,NULL)==VK_SUCCESS && count==1);
+        CHECK(vkEnumeratePhysicalDeviceGroups(instance,&count,&group)==VK_SUCCESS && count==1 && group.physicalDeviceCount==1 && group.physicalDevices[0]==physical);
+        puts("GUEST_VK_LOADER_CORE11_PASS api=1.1 properties2=1 features2=1 format2=2 memory2=1 queue2=1 groups=1");fflush(stdout);
+    }
     count=0;vkGetPhysicalDeviceQueueFamilyProperties(physical,&count,NULL);CHECK(count==1);
     VkQueueFamilyProperties family;vkGetPhysicalDeviceQueueFamilyProperties(physical,&count,&family);
     CHECK(count==1 && family.queueCount==1 && family.queueFlags==(VK_QUEUE_COMPUTE_BIT|VK_QUEUE_TRANSFER_BIT));
@@ -57,6 +97,13 @@ int main(void) {
     PFN_vkQueueWaitIdle queue_wait=(PFN_vkQueueWaitIdle)vkGetDeviceProcAddr(device,"vkQueueWaitIdle");
     CHECK(queue_wait!=NULL);
     VkQueue queue=VK_NULL_HANDLE;vkGetDeviceQueue(device,0,0,&queue);CHECK(queue!=VK_NULL_HANDLE);
+    VkDeviceQueueInfo2 queue_info2={.sType=VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2};
+    VkQueue queue2=VK_NULL_HANDLE;vkGetDeviceQueue2(device,&queue_info2,&queue2);CHECK(queue2==queue);
+    VkFenceCreateInfo fence_info={.sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    CHECK(vkCreateFence(device,&fence_info,NULL,&fence)==VK_SUCCESS && fence && vkGetFenceStatus(device,fence)==VK_NOT_READY);
+    VkSemaphoreCreateInfo semaphore_info={.sType=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+    CHECK(vkCreateSemaphore(device,&semaphore_info,NULL,&semaphore)==VK_SUCCESS && semaphore);
+    VkPipelineStageFlags wait_stage=VK_PIPELINE_STAGE_TRANSFER_BIT;
     VkPhysicalDeviceMemoryProperties memory;vkGetPhysicalDeviceMemoryProperties(physical,&memory);
     CHECK(memory.memoryTypeCount==2 && memory.memoryHeapCount==1 && memory.memoryHeaps[0].size==1048576);
     CHECK(memory.memoryTypes[1].propertyFlags==(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
@@ -118,16 +165,25 @@ int main(void) {
         vkCmdPipelineBarrier(command,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_HOST_BIT,0,0,NULL,1,&host,0,NULL);
         CHECK(vkEndCommandBuffer(command)==VK_SUCCESS);
         for(unsigned p=0;p<204;p++) CHECK(((unsigned char *)mapped)[p]==(round?expected[0][p%4]:0xa5));
-        CHECK(vkQueueSubmit(queue,1,&submit,VK_NULL_HANDLE)==VK_SUCCESS);
+        /* Round 0 signals the semaphore and fence; round 1 reuses the fence and waits on the semaphore. */
+        if(round) { CHECK(vkResetFences(device,1,&fence)==VK_SUCCESS && vkGetFenceStatus(device,fence)==VK_NOT_READY);
+            submit.waitSemaphoreCount=1;submit.pWaitSemaphores=&semaphore;submit.pWaitDstStageMask=&wait_stage; }
+        else { submit.signalSemaphoreCount=1;submit.pSignalSemaphores=&semaphore; }
+        CHECK(vkQueueSubmit(queue,1,&submit,fence)==VK_SUCCESS);
+        submit.waitSemaphoreCount=0;submit.pWaitSemaphores=NULL;submit.pWaitDstStageMask=NULL;submit.signalSemaphoreCount=0;submit.pSignalSemaphores=NULL;
+        CHECK(vkWaitForFences(device,1,&fence,VK_TRUE,UINT64_MAX)==VK_SUCCESS && vkGetFenceStatus(device,fence)==VK_SUCCESS);
         CHECK(queue_wait(queue)==VK_SUCCESS && vkDeviceWaitIdle(device)==VK_SUCCESS);
         for(unsigned p=0;p<204;p++) CHECK(((unsigned char *)mapped)[p]==expected[round][p%4]);
         for(unsigned p=204;p<212;p++) CHECK(((unsigned char *)mapped)[p]==0xa5);
         printf("GUEST_VK_LOADER_PIXELS_PASS round=%u width=17 height=3 bytes=204 rgba=%u,%u,%u,%u\n",round,expected[round][0],expected[round][1],expected[round][2],expected[round][3]);fflush(stdout);
         CHECK(vkResetCommandBuffer(command,0)==VK_SUCCESS);
     }
+    puts("GUEST_VK_LOADER_SYNC_PASS fences=1 semaphores=1 submits=2 fence_reuse=1");fflush(stdout);
     result=0;
 done:
     if(device) {
+        if(fence) vkDestroyFence(device,fence,NULL);
+        if(semaphore) vkDestroySemaphore(device,semaphore,NULL);
         if(command) vkFreeCommandBuffers(device,pool,1,&command);
         if(pool) vkDestroyCommandPool(device,pool,NULL);
         if(mapped) vkUnmapMemory(device,buffer_memory);

@@ -22,13 +22,21 @@ function check() {
     own.liveDevices === 0 && own.liveTextures === 0 && own.liveBuffers === 0;
   if (report.mode === 'unavailable') {
     report.pass = base && h.readbacks === 0 && h.released === 0 && h.commands === 0 && !h.adapter && own.devicesCreated === 0 && own.devicesDestroyed === 0 &&
-      h.error === 'WebGPU unavailable: no renderer fallback is implied' && report.hellos.length === 0 &&
+      // guest-gpu/host.mjs wording since d4a1ed9; this page never enables WebGL fallback.
+      h.error === 'WebGPU API unavailable' && h.acquisitionError === 'WebGPU API unavailable' &&
+      h.backend === null && h.contextsCreated === 0 && report.hellos.length === 0 &&
       report.logs.includes('GUEST_VK_UNAVAILABLE_PASS') && !report.logs.includes('GUEST_VK_DEVICE_PASS');
   } else {
     const matchingHello = report.hellos.length === 2 && report.hellos.every(item => item.version === 1 &&
       item.shader === 'WGSL' && JSON.stringify(item.adapter) === JSON.stringify(h.adapter));
     const loss = report.mode.startsWith('loss-');
     const clear = report.mode === 'clear' || report.mode === 'exhaustion';
+    // Core 1.1 queries and guest-only sync objects add no host requests.
+    const core11 = /^GUEST_VK_CORE11_QUERY_PASS api=1\.1 chained=6 unknown_untouched=1 formats=10 nonzero_formats=\d+$/m.test(report.logs.replaceAll('\r','')) &&
+      report.logs.includes('GUEST_VK_CORE11_DEVICE_PASS features2=1 vulkan11_features=1 device_group=1 unknown_skipped=1 queue2=1');
+    const sync = loss ? report.logs.includes('GUEST_VK_SYNC teardown_released=4') :
+      report.logs.includes('GUEST_VK_SYNC teardown_released=0') &&
+      (!clear || report.logs.includes('GUEST_VK_SYNC_PASS fences=2 semaphores=2 two_batch=1 fence_reuse=2 fence_only=1 rejected_submits=8'));
     const operations = report.events.filter(e => e.type === 'command').map(e => `${e.opcode}:${e.status}`).join(',');
     const rendering = clear ? h.clears === 2 && h.readbacks === 2 && h.released === 1 && report.hellos.every(x => x.clearImage === true) &&
       report.logs.includes('GUEST_VK_CLEAR_PASS colors=2 pixels=102 tight_rows=68 host_rows=256') &&
@@ -37,7 +45,7 @@ function check() {
     if(loss) {
       const deviceLoss=report.mode === 'loss-device';
       const fault=h.fault;
-      report.pass=base && matchingHello && report.hellos.every(x => x.clearImage === true) &&
+      report.pass=base && matchingHello && core11 && sync && report.hellos.every(x => x.clearImage === true) &&
         h.clears === 1 && h.readbacks === 0 && h.released === 1 && !!h.adapter &&
         own.devicesCreated === 1 && own.devicesDestroyed === 1 && own.texturesCreated === 1 && own.texturesDestroyed === 1 &&
         own.buffersCreated === (deviceLoss?1:0) && own.buffersDestroyed === (deviceLoss?1:0) &&
@@ -50,7 +58,7 @@ function check() {
         report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') &&
         report.logs.includes('GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0') &&
         report.logs.includes('GUEST_VK_CLOSE status=-1');
-    } else report.pass = base && rendering && h.commands === (clear ? 9 : 3) && h.error === null && !!h.adapter && matchingHello &&
+    } else report.pass = base && rendering && core11 && sync && h.commands === (clear ? 9 : 3) && h.error === null && !!h.adapter && matchingHello &&
       own.devicesCreated === 1 && own.devicesDestroyed === 1 &&
       report.logs.includes('GUEST_VK_DEVICE_PASS') && report.logs.includes('GUEST_VK_LIFETIME_PASS live_instances=0 live_devices=0') &&
       report.logs.includes('GUEST_VK_CLOSE status=0') &&

@@ -9,5 +9,6 @@ struct guest_vk_audit {
 };
 struct guest_vk_audit guest_vk_get_audit(void);
 unsigned guest_vk_live_resources(void);
+unsigned guest_vk_live_sync(void);
 VkDeviceSize guest_vk_allocated_bytes(void);
 #endif

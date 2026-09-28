@@ -26,7 +26,10 @@ function check() {
     operations==='0:0,0:0,4:0,9:0,6:0,9:0,6:0,7:0,8:0' &&
     report.logs.includes('GUEST_VK_LOADER_PIXELS_PASS round=0 width=17 height=3 bytes=204 rgba=255,0,0,255') &&
     report.logs.includes('GUEST_VK_LOADER_PIXELS_PASS round=1 width=17 height=3 bytes=204 rgba=0,255,0,0') &&
-    report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') && report.logs.includes('GUEST_VK_CLOSE status=0');
+    report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') && report.logs.includes('GUEST_VK_CLOSE status=0') &&
+    report.logs.includes('GUEST_VK_LOADER_CORE11_PASS api=1.1 properties2=1 features2=1 format2=2 memory2=1 queue2=1 groups=1') &&
+    report.logs.includes('GUEST_VK_LOADER_SYNC_PASS fences=1 semaphores=1 submits=2 fence_reuse=1') &&
+    report.logs.includes('GUEST_VK_SYNC teardown_released=0');
   if (!report.pass) { fail('public-client acceptance mismatch'); return; }
   report.hostLifetimePass=true;finished=true;clearTimeout(deadline);document.documentElement.dataset.result='pass';
 }
