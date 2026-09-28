@@ -8,11 +8,16 @@ out, pause and resume after it resets. Subagents use Opus 5.5 with short,
 bounded packets. Storage policy below still applies to every packet.
 
 Current packets (update as they finish):
-- Research: Vulkan gap for vkcube + Zink →
-  `docs/vulkan-gap-zink-vkcube-20260928.md` (scratch `/mnt/p6/build/zink-gap-20260928`).
-- Research: guest JIT runtime primitive + SpiderMonkey plan →
-  `docs/guest-jit-design-20260928.md` (scratch `/mnt/p6/build/jit-research-20260928`).
-Next: cut implementation packets from those two docs.
+- Done: Vulkan gap research `docs/vulkan-gap-zink-vkcube-20260928.md`
+  (Mesa 26.2.3, Vulkan-Tools v1.3.231; tracks A vkcube, B Zink, C Firefox GL).
+- Done: JIT design `docs/guest-jit-design-20260928.md` (private jit_install
+  syscall intercepted in worker.js, per-process control SAB + log replay,
+  runtime PBL-to-wasm specializer for SpiderMonkey).
+- Running: JIT packet 1 (runtime primitive + guest C test; task dir
+  `/mnt/p6/build/guest-jit-20260928`, ports 4191/9401).
+- Running: Vulkan A1+A2 (1.1 plumbing, fences/semaphores; task dir
+  `/mnt/p6/build/guest-vulkan-a1a2-20260928`, ports 4192/9402).
+Next: Vulkan A3-A7 (UBO, textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
 
 # Current work and handoff — 2026-09-27 UTC
 
