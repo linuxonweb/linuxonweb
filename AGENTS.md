@@ -13,12 +13,14 @@ Current packets (update as they finish):
 - Done: JIT design `docs/guest-jit-design-20260928.md` (private jit_install
   syscall intercepted in worker.js, per-process control SAB + log replay,
   runtime PBL-to-wasm specializer for SpiderMonkey).
-- Running: JIT packet 1 (runtime primitive + guest C test; task dir
-  `/mnt/p6/build/guest-jit-20260928`, ports 4191/9401).
-- Running: Vulkan A1+A2 (1.1 plumbing, fences/semaphores; task dir
+- Done: JIT packet 1 runtime primitive (`72b71a9`,
+  `docs/guest-jit-runtime-primitive-20260928.md`): 62/62 real-guest checks,
+  installed call 15.7 ns vs static 15.3 ns. Firefox table is not growable yet
+  (JIT packet 2 must splice/relink it).
+- Running: Vulkan A1+A2 (partial edits uncommitted in guest-vulkan*/; task dir
   `/mnt/p6/build/guest-vulkan-a1a2-20260928`, ports 4192/9402).
-Queued (next free slot): Firefox DevTools opens blank — diagnose and fix so
-the web console works (user request 2026-09-28).
+- Running: Firefox DevTools blank fix (task dir
+  `/mnt/p6/build/firefox-devtools-20260928`, ports 4193/9403).
 Next: Vulkan A3-A7 (UBO, textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
