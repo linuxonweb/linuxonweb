@@ -26,9 +26,11 @@ Current packets (update as they finish):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
   at `/mnt/p6/build/firefox-devtools-20260928/candidate-run1` passes console,
-  eval, inspector and warm in the guest. v9->candidate update gate:
-  `/mnt/p6/build/firefox-homepage-20260926/devtools-update-run1`. Promote
-  locally only after it passes; not deployed to Sites.
+  eval, inspector and warm in the guest. v9->candidate update gate
+  `/mnt/p6/build/firefox-homepage-20260926/devtools-update-run1` passed (home,
+  user.js, prior download preserved; zero-image restart). Promoted locally in
+  `web/linux`; v9 inputs kept in `/mnt/p6/build/firefox-devtools-20260928/v9-baseline`.
+  Not deployed to Sites (v9 still public).
 - Running: JIT packet 2 Firefox prep (growable table splice, stack-pointer
   plan, 23-i64 helper call; task dir `/mnt/p6/build/guest-jit-ffprep-20260928`,
   ports 4195/9405).
