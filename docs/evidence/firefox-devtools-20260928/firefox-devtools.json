@@ -1,0 +1,84 @@
+{
+  "task": "firefox-devtools-20260928",
+  "taskRoot": "/mnt/p6/build/firefox-devtools-20260928",
+  "symptom": "F12 opens a blank DevTools panel (Sites v9 / 29331a186e50)",
+  "rootCause": {
+    "error": "Error: Missing session data in `sharedData` (ContentProcessWatcherRegistry.sys.mjs:47) -> DevToolsProcessParent:watchTargets sendQuery failure -> Exception while opening the toolbox (toolbox.js startListening)",
+    "mechanism": "Single-process build hosts DevToolsProcess actor in the parent; Services.cpmm.sharedData there is a read-only SharedMap re-mapping the serialized descriptor, which the wasm MemMapSnapshot/mmap shim does not keep coherent with the writer mapping, so DevTools:watchedPerWatcher reads null.",
+    "reproduction": "repro-run2 (v9 image); harness pass=true there only means startup/home, the toolbox was blank and the log contains the error"
+  },
+  "fix": {
+    "kind": "packed chrome JS adapter, no Firefox rebuild",
+    "packager": "tools/guest-rootfs/package-firefox-devtools.py",
+    "member": "opt/firefox/browser/chrome/devtools/modules/devtools/server/connectors/js-process-actor/ContentProcessWatcherRegistry.sys.mjs",
+    "memberBeforeSha256": "46f8517806978398c9b4739494d64c44371d574445680de9570c467b730ef815",
+    "memberAfterSha256": "d860fcddc32cdcf8b774809c0986ff4161bae94813a21676f042928930e482f1",
+    "change": "getWatcherSharedData(): Services.ppmm.sharedData in the parent process, Services.cpmm.sharedData otherwise; both reads use it"
+  },
+  "candidate": {
+    "path": "/mnt/p6/build/firefox-devtools-20260928/candidate-run1",
+    "version": "b21b2cac65a3",
+    "archiveSha256": "d3d9afca272947ba1b6bb743585a6f0cf33de90c54adff1cd85b5c5bf9d8002b",
+    "bytes": 88378850,
+    "manifestSha256": "8fca6cf14e2a0e1ad77cd49aa28198ed0fa02a8649156bcb43468b877ca8cc45",
+    "sourceSha256": "7bd5e9041d568c6b5b325abba16754d943a51b009c368c39901c0fb0a751508a",
+    "sourceVersion": "29331a186e50",
+    "otherRecordsUnchanged": true,
+    "promoted": false
+  },
+  "acceptance": {
+    "run": "cand-accept-run1",
+    "runner": "tools/guest-rootfs/test-firefox-devtools.mjs",
+    "steps": [
+      "console",
+      "eval",
+      "inspector",
+      "warm"
+    ],
+    "diag": false,
+    "pass": true,
+    "resultSha256": "035a84e9d90291ed4cdb26fbfb71210f2fc9fe3e2ba6d1a5d523198c4a92765e",
+    "coldReadyMs": 50386,
+    "consoleVisible": "15-console-020s.png: Console tab, devtools-ok (devtools-probe.html:3:9)",
+    "eval1plus2": "20-eval-040s.png: >> 1+2 <- 3",
+    "evalGuestEffect": {
+      "tag": "devtools-eval-v1",
+      "title": "dt-3",
+      "createdAt": 1790634836720,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
+    },
+    "inspectorDomTree": "30-inspector-040s.png: DOM tree, Rules, Layout/Box Model; tab title dt-3",
+    "warm": {
+      "readyMs": 29346,
+      "systemImageRequests": 0,
+      "screenshot": "50-warm.png"
+    },
+    "markerPreserved": true,
+    "runtimeExceptions": 0,
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "serverClosed": true,
+    "screenshotsInspected": true
+  },
+  "diagnosticRun": {
+    "run": "cand-diag-run1",
+    "browserConsole": "Ctrl+Shift+J opens Browser Console window with messages",
+    "note": "eval step there typed into Inspector (F12 default tool); superseded by console step"
+  },
+  "failedRuns": [
+    "repro-run1: harness browser-readiness deadline (no DevToolsActivePort with explicit port); fixed by polling /json/version"
+  ],
+  "cleanup": {
+    "ports4193and9403Free": true,
+    "ownedProcessesRemaining": 0,
+    "userServerPid1591443Unchanged": true
+  },
+  "limitations": [
+    "Local candidate only; not promoted to web/linux or Sites, no public acceptance or update-path test.",
+    "Other parent-process cpmm.sharedData readers may see the same incoherence (log shows \"bad serialized structured data\"); the underlying mmap/SharedMap issue is not fixed.",
+    "Only the parent-process DevTools path was exercised; Browser Console multiprocess mode is moot in this single-process build.",
+    "Timings are fixed-wait observations, not benchmarks. Software rendering only."
+  ]
+}
