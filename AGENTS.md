@@ -22,9 +22,17 @@ Current packets (update as they finish):
   Waits return VK_TIMEOUT instead of blocking; no extensions/WSI yet.
 - Running: Vulkan A3 uniform buffers in graphics (task dir
   `/mnt/p6/build/guest-vulkan-a3-20260928`, ports 4194/9404).
-- Running: Firefox DevTools blank fix (task dir
-  `/mnt/p6/build/firefox-devtools-20260928`, ports 4193/9403).
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
+- Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
+  packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
+  snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
+  at `/mnt/p6/build/firefox-devtools-20260928/candidate-run1` passes console,
+  eval, inspector and warm in the guest. v9->candidate update gate:
+  `/mnt/p6/build/firefox-homepage-20260926/devtools-update-run1`. Promote
+  locally only after it passes; not deployed to Sites.
+- Running: JIT packet 2 Firefox prep (growable table splice, stack-pointer
+  plan, 23-i64 helper call; task dir `/mnt/p6/build/guest-jit-ffprep-20260928`,
+  ports 4195/9405).
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Zink B0/B1, JIT 3.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
