@@ -1,3 +1,19 @@
+# Resumed work — 2026-09-28 (Claude Opus 5.5 session)
+
+The user explicitly resumed the goal: guest GPU in Linux-wasm, Vulkan usable by
+ordinary guest apps, Firefox GPU and JIT, then OpenGL via Vulkan (Zink).
+Branch: `claude-opus-5-5-guest-gpu-jit` (from `8ba982e`). The Codex-era weekly
+quota stop below is superseded for this work: if the 5-hour usage window runs
+out, pause and resume after it resets. Subagents use Opus 5.5 with short,
+bounded packets. Storage policy below still applies to every packet.
+
+Current packets (update as they finish):
+- Research: Vulkan gap for vkcube + Zink →
+  `docs/vulkan-gap-zink-vkcube-20260928.md` (scratch `/mnt/p6/build/zink-gap-20260928`).
+- Research: guest JIT runtime primitive + SpiderMonkey plan →
+  `docs/guest-jit-design-20260928.md` (scratch `/mnt/p6/build/jit-research-20260928`).
+Next: cut implementation packets from those two docs.
+
 # Current work and handoff — 2026-09-27 UTC
 
 Read `Agents.md` for the existing project instructions and historical build notes.
