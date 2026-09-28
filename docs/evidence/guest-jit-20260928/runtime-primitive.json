@@ -1,0 +1,52 @@
+{
+  "packet": "guest-jit-runtime-primitive (design packet 1)",
+  "date": "2026-09-28",
+  "baseCommit": "d5e48c074be2adf6ccb1d75c5b53b21fdfdc44f6",
+  "taskRoot": "/mnt/p6/build/guest-jit-20260928",
+  "sources": {
+    "web/linux/dist/worker.js": "4a052ba877327a197e110dba024c7ae9658d3eac951a203e9bbd94db6f7a5cec",
+    "web/linux/dist/guest-jit.js": "fc50f4af5232ce82054f81a90a9821742a457f471ac3911da1c01be72c4daad5",
+    "web/linux/tests/guest-jit/jit-test.c": "7fd4f9c9f86554abc4cb225c4fc2933263ee9939965b7d99f714887cb723fb8f",
+    "web/linux/tests/guest-jit/build.py": "632246a617d0904c640d4c8577b4ea6389f31686070ac0dc3b973451a226c2c9",
+    "web/linux/tests/guest-jit/run-guest.mjs": "57bc17e73d2836e030a61c4f903c6f4003240c95f2b5cf2568d1334dccbf8d04",
+    "web/linux/tests/guest-jit/index.html": "6587b0b9d783909550f7b166232878f74ab6ff99c571ada2e6beff2a0b21f241"
+  },
+  "build": {
+    "dir": "build-run2",
+    "binaryBytes": 50774,
+    "binarySha256": "946a2268f106cf88bb5c9a5e814b0855339fb46802f5a247d1f12c104eed18e2",
+    "mainTableInitial": 17,
+    "growableTable": true,
+    "archiveBytes": 40546576,
+    "archiveSha256": "4cdf421aeff8ef764f654c1673d6267f1e83987ff2849b8a11caabd5ceb458f4",
+    "plainSourceSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+    "modified": ["init"], "added": ["bin/guest-jit-test"], "unchangedOriginalRecords": 3846,
+    "acceptedImagesModified": false
+  },
+  "guest": {
+    "run": "guest-run4",
+    "resultSha256": "f9b7206790abdbaf30cea022d7687953e7cc8e1fc5ab792d8387db7e7271f0ec",
+    "pass": true, "checksPassed": 62, "checksFailed": 0, "exitStatus": 0,
+    "configuration": {"memoryKiB": 1048576, "cpus": 2, "verifiedFromKernelMarkers": true},
+    "browserExit": 0, "serverClosed": true, "runtimeExceptions": 0,
+    "covered": ["install f0 x+1", "call_indirect into main module", "shared memory load/store",
+      "sibling call via __jit_table_base", "module cache hit reinstall", "second pthread replay at creation",
+      "jit_sync late install and tombstone", "thread install visible to main", "fork COPY child replay and private install",
+      "exec fresh control block", "jit_free clears slot", "delayed index reuse after ack",
+      "reject function import/unshared memory/mutable global/start/active data/active elem/bad export name/oversized/garbage/bad pointer/flags/bad free/partial free/double free"],
+    "bench": {"iterations": 10000000, "nativeNsPerCall": 15.348, "jitNsPerCall": 15.677, "ratio": 1.021,
+      "rounds": [[15.348, 16.177], [15.669, 15.677], [15.954, 16.107]]},
+    "syscallBench": {"calls": 200000, "getppidNs": 1131.6, "jitSyncNs": 155.6},
+    "stats": {"epoch": 11, "compiles": 10, "cacheHits": 1, "replayInstalls": 1, "replayFrees": 1, "replayErrors": 0}
+  },
+  "regression": {
+    "run": "aurora-run1", "runner": "web/linux/tests/aurora-ready/run-browser.mjs (frozen copy, task-root guard only)",
+    "resultSha256": "4ac3350c78debe0c4404af2115ccafe8f389e17ffaa82a6ce6e59431c6a44b81",
+    "pass": true, "checks": 23, "configuration": {"memoryKiB": 4194240, "cpus": 2},
+    "servedRuntimeMatchesTestedSources": true
+  },
+  "failedAttemptsPreserved": ["guest-run1: browser startup deadline", "guest-run2: fork child null-slot check (thread reused freed slot) in older test",
+    "guest-run3: runner snapshot before documentElement existed"],
+  "limitations": ["not a SpiderMonkey JIT", "Firefox table fixed-size: installs return ENOMEM",
+    "normal-syscall overhead not measured against unmodified worker.js", "headless Chromium single-run timings"]
+}

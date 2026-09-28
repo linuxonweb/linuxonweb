@@ -1,0 +1,69 @@
+<!doctype html><meta charset="utf-8"><title>Guest JIT runtime primitive</title>
+<h1>Guest JIT runtime code-install primitive</h1>
+<p>Boots the accepted plain system with a test-only /init that runs /bin/guest-jit-test in the foreground.</p>
+<button id="boot">Run isolated guest</button><button id="stop">Stop guest</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import {spawnMachine, consoleDevice, entropyDevice, inputDevice} from '../../dist/index.js';
+const report = window.guestJitResults = {logs:'', lines:[], bootConfigurationEvidence:[], errors:[], done:false,
+  isolated:crossOriginIsolated};
+let machine, deadline, partial = '';
+const decoder = new TextDecoder();
+async function readBootConsole(stream) {
+  const reader = stream.getReader(), bootDecoder = new TextDecoder();
+  let pending = '';
+  try {
+    for (;;) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      const lines = (pending + bootDecoder.decode(new Uint8Array(value), {stream:true})).split('\n');
+      pending = lines.pop().slice(-8192);
+      for (const line of lines)
+        if (/Memory:|smp: Brought up/.test(line) && report.bootConfigurationEvidence.length < 16)
+          report.bootConfigurationEvidence.push({text:line.replaceAll('\r','').slice(0,4096), hostMs:performance.now()});
+    }
+  } catch (error) { report.bootConsoleError = String(error); }
+  finally { reader.releaseLock(); }
+}
+const finish = result => {
+  if (report.done) return;
+  report.done = true; clearTimeout(deadline);
+  document.documentElement.dataset.result = result;
+};
+const log = bytes => {
+  const text = decoder.decode(new Uint8Array(bytes), {stream:true});
+  report.logs = (report.logs + text).slice(-262144);
+  partial += text;
+  const lines = partial.split('\n');
+  partial = lines.pop();
+  for (const raw of lines) {
+    const line = raw.replaceAll('\r', '');
+    if (line.startsWith('GUEST_JIT') && report.lines.length < 512) report.lines.push({text:line, hostMs:performance.now()});
+    const exit = /^GUEST_JIT_EXIT status=(\d+)/.exec(line);
+    if (exit) { report.exitStatus = Number(exit[1]); finish(report.exitStatus === 0 ? 'pass' : 'fail'); }
+  }
+  document.querySelector('#log').textContent = report.logs.slice(-16000);
+};
+document.querySelector('#boot').onclick = async () => {
+  document.querySelector('#boot').disabled = true;
+  report.startedMs = performance.now();
+  deadline = setTimeout(() => { report.errors.push('page watchdog: 150 seconds'); machine?.close(); finish('fail'); }, 150000);
+  try {
+    if (!crossOriginIsolated) throw Error('cross-origin isolation required');
+    const metadata = await (await fetch('./candidate/build.json')).json();
+    const initcpio = new Uint8Array(await (await fetch('./candidate/initramfs.cpio')).arrayBuffer());
+    const sha = [...new Uint8Array(await crypto.subtle.digest('SHA-256', initcpio))].map(n => n.toString(16).padStart(2, '0')).join('');
+    if (!metadata.pass || !metadata.testOnly || metadata.archiveBytes !== initcpio.length || metadata.archiveSha256 !== sha)
+      throw Error('candidate hash mismatch');
+    report.configuration = {cpus:2, memoryBytes:1073741824, cmdline:'console=hvc0 rdinit=/init', visibility:document.visibilityState};
+    machine = await spawnMachine({cpus:2, devicetree:{memory:{reg:[0, report.configuration.memoryBytes]}}, initcpio,
+      cmdline:report.configuration.cmdline,
+      devices:[consoleDevice(null, new WritableStream({write:log})), entropyDevice(), inputDevice()],
+      framebuffer:{canvas:document.querySelector('#display'), width:640, height:480, backend:'canvas2d'}});
+    window.guestJitMachine = machine;
+    void readBootConsole(machine.bootConsole);
+    machine.closed.catch(error => { report.errors.push(String(error?.message ?? error)); finish('fail'); });
+  } catch (error) { report.errors.push(String(error.message)); finish('fail'); }
+};
+document.querySelector('#stop').onclick = () => { clearTimeout(deadline); machine?.close(); };
+</script>

@@ -6,6 +6,7 @@ import { read_wasm_memories } from "./wasm_binary.js";
 import { allocate_shared_memory, HALT_KERNEL, kernel_imports, memory_bytes, user_module_imports_supported, } from "./wasm.js";
 import { ensureUserDestination, growForSyscallResult } from "./user-memory-growth-adapter.js";
 import { installFirefoxCallbackAdapter } from "./firefox-callback-adapter.mjs";
+import { cloneJitControl, createJitControl, JitThread, jitSyscall, JIT_SYSCALL_MAX, JIT_SYSCALL_MIN, } from "./guest-jit.js";
 const unavailable = () => {
     throw new Error("not available on worker thread");
 };
@@ -17,6 +18,8 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
     let instance = null;
     let pending_module_bytes = null;
     let pending = null;
+    // Guest runtime code installation (see guest-jit.js); one per user Instance.
+    let jit_thread = null;
     // One slot per nested SA_SIGINFO callback; null means its trampoline has
     // not requested the active signal payload yet.
     const siginfo_copy_results = [];
@@ -338,6 +341,8 @@ function create_instance(context) {
   let threadAreaPointer = null;
   let threadAreaLogged = false;
   let threadAreaGetLogged = false;
+  // Set after instantiation; private JIT syscalls see null until then.
+  let local_jit = null;
     firefox_start_guard_snapshot(context.memory, "before-instance");
     const abortTrace = firefox_abort_trace_enabled() && isFirefoxSyscallTraceModule(context.module);
     if (abortTrace) Error.stackTraceLimit = 64;
@@ -388,6 +393,9 @@ function create_instance(context) {
             linux: {
                 audio_write: createAudioWrite(context.memory, postMessage),
       syscall: (nr, arg0, arg1, arg2, arg3, arg4, arg5) => {
+        // Private guest JIT syscalls never reach the kernel.
+        if (nr >= JIT_SYSCALL_MIN && nr <= JIT_SYSCALL_MAX)
+          return jitSyscall(local_jit, context.memory, nr, arg0, arg1, arg2, arg3);
         const original_instance = instance;
         traceAbortWrite(nr, arg0, arg1, arg2);
         const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
@@ -425,6 +433,8 @@ function create_instance(context) {
                         call_entry = call_start;
                         throw HALT_USER;
                     }
+                    if (local_jit !== null && local_jit.pending())
+                        local_jit.replay();
                     return ret;
                 },
       get_thread_area: (addr) => {
@@ -462,6 +472,17 @@ function create_instance(context) {
         if (patched) {
             console.debug(`[firefox-callback-adapter] filled ${patched} reserved indirect-table entries`);
         }
+        // Exec replaces the instance and its control block; release the old slot.
+        if (jit_thread !== null) {
+            jit_thread.release();
+            jit_thread = null;
+        }
+        if (context.jit instanceof SharedArrayBuffer) {
+            local_jit = new JitThread(context.jit, context.memory, user_instance.exports.__indirect_function_table);
+            // Threads and fork children observe every earlier install.
+            local_jit.replay();
+            jit_thread = local_jit;
+        }
         return user_instance;
     }
     function instantiate(fresh_memory) {
@@ -476,6 +497,12 @@ function create_instance(context) {
     return {
         get context() {
             return context;
+        },
+        release_jit() {
+            if (jit_thread !== null) {
+                jit_thread.release();
+                jit_thread = null;
+            }
         },
         prepare() {
             if (parent)
@@ -548,7 +575,8 @@ function create_instance(context) {
                 catch {
                     return -12; // out of memory
                 }
-                const next_context = { module, ...allocated };
+                // Exec starts with an empty guest JIT control block.
+                const next_context = { module, ...allocated, jit: createJitControl() };
                 pending = next_context;
                 return 0;
             },
@@ -733,7 +761,9 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
             if (!destination)
                 throw new RangeError("invalid destination memory");
             destination.set(source);
-            user_context = { module: user_context.module, ...copied };
+            // The child owns a private copy of the JIT allocator/log and replays it.
+            const jit = cloneJitControl(user_context.jit);
+            user_context = { module: user_context.module, ...copied, jit };
             Atomics.store(user_copy_status, 0, 1);
         }
         catch {
@@ -806,6 +836,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
                 return user.context;
             },
             worker_exit() {
+                user.release_jit();
                 postMessage({ type: "worker_exit" });
             },
         }),
