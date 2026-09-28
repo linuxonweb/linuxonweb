@@ -17,11 +17,14 @@ Current packets (update as they finish):
   `docs/guest-jit-runtime-primitive-20260928.md`): 62/62 real-guest checks,
   installed call 15.7 ns vs static 15.3 ns. Firefox table is not growable yet
   (JIT packet 2 must splice/relink it).
-- Running: Vulkan A1+A2 (partial edits uncommitted in guest-vulkan*/; task dir
-  `/mnt/p6/build/guest-vulkan-a1a2-20260928`, ports 4192/9402).
+- Done: Vulkan A1+A2 core 1.1 queries, fences, semaphores (`083368a`,
+  `docs/guest-vulkan-core11-sync-20260928.md`); all ten guest suites pass.
+  Waits return VK_TIMEOUT instead of blocking; no extensions/WSI yet.
+- Running: Vulkan A3 uniform buffers in graphics (task dir
+  `/mnt/p6/build/guest-vulkan-a3-20260928`, ports 4194/9404).
 - Running: Firefox DevTools blank fix (task dir
   `/mnt/p6/build/firefox-devtools-20260928`, ports 4193/9403).
-Next: Vulkan A3-A7 (UBO, textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Zink B0/B1, JIT 2-3.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
