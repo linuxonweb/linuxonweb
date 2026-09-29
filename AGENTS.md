@@ -30,8 +30,14 @@ Current packets (update as they finish):
   guest Firefox has WebGPU DOM/IPC/wgpu bindings but only the Empty hal and
   RELEASE_OR_BETA gates. Route: `--wrap` forwarder at `wgpu_server_*` to a host
   GPU-owner Worker (host WebGPU passthrough). Packets W0-W9.
-- Running: W0 mmap-shim MAP_SHARED aliasing + Firefox relink (task dir
-  `/mnt/p6/build/firefox-mmap-w0-20260929`, ports 4196/9406).
+- Done: W0 mmap-shim MAP_SHARED aliasing (`91c80e0`,
+  `docs/firefox-mmap-shared-20260929.md`): one backing per file, guest 63/0,
+  relinked Firefox passes DevTools even without the packed-JS workaround
+  (root cause fixed) plus startup/update regressions. Candidates
+  `93720d50222f` (workaround kept) and `9fe35012a2b7` (workaround removed) in
+  `/mnt/p6/build/firefox-mmap-w0-20260929`; neither promoted.
+- Running: W1 WebGPU gates + prefs (task dir
+  `/mnt/p6/build/firefox-webgpu-w1-20260929`, ports 4198/9408).
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
