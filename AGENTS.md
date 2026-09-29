@@ -37,9 +37,16 @@ Current packets (update as they finish):
   spliced Firefox 11/11, startup/update regressions pass. Candidate
   `a9438150f676` at `/mnt/p6/build/guest-jit-ffprep-20260928/candidate-run1`
   (base `b21b2cac65a3`) is NOT promoted; promote with the JIT specializer.
-- Running: Zink B0/B1 (Mesa 26.2.3 wasm32 configure blockers + native lavapipe
-  Zink requirement dump; task dir `/mnt/p6/build/zink-b0b1-20260928`).
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), JIT 3 (PBL diagnosis), Zink B2+.
+- Done: Zink B0/B1 (`c4e71e9`, `docs/zink-requirements-20260928.md`): Mesa
+  26.2.3 wasm32 configure passes (bundled libdrm, xshmfence/xxf86vm stubs).
+  Zink startup needs 7 device exts + 4 features (maintenance1/5,
+  desc_update_template, renderpass2, dynamic_rendering, robustness2,
+  timeline_semaphore; nullDescriptor etc.), CPU device type for surfaceless,
+  >=3 descriptor sets, headers >=354 (bind Zink directly to the ICD).
+  Current guest limits reach GL 2.1/ES 2.0 at best. Plan B2a-d, B3, B4a-f.
+- Running: JIT packet 3 PBL slowdown diagnosis (task dir
+  `/mnt/p6/build/guest-jit-pbl-diag-20260928`, ports 4196/9406).
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube) merged with Zink B2a-d, then B3 (first Zink pixels), JIT 4-5.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
