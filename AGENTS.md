@@ -31,10 +31,15 @@ Current packets (update as they finish):
   user.js, prior download preserved; zero-image restart). Promoted locally in
   `web/linux`; v9 inputs kept in `/mnt/p6/build/firefox-devtools-20260928/v9-baseline`.
   Not deployed to Sites (v9 still public).
-- Running: JIT packet 2 Firefox prep (growable table splice, stack-pointer
-  plan, 23-i64 helper call; task dir `/mnt/p6/build/guest-jit-ffprep-20260928`,
-  ports 4195/9405).
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Zink B0/B1, JIT 3.
+- Done: JIT packet 2 Firefox prep (`fbfdaab`, `docs/guest-jit-firefox-prep-20260928.md`):
+  Table section splice (min 177851, no max; only opt/firefox/firefox changes),
+  stack-pointer option (c), fpcast 23-i64 guest test 24/24, host check on
+  spliced Firefox 11/11, startup/update regressions pass. Candidate
+  `a9438150f676` at `/mnt/p6/build/guest-jit-ffprep-20260928/candidate-run1`
+  (base `b21b2cac65a3`) is NOT promoted; promote with the JIT specializer.
+- Running: Zink B0/B1 (Mesa 26.2.3 wasm32 configure blockers + native lavapipe
+  Zink requirement dump; task dir `/mnt/p6/build/zink-b0b1-20260928`).
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), JIT 3 (PBL diagnosis), Zink B2+.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
