@@ -20,9 +20,12 @@ Current packets (update as they finish):
 - Done: Vulkan A1+A2 core 1.1 queries, fences, semaphores (`083368a`,
   `docs/guest-vulkan-core11-sync-20260928.md`); all ten guest suites pass.
   Waits return VK_TIMEOUT instead of blocking; no extensions/WSI yet.
-- Running: Vulkan A3 uniform buffers (resumed 2026-09-29 after a rate-limit
-  cut; partial edits uncommitted; task dir `/mnt/p6/build/guest-vulkan-a3-20260928`,
-  ports 4194/9404).
+- Done: Vulkan A3 uniform buffers (`f93e8a2`, `docs/guest-vulkan-uniform-buffers-20260929.md`):
+  descriptor set layouts/pools/sets + UNIFORM_BUFFER on WebGPU and WebGL2
+  (opt-in `allowUniforms`); uniform app 201,269 checks on both backends, all
+  ten earlier suites unchanged. No dynamic offsets/push constants yet.
+- Running: Vulkan A4 sampled textures/samplers (task dir
+  `/mnt/p6/build/guest-vulkan-a4-20260929`, ports 4197/9407).
 - Done: Firefox WebGPU design (`5f0c1b5`, `docs/firefox-webgpu-design-20260929.md`):
   guest Firefox has WebGPU DOM/IPC/wgpu bindings but only the Empty hal and
   RELEASE_OR_BETA gates. Route: `--wrap` forwarder at `wgpu_server_*` to a host
@@ -55,7 +58,7 @@ User priority (2026-09-29): finish guest Vulkan first, then Firefox WebGPU
 (prefer passthrough to host WebGPU if feasible), then Firefox GPU generally;
 Zink/OpenGL is deferred until after that. JIT continues in parallel when a slot
 is free.
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Firefox WebGPU W1-W9, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
+Next: Vulkan A5-A7 (depth, WSI, vkcube), Firefox WebGPU W1-W9, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
