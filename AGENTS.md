@@ -20,8 +20,11 @@ Current packets (update as they finish):
 - Done: Vulkan A1+A2 core 1.1 queries, fences, semaphores (`083368a`,
   `docs/guest-vulkan-core11-sync-20260928.md`); all ten guest suites pass.
   Waits return VK_TIMEOUT instead of blocking; no extensions/WSI yet.
-- Running: Vulkan A3 uniform buffers in graphics (task dir
-  `/mnt/p6/build/guest-vulkan-a3-20260928`, ports 4194/9404).
+- Running: Vulkan A3 uniform buffers (resumed 2026-09-29 after a rate-limit
+  cut; partial edits uncommitted; task dir `/mnt/p6/build/guest-vulkan-a3-20260928`,
+  ports 4194/9404).
+- Running: Firefox WebGPU research/design (host-WebGPU passthrough vs wgpu on
+  the guest Vulkan ICD; task dir `/mnt/p6/build/firefox-webgpu-research-20260929`).
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
@@ -44,9 +47,12 @@ Current packets (update as they finish):
   timeline_semaphore; nullDescriptor etc.), CPU device type for surfaceless,
   >=3 descriptor sets, headers >=354 (bind Zink directly to the ICD).
   Current guest limits reach GL 2.1/ES 2.0 at best. Plan B2a-d, B3, B4a-f.
-- Running: JIT packet 3 PBL slowdown diagnosis (task dir
-  `/mnt/p6/build/guest-jit-pbl-diag-20260928`, ports 4196/9406).
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube) merged with Zink B2a-d, then B3 (first Zink pixels), JIT 4-5.
+User priority (2026-09-29): finish guest Vulkan first, then Firefox WebGPU
+(prefer passthrough to host WebGPU if feasible), then Firefox GPU generally;
+Zink/OpenGL is deferred until after that. JIT continues in parallel when a slot
+is free.
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Firefox WebGPU packets
+from the design doc, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
