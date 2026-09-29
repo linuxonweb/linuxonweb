@@ -1,0 +1,113 @@
+{
+  "packet": "guest-jit-firefox-prep (design packet 2)",
+  "date": "2026-09-28",
+  "branch": "claude-opus-5-5-guest-gpu-jit",
+  "baseCommit": "ee20f16",
+  "taskRoot": "/mnt/p6/build/guest-jit-ffprep-20260928",
+  "sources": {
+    "tools/guest-rootfs/package-firefox-jit-table.py": "00097a53a8892b82298839eba87c774f0af768282ccf5e840e93f3fde7d15a73",
+    "web/linux/tests/guest-jit-fpcast/jit-fpcast-test.c": "e3180aec87b490b20c6caf5953b13d65f1f1350d57a4000ca58209d56a6494c2",
+    "web/linux/tests/guest-jit-fpcast/build.py": "1fbed2bed4a758ec1ab6d5e12b307d2b9bec752b35359bc805ca744699f24b73",
+    "web/linux/tests/guest-jit-fpcast/run-guest.mjs": "a79cfc6fb3ab47e01d691565b5e7aa737485d68d19eaa0e0f4c491291e137341",
+    "web/linux/tests/guest-jit-fpcast/index.html": "544819373ba6f6a6b86ceadefd8d935ee7ef2fb388dfa2783e8a263dbbebdace",
+    "web/linux/tests/guest-jit-fpcast/firefox-table-check.mjs": "5ce9c52b4684e61d085a5583151a433a7474b3597bb94b573adae386b8706d30",
+    "web/linux/dist/worker.js (unchanged)": "4a052ba877327a197e110dba024c7ae9658d3eac951a203e9bbd94db6f7a5cec",
+    "web/linux/dist/guest-jit.js (unchanged)": "fc50f4af5232ce82054f81a90a9821742a457f471ac3911da1c01be72c4daad5"
+  },
+  "candidate": {
+    "dir": "candidate-run1",
+    "version": "a9438150f676",
+    "archive": "initramfs-firefox.cpio.gz",
+    "archiveBytes": 88378858,
+    "archiveSha256": "557019a9b425f483588f3ea5f715150a7e9f1b16744bec2a14343fe44e7f3cf3",
+    "manifestSha256": "e9f35b8a5bc581a6cf0cec6efaf310f0be8bb56e84213b5a3b7d25d81340745e",
+    "baseImage": {
+      "version": "b21b2cac65a3",
+      "label": "DevTools fix, promoted in ee20f16 (currently in web/linux)",
+      "archiveSha256": "d3d9afca272947ba1b6bb743585a6f0cf33de90c54adff1cd85b5c5bf9d8002b",
+      "manifestSha256": "8fca6cf14e2a0e1ad77cd49aa28198ed0fa02a8649156bcb43468b877ca8cc45",
+      "snapshotByteEqualToWebLinux": true
+    },
+    "module": {
+      "member": "opt/firefox/firefox",
+      "beforeBytes": 157421037, "beforeSha256": "644ab48f01a8a588706d1ec1c3a97006469964c705edc0f5d599286c890c610f",
+      "afterBytes": 157421034, "afterSha256": "ffcfcbf3783bf15634473e9bd43d10629a468ed7a17814c64ff70618e4baefa7",
+      "splice": {"tableSectionOffset": 526204, "old": "0409017001bbed0abbed0a", "new": "0406017000bbed0a",
+        "meaning": "table 0 funcref limits {min=177851,max=177851} -> {min=177851, no max}"},
+      "tableExportAlreadyPresent": "__indirect_function_table",
+      "wasmValidateEnableAll": "exit 0"
+    },
+    "independentAudit": {
+      "file": "verify-run1/audit.json",
+      "sha256": "f4df1610791ba77ee3f4de007405690f7ee317d727f46492835a5cb07d586eac",
+      "records": 11470, "orderEqual": true, "tailEqual": true,
+      "differingRecords": ["opt/firefox/firefox (header field filesize only)"],
+      "moduleBytesDifferOnlyInTableSection": true,
+      "manifestDiff": ["version", "firefox.bytes", "firefox.sha256"]
+    },
+    "promoted": false
+  },
+  "stackPointer": {
+    "decision": "option (c): generated code never reads or writes the C shadow stack pointer",
+    "moduleFacts": {
+      "global0": "i32 mutable, init 16777216 (the shadow stack pointer); not exported, not imported; per Instance, hence per thread",
+      "globals": 1670,
+      "functions": 513810,
+      "functionsWhoseFirstInstructionIsGlobalGet0": 124075,
+      "staticTableEntries": 177848,
+      "tableEntriesThatAreStraightLineFpcastThunks": 177848,
+      "thunksTouchingAnyGlobal": 0,
+      "scan": "inspect2/sp-scan.json sha256 328a9dbb662dc94b05a97f1be39e414914a9c63a0063c992cf6549c0fb343818"
+    },
+    "guestEvidence": "a C callee that uses the shadow stack, reached through an installed trampoline, sees the same frame address as a direct call; caller frame guard bytes intact; 2000 calls and JIT->C->JIT reentry depth 50 pass"
+  },
+  "fpcastGuestTest": {
+    "build": "fpcast-build-run2",
+    "binaryBytes": 40199,
+    "binarySha256": "9e2c32dd9ce8016dedc3ff20f24cc2b331c00f1319310afc642665fdf1e2629d",
+    "postProcess": "wasm-opt --fpcast-emu --pass-arg=max-func-params@23 (same pass as Firefox)",
+    "tableUniformity": {"entries": 13, "types": ["23xi64->i64"], "uniform": true},
+    "archiveSha256": "dd55b6bc35c2e55ca6ea1083c155630389a9d9b8e864983d58dd49ac00da32f5",
+    "archiveChanges": {"modified": ["init"], "added": ["bin/guest-jit-fpcast-test"], "unchangedOriginalRecords": 3846},
+    "run": "fpcast-guest-run2",
+    "resultSha256": "efa2b219d8bdb98e64f9f4b861739cc2e0fcd4bbc4250522fbc3af37d30aaf3b",
+    "pass": true, "checksPassed": 24, "checksFailed": 0, "exitStatus": 0,
+    "configuration": {"memoryKiB": 1048576, "cpus": 2, "verifiedFromKernelMarkers": true},
+    "browserExit": 0, "serverClosed": true, "runtimeExceptions": 0,
+    "bench": {"calls": 2000000, "directNsPerCall": [20.992, 19.245, 18.335], "viaInstalledTrampolineNsPerCall": [25.735, 25.993, 25.575]},
+    "stats": "epoch=3 compiles=2 table_length=19 table_base=16 next=19"
+  },
+  "firefoxModuleHostCheck": {
+    "scope": "Node v22 V8 on the actual spliced Firefox module bytes with the unmodified guest-jit.js install path; not inside a running guest Firefox",
+    "run": "host-check/run2",
+    "resultSha256": "96a5cb4fa253bbdf16ec4dc797c926090801f1aa80683a412e611015a9b31b06",
+    "pass": true, "checks": 11, "failures": 0,
+    "installedIndex": 177851, "tableLengthAfterInstall": 177852,
+    "fpcastTrampolineCallsIntoExistingFirefoxEntries": {"pureLeafEntries": 881, "comparedCalls": 3524, "mismatches": 0},
+    "controls": ["null static slot traps", "index beyond table traps", "free nulls slot", "unspliced module refuses install with -ENOMEM (-12), length unchanged"],
+    "earlierRun": "host-check/run1 identical pass (no input hashes recorded)"
+  },
+  "firefoxRegression": {
+    "runner": "tools/guest-rootfs/test-firefox-session-startup.mjs (sha256 8dc214e6ad8a4bcd9e87e362062a4c7c3ee0290170e3d444de405fc30c1db340)",
+    "taskRoot": "/mnt/p6/build/firefox-homepage-20260926",
+    "startup": {"run": "jit2-startup-run1", "resultSha256": "426099163e114b8d7e28ee863ddc36a7c12426d4bc1682be357b0ec61cfffdb9",
+      "servedVersion": "a9438150f676", "cold": "pass (typed input, JS checksum 7998000, home/user.js)", "warm": "pass, 0 image requests",
+      "launchLogMs": {"cold": 10438, "warm": 7319}, "browserExit": 0, "serverClosed": true, "errors": 0},
+    "update": {"run": "jit2-update-run1", "resultSha256": "998e124475105ae2d9ccb3d32e4e274b18c568dabdc996d0ab079774791e986f",
+      "baselineVersion": "b21b2cac65a3", "updatedVersion": "a9438150f676",
+      "baseline": "pass", "update": "pass, 0 image requests, prior download preserved",
+      "browserExit": 0, "serverClosed": true, "errors": 0},
+    "memory": "4 GiB / 2 CPUs Firefox boot mode"
+  },
+  "failedRuns": [
+    {"run": "fpcast-guest-run1", "result": "23 pass / 1 fail",
+     "cause": "test bug: expected value for stack_user was inverted (odd strings end in 'd' and return +1, the check expected +2); all ABI, frame-address and guard checks passed. Fixed in the C source; run2 passes 24/0."}
+  ],
+  "notProven": [
+    "jit_install called from inside a running guest Firefox process (no in-process caller exists without a SpiderMonkey change)",
+    "generated code calling SpiderMonkey helpers with real JSContext/frames",
+    "performance impact of a maximum-less table on Firefox call_indirect (no matched benchmark)",
+    "any JIT speedup; SpiderMonkey is still --disable-jit and unmodified"
+  ],
+  "selfScore": 80
+}
