@@ -1,0 +1,77 @@
+{
+  "packet": "W1",
+  "date": "2026-09-29",
+  "pass": true,
+  "taskRoot": "/mnt/p6/build/firefox-webgpu-w1-20260929",
+  "filesystem": "ext4 (/mnt/p6)",
+  "upstreamPatch": {
+    "path": "relink-run1/webgpu-gates.patch",
+    "sha256": "b31bddf801ecdc6068e163c10f27c898da542326a003536704653b5ba4703a37",
+    "edits": [
+      {"file": "dom/webgpu/Instance.cpp", "line": 69, "from": "#ifdef RELEASE_OR_BETA", "to": "#if defined(RELEASE_OR_BETA) && !defined(__wasm__)",
+       "originalSha256": "d0727d947b47f1b28caf2b7dee78022d8f4b155a046ff83ea63c2806bb6a5cc0", "patchedSha256": "63edadb39f48282e6101ff1103fea4a89380d2acf68a2b6cb95fdf0068b16f8e"},
+      {"file": "gfx/thebes/gfxPlatform.cpp", "line": 3178, "from": "#ifdef RELEASE_OR_BETA", "to": "#if defined(RELEASE_OR_BETA) && !defined(__wasm__)",
+       "originalSha256": "06c23a2454db76e9e13491f4baf72bead9a0bd057e3aa54d45f5425f89573536", "patchedSha256": "e20ea9fc6649b7468a8c73dd734c28bf8ba682a19af34a8313618dea24f16856"}
+    ],
+    "whyUnavoidable": "compile-time preprocessor branches; Instance.cpp returns the Release/Beta error before any pref check, gfxPlatform ForceDisable is not pref-overridable; no external call to --wrap; control-prefs run shows prefs alone reject x4"
+  },
+  "prefs": {"file": "opt/firefox/defaults/pref/wasm.js", "set": {"dom.webgpu.enabled": true, "gfx.webgpu.ignore-blocklist": true},
+            "beforeSha256": "5c4072e335ae8f2d96a78bbded4fc83face99bad25b276d2534bbb6cf9b92910", "afterSha256": "544a838463c452b884d6a3f9935e39a2977875e09b143ee49a25d0c8eb2949ae", "bytes": [541, 917]},
+  "tools": {
+    "tools/build-firefox-webgpu-gates.py": "ddc9256beb4d9144f3846acadbd7f9b0e3aed5e47ea6c6895784f0f21565a0f7",
+    "tools/guest-rootfs/package-firefox-webgpu-w1.py": "a1bc9630c2e50ba78e6818ef1b718e351a9e220e8c1944203cb1b0b83d09211a",
+    "tools/guest-rootfs/test-firefox-webgpu-w1.mjs": "bd177eb7cd5946ca85832d19ac39e80ebc45faba48c80649f8ee19446a0b8df6",
+    "runners/test-firefox-session-startup.mjs": "97c6e453d68f621db17af2c06a5fe3b8c408a39a74e290d47d4af1c558d70c6f"
+  },
+  "relinkControl": {
+    "run": "relink-control-run1", "pass": true,
+    "originalObjectsReproduced": {"webgpu0": "7521423c8ff7408a07102ff235fa398eacdd8ba83759156bef413e11139e4e11", "gfxPlatform": "bc3a9f8d5bcd9703b23235e482e7df5ee3bdf7b718071d5ecd243823538573ff"},
+    "maskedBuildIdSha256": "fd1b9cdbe4c31d8c9fbe461f5d0dcb96bb4405c36dd67f8ab81e0ef67cab49a2",
+    "equalsW0MaskedBuildId": true,
+    "reportSha256": "e9ff5cff8ab28aa6094f1be6e21435d2af0b363c389ff336576134277ba4031c"
+  },
+  "relink": {
+    "run": "relink-run1", "pass": true,
+    "linkInputDiff": {"argvDiffIndices": [37, 111], "argvLength": 114, "listDiffLines": [1112, 1485], "listLength": 2378},
+    "patchedObjects": {"webgpu0": {"sha256": "c2d44d7711ae142646dca356fb72d84fbb94d7b42963521ff90485abaf647bb1", "bytes": 3938182},
+                       "gfxPlatform": {"sha256": "064197359b89f4163c267e03104c47b243e2d2619a9a01bb64e38458cce28f7e", "bytes": 2065744}},
+    "firefoxWasm": {"sha256": "3a1af53de3306e5380c84fa900bcc505f09bae6ffb856be03972c9b9b2aa3db6", "bytes": 157454290, "validated": true},
+    "gateStringsRemoved": true,
+    "reportSha256": "38b09f62e6b35a452043b3d2c117655568c6b80c681e9806c1cca588be1431e0"
+  },
+  "candidate": {
+    "run": "candidate-run1", "version": "c27a1a7c6e6a",
+    "archiveSha256": "dbd64c0dcf7228f6385f54f3409c806df53448387451b8fe8ec688594b3ab5c2", "bytes": 88387268, "uncompressedBytes": 280054560,
+    "manifestSha256": "9b6dcb449335a761e99e5fe6a42084aef2633a61edc0969d29cbeb43fcaea52b",
+    "base": {"version": "9fe35012a2b7", "archiveSha256": "fe15ebdd7601aa567c658adf7b5d26873f4e6ca52219ae53cb1b30f70b6b2577"},
+    "records": 11470, "unchangedRecords": 11468, "changed": ["opt/firefox/firefox", "opt/firefox/defaults/pref/wasm.js"],
+    "independentVerify": "verify-package-run1/result.json",
+    "promoted": false, "deployed": false
+  },
+  "guestGates": {
+    "webgpu-gate-run1": {"mode": "candidate", "pass": true, "runnerSha256": "44252dcf83e5e53d2fb2157d10c415b3cea900996901ea39275ef948cc9d323b",
+      "cold": {"navigatorGpu": "[object GPU]", "secureContext": true, "requestAdapter": ["null", "null", "null", "null"], "probeMs": [280, 130, 49, 195], "preferredCanvasFormat": "bgra8unorm", "launchSeconds": 7.9, "imageRequests": 2},
+      "warm": {"requestAdapter": ["null", "null", "null", "null"], "probeMs": [82, 36, 194, 10], "imageRequests": 0},
+      "guestLog": "Uncaptured WebGPU error without device target: No suitable adapter found (x4 per phase); no fatal/crash lines; Firefox alive",
+      "input": "wasmperf checksum 7998000", "browserExit": 0, "serverClosed": true, "errors": 0,
+      "screenshotsInspected": ["cold-probe.png", "cold-functional.png", "warm-functional.png"]},
+    "webgpu-control-run1": {"mode": "control (W0 baseline, no prefs)", "pass": true, "runnerSha256": "44252dcf83e5e53d2fb2157d10c415b3cea900996901ea39275ef948cc9d323b", "navigatorGpu": "absent", "browserExit": 0},
+    "webgpu-control-prefs-run1": {"mode": "control-prefs (W0 baseline + both prefs)", "pass": true, "runnerSha256": "bd177eb7cd5946ca85832d19ac39e80ebc45faba48c80649f8ee19446a0b8df6", "navigatorGpu": "[object GPU]",
+      "requestAdapter": "rejected x4: NotSupportedError: WebGPU is not yet available in Release or Beta builds.", "browserExit": 0}
+  },
+  "regressions": {
+    "session-startup-run1": {"pass": true, "baseline": "9fe35012a2b7",
+      "cold": {"guestReadySeconds": 34.9, "launchSeconds": 7.9, "imageRequests": 2},
+      "warm": {"guestReadySeconds": 25.7, "launchSeconds": 6.8, "imageRequests": 0},
+      "browserExit": 0, "serverClosed": true, "errors": 0}
+  },
+  "cleanup": {"ownedProcessesRemaining": 0, "ports": [4198, 9408], "portsFree": true, "userServerPid": 1591443, "userServerStartTicks": 148821663, "preserved": true},
+  "limitations": [
+    "Empty wgpu HAL: adapters are null; no GPU work",
+    "patched objects embed task paths; control relink proves pipeline reproduces W0",
+    "wgslLanguageFeatures undefined in Firefox 128",
+    "launch-log timing is not first paint",
+    "not promoted/deployed; update/home, DevTools, JIT-prep combination and public gates pending"
+  ],
+  "w2Blockers": []
+}
