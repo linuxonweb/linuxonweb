@@ -36,8 +36,15 @@ Current packets (update as they finish):
   (root cause fixed) plus startup/update regressions. Candidates
   `93720d50222f` (workaround kept) and `9fe35012a2b7` (workaround removed) in
   `/mnt/p6/build/firefox-mmap-w0-20260929`; neither promoted.
-- Running: W1 WebGPU gates + prefs (task dir
-  `/mnt/p6/build/firefox-webgpu-w1-20260929`, ports 4198/9408).
+- Done: W1 WebGPU gates (`88a24f8`, `docs/firefox-webgpu-w1-20260929.md`): two
+  `RELEASE_OR_BETA` gate lines relaxed under `__wasm__` (only upstream edit),
+  prefs in `defaults/pref/wasm.js`. Guest `navigator.gpu` present,
+  `requestAdapter()` resolves null (Empty HAL), no crash; startup cold/warm
+  pass. Candidate `c27a1a7c6e6a` (base W0 `9fe35012a2b7`) at
+  `/mnt/p6/build/firefox-webgpu-w1-20260929/candidate-run1`; not promoted.
+  Later Firefox candidates build on it.
+- Running: W2 host GPU-owner Worker + `gpu_hostcall` (task dir
+  `/mnt/p6/build/firefox-webgpu-w2-20260929`, ports 4198/9408).
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
