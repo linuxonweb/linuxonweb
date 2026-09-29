@@ -67,7 +67,7 @@ export function createMobileKeyboard({ toggle, panel, input, canvas }) {
     input.blur();
     panel.hidden = true;
     toggle.setAttribute('aria-expanded', 'false');
-    toggle.textContent = 'Keyboard';
+    (toggle.querySelector('.label') ?? toggle).textContent = 'Keyboard';
     reset();
     if (restoreFocus) canvas.focus({ preventScroll: true });
   };
@@ -77,7 +77,7 @@ export function createMobileKeyboard({ toggle, panel, input, canvas }) {
     opened = true;
     panel.hidden = false;
     toggle.setAttribute('aria-expanded', 'true');
-    toggle.textContent = 'Hide keyboard';
+    (toggle.querySelector('.label') ?? toggle).textContent = 'Hide keyboard';
     reset();
     focus();
   });

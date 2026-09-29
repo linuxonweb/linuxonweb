@@ -102,7 +102,7 @@ export function createLogViewer({ toggle, parent }) {
     timer = null;
     panel?.remove();
     panel = viewport = list = summary = latest = null;
-    toggle.textContent = 'Show logs';
+    (toggle.querySelector('.label') ?? toggle).textContent = 'Show logs';
     toggle.setAttribute('aria-expanded', 'false');
   }
   function open() {
@@ -146,7 +146,7 @@ export function createLogViewer({ toggle, parent }) {
     parent.append(panel);
     following = true;
     render('bottom');
-    toggle.textContent = 'Hide logs';
+    (toggle.querySelector('.label') ?? toggle).textContent = 'Hide logs';
     toggle.setAttribute('aria-expanded', 'true');
   }
   toggle.addEventListener('click', () => panel ? close() : open());

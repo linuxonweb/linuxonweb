@@ -60,8 +60,12 @@ const displayStage = document.querySelector(".stage");
 const displayPan = document.getElementById("display-pan");
 let panDisplay = false;
 let cancelGuestGesture = () => {};
+// The page itself scrolls around a display larger than the window, so panning
+// is offered whenever the display does not fit the viewport.
 function updateDisplayPan() {
-  const overflow = displayStage.scrollWidth > displayStage.clientWidth || displayStage.scrollHeight > displayStage.clientHeight;
+  const viewportWidth = document.documentElement.clientWidth;
+  document.documentElement.style.setProperty("--viewport-width", `${viewportWidth}px`);
+  const overflow = displayStage.offsetWidth > viewportWidth || displayStage.offsetHeight > window.innerHeight;
   displayPan.hidden = !overflow;
   if (!overflow) panDisplay = false;
   canvas.style.touchAction = panDisplay ? "pan-x pan-y" : "none";
@@ -73,6 +77,24 @@ displayPan.addEventListener("click", () => {
   updateDisplayPan();
 });
 new ResizeObserver(updateDisplayPan).observe(displayStage);
+window.addEventListener("resize", updateDisplayPan);
+// After a click on the display, align its top with the viewport. Doing this on
+// release keeps the guest's press and release at the same display position.
+canvas.addEventListener("pointerup", () => {
+  if (panDisplay) return;
+  const top = displayStage.getBoundingClientRect().top;
+  if (Math.abs(top) >= 1) window.scrollBy({ top, behavior: "instant" });
+});
+// Icon buttons show their label on hover or keyboard focus; a click or tap
+// shows it briefly, since touch has no hover.
+for (const button of document.querySelectorAll(".toolbar .tool")) {
+  let timer = 0;
+  button.addEventListener("click", () => {
+    button.classList.add("show-label");
+    clearTimeout(timer);
+    timer = setTimeout(() => button.classList.remove("show-label"), 1500);
+  });
+}
 const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
 const settingsKey = "linuxonweb.machine-settings.v1";
 const resumeKey = "linuxonweb.restart-mode.v1";
