@@ -23,8 +23,12 @@ Current packets (update as they finish):
 - Running: Vulkan A3 uniform buffers (resumed 2026-09-29 after a rate-limit
   cut; partial edits uncommitted; task dir `/mnt/p6/build/guest-vulkan-a3-20260928`,
   ports 4194/9404).
-- Running: Firefox WebGPU research/design (host-WebGPU passthrough vs wgpu on
-  the guest Vulkan ICD; task dir `/mnt/p6/build/firefox-webgpu-research-20260929`).
+- Done: Firefox WebGPU design (`5f0c1b5`, `docs/firefox-webgpu-design-20260929.md`):
+  guest Firefox has WebGPU DOM/IPC/wgpu bindings but only the Empty hal and
+  RELEASE_OR_BETA gates. Route: `--wrap` forwarder at `wgpu_server_*` to a host
+  GPU-owner Worker (host WebGPU passthrough). Packets W0-W9.
+- Running: W0 mmap-shim MAP_SHARED aliasing + Firefox relink (task dir
+  `/mnt/p6/build/firefox-mmap-w0-20260929`, ports 4196/9406).
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
@@ -51,8 +55,7 @@ User priority (2026-09-29): finish guest Vulkan first, then Firefox WebGPU
 (prefer passthrough to host WebGPU if feasible), then Firefox GPU generally;
 Zink/OpenGL is deferred until after that. JIT continues in parallel when a slot
 is free.
-Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Firefox WebGPU packets
-from the design doc, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
+Next: Vulkan A4-A7 (textures, depth, WSI, vkcube), Firefox WebGPU W1-W9, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
