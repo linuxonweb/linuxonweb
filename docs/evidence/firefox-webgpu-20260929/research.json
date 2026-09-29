@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-29",
+  "kind": "research-only; no builds, browsers or servers",
+  "rootfs": {"path": "web/linux/initramfs-firefox.cpio.gz", "bytes": 88378850, "sha256": "d3d9afca272947ba1b6bb743585a6f0cf33de90c54adff1cd85b5c5bf9d8002b"},
+  "firefoxBinary": {"path": "opt/firefox/firefox", "bytes": 157421037, "sha256": "644ab48f01a8a588706d1ec1c3a97006469964c705edc0f5d599286c890c610f", "functions": 513810, "nameSection": false},
+  "buildTree": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/var/nix/builds/nix-721784-2625232085/build/firefox-128.14.0 (objdir obj-wasm-browser)",
+  "compiled": {"domWebgpu": true, "pwebgpuIpdl": true, "gkrustWgpuServerExports": 57, "gkrustWgpuClientExports": 38, "wgpuCore": true, "naga": true, "wgpuHalBackends": ["empty"], "wgpuRevision": "c7458638d14921c7562e4197ddeefa17be413587"},
+  "gates": {"RELEASE_OR_BETA": 1, "instanceRequestAdapterRejects": "WebGPU is not yet available in Release or Beta builds.", "gfxPlatformForceDisable": "WEBGPU_DISABLE_RELEASE_OR_BETA", "domWebgpuEnabledDefault": false, "enableablePerPrefOnly": false},
+  "singleProcess": {"webgpuParentInProcess": true, "shmemCoherent": false, "cause": "mmap-shim.c file-backed mmap = posix_memalign+pread private copy"},
+  "parentFfiDistinctCalls": 47,
+  "pollTimeMs": 100,
+  "options": {"a_remoteHal": "viable, heavier, patches vendored wgpu-core/hal", "b_serverFfiForwarder": "recommended", "c_parentRewrite": "viable but upstream C++ rewrite", "d_jsOverride": "infeasible", "e_vulkanOnGuestIcd": "unsuitable for WebGPU"},
+  "recommended": "b",
+  "packets": ["W0 mmap-shim MAP_SHARED aliasing", "W1 gate rebuild + prefs", "W2 host GPU-owner + hostcall ring", "W3 host bincode decoder at pinned wgpu rev", "W4 --wrap adapter: adapter/device/buffer/map/queue/poll", "W5 shaders/pipelines/compute readback", "W6 textures/render pass/canvas clear", "W7 triangle", "W8 error scopes/device loss", "W9 perf/CTS subset/promotion"],
+  "doc": "docs/firefox-webgpu-design-20260929.md"
+}
