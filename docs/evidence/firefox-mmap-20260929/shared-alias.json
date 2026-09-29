@@ -1,0 +1,122 @@
+{
+  "packet": "W0",
+  "date": "2026-09-29",
+  "taskRoot": "/mnt/p6/build/firefox-mmap-w0-20260929/",
+  "promoted": false,
+  "deployed": false,
+  "shim": {
+    "path": "web/linux/firefox-shims/mmap-shim.c",
+    "sourceSha256Prefix": "cf9f7592",
+    "objectSha256Prefix": "ebb24527"
+  },
+  "hostTest": {
+    "run": "host-test-run1",
+    "pass": true,
+    "aliasingChecks": 49,
+    "outputSha256": "5f162fff2c0f69e2fd87da580f61a492e8abedfd1b1c523fbc9c2dc6ccf0d16f"
+  },
+  "guestTest": {
+    "run": "guest-run2",
+    "pass": true,
+    "passed": 63,
+    "failed": 0,
+    "pageSize": 65536,
+    "memory": "1 GiB",
+    "cpus": 2,
+    "note": "memfd_create ENOSYS; shm_open path used",
+    "resultSha256": "65edf0c4a10106a351a4b252efe09f6b9c6f3c698fedf69a9fc2f1cffada4dfe",
+    "failedPreserved": [
+      "guest-run1"
+    ]
+  },
+  "relink": {
+    "control": {
+      "run": "relink-control-run1",
+      "matchesDeployedModuloBuildId": true
+    },
+    "candidate": {
+      "run": "relink-run1",
+      "bytes": 157423177,
+      "sha256": "4f7492e4c7666039f559c8cec55a438093fdf5093224dcd93c4ff95dede4305d",
+      "reportSha256": "bbebae2e797c1ffe3745e76940a234928bdfca12f42a27756633e03ed417302f"
+    }
+  },
+  "candidates": [
+    {
+      "run": "candidate-run1",
+      "version": "93720d50222f",
+      "base": "b21b2cac65a3",
+      "bytes": 88379774,
+      "sha256": "d1a7a74f9aa0facdd8d7c11ebe86f564a5de60250683903b8e9ecc1ffeebb656",
+      "modified": [
+        "opt/firefox/firefox"
+      ],
+      "unchangedRecords": 11469,
+      "devtoolsWorkaround": true
+    },
+    {
+      "run": "candidate-noworkaround-run1",
+      "version": "9fe35012a2b7",
+      "base": "b21b2cac65a3",
+      "bytes": 88379824,
+      "modifiedExtra": "ContentProcessWatcherRegistry.sys.mjs restored",
+      "unchangedRecords": 11468,
+      "devtoolsWorkaround": false
+    }
+  ],
+  "devtools": [
+    {
+      "run": "devtools-v9-control-run1",
+      "reproducesBug": true,
+      "resultSha256": "5913330eafa3f3a67e9974f67ae94f2381a8dc14f56ed2251b1d583fb140783e"
+    },
+    {
+      "run": "devtools-candidate-run1",
+      "pass": true,
+      "resultSha256": "4b8314c714eefc4e8d7859825f92c5da5ce82eaf470eb7995e44be646c49f7cc"
+    },
+    {
+      "run": "devtools-noworkaround-run1",
+      "pass": true,
+      "resultSha256": "4ad5484abaa747cf3b38b0b08808fa7c4b09586c6c72918ea7d78a2800e175de",
+      "screenshotsInspected": [
+        "21-eval-title.png",
+        "30-inspector-061s.png"
+      ]
+    }
+  ],
+  "regressions": [
+    {
+      "run": "session-startup-run1",
+      "candidate": "93720d50222f",
+      "pass": true,
+      "warmImageRequests": 0,
+      "launchLogSeconds": [
+        8.84,
+        7.87
+      ],
+      "resultSha256": "e0bfaf4c8f71fb12c3625d01354330089887d1401f1d83e63c8f1ca3d42d1625"
+    },
+    {
+      "run": "session-update-run1",
+      "from": "b21b2cac65a3",
+      "to": "93720d50222f",
+      "pass": true,
+      "priorDownloadPreserved": true,
+      "resultSha256": "fcd9d8bc5d804263a43fd67d15466a5097d71698d484365c1d919ad0dbc3d810"
+    }
+  ],
+  "ports": [
+    4196,
+    9406
+  ],
+  "cleanup": {
+    "browsersExitedZero": true,
+    "serversClosed": true
+  },
+  "limitations": [
+    "Session regressions ran on the workaround candidate, not the no-workaround bytes",
+    "Not a first-paint benchmark",
+    "No WebGPU functionality yet (W1+)"
+  ]
+}
