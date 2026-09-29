@@ -1,0 +1,543 @@
+{
+ "packet": "Zink B0/B1",
+ "date": "2026-09-28",
+ "doc": "docs/zink-requirements-20260928.md",
+ "task_root": "/mnt/p6/build/zink-b0b1-20260928",
+ "mesa": {
+  "version": "26.2.3",
+  "tarball_sha256": "1628058a8d2c0615975de5a15ab7bbb9638c50000b5bed9456ff423ea034a81f",
+  "upstream_patches": 0,
+  "libdrm_wrap_sha256": "fc68f9d0ba2ea63c9432a299e14fea09fad7a8a66e8039fcd7802ca59f77b4f5"
+ },
+ "b0": {
+  "cross_files": {
+   "wasm32-musl.ini": "f0720fc77f60a0765c63b5f40aac2eac1fc77675f0db25b60be6a25722cd8b7b",
+   "wasm32-musl-stubs.ini": "e4783d96bb494671994fe90136eb73a02da253dc5c10eabc3a660765e2939667"
+  },
+  "compiler": "nix wasm32-unknown-linux-musl-clang 22.1.8 wrapper, -pthread -matomics -mbulk-memory, link -static",
+  "blockers_ordered": [
+   {
+    "n": 1,
+    "dep": "libdrm",
+    "line": "meson.build:1921",
+    "runs": [
+     "x11-a1",
+     "headless-h1"
+    ],
+    "scope": "both (linux host => system_has_kms_drm => DRI required by EGL)",
+    "fix": "-Dallow-fallback-for=libdrm (Mesa libdrm 2.4.133 wrap, static)",
+    "class": "meson option"
+   },
+   {
+    "n": 2,
+    "dep": "xshmfence",
+    "line": "meson.build:2347",
+    "runs": [
+     "x11-a2"
+    ],
+    "scope": "x11 DRI3 only",
+    "fix": "configure-only .pc stub; cross-build to link",
+    "class": "stub"
+   },
+   {
+    "n": 3,
+    "dep": "xxf86vm",
+    "line": "meson.build:2356",
+    "runs": [
+     "x11-a3"
+    ],
+    "scope": "GLX only",
+    "fix": "configure-only .pc stub; cross-build to link",
+    "class": "stub"
+   }
+  ],
+  "configure_ok": {
+   "x11-a5": {
+    "rc": 0,
+    "targets": 1036
+   },
+   "headless-h2": {
+    "rc": 0,
+    "targets": 992
+   }
+  },
+  "shared_glapi": "deprecated no-op in 26.2.3, omitted",
+  "post_configure_blockers": [
+   "shared_library() hardcoded for libgallium/libEGL/libGLESv2/libGL/dril_dri -> static link wrapper",
+   "util_dl_open(VK_LIBNAME) -> static adapter returning ICD vk_icdGetInstanceProcAddr",
+   "DRI/EGL driver loader dlopen -> built-in static driver",
+   "version-script/dynamic-list NO (harmless)",
+   "threads/atomics verify at link"
+  ],
+  "compiled_or_linked": false
+ },
+ "b1_method": {
+  "native_build": "debug zink-only EGL surfaceless (native-dbg-install)",
+  "icd_under_test": "host lavapipe masked by probe/wrap_icd.c",
+  "wrap_icd_sha256": "b5c3bfa5029934527965e7600dffe7d7efa57556cc82a6fe71ae4930371cbe11",
+  "eglprobe_sha256": "6338c9c7ff5f69d61e13999befd0ae106de301562794e6aa3116fb6823bccf0d",
+  "env": "LIBGL_ALWAYS_SOFTWARE=1 MESA_LOADER_DRIVER_OVERRIDE=zink WRAP_API=1.1 WRAP_TYPE=4(CPU) WRAP_IEXT=none; /dev/dri hidden via unshare"
+ },
+ "hard_requirements": {
+  "api": "1.1",
+  "instance_extensions": [],
+  "device_extensions": [
+   "VK_KHR_maintenance1",
+   "VK_KHR_descriptor_update_template",
+   "VK_KHR_maintenance5",
+   "VK_KHR_create_renderpass2",
+   "VK_KHR_dynamic_rendering",
+   "VK_KHR_robustness2|VK_EXT_robustness2",
+   "VK_KHR_timeline_semaphore"
+  ],
+  "features": [
+   "nullDescriptor",
+   "timelineSemaphore",
+   "dynamicRendering",
+   "maintenance5"
+  ],
+  "quirk": "have_vulkan11 only when vk_version>=1.2, so 1.1 drivers must advertise maint1+descriptor_update_template as extensions",
+  "warn_only": [
+   "logicOp",
+   "scalarBlockLayout",
+   "EXT_custom_border_color",
+   "EXT_line_rasterization"
+  ],
+  "debug_asserts": {
+   "maxUniformBufferRange": ">=16384 (zink_screen.c:608)",
+   "maxStorageBufferRange": ">=1<<27 (zink_screen.c:1124)"
+  },
+  "device_type": "CPU required for EGL surfaceless + LIBGL_ALWAYS_SOFTWARE (zink_screen.c:1725); guest ICD reports OTHER"
+ },
+ "gl_gates": [
+  {
+   "level": "GL 1.5 compat",
+   "adds": "hard set",
+   "run": "e03-min7"
+  },
+  {
+   "level": "GL 2.1 + GLES 2.0",
+   "adds": [
+    "independentBlend"
+   ],
+   "run": "e04-iblend"
+  },
+  {
+   "level": "GL 3.1",
+   "adds": [
+    "VK_EXT_transform_feedback",
+    "transformFeedback"
+   ],
+   "also": "maxColorAttachments>=4, 13 UBO/stage, UBO range>=16384",
+   "run": "e05-xfb"
+  },
+  {
+   "level": "GLES 3.0",
+   "adds": [
+    "VK_EXT_vertex_attribute_divisor",
+    "VK_KHR_vertex_attribute_divisor",
+    "vertexAttributeInstanceRateDivisor"
+   ],
+   "run": "e06-div"
+  },
+  {
+   "level": "GL 3.2 core/compat",
+   "adds": [
+    "VK_EXT_depth_clip_enable",
+    "depthClipEnable"
+   ],
+   "note": "geometryShader not required",
+   "run": "e07-clip"
+  },
+  {
+   "level": "GL 3.3 core/compat",
+   "adds": [
+    "dualSrcBlend"
+   ],
+   "also": "timestampValidBits>0 (source only, not masked)",
+   "run": "e10-33min"
+  }
+ ],
+ "guest_limit_results": {
+  "GL_LIM (current guest graphics+uniform)": "GL 2.1 / ES 2.0",
+  "+maxColorAttachments=4": "GL 3.0 / ES 2.0",
+  "+sample counts 4": "no change",
+  "+13 UBO/stage, 78/set": "GL 3.3 / ES 3.0",
+  "maxBoundDescriptorSets=1": "still 3.3 on lavapipe (lenient); zink uses 3-set layouts",
+  "stride 252/offset 244": "still 3.3 / ES 3.0"
+ },
+ "experiments": {
+  "e01-bare": {
+   "_screen": "FAIL: ZINK: VK_KHR_maintenance1 required!"
+  },
+  "e02-min5": {
+   "_screen": "FAIL: ZINK: VK_KHR_maintenance1 required!"
+  },
+  "e03-min7": {
+   "gl-compat": "1.5 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": null,
+   "gles3": null,
+   "_fails": 3
+  },
+  "e04-iblend": {
+   "gl-compat": "2.1 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "e05-xfb": {
+   "gl-compat": "3.1 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "e06-div": {
+   "gl-compat": "3.1 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 1
+  },
+  "e07-clip": {
+   "gl-compat": "3.2 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.2 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e08-gs": {
+   "gl-compat": "3.2 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.2 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e09-dual": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e10-33min": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e11-guestlim": {
+   "gl-compat": "2.1 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "e12-ca4": {
+   "gl-compat": "3.0 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "e13-ms4": {
+   "gl-compat": "3.0 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "e14-ubo13": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e15-sets1": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "e16-stride252": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "r-es2": {
+   "gl-compat": "2.1 Mesa 26.2.3",
+   "gl-core": null,
+   "gles2": "OpenGL ES 2.0 Mesa 26.2.3",
+   "gles3": null,
+   "_fails": 2
+  },
+  "r-33": {
+   "gl-compat": "3.3 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "3.3 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.0 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.0 Mesa 26.2.3",
+   "_fails": 0
+  },
+  "r-full": {
+   "gl-compat": "4.6 (Compatibility Profile) Mesa 26.2.3",
+   "gl-core": "4.6 (Core Profile) Mesa 26.2.3",
+   "gles2": "OpenGL ES 3.2 Mesa 26.2.3",
+   "gles3": "OpenGL ES 3.2 Mesa 26.2.3",
+   "_fails": 0
+  }
+ },
+ "usage_profile_r33": {
+  "features_queried": [
+   "VkPhysicalDeviceDepthClipEnableFeaturesEXT",
+   "VkPhysicalDeviceTimelineSemaphoreFeatures",
+   "VkPhysicalDeviceDynamicRenderingFeatures",
+   "VkPhysicalDeviceVertexAttributeDivisorFeatures",
+   "VkPhysicalDeviceRobustness2FeaturesKHR",
+   "VkPhysicalDeviceTransformFeedbackFeaturesEXT",
+   "VkPhysicalDeviceMaintenance5Features"
+  ],
+  "properties_queried": [
+   "VkPhysicalDeviceSubgroupProperties",
+   "VkPhysicalDeviceTimelineSemaphoreProperties",
+   "VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT",
+   "VkPhysicalDeviceRobustness2PropertiesKHR",
+   "VkPhysicalDeviceTransformFeedbackPropertiesEXT",
+   "VkPhysicalDeviceMaintenance5Properties"
+  ],
+  "device_extensions_enabled": [
+   "VK_KHR_maintenance1",
+   "VK_KHR_maintenance5",
+   "VK_KHR_create_renderpass2",
+   "VK_EXT_transform_feedback",
+   "VK_KHR_robustness2",
+   "VK_KHR_vertex_attribute_divisor",
+   "VK_KHR_dynamic_rendering",
+   "VK_KHR_timeline_semaphore",
+   "VK_KHR_descriptor_update_template",
+   "VK_EXT_depth_clip_enable"
+  ],
+  "features_enabled": [
+   "VkPhysicalDeviceFeatures.independentBlend",
+   "VkPhysicalDeviceFeatures.dualSrcBlend",
+   "VkPhysicalDeviceDepthClipEnableFeaturesEXT.depthClipEnable",
+   "VkPhysicalDeviceTimelineSemaphoreFeatures.timelineSemaphore",
+   "VkPhysicalDeviceDynamicRenderingFeatures.dynamicRendering",
+   "VkPhysicalDeviceVertexAttributeDivisorFeatures.vertexAttributeInstanceRateDivisor",
+   "VkPhysicalDeviceRobustness2FeaturesKHR.nullDescriptor",
+   "VkPhysicalDeviceTransformFeedbackFeaturesEXT.transformFeedback",
+   "VkPhysicalDeviceMaintenance5Features.maintenance5"
+  ],
+  "formats_queried_count": 133,
+  "formats_queried": [
+   2,
+   4,
+   8,
+   9,
+   10,
+   11,
+   12,
+   15,
+   16,
+   17,
+   18,
+   19,
+   22,
+   23,
+   24,
+   25,
+   26,
+   37,
+   38,
+   39,
+   40,
+   42,
+   44,
+   50,
+   57,
+   58,
+   59,
+   60,
+   61,
+   62,
+   64,
+   65,
+   66,
+   67,
+   68,
+   70,
+   71,
+   72,
+   73,
+   76,
+   77,
+   78,
+   79,
+   80,
+   83,
+   84,
+   85,
+   86,
+   87,
+   88,
+   89,
+   90,
+   91,
+   92,
+   93,
+   94,
+   96,
+   97,
+   100,
+   103,
+   104,
+   105,
+   106,
+   107,
+   108,
+   109,
+   122,
+   123,
+   124,
+   125,
+   126,
+   129,
+   130,
+   131,
+   132,
+   133,
+   134,
+   135,
+   136,
+   137,
+   138,
+   139,
+   140,
+   141,
+   142,
+   143,
+   144,
+   145,
+   146,
+   147,
+   157,
+   158,
+   159,
+   160,
+   161,
+   162,
+   163,
+   164,
+   165,
+   166,
+   167,
+   168,
+   169,
+   170,
+   171,
+   172,
+   173,
+   174,
+   175,
+   176,
+   177,
+   178,
+   179,
+   180,
+   181,
+   182,
+   183,
+   184,
+   1000066000,
+   1000066001,
+   1000066002,
+   1000066003,
+   1000066004,
+   1000066005,
+   1000066006,
+   1000066007,
+   1000066008,
+   1000066009,
+   1000066010,
+   1000066011,
+   1000066012,
+   1000066013,
+   1000470001
+  ],
+  "gdpa_ok_count": 228,
+  "gdpa_ok_post_231": [
+   "vkCmdBindDescriptorSets2",
+   "vkCmdBindIndexBuffer2",
+   "vkCmdBindIndexBuffer2KHR",
+   "vkCmdPushConstants2",
+   "vkCmdPushDescriptorSet",
+   "vkCmdPushDescriptorSet2",
+   "vkCmdPushDescriptorSetWithTemplate",
+   "vkCmdPushDescriptorSetWithTemplate2",
+   "vkCmdSetLineStipple",
+   "vkCmdSetRenderingAttachmentLocations",
+   "vkCmdSetRenderingInputAttachmentIndices",
+   "vkCopyImageToImage",
+   "vkCopyImageToMemory",
+   "vkCopyMemoryToImage",
+   "vkGetDeviceImageSubresourceLayout",
+   "vkGetDeviceImageSubresourceLayoutKHR",
+   "vkGetImageSubresourceLayout2",
+   "vkGetImageSubresourceLayout2KHR",
+   "vkGetRenderingAreaGranularity",
+   "vkGetRenderingAreaGranularityKHR",
+   "vkMapMemory2",
+   "vkTransitionImageLayout",
+   "vkUnmapMemory2"
+  ],
+  "pipeline_layouts": "sets=3 (one sets=0), push constants 52 B",
+  "descriptor_layouts": "5x UNIFORM_BUFFER per gfx stage b0-4; compute UBO b5; COMBINED_IMAGE_SAMPLER b128 FS; empty",
+  "graphics_pipelines": "renderPass NULL (dynamic rendering); dynamic states VIEWPORT,SCISSOR,LINE_WIDTH,DEPTH_BIAS,BLEND_CONSTANTS,STENCIL_REFERENCE",
+  "images": "fmt 37 RGBA8, fmt 2 RGBA4 (ES2); usage 0x97; MUTABLE_FORMAT + format list; 1x1..32x32",
+  "memory": "3 allocations x 2 MiB, type 0 (suballocated)",
+  "buffers": "usage 0x1ff / 0x19ff with xfb; 4 B..1 MiB",
+  "samplers": "nearest/linear, repeat/clamp-to-edge, no aniso"
+ },
+ "header_skew": {
+  "answer": "Zink 26.2 cannot build against Vulkan 231 headers; minimum is Mesa-bundled VK_HEADER_VERSION 354. Guest ICD/loader may stay 231; bind Zink directly to ICD GIPA (231 loader lacks post-231 trampolines).",
+  "errors_per_file_with_231": {
+   "zink_context.c": 1453,
+   "zink_program.c": 1281,
+   "zink_compiler.c": 1305,
+   "zink_instance.c": 1292,
+   "zink_resource.c": 1308,
+   "zink_screen.c": 1310,
+   "zink_device_info.c": 1629
+  },
+  "guest_header_version": 231,
+  "mesa_bundled_header_version": 354
+ },
+ "packets": [
+  "B2a screen surface: 7 ext + 4 feat, CPU type opt-in, limits",
+  "B2b blocking timeline semaphores",
+  "B2c dynamic rendering + 6 dynamic states + maint5 cmds",
+  "B2d sampled images/samplers/formats/mutable/2MiB allocs",
+  "B3 static Zink/EGL wasm32 link adapters, independentBlend -> GL2.1/ES2.0 in guest",
+  "B4a MRT 4 + 13 UBO/stage",
+  "B4b transform feedback (WebGL native; WebGPU emulate or refuse)",
+  "B4c vertex divisor",
+  "B4d depth clip",
+  "B4e dual-source blend",
+  "B4f timestamps",
+  "refuse: GS/tess/sparse/64-bit/logicOp/wide lines"
+ ],
+ "limitations": [
+  "lavapipe not guest ICD; lenient (sets=1 passes)",
+  "timer-query gate not masked",
+  "GLX/kopper/WSI not exercised",
+  "cross build not compiled/linked",
+  "Mesa GL versions non-conformant (no GS, 1 layer, 128^2)",
+  "probe is one textured quad per context"
+ ]
+}
