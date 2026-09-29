@@ -1,4 +1,4 @@
-// Finite owner of one static test server (HTTP 4192) and one Chromium (CDP 9402).
+// Finite owner of one static test server (HTTP 4194) and one Chromium (CDP 9404).
 // Runs isolated guest Vulkan packages in the real 1 GiB / 2 CPU guest; no deployment.
 // Usage: node run-finite.mjs OUTPUT TASK_ROOT [suite,...]
 // Runtime files other than the pinned host sources are served from Git HEAD blobs,
@@ -13,11 +13,11 @@ import { createHash } from 'node:crypto';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), repo = path.resolve(here, '../../../..');
 const out = path.resolve(process.argv[2] || ''), task = path.resolve(process.argv[3] || '');
-const HTTP_PORT = 4192, CDP_PORT = 9402;
-const webgl = '/mnt/p6/build/guest-vulkan-webgl-20260926', graphics = '/mnt/p6/build/guest-vulkan-graphics-20260926';
+const HTTP_PORT = 4194, CDP_PORT = 9404;
+const a3 = '/mnt/p6/build/guest-vulkan-a3-20260928';
 const compute = '/mnt/p6/build/guest-vulkan-compute-20260926';
 const direct = ['live', 'unavailable', 'clear', 'loss-transport', 'loss-device', 'exhaustion'];
-const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu'];
+const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu'];
 const suites = process.argv[4] ? process.argv[4].split(',') : allSuites;
 if (suites.some(item => !allSuites.includes(item))) throw Error('unknown suite');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -43,12 +43,13 @@ function route(url, bytes) {
 }
 await freeze(fileURLToPath(import.meta.url), path.join(out, 'run-finite.mjs'));
 const packages = {
-  ...Object.fromEntries(direct.map(mode => ['direct-' + mode, { dir: `${task}/direct-package-${mode}-run2`, prefix: `/linux/tests/guest-vulkan/candidate${mode === 'live' ? '' : '-' + mode}/` }])),
-  loader: { dir: `${task}/loader-package-run1`, prefix: '/linux/tests/guest-vulkan-loader/candidate-clear/' },
-  compute: { dir: `${task}/compute-package-run1`, prefix: '/linux/tests/guest-vulkan-compute/candidate-compute/' },
-  graphics: { dir: `${task}/graphics-package-run1`, prefix: '/linux/tests/guest-vulkan-webgl/candidate/' },
+  ...Object.fromEntries(direct.map(mode => ['direct-' + mode, { dir: `${task}/direct-package-${mode}-run4`, prefix: `/linux/tests/guest-vulkan/candidate${mode === 'live' ? '' : '-' + mode}/` }])),
+  loader: { dir: `${task}/loader-package-run4`, prefix: '/linux/tests/guest-vulkan-loader/candidate-clear/' },
+  compute: { dir: `${task}/compute-package-run4`, prefix: '/linux/tests/guest-vulkan-compute/candidate-compute/' },
+  graphics: { dir: `${task}/graphics-package-run4`, prefix: '/linux/tests/guest-vulkan-webgl/candidate/' },
+  uniform: { dir: `${task}/uniform-package-run4`, prefix: '/linux/tests/guest-vulkan-uniform/candidate/' },
 };
-const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item));
+const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item));
 const metadataBySuite = {};
 for (const name of needed) {
   const { dir, prefix } = packages[name]; await disk(dir);
@@ -67,9 +68,9 @@ for (const name of needed) {
 }
 const translators = [];
 if (needed.has('compute')) translators.push(['/linux/tests/guest-vulkan-compute/translator/candidate/translator.wasm', compute + '/translator-build-run4/translator.wasm', 'e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea']);
-if (needed.has('graphics')) translators.push(
-  ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', webgl + '/translator-build-run2/translator.wasm', '4fcdabf05d9e9cc0003e299739d809a7360256b405a3bb588e5a5771b410aa49'],
-  ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', graphics + '/translator-build-run3/translator.wasm', 'a530270fb7ae3099fbcf60964cff494987fdf608720ce34b936e52a545b3335b']);
+if (needed.has('graphics') || needed.has('uniform')) translators.push(
+  ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', a3 + '/glsl-translator-build-run1/translator.wasm', '31d062e7582ab95333cab7eb87c11b031e481ccd30c5ba5b6498aad04a6aa0bd'],
+  ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', a3 + '/wgsl-translator-build-run1/translator.wasm', 'f1df22534091d4c00fab4884e970c03040c7fc1c9353d29c8421e186758d4542']);
 for (const [url, source, expected] of translators) {
   const bytes = await freeze(source);
   if (hash(bytes) !== expected) throw Error('translator differs: ' + source); route(url, bytes);
@@ -131,8 +132,9 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
 const pageFor = suite => suite.startsWith('direct-') ? `/linux/tests/guest-vulkan/index.html?candidate=${suite === 'direct-live' ? 'candidate' : 'candidate-' + suite.slice(7)}`
   : suite === 'loader' ? '/linux/tests/guest-vulkan-loader/index.html?candidate=candidate-clear'
   : suite === 'compute' ? '/linux/tests/guest-vulkan-compute/index.html?candidate=candidate-compute'
+  : suite.startsWith('uniform-') ? '/linux/tests/guest-vulkan-uniform/guest.html?backend=' + suite.slice('uniform-'.length)
   : '/linux/tests/guest-vulkan-webgl/guest.html?backend=' + suite.slice('graphics-'.length);
-const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS)?_EXIT status=(\d+) checks=(\d+)$/m;
+const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM)?_EXIT status=(\d+) checks=(\d+)$/m;
 try {
   let target; const startup = Date.now() + 15000;
   for (;;) {
@@ -175,6 +177,7 @@ try {
     if (suite.startsWith('direct-')) current.pass &&= guest.mode === suite.slice(7);
     if (suite === 'compute') current.pass &&= guest.host?.backend === 'webgpu' && guest.host?.contextsCreated === 0;
     if (suite.startsWith('graphics-')) current.pass &&= guest.host?.backend === suite.slice('graphics-'.length);
+    if (suite.startsWith('uniform-')) current.pass &&= guest.host?.backend === suite.slice('uniform-'.length) && guest.mode === 'uniform';
     report.runs.push(current);
     await fs.writeFile(path.join(out, suite + '.json'), JSON.stringify({ ...current, guest }, null, 2) + '\n');
     const screenshot = await call('Page.captureScreenshot', { format: 'png' });

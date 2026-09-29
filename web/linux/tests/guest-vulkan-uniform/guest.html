@@ -1,0 +1,121 @@
+<!doctype html><meta charset="utf-8"><title>Guest Vulkan uniform buffers</title>
+<h1>UNIFORM_BUFFER descriptors through public Vulkan</h1>
+<p>Isolated static built-in driver integration (packet A3). Descriptor set layouts, pools, sets, updates and binds with uniform blocks read by application SPIR-V on WebGPU or WebGL2. Eight 73×51 readback frames plus negative cases. Bounded, nonconformant; no OpenGL, Firefox acceleration, decoder or physical GPU claim.</p>
+<button id="boot">Run isolated guest</button><button id="stop">Stop guest</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import {spawnMachine, consoleDevice, entropyDevice, inputDevice, vsockDevice} from '../../dist/index.js';
+import {serveFallback} from '../guest-vulkan-webgl/host.mjs';
+const report = window.guestVulkanResults = {logs:'', errors:[], events:[], host:null, hellos:[], pass:false,
+  bootLogs:'', bootConfigurationEvidence:[], isolated:crossOriginIsolated, backend:new URLSearchParams(location.search).get('backend')||'webgl2'};
+/* Analytic host expectations: 8 submitted frames (R0..R7), 14 draws, the vertex
+ * buffer used by 5 frames, 13 per-submit uniform-buffer uploads, 4 translated
+ * shaders, 10 released host resources (target, 3 buffers, 4 shaders, 2 pipelines),
+ * and exactly four refused host commands (two shaders, two pipelines). */
+const expected = report.expected = {passes:8, draws:14, uploads:5, uniformUploads:13, readbacks:8, translations:4, released:10,
+  failedCommands:[[16,-22],[16,-22],[17,-22],[17,-22]]};
+const decoder = new TextDecoder(), vsock = vsockDevice();
+let machine, deadline, partial = '', connected = false, finished = false, stopping = false;
+function fail(error) {
+  if (stopping) return;
+  report.errors.push(String(error)); finished = true; clearTimeout(deadline);
+  document.documentElement.dataset.result = 'fail';
+}
+function check() {
+  if (finished || !report.host || !/^GUEST_VK_UNIFORM_EXIT status=0 checks=\d+$/m.test(report.logs.replaceAll('\r',''))) return;
+  const h=report.host, own=h.ownership, webgl=report.backend==='webgl2';
+  const failed=report.events.filter(e=>e.type==='command'&&e.status!==0).map(e=>[e.opcode,e.status]).sort((a,b)=>a[0]-b[0]);
+  report.pass=report.errors.length===0 && h.error===null && h.draws===0 && h.clears===0 && h.dispatches===0 &&
+    h.graphicsPasses===expected.passes && h.graphicsDraws===expected.draws && h.graphicsUploads===expected.uploads &&
+    h.graphicsUniformUploads===expected.uniformUploads && h.graphicsReadbacks===expected.readbacks &&
+    h.released===expected.released && h.graphics?.state==='closed' && h.graphics.resources===0 && h.graphics.nativeObjects===0 && h.graphics.allocatedBytes===0 &&
+    h.graphics.passes===expected.passes && h.graphics.draws===expected.draws && h.graphics.readbacks===expected.readbacks &&
+    h.graphics.uploads===expected.uploads && h.graphics.uniformUploads===expected.uniformUploads &&
+    h.graphicsTranslations===expected.translations && h.graphicsTranslatorsCreated===1 && h.graphicsTranslatorsClosed===1 &&
+    h.backend===report.backend && h.cleanupErrors.length===0 && own.connectionsClosed===1 && own.liveDevices===0 &&
+    (webgl ? own.devicesCreated===0 && own.contextsCreated===1 && own.contextsClosed===1 && own.liveContexts===0 && own.liveGL===0 &&
+      Object.values(own.gl).every(item=>item.created===item.deleted) : own.devicesCreated===1 && own.devicesDestroyed===1 && own.contextsCreated===0) &&
+    own.workersCreated===1 && own.workersTerminated===1 && own.liveWorkers===0 &&
+    own.buffersCreated===own.buffersDestroyed && own.liveBuffers===0 &&
+    own.texturesCreated===own.texturesDestroyed && own.liveTextures===0 && own.beforeEmergencyCleanup===true &&
+    !!h.adapter && report.hellos.length===2 && report.hellos.every(item=>item.version===1 && item.backend===report.backend && item.graphicsProfile===1 &&
+      item.uniformProfile===1 && item.maxUniformRange===16384 && item.uniformOffsetAlignment===256 &&
+      !item.computeProfile && !item.clearImage && item.maxVertexStride===(webgl?252:2048) && item.integerViewport===webgl && JSON.stringify(item.adapter)===JSON.stringify(h.adapter)) &&
+    report.logs.includes('GUEST_VK_UNIFORM_LIMITS sets=4 range=16384 alignment=256 max_stride='+(webgl?'252':'2048')) &&
+    JSON.stringify(failed)===JSON.stringify(expected.failedCommands) &&
+    report.logs.includes('GUEST_VK_UNIFORM_DESCRIPTORS layouts=3 rejected_layouts=5 rejected_pipeline_layouts=3 pool_exhaustion=2') &&
+    report.logs.includes('GUEST_VK_UNIFORM_RECORDING_REJECTED count=6') &&
+    Array.from({length:8},(_,round)=>round).every(round=>report.logs.includes('GUEST_VK_UNIFORM_PIXELS_PASS round='+round+' ')) &&
+    report.logs.includes('GUEST_VK_UNIFORM_FRAMES_PASS rounds=6') &&
+    report.logs.includes('GUEST_VK_UNIFORM_NEGATIVE_PASS invalid_writes=5 short_range=1 recovered=2') &&
+    report.logs.includes('GUEST_VK_RESOURCES live=0 allocated_bytes=0') && report.logs.includes('GUEST_VK_CLOSE status=0') &&
+    report.bootConfigurationEvidence.some(line=>/Memory:.*1048576K/.test(line)) &&
+    report.bootConfigurationEvidence.some(line=>/smp: Brought up 1 node, 2 CPUs/.test(line));
+  if (!report.pass) { fail('uniform client acceptance mismatch'); return; }
+  report.hostLifetimePass=true;finished=true;clearTimeout(deadline);document.documentElement.dataset.result='pass';
+}
+const log = bytes => {
+  const text = decoder.decode(new Uint8Array(bytes), {stream:true});
+  report.logs = (report.logs + text).slice(-131072);
+  partial += text;
+  const lines = partial.split('\n'); partial = lines.pop().slice(-8192);
+  for (const raw of lines) {
+    const line = raw.replaceAll('\r','');
+    if (line.startsWith('GUEST_VK_HOST_HELLO ')) {
+      try { report.hellos.push(JSON.parse(line.slice('GUEST_VK_HOST_HELLO '.length))); }
+      catch (error) { fail(`invalid guest HELLO JSON: ${error}`); }
+    }
+    if (line.includes('GUEST_VK_UNIFORM_FAIL') || line.includes('GUEST_VK_UNIFORM_PIXEL_FAIL') || /^GUEST_VK_UNIFORM_EXIT status=[1-9]/.test(line)) fail(line);
+  }
+  document.querySelector('#log').textContent = report.logs.slice(-20000);
+  if (!connected && report.logs.includes('GUEST_GPU_LISTENING')) {
+    connected = true;
+    vsock.connect(4050, {timeoutMs:10000})
+      .then(connection => serveFallback(connection, report.backend, event => { if (report.events.length < 512) report.events.push(event); }, {allowUniforms:true}))
+      .then(host => { report.host = host; check(); }).catch(fail);
+  }
+  check();
+};
+async function captureBoot(stream) {
+  const reader = stream.getReader(), decoder = new TextDecoder(); let pending = '';
+  try {
+    for (;;) {
+      const {value, done} = await reader.read(); if (done) break;
+      const text = decoder.decode(new Uint8Array(value), {stream:true}); report.bootLogs = (report.bootLogs + text).slice(-131072);
+      const lines = (pending + text).split('\n'); pending = lines.pop().slice(-8192);
+      for (const line of lines) if (/Memory:|smp: Brought up/.test(line) && report.bootConfigurationEvidence.length < 16)
+        report.bootConfigurationEvidence.push(line.replaceAll('\r',''));
+    }
+  } catch (error) { if (!stopping) report.bootConsoleError = String(error); }
+  finally { reader.releaseLock(); }
+}
+const sha256 = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2,'0')).join('');
+document.querySelector('#boot').onclick = async () => {
+  document.querySelector('#boot').disabled = true;
+  deadline = setTimeout(() => { fail('page watchdog: 135 seconds'); machine?.close(); }, 135000);
+  try {
+    if (!crossOriginIsolated) throw Error('cross-origin isolation required');
+    if (!['webgl2','webgpu'].includes(report.backend)) throw Error('invalid backend');
+    const metadataResponse = await fetch('./candidate/package.json');
+    if (!metadataResponse.ok) throw Error('candidate metadata unavailable');
+    const metadata = await metadataResponse.json();
+    if (!metadata.testOnly || !metadata.passPackage || metadata.mode !== 'uniform' || metadata.guestBinary.app !== 'uniform') throw Error('invalid test package');
+    report.mode = metadata.mode; report.package = metadata;
+    for (const [relative, hash] of Object.entries(metadata.guestBinary.hostSources)) {
+      const response = await fetch(new URL(relative, new URL('../', location.href)));
+      if (!response.ok || await sha256(await response.arrayBuffer()) !== hash) throw Error('host source changed: ' + relative);
+    }
+    const response = await fetch('./candidate/initramfs.cpio');
+    if (!response.ok) throw Error('candidate archive unavailable');
+    const initcpio = new Uint8Array(await response.arrayBuffer());
+    if (initcpio.length !== metadata.bytes || await sha256(initcpio) !== metadata.archiveSha256) throw Error('candidate hash mismatch');
+    report.configuration = {cpus:2, memoryBytes:1073741824, visibility:document.visibilityState};
+    machine = await spawnMachine({cpus:2, devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}}, initcpio,
+      cmdline:'console=hvc0 rdinit=/init', devices:[consoleDevice(null,new WritableStream({write:log})), entropyDevice(), inputDevice(), vsock],
+      framebuffer:{canvas:document.querySelector('#display'), width:640, height:480, backend:'canvas2d'}});
+    window.guestVulkanMachine = machine; void captureBoot(machine.bootConsole);
+    machine.closed.catch(error => { if (!finished) fail(error); });
+  } catch (error) { fail(error); }
+};
+document.querySelector('#stop').onclick = () => { stopping = true; clearTimeout(deadline); machine?.close(); window.guestWebGLCleanup?.(); };
+</script>

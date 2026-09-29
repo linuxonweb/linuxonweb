@@ -15,7 +15,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, webgl_backend, failed;
+    int clear_supported, compute_supported, graphics_supported, uniform_supported, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
@@ -104,6 +104,9 @@ static int hello(VkInstance instance) {
     instance->webgl_backend = strstr(data, "\"backend\":\"webgl2\"") != NULL;
     if (instance->webgl_backend && (!instance->graphics_supported || instance->compute_supported || instance->clear_supported ||
         !strstr(data, "\"maxVertexStride\":252") || !strstr(data, "\"integerViewport\":true"))) return -1;
+    /* Opt-in A3 uniform-buffer profile; absent from the older host profiles. */
+    instance->uniform_supported = instance->graphics_supported && strstr(data, "\"uniformProfile\":1") &&
+        strstr(data, "\"maxUniformRange\":16384") && strstr(data, "\"uniformOffsetAlignment\":256");
     return 0;
 }
 static void transfer_cleanup(void);
@@ -207,6 +210,14 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
         out->limits.viewportBoundsRange[0]=0;out->limits.viewportBoundsRange[1]=128;
         out->limits.framebufferColorSampleCounts=VK_SAMPLE_COUNT_1_BIT;
         out->limits.minMemoryMapAlignment=4;out->limits.nonCoherentAtomSize=4;out->limits.maxMemoryAllocationCount=32;
+    }
+    if (live->uniform_supported) {
+        out->limits.maxBoundDescriptorSets=4;
+        out->limits.maxUniformBufferRange=16384;
+        out->limits.minUniformBufferOffsetAlignment=256;
+        out->limits.maxPerStageDescriptorUniformBuffers=8;
+        out->limits.maxDescriptorSetUniformBuffers=8;
+        out->limits.maxPerStageResources=8;
     }
     /* No invented physical PCI IDs or physical acceleration claims. */
 }
@@ -373,7 +384,7 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties2(VkPhysicalDevice physical
     if (!out) return;
     physical_properties(physical, &out->properties);
     if (!physical_valid(physical)) return;
-    uint32_t descriptors = live->compute_supported ? 1 : 0;
+    uint32_t descriptors = live->uniform_supported ? 4 : live->compute_supported ? 1 : 0;
     VkDeviceSize allocation = profile_any() ? 1024 * 1024 : 0;
     VkBaseOutStructure *node = out->pNext;
     for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch (node->sType) {

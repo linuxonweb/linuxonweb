@@ -60,9 +60,15 @@ static VKAPI_ATTR void VKAPI_CALL draw_graphics(VkCommandBuffer cb,uint32_t coun
     if(!command.graphics.in_pass||!command.graphics.pipeline||count<3||count>65536||count%3||first>65536||instances!=1||first_instance) {
         invalid_command(cb);return;
     }
+    /* A3: every non-empty set of the pipeline layout must be bound first. */
+    struct resource *pipeline=resource_get(command.graphics.pipeline,R_GRAPHICS_PIPELINE);
+    if(!pipeline){invalid_command(cb);return;}
+    const struct uniform_pipeline_layout *u=&pipeline->graphics.pipeline.uniforms;
+    for(unsigned s=0;s<u->set_count;s++)if(u->sets[s].count&&!command.graphics.sets[s]){invalid_command(cb);return;}
     struct recorded *r=record_command(cb,C_GRAPHICS_DRAW);
     if(r){r->graphics.draw.pipeline=command.graphics.pipeline;r->graphics.draw.count=count;r->graphics.draw.first=first;
-        memcpy(r->graphics.draw.vertices,command.graphics.vertices,sizeof(r->graphics.draw.vertices));}
+        memcpy(r->graphics.draw.vertices,command.graphics.vertices,sizeof(r->graphics.draw.vertices));
+        memcpy(r->graphics.draw.sets,command.graphics.sets,sizeof(r->graphics.draw.sets));}
 }
 static int record_vertex_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {
     struct resource *b=resource_get(RID(bb->buffer),R_BUFFER);if(!b||!b->vertex)return 0;
@@ -95,7 +101,7 @@ static int graphics_prepare_begin(const struct graphics_begin_record *r,struct r
     graphics_json_append(j,",\"draws\":[");return !j->bad;
 }
 static int graphics_prepare_draw(const struct graphics_draw_record *r,const struct graphics_pass *pass,
-        struct resource *image,struct graphics_json *j,unsigned draw_index,unsigned used[MAX_RES]) {
+        struct resource *image,struct graphics_json *j,unsigned draw_index,unsigned used[MAX_RES],unsigned used_uniforms[MAX_RES]) {
     struct resource *pipeline=resource_get(r->pipeline,R_GRAPHICS_PIPELINE);
     if(!pipeline||!pipeline->host||!graphics_pass_compatible(&pipeline->graphics.pipeline.pass,pass))return 0;
     const struct graphics_pipeline *p=&pipeline->graphics.pipeline;
@@ -118,7 +124,27 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         used[b-resources]=1;
         graphics_json_append(j,"%s{\"buffer\":%u,\"offset\":%u,\"size\":%u}",n?",":"",b->host,(unsigned)binding->offset,(unsigned)remaining);
     }
-    graphics_json_append(j,"],\"vertexCount\":%u,\"firstVertex\":%u,\"instanceCount\":1,\"firstInstance\":0,"
+    graphics_json_append(j,"]");
+    /* A3: resolve bound uniform descriptors at submit (the set contents at
+     * submission time are used, matching update-before-submit semantics). */
+    unsigned emitted=0;
+    for(unsigned s=0;s<p->uniforms.set_count;s++) {
+        const struct uniform_set_layout *l=&p->uniforms.sets[s];if(!l->count)continue;
+        struct resource *set=resource_get(r->sets[s],R_DESC_SET);
+        if(!set||!set->uniform||!set->valid||!resource_get(set->parent,R_DESC_POOL)||!uniform_layout_equal(&set->graphics.set.layout,l))return 0;
+        for(unsigned n=0;n<l->count;n++) {
+            const struct uniform_set *d=&set->graphics.set;
+            struct resource *b=resource_get(d->buffers[n],R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
+            if(!b||!b->uniform||!b->host||!m||!m->bytes||d->offsets[n]%256||d->ranges[n]<16||d->ranges[n]>16384||
+               d->offsets[n]>=b->size||d->ranges[n]>b->size-d->offsets[n]||
+               emitted>=p->uniform_count||d->ranges[n]<p->min_sizes[emitted])return 0;
+            used_uniforms[b-resources]=1;
+            graphics_json_append(j,"%s{\"group\":%u,\"binding\":%u,\"buffer\":%u,\"offset\":%u,\"size\":%u}",
+                emitted++?",":",\"uniforms\":[",s,l->bindings[n],b->host,d->offsets[n],d->ranges[n]);
+        }
+    }
+    if(emitted)graphics_json_append(j,"]");
+    graphics_json_append(j,",\"vertexCount\":%u,\"firstVertex\":%u,\"instanceCount\":1,\"firstInstance\":0,"
         "\"viewport\":{\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g,\"minDepth\":%.9g,\"maxDepth\":%.9g},"
         "\"scissor\":{\"x\":%u,\"y\":%u,\"width\":%u,\"height\":%u}}",
         r->count,r->first,v.x,v.y,v.width,v.height,v.minDepth,v.maxDepth,
@@ -134,6 +160,17 @@ static VkResult graphics_upload_vertices(const unsigned used[MAX_RES]) {
         struct resource *b=&resources[n],*m=resource_get(b->memory,R_MEMORY);
         uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes,b->size);
         if(host_empty(GPU_VERTEX_UPLOAD,data,(uint32_t)b->size+12)!=VK_SUCCESS)return VK_ERROR_DEVICE_LOST;
+    }
+    return VK_SUCCESS;
+}
+static VkResult graphics_upload_uniforms(const unsigned used[MAX_RES]) {
+    /* A3: one upload of the complete current coherent bytes per used uniform
+     * buffer per submit, observing host writes made after recording. */
+    static unsigned char data[65548];
+    for(unsigned n=0;n<MAX_RES;n++)if(used[n]) {
+        struct resource *b=&resources[n],*m=resource_get(b->memory,R_MEMORY);
+        uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes,b->size);
+        if(host_empty(GPU_UNIFORM_UPLOAD,data,(uint32_t)b->size+12)!=VK_SUCCESS)return VK_ERROR_DEVICE_LOST;
     }
     return VK_SUCCESS;
 }

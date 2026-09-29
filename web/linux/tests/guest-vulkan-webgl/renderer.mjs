@@ -1,6 +1,7 @@
 // Bounded guest graphics backend. Caller exclusively owns the WebGL2 context.
 import { GRAPHICS_LIMITS, GraphicsRendererError, validatePipelineDescriptor,
-  validateTargetDescriptor } from '../guest-vulkan-graphics/renderer.mjs';
+  validateTargetDescriptor, UNIFORM_LIMITS, validateUniformReflection, validateVertexIndex,
+  validateDrawUniforms, validateUniformBufferDescriptor } from '../guest-vulkan-graphics/renderer.mjs';
 export { GraphicsRendererError };
 // WebGL vertexAttribPointer permits at most 255 bytes; this profile aligns to 4.
 export const WEBGL_LIMITS = Object.freeze({ ...GRAPHICS_LIMITS, maxStride: 252, integerViewport: true });
@@ -33,20 +34,25 @@ const freeze = value => {
 };
 
 /** Validate actual GLSL translator metadata, independently of the WGSL contract. */
-export function validateWebGLShader(input, stage) {
+export function validateWebGLShader(input, stage, options) {
   choice(stage, ['vertex', 'fragment'], 'shader stage');
+  if (options !== undefined) record(options, ['allowUniforms'], 'shader options');
+  const allowUniforms = choice(options?.allowUniforms ?? false, [false, true], 'uniform option');
   record(input, ['glsl', 'schema', 'profile', 'backend', 'stage', 'originalEntryPoint', 'entryPoint',
     'coordinateAdjustment', 'backendCoordinateAdjustment', 'inputs', 'outputs', 'resources', 'varyingBindings'], 'translated shader');
   if (input.schema !== 1 || input.profile !== 'graphics-empty-webgl-v1' || input.backend !== 'glsl-es-300' ||
       input.stage !== stage || input.coordinateAdjustment !== true || input.backendCoordinateAdjustment !== true || input.entryPoint !== 'main') fail('unsupported WebGL translation contract');
   if (typeof input.glsl !== 'string' || !input.glsl.length || bytesOf(input.glsl) > WEBGL_LIMITS.maxShaderBytes) fail('invalid GLSL size');
   if (typeof input.originalEntryPoint !== 'string' || !input.originalEntryPoint.length || input.originalEntryPoint.includes('\0') || bytesOf(input.originalEntryPoint) > 128) fail('invalid original entry point');
-  array(input.resources, 0, 0, 'shader resources');
+  // Uniform blocks carry the writer's exact block name; bindings are host-assigned.
+  const resources = validateUniformReflection(input.resources, allowUniforms, true);
   // The pinned ES300 writer emits explicit locations and returns no host bindings.
   array(input.varyingBindings, 0, 0, 'host-assigned varying bindings');
   const reflect = (items, direction) => {
-    const locations = new Set(); let positions = 0;
+    const locations = new Set(); let positions = 0, vertexIndex = 0;
     const result = array(items, 0, 9, `shader ${direction}`).map(item => {
+      const index = validateVertexIndex(item, allowUniforms, stage, direction);
+      if (index) { if (++vertexIndex > 1) fail('duplicate vertex_index'); return index; }
       record(item, ['location', 'builtin', 'type', 'interpolation', 'invariant'], 'interface item');
       record(item.type, ['scalar', 'components'], 'interface type');
       if (item.type.scalar !== 'f32') fail('unsupported interface scalar');
@@ -76,7 +82,7 @@ export function validateWebGLShader(input, stage) {
   };
   return freeze({ schema: 1, profile: input.profile, backend: input.backend, stage, coordinateAdjustment: true,
     backendCoordinateAdjustment: true, glsl: input.glsl, entryPoint: 'main', originalEntryPoint: input.originalEntryPoint,
-    inputs: reflect(input.inputs, 'inputs'), outputs: reflect(input.outputs, 'outputs'), resources: [], varyingBindings: [] });
+    inputs: reflect(input.inputs, 'inputs'), outputs: reflect(input.outputs, 'outputs'), resources, varyingBindings: [] });
 }
 
 function rectangle(input, target, viewport) {
@@ -92,13 +98,15 @@ function rectangle(input, target, viewport) {
 }
 
 /** Async API serializes context use. Readback uses a PBO and yielding fence waits. */
-export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 10000 } = {}) {
+export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 10000, allowUniforms = false } = {}) {
   if (!gl?.texStorage2D || !gl?.fenceSync || !gl?.getBufferSubData || !gl.canvas?.addEventListener) fail('WebGL2 context required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
   integer(fenceTimeoutMs, 1, 30000, 'fence timeout');
+  choice(allowUniforms, [false, true], 'uniform option');
+  const uniformOptions = allowUniforms ? { allowUniforms } : undefined;
   const resources = new Map(), native = new Map(), waiters = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
-  const counters = { passes: 0, draws: 0, uploads: 0, readbacks: 0, fences: 0, indexDraws: 0 };
+  const counters = { passes: 0, draws: 0, uploads: 0, uniformUploads: 0, readbacks: 0, fences: 0, indexDraws: 0 };
   const ownership = Object.fromEntries(['Buffer', 'Texture', 'Framebuffer', 'VertexArray', 'Program', 'Shader', 'Sync'].map(kind => [kind, { created: 0, deleted: 0 }]));
   const event = value => { try { onEvent(value); } catch { /* diagnostics do not alter semantics */ } };
   const release = object => {
@@ -109,6 +117,7 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
   const unbind = () => {
     gl.useProgram(null); gl.bindVertexArray(null); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindBuffer(gl.ARRAY_BUFFER, null); gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null); gl.bindTexture(gl.TEXTURE_2D, null);
+    if (allowUniforms) { gl.bindBuffer(gl.UNIFORM_BUFFER, null); for (let i = 0; i < 8; i++) gl.bindBufferBase(gl.UNIFORM_BUFFER, i, null); }
   };
   const dispose = (next, reason) => {
     if (state !== 'open') return;
@@ -185,16 +194,24 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
     fail(message, 'gpu');
   };
   const nativeLimits = { attributes: gl.getParameter(gl.MAX_VERTEX_ATTRIBS), texture: gl.getParameter(gl.MAX_TEXTURE_SIZE),
-    viewport: gl.getParameter(gl.MAX_VIEWPORT_DIMS) };
+    viewport: gl.getParameter(gl.MAX_VIEWPORT_DIMS),
+    ...(allowUniforms ? { uniformBindings: gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS), uniformBlockSize: gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE),
+      uniformAlignment: gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT), vertexBlocks: gl.getParameter(gl.MAX_VERTEX_UNIFORM_BLOCKS),
+      fragmentBlocks: gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_BLOCKS) } : {}) };
+  if (allowUniforms && (nativeLimits.uniformBindings < UNIFORM_LIMITS.maxUniforms || nativeLimits.uniformBlockSize < UNIFORM_LIMITS.maxRange ||
+      UNIFORM_LIMITS.offsetAlignment % nativeLimits.uniformAlignment || nativeLimits.vertexBlocks < UNIFORM_LIMITS.maxUniforms ||
+      nativeLimits.fragmentBlocks < UNIFORM_LIMITS.maxUniforms)) fail('WebGL2 context lacks the uniform profile limits', 'unavailable');
   const provoking = gl.getExtension('WEBGL_provoking_vertex');
   if (provoking) provoking.provokingVertexWEBGL(provoking.FIRST_VERTEX_CONVENTION_WEBGL);
   try { checkGL(); } catch (error) { dispose('failed', error.message); throw error; }
   const validateDraw = (input, target) => {
-    record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor'], 'draw');
+    record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor',
+      ...(allowUniforms ? ['uniforms'] : [])], 'draw');
     const pipeline = get(input.pipeline, 'pipeline'), descriptor = pipeline.descriptor;
     if (descriptor.colorFormat !== target.descriptor.format) fail('pipeline/target format mismatch');
     const vertexCount = integer(input.vertexCount, 3, WEBGL_LIMITS.maxVertices, 'vertex count');
     if (vertexCount % 3) fail('triangle profile requires complete triangles');
+    const uniforms = validateDrawUniforms(input.uniforms, descriptor, allowUniforms, handle => get(handle, 'uniform-buffer'));
     const firstVertex = integer(input.firstVertex ?? 0, 0, WEBGL_LIMITS.maxVertices, 'first vertex');
     choice(input.instanceCount ?? 1, [1], 'instance count'); choice(input.firstInstance ?? 0, [0], 'first instance');
     const bindings = array(input.vertexBuffers, descriptor.vertexBuffers.length, descriptor.vertexBuffers.length, 'draw vertex buffers').map((binding, i) => {
@@ -210,15 +227,18 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
     const viewport = rectangle(input.viewport, target.descriptor, true);
     if (viewport.width > nativeLimits.viewport[0] || viewport.height > nativeLimits.viewport[1]) fail('viewport exceeds context limits');
     return Object.freeze({ pipeline: input.pipeline, vertexBuffers: Object.freeze(bindings), vertexCount, firstVertex,
-      instanceCount: 1, firstInstance: 0, viewport, scissor: rectangle(input.scissor, target.descriptor, false) });
+      instanceCount: 1, firstInstance: 0, viewport, scissor: rectangle(input.scissor, target.descriptor, false),
+      ...(allowUniforms ? { uniforms: Object.freeze(uniforms) } : {}) });
   };
   return Object.freeze({
     limits: WEBGL_LIMITS,
+    /** Declared pipeline uniforms: [{group,binding,stages,minSize}] in binding order. */
+    pipelineUniforms(handle) { return get(handle, 'pipeline').descriptor.uniforms; },
     getStats() { return freeze({ state, resources: resources.size, nativeObjects: native.size, allocatedBytes: bytes,
       recordingDraws: recording?.draws.length ?? 0, pendingWaits: waiters.size, ...counters,
       ownership: Object.fromEntries(Object.entries(ownership).map(([kind, counts]) => [kind, { ...counts }])) }); },
     createPipeline(input) {
-      const descriptor = validatePipelineDescriptor(input, validateWebGLShader);
+      const descriptor = validatePipelineDescriptor(input, validateWebGLShader, uniformOptions);
       if (descriptor.vertexBuffers.some(b => b.stride > WEBGL_LIMITS.maxStride || b.attributes.some(a => a.location >= nativeLimits.attributes))) fail('vertex layout exceeds WebGL stride/attribute limits');
       const size = bytesOf(descriptor.vertex.glsl) + bytesOf(descriptor.fragment.glsl);
       return enqueue(() => {
@@ -236,11 +256,33 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           program = make('Program', size); gl.attachShader(program, vertex); gl.attachShader(program, fragment);
           gl.linkProgram(program); checkGL();
           if (!gl.getProgramParameter(program, gl.LINK_STATUS)) fail(`GLSL linking failed: ${(gl.getProgramInfoLog(program) || '').slice(0, 1024)}`);
-          if (gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS) || gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS)) fail('linked shader has prohibited resources');
+          // Each reflected block must be active with the translator's std140 size;
+          // no default-block uniforms. Binding point = index of the declared
+          // pipeline uniform (Vulkan set/binding order), identical in both stages.
+          const blocks = [...descriptor.vertex.resources, ...descriptor.fragment.resources];
+          const uniformBlocks = [];
+          if (gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS) !== new Set(blocks.map(b => b.blockName)).size) fail('linked uniform blocks disagree with translator reflection');
+          for (const block of blocks) {
+            const index = gl.getUniformBlockIndex(program, block.blockName);
+            if (index === gl.INVALID_INDEX || gl.getActiveUniformBlockParameter(program, index, gl.UNIFORM_BLOCK_DATA_SIZE) !== block.size) fail('linked uniform block size disagrees with translator reflection');
+            const point = descriptor.uniforms.findIndex(u => u.group === block.group && u.binding === block.binding);
+            if (point < 0) fail('uniform block missing from pipeline layout');
+            if (uniformBlocks.some(b => b.index === index && b.point !== point)) fail('uniform block name bound to two bindings');
+            if (!uniformBlocks.some(b => b.index === index)) { gl.uniformBlockBinding(program, index, point); uniformBlocks.push({ index, point }); }
+          }
+          const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+          if (activeUniforms) {
+            const indices = Array.from({ length: activeUniforms }, (_, i) => i);
+            if (gl.getActiveUniforms(program, indices, gl.UNIFORM_BLOCK_INDEX).some(block => block < 0)) fail('linked shader has prohibited default-block uniforms');
+          }
           const typeMap = new Map([[gl.FLOAT_VEC2, 2], [gl.FLOAT_VEC3, 3], [gl.FLOAT_VEC4, 4]]);
           for (let i = 0; i < gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES); i++) {
             const active = gl.getActiveAttrib(program, i), location = gl.getAttribLocation(program, active.name);
-            const declared = descriptor.vertex.inputs.find(item => item.location === location);
+            // Some GL implementations (ANGLE) list the gl_VertexID built-in as an active
+            // attribute; it is accepted only when reflection declared Vulkan vertex_index.
+            if (active.name === 'gl_VertexID' && descriptor.vertex.inputs.some(item => item.builtin === 'vertex_index')) continue;
+            if (active.name.startsWith('gl_')) fail('unexpected built-in attribute');
+            const declared = descriptor.vertex.inputs.find(item => own(item, 'location') && item.location === location);
             if (!declared || active.size !== 1 || declared.type.components !== typeMap.get(active.type)) fail('linked attributes disagree with translator reflection');
           }
           checkGL(); gl.detachShader(program, vertex); gl.detachShader(program, fragment); checkGL();
@@ -257,6 +299,30 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           buffer = make('Buffer', size); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, size, gl.DYNAMIC_DRAW); checkGL();
           const handle = add('vertex-buffer', [buffer], Object.freeze({ size })); accepted = true; return handle;
         } finally { gl.bindBuffer(gl.ARRAY_BUFFER, null); if (!accepted) release(buffer); }
+      });
+    },
+    createUniformBuffer(input) {
+      if (!allowUniforms) fail('uniform profile not enabled');
+      const { size } = validateUniformBufferDescriptor(input);
+      return enqueue(() => {
+        budget(size); let buffer, accepted = false;
+        try {
+          buffer = make('Buffer', size); gl.bindBuffer(gl.UNIFORM_BUFFER, buffer); gl.bufferData(gl.UNIFORM_BUFFER, size, gl.DYNAMIC_DRAW); checkGL();
+          const handle = add('uniform-buffer', [buffer], Object.freeze({ size })); accepted = true; return handle;
+        } finally { gl.bindBuffer(gl.UNIFORM_BUFFER, null); if (!accepted) release(buffer); }
+      });
+    },
+    uploadUniformBuffer(handle, offset, data) {
+      if (!allowUniforms) fail('uniform profile not enabled');
+      get(handle, 'uniform-buffer'); integer(offset, 0, UNIFORM_LIMITS.maxBufferBytes, 'upload offset');
+      if (!(data instanceof Uint8Array) || !data.byteLength || data.byteLength > UNIFORM_LIMITS.maxBufferBytes || offset % 4 || data.byteLength % 4) fail('upload requires bounded aligned bytes');
+      const copy = data.slice();
+      return enqueue(() => {
+        const entry = get(handle, 'uniform-buffer');
+        if (offset > entry.descriptor.size || copy.byteLength > entry.descriptor.size - offset) fail('upload exceeds uniform buffer');
+        try { gl.bindBuffer(gl.UNIFORM_BUFFER, entry.objects[0]); gl.bufferSubData(gl.UNIFORM_BUFFER, offset, copy); checkGL(); counters.uniformUploads++; }
+        catch (error) { terminal(error); }
+        finally { gl.bindBuffer(gl.UNIFORM_BUFFER, null); }
       });
     },
     uploadVertexBuffer(handle, offset, data) {
@@ -333,6 +399,7 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           if (pass.loadOp === 'clear') { gl.clearColor(...pass.clearColor); gl.clear(gl.COLOR_BUFFER_BIT); }
           for (const draw of draws) {
             const pipeline = get(draw.pipeline, 'pipeline'); gl.useProgram(pipeline.objects[0]);
+            draw.uniforms?.forEach((u, point) => gl.bindBufferRange(gl.UNIFORM_BUFFER, point, get(u.buffer, 'uniform-buffer').objects[0], u.offset, u.size));
             for (let location = 0; location < Math.min(8, nativeLimits.attributes); location++) gl.disableVertexAttribArray(location);
             draw.vertexBuffers.forEach((binding, slot) => {
               const layout = pipeline.descriptor.vertexBuffers[slot]; gl.bindBuffer(gl.ARRAY_BUFFER, get(binding.buffer, 'vertex-buffer').objects[0]);
@@ -355,7 +422,11 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           checkGL(); await fence(); available(); target.initialized = true;
           counters.passes++; counters.draws += draws.length; event({ type: 'pass', draws: draws.length });
         } catch (error) { terminal(error); }
-        finally { gl.useProgram(null); gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null); gl.bindFramebuffer(gl.FRAMEBUFFER, null); release(vao); release(indexBuffer); }
+        finally {
+          gl.useProgram(null); gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          if (allowUniforms) for (let point = 0; point < UNIFORM_LIMITS.maxUniforms; point++) gl.bindBufferBase(gl.UNIFORM_BUFFER, point, null);
+          release(vao); release(indexBuffer);
+        }
       });
     },
     readback(handle) {

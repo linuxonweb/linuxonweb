@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
-TASK = Path('/mnt/p6/build/guest-vulkan-graphics-20260926')
+TASKS = (Path('/mnt/p6/build/guest-vulkan-a3-20260928'), Path('/mnt/p6/build/guest-vulkan-graphics-20260926'))
 LOCK_SHA = '5ccf7efcd90cacfefc6fda26986d4d2e9d48f774ba31ad26a4d91c4a925727d9'
 COMPUTE_SHA = 'e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea'
 
@@ -19,8 +19,8 @@ def digest(data):
 
 def storage(path, output=False):
     path = path.resolve()
-    if output and (not path.is_relative_to(TASK) or path == TASK):
-        raise ValueError('outputs and scratch must be below ' + str(TASK))
+    if output and not any(path.is_relative_to(task) and path != task for task in TASKS):
+        raise ValueError('outputs and scratch must be below one of ' + ', '.join(map(str, TASKS)))
     mounts = []
     for line in Path('/proc/self/mountinfo').read_text().splitlines():
         fields, info = line.split(' - ', 1)

@@ -18,22 +18,29 @@ struct graphics_view { uint64_t image; };
 struct graphics_pass { VkFormat format; VkSampleCountFlagBits samples; VkAttachmentLoadOp load; VkAttachmentStoreOp store; VkImageLayout initial, final; };
 struct graphics_framebuffer { uint64_t view, image; unsigned width,height; struct graphics_pass pass; };
 struct graphics_binding { unsigned binding,stride,count; VkVertexInputAttributeDescription attributes[8]; };
-struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass; };
+/* A3 uniform-buffer descriptor shapes: at most 4 sets x 4 single-descriptor
+ * UNIFORM_BUFFER bindings (8 per pipeline layout), vertex/fragment stages. */
+struct uniform_set_layout { unsigned count; uint32_t bindings[4]; VkShaderStageFlags stages[4]; };
+struct uniform_pipeline_layout { unsigned set_count; struct uniform_set_layout sets[4]; };
+struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_t buffers[4]; uint32_t offsets[4], ranges[4]; };
+struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
+    struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
-    unsigned vertex, graphics_target, graphics_layout, graphics_initialized; VkShaderStageFlagBits shader_stage;
+    unsigned vertex, uniform, graphics_target, graphics_layout, graphics_initialized; VkShaderStageFlagBits shader_stage;
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
-    union { struct graphics_view view; struct graphics_pass pass; struct graphics_framebuffer framebuffer; struct graphics_pipeline pipeline; } graphics;
+    union { struct graphics_view view; struct graphics_pass pass; struct graphics_framebuffer framebuffer; struct graphics_pipeline pipeline;
+        struct uniform_set_layout set_layout; struct uniform_pipeline_layout layout; struct uniform_set set; } graphics;
 };
 static struct resource resources[MAX_RES];
 static uint64_t next_resource = 1;
-enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER };
+enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER, C_UNIFORM_BARRIER };
 struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
 struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; };
-struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; };
+struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4]; };
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkImageLayout old_layout, new_layout; VkClearColorValue color;
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
 };
-struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; };
+struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4]; };
 struct VkCommandBuffer_T { VK_LOADER_DATA loader; unsigned state, count; uint64_t pipeline, set, pipeline_layout;
     struct graphics_command_state graphics; struct recorded commands[MAX_CMDS]; };
 static struct VkCommandBuffer_T command;
@@ -126,10 +133,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCre
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO||i->pNext||i->flags||
         !i->size||i->size>65536||(i->usage!=VK_BUFFER_USAGE_TRANSFER_DST_BIT &&
           !(live->compute_supported && i->usage==VK_BUFFER_USAGE_STORAGE_BUFFER_BIT && !(i->size%4)) &&
-          !(live->graphics_supported && i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT && !(i->size%4)))||
+          !(live->graphics_supported && i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT && !(i->size%4)) &&
+          !(live->uniform_supported && i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT && !(i->size%16)))||
         i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount) return VK_ERROR_FEATURE_NOT_PRESENT;
     struct resource *r=resource_new(R_BUFFER);if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->size=(size_t)i->size;r->storage=i->usage==VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;r->vertex=i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    r->uniform=i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     *out=HANDLE(VkBuffer,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_image(VkDevice d,VkImage h,const VkAllocationCallbacks *a) {
@@ -141,7 +150,7 @@ static VKAPI_ATTR void VKAPI_CALL destroy_buffer(VkDevice d,VkBuffer h,const VkA
 static void requirements(VkDevice d,uint64_t id,unsigned kind,VkMemoryRequirements *out) {
     if (!out) return;
     memset(out,0,sizeof(*out));struct resource *r=resource_get(id,kind);
-    if (device_valid(d)&&r) {out->size=r->size;out->alignment=4;out->memoryTypeBits=kind==R_IMAGE?1:2;}
+    if (device_valid(d)&&r) {out->size=r->size;out->alignment=kind==R_BUFFER&&r->uniform?256:4;out->memoryTypeBits=kind==R_IMAGE?1:2;}
 }
 static VKAPI_ATTR void VKAPI_CALL image_requirements(VkDevice d,VkImage h,VkMemoryRequirements *out) {requirements(d,RID(h),R_IMAGE,out);}
 static VKAPI_ATTR void VKAPI_CALL buffer_requirements(VkDevice d,VkBuffer h,VkMemoryRequirements *out) {requirements(d,RID(h),R_BUFFER,out);}
@@ -169,6 +178,7 @@ static VkResult bind_memory(VkDevice d,uint64_t id,unsigned kind,VkDeviceMemory 
     }
     if(kind==R_BUFFER && r->storage) {uint32_t size=(uint32_t)r->size;VkResult result=compute_resource(GPU_STORAGE_BUFFER,&size,4,&r->host);if(result!=VK_SUCCESS)return result;}
     if(kind==R_BUFFER && r->vertex) {uint32_t size=(uint32_t)r->size;VkResult result=compute_resource(GPU_VERTEX_BUFFER,&size,4,&r->host);if(result!=VK_SUCCESS)return result;}
+    if(kind==R_BUFFER && r->uniform) {uint32_t size=(uint32_t)r->size;VkResult result=compute_resource(GPU_UNIFORM_BUFFER,&size,4,&r->host);if(result!=VK_SUCCESS)return result;}
     r->memory=m->id;m->bound++;return VK_SUCCESS;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL bind_image(VkDevice d,VkImage h,VkDeviceMemory m,VkDeviceSize o) {return bind_memory(d,RID(h),R_IMAGE,m,o);}
@@ -238,6 +248,7 @@ static VKAPI_ATTR void VKAPI_CALL pipeline_barrier(VkCommandBuffer cb,VkPipeline
         r=record_command(cb,1);if(r){r->image=RID(ib->image);r->old_layout=ib->oldLayout;r->new_layout=ib->newLayout;}
     } else {
         if(live->graphics_supported && record_vertex_barrier(cb,src,dst,bb))return;
+        if(live->uniform_supported && record_uniform_barrier(cb,src,dst,bb))return;
         if(live->compute_supported && record_compute_barrier(cb,src,dst,bb))return;
         if(bb->sType!=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER||bb->pNext||src!=VK_PIPELINE_STAGE_TRANSFER_BIT||dst!=VK_PIPELINE_STAGE_HOST_BIT||
           bb->srcAccessMask!=VK_ACCESS_TRANSFER_WRITE_BIT||bb->dstAccessMask!=VK_ACCESS_HOST_READ_BIT||bb->srcQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED||
@@ -272,7 +283,7 @@ static VkResult execute_submit(void) {
     struct graphics_json *prepared=live->graphics_supported?calloc(MAX_CMDS,sizeof(*prepared)):NULL;
     if(live->graphics_supported&&!prepared)return VK_ERROR_OUT_OF_HOST_MEMORY;
     VkResult result=VK_ERROR_INITIALIZATION_FAILED;
-    VkImageLayout layouts[MAX_RES];unsigned initialized[MAX_RES],used_vertices[MAX_RES]={0};
+    VkImageLayout layouts[MAX_RES];unsigned initialized[MAX_RES],used_vertices[MAX_RES]={0},used_uniforms[MAX_RES]={0};
     unsigned written[MAX_RES]={0},ready[MAX_RES]={0},dirty[MAX_RES]={0};
     struct resource *pass_image=NULL;const struct graphics_pass *pass=NULL;
     unsigned pass_start=0,pass_draws=0;
@@ -292,11 +303,11 @@ static VkResult execute_submit(void) {
                 layouts[i-resources]=c->new_layout;break;
             }
             if(c->op==2){if(i->graphics_target||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)goto submit_done;break;}
-            if(!b||b->storage||b->vertex||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
+            if(!b||b->storage||b->vertex||b->uniform||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
                b->size<i->size||(i->graphics_target&&!initialized[i-resources]))goto submit_done;
             written[b-resources]=1;break;
         case 4:
-            if(!b||b->storage||b->vertex||!resource_get(b->memory,R_MEMORY)||!written[b-resources])goto submit_done;
+            if(!b||b->storage||b->vertex||b->uniform||!resource_get(b->memory,R_MEMORY)||!written[b-resources])goto submit_done;
             written[b-resources]=0;break;
         case 5: case 6: case 7:
             if(!live->compute_supported||!b||!b->storage||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
@@ -322,7 +333,7 @@ static VkResult execute_submit(void) {
             if(!graphics_prepare_begin(&c->graphics.begin,pass_image,&prepared[n]))goto submit_done;
             break;
         case C_GRAPHICS_DRAW:
-            if(!pass_image||!graphics_prepare_draw(&c->graphics.draw,pass,pass_image,&prepared[pass_start],pass_draws++,used_vertices))goto submit_done;
+            if(!pass_image||!graphics_prepare_draw(&c->graphics.draw,pass,pass_image,&prepared[pass_start],pass_draws++,used_vertices,used_uniforms))goto submit_done;
             break;
         case C_GRAPHICS_END:
             if(!pass_image)goto submit_done;
@@ -332,13 +343,16 @@ static VkResult execute_submit(void) {
         case C_VERTEX_BARRIER:
             if(!live->graphics_supported||!b||!b->vertex||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
             break;
+        case C_UNIFORM_BARRIER:
+            if(!live->uniform_supported||!b||!b->uniform||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
+            break;
         default:goto submit_done;
         }
     }
     if(pass_image)goto submit_done;
     for(unsigned i=0;i<MAX_RES;i++)if(written[i]||dirty[i])goto submit_done;
     command.state=5; /* Pending, even though this transport completes synchronously. */
-    if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS)goto submit_lost;
+    if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS||graphics_upload_uniforms(used_uniforms)!=VK_SUCCESS)goto submit_lost;
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
         if(c->op==1){i->layout=c->new_layout;if(i->graphics_target&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=0;}

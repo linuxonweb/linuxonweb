@@ -123,7 +123,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
         return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *layout=resource_get(RID(i->layout),R_PIPELINE_LAYOUT),*pass=resource_get(RID(i->renderPass),R_RENDER_PASS);
     if(!layout||!layout->graphics_layout||!pass)return VK_ERROR_INITIALIZATION_FAILED;
-    struct graphics_pipeline p={0};p.pass=pass->graphics.pass;
+    struct graphics_pipeline p={0};p.pass=pass->graphics.pass;p.uniforms=layout->graphics.layout;
     if(!graphics_vertex_layout(i->pVertexInputState,&p)||!graphics_viewport(i->pViewportState,&p))return VK_ERROR_FEATURE_NOT_PRESENT;
     const VkPipelineInputAssemblyStateCreateInfo *assembly=i->pInputAssemblyState;
     const VkPipelineRasterizationStateCreateInfo *raster=i->pRasterizationState;
@@ -159,11 +159,34 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
             graphics_json_append(&j,"%s{\"location\":%u,\"offset\":%u,\"format\":\"float32x%u\"}",k?",":"",v->location,v->offset,graphics_format_components(v->format));}
         graphics_json_append(&j,"]}");
     }
-    graphics_json_append(&j,"]}");if(j.bad)return VK_ERROR_INITIALIZATION_FAILED;
+    graphics_json_append(&j,"]");
+    /* A3: declared layout bindings; stages bit0=vertex, bit1=fragment. The
+     * host checks every reflected shader uniform against this list. */
+    unsigned emitted=0;
+    for(unsigned s=0;s<p.uniforms.set_count;s++)for(unsigned n=0;n<p.uniforms.sets[s].count;n++) {
+        VkShaderStageFlags st=p.uniforms.sets[s].stages[n];
+        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",emitted++?",":",\"uniforms\":[",s,p.uniforms.sets[s].bindings[n],
+            ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
+    }
+    if(emitted)graphics_json_append(&j,"]");
+    graphics_json_append(&j,"}");if(j.bad)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_GRAPHICS_PIPELINE);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.pipeline=p;
-    VkResult result=compute_resource(GPU_GRAPHICS_PIPELINE,j.bytes,(uint32_t)j.used,&r->host);
+    /* With the uniform profile the reply is the id followed by one minimum
+     * std140 block size per declared binding, in emitted (set, binding) order;
+     * 0 means no stage statically uses it. Otherwise exactly the id. */
+    unsigned char reply[512];uint32_t n=0;
+    VkResult result=compute_call(GPU_GRAPHICS_PIPELINE,j.bytes,(uint32_t)j.used,reply,sizeof(reply),&n);
     if(result!=VK_SUCCESS){resource_drop(r);return result;}
+    if(n!=4+4*(live->uniform_supported?emitted:0)){live->failed=1;resource_drop(r);return VK_ERROR_DEVICE_LOST;}
+    memcpy(&r->host,reply,4);
+    if(!r->host){live->failed=1;resource_drop(r);return VK_ERROR_DEVICE_LOST;}
+    r->graphics.pipeline.uniform_count=emitted;
+    for(unsigned k=0;k<emitted;k++) {
+        uint32_t size;memcpy(&size,reply+4+4*k,4);
+        if(size>16384||size%4){live->failed=1;resource_drop(r);return VK_ERROR_DEVICE_LOST;}
+        r->graphics.pipeline.min_sizes[k]=size;
+    }
     /* The host pipeline owns translated shader metadata. No live shader,
      * renderpass or pipeline-layout handle is retained by this pipeline. */
     *out=HANDLE(VkPipeline,r->id);return VK_SUCCESS;
@@ -179,6 +202,12 @@ static PFN_vkVoidFunction graphics_proc(const char *name) {
     P(vkCreateGraphicsPipelines,create_graphics_pipelines) P(vkDestroyPipeline,destroy_pipeline)
     P(vkCmdBeginRenderPass,begin_graphics_pass) P(vkCmdEndRenderPass,end_graphics_pass)
     P(vkCmdBindPipeline,bind_pipeline) P(vkCmdBindVertexBuffers,bind_vertex_buffers) P(vkCmdDraw,draw_graphics)
+    if(live->uniform_supported) {
+        P(vkCreateDescriptorSetLayout,create_set_layout) P(vkDestroyDescriptorSetLayout,destroy_set_layout)
+        P(vkCreateDescriptorPool,create_descriptor_pool) P(vkDestroyDescriptorPool,destroy_descriptor_pool)
+        P(vkAllocateDescriptorSets,allocate_descriptor_sets) P(vkUpdateDescriptorSets,update_descriptor_sets)
+        P(vkCmdBindDescriptorSets,bind_descriptor_sets)
+    }
 #undef P
     return NULL;
 }

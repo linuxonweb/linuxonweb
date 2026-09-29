@@ -38,10 +38,56 @@ const freeze = o => {
   return o;
 };
 const FORMAT_COMPONENTS = Object.freeze({ float32x2: 2, float32x3: 3, float32x4: 4 });
+// Opt-in A3 uniform-buffer profile. Absent options keep the resource-free contract.
+export const UNIFORM_LIMITS = Object.freeze({ maxGroups: 4, maxBindings: 16, maxUniforms: 8, maxRange: 16384,
+  offsetAlignment: 256, maxBufferBytes: 65536 });
+const UNIFORM_MEMBER_BYTES = Object.freeze({ vec4: 16, mat4x4: 64 });
+const uniformsAllowed = options => {
+  if (options === undefined) return false;
+  record(options, ['allowUniforms'], 'shader options');
+  return choice(options.allowUniforms ?? false, [false, true], 'uniform option');
+};
+
+/** Copy translator uniform reflection: sorted unique set/binding, tightly packed vec4/mat4 blocks. */
+export function validateUniformReflection(resources, allowUniforms, blockNames = false) {
+  if (!allowUniforms) { array(resources, 0, 0, 'shader resources'); return []; }
+  let previous = -1;
+  return array(resources, 0, UNIFORM_LIMITS.maxUniforms, 'shader resources').map(item => {
+    record(item, ['group', 'binding', 'type', 'size', 'members', ...(blockNames ? ['blockName'] : [])], 'uniform resource');
+    const group = integer(item.group, 0, UNIFORM_LIMITS.maxGroups - 1, 'uniform set');
+    const binding = integer(item.binding, 0, UNIFORM_LIMITS.maxBindings - 1, 'uniform binding');
+    if (group * 16 + binding <= previous) fail('uniform resources must be sorted and unique');
+    previous = group * 16 + binding;
+    choice(item.type, ['uniform'], 'resource type');
+    const size = integer(item.size, 16, UNIFORM_LIMITS.maxRange, 'uniform block size');
+    let offset = 0;
+    const members = array(item.members, 1, 16, 'uniform members').map(member => {
+      record(member, ['offset', 'type', 'arrayLength'], 'uniform member');
+      const type = choice(member.type, Object.keys(UNIFORM_MEMBER_BYTES), 'uniform member type');
+      const arrayLength = integer(member.arrayLength, 0, type === 'vec4' ? 1024 : 0, 'uniform array length');
+      if (member.offset !== offset) fail('uniform members must be tightly packed');
+      offset += UNIFORM_MEMBER_BYTES[type] * Math.max(1, arrayLength);
+      return { offset: member.offset, type, arrayLength };
+    });
+    if (offset !== size || size % 16) fail('uniform block size mismatch');
+    if (blockNames && (typeof item.blockName !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]{0,159}$/.test(item.blockName))) fail('invalid uniform block name');
+    return { group, binding, type: 'uniform', size, members, ...(blockNames ? { blockName: item.blockName } : {}) };
+  });
+}
+/** Vulkan gl_VertexIndex (u32, includes firstVertex); only with the uniform profile. */
+export function validateVertexIndex(item, allowUniforms, stage, direction) {
+  if (!allowUniforms || item?.builtin !== 'vertex_index') return null;
+  record(item, ['builtin', 'type', 'interpolation'], 'vertex index');
+  record(item.type, ['scalar', 'components'], 'interface type');
+  if (stage !== 'vertex' || direction !== 'inputs' || item.type.scalar !== 'u32' || item.type.components !== 1 ||
+      item.interpolation !== null) fail('unsupported vertex_index interface');
+  return { builtin: 'vertex_index', type: { scalar: 'u32', components: 1 }, interpolation: null };
+}
 
 /** Copy and validate translator metadata; this is a trust boundary, not reflection of WGSL text. */
-export function validateTranslatedShader(input, expectedStage) {
+export function validateTranslatedShader(input, expectedStage, options) {
   choice(expectedStage, ['vertex', 'fragment'], 'shader stage');
+  const allowUniforms = uniformsAllowed(options);
   record(input, ['wgsl', 'schema', 'profile', 'backend', 'stage', 'originalEntryPoint', 'entryPoint',
     'coordinateAdjustment', 'inputs', 'outputs', 'resources'], 'translated shader');
   if (input.schema !== 1 || input.profile !== 'graphics-empty-v1' || input.backend !== 'wgsl' ||
@@ -50,10 +96,12 @@ export function validateTranslatedShader(input, expectedStage) {
   if (typeof input.entryPoint !== 'string' || !/^[A-Za-z_][A-Za-z_0-9]*$/.test(input.entryPoint) || input.entryPoint.length > 256) fail('invalid emitted entry point');
   if (typeof input.originalEntryPoint !== 'string' || !input.originalEntryPoint.length ||
       input.originalEntryPoint.includes('\0') || bytesOf(input.originalEntryPoint) > 128) fail('invalid original entry point');
-  array(input.resources, 0, 0, 'shader resources');
+  const resources = validateUniformReflection(input.resources, allowUniforms);
   const reflect = (items, direction) => {
-    const locations = new Set(); let positions = 0;
+    const locations = new Set(); let positions = 0, vertexIndex = 0;
     const result = array(items, 0, 9, `shader ${direction}`).map(item => {
+      const index = validateVertexIndex(item, allowUniforms, expectedStage, direction);
+      if (index) { if (++vertexIndex > 1) fail('duplicate vertex_index'); return index; }
       record(item, ['location', 'builtin', 'type', 'interpolation', 'invariant'], 'interface item');
       record(item.type, ['scalar', 'components'], 'interface type');
       if (item.type.scalar !== 'f32') fail('unsupported interface scalar');
@@ -90,14 +138,16 @@ export function validateTranslatedShader(input, expectedStage) {
   return freeze({ schema: 1, profile: input.profile, backend: 'wgsl', stage: expectedStage,
     coordinateAdjustment: true, wgsl: input.wgsl, entryPoint: input.entryPoint,
     originalEntryPoint: input.originalEntryPoint, inputs: reflect(input.inputs, 'inputs'),
-    outputs: reflect(input.outputs, 'outputs'), resources: [] });
+    outputs: reflect(input.outputs, 'outputs'), resources });
 }
 
 /** Backend-neutral profile and vertex declarations; no GPU enums/native objects here. */
-export function validatePipelineDescriptor(input, validateShader = validateTranslatedShader) {
-  record(input, ['vertex', 'fragment', 'vertexBuffers', 'colorFormat', 'topology', 'frontFace', 'cullMode', 'sampleCount'], 'pipeline');
-  const vertex = validateShader(input.vertex, 'vertex');
-  const fragment = validateShader(input.fragment, 'fragment');
+export function validatePipelineDescriptor(input, validateShader = validateTranslatedShader, options) {
+  const allowUniforms = uniformsAllowed(options);
+  record(input, ['vertex', 'fragment', 'vertexBuffers', 'colorFormat', 'topology', 'frontFace', 'cullMode', 'sampleCount',
+    ...(allowUniforms ? ['uniforms'] : [])], 'pipeline');
+  const vertex = validateShader(input.vertex, 'vertex', ...(allowUniforms ? [{ allowUniforms }] : []));
+  const fragment = validateShader(input.fragment, 'fragment', ...(allowUniforms ? [{ allowUniforms }] : []));
   const colorFormat = choice(input.colorFormat ?? 'rgba8unorm', ['rgba8unorm'], 'color format');
   const topology = choice(input.topology ?? 'triangle-list', ['triangle-list'], 'primitive topology');
   const frontFace = choice(input.frontFace ?? 'ccw', ['ccw'], 'front face');
@@ -121,8 +171,28 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
     });
     return { stride, stepMode, attributes };
   });
-  if (supplied.size > GRAPHICS_LIMITS.maxAttributes || supplied.size !== vertex.inputs.length ||
-      vertex.inputs.some(i => supplied.get(i.location) !== i.type.components)) fail('vertex attributes do not match shader inputs');
+  const attributes = vertex.inputs.filter(i => own(i, 'location'));
+  if (supplied.size > GRAPHICS_LIMITS.maxAttributes || supplied.size !== attributes.length ||
+      attributes.some(i => supplied.get(i.location) !== i.type.components)) fail('vertex attributes do not match shader inputs');
+  // Declared Vulkan pipeline-layout bindings (sorted); stages bit0 vertex, bit1 fragment.
+  // minSize is the largest statically used shader block, or 0 if no stage uses it.
+  let previous = -1;
+  const uniforms = !allowUniforms ? [] : array(input.uniforms ?? [], 0, UNIFORM_LIMITS.maxUniforms, 'pipeline uniforms').map(u => {
+    record(u, ['group', 'binding', 'stages'], 'pipeline uniform');
+    const group = integer(u.group, 0, UNIFORM_LIMITS.maxGroups - 1, 'uniform set');
+    const binding = integer(u.binding, 0, UNIFORM_LIMITS.maxBindings - 1, 'uniform binding');
+    const stages = integer(u.stages, 1, 3, 'uniform stages');
+    if (group * 16 + binding <= previous) fail('pipeline uniforms must be sorted and unique');
+    previous = group * 16 + binding;
+    const sizes = [[vertex, 1], [fragment, 2]].flatMap(([shader, bit]) => shader.resources
+      .filter(r => r.group === group && r.binding === binding).map(r => {
+        if (!(stages & bit)) fail('shader uniform is not visible to its stage in the pipeline layout');
+        return r.size;
+      }));
+    return { group, binding, stages, minSize: Math.max(0, ...sizes) };
+  });
+  for (const shader of [vertex, fragment]) for (const r of shader.resources)
+    if (!uniforms.some(u => u.group === r.group && u.binding === r.binding)) fail('shader uniform missing from the pipeline layout');
   const outputs = new Map(vertex.outputs.filter(i => own(i, 'location')).map(i => [i.location, i]));
   for (const input of fragment.inputs.filter(i => own(i, 'location'))) {
     const output = outputs.get(input.location);
@@ -130,7 +200,29 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
         output.interpolation.mode !== input.interpolation.mode ||
         output.interpolation.sampling !== input.interpolation.sampling) fail('vertex/fragment interface mismatch');
   }
-  return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount });
+  return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount, uniforms });
+}
+
+/** Shared draw-time uniform range validation for both backends. */
+export function validateDrawUniforms(input, descriptor, allowUniforms, lookup) {
+  if (!allowUniforms) return [];
+  return array(input ?? [], descriptor.uniforms.length, descriptor.uniforms.length, 'draw uniforms').map((u, i) => {
+    record(u, ['group', 'binding', 'buffer', 'offset', 'size'], 'uniform binding');
+    const declared = descriptor.uniforms[i];
+    if (u.group !== declared.group || u.binding !== declared.binding) fail('draw uniforms do not match the pipeline layout');
+    const entry = lookup(u.buffer);
+    const offset = integer(u.offset, 0, entry.descriptor.size - 16, 'uniform offset');
+    const size = integer(u.size, 16, Math.min(UNIFORM_LIMITS.maxRange, entry.descriptor.size - offset), 'uniform range');
+    if (offset % UNIFORM_LIMITS.offsetAlignment || size % 16) fail('uniform offset/range alignment');
+    if (size < declared.minSize) fail('uniform range is smaller than the shader block');
+    return Object.freeze({ group: declared.group, binding: declared.binding, buffer: u.buffer, offset, size });
+  });
+}
+export function validateUniformBufferDescriptor(input) {
+  record(input, ['size'], 'uniform buffer');
+  const size = integer(input.size, 16, UNIFORM_LIMITS.maxBufferBytes, 'uniform buffer size');
+  if (size % 16) fail('uniform buffer size must be aligned to 16 bytes');
+  return Object.freeze({ size });
 }
 
 export function validateTargetDescriptor(input) {
@@ -171,13 +263,15 @@ function webgpuPipeline(descriptor, vertex, fragment, layout) {
  * the host adapter owns wire IDs and the device. Async methods serialize GPU error
  * scopes. The caller must not interleave its own error scopes on this same device.
  */
-export function createGraphicsRenderer(device, { onEvent = () => {} } = {}) {
+export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false } = {}) {
   if (!device?.queue || !device?.lost?.then) fail('existing WebGPU device required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
+  choice(allowUniforms, [false, true], 'uniform option');
+  const uniformOptions = allowUniforms ? { allowUniforms } : undefined;
   const resources = new Map(), native = new Map(), cancelWaits = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
   const counters = { buffersCreated: 0, buffersDestroyed: 0, texturesCreated: 0, texturesDestroyed: 0,
-    passes: 0, draws: 0, readbacks: 0, uploads: 0 };
+    passes: 0, draws: 0, readbacks: 0, uploads: 0, uniformUploads: 0 };
   const event = e => { try { onEvent(e); } catch { /* diagnostics cannot change renderer state */ } };
   const unavailable = () => new GraphicsRendererError(cause || `renderer ${state}`, 'unavailable');
   const available = () => { if (state !== 'open') throw unavailable(); };
@@ -234,9 +328,9 @@ export function createGraphicsRenderer(device, { onEvent = () => {} } = {}) {
     counters[kind === 'buffer' ? 'buffersCreated' : 'texturesCreated']++;
     return object;
   };
-  const add = (kind, object, descriptor) => {
+  const add = (kind, object, descriptor, extra = {}) => {
     available(); const handle = Object.freeze({ kind });
-    resources.set(handle, { kind, object, descriptor, initialized: false }); return handle;
+    resources.set(handle, { ...extra, kind, object, descriptor, initialized: false }); return handle;
   };
   const get = (handle, kind) => {
     available(); const entry = resources.get(handle);
@@ -255,11 +349,15 @@ export function createGraphicsRenderer(device, { onEvent = () => {} } = {}) {
         descriptor.vertexBuffers.some(b => b.stride > (limits.maxVertexBufferArrayStride ?? 2048))) fail('pipeline exceeds device limits');
   };
   const validateDraw = (input, target) => {
-    record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor'], 'draw');
+    record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor',
+      ...(allowUniforms ? ['uniforms'] : [])], 'draw');
     const pipeline = get(input.pipeline, 'pipeline'), descriptor = pipeline.descriptor;
     if (descriptor.colorFormat !== target.descriptor.format) fail('pipeline/target format mismatch');
     const vertexCount = integer(input.vertexCount, 3, GRAPHICS_LIMITS.maxVertices, 'vertex count');
     if (vertexCount % 3) fail('initial triangle profile requires complete triangles');
+    const uniforms = validateDrawUniforms(input.uniforms, descriptor, allowUniforms, handle => get(handle, 'uniform-buffer'));
+    if (uniforms.some(u => u.size > (limits.maxUniformBufferBindingSize ?? 65536) ||
+        u.offset % (limits.minUniformBufferOffsetAlignment ?? 256))) fail('uniform binding exceeds device limits');
     const firstVertex = integer(input.firstVertex ?? 0, 0, GRAPHICS_LIMITS.maxVertices, 'first vertex');
     choice(input.instanceCount ?? 1, [1], 'instance count'); choice(input.firstInstance ?? 0, [0], 'first instance');
     const bindings = array(input.vertexBuffers, descriptor.vertexBuffers.length, descriptor.vertexBuffers.length, 'draw vertex buffers').map((b, i) => {
@@ -275,27 +373,58 @@ export function createGraphicsRenderer(device, { onEvent = () => {} } = {}) {
     });
     return Object.freeze({ pipeline: input.pipeline, vertexBuffers: Object.freeze(bindings.map(Object.freeze)), vertexCount, firstVertex,
       instanceCount: 1, firstInstance: 0, viewport: rectangle(input.viewport, target.descriptor, true),
-      scissor: rectangle(input.scissor, target.descriptor, false) });
+      scissor: rectangle(input.scissor, target.descriptor, false), ...(allowUniforms ? { uniforms: Object.freeze(uniforms) } : {}) });
   };
 
   return Object.freeze({
     limits: GRAPHICS_LIMITS,
+    /** Declared pipeline uniforms: [{group,binding,stages,minSize}] in binding order. */
+    pipelineUniforms(handle) { return get(handle, 'pipeline').descriptor.uniforms; },
     getStats() { return Object.freeze({ state, resources: resources.size, nativeObjects: native.size, allocatedBytes: bytes,
       recordingDraws: recording?.draws.length ?? 0, ...counters }); },
     createPipeline(input) {
       // Take the entire value snapshot synchronously, before queueing/awaiting.
-      const descriptor = validatePipelineDescriptor(input); checkDevicePipelineLimits(descriptor);
+      const descriptor = validatePipelineDescriptor(input, validateTranslatedShader, uniformOptions); checkDevicePipelineLimits(descriptor);
       return enqueue(async () => {
-        budget(0);
+        budget(0); let groupLayouts = [];
         const object = await checked(async () => {
           const vertex = device.createShaderModule({ code: descriptor.vertex.wgsl });
           const fragment = device.createShaderModule({ code: descriptor.fragment.wgsl });
           const info = await wait(Promise.all([vertex.getCompilationInfo(), fragment.getCompilationInfo()]));
           if (info.some(i => i.messages.some(m => m.type === 'error'))) fail('translated WGSL compilation failed');
-          const layout = device.createPipelineLayout({ bindGroupLayouts: [] });
+          // Vulkan set N maps to WebGPU group N; bindings keep their numbers.
+          const groups = descriptor.uniforms.length ? Math.max(...descriptor.uniforms.map(u => u.group)) + 1 : 0;
+          groupLayouts = Array.from({ length: groups }, (_, group) => device.createBindGroupLayout({ entries: descriptor.uniforms
+            .filter(u => u.group === group).map(u => ({ binding: u.binding,
+              visibility: (u.stages & 1 ? GPUShaderStage.VERTEX : 0) | (u.stages & 2 ? GPUShaderStage.FRAGMENT : 0),
+              buffer: { type: 'uniform', hasDynamicOffset: false, minBindingSize: u.minSize } })) }));
+          const layout = device.createPipelineLayout({ bindGroupLayouts: groupLayouts });
           return wait(device.createRenderPipelineAsync(webgpuPipeline(descriptor, vertex, fragment, layout)));
         });
-        return add('pipeline', object, descriptor);
+        return add('pipeline', object, descriptor, { groupLayouts: Object.freeze(groupLayouts) });
+      });
+    },
+    createUniformBuffer(input) {
+      if (!allowUniforms) fail('uniform profile not enabled');
+      const { size } = validateUniformBufferDescriptor(input);
+      if (size > (limits.maxBufferSize ?? Infinity)) fail('uniform buffer exceeds device limits');
+      return enqueue(async () => {
+        budget(size);
+        const object = await makeNative('buffer', size, () => device.createBuffer({ size,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST }));
+        return add('uniform-buffer', object, Object.freeze({ size }));
+      });
+    },
+    uploadUniformBuffer(handle, offset, data) {
+      if (!allowUniforms) fail('uniform profile not enabled');
+      get(handle, 'uniform-buffer'); integer(offset, 0, UNIFORM_LIMITS.maxBufferBytes, 'upload offset');
+      if (!(data instanceof Uint8Array) || !data.byteLength || data.byteLength > UNIFORM_LIMITS.maxBufferBytes ||
+          offset % 4 || data.byteLength % 4) fail('upload requires aligned, bounded Uint8Array data');
+      const copy = data.slice();
+      return enqueue(async () => {
+        const entry = get(handle, 'uniform-buffer');
+        if (offset > entry.descriptor.size || copy.byteLength > entry.descriptor.size - offset) fail('upload exceeds uniform buffer');
+        await checked(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uniformUploads++;
       });
     },
     createVertexBuffer(input) {
@@ -362,7 +491,10 @@ export function createGraphicsRenderer(device, { onEvent = () => {} } = {}) {
           if (pass.clearColor) attachment.clearValue = pass.clearColor;
           const render = encoder.beginRenderPass({ colorAttachments: [attachment] });
           for (const draw of draws) {
-            render.setPipeline(get(draw.pipeline, 'pipeline').object);
+            const pipeline = get(draw.pipeline, 'pipeline'); render.setPipeline(pipeline.object);
+            pipeline.groupLayouts.forEach((layout, group) => render.setBindGroup(group, device.createBindGroup({ layout,
+              entries: draw.uniforms.filter(u => u.group === group).map(u => ({ binding: u.binding,
+                resource: { buffer: get(u.buffer, 'uniform-buffer').object, offset: u.offset, size: u.size } })) })));
             draw.vertexBuffers.forEach((b, slot) => render.setVertexBuffer(slot, get(b.buffer, 'vertex-buffer').object, b.offset, b.size));
             const v = draw.viewport, s = draw.scissor;
             render.setViewport(v.x, v.y, v.width, v.height, v.minDepth, v.maxDepth);

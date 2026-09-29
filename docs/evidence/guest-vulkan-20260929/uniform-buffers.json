@@ -1,0 +1,299 @@
+{
+ "packet": "A3 uniform buffers in graphics",
+ "date": "2026-09-29",
+ "branch": "claude-opus-5-5-guest-gpu-jit",
+ "head": "91543049ffde9c5eb126760aa430cbb9bcac1e94",
+ "workingTreeUncommitted": true,
+ "taskRoot": "/mnt/p6/build/guest-vulkan-a3-20260928",
+ "filesystem": "ext4 (verified)",
+ "authoritativeRun": {
+  "path": "/mnt/p6/build/guest-vulkan-a3-20260928/guest-run1/result.json",
+  "sha256": "b88b1da63bfee256724d0c655ed39abe12e04dace944510f9086c042324347b2",
+  "pass": true,
+  "browserExit": {
+   "code": 0,
+   "signal": null
+  },
+  "serverClosed": true,
+  "httpErrors": [
+   {
+    "url": "/favicon.ico",
+    "error": "unsupported route"
+   }
+  ],
+  "ports": {
+   "http": 4194,
+   "cdp": 9404
+  },
+  "runner": "web/linux/tests/guest-vulkan/run-finite.mjs",
+  "suites": [
+   {
+    "suite": "direct-live",
+    "pass": true,
+    "guestChecks": 140,
+    "elapsedMs": 5320,
+    "priorA1A2GuestChecks": 140
+   },
+   {
+    "suite": "direct-unavailable",
+    "pass": true,
+    "guestChecks": 17,
+    "elapsedMs": 3798,
+    "priorA1A2GuestChecks": 17
+   },
+   {
+    "suite": "direct-clear",
+    "pass": true,
+    "guestChecks": 1087,
+    "elapsedMs": 3800,
+    "priorA1A2GuestChecks": 1087
+   },
+   {
+    "suite": "direct-loss-transport",
+    "pass": true,
+    "guestChecks": 640,
+    "elapsedMs": 3913,
+    "priorA1A2GuestChecks": 640
+   },
+   {
+    "suite": "direct-loss-device",
+    "pass": true,
+    "guestChecks": 640,
+    "elapsedMs": 4075,
+    "priorA1A2GuestChecks": 640
+   },
+   {
+    "suite": "direct-exhaustion",
+    "pass": true,
+    "guestChecks": 1213,
+    "elapsedMs": 4250,
+    "priorA1A2GuestChecks": 1213
+   },
+   {
+    "suite": "loader",
+    "pass": true,
+    "guestChecks": 901,
+    "elapsedMs": 4005,
+    "priorA1A2GuestChecks": 901
+   },
+   {
+    "suite": "compute",
+    "pass": true,
+    "guestChecks": 501,
+    "elapsedMs": 4177,
+    "priorA1A2GuestChecks": 501
+   },
+   {
+    "suite": "graphics-webgl2",
+    "pass": true,
+    "guestChecks": 232753,
+    "elapsedMs": 4749,
+    "priorA1A2GuestChecks": 232753
+   },
+   {
+    "suite": "graphics-webgpu",
+    "pass": true,
+    "guestChecks": 232745,
+    "elapsedMs": 4311,
+    "priorA1A2GuestChecks": 232745
+   },
+   {
+    "suite": "uniform-webgl2",
+    "pass": true,
+    "guestChecks": 201269,
+    "elapsedMs": 4177
+   },
+   {
+    "suite": "uniform-webgpu",
+    "pass": true,
+    "guestChecks": 201269,
+    "elapsedMs": 4280
+   }
+  ],
+  "regressionsUnchangedVsA1A2": true,
+  "notes": [
+   "net::ERR_ABORTED observed once on graphics-webgl2 and once on uniform-webgpu; cause not established (historical pattern)"
+  ]
+ },
+ "uniformHostReport": {
+  "bothBackends": {
+   "graphicsTranslations": 4,
+   "passes": 8,
+   "draws": 14,
+   "vertexUploads": 5,
+   "uniformUploads": 13,
+   "readbacks": 8,
+   "released": 10,
+   "commands": 61,
+   "failedCommands": [
+    [
+     16,
+     -22
+    ],
+    [
+     16,
+     -22
+    ],
+    [
+     17,
+     -22
+    ],
+    [
+     17,
+     -22
+    ]
+   ],
+   "boot": "Memory 1048576K, 2 CPUs"
+  },
+  "webgl2Ownership": {
+   "Buffer": 11,
+   "Texture": 1,
+   "Framebuffer": 1,
+   "VertexArray": 8,
+   "Program": 2,
+   "Shader": 4,
+   "Sync": 16,
+   "createdEqualsDeleted": true
+  },
+  "adapters": {
+   "webgl2": "ANGLE SwiftShader",
+   "webgpu": "google/swiftshader fallback"
+  },
+  "pixelRounds": {
+   "R0": [
+    256,
+    0,
+    3309
+   ],
+   "R1": [
+    227,
+    0,
+    3355
+   ],
+   "R2": [
+    227,
+    248,
+    2957
+   ],
+   "R3": [
+    231,
+    220,
+    2990
+   ],
+   "R4..R7": [
+    231,
+    211,
+    3010
+   ],
+   "columns": [
+    "inside0",
+    "inside1",
+    "outside"
+   ],
+   "frame": "73x51 RGBA8, 32 tail sentinel bytes 0xa5, pixel centres within 0.04 of an edge skipped"
+  }
+ },
+ "guestMarkers": [
+  "GUEST_VK_UNIFORM_LIMITS sets=4 range=16384 alignment=256",
+  "GUEST_VK_UNIFORM_DESCRIPTORS layouts=3 rejected_layouts=5 rejected_pipeline_layouts=3 pool_exhaustion=2",
+  "GUEST_VK_UNIFORM_RECORDING_REJECTED count=6",
+  "GUEST_VK_UNIFORM_PIXELS_PASS round=0..7",
+  "GUEST_VK_UNIFORM_FRAMES_PASS rounds=6",
+  "GUEST_VK_UNIFORM_NEGATIVE_PASS invalid_writes=5 short_range=1 recovered=2",
+  "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+  "GUEST_VK_CLOSE status=0"
+ ],
+ "translatorCheck": {
+  "path": "/mnt/p6/build/guest-vulkan-a3-20260928/translator-check-run1/result.json",
+  "sha256": "e5ff2cd06612b4374ed81805b964af8bde051bbcd70be4ba1b2caa81c631a6c1",
+  "checks": 58,
+  "pass": true,
+  "rejected": {
+   "bad-binding.frag:wgsl": "uniform set/binding outside profile (set < 4, binding < 16)",
+   "bad-binding.frag:glsl": "uniform set/binding outside profile (set < 4, binding < 16)",
+   "bad-member.frag:wgsl": "uniform members must be vec4<f32>, mat4x4<f32> or array<vec4<f32>, N>",
+   "bad-member.frag:glsl": "uniform members must be vec4<f32>, mat4x4<f32> or array<vec4<f32>, N>"
+  }
+ },
+ "translators": {
+  "wgsl": {
+   "path": "/mnt/p6/build/guest-vulkan-a3-20260928/wgsl-translator-build-run1/translator.wasm",
+   "bytes": 786443,
+   "sha256": "f1df22534091d4c00fab4884e970c03040c7fc1c9353d29c8421e186758d4542"
+  },
+  "glsl": {
+   "path": "/mnt/p6/build/guest-vulkan-a3-20260928/glsl-translator-build-run1/translator.wasm",
+   "bytes": 887995,
+   "sha256": "31d062e7582ab95333cab7eb87c11b031e481ccd30c5ba5b6498aad04a6aa0bd"
+  }
+ },
+ "shaderSpirvSha256": {
+  "index.vert": "732d95164134409bf7f05283bfa8aefc716c206ed31652595b540083ad5b9a90",
+  "color.frag": "771776ecc4dd700bf345309318799f006b8712186fa040d8b298d0da59ff625e",
+  "offset.vert": "699703bbc6ca5d438dfc07af28503cae838c66980cb9c9c33dc56fa551d75791",
+  "tint.frag": "688c8ec2e04d2733eadbd9ef497a60e737f30672d5247fcb4f94bc0596f4729f",
+  "bad-binding.frag": "bf200eee73b09712b46825f53aab6f180e48fedc8d31bf002ef23e25080bffa3",
+  "bad-member.frag": "faeb3c4322df26c0f0175473fbf909f5bdefb8b3b1db62966eeb9b5d47f6f061"
+ },
+ "shaderDir": "/mnt/p6/build/guest-vulkan-a3-20260928/uniform-shaders-run1",
+ "artifacts": {
+  "uniformClient": {
+   "path": "/mnt/p6/build/guest-vulkan-a3-20260928/uniform-build-run5/guest-vulkan-public-client.wasm",
+   "bytes": 417338,
+   "sha256": "7c77ff152d680fa0f39517cd7055e8dce96b67b180a7a17ebe7dba2101b3753e"
+  },
+  "uniformPackage": {
+   "path": "/mnt/p6/build/guest-vulkan-a3-20260928/uniform-package-run4/initramfs.cpio",
+   "bytes": 40913128,
+   "sha256": "cb19242d83e916bf98b5e75591b6fa327c2a6760dc6fd7580ebddef6f8839afe"
+  },
+  "regressionBuilds": "direct/loader/compute/graphics *-build-run5 and *-package-run4 via rebuild.sh"
+ },
+ "failedRunHistory": [
+  {
+   "run": "uniform-build-run1",
+   "failure": "FileNotFoundError guest-vulkan-uniform/guest.html",
+   "fix": "wrote guest.html"
+  },
+  {
+   "run": "uniform-run1",
+   "failure": "GUEST_VK_UNIFORM_FAIL line=191 vkBindBufferMemory (UBO)",
+   "cause": "guest-gpu.c refused opcodes above GPU_GRAPHICS_READBACK",
+   "fix": "bound raised to GPU_UNIFORM_UPLOAD"
+  },
+  {
+   "run": "uniform-run2",
+   "failure": "GUEST_VK_UNIFORM_FAIL line=239 bad pipeline returned DEVICE_LOST",
+   "cause": "graphics.inc pipeline reply buffer 36 bytes < host -22 error text; session poisoned",
+   "fix": "reply buffer 512 bytes"
+  },
+  {
+   "run": "uniform-run3",
+   "failure": "WebGL2 line=241 unexpected built-in attribute",
+   "cause": "ANGLE lists gl_VertexID as an active attribute",
+   "fix": "webgl renderer skips gl_VertexID only when vertex_index reflected"
+  },
+  {
+   "run": "uniform-run4",
+   "result": "pass on both backends"
+  }
+ ],
+ "cleanup": {
+  "listeners4194": false,
+  "listeners9404": false,
+  "ownedProcessesRemaining": 0,
+  "userPid1591443Touched": false
+ },
+ "limitations": [
+  "no dynamic offsets, push constants, descriptor copies, update templates, push descriptors or individual set free/reset",
+  "UBO members limited to tightly packed vec4, column-major mat4 and vec4[N]",
+  "max 4 sets, 8 bindings per pipeline, 16 KiB range, 64 KiB buffer, 256-byte offset alignment",
+  "whole used UBO uploaded per submit",
+  "no samplers/textures/storage in graphics (A4); only gl_VertexIndex added (no gl_InstanceIndex); no depth or WSI",
+  "edge pixels within 0.04 not compared",
+  "SwiftShader only; nonconformant; no CTS; no Zink/OpenGL/Firefox GPU claim",
+  "two net::ERR_ABORTED events of unknown cause"
+ ],
+ "upstreamModified": false,
+ "deployed": false
+}

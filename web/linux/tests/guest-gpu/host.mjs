@@ -1,16 +1,17 @@
 // Experimental guest-command renderer. Not imported by the accepted runtime.
 export const MAGIC = 0x31555047, VERSION = 1, MAX_PAYLOAD = 1048576;
 export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8, CLEAR: 9, SPIRV_SHADER: 10, COMPUTE_PIPELINE: 11, STORAGE_BUFFER: 12, STORAGE_UPLOAD: 13, COMPUTE_DISPATCH: 14, STORAGE_READBACK: 15,
-  GRAPHICS_SHADER: 16, GRAPHICS_PIPELINE: 17, VERTEX_BUFFER: 18, VERTEX_UPLOAD: 19, GRAPHICS_TARGET: 20, GRAPHICS_PASS: 21, GRAPHICS_READBACK: 22 });
+  GRAPHICS_SHADER: 16, GRAPHICS_PIPELINE: 17, VERTEX_BUFFER: 18, VERTEX_UPLOAD: 19, GRAPHICS_TARGET: 20, GRAPHICS_PASS: 21, GRAPHICS_READBACK: 22,
+  UNIFORM_BUFFER: 23, UNIFORM_UPLOAD: 24 });
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8', { fatal: true });
 const fail = (message, status = -22) => { throw Object.assign(new Error(message), {status}); };
 const words = (...values) => { const bytes = new Uint8Array(values.length * 4), view = new DataView(bytes.buffer); values.forEach((n, i) => view.setUint32(i * 4, n, true)); return bytes; };
-export function decodeHeader(bytes, allowClear = false, allowCompute = false, allowGraphics = false) {
+export function decodeHeader(bytes, allowClear = false, allowCompute = false, allowGraphics = false, allowUniforms = false) {
   if (bytes.byteLength !== 16) fail('short header');
   const v = new DataView(bytes.buffer, bytes.byteOffset, 16);
   if (v.getUint32(0, true) !== MAGIC || v.getUint16(4, true) !== VERSION) fail('unsupported protocol');
   const opcode = v.getUint16(6, true), request = v.getUint32(8, true), length = v.getUint32(12, true);
-  if (opcode > (allowGraphics ? OP.GRAPHICS_READBACK : allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
+  if (opcode > (allowGraphics && allowUniforms ? OP.UNIFORM_UPLOAD : allowGraphics ? OP.GRAPHICS_READBACK : allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
   return { opcode, request, length };
 }
 export function encodeReply(opcode, request, status, body = new Uint8Array()) {
@@ -32,13 +33,13 @@ export function createWebGLContextLease() {
 
 /** One device and resource table per connection. No guest memory/shared views. */
 export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
-  allowGraphics = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
+  allowGraphics = false, allowUniforms = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
   allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease } = {}) {
   const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
   let device, contextLease, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
   const initializing = new Set();
   const report = { commands: 0, draws: 0, clears: 0, readbacks: 0, dispatches: 0, uploads: 0, translations: 0, translatorsCreated: 0, translatorsClosed: 0, released: 0, adapter: null, error: null,
-    graphicsTranslations: 0, graphicsPasses: 0, graphicsDraws: 0, graphicsUploads: 0, graphicsReadbacks: 0,
+    graphicsTranslations: 0, graphicsPasses: 0, graphicsDraws: 0, graphicsUploads: 0, graphicsReadbacks: 0, graphicsUniformUploads: 0,
     graphicsTranslatorsCreated: 0, graphicsTranslatorsClosed: 0, graphics: null,
     backend: null, acquisitionError: null, contextsCreated: 0, contextsClosed: 0, cleanupErrors: [] };
   const attempt = action => { try { action(); } catch (error) { report.cleanupErrors.push(String(error.message).slice(0, 512)); } };
@@ -116,6 +117,8 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
   };
   try {
     if (allowWebGL && !allowGraphics) fail('WebGL fallback requires the graphics profile');
+    if (allowUniforms && !allowGraphics) fail('uniform profile requires the graphics profile');
+    const uniformOptions = allowUniforms ? { allowUniforms } : undefined;
     let adapter;
     try {
       if (!gpu) fail('WebGPU API unavailable', -19);
@@ -163,12 +166,12 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       validateGraphicsShader = webgl ? renderer.validateWebGLShader : renderer.validateTranslatedShader;
       graphicsRenderer = webgl ? renderer.createWebGLRenderer(contextLease.gl, { onEvent(event) {
         if (event.type === 'lost' && !closed) { lost = true; report.error = event.message; cleanup(); }
-      } }) : renderer.createGraphicsRenderer(device);
+      }, ...(allowUniforms ? { allowUniforms } : {}) }) : renderer.createGraphicsRenderer(device, allowUniforms ? { allowUniforms } : undefined);
     }
     onEvent({ type: 'adapter', backend: report.backend, ...report.adapter });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
-      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics);
+      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics, allowUniforms);
       if (request <= lastRequest) fail('non-monotonic request id'); lastRequest = request;
       const payload = await connection.readExactly(length); if (payload.length !== length) fail('truncated payload');
       const v = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
@@ -181,7 +184,8 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, backend: report.backend,
             shader: report.backend === 'webgl2' ? 'SPIR-V' : 'WGSL', ...(allowClear ? { clearImage: true } : {}),
             ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}),
-            ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:report.backend==='webgl2'} : {}), adapter: report.adapter })); break;
+            ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:report.backend==='webgl2'} : {}),
+            ...(allowUniforms ? {uniformProfile:1,maxUniformRange:16384,uniformOffsetAlignment:256,maxUniformBuffer:65536} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -311,18 +315,25 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           case OP.GRAPHICS_SHADER: {
             if (!allowGraphics || length < 20 || length > 65536 || length % 4) fail('invalid graphics SPIR-V profile/length');
             const translated = await graphicsTranslator.translate(payload.slice());
-            const shader = validateGraphicsShader(translated, translated.stage);
+            const shader = uniformOptions ? validateGraphicsShader(translated, translated.stage, uniformOptions) : validateGraphicsShader(translated, translated.stage);
             const bytes = encoder.encode(JSON.stringify(shader)).length;
             budget(bytes); body = add('graphics-shader', shader, bytes, {graphics:true});
             report.graphicsTranslations++; break;
           }
           case OP.GRAPHICS_PIPELINE: {
             if (!allowGraphics) fail('graphics not negotiated');
-            const descriptor = record(parseGraphics(payload), ['vertex','fragment','vertexBuffers','colorFormat','topology','frontFace','cullMode','sampleCount'], 'graphics pipeline');
+            const descriptor = record(parseGraphics(payload), ['vertex','fragment','vertexBuffers','colorFormat','topology','frontFace','cullMode','sampleCount',
+              ...(allowUniforms ? ['uniforms'] : [])], 'graphics pipeline');
             const vertex = shaderReference(descriptor.vertex, 'vertex'), fragment = shaderReference(descriptor.fragment, 'fragment');
             // Charge copies retained by the pipeline even after shader IDs are destroyed.
             const bytes = vertex.bytes + fragment.bytes + length;
             body = await addGraphics('graphics-pipeline', bytes, () => graphicsRenderer.createPipeline({ ...descriptor, vertex:vertex.object, fragment:fragment.object }));
+            if (allowUniforms) {
+              // Reply: id, then one u32 minimum std140 block size per declared
+              // uniform in declared order, so the guest prevalidates ranges.
+              const pipeline = get(new DataView(body.buffer).getUint32(0, true), 'graphics-pipeline');
+              body = words(new DataView(body.buffer).getUint32(0, true), ...graphicsRenderer.pipelineUniforms(pipeline.object).map(u => u.minSize));
+            }
             break;
           }
           case OP.VERTEX_BUFFER: {
@@ -337,6 +348,18 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             if (!size || size % 4 || offset % 4 || offset > buffer.bytes || size > buffer.bytes-offset || length !== size+12) fail('invalid vertex upload bounds');
             await graphicsRenderer.uploadVertexBuffer(buffer.object, offset, payload.subarray(12)); report.graphicsUploads++; break;
           }
+          case OP.UNIFORM_BUFFER: {
+            if (!allowUniforms) fail('uniforms not negotiated');
+            exact(4); const size = v.getUint32(0,true);
+            if (size < 16 || size > 65536 || size % 16) fail('invalid uniform buffer size');
+            body = await addGraphics('graphics-uniform', size, () => graphicsRenderer.createUniformBuffer({size})); break;
+          }
+          case OP.UNIFORM_UPLOAD: {
+            if (!allowUniforms || length < 12) fail('invalid uniform upload');
+            const buffer = get(v.getUint32(0,true), 'graphics-uniform'), offset = v.getUint32(4,true), size = v.getUint32(8,true);
+            if (!size || size % 4 || offset % 4 || offset > buffer.bytes || size > buffer.bytes-offset || length !== size+12) fail('invalid uniform upload bounds');
+            await graphicsRenderer.uploadUniformBuffer(buffer.object, offset, payload.subarray(12)); report.graphicsUniformUploads++; break;
+          }
           case OP.GRAPHICS_TARGET: {
             if (!allowGraphics) fail('graphics not negotiated');
             exact(8); const width = v.getUint32(0,true), height = v.getUint32(4,true);
@@ -349,14 +372,21 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             const target = get(pass.target, 'graphics-target');
             if (!Array.isArray(pass.draws) || pass.draws.length > 256) fail('invalid graphics draw count');
             const draws = pass.draws.map(draw => {
-              record(draw, ['pipeline','vertexBuffers','vertexCount','firstVertex','instanceCount','firstInstance','viewport','scissor'], 'graphics draw');
+              record(draw, ['pipeline','vertexBuffers','vertexCount','firstVertex','instanceCount','firstInstance','viewport','scissor',
+                ...(allowUniforms ? ['uniforms'] : [])], 'graphics draw');
               const pipeline = get(draw.pipeline, 'graphics-pipeline');
               if (!Array.isArray(draw.vertexBuffers) || draw.vertexBuffers.length > 8) fail('invalid graphics vertex bindings');
               const vertexBuffers = draw.vertexBuffers.map(binding => {
                 record(binding, ['buffer','offset','size'], 'vertex binding');
                 return { ...binding, buffer:get(binding.buffer, 'graphics-vertex').object };
               });
-              return { ...draw, pipeline:pipeline.object, vertexBuffers };
+              if (!allowUniforms) return { ...draw, pipeline:pipeline.object, vertexBuffers };
+              if (!Array.isArray(draw.uniforms) || draw.uniforms.length > 8) fail('invalid graphics uniform bindings');
+              const uniforms = draw.uniforms.map(binding => {
+                record(binding, ['group','binding','buffer','offset','size'], 'uniform binding');
+                return { ...binding, buffer:get(binding.buffer, 'graphics-uniform').object };
+              });
+              return { ...draw, pipeline:pipeline.object, vertexBuffers, uniforms };
             });
             try {
               graphicsRenderer.begin({target:target.object,loadOp:pass.loadOp,storeOp:pass.storeOp,...(Object.hasOwn(pass,'clearColor') ? {clearColor:pass.clearColor} : {})});

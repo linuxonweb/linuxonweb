@@ -20,6 +20,7 @@ static VkShaderStageFlagBits shader_execution_stage(const unsigned char *bytes,s
     }
     return entries==1?stage:0;
 }
+#include "uniform.inc"
 static int compute_layout_valid(uint64_t id) {
     struct resource *r=resource_get(id,R_PIPELINE_LAYOUT);return r&&!r->graphics_layout;
 }
@@ -46,7 +47,10 @@ static VKAPI_ATTR void VKAPI_CALL destroy_shader(VkDevice d,VkShaderModule h,con
 static VKAPI_ATTR VkResult VKAPI_CALL create_set_layout(VkDevice d,const VkDescriptorSetLayoutCreateInfo *i,const VkAllocationCallbacks *a,VkDescriptorSetLayout *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO||i->pNext||i->flags||i->bindingCount!=1||!i->pBindings)return VK_ERROR_INITIALIZATION_FAILED;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO||i->pNext||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
+    if(live->uniform_supported&&(i->bindingCount!=1||(i->pBindings&&i->pBindings[0].descriptorType!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)))
+        return create_uniform_set_layout(i,out);
+    if(i->bindingCount!=1||!i->pBindings)return VK_ERROR_INITIALIZATION_FAILED;
     const VkDescriptorSetLayoutBinding b=*i->pBindings;
     if(b.binding||b.descriptorType!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||b.descriptorCount!=1||b.stageFlags!=VK_SHADER_STAGE_COMPUTE_BIT||b.pImmutableSamplers)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_SET_LAYOUT);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -58,10 +62,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_pipeline_layout(VkDevice d,const Vk
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO||i->pNext||i->flags||i->pushConstantRangeCount)return VK_ERROR_INITIALIZATION_FAILED;
     int graphics=live->graphics_supported&&!i->setLayoutCount;
-    if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
-       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)))return VK_ERROR_INITIALIZATION_FAILED;
+    struct uniform_pipeline_layout uniforms={0};
+    if(!graphics&&live->uniform_supported&&i->setLayoutCount&&i->pSetLayouts&&uniform_pipeline_layout(i,&uniforms))graphics=1;
+    else if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
+       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_PIPELINE_LAYOUT);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
-    r->graphics_layout=graphics;
+    r->graphics_layout=graphics;r->graphics.layout=uniforms;
     /* All supported layouts have exactly the same immutable binding shape. */
     *out=HANDLE(VkPipelineLayout,r->id);return VK_SUCCESS;
 }
@@ -86,9 +92,14 @@ static VKAPI_ATTR void VKAPI_CALL destroy_pipeline(VkDevice d,VkPipeline h,const
 static VKAPI_ATTR VkResult VKAPI_CALL create_descriptor_pool(VkDevice d,const VkDescriptorPoolCreateInfo *i,const VkAllocationCallbacks *a,VkDescriptorPool *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO||i->pNext||i->flags||i->maxSets!=1||i->poolSizeCount!=1||
-       !i->pPoolSizes||i->pPoolSizes[0].type!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||i->pPoolSizes[0].descriptorCount!=1)return VK_ERROR_INITIALIZATION_FAILED;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO||i->pNext||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
+    int uniform=live->uniform_supported&&i->poolSizeCount==1&&i->pPoolSizes&&i->pPoolSizes[0].type==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&
+        i->maxSets>=1&&i->maxSets<=8&&i->pPoolSizes[0].descriptorCount>=1&&i->pPoolSizes[0].descriptorCount<=32;
+    if(!uniform&&(i->maxSets!=1||i->poolSizeCount!=1||
+       !i->pPoolSizes||i->pPoolSizes[0].type!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||i->pPoolSizes[0].descriptorCount!=1))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_DESC_POOL);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    /* Uniform pools record capacity: width=max sets, height=descriptors. */
+    if(uniform){r->uniform=1;r->width=i->maxSets;r->height=i->pPoolSizes[0].descriptorCount;}
     *out=HANDLE(VkDescriptorPool,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_descriptor_pool(VkDevice d,VkDescriptorPool h,const VkAllocationCallbacks *a) {
@@ -99,8 +110,11 @@ static VKAPI_ATTR void VKAPI_CALL destroy_descriptor_pool(VkDevice d,VkDescripto
 static VKAPI_ATTR VkResult VKAPI_CALL allocate_descriptor_sets(VkDevice d,const VkDescriptorSetAllocateInfo *i,VkDescriptorSet *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
+    if(device_valid(d)&&i&&i->sType==VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO&&!i->pNext&&
+       resource_get(RID(i->descriptorPool),R_DESC_POOL)&&resource_get(RID(i->descriptorPool),R_DESC_POOL)->uniform)
+        return allocate_uniform_sets(i,out);
     if(!device_valid(d)||!i||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO||i->pNext||i->descriptorSetCount!=1||!i->pSetLayouts||
-       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT))return VK_ERROR_INITIALIZATION_FAILED;
+       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *p=resource_get(RID(i->descriptorPool),R_DESC_POOL);if(!p)return VK_ERROR_INITIALIZATION_FAILED;
     for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET&&resources[n].parent==p->id)return VK_ERROR_OUT_OF_POOL_MEMORY;
     struct resource *r=resource_new(R_DESC_SET);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -110,9 +124,10 @@ static VKAPI_ATTR void VKAPI_CALL update_descriptor_sets(VkDevice d,uint32_t cou
     (void)copy;if(!device_valid(d))return;
     /* Invalid updates invalidate addressed sets instead of retaining a stale
      * binding that could make an unsupported write appear successful. */
-    if(count>32 || (count&&!writes)){for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET)resources[n].valid=0;return;}
+    if(count>32 || (count&&!writes)){for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET){resources[n].valid=0;resources[n].graphics.set.written=0;}return;}
     for(uint32_t n=0;n<count;n++) {
         const VkWriteDescriptorSet w=writes[n];struct resource *set=resource_get(RID(w.dstSet),R_DESC_SET);if(!set)continue;
+        if(set->uniform){update_uniform_set(set,&w,copies);continue;}
         set->valid=0;
         if(copies||w.sType!=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET||w.pNext||w.dstBinding||w.dstArrayElement||w.descriptorCount!=1||
            w.descriptorType!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||!w.pBufferInfo)continue;
@@ -121,7 +136,7 @@ static VKAPI_ATTR void VKAPI_CALL update_descriptor_sets(VkDevice d,uint32_t cou
         if(!buffer||!buffer->storage||b.offset||range<256||range>buffer->size||range%4)continue;
         set->link=buffer->id;set->range=(size_t)range;set->valid=1;
     }
-    if(copies)for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET)resources[n].valid=0;
+    if(copies)for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET){resources[n].valid=0;resources[n].graphics.set.written=0;}
 }
 static VKAPI_ATTR void VKAPI_CALL bind_compute_pipeline(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipeline pipeline) {
     if(cb!=&command||command.state!=2)return;
@@ -130,6 +145,7 @@ static VKAPI_ATTR void VKAPI_CALL bind_compute_pipeline(VkCommandBuffer cb,VkPip
 }
 static VKAPI_ATTR void VKAPI_CALL bind_descriptor_sets(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipelineLayout layout,uint32_t first,uint32_t count,const VkDescriptorSet *sets,uint32_t dynamic_count,const uint32_t *offsets) {
     (void)offsets;if(cb!=&command||command.state!=2)return;
+    if(point==VK_PIPELINE_BIND_POINT_GRAPHICS){bind_uniform_sets(cb,layout,first,count,sets,dynamic_count);return;}
     if(command.graphics.in_pass||point!=VK_PIPELINE_BIND_POINT_COMPUTE||!compute_layout_valid(RID(layout))||first||count!=1||!sets||dynamic_count||
        !resource_get(RID(sets[0]),R_DESC_SET)){invalid_command(cb);return;}
     command.set=RID(sets[0]);command.pipeline_layout=RID(layout);

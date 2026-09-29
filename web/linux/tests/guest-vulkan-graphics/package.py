@@ -38,7 +38,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['graphics'], default='graphics')
+    parser.add_argument('--mode', choices=['graphics', 'uniform'], default='graphics')
     args = parser.parse_args()
     out, storage = checked_storage(args.output)
     if out.exists():
@@ -53,6 +53,8 @@ def main():
     build = json.loads(args.build.read_text()); binary = Path(build['artifact']).read_bytes()
     if not build['pass'] or not build['testOnly'] or len(binary) != build['bytes'] or digest(binary) != build['sha256']:
         raise ValueError('build artifact differs from verified build report')
+    if build.get('app', 'graphics') != args.mode:
+        raise ValueError('package mode does not match the built application')
     original = list(records(raw)); chunks = []; changes = 0
     anchor = b'# Keep the picker available without requiring Firefox to fork a helper on NOMMU.'
     argument = b''

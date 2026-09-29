@@ -50,6 +50,20 @@ fn reflect(module: &Module, ty: Handle<Type>, binding: Option<&Binding>, stage: 
         }
         return Err("interface leaf has no binding".into());
     }
+    if let Some(Binding::BuiltIn(BuiltIn::VertexIndex)) = binding {
+        // Vulkan gl_VertexIndex (including firstVertex); Naga types it as u32.
+        match module.types[ty].inner {
+            TypeInner::Scalar(scalar) if stage == ShaderStage::Vertex && input &&
+                scalar.kind == naga::ScalarKind::Uint && scalar.width == 4 => {},
+            _ => return Err("vertex_index is only supported as a vertex-stage u32 input".into()),
+        }
+        if items.iter().any(|item| item.builtin && item.location == Some(u32::MAX)) {
+            return Err("duplicate interface binding".into());
+        }
+        items.push(Io { location: Some(u32::MAX), builtin: true, components: 1,
+            json: "{\"builtin\":\"vertex_index\",\"type\":{\"scalar\":\"u32\",\"components\":1},\"interpolation\":null}".into() });
+        return Ok(());
+    }
     let components = match module.types[ty].inner {
         TypeInner::Vector { size, scalar } if scalar.kind == naga::ScalarKind::Float && scalar.width == 4 => size as u8,
         _ => return Err("interface supports only float32 vectors of 2 to 4 components".into()),
@@ -92,6 +106,34 @@ fn reflect(module: &Module, ty: Handle<Type>, binding: Option<&Binding>, stage: 
     Ok(())
 }
 
+// Bounded std140/std430-compatible uniform profile: tightly packed vec4,
+// mat4x4 (column-major, stride 16) and array<vec4, N> (stride 16) members.
+fn uniform_layout(module: &Module, ty: Handle<Type>) -> Result<(u32, String), String> {
+    let float4 = |ty: Handle<Type>| matches!(module.types[ty].inner, TypeInner::Vector { size: naga::VectorSize::Quad, scalar }
+        if scalar.kind == naga::ScalarKind::Float && scalar.width == 4);
+    let (members, span) = match module.types[ty].inner {
+        TypeInner::Struct { ref members, span } => (members, span),
+        _ => return Err("uniform buffer must be a block struct".into()),
+    };
+    if members.is_empty() || members.len() > 16 { return Err("uniform block member count outside profile".into()); }
+    let mut offset = 0u32; let mut items = Vec::new();
+    for member in members {
+        let (kind, length, size) = match module.types[member.ty].inner {
+            _ if float4(member.ty) => ("vec4", 0, 16),
+            TypeInner::Matrix { columns: naga::VectorSize::Quad, rows: naga::VectorSize::Quad, scalar }
+                if scalar.kind == naga::ScalarKind::Float && scalar.width == 4 => ("mat4x4", 0, 64),
+            TypeInner::Array { base, size: naga::ArraySize::Constant(n), stride: 16 }
+                if float4(base) && n.get() <= 1024 => ("vec4", n.get(), 16 * n.get()),
+            _ => return Err("uniform members must be vec4<f32>, mat4x4<f32> or array<vec4<f32>, N>".into()),
+        };
+        if member.offset != offset { return Err("uniform members must be tightly packed".into()); }
+        items.push(format!("{{\"offset\":{offset},\"type\":\"{kind}\",\"arrayLength\":{length}}}"));
+        offset += size;
+    }
+    if span != offset || offset > 16_384 { return Err("uniform block size outside profile".into()); }
+    Ok((offset, items.join(",")))
+}
+
 fn compile(input: &[u8]) -> Result<(String, String), String> {
     if !(20..=INPUT_LIMIT).contains(&input.len()) || input.len() % 4 != 0 {
         return Err("invalid SPIR-V byte length".into());
@@ -120,6 +162,7 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
             if matches!(word(position), 16 | 17) {
                 return Err("only center sampling supported (raw SPIR-V decoration)".into());
             }
+            if word(position) == 4 { return Err("row-major uniform matrices unsupported".into()); }
         }
         offset += bytes;
     }
@@ -140,13 +183,29 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
     if entry.name.is_empty() || entry.name.len() > 128 { return Err("original entry name exceeds profile bounds".into()); }
     if entry.early_depth_test.is_some() { return Err("early depth tests unsupported".into()); }
     if !module.overrides.is_empty() { return Err("specialization constants unsupported".into()); }
-    for (_, global) in module.global_variables.iter() {
-        if global.space != naga::AddressSpace::Private || global.binding.is_some() {
-            return Err("graphics profile requires empty resources and private globals only".into());
+    let mut uniform_globals = Vec::new();
+    for (handle, global) in module.global_variables.iter() {
+        match (global.space, global.binding.as_ref()) {
+            (naga::AddressSpace::Private, None) => {},
+            (naga::AddressSpace::Uniform, Some(binding)) => {
+                if binding.group >= 4 || binding.binding >= 16 {
+                    return Err("uniform set/binding outside profile (set < 4, binding < 16)".into());
+                }
+                if uniform_globals.iter().any(|(_, other, _, _): &(Handle<naga::GlobalVariable>, naga::ResourceBinding, u32, String)| other == binding) {
+                    return Err("duplicate uniform set/binding".into());
+                }
+                let (size, members) = uniform_layout(&module, global.ty)?;
+                uniform_globals.push((handle, binding.clone(), size, members));
+            },
+            _ => return Err("graphics profile permits only uniform buffers and private globals".into()),
         }
     }
+    if uniform_globals.len() > 8 { return Err("uniform buffer count exceeds profile".into()); }
     let info = naga::valid::Validator::new(naga::valid::ValidationFlags::all(), naga::valid::Capabilities::empty())
         .validate(&module).map_err(|error| format!("SPIR-V validation: {error}"))?;
+    let usage = info.get_entry_point(0);
+    let mut used: Vec<_> = uniform_globals.into_iter().filter(|item| !usage[item.0].is_empty()).collect();
+    used.sort_by_key(|item| (item.1.group, item.1.binding));
     let mut inputs = Vec::new(); let mut outputs = Vec::new();
     for argument in &entry.function.arguments {
         reflect(&module, argument.ty, argument.binding.as_ref(), entry.stage, true, 0, &mut inputs)?;
@@ -172,8 +231,9 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
         .map_err(|error| format!("WGSL write: {error}"))?;
     if output.len() > OUTPUT_LIMIT { return Err("WGSL output exceeds profile limit".into()); }
     let join = |items: &[Io]| items.iter().map(|item| item.json.as_str()).collect::<Vec<_>>().join(",");
-    let metadata = format!("{{\"schema\":1,\"profile\":\"graphics-empty-v1\",\"backend\":\"wgsl\",\"stage\":\"{stage}\",\"originalEntryPoint\":{},\"entryPoint\":{},\"coordinateAdjustment\":true,\"inputs\":[{}],\"outputs\":[{}],\"resources\":[]}}",
-        quoted(&entry.name), quoted(&emitted), join(&inputs), join(&outputs));
+    let metadata = format!("{{\"schema\":1,\"profile\":\"graphics-empty-v1\",\"backend\":\"wgsl\",\"stage\":\"{stage}\",\"originalEntryPoint\":{},\"entryPoint\":{},\"coordinateAdjustment\":true,\"inputs\":[{}],\"outputs\":[{}],\"resources\":[{}]}}",
+        quoted(&entry.name), quoted(&emitted), join(&inputs), join(&outputs),
+        used.iter().map(|(_, b, size, members)| format!("{{\"group\":{},\"binding\":{},\"type\":\"uniform\",\"size\":{size},\"members\":[{members}]}}", b.group, b.binding)).collect::<Vec<_>>().join(","));
     if metadata.len() > METADATA_LIMIT { return Err("reflection exceeds profile limit".into()); }
     Ok((output, metadata))
 }

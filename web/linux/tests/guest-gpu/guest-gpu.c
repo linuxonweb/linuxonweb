@@ -28,7 +28,7 @@ int gpu_accept(struct gpu_session *s, unsigned port) {
   s->fd=accept(listener,NULL,NULL); close(listener); return s->fd<0 ? -1 : 0;
 }
 int gpu_call(struct gpu_session *s, enum gpu_op op, const void *data, uint32_t length, void *reply, uint32_t capacity, uint32_t *received) {
-  if(!s || s->fd<0 || op<GPU_HELLO || op>GPU_GRAPHICS_READBACK || !received || (!reply && capacity) || length>1048576 || (!data && length) || s->sequence==0xffffffffu) { errno=EINVAL; return -1; }
+  if(!s || s->fd<0 || op<GPU_HELLO || op>GPU_UNIFORM_UPLOAD || !received || (!reply && capacity) || length>1048576 || (!data && length) || s->sequence==0xffffffffu) { errno=EINVAL; return -1; }
   *received=0;
   unsigned char h[16]={0}, status[4]; uint32_t seq=++s->sequence;
   put32(h,MAGIC); h[4]=1; h[6]=(unsigned char)op; put32(h+8,seq); put32(h+12,length);

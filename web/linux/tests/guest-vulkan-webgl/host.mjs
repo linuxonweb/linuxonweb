@@ -1,7 +1,7 @@
 import { serveGPU, createWebGLContextLease } from '../guest-gpu/host.mjs';
 
 /** Real guest fixture adapter; independent native ownership before emergency cleanup. */
-export async function serveFallback(connection, backend, onEvent) {
+export async function serveFallback(connection, backend, onEvent, options = {}) {
   if (!['webgl2', 'webgpu'].includes(backend)) throw Error('unknown requested test backend');
   const workers = new Set(), devices = new Set(), buffers = new Set(), textures = new Set(), contexts = new Set(), glObjects = new Map();
   const counts = { workersCreated: 0, workersTerminated: 0, devicesCreated: 0, devicesDestroyed: 0,
@@ -58,9 +58,9 @@ export async function serveFallback(connection, backend, onEvent) {
     if (globalThis.Worker === ObservedWorker) globalThis.Worker = NativeWorker;
   };
   try {
-    const host = await serveGPU(transport, { gpu, allowGraphics: true, allowWebGL: true, timeoutMs: 120000, onEvent,
-      graphicsTranslatorOptions: { url: new URL('./candidate/wgsl.wasm', import.meta.url), sha256: 'a530270fb7ae3099fbcf60964cff494987fdf608720ce34b936e52a545b3335b' },
-      webglTranslatorOptions: { url: new URL('./candidate/glsl.wasm', import.meta.url), sha256: '4fcdabf05d9e9cc0003e299739d809a7360256b405a3bb588e5a5771b410aa49' }, webglContextFactory: contextFactory });
+    const host = await serveGPU(transport, { gpu, allowGraphics: true, allowWebGL: true, allowUniforms: !!options.allowUniforms, timeoutMs: 120000, onEvent,
+      graphicsTranslatorOptions: { url: new URL('./candidate/wgsl.wasm', import.meta.url), sha256: 'f1df22534091d4c00fab4884e970c03040c7fc1c9353d29c8421e186758d4542' },
+      webglTranslatorOptions: { url: new URL('./candidate/glsl.wasm', import.meta.url), sha256: '31d062e7582ab95333cab7eb87c11b031e481ccd30c5ba5b6498aad04a6aa0bd' }, webglContextFactory: contextFactory });
     return { ...host, ownership: { ...counts, gl: structuredClone(counts.gl), liveWorkers: workers.size, liveDevices: devices.size,
       liveBuffers: buffers.size, liveTextures: textures.size, liveContexts: contexts.size, liveGL: glObjects.size, beforeEmergencyCleanup: !cleaned } };
   } finally { if (globalThis.Worker === ObservedWorker) globalThis.Worker = NativeWorker; }
