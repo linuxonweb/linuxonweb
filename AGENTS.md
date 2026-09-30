@@ -24,8 +24,19 @@ Current packets (update as they finish):
   descriptor set layouts/pools/sets + UNIFORM_BUFFER on WebGPU and WebGL2
   (opt-in `allowUniforms`); uniform app 201,269 checks on both backends, all
   ten earlier suites unchanged. No dynamic offsets/push constants yet.
-- Running: Vulkan A4 sampled textures/samplers (task dir
-  `/mnt/p6/build/guest-vulkan-a4-20260929`, ports 4197/9407).
+- Done: Vulkan A4 sampled textures/samplers (`5195015`,
+  `docs/guest-vulkan-textures-20260929.md`): opt-in `allowTextures`, RGBA8 2D
+  <=128, samplers, combined image samplers; all earlier suites plus textures
+  pass (`/mnt/p6/build/guest-vulkan-a4-20260929/all-run1`). First runs on a
+  physical GPU: WebGPU on NVIDIA MX110 (Dawn Vulkan), WebGL2 on Intel ANGLE.
+- Running: Vulkan A5 depth (task dir `/mnt/p6/build/guest-vulkan-a5-20260929`,
+  ports 4197/9407).
+- Done: Firefox GPU check page (`7d02735`): packager
+  `tools/guest-rootfs/package-firefox-gpu-check.py` adds the WebGL/WebGPU cube
+  page plus `distribution.ini` (toolbar+menu bookmark, default homepage) to
+  the W1 candidate -> `37bd8f5d7fc7` (`/mnt/p6/build/firefox-gpu-check-20260929/candidate-run3`,
+  not promoted). `guest-run4` passes cold/warm; guest reports webgl=none,
+  webgpu=none (null adapter) until W3+. Web UI icon toolbar/resolutions: `8d65406`.
 - Done: Firefox WebGPU design (`5f0c1b5`, `docs/firefox-webgpu-design-20260929.md`):
   guest Firefox has WebGPU DOM/IPC/wgpu bindings but only the Empty hal and
   RELEASE_OR_BETA gates. Route: `--wrap` forwarder at `wgpu_server_*` to a host
@@ -43,8 +54,14 @@ Current packets (update as they finish):
   pass. Candidate `c27a1a7c6e6a` (base W0 `9fe35012a2b7`) at
   `/mnt/p6/build/firefox-webgpu-w1-20260929/candidate-run1`; not promoted.
   Later Firefox candidates build on it.
-- Running: W2 host GPU-owner Worker + `gpu_hostcall` (task dir
-  `/mnt/p6/build/firefox-webgpu-w2-20260929`, ports 4198/9408).
+- Done: W2 `gpu_hostcall` channel (`d030464`, `docs/firefox-webgpu-w2-20260929.md`):
+  private syscalls 0x6a470001-3 intercepted in worker.js -> lazily started
+  GPU-owner Worker with a real WebGPU adapter (NVIDIA MX110 verified), 256
+  SAB slots, owner-loss errors. Chromium writeBuffer accepts SAB views.
+  Firefox W1 regression run4 passes; runs 2/3 failed under host load on a
+  duplicated guest keystroke (kept).
+- Running: W3 host wgpu action decoder (task dir
+  `/mnt/p6/build/firefox-webgpu-w3-20260929`, ports 4198/9408 if needed).
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`
