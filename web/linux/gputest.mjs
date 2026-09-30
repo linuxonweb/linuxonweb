@@ -17,6 +17,18 @@ export function gputestEnabled(search = globalThis.location?.search ?? '') {
   return new URLSearchParams(search).get('gputest') === '1';
 }
 
+/**
+ * `?gpubackend=webgpu|webgl` forces the host backend for tests: `webgpu`
+ * disables the WebGL2 fallback, `webgl` skips WebGPU acquisition. Anything
+ * else (or absent) is `auto`: WebGPU first, WebGL2 on acquisition failure.
+ */
+export const GPU_BACKENDS = Object.freeze(['auto', 'webgpu', 'webgl']);
+export function gpuBackendParam(search = globalThis.location?.search ?? '') {
+  const value = (new URLSearchParams(search).get('gpubackend') || '').toLowerCase();
+  if (value === 'webgl2') return 'webgl';
+  return GPU_BACKENDS.includes(value) ? value : 'auto';
+}
+
 /** Fetches the demo archive; null (logged) when absent or unavailable. */
 export async function loadGputestArchive(log, fetchImpl = fetch) {
   let response;
@@ -46,13 +58,20 @@ export function appendCpio(base, extra) {
  * session, then wait for the next listener. `wake()` retries immediately
  * (e.g. when the guest prints GUEST_GPU_LISTENING).
  */
-export function startGpuHost({ vsock, log, gpu = globalThis.navigator?.gpu, retryMs = 2000, connectTimeoutMs = 3000, importHost } = {}) {
+export function startGpuHost({ vsock, log, gpu = globalThis.navigator?.gpu, backend = 'auto', retryMs = 2000, connectTimeoutMs = 3000, importHost } = {}) {
+  if (!GPU_BACKENDS.includes(backend)) throw new TypeError(`unknown GPU backend ${backend}`);
+  // Forced WebGL: serveGPU sees no WebGPU API and takes its WebGL2 path.
+  const serveGpu = backend === 'webgl' ? null : gpu;
+  const allowWebGL = backend !== 'webgpu';
+  const describe = backend === 'webgpu' ? `forced WebGPU (${gpu ? 'available' : 'unavailable'}), no WebGL2 fallback`
+    : backend === 'webgl' ? 'forced WebGL2'
+    : `WebGPU ${gpu ? 'available' : 'unavailable'}, WebGL2 fallback`;
   let stopped = false, wakeUp = null, sessions = 0, lastFailure = '';
   const wake = () => { const resolve = wakeUp; wakeUp = null; resolve?.(); };
   const pause = ms => new Promise(resolve => { const timer = setTimeout(() => { wakeUp = null; resolve(); }, ms); wakeUp = () => { clearTimeout(timer); resolve(); }; });
   const done = (async () => {
     const { serveGPU } = await (importHost ? importHost() : import('./tests/guest-gpu/host.mjs'));
-    log(`gputest: waiting for guest GPU listener on vsock port ${GPUTEST_VSOCK_PORT} (WebGPU ${gpu ? 'available' : 'unavailable'}, WebGL2 fallback)`);
+    log(`gputest: waiting for guest GPU listener on vsock port ${GPUTEST_VSOCK_PORT} (gpubackend=${backend}: ${describe})`);
     while (!stopped) {
       let connection;
       try { connection = await vsock.connect(GPUTEST_VSOCK_PORT, { timeoutMs: connectTimeoutMs }); }
@@ -66,14 +85,14 @@ export function startGpuHost({ vsock, log, gpu = globalThis.navigator?.gpu, retr
       log(`gputest: session ${session} connected`);
       try {
         const report = await serveGPU(connection, {
-          gpu, allowGraphics: true, allowWebGL: true, allowUniforms: true, allowTextures: true, allowDepth: true,
+          gpu: serveGpu, allowGraphics: true, allowWebGL, allowUniforms: true, allowTextures: true, allowDepth: true,
           timeoutMs: 0x7fffffff, // demo sessions are long-lived; closed by guest or machine
           graphicsTranslatorOptions: GPUTEST_TRANSLATORS.wgsl, webglTranslatorOptions: GPUTEST_TRANSLATORS.glsl,
           onEvent(event) {
             if (event.type === 'adapter') log(`gputest: session ${session} backend=${event.backend} adapter=${JSON.stringify({ vendor: event.vendor, architecture: event.architecture, description: event.description, fallback: event.isFallbackAdapter })}`);
           },
         });
-        log(`gputest: session ${session} closed commands=${report.commands} passes=${report.graphicsPasses} draws=${report.graphicsDraws} readbacks=${report.graphicsReadbacks}${report.acquisitionError ? ` webgpu-unavailable=${JSON.stringify(report.acquisitionError)}` : ''}${report.error ? ` error=${JSON.stringify(report.error)}` : ''}`);
+        log(`gputest: session ${session} closed commands=${report.commands} passes=${report.graphicsPasses} draws=${report.graphicsDraws} readbacks=${report.graphicsReadbacks}${report.acquisitionError && backend !== 'webgl' ? ` webgpu-unavailable=${JSON.stringify(report.acquisitionError)}` : ''}${report.error ? ` error=${JSON.stringify(report.error)}` : ''}`);
       } catch (error) {
         if (!stopped) log(`gputest: session ${session} failed: ${error.message}`, 'error');
       } finally { try { connection.close(); } catch { /* already closed */ } }

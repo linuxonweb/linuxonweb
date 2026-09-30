@@ -19,7 +19,7 @@ import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
 import { systemAsset, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
-import { gputestEnabled, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_RDINIT } from './gputest.mjs';
+import { gputestEnabled, gpuBackendParam, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_RDINIT } from './gputest.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -106,6 +106,8 @@ for (const button of document.querySelectorAll(".toolbar .tool")) {
 const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
 // ?gputest=1 serves the guest Vulkan ICD over vsock and appends gpu/gputest.cpio.
 const gputestMode = gputestEnabled();
+// ?gpubackend=webgpu|webgl forces the gputest host backend (default auto).
+const gpuBackend = gpuBackendParam();
 const settingsKey = "linuxonweb.machine-settings.v1";
 const resumeKey = "linuxonweb.restart-mode.v1";
 const modes = ["guest", "console", "startx", "firefox"];
@@ -726,7 +728,7 @@ async function boot(mode) {
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
     // Serve guest GPU sessions until the machine closes (cleanupBoot stops it).
-    if (vsock && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog });
+    if (vsock && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog, backend: gpuBackend });
     bootReader = machine.bootConsole.getReader();
     (async () => {
       for (;;) {

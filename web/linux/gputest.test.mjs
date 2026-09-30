@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gputestEnabled, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_VSOCK_PORT } from './gputest.mjs';
+import { gputestEnabled, gpuBackendParam, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_VSOCK_PORT } from './gputest.mjs';
 
 test('gputest query flag', () => {
   assert.equal(gputestEnabled('?gputest=1'), true);
@@ -53,4 +53,31 @@ test('host loop retries, serves each session and stops', async () => {
   assert.equal(o.webglTranslatorOptions.sha256, '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5');
   assert.equal(lines.filter(line => line.includes('connect retry')).length, 1, 'repeated identical failures are logged once');
   assert.ok(lines.some(line => line.includes('session 2 backend=webgpu')));
+});
+
+test('gpubackend query parameter', () => {
+  assert.equal(gpuBackendParam('?gputest=1&gpubackend=webgpu'), 'webgpu');
+  assert.equal(gpuBackendParam('?gpubackend=webgl&gputest=1&firefox=1'), 'webgl');
+  assert.equal(gpuBackendParam('?gpubackend=WebGL2'), 'webgl');
+  assert.equal(gpuBackendParam('?gpubackend=auto'), 'auto');
+  assert.equal(gpuBackendParam('?gpubackend=vulkan'), 'auto');
+  assert.equal(gpuBackendParam(''), 'auto');
+});
+
+test('forced backends shape serveGPU options', async () => {
+  const fakeGpu = { requestAdapter() {} };
+  for (const [backend, gpu, allowWebGL] of [['auto', fakeGpu, true], ['webgpu', fakeGpu, false], ['webgl', null, true]]) {
+    const lines = [];
+    let host, seen;
+    const vsock = { async connect() { return { close() {} }; } };
+    const serveGPU = async (connection, options) => { seen = options; host.stop();
+      return { commands: 0, graphicsPasses: 0, graphicsDraws: 0, graphicsReadbacks: 0, acquisitionError: 'WebGPU API unavailable', error: null }; };
+    host = startGpuHost({ vsock, log: line => lines.push(line), gpu: fakeGpu, backend, retryMs: 5, importHost: async () => ({ serveGPU }) });
+    await host.done;
+    assert.equal(seen.gpu, gpu, backend);
+    assert.equal(seen.allowWebGL, allowWebGL, backend);
+    assert.ok(lines[0].includes(`gpubackend=${backend}`), lines[0]);
+    assert.equal(lines.some(line => line.includes('webgpu-unavailable')), backend !== 'webgl');
+  }
+  assert.throws(() => startGpuHost({ vsock: {}, log() {}, backend: 'vulkan' }), /unknown GPU backend/);
 });
