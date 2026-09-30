@@ -91,7 +91,17 @@ User priority (2026-09-29): finish guest Vulkan first, then Firefox WebGPU
 (prefer passthrough to host WebGPU if feasible), then Firefox GPU generally;
 Zink/OpenGL is deferred until after that. JIT continues in parallel when a slot
 is free.
-Next: Vulkan A5-A7 (depth, WSI, vkcube), Firefox WebGPU W1-W9, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
+- Done: JIT 3a PBL static diagnosis (`docs/guest-jit-pbl-diagnosis-20260930.md`,
+  scratch `/mnt/p6/build/guest-jit-pbl-diag-20260930`). PBL adds only 6
+  `js::pbl::` functions (0.075% of code). The 09-26 "slower" verdict rests on
+  one run per build and is likely mostly noise. The one clear regression is
+  exceptions (~1.3-1.6x, every throw goes through `jit::HandleException`); per-op
+  checks compiled in for non-`__wasi__` come next. fpcast does not explain it.
+  Next is JIT 3b: an ABBAAB 6-cold-boot measurement of baseline `6c7fad94` vs PBL
+  `6febc628`, run on an idle host (no concurrent browser gates).
+- Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
+  property), light blue, and a Stop/Cancel confirm popover below the button.
+Next: Vulkan A6-A7 (WSI, vkcube), gputest G1-G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
