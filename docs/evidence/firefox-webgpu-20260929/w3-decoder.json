@@ -1,0 +1,144 @@
+{
+ "schema": "firefox-webgpu-w3-decoder-evidence-v1",
+ "packet": "W3",
+ "date": "2026-09-29",
+ "pass": true,
+ "checks": 21098,
+ "failures": 0,
+ "traps": 0,
+ "goldens": {
+  "count": 31,
+  "passed": 31,
+  "fieldChecks": 1286,
+  "allCanonical": true,
+  "producer": "golden-harness linked against verbatim gfx/wgpu_bindings, host-native rustc 1.94.1 (e408947bf 2026-03-25)",
+  "firefox": "128.14.0esr",
+  "wgpuRev": "c7458638d14921c7562e4197ddeefa17be413587",
+  "harnessRun": "native-run4",
+  "mirrorOnly": [
+   "device-create-shader-module"
+  ],
+  "mirrorCrosscheck": "CreateCommandEncoder,CreateSampler byte-identical"
+ },
+ "negatives": {
+  "cases": 4047,
+  "byCategory": {
+   "truncation": 3933,
+   "trailing": 62,
+   "oversized": 1,
+   "bad-kind": 6,
+   "huge-length": 10,
+   "bad-tag": 9,
+   "id-guard": 7,
+   "zero-buffersize": 2,
+   "colour-attachments": 3,
+   "utf8": 5,
+   "format": 3,
+   "non-finite": 4
+  }
+ },
+ "fuzz": {
+  "mutants": 9300,
+  "randomBuffers": 2100,
+  "decodedOk": 1996,
+  "structuredErrors": 9404
+ },
+ "wasm": {
+  "path": "/mnt/p6/build/firefox-webgpu-w3-20260929/decoder-build-run2/firefox-webgpu-decoder.wasm",
+  "bytes": 377315,
+  "sha256": "2f0c575b700a9220aea6365a60201f29600ff446c26eeeb78d703ccb11cd248e",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "target": "wasm32-unknown-unknown",
+  "imports": 0,
+  "exports": [
+   "__data_end",
+   "__heap_base",
+   "alloc",
+   "decode",
+   "free",
+   "max_input",
+   "memory",
+   "result_len",
+   "result_ptr",
+   "wgpu_render_bundle_draw",
+   "wgpu_render_bundle_draw_indexed",
+   "wgpu_render_bundle_draw_indexed_indirect",
+   "wgpu_render_bundle_draw_indirect",
+   "wgpu_render_bundle_insert_debug_marker",
+   "wgpu_render_bundle_pop_debug_group",
+   "wgpu_render_bundle_push_debug_group",
+   "wgpu_render_bundle_set_bind_group",
+   "wgpu_render_bundle_set_index_buffer",
+   "wgpu_render_bundle_set_pipeline",
+   "wgpu_render_bundle_set_push_constants",
+   "wgpu_render_bundle_set_vertex_buffer"
+  ],
+  "resolvedPackagesAllInFirefoxLock": true,
+  "firefoxCargoLockSha256": "3a72a0456cfe9ab0c2239852383a18c4a90a119c5dc684c0b56d513414114d3f"
+ },
+ "timing": {
+  "node": "v22.22.2",
+  "compileMs": 2,
+  "instantiateMs": 0.34,
+  "perGoldenMedianUs": {
+   "min": 2.07,
+   "max": 83.61,
+   "mean": 9.18
+  },
+  "bigComputePass": {
+   "commands": 500000,
+   "inputBytes": 8000026,
+   "jsonBytes": 10500156,
+   "medianMs": 416.4,
+   "wasmOnlyMedianMs": 63.6,
+   "jsonParseMedianMs": 218,
+   "reviverParseMedianMs": 2070.4,
+   "inputMBps": 19.2,
+   "memoryBytesAfter": 105512960
+  }
+ },
+ "divergences": [
+  "decoder rejects trailing bytes (Firefox bincode::deserialize ignores them)",
+  "guard rejects epoch>=2^29, backend>4, all-zero id, non-finite f32/f64"
+ ],
+ "runs": {
+  "accepted": {
+   "build": "decoder-build-run2",
+   "gate": "gate-run3"
+  },
+  "preserved": {
+   "decoder-build-run1": "pass, pre float-guard (375,989 bytes)",
+   "gate-run1": "fail: 31 trailing checks expected wrong error substring",
+   "gate-run2": "pass: before JSON fast path (2.07 s reviver parse)",
+   "native-run1..4": "golden harness builds; run4 accepted",
+   "dump-run1": "initial decode dump"
+  }
+ },
+ "resultJson": {
+  "path": "/mnt/p6/build/firefox-webgpu-w3-20260929/gate-run3/result.json",
+  "sha256": "4d2331de0ee19a93ecb1c53af90819dded704e35e1b6cf94d0bd4e19b36705b4"
+ },
+ "sourceSha256": {
+  "web/linux/tests/firefox-webgpu-decoder/Cargo.toml": "6f6e45e5d7f36239d2a035ae7214f5230d3f44f1e58cf150e8e88ae5ec8b9fe4",
+  "web/linux/tests/firefox-webgpu-decoder/src/lib.rs": "3163c73886ad97482535fb7008ce4bdf10b25272c848aaa4834a8ff6bff236fa",
+  "web/linux/tests/firefox-webgpu-decoder/src/guard.rs": "8cffc8026e9273d5e3ee93d32c6465501a08ce07542b8d0b443c63919fccd6ac",
+  "web/linux/tests/firefox-webgpu-decoder/src/wire_dispatch.rs": "43086582fd030ddc88e30b8413882e4356ae60af90272dec9c2ffadbb960aa3f",
+  "web/linux/tests/firefox-webgpu-decoder/adapters/js-sys/lib.rs": "9d8a75912da57074d9b421efca6609f5837597806f1d911e3974291017674683",
+  "web/linux/tests/firefox-webgpu-decoder/adapters/web-sys/lib.rs": "f98c6b3809796b5888d2058236bd0279569bc50213079a5a042fe6ddc6fd552a",
+  "web/linux/tests/firefox-webgpu-decoder/build.py": "8d5c4e43cab4dc051b484b2c429da907aefca1c9b92067036dd05f6c6d09671a",
+  "web/linux/tests/firefox-webgpu-decoder/decoder.mjs": "5fcf2a352aa830a51b185fe1b65a476aeed73ec3814b3819079de6e1ead42bba",
+  "web/linux/tests/firefox-webgpu-decoder/check.mjs": "c1c5c40842022738a77d1176db45456bd28611c1ac13fc8909c5da4e9c1472da",
+  "web/linux/tests/firefox-webgpu-decoder/make-goldens.py": "b9a16a9a9d9e44c9d84dba8be3ea0c5fa9ec8079a869c4319d2bb576b2c36b84",
+  "web/linux/tests/firefox-webgpu-decoder/golden-harness/src/main.rs": "3d33b01e8d0b5d11304edb4bd6112fd3859a36c4e6ae3c2df7f6fcccf938558b",
+  "web/linux/tests/firefox-webgpu-decoder/goldens/manifest.json": "dd66123e4cdd989055646343b9ffae6c84152ab910b14794baf3f28f155f68e6"
+ },
+ "storage": {
+  "path": "/mnt/p6/build/firefox-webgpu-w3-20260929/decoder-build-run2",
+  "filesystem": "ext4",
+  "mount": "/mnt/p6",
+  "freeBytes": 127507861504
+ },
+ "notPromoted": true,
+ "upstreamEdits": 0,
+ "browserUsed": false
+}

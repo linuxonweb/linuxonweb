@@ -63,8 +63,15 @@ Current packets (update as they finish):
   SAB slots, owner-loss errors. Chromium writeBuffer accepts SAB views.
   Firefox W1 regression run4 passes; runs 2/3 failed under host load on a
   duplicated guest keystroke (kept).
-- Running: W3 host wgpu action decoder (task dir
-  `/mnt/p6/build/firefox-webgpu-w3-20260929`, ports 4198/9408 if needed).
+- Done: W3 host wgpu action decoder (`web/linux/tests/firefox-webgpu-decoder/`,
+  `docs/firefox-webgpu-w3-20260929.md`): Rust->wasm bincode decoder (377,315
+  bytes, no imports, `/mnt/p6/build/firefox-webgpu-w3-20260929/decoder-build-run2`).
+  Gate-run3: 21,098 checks, 0 failures. 31 goldens come from Firefox 128.14.0's
+  own client encoders (wgpu c7458638) and round-trip byte-exact; 4,047 malformed
+  cases are rejected; 11,400 fuzz inputs cause no traps. The decode median is
+  9.2 us. W4 blockers are listed in the doc: adapter_pack_info, callback queue
+  drained in poll_all_devices, mapped-range staging, direct-FFI descriptors,
+  async error policy, epoch-checked ids.
 - Done: Firefox DevTools blank fix (`132e4fc`, `docs/firefox-devtools-20260928.md`):
   packed-JS adapter reads `ppmm.sharedData` in the parent process (the cpmm
   snapshot is incoherent under the Wasm mmap shim). Candidate `b21b2cac65a3`

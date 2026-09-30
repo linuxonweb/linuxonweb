@@ -1,0 +1,398 @@
+{
+ "schema": "firefox-webgpu-w3-goldens-v1",
+ "firefox": "128.14.0esr",
+ "wgpu_rev": "c7458638d14921c7562e4197ddeefa17be413587",
+ "firefox_cargo_lock_sha256": "3a72a0456cfe9ab0c2239852383a18c4a90a119c5dc684c0b56d513414114d3f",
+ "wire": "bincode 1.3.3 serialize() (fixint, little-endian); same make_byte_buf path as Firefox",
+ "producer": "golden-harness linked against verbatim gfx/wgpu_bindings, host-native rustc 1.94.1 (e408947bf 2026-03-25)",
+ "upstream_copies": {
+  "gfx/wgpu_bindings": "944b072a5abb240f58846abb2c980a6b7d2d2f954a88eb1d1aed7dc518f18829",
+  "xpcom/rust/nsstring": "18ce0988bed67f785d02c1eecebad6109ba0b5843c2edc59e42b9f262bbfe40f"
+ },
+ "harness_main_sha256": "3d33b01e8d0b5d11304edb4bd6112fd3859a36c4e6ae3c2df7f6fcccf938558b",
+ "storage": {
+  "fstype": "ext4",
+  "source": "/dev/nvme0n1p6",
+  "free_bytes": 131197304832
+ },
+ "run": "native-run4",
+ "goldens": [
+  {
+   "name": "device-descriptor",
+   "kind": "DeviceDescriptor",
+   "file": "device-descriptor.bin",
+   "size": 166,
+   "source": "wgpu_client_serialize_device_descriptor",
+   "sha256": "fbdfa39c6b650500a12ee842d2baa898b81880e03a5be00d7452960bfff4ada6"
+  },
+  {
+   "name": "device-create-texture",
+   "kind": "DeviceAction",
+   "file": "device-create-texture.bin",
+   "size": 117,
+   "source": "wgpu_client_create_texture",
+   "sha256": "df666109b1746c0170cfe88ff4f256361df5298fbcd79c812bf533e9da8fc52f"
+  },
+  {
+   "name": "device-create-texture-swapchain",
+   "kind": "DeviceAction",
+   "file": "device-create-texture-swapchain.bin",
+   "size": 84,
+   "source": "wgpu_client_create_texture",
+   "sha256": "bf6360082f30ea31302248174e3d28e5ac57f200f4512869d9568ab74f666827"
+  },
+  {
+   "name": "texture-create-view",
+   "kind": "TextureAction",
+   "file": "texture-create-view.bin",
+   "size": 83,
+   "source": "wgpu_client_create_texture_view",
+   "sha256": "a58bd164899342c3a835806ea5a80d6ba322de22d03f5e118aee4d71bd5c37ac"
+  },
+  {
+   "name": "device-create-sampler",
+   "kind": "DeviceAction",
+   "file": "device-create-sampler.bin",
+   "size": 79,
+   "source": "wgpu_client_create_sampler",
+   "sha256": "0796deebdd7465a9c213b6ea0f44dc3be8b23050328c96c9be55deabea7da872"
+  },
+  {
+   "name": "device-create-bind-group-layout",
+   "kind": "DeviceAction",
+   "file": "device-create-bind-group-layout.bin",
+   "size": 169,
+   "source": "wgpu_client_create_bind_group_layout",
+   "sha256": "774bc9c1d2553d801aa3052cb0d39512cd890963bafd161040470be2e92de2f5"
+  },
+  {
+   "name": "device-create-pipeline-layout",
+   "kind": "DeviceAction",
+   "file": "device-create-pipeline-layout.bin",
+   "size": 66,
+   "source": "wgpu_client_create_pipeline_layout",
+   "sha256": "58ae2a7e608c9650d1b31fac9762e2aa4c3c1e55d065b4bb8f9c660414de93af"
+  },
+  {
+   "name": "device-create-bind-group",
+   "kind": "DeviceAction",
+   "file": "device-create-bind-group.bin",
+   "size": 180,
+   "source": "wgpu_client_create_bind_group",
+   "sha256": "0f40a152f38ae3869b86fb002328c8987bf56f67c3d127349baf7a22249fa6ed"
+  },
+  {
+   "name": "device-create-shader-module",
+   "kind": "DeviceAction",
+   "file": "device-create-shader-module.bin",
+   "size": 413,
+   "source": "mirror:DeviceAction::CreateShaderModule",
+   "sha256": "ec87c438dc852bf011fd7d49f96845664049fbd9fc595f25fa4003808a4a2033"
+  },
+  {
+   "name": "device-create-compute-pipeline",
+   "kind": "DeviceAction",
+   "file": "device-create-compute-pipeline.bin",
+   "size": 119,
+   "source": "wgpu_client_create_compute_pipeline",
+   "sha256": "0983c6462d9d9eb49a424e245bdc4bea0789f40628767fe6261c2cc6b6d42a79"
+  },
+  {
+   "name": "device-create-compute-pipeline-implicit",
+   "kind": "DeviceAction",
+   "file": "device-create-compute-pipeline-implicit.bin",
+   "size": 226,
+   "source": "wgpu_client_create_compute_pipeline",
+   "sha256": "bafa73f15cb265a85e0c631d976b1230171210fa50e65cac899818ab19bafef0"
+  },
+  {
+   "name": "device-compute-pipeline-get-bgl",
+   "kind": "DeviceAction",
+   "file": "device-compute-pipeline-get-bgl.bin",
+   "size": 40,
+   "source": "wgpu_client_compute_pipeline_get_bind_group_layout",
+   "sha256": "6413a463354f411c1d86179027bdbaa4d4bd4351100fd616f3ca7a7d999554ad"
+  },
+  {
+   "name": "device-create-render-pipeline",
+   "kind": "DeviceAction",
+   "file": "device-create-render-pipeline.bin",
+   "size": 377,
+   "source": "wgpu_client_create_render_pipeline",
+   "sha256": "79839adbe626930727a0d8aeab1c7b7886976f793f57082c29a2c03345f0ce37"
+  },
+  {
+   "name": "device-render-pipeline-get-bgl",
+   "kind": "DeviceAction",
+   "file": "device-render-pipeline-get-bgl.bin",
+   "size": 40,
+   "source": "wgpu_client_render_pipeline_get_bind_group_layout",
+   "sha256": "2381bfa6798693c7c67f571af4c841c7bc51f9dc6ea551db47121adca61f840d"
+  },
+  {
+   "name": "device-create-command-encoder",
+   "kind": "DeviceAction",
+   "file": "device-create-command-encoder.bin",
+   "size": 39,
+   "source": "wgpu_client_create_command_encoder",
+   "sha256": "3af7b57711db951e95f0d59816a5fccb1e733d2ba7f4346ef009e634d3ef6c10"
+  },
+  {
+   "name": "device-create-render-bundle",
+   "kind": "DeviceAction",
+   "file": "device-create-render-bundle.bin",
+   "size": 288,
+   "source": "wgpu_client_create_render_bundle",
+   "sha256": "e1e6accd69edd5f2273e944d9dd770e427081199dc206675bb23b04451db0f4a"
+  },
+  {
+   "name": "device-create-render-bundle-error",
+   "kind": "DeviceAction",
+   "file": "device-create-render-bundle-error.bin",
+   "size": 42,
+   "source": "wgpu_client_create_render_bundle_error",
+   "sha256": "a640ea01e455053a423a07782bfefc52eda5d2a1c8cbfdb6dff4b22949e400a2"
+  },
+  {
+   "name": "device-error",
+   "kind": "DeviceAction",
+   "file": "device-error.bin",
+   "size": 118,
+   "source": "wgpu_device_create_render_bundle_encoder(error)",
+   "sha256": "960fd3f821f3d3b71e100ac0f76748bc3b130e63d4314659f555a84bfcafaeda"
+  },
+  {
+   "name": "encoder-copy-buffer-to-buffer",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-copy-buffer-to-buffer.bin",
+   "size": 60,
+   "source": "wgpu_command_encoder_copy_buffer_to_buffer",
+   "sha256": "7667ee5dcdb8d18c9f5fe46fae148c3761818a1afed53e2936a32cc35d88b25f"
+  },
+  {
+   "name": "encoder-copy-texture-to-buffer",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-copy-texture-to-buffer.bin",
+   "size": 86,
+   "source": "wgpu_command_encoder_copy_texture_to_buffer",
+   "sha256": "31708eaf64a85abf90a45c0f035b42c847ab070ccec543a64d00336b92d73259"
+  },
+  {
+   "name": "encoder-copy-buffer-to-texture",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-copy-buffer-to-texture.bin",
+   "size": 82,
+   "source": "wgpu_command_encoder_copy_buffer_to_texture",
+   "sha256": "ca452929ff2735d0971f1ad2769e50ccdc346828fd5cb8b624853ac6f27c1a2e"
+  },
+  {
+   "name": "encoder-copy-texture-to-texture",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-copy-texture-to-texture.bin",
+   "size": 88,
+   "source": "wgpu_command_encoder_copy_texture_to_texture",
+   "sha256": "a6a8c9998ba800e7d918a9e679d5ae72257c0122bd52590ece59e8bb1b2b9238"
+  },
+  {
+   "name": "encoder-clear-buffer",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-clear-buffer.bin",
+   "size": 37,
+   "source": "wgpu_command_encoder_clear_buffer",
+   "sha256": "696f89dac528cad95aafcb12603003ae3fe3750beb171e9bd6b888cf86f57e6f"
+  },
+  {
+   "name": "encoder-clear-buffer-whole",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-clear-buffer-whole.bin",
+   "size": 29,
+   "source": "wgpu_command_encoder_clear_buffer",
+   "sha256": "125cdbc44c726811575ff59dc918a58126832546932d8fcc693d1504c6bdf9a8"
+  },
+  {
+   "name": "encoder-push-debug-group",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-push-debug-group.bin",
+   "size": 20,
+   "source": "wgpu_command_encoder_push_debug_group",
+   "sha256": "9c1ffcab284ebd2c09c4b5d231697f076d2ac1e5ccb62beff11dd90a98980cfe"
+  },
+  {
+   "name": "encoder-pop-debug-group",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-pop-debug-group.bin",
+   "size": 4,
+   "source": "wgpu_command_encoder_pop_debug_group",
+   "sha256": "9f076b7eb7fdc0311cd3208cdbbebbf8014dd3a05e35191c96947b358a362b40"
+  },
+  {
+   "name": "encoder-insert-debug-marker",
+   "kind": "CommandEncoderAction",
+   "file": "encoder-insert-debug-marker.bin",
+   "size": 24,
+   "source": "wgpu_command_encoder_insert_debug_marker",
+   "sha256": "c6b1c982a70472b05af03c5e7861c1cfebce2bb78103e9ce9e6ddad28b691dcb"
+  },
+  {
+   "name": "render-pass",
+   "kind": "RenderPass",
+   "file": "render-pass.bin",
+   "size": 562,
+   "source": "wgpu_command_encoder_begin_render_pass+wgpu_recorded_render_pass_*+wgpu_render_pass_finish",
+   "sha256": "9145a22b8555ac509f425e0492710d7a4d1594a6607eab4f843df34e5dcbf2e5"
+  },
+  {
+   "name": "compute-pass",
+   "kind": "ComputePass",
+   "file": "compute-pass.bin",
+   "size": 197,
+   "source": "wgpu_command_encoder_begin_compute_pass+wgpu_recorded_compute_pass_*+wgpu_compute_pass_finish",
+   "sha256": "375cc357a5f4fff7274e37ad68f8246148bf9fb5d9601ad9b42bfed3d1eec8f7"
+  },
+  {
+   "name": "queue-write-buffer",
+   "kind": "QueueWriteAction",
+   "file": "queue-write-buffer.bin",
+   "size": 28,
+   "source": "wgpu_queue_write_buffer",
+   "sha256": "8eebe322e4dd55d7ed1e4d0635c52e18b56b9300567fa3e020ef165b8ce41c08"
+  },
+  {
+   "name": "queue-write-texture",
+   "kind": "QueueWriteAction",
+   "file": "queue-write-texture.bin",
+   "size": 70,
+   "source": "wgpu_queue_write_texture",
+   "sha256": "99cd448f28506a8236645f818e5da2473ea4094f21c5f398cb2cbe23945e5a27"
+  }
+ ],
+ "ids": {
+  "adapter": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "bg": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "bgl": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "buf_readback": {
+   "index": 3,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "buf_storage": {
+   "index": 2,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "buf_uniform": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "buf_vertex": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "bundle": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "bundle_err": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "cpipe": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "cpipe_auto": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "cpipe_auto_bgl0": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "cpipe_auto_bgl_count": 8,
+  "cpipe_auto_pl": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "cpipe_get_bgl": {
+   "index": 9,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "device": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "encoder": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "mirror_crosscheck": "CreateCommandEncoder,CreateSampler byte-identical",
+  "pl": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "qset": {
+   "index": 3,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "rpipe": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "rpipe_get_bgl": {
+   "index": 10,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "sampler": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "shader": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "texture": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "texture2": {
+   "index": 1,
+   "epoch": 1,
+   "backend": "Vulkan"
+  },
+  "view": {
+   "index": 0,
+   "epoch": 1,
+   "backend": "Vulkan"
+  }
+ }
+}

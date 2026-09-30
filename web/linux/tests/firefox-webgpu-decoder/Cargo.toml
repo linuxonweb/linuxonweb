@@ -1,0 +1,37 @@
+[package]
+name = "firefox-webgpu-decoder"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Built only by ../build.py, which assembles an offline workspace in the task
+# directory: this crate plus src/wire_generated.rs (extracted verbatim from
+# Firefox 128 gfx/wgpu_bindings), the js-sys/web-sys adapters, Firefox's
+# Cargo.lock/[patch] tables and its vendored third_party/rust.
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+arrayvec = { version = "0.7", features = ["serde"] }
+bincode = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dependencies.wgc]
+package = "wgpu-core"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "c7458638d14921c7562e4197ddeefa17be413587"
+features = ["serde", "replay", "trace"]
+
+[dependencies.wgt]
+package = "wgpu-types"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "c7458638d14921c7562e4197ddeefa17be413587"
+features = ["serde"]
+
+[dependencies.wgh]
+package = "wgpu-hal"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "c7458638d14921c7562e4197ddeefa17be413587"
+default-features = false
