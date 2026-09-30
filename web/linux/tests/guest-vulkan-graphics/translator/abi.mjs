@@ -27,11 +27,24 @@ export function translateGraphics(instance, input) {
   return { ...metadata, wgsl: output };
 }
 
-/** Bounded uniform-buffer reflection (A3): sorted, unique, tightly packed. */
+/** Bounded resource reflection: uniform buffers (A3, sorted, unique, tightly
+ * packed) and combined 2D sampled textures (A4, sampler at binding + 16). */
 export function validateUniformResources(resources, blockNames) {
-  if (!Array.isArray(resources) || resources.length > 8) throw new Error('invalid graphics reflection');
-  let previous = -1;
+  if (!Array.isArray(resources) || resources.length > 12) throw new Error('invalid graphics reflection');
+  let previous = -1; let uniforms = 0; let textures = 0;
   for (const item of resources) {
+    if (item?.type === 'texture') {
+      const keys = ['group', 'binding', 'type', 'samplerBinding', ...(blockNames ? ['samplerName'] : [])];
+      if (typeof item !== 'object' || Object.keys(item).length !== keys.length || keys.some((key) => !(key in item)) ||
+          !Number.isInteger(item.group) || item.group < 0 || item.group >= 4 ||
+          !Number.isInteger(item.binding) || item.binding < 0 || item.binding >= 16 ||
+          item.group * 16 + item.binding <= previous || item.samplerBinding !== item.binding + 16 ||
+          ++textures > 4 || (blockNames && (typeof item.samplerName !== 'string' ||
+            !/^[A-Za-z_][A-Za-z0-9_]{0,159}$/.test(item.samplerName)))) throw new Error('invalid texture reflection');
+      previous = item.group * 16 + item.binding;
+      continue;
+    }
+    if (++uniforms > 8) throw new Error('invalid graphics reflection');
     const keys = ['group', 'binding', 'type', 'size', 'members', ...(blockNames ? ['blockName'] : [])];
     if (!item || typeof item !== 'object' || Object.keys(item).length !== keys.length || keys.some((key) => !(key in item)) ||
         item.type !== 'uniform' || !Number.isInteger(item.group) || item.group < 0 || item.group >= 4 ||

@@ -15,7 +15,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, uniform_supported, webgl_backend, failed;
+    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
@@ -107,6 +107,9 @@ static int hello(VkInstance instance) {
     /* Opt-in A3 uniform-buffer profile; absent from the older host profiles. */
     instance->uniform_supported = instance->graphics_supported && strstr(data, "\"uniformProfile\":1") &&
         strstr(data, "\"maxUniformRange\":16384") && strstr(data, "\"uniformOffsetAlignment\":256");
+    /* Opt-in A4 sampled-texture profile, layered on the uniform profile. */
+    instance->texture_supported = instance->uniform_supported && strstr(data, "\"textureProfile\":1") &&
+        strstr(data, "\"maxSampledTextures\":4") && strstr(data, "\"maxTextureDimension\":128");
     return 0;
 }
 static void transfer_cleanup(void);
@@ -219,6 +222,14 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
         out->limits.maxDescriptorSetUniformBuffers=8;
         out->limits.maxPerStageResources=8;
     }
+    if (live->texture_supported) {
+        /* A4: at most 4 COMBINED_IMAGE_SAMPLER bindings per pipeline layout,
+         * sharing the 8-descriptor layout budget with uniform buffers. */
+        out->limits.maxPerStageDescriptorSamplers=out->limits.maxPerStageDescriptorSampledImages=4;
+        out->limits.maxDescriptorSetSamplers=out->limits.maxDescriptorSetSampledImages=4;
+        out->limits.maxSamplerAllocationCount=8;
+        out->limits.maxSamplerLodBias=0;out->limits.maxSamplerAnisotropy=1;
+    }
     /* No invented physical PCI IDs or physical acceleration claims. */
 }
 static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, VkPhysicalDeviceFeatures *out) {
@@ -239,6 +250,9 @@ static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, V
         if (format == VK_FORMAT_R32G32_SFLOAT || format == VK_FORMAT_R32G32B32_SFLOAT || format == VK_FORMAT_R32G32B32A32_SFLOAT)
             out->bufferFeatures = VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
     }
+    if (physical_valid(physical) && live->texture_supported && format == VK_FORMAT_R8G8B8A8_UNORM)
+        out->optimalTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
+            VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL image_format_properties(VkPhysicalDevice physical, VkFormat format,
         VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
@@ -248,7 +262,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL image_format_properties(VkPhysicalDevice p
     if (!physical_valid(physical) || format != VK_FORMAT_R8G8B8A8_UNORM ||
         type != VK_IMAGE_TYPE_2D || tiling != VK_IMAGE_TILING_OPTIMAL || flags ||
         !((live->clear_supported && usage == (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
-          (live->graphics_supported && usage == (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))))
+          (live->graphics_supported && usage == (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
+          (live->texture_supported && usage == (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))))
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
     out->maxExtent = (VkExtent3D){128,128,1}; out->maxMipLevels = 1; out->maxArrayLayers = 1;
     out->sampleCounts = VK_SAMPLE_COUNT_1_BIT; out->maxResourceSize = 65536;

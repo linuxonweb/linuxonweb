@@ -134,6 +134,148 @@ fn uniform_layout(module: &Module, ty: Handle<Type>) -> Result<(u32, String), St
     Ok((offset, items.join(",")))
 }
 
+// A4 adapter (no Naga source change): pinned Naga 0.20 samples only through
+// an OpSampledImage coupling. Vulkan GLSL combined `sampler2D` globals are a
+// single UniformConstant variable of OpTypeSampledImage, which Naga maps to an
+// image global, leaving no sampler. Split each such variable into its image
+// global plus a synthesized sampler global at binding + 16 in the same set,
+// and rewrite every OpLoad of it into image load + sampler load + OpSampledImage.
+// Everything outside that exact shape is rejected, including separate
+// samplers/images, arrays and passing combined samplers through functions.
+// Inputs without combined samplers are returned unchanged (byte-identical).
+fn split_combined_samplers(input: &[u8]) -> Result<Vec<u8>, String> {
+    use std::collections::{HashMap, HashSet};
+    let word = |i: usize| u32::from_le_bytes(input[i..i + 4].try_into().unwrap());
+    let mut images = HashSet::new();
+    let mut sampled = HashMap::new(); // sampled-image type -> image type
+    let mut pointers = HashSet::new(); // UniformConstant pointer -> sampled-image
+    let mut vars = Vec::new();
+    let mut sets = HashMap::new();
+    let mut bindings = HashMap::new();
+    let mut annotations_end = 0usize;
+    let mut offset = 20;
+    while offset < input.len() {
+        let instruction = word(offset);
+        let count = (instruction >> 16) as usize;
+        let opcode = instruction & 0xffff;
+        let operand = |n: usize| if n < count { Some(word(offset + 4 * n)) } else { None };
+        match opcode {
+            25 => { images.insert(operand(1).ok_or("malformed OpTypeImage")?); },
+            26 => return Err("separate samplers unsupported (use combined sampler2D)".into()),
+            27 => {
+                let (id, image) = (operand(1).ok_or("malformed OpTypeSampledImage")?, operand(2).ok_or("malformed OpTypeSampledImage")?);
+                if !images.contains(&image) { return Err("sampled image must reference a declared image type".into()); }
+                sampled.insert(id, image);
+            },
+            28 | 29 => {
+                let element = operand(2).ok_or("malformed array type")?;
+                if images.contains(&element) || sampled.contains_key(&element) {
+                    return Err("arrays of images or samplers unsupported".into());
+                }
+            },
+            32 => {
+                let (id, storage, base) = (operand(1).ok_or("malformed pointer")?, operand(2).ok_or("malformed pointer")?, operand(3).ok_or("malformed pointer")?);
+                if images.contains(&base) { return Err("separate images unsupported (use combined sampler2D)".into()); }
+                if sampled.contains_key(&base) {
+                    if storage != 0 { return Err("combined sampler pointer must be UniformConstant".into()); }
+                    pointers.insert(id);
+                }
+            },
+            59 => {
+                if pointers.contains(&operand(1).ok_or("malformed OpVariable")?) {
+                    if count != 4 { return Err("combined sampler variable cannot have an initializer".into()); }
+                    vars.push((operand(2).unwrap(), offset));
+                }
+            },
+            55 => {
+                let ty = operand(1).ok_or("malformed OpFunctionParameter")?;
+                if pointers.contains(&ty) || sampled.contains_key(&ty) || images.contains(&ty) {
+                    return Err("image/sampler function parameters unsupported".into());
+                }
+            },
+            71 => {
+                if let (Some(target), Some(decoration), Some(value)) = (operand(1), operand(2), operand(3)) {
+                    if decoration == 34 { sets.insert(target, value); }
+                    if decoration == 33 { bindings.insert(target, value); }
+                }
+                annotations_end = offset + 4 * count;
+            },
+            72..=75 | 332 | 5632 | 5633 => annotations_end = offset + 4 * count,
+            _ => {},
+        }
+        offset += 4 * count;
+    }
+    if vars.is_empty() { return Ok(input.to_vec()); }
+    if vars.len() > 4 { return Err("combined sampler count exceeds profile (4)".into()); }
+    let ids: HashSet<u32> = vars.iter().map(|v| v.0).collect();
+    // Only direct OpLoad of a combined variable is allowed; any other use as
+    // an operand (calls, stores, copies, access chains, OpCopyObject ...) is refused.
+    let mut offset = 20;
+    while offset < input.len() {
+        let count = (word(offset) >> 16) as usize;
+        let opcode = word(offset) & 0xffff;
+        // Explicit pointer/value operand positions only; literal operands
+        // (constants, strings, indices) must never be mistaken for ids.
+        let refs: Vec<usize> = match opcode {
+            62 | 63 => vec![1, 2],                        // OpStore, OpCopyMemory
+            60 | 65 | 66 | 67 | 70 | 83 | 124 => vec![3], // texel pointer, access chains, copy, bitcast
+            57 => (4..count).collect(),                   // OpFunctionCall arguments
+            245 => (3..count).step_by(2).collect(),       // OpPhi values
+            169 => vec![4, 5],                            // OpSelect
+            401..=403 => vec![3, 4],                      // pointer comparisons
+            _ => Vec::new(),
+        };
+        if refs.iter().any(|&n| n < count && ids.contains(&word(offset + 4 * n))) {
+            return Err("combined samplers may only be loaded directly".into());
+        }
+        offset += 4 * count;
+    }
+    let bound = word(12);
+    if bound as usize + 2 + vars.len() > 16_400 { return Err("SPIR-V id bound exceeds profile".into()); }
+    let sampler_type = bound; let sampler_pointer = bound + 1;
+    let mut split = HashMap::new(); // combined var -> synthesized sampler var
+    let mut decorations = Vec::new();
+    for (index, &(id, _)) in vars.iter().enumerate() {
+        let (set, binding) = match (sets.get(&id), bindings.get(&id)) {
+            (Some(&s), Some(&b)) => (s, b),
+            _ => return Err("combined sampler requires explicit DescriptorSet and Binding".into()),
+        };
+        if set >= 4 || binding >= 16 { return Err("texture set/binding outside profile (set < 4, binding < 16)".into()); }
+        let sampler = bound + 2 + index as u32;
+        split.insert(id, sampler);
+        decorations.extend_from_slice(&[71 | 4 << 16, sampler, 34, set, 71 | 4 << 16, sampler, 33, binding + 16]);
+    }
+    if annotations_end == 0 { return Err("combined sampler requires explicit DescriptorSet and Binding".into()); }
+    let mut out: Vec<u32> = Vec::with_capacity(input.len() / 4 + 64);
+    for i in 0..5 { out.push(word(4 * i)); }
+    out[3] = bound + 2 + vars.len() as u32;
+    let mut offset = 20;
+    while offset < input.len() {
+        let count = (word(offset) >> 16) as usize;
+        let opcode = word(offset) & 0xffff;
+        if offset == vars[0].1 { out.extend_from_slice(&[26 | 2 << 16, sampler_type, 32 | 4 << 16, sampler_pointer, 0, sampler_type]); }
+        if opcode == 61 && count >= 4 && split.contains_key(&word(offset + 12)) {
+            let (ty, result, var) = (word(offset + 4), word(offset + 8), word(offset + 12));
+            // New ids for the two loads come after all synthesized declarations.
+            let image_load = out[3]; let sampler_load = out[3] + 1; out[3] += 2;
+            if out[3] > 16_400 { return Err("SPIR-V id bound exceeds profile".into()); }
+            out.extend_from_slice(&[61 | 4 << 16, ty, image_load, var,
+                61 | 4 << 16, sampler_type, sampler_load, split[&var],
+                86 | 5 << 16, ty, result, image_load, sampler_load]);
+        } else {
+            for n in 0..count { out.push(word(offset + 4 * n)); }
+        }
+        if opcode == 59 && count == 4 {
+            if let Some(&sampler) = split.get(&word(offset + 8)) {
+                out.extend_from_slice(&[59 | 4 << 16, sampler_pointer, sampler, 0]);
+            }
+        }
+        offset += 4 * count;
+        if offset == annotations_end { out.extend_from_slice(&decorations); }
+    }
+    Ok(out.iter().flat_map(|w| w.to_le_bytes()).collect())
+}
+
 fn compile(input: &[u8]) -> Result<(String, String), String> {
     if !(20..=INPUT_LIMIT).contains(&input.len()) || input.len() % 4 != 0 {
         return Err("invalid SPIR-V byte length".into());
@@ -172,7 +314,8 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
     let options = naga::front::spv::Options {
         adjust_coordinate_space: true, strict_capabilities: true, block_ctx_dump_prefix: None,
     };
-    let module = naga::front::spv::parse_u8_slice(input, &options)
+    let rewritten = split_combined_samplers(input)?;
+    let module = naga::front::spv::parse_u8_slice(&rewritten, &options)
         .map_err(|error| format!("SPIR-V parse: {error}"))?;
     if module.entry_points.len() != 1 { return Err("exactly one graphics entry point required".into()); }
     let entry = &module.entry_points[0];
@@ -184,6 +327,8 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
     if entry.early_depth_test.is_some() { return Err("early depth tests unsupported".into()); }
     if !module.overrides.is_empty() { return Err("specialization constants unsupported".into()); }
     let mut uniform_globals = Vec::new();
+    let mut texture_globals: Vec<(Handle<naga::GlobalVariable>, naga::ResourceBinding)> = Vec::new();
+    let mut sampler_globals: Vec<(Handle<naga::GlobalVariable>, naga::ResourceBinding)> = Vec::new();
     for (handle, global) in module.global_variables.iter() {
         match (global.space, global.binding.as_ref()) {
             (naga::AddressSpace::Private, None) => {},
@@ -197,15 +342,48 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
                 let (size, members) = uniform_layout(&module, global.ty)?;
                 uniform_globals.push((handle, binding.clone(), size, members));
             },
+            (naga::AddressSpace::Handle, Some(binding)) => match module.types[global.ty].inner {
+                TypeInner::Image { dim: naga::ImageDimension::D2, arrayed: false,
+                    class: naga::ImageClass::Sampled { kind: naga::ScalarKind::Float, multi: false } }
+                    if binding.group < 4 && binding.binding < 16 => texture_globals.push((handle, binding.clone())),
+                TypeInner::Sampler { comparison: false }
+                    if binding.group < 4 && (16..32).contains(&binding.binding) => sampler_globals.push((handle, binding.clone())),
+                _ => return Err("texture profile permits only combined sampler2D (float, 2D, non-array, non-multisampled)".into()),
+            },
             _ => return Err("graphics profile permits only uniform buffers and private globals".into()),
         }
     }
     if uniform_globals.len() > 8 { return Err("uniform buffer count exceeds profile".into()); }
+    if texture_globals.len() > 4 { return Err("texture count exceeds profile".into()); }
+    for (index, (_, binding)) in texture_globals.iter().chain(sampler_globals.iter()).enumerate() {
+        if uniform_globals.iter().any(|item| &item.1 == binding) ||
+            texture_globals.iter().chain(sampler_globals.iter()).skip(index + 1).any(|other| &other.1 == binding) {
+            return Err("duplicate resource set/binding".into());
+        }
+    }
     let info = naga::valid::Validator::new(naga::valid::ValidationFlags::all(), naga::valid::Capabilities::empty())
         .validate(&module).map_err(|error| format!("SPIR-V validation: {error}"))?;
     let usage = info.get_entry_point(0);
     let mut used: Vec<_> = uniform_globals.into_iter().filter(|item| !usage[item.0].is_empty()).collect();
     used.sort_by_key(|item| (item.1.group, item.1.binding));
+    // Every used texture is sampled only through its own synthesized sampler
+    // (same set, binding + 16) and every sampling pair is such a pair.
+    let mut textures: Vec<_> = texture_globals.into_iter().filter(|item| !usage[item.0].is_empty()).collect();
+    textures.sort_by_key(|item| (item.1.group, item.1.binding));
+    for key in usage.sampling_set.iter() {
+        let image = module.global_variables[key.image].binding.as_ref();
+        let sampler = module.global_variables[key.sampler].binding.as_ref();
+        match (image, sampler) {
+            (Some(i), Some(s)) if textures.iter().any(|t| t.0 == key.image) &&
+                i.group == s.group && s.binding == i.binding + 16 => {},
+            _ => return Err("texture sampled through a foreign sampler".into()),
+        }
+    }
+    for texture in &textures {
+        if !usage.sampling_set.iter().any(|key| key.image == texture.0) {
+            return Err("texture must be sampled through its combined sampler".into());
+        }
+    }
     let mut inputs = Vec::new(); let mut outputs = Vec::new();
     for argument in &entry.function.arguments {
         reflect(&module, argument.ty, argument.binding.as_ref(), entry.stage, true, 0, &mut inputs)?;
@@ -231,9 +409,14 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
         .map_err(|error| format!("WGSL write: {error}"))?;
     if output.len() > OUTPUT_LIMIT { return Err("WGSL output exceeds profile limit".into()); }
     let join = |items: &[Io]| items.iter().map(|item| item.json.as_str()).collect::<Vec<_>>().join(",");
+    let mut resources: Vec<((u32, u32), String)> = used.iter().map(|(_, b, size, members)| ((b.group, b.binding),
+        format!("{{\"group\":{},\"binding\":{},\"type\":\"uniform\",\"size\":{size},\"members\":[{members}]}}", b.group, b.binding))).collect();
+    resources.extend(textures.iter().map(|(_, b)| ((b.group, b.binding),
+        format!("{{\"group\":{},\"binding\":{},\"type\":\"texture\",\"samplerBinding\":{}}}", b.group, b.binding, b.binding + 16))));
+    resources.sort_by_key(|item| item.0);
     let metadata = format!("{{\"schema\":1,\"profile\":\"graphics-empty-v1\",\"backend\":\"wgsl\",\"stage\":\"{stage}\",\"originalEntryPoint\":{},\"entryPoint\":{},\"coordinateAdjustment\":true,\"inputs\":[{}],\"outputs\":[{}],\"resources\":[{}]}}",
         quoted(&entry.name), quoted(&emitted), join(&inputs), join(&outputs),
-        used.iter().map(|(_, b, size, members)| format!("{{\"group\":{},\"binding\":{},\"type\":\"uniform\",\"size\":{size},\"members\":[{members}]}}", b.group, b.binding)).collect::<Vec<_>>().join(","));
+        resources.iter().map(|item| item.1.as_str()).collect::<Vec<_>>().join(","));
     if metadata.len() > METADATA_LIMIT { return Err("reflection exceeds profile limit".into()); }
     Ok((output, metadata))
 }

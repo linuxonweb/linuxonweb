@@ -95,11 +95,24 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_descriptor_pool(VkDevice d,const Vk
     if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO||i->pNext||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
     int uniform=live->uniform_supported&&i->poolSizeCount==1&&i->pPoolSizes&&i->pPoolSizes[0].type==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&
         i->maxSets>=1&&i->maxSets<=8&&i->pPoolSizes[0].descriptorCount>=1&&i->pPoolSizes[0].descriptorCount<=32;
+    unsigned uniform_count=uniform?i->pPoolSizes[0].descriptorCount:0,sampler_count=0;
+    /* A4: one or two distinct UNIFORM_BUFFER/COMBINED_IMAGE_SAMPLER sizes. */
+    if(!uniform&&live->texture_supported&&i->poolSizeCount>=1&&i->poolSizeCount<=2&&i->pPoolSizes&&i->maxSets>=1&&i->maxSets<=8) {
+        int ok=1;
+        for(uint32_t n=0;n<i->poolSizeCount&&ok;n++) {
+            const VkDescriptorPoolSize z=i->pPoolSizes[n];
+            if(z.descriptorCount<1||z.descriptorCount>32)ok=0;
+            else if(z.type==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&!uniform_count)uniform_count=z.descriptorCount;
+            else if(z.type==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER&&!sampler_count)sampler_count=z.descriptorCount;
+            else ok=0;
+        }
+        if(ok&&sampler_count)uniform=1;else uniform_count=sampler_count=0;
+    }
     if(!uniform&&(i->maxSets!=1||i->poolSizeCount!=1||
        !i->pPoolSizes||i->pPoolSizes[0].type!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||i->pPoolSizes[0].descriptorCount!=1))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_DESC_POOL);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     /* Uniform pools record capacity: width=max sets, height=descriptors. */
-    if(uniform){r->uniform=1;r->width=i->maxSets;r->height=i->pPoolSizes[0].descriptorCount;}
+    if(uniform){r->uniform=1;r->width=i->maxSets;r->height=uniform_count;r->sampler_capacity=sampler_count;}
     *out=HANDLE(VkDescriptorPool,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_descriptor_pool(VkDevice d,VkDescriptorPool h,const VkAllocationCallbacks *a) {

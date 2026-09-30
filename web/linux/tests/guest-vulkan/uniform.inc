@@ -6,7 +6,7 @@
  * Every snapshot is copied; no caller pointer survives a call. */
 static int uniform_layout_equal(const struct uniform_set_layout *a,const struct uniform_set_layout *b) {
     if(a->count!=b->count)return 0;
-    for(unsigned n=0;n<a->count;n++)if(a->bindings[n]!=b->bindings[n]||a->stages[n]!=b->stages[n])return 0;
+    for(unsigned n=0;n<a->count;n++)if(a->bindings[n]!=b->bindings[n]||a->stages[n]!=b->stages[n]||a->types[n]!=b->types[n])return 0;
     return 1;
 }
 static VkResult create_uniform_set_layout(const VkDescriptorSetLayoutCreateInfo *i,VkDescriptorSetLayout *out) {
@@ -14,40 +14,46 @@ static VkResult create_uniform_set_layout(const VkDescriptorSetLayoutCreateInfo 
     struct uniform_set_layout l={0};
     for(unsigned n=0;n<i->bindingCount;n++) {
         const VkDescriptorSetLayoutBinding b=i->pBindings[n];
-        if(b.binding>=16||b.descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||b.descriptorCount!=1||!b.stageFlags||
+        int sampler=live->texture_supported&&b.descriptorType==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        if(b.binding>=16||(b.descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&!sampler)||b.descriptorCount!=1||!b.stageFlags||
            (b.stageFlags&~(VkShaderStageFlags)(VK_SHADER_STAGE_VERTEX_BIT|VK_SHADER_STAGE_FRAGMENT_BIT))||b.pImmutableSamplers)
             return VK_ERROR_INITIALIZATION_FAILED;
         unsigned slot=l.count;
-        while(slot&&l.bindings[slot-1]>b.binding){l.bindings[slot]=l.bindings[slot-1];l.stages[slot]=l.stages[slot-1];slot--;}
+        while(slot&&l.bindings[slot-1]>b.binding){l.bindings[slot]=l.bindings[slot-1];l.stages[slot]=l.stages[slot-1];l.types[slot]=l.types[slot-1];slot--;}
         if(slot&&l.bindings[slot-1]==b.binding)return VK_ERROR_INITIALIZATION_FAILED;
-        l.bindings[slot]=b.binding;l.stages[slot]=b.stageFlags;l.count++;
+        l.bindings[slot]=b.binding;l.stages[slot]=b.stageFlags;l.types[slot]=b.descriptorType;l.count++;
     }
     struct resource *r=resource_new(R_SET_LAYOUT);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->uniform=1;r->graphics.set_layout=l;*out=HANDLE(VkDescriptorSetLayout,r->id);return VK_SUCCESS;
 }
 static int uniform_pipeline_layout(const VkPipelineLayoutCreateInfo *i,struct uniform_pipeline_layout *out) {
-    struct uniform_pipeline_layout l={0};unsigned total=0;
+    struct uniform_pipeline_layout l={0};unsigned total=0,textures=0;
     if(!i->setLayoutCount||i->setLayoutCount>4||!i->pSetLayouts)return 0;
     for(unsigned n=0;n<i->setLayoutCount;n++) {
         struct resource *s=resource_get(RID(i->pSetLayouts[n]),R_SET_LAYOUT);
         if(!s||!s->uniform)return 0;
         l.sets[n]=s->graphics.set_layout;total+=l.sets[n].count;
+        for(unsigned k=0;k<l.sets[n].count;k++)textures+=l.sets[n].types[k]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     }
-    if(total>8)return 0;
+    if(total>8||textures>4)return 0;
     l.set_count=i->setLayoutCount;*out=l;return 1;
 }
 static VkResult allocate_uniform_sets(const VkDescriptorSetAllocateInfo *i,VkDescriptorSet *out) {
     struct resource *p=resource_get(RID(i->descriptorPool),R_DESC_POOL);
     if(!p||!p->uniform||!i->descriptorSetCount||i->descriptorSetCount>4||!i->pSetLayouts)return VK_ERROR_INITIALIZATION_FAILED;
     for(unsigned n=0;n<i->descriptorSetCount;n++)out[n]=VK_NULL_HANDLE;
-    unsigned sets=0,descriptors=0;
-    for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET&&resources[n].parent==p->id){sets++;descriptors+=resources[n].graphics.set.layout.count;}
+    unsigned sets=0,descriptors=0,samplers=0;
+    for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET&&resources[n].parent==p->id){
+        const struct uniform_set_layout *l=&resources[n].graphics.set.layout;sets++;
+        for(unsigned k=0;k<l->count;k++){if(l->types[k]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)samplers++;else descriptors++;}
+    }
     for(unsigned n=0;n<i->descriptorSetCount;n++) {
         struct resource *l=resource_get(RID(i->pSetLayouts[n]),R_SET_LAYOUT);
         if(!l||!l->uniform)return VK_ERROR_INITIALIZATION_FAILED;
-        sets++;descriptors+=l->graphics.set_layout.count;
+        sets++;
+        for(unsigned k=0;k<l->graphics.set_layout.count;k++){if(l->graphics.set_layout.types[k]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)samplers++;else descriptors++;}
     }
-    if(sets>p->width||descriptors>p->height)return VK_ERROR_OUT_OF_POOL_MEMORY;
+    if(sets>p->width||descriptors>p->height||samplers>p->sampler_capacity)return VK_ERROR_OUT_OF_POOL_MEMORY;
     for(unsigned n=0;n<i->descriptorSetCount;n++) {
         struct resource *r=resource_new(R_DESC_SET);
         if(!r) {
@@ -64,11 +70,22 @@ static VkResult allocate_uniform_sets(const VkDescriptorSetAllocateInfo *i,VkDes
 static void update_uniform_set(struct resource *set,const VkWriteDescriptorSet *w,uint32_t copies) {
     struct uniform_set *s=&set->graphics.set;unsigned slot=0;
     while(slot<s->layout.count&&s->layout.bindings[slot]!=w->dstBinding)slot++;
+    if(slot<s->layout.count&&s->layout.types[slot]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+        /* A4: whole sampled image view + profile sampler, SHADER_READ_ONLY. */
+        const VkDescriptorImageInfo *t=w->pImageInfo;
+        struct resource *sampler=t?resource_get(RID(t->sampler),R_SAMPLER):NULL,*view=t?resource_get(RID(t->imageView),R_IMAGE_VIEW):NULL;
+        struct resource *image=view?resource_get(view->graphics.view.image,R_IMAGE):NULL;
+        if(copies||w->sType!=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET||w->pNext||w->dstArrayElement||w->descriptorCount!=1||
+           w->descriptorType!=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER||!t||!sampler||!sampler->host||!view||!image||!image->sampled||
+           t->imageLayout!=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL){s->written=0;set->valid=0;return;}
+        s->views[slot]=view->id;s->samplers[slot]=sampler->id;s->written|=1u<<slot;
+        set->valid=s->written==(1u<<s->layout.count)-1;return;
+    }
     const VkDescriptorBufferInfo *b=w->pBufferInfo;
     struct resource *buffer=b?resource_get(RID(b->buffer),R_BUFFER):NULL;
     VkDeviceSize range=b&&buffer&&b->range==VK_WHOLE_SIZE&&b->offset<buffer->size?buffer->size-b->offset:b?b->range:0;
     if(copies||w->sType!=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET||w->pNext||slot==s->layout.count||w->dstArrayElement||
-       w->descriptorCount!=1||w->descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||!b||!buffer||!buffer->uniform||
+       w->descriptorCount!=1||w->descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||s->layout.types[slot]!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||!b||!buffer||!buffer->uniform||
        b->offset%256||b->offset>=buffer->size||range<16||range>16384||range%16||range>buffer->size-b->offset) {
         s->written=0;set->valid=0;return;
     }

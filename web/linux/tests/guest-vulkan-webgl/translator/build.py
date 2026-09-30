@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
-TASKS = (Path('/mnt/p6/build/guest-vulkan-a3-20260928'), Path('/mnt/p6/build/guest-vulkan-webgl-20260926'))
+TASKS = (Path('/mnt/p6/build/guest-vulkan-a4-20260929'), Path('/mnt/p6/build/guest-vulkan-a3-20260928'), Path('/mnt/p6/build/guest-vulkan-webgl-20260926'))
 LOCK_SHA = '5ccf7efcd90cacfefc6fda26986d4d2e9d48f774ba31ad26a4d91c4a925727d9'
 GRAPHICS_SHA = 'c1506c293785db309df6de17e481a9fb62ca9001823d3150f7a39cecc2575636'
 GRAPHICS_LOCK_SHA = 'a62ae7cbbbbd4fb77d277b6d52b657c4733da60569c79bd2c233cbe8a9d03c02'

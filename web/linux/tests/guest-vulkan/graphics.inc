@@ -13,7 +13,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image_view(VkDevice d,const VkImage
        (c.b!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.b!=VK_COMPONENT_SWIZZLE_B)||
        (c.a!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.a!=VK_COMPONENT_SWIZZLE_A))return VK_ERROR_FEATURE_NOT_PRESENT;
     struct resource *image=resource_get(RID(i->image),R_IMAGE);
-    if(!image||!image->graphics_target||!image->host||!resource_get(image->memory,R_MEMORY))return VK_ERROR_INITIALIZATION_FAILED;
+    if(!image||!(image->graphics_target||image->sampled)||!image->host||!resource_get(image->memory,R_MEMORY))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_IMAGE_VIEW);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.view.image=image->id;*out=HANDLE(VkImageView,r->id);return VK_SUCCESS;
 }
@@ -165,10 +165,20 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     unsigned emitted=0;
     for(unsigned s=0;s<p.uniforms.set_count;s++)for(unsigned n=0;n<p.uniforms.sets[s].count;n++) {
         VkShaderStageFlags st=p.uniforms.sets[s].stages[n];
+        if(p.uniforms.sets[s].types[n]!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)continue;
         graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",emitted++?",":",\"uniforms\":[",s,p.uniforms.sets[s].bindings[n],
             ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
     }
     if(emitted)graphics_json_append(&j,"]");
+    /* A4: declared combined image samplers, same stage encoding. */
+    unsigned textures=0;
+    for(unsigned s=0;s<p.uniforms.set_count;s++)for(unsigned n=0;n<p.uniforms.sets[s].count;n++) {
+        VkShaderStageFlags st=p.uniforms.sets[s].stages[n];
+        if(p.uniforms.sets[s].types[n]!=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)continue;
+        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",textures++?",":",\"textures\":[",s,p.uniforms.sets[s].bindings[n],
+            ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
+    }
+    if(textures)graphics_json_append(&j,"]");
     graphics_json_append(&j,"}");if(j.bad)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_GRAPHICS_PIPELINE);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.pipeline=p;

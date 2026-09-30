@@ -1,6 +1,7 @@
-// Finite owner of one static test server (HTTP 4194) and one Chromium (CDP 9404).
+// Finite owner of one static test server (HTTP 4197) and one headful Chromium (CDP 9407) on DISPLAY=:0.
+// WebGPU uses the high-performance (NVIDIA) adapter through Chromium's Vulkan backend; WebGL2 stays on ANGLE.
 // Runs isolated guest Vulkan packages in the real 1 GiB / 2 CPU guest; no deployment.
-// Usage: node run-finite.mjs OUTPUT TASK_ROOT [suite,...]
+// Usage: PKG_RUN=N node run-finite.mjs OUTPUT TASK_ROOT [suite,...]
 // Runtime files other than the pinned host sources are served from Git HEAD blobs,
 // isolating the run from concurrent working-tree edits to web/linux/dist.
 import fs from 'node:fs/promises';
@@ -13,11 +14,11 @@ import { createHash } from 'node:crypto';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), repo = path.resolve(here, '../../../..');
 const out = path.resolve(process.argv[2] || ''), task = path.resolve(process.argv[3] || '');
-const HTTP_PORT = 4194, CDP_PORT = 9404;
-const a3 = '/mnt/p6/build/guest-vulkan-a3-20260928';
+const HTTP_PORT = 4197, CDP_PORT = 9407;
+const a4 = '/mnt/p6/build/guest-vulkan-a4-20260929', K = process.env.PKG_RUN || '1';
 const compute = '/mnt/p6/build/guest-vulkan-compute-20260926';
 const direct = ['live', 'unavailable', 'clear', 'loss-transport', 'loss-device', 'exhaustion'];
-const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu'];
+const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu', 'texture-webgl2', 'texture-webgpu'];
 const suites = process.argv[4] ? process.argv[4].split(',') : allSuites;
 if (suites.some(item => !allSuites.includes(item))) throw Error('unknown suite');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -43,13 +44,14 @@ function route(url, bytes) {
 }
 await freeze(fileURLToPath(import.meta.url), path.join(out, 'run-finite.mjs'));
 const packages = {
-  ...Object.fromEntries(direct.map(mode => ['direct-' + mode, { dir: `${task}/direct-package-${mode}-run4`, prefix: `/linux/tests/guest-vulkan/candidate${mode === 'live' ? '' : '-' + mode}/` }])),
-  loader: { dir: `${task}/loader-package-run4`, prefix: '/linux/tests/guest-vulkan-loader/candidate-clear/' },
-  compute: { dir: `${task}/compute-package-run4`, prefix: '/linux/tests/guest-vulkan-compute/candidate-compute/' },
-  graphics: { dir: `${task}/graphics-package-run4`, prefix: '/linux/tests/guest-vulkan-webgl/candidate/' },
-  uniform: { dir: `${task}/uniform-package-run4`, prefix: '/linux/tests/guest-vulkan-uniform/candidate/' },
+  ...Object.fromEntries(direct.map(mode => ['direct-' + mode, { dir: `${task}/direct-package-${mode}-run${K}`, prefix: `/linux/tests/guest-vulkan/candidate${mode === 'live' ? '' : '-' + mode}/` }])),
+  loader: { dir: `${task}/loader-package-run${K}`, prefix: '/linux/tests/guest-vulkan-loader/candidate-clear/' },
+  compute: { dir: `${task}/compute-package-run${K}`, prefix: '/linux/tests/guest-vulkan-compute/candidate-compute/' },
+  graphics: { dir: `${task}/graphics-package-run${K}`, prefix: '/linux/tests/guest-vulkan-webgl/candidate/' },
+  uniform: { dir: `${task}/uniform-package-run${K}`, prefix: '/linux/tests/guest-vulkan-uniform/candidate/' },
+  texture: { dir: `${task}/texture-package-run${K}`, prefix: '/linux/tests/guest-vulkan-texture/candidate/' },
 };
-const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item));
+const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item.startsWith('texture-') ? 'texture' : item));
 const metadataBySuite = {};
 for (const name of needed) {
   const { dir, prefix } = packages[name]; await disk(dir);
@@ -68,9 +70,9 @@ for (const name of needed) {
 }
 const translators = [];
 if (needed.has('compute')) translators.push(['/linux/tests/guest-vulkan-compute/translator/candidate/translator.wasm', compute + '/translator-build-run4/translator.wasm', 'e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea']);
-if (needed.has('graphics') || needed.has('uniform')) translators.push(
-  ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', a3 + '/glsl-translator-build-run1/translator.wasm', '31d062e7582ab95333cab7eb87c11b031e481ccd30c5ba5b6498aad04a6aa0bd'],
-  ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', a3 + '/wgsl-translator-build-run1/translator.wasm', 'f1df22534091d4c00fab4884e970c03040c7fc1c9353d29c8421e186758d4542']);
+if (needed.has('graphics') || needed.has('uniform') || needed.has('texture')) translators.push(
+  ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', a4 + '/glsl-translator-build-run1/translator.wasm', '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5'],
+  ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', a4 + '/wgsl-translator-build-run1/translator.wasm', '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2']);
 for (const [url, source, expected] of translators) {
   const bytes = await freeze(source);
   if (hash(bytes) !== expected) throw Error('translator differs: ' + source); route(url, bytes);
@@ -103,20 +105,23 @@ const server = createServer(async (request, response) => {
 await new Promise((resolve, reject) => { server.once('error', reject); server.listen(HTTP_PORT, '127.0.0.1', resolve); });
 const origin = 'http://127.0.0.1:' + HTTP_PORT;
 const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
-const args = ['--headless', '--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage',
+// CHROMIUM_MODE=swiftshader reproduces the earlier headless SwiftShader configuration for comparison runs only.
+const swiftshader = process.env.CHROMIUM_MODE === 'swiftshader';
+const args = [...(swiftshader ? ['--headless', '--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
+  : ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--ignore-gpu-blocklist', '--window-size=800,600']), '--disable-dev-shm-usage',
   '--no-first-run', '--no-default-browser-check', '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=' + CDP_PORT,
   '--user-data-dir=' + path.join(out, 'profile'), '--disk-cache-dir=' + path.join(out, 'cache'), 'about:blank'];
 await fs.writeFile(path.join(out, 'command.json'), JSON.stringify([executable, ...args], null, 2) + '\n');
 await fs.writeFile(path.join(out, 'inputs-before.json'), JSON.stringify(inputs, null, 2) + '\n');
 const log = openSync(path.join(out, 'browser.log'), 'wx');
-const child = spawn(executable, args, { detached: true, env: { ...process.env, XDG_CACHE_HOME: path.join(out, 'xdg-cache') }, stdio: ['ignore', log, log] }); closeSync(log);
+const child = spawn(executable, args, { detached: true, env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^(__NV_PRIME|__GLX_VENDOR|__VK_LAYER_NV|DRI_PRIME)/.test(key))), DISPLAY: ':0', XAUTHORITY: process.env.XAUTHORITY || '/home/a/.Xauthority', XDG_CACHE_HOME: path.join(out, 'xdg-cache') }, stdio: ['ignore', log, log] }); closeSync(log);
 let exitInfo, spawnError, ws, opened = false, closing = false, sequence = 0;
 const exited = new Promise(resolve => {
   child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(exitInfo); });
   child.once('error', error => { spawnError = error; resolve({ error: String(error) }); });
 });
 const pending = new Map(), events = [];
-const report = { pass: false, head, suites, runs: [], origin, cdpPort: CDP_PORT, runnerPid: process.pid, browserPid: child.pid };
+const report = { pass: false, chromiumMode: swiftshader ? 'headless-swiftshader' : 'headful-display0-gpu', head, suites, runs: [], origin, cdpPort: CDP_PORT, runnerPid: process.pid, browserPid: child.pid };
 function call(method, params = {}) {
   return new Promise((resolve, reject) => {
     const id = ++sequence, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP timeout: ' + method)); }, 15000);
@@ -132,9 +137,10 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
 const pageFor = suite => suite.startsWith('direct-') ? `/linux/tests/guest-vulkan/index.html?candidate=${suite === 'direct-live' ? 'candidate' : 'candidate-' + suite.slice(7)}`
   : suite === 'loader' ? '/linux/tests/guest-vulkan-loader/index.html?candidate=candidate-clear'
   : suite === 'compute' ? '/linux/tests/guest-vulkan-compute/index.html?candidate=candidate-compute'
+  : suite.startsWith('texture-') ? '/linux/tests/guest-vulkan-texture/guest.html?backend=' + suite.slice('texture-'.length)
   : suite.startsWith('uniform-') ? '/linux/tests/guest-vulkan-uniform/guest.html?backend=' + suite.slice('uniform-'.length)
   : '/linux/tests/guest-vulkan-webgl/guest.html?backend=' + suite.slice('graphics-'.length);
-const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM)?_EXIT status=(\d+) checks=(\d+)$/m;
+const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM|_TEXTURE)?_EXIT status=(\d+) checks=(\d+)$/m;
 try {
   let target; const startup = Date.now() + 15000;
   for (;;) {
@@ -178,6 +184,9 @@ try {
     if (suite === 'compute') current.pass &&= guest.host?.backend === 'webgpu' && guest.host?.contextsCreated === 0;
     if (suite.startsWith('graphics-')) current.pass &&= guest.host?.backend === suite.slice('graphics-'.length);
     if (suite.startsWith('uniform-')) current.pass &&= guest.host?.backend === suite.slice('uniform-'.length) && guest.mode === 'uniform';
+    if (suite.startsWith('texture-')) current.pass &&= guest.host?.backend === suite.slice('texture-'.length) && guest.mode === 'texture';
+    current.adapter = guest.host?.adapter ?? null;
+    if (process.env.REQUIRE_WEBGPU_VENDOR && guest.host?.backend === 'webgpu') current.pass &&= current.adapter?.vendor === process.env.REQUIRE_WEBGPU_VENDOR;
     report.runs.push(current);
     await fs.writeFile(path.join(out, suite + '.json'), JSON.stringify({ ...current, guest }, null, 2) + '\n');
     const screenshot = await call('Page.captureScreenshot', { format: 'png' });

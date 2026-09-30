@@ -101,7 +101,8 @@ static int graphics_prepare_begin(const struct graphics_begin_record *r,struct r
     graphics_json_append(j,",\"draws\":[");return !j->bad;
 }
 static int graphics_prepare_draw(const struct graphics_draw_record *r,const struct graphics_pass *pass,
-        struct resource *image,struct graphics_json *j,unsigned draw_index,unsigned used[MAX_RES],unsigned used_uniforms[MAX_RES]) {
+        struct resource *image,struct graphics_json *j,unsigned draw_index,unsigned used[MAX_RES],unsigned used_uniforms[MAX_RES],
+        const VkImageLayout layouts[MAX_RES],const unsigned initialized[MAX_RES]) {
     struct resource *pipeline=resource_get(r->pipeline,R_GRAPHICS_PIPELINE);
     if(!pipeline||!pipeline->host||!graphics_pass_compatible(&pipeline->graphics.pipeline.pass,pass))return 0;
     const struct graphics_pipeline *p=&pipeline->graphics.pipeline;
@@ -134,6 +135,7 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         if(!set||!set->uniform||!set->valid||!resource_get(set->parent,R_DESC_POOL)||!uniform_layout_equal(&set->graphics.set.layout,l))return 0;
         for(unsigned n=0;n<l->count;n++) {
             const struct uniform_set *d=&set->graphics.set;
+            if(l->types[n]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)continue;
             struct resource *b=resource_get(d->buffers[n],R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
             if(!b||!b->uniform||!b->host||!m||!m->bytes||d->offsets[n]%256||d->ranges[n]<16||d->ranges[n]>16384||
                d->offsets[n]>=b->size||d->ranges[n]>b->size-d->offsets[n]||
@@ -144,6 +146,24 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         }
     }
     if(emitted)graphics_json_append(j,"]");
+    /* A4: combined image samplers resolve to host texture/sampler ids; the
+     * image must be in SHADER_READ_ONLY with defined contents at this point
+     * of the simulated submission. */
+    unsigned textures=0;
+    for(unsigned s=0;s<p->uniforms.set_count;s++) {
+        const struct uniform_set_layout *l=&p->uniforms.sets[s];
+        const struct resource *set=resource_get(r->sets[s],R_DESC_SET);
+        for(unsigned n=0;n<l->count;n++)if(l->types[n]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+            if(!set||!set->valid)return 0;
+            struct resource *view=resource_get(set->graphics.set.views[n],R_IMAGE_VIEW),*sampler=resource_get(set->graphics.set.samplers[n],R_SAMPLER);
+            struct resource *t=view?resource_get(view->graphics.view.image,R_IMAGE):NULL;
+            if(!t||!t->sampled||!t->host||!resource_get(t->memory,R_MEMORY)||!sampler||!sampler->host||
+               layouts[t-resources]!=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL||!initialized[t-resources])return 0;
+            graphics_json_append(j,"%s{\"group\":%u,\"binding\":%u,\"texture\":%u,\"sampler\":%u}",
+                textures++?",":",\"textures\":[",s,l->bindings[n],t->host,sampler->host);
+        }
+    }
+    if(textures)graphics_json_append(j,"]");
     graphics_json_append(j,",\"vertexCount\":%u,\"firstVertex\":%u,\"instanceCount\":1,\"firstInstance\":0,"
         "\"viewport\":{\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g,\"minDepth\":%.9g,\"maxDepth\":%.9g},"
         "\"scissor\":{\"x\":%u,\"y\":%u,\"width\":%u,\"height\":%u}}",

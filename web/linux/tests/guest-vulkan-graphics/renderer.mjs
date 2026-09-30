@@ -42,23 +42,45 @@ const FORMAT_COMPONENTS = Object.freeze({ float32x2: 2, float32x3: 3, float32x4:
 export const UNIFORM_LIMITS = Object.freeze({ maxGroups: 4, maxBindings: 16, maxUniforms: 8, maxRange: 16384,
   offsetAlignment: 256, maxBufferBytes: 65536 });
 const UNIFORM_MEMBER_BYTES = Object.freeze({ vec4: 16, mat4x4: 64 });
-const uniformsAllowed = options => {
-  if (options === undefined) return false;
-  record(options, ['allowUniforms'], 'shader options');
-  return choice(options.allowUniforms ?? false, [false, true], 'uniform option');
+// Opt-in A4 sampled-texture profile (combined image samplers); requires the uniform profile.
+export const TEXTURE_LIMITS = Object.freeze({ maxTextures: 4, maxDimension: 128, maxSamplers: 8, samplerBindingOffset: 16 });
+const profileOptions = options => {
+  if (options === undefined) return { allowUniforms: false, allowTextures: false };
+  record(options, ['allowUniforms', 'allowTextures'], 'shader options');
+  const allowUniforms = choice(options.allowUniforms ?? false, [false, true], 'uniform option');
+  const allowTextures = choice(options.allowTextures ?? false, [false, true], 'texture option');
+  if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
+  return { allowUniforms, allowTextures };
 };
+const uniformsAllowed = options => profileOptions(options).allowUniforms;
+const shaderOptions = ({ allowUniforms, allowTextures }) =>
+  allowTextures ? [{ allowUniforms, allowTextures }] : allowUniforms ? [{ allowUniforms }] : [];
+export { profileOptions };
 
 /** Copy translator uniform reflection: sorted unique set/binding, tightly packed vec4/mat4 blocks. */
-export function validateUniformReflection(resources, allowUniforms, blockNames = false) {
+export function validateUniformReflection(resources, allowUniforms, blockNames = false, allowTextures = false) {
   if (!allowUniforms) { array(resources, 0, 0, 'shader resources'); return []; }
-  let previous = -1;
-  return array(resources, 0, UNIFORM_LIMITS.maxUniforms, 'shader resources').map(item => {
+  if (allowTextures !== false && allowTextures !== true) fail('invalid texture option');
+  let previous = -1, uniformCount = 0, textureCount = 0;
+  return array(resources, 0, UNIFORM_LIMITS.maxUniforms + (allowTextures ? TEXTURE_LIMITS.maxTextures : 0), 'shader resources').map(item => {
+    if (allowTextures && item?.type === 'texture') {
+      record(item, ['group', 'binding', 'type', 'samplerBinding', ...(blockNames ? ['samplerName'] : [])], 'texture resource');
+      const group = integer(item.group, 0, UNIFORM_LIMITS.maxGroups - 1, 'texture set');
+      const binding = integer(item.binding, 0, UNIFORM_LIMITS.maxBindings - 1, 'texture binding');
+      if (group * 16 + binding <= previous) fail('shader resources must be sorted and unique');
+      previous = group * 16 + binding;
+      if (item.samplerBinding !== binding + TEXTURE_LIMITS.samplerBindingOffset) fail('invalid combined sampler binding');
+      if (++textureCount > TEXTURE_LIMITS.maxTextures) fail('too many sampled textures');
+      if (blockNames && (typeof item.samplerName !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]{0,159}$/.test(item.samplerName))) fail('invalid sampler name');
+      return { group, binding, type: 'texture', samplerBinding: item.samplerBinding, ...(blockNames ? { samplerName: item.samplerName } : {}) };
+    }
     record(item, ['group', 'binding', 'type', 'size', 'members', ...(blockNames ? ['blockName'] : [])], 'uniform resource');
     const group = integer(item.group, 0, UNIFORM_LIMITS.maxGroups - 1, 'uniform set');
     const binding = integer(item.binding, 0, UNIFORM_LIMITS.maxBindings - 1, 'uniform binding');
     if (group * 16 + binding <= previous) fail('uniform resources must be sorted and unique');
     previous = group * 16 + binding;
     choice(item.type, ['uniform'], 'resource type');
+    if (++uniformCount > UNIFORM_LIMITS.maxUniforms) fail('too many uniform blocks');
     const size = integer(item.size, 16, UNIFORM_LIMITS.maxRange, 'uniform block size');
     let offset = 0;
     const members = array(item.members, 1, 16, 'uniform members').map(member => {
@@ -87,7 +109,7 @@ export function validateVertexIndex(item, allowUniforms, stage, direction) {
 /** Copy and validate translator metadata; this is a trust boundary, not reflection of WGSL text. */
 export function validateTranslatedShader(input, expectedStage, options) {
   choice(expectedStage, ['vertex', 'fragment'], 'shader stage');
-  const allowUniforms = uniformsAllowed(options);
+  const { allowUniforms, allowTextures } = profileOptions(options);
   record(input, ['wgsl', 'schema', 'profile', 'backend', 'stage', 'originalEntryPoint', 'entryPoint',
     'coordinateAdjustment', 'inputs', 'outputs', 'resources'], 'translated shader');
   if (input.schema !== 1 || input.profile !== 'graphics-empty-v1' || input.backend !== 'wgsl' ||
@@ -96,7 +118,7 @@ export function validateTranslatedShader(input, expectedStage, options) {
   if (typeof input.entryPoint !== 'string' || !/^[A-Za-z_][A-Za-z_0-9]*$/.test(input.entryPoint) || input.entryPoint.length > 256) fail('invalid emitted entry point');
   if (typeof input.originalEntryPoint !== 'string' || !input.originalEntryPoint.length ||
       input.originalEntryPoint.includes('\0') || bytesOf(input.originalEntryPoint) > 128) fail('invalid original entry point');
-  const resources = validateUniformReflection(input.resources, allowUniforms);
+  const resources = validateUniformReflection(input.resources, allowUniforms, false, allowTextures);
   const reflect = (items, direction) => {
     const locations = new Set(); let positions = 0, vertexIndex = 0;
     const result = array(items, 0, 9, `shader ${direction}`).map(item => {
@@ -143,11 +165,11 @@ export function validateTranslatedShader(input, expectedStage, options) {
 
 /** Backend-neutral profile and vertex declarations; no GPU enums/native objects here. */
 export function validatePipelineDescriptor(input, validateShader = validateTranslatedShader, options) {
-  const allowUniforms = uniformsAllowed(options);
+  const profile = profileOptions(options), { allowUniforms, allowTextures } = profile;
   record(input, ['vertex', 'fragment', 'vertexBuffers', 'colorFormat', 'topology', 'frontFace', 'cullMode', 'sampleCount',
-    ...(allowUniforms ? ['uniforms'] : [])], 'pipeline');
-  const vertex = validateShader(input.vertex, 'vertex', ...(allowUniforms ? [{ allowUniforms }] : []));
-  const fragment = validateShader(input.fragment, 'fragment', ...(allowUniforms ? [{ allowUniforms }] : []));
+    ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'pipeline');
+  const vertex = validateShader(input.vertex, 'vertex', ...shaderOptions(profile));
+  const fragment = validateShader(input.fragment, 'fragment', ...shaderOptions(profile));
   const colorFormat = choice(input.colorFormat ?? 'rgba8unorm', ['rgba8unorm'], 'color format');
   const topology = choice(input.topology ?? 'triangle-list', ['triangle-list'], 'primitive topology');
   const frontFace = choice(input.frontFace ?? 'ccw', ['ccw'], 'front face');
@@ -186,13 +208,31 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
     previous = group * 16 + binding;
     const sizes = [[vertex, 1], [fragment, 2]].flatMap(([shader, bit]) => shader.resources
       .filter(r => r.group === group && r.binding === binding).map(r => {
+        if (r.type !== 'uniform') fail('shader texture declared as a uniform buffer in the pipeline layout');
         if (!(stages & bit)) fail('shader uniform is not visible to its stage in the pipeline layout');
         return r.size;
       }));
     return { group, binding, stages, minSize: Math.max(0, ...sizes) };
   });
+  previous = -1;
+  const textures = !allowTextures ? [] : array(input.textures ?? [], 0, TEXTURE_LIMITS.maxTextures, 'pipeline textures').map(t => {
+    record(t, ['group', 'binding', 'stages'], 'pipeline texture');
+    const group = integer(t.group, 0, UNIFORM_LIMITS.maxGroups - 1, 'texture set');
+    const binding = integer(t.binding, 0, UNIFORM_LIMITS.maxBindings - 1, 'texture binding');
+    const stages = integer(t.stages, 1, 3, 'texture stages');
+    if (group * 16 + binding <= previous) fail('pipeline textures must be sorted and unique');
+    previous = group * 16 + binding;
+    if (uniforms.some(u => u.group === group && u.binding === binding)) fail('pipeline texture/uniform binding collision');
+    for (const [shader, bit] of [[vertex, 1], [fragment, 2]]) for (const r of shader.resources)
+      if (r.group === group && r.binding === binding) {
+        if (r.type !== 'texture') fail('shader uniform declared as a texture in the pipeline layout');
+        if (!(stages & bit)) fail('shader texture is not visible to its stage in the pipeline layout');
+      }
+    return { group, binding, stages };
+  });
   for (const shader of [vertex, fragment]) for (const r of shader.resources)
-    if (!uniforms.some(u => u.group === r.group && u.binding === r.binding)) fail('shader uniform missing from the pipeline layout');
+    if (!(r.type === 'texture' ? textures : uniforms).some(u => u.group === r.group && u.binding === r.binding))
+      fail(`shader ${r.type} missing from the pipeline layout`);
   const outputs = new Map(vertex.outputs.filter(i => own(i, 'location')).map(i => [i.location, i]));
   for (const input of fragment.inputs.filter(i => own(i, 'location'))) {
     const output = outputs.get(input.location);
@@ -200,7 +240,41 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
         output.interpolation.mode !== input.interpolation.mode ||
         output.interpolation.sampling !== input.interpolation.sampling) fail('vertex/fragment interface mismatch');
   }
-  return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount, uniforms });
+  return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount, uniforms,
+    ...(allowTextures ? { textures } : {}) });
+}
+
+/** Draw-time combined image samplers, in pipeline-layout order; textures must hold uploaded contents. */
+export function validateDrawTextures(input, descriptor, allowTextures, lookupTexture, lookupSampler) {
+  if (!allowTextures) return [];
+  const declared = descriptor.textures ?? [];
+  return array(input ?? [], declared.length, declared.length, 'draw textures').map((t, i) => {
+    record(t, ['group', 'binding', 'texture', 'sampler'], 'texture binding');
+    if (t.group !== declared[i].group || t.binding !== declared[i].binding) fail('draw textures do not match the pipeline layout');
+    if (!lookupTexture(t.texture).initialized) fail('sampled texture has no uploaded contents');
+    lookupSampler(t.sampler);
+    // Same field set as the input: recorded draws are revalidated at end().
+    return Object.freeze({ group: declared[i].group, binding: declared[i].binding, texture: t.texture, sampler: t.sampler });
+  });
+}
+export function validateTextureDescriptor(input) {
+  record(input, ['width', 'height', 'format'], 'texture');
+  return Object.freeze({ width: integer(input.width, 1, TEXTURE_LIMITS.maxDimension, 'texture width'),
+    height: integer(input.height, 1, TEXTURE_LIMITS.maxDimension, 'texture height'),
+    format: choice(input.format ?? 'rgba8unorm', ['rgba8unorm'], 'texture format') });
+}
+export function validateSamplerDescriptor(input) {
+  record(input, ['magFilter', 'minFilter', 'addressModeU', 'addressModeV'], 'sampler');
+  const filters = ['nearest', 'linear'], modes = ['repeat', 'clamp-to-edge', 'mirror-repeat'];
+  return Object.freeze({ magFilter: choice(input.magFilter, filters, 'sampler mag filter'),
+    minFilter: choice(input.minFilter, filters, 'sampler min filter'),
+    addressModeU: choice(input.addressModeU, modes, 'sampler address mode U'),
+    addressModeV: choice(input.addressModeV, modes, 'sampler address mode V') });
+}
+export function validateTextureUpload(entry, data) {
+  const { width, height } = entry.descriptor;
+  if (!(data instanceof Uint8Array) || data.byteLength !== width * height * 4) fail('texture upload requires exactly width*height*4 RGBA8 bytes');
+  return data.slice();
 }
 
 /** Shared draw-time uniform range validation for both backends. */
@@ -263,15 +337,16 @@ function webgpuPipeline(descriptor, vertex, fragment, layout) {
  * the host adapter owns wire IDs and the device. Async methods serialize GPU error
  * scopes. The caller must not interleave its own error scopes on this same device.
  */
-export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false } = {}) {
+export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false, allowTextures = false } = {}) {
   if (!device?.queue || !device?.lost?.then) fail('existing WebGPU device required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
-  choice(allowUniforms, [false, true], 'uniform option');
-  const uniformOptions = allowUniforms ? { allowUniforms } : undefined;
+  choice(allowUniforms, [false, true], 'uniform option'); choice(allowTextures, [false, true], 'texture option');
+  if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
+  const uniformOptions = allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
   const resources = new Map(), native = new Map(), cancelWaits = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
   const counters = { buffersCreated: 0, buffersDestroyed: 0, texturesCreated: 0, texturesDestroyed: 0,
-    passes: 0, draws: 0, readbacks: 0, uploads: 0, uniformUploads: 0 };
+    passes: 0, draws: 0, readbacks: 0, uploads: 0, uniformUploads: 0, ...(allowTextures ? { textureUploads: 0, samplersCreated: 0 } : {}) };
   const event = e => { try { onEvent(e); } catch { /* diagnostics cannot change renderer state */ } };
   const unavailable = () => new GraphicsRendererError(cause || `renderer ${state}`, 'unavailable');
   const available = () => { if (state !== 'open') throw unavailable(); };
@@ -350,8 +425,9 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
   };
   const validateDraw = (input, target) => {
     record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor',
-      ...(allowUniforms ? ['uniforms'] : [])], 'draw');
+      ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'draw');
     const pipeline = get(input.pipeline, 'pipeline'), descriptor = pipeline.descriptor;
+    const textures = validateDrawTextures(input.textures, descriptor, allowTextures, handle => get(handle, 'sampled-texture'), handle => get(handle, 'sampler'));
     if (descriptor.colorFormat !== target.descriptor.format) fail('pipeline/target format mismatch');
     const vertexCount = integer(input.vertexCount, 3, GRAPHICS_LIMITS.maxVertices, 'vertex count');
     if (vertexCount % 3) fail('initial triangle profile requires complete triangles');
@@ -373,7 +449,8 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
     });
     return Object.freeze({ pipeline: input.pipeline, vertexBuffers: Object.freeze(bindings.map(Object.freeze)), vertexCount, firstVertex,
       instanceCount: 1, firstInstance: 0, viewport: rectangle(input.viewport, target.descriptor, true),
-      scissor: rectangle(input.scissor, target.descriptor, false), ...(allowUniforms ? { uniforms: Object.freeze(uniforms) } : {}) });
+      scissor: rectangle(input.scissor, target.descriptor, false), ...(allowUniforms ? { uniforms: Object.freeze(uniforms) } : {}),
+      ...(allowTextures ? { textures: Object.freeze(textures) } : {}) });
   };
 
   return Object.freeze({
@@ -393,11 +470,16 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
           const info = await wait(Promise.all([vertex.getCompilationInfo(), fragment.getCompilationInfo()]));
           if (info.some(i => i.messages.some(m => m.type === 'error'))) fail('translated WGSL compilation failed');
           // Vulkan set N maps to WebGPU group N; bindings keep their numbers.
-          const groups = descriptor.uniforms.length ? Math.max(...descriptor.uniforms.map(u => u.group)) + 1 : 0;
-          groupLayouts = Array.from({ length: groups }, (_, group) => device.createBindGroupLayout({ entries: descriptor.uniforms
-            .filter(u => u.group === group).map(u => ({ binding: u.binding,
-              visibility: (u.stages & 1 ? GPUShaderStage.VERTEX : 0) | (u.stages & 2 ? GPUShaderStage.FRAGMENT : 0),
-              buffer: { type: 'uniform', hasDynamicOffset: false, minBindingSize: u.minSize } })) }));
+          // Combined image sampler (set, b) becomes texture @binding(b) plus sampler @binding(b+16).
+          const textures = descriptor.textures ?? [], used = [...descriptor.uniforms, ...textures];
+          const groups = used.length ? Math.max(...used.map(u => u.group)) + 1 : 0;
+          const visibility = u => (u.stages & 1 ? GPUShaderStage.VERTEX : 0) | (u.stages & 2 ? GPUShaderStage.FRAGMENT : 0);
+          groupLayouts = Array.from({ length: groups }, (_, group) => device.createBindGroupLayout({ entries: [
+            ...descriptor.uniforms.filter(u => u.group === group).map(u => ({ binding: u.binding, visibility: visibility(u),
+              buffer: { type: 'uniform', hasDynamicOffset: false, minBindingSize: u.minSize } })),
+            ...textures.filter(t => t.group === group).flatMap(t => [
+              { binding: t.binding, visibility: visibility(t), texture: { sampleType: 'float', viewDimension: '2d', multisampled: false } },
+              { binding: t.binding + TEXTURE_LIMITS.samplerBindingOffset, visibility: visibility(t), sampler: { type: 'filtering' } }])] }));
           const layout = device.createPipelineLayout({ bindGroupLayouts: groupLayouts });
           return wait(device.createRenderPipelineAsync(webgpuPipeline(descriptor, vertex, fragment, layout)));
         });
@@ -425,6 +507,40 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         const entry = get(handle, 'uniform-buffer');
         if (offset > entry.descriptor.size || copy.byteLength > entry.descriptor.size - offset) fail('upload exceeds uniform buffer');
         await checked(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uniformUploads++;
+      });
+    },
+    createTexture(input) {
+      if (!allowTextures) fail('texture profile not enabled');
+      const descriptor = validateTextureDescriptor(input), size = descriptor.width * descriptor.height * 4;
+      return enqueue(async () => {
+        budget(size);
+        const object = await makeNative('texture', size, () => device.createTexture({
+          size: [descriptor.width, descriptor.height, 1], format: descriptor.format, sampleCount: 1, mipLevelCount: 1,
+          dimension: '2d', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST }));
+        return add('sampled-texture', object, descriptor);
+      });
+    },
+    uploadTexture(handle, data) {
+      if (!allowTextures) fail('texture profile not enabled');
+      const copy = validateTextureUpload(get(handle, 'sampled-texture'), data);
+      return enqueue(async () => {
+        const entry = get(handle, 'sampled-texture'), { width, height } = entry.descriptor;
+        if (copy.byteLength !== width * height * 4) fail('texture upload size changed');
+        entry.initialized = false;
+        await checked(() => device.queue.writeTexture({ texture: entry.object }, copy, { offset: 0, bytesPerRow: width * 4, rowsPerImage: height }, [width, height, 1]));
+        entry.initialized = true; counters.textureUploads++;
+      });
+    },
+    createSampler(input) {
+      if (!allowTextures) fail('texture profile not enabled');
+      const descriptor = validateSamplerDescriptor(input);
+      return enqueue(async () => {
+        budget(0);
+        // GPUSampler has no destroy(); it is not a byte-accounted native object.
+        const object = await checked(() => device.createSampler({ ...descriptor, addressModeW: 'clamp-to-edge',
+          mipmapFilter: 'nearest', lodMinClamp: 0, lodMaxClamp: 32, maxAnisotropy: 1 }));
+        counters.samplersCreated++;
+        const handle = add('sampler', object, descriptor); resources.get(handle).initialized = true; return handle;
       });
     },
     createVertexBuffer(input) {
@@ -493,8 +609,11 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
           for (const draw of draws) {
             const pipeline = get(draw.pipeline, 'pipeline'); render.setPipeline(pipeline.object);
             pipeline.groupLayouts.forEach((layout, group) => render.setBindGroup(group, device.createBindGroup({ layout,
-              entries: draw.uniforms.filter(u => u.group === group).map(u => ({ binding: u.binding,
-                resource: { buffer: get(u.buffer, 'uniform-buffer').object, offset: u.offset, size: u.size } })) })));
+              entries: [...draw.uniforms.filter(u => u.group === group).map(u => ({ binding: u.binding,
+                resource: { buffer: get(u.buffer, 'uniform-buffer').object, offset: u.offset, size: u.size } })),
+                ...(draw.textures ?? []).filter(t => t.group === group).flatMap(t => [
+                  { binding: t.binding, resource: get(t.texture, 'sampled-texture').object.createView() },
+                  { binding: t.binding + TEXTURE_LIMITS.samplerBindingOffset, resource: get(t.sampler, 'sampler').object }])] })));
             draw.vertexBuffers.forEach((b, slot) => render.setVertexBuffer(slot, get(b.buffer, 'vertex-buffer').object, b.offset, b.size));
             const v = draw.viewport, s = draw.scissor;
             render.setViewport(v.x, v.y, v.width, v.height, v.minDepth, v.maxDepth);
