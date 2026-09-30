@@ -121,7 +121,19 @@ is free.
   full Firefox ids with epoch checks, per-call error policy + poll events.
   Guest test 102/0 on NVIDIA (maxwell); W2 regression 150/0. Decoder wasm is
   still served from the W3 build dir (ship it in W4c). No textures/passes/shaders.
-Running: Vulkan A6a (WSI surfaces/swapchain objects).
+PAUSED by user 2026-09-30 for review; both agents died on the 5 h limit (429),
+work is uncommitted in the tree:
+- A6a WSI (partial, not reviewed): modified `guest-vulkan/{icd.c,transfer.inc,
+  run-finite.mjs,storage.py}`, graphics/loader/compute build+storage tweaks, new
+  `guest-vulkan/wsi.inc`, `web/linux/tests/guest-vulkan-wsi/{client.c,guest.html}`.
+  `/mnt/p6/build/guest-vulkan-a6a-20260930/all-run1` passes wsi-webgpu and
+  wsi-webgl2 (276,963 checks each), depth-webgpu, loader, uniform, texture. Still
+  needed: review, full ten-suite regression, doc/evidence, commit; then A6b
+  (acquire/present via XPutImage, FIFO pacing).
+- W4b Firefox wgpu wrapper (early partial): `web/linux/tests/firefox-webgpu-wrapper/`
+  (`wgpu-server-wrap.c`, `wgpu-server-abi.h`, pack_info golden generator and
+  goldens in `/mnt/p6/build/firefox-webgpu-w4b-20260930/goldens-run1`). Not built or
+  guest-tested; relaunch W4b from these files. W4a runner hex parser fixed (`aa93cf0`).
 Next: Vulkan A6-A7 (WSI, vkcube), gputest G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
