@@ -14,6 +14,12 @@ Firefox's own distribution customizer (distribution.sys.mjs) applies the
 [Preferences] section on the default branch, so a homepage a user sets
 still wins. It adds the bookmarks once per profile, including existing
 profiles, tracked by distribution.linuxonweb.bookmarksProcessed.
+
+[Preferences] also force-enables WebGL and WebGPU on the default branch (as
+if flipped in about:config; a user value still wins): webgl.force-enabled,
+webgl.enable-webgl2, dom.webgpu.enabled (+workers), gfx.webgpu.ignore-blocklist.
+Forcing does not create a GL driver: the guest has no libGL/EGL, so WebGL
+still fails context creation, and WebGPU gets a null adapter until W4.
 """
 import argparse
 import copy
@@ -44,6 +50,13 @@ about=Linux on Web
 [Preferences]
 browser.startup.homepage="{PAGE_URL}"
 browser.toolbars.bookmarks.visibility="always"
+webgl.force-enabled=true
+webgl.disabled=false
+webgl.enable-webgl2=true
+webgl.disable-fail-if-major-performance-caveat=true
+dom.webgpu.enabled=true
+dom.webgpu.workers.enabled=true
+gfx.webgpu.ignore-blocklist=true
 
 [BookmarksToolbar]
 item.1.title=GPU check (WebGL / WebGPU)

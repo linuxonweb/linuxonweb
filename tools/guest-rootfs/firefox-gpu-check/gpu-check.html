@@ -135,9 +135,15 @@ function fpsMeter(api) {
 
 function startWebGL() {
   const canvas = document.getElementById("webgl-canvas");
+  const errors = [];
+  canvas.addEventListener("webglcontextcreationerror", e => errors.push(e.statusMessage || "(no message)"));
   let gl = canvas.getContext("webgl2", { antialias: false }), version = 2;
   if (!gl) { gl = canvas.getContext("webgl", { antialias: false }); version = 1; }
-  if (!gl) { row("webgl", "context", "WebGL and WebGL2 contexts unavailable"); fail("webgl", "unavailable"); return; }
+  if (!gl) {
+    row("webgl", "context", "WebGL and WebGL2 contexts unavailable");
+    for (const message of [...new Set(errors)]) row("webgl", "creation error", message);
+    fail("webgl", "unavailable"); return;
+  }
   row("webgl", "context", version === 2 ? "webgl2" : "webgl (1.0)");
   row("webgl", "version", gl.getParameter(gl.VERSION));
   row("webgl", "shading language", gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
