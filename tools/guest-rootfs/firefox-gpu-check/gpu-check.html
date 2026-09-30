@@ -43,7 +43,17 @@
 // Results are mirrored into document.title so automated tests can read them:
 // "GPUCHECK webgl=<state> webgpu=<state>", state = pending|ok|fail|none|skipped.
 const state = { webgl: "pending", webgpu: "pending" };
-function publish() { document.title = `GPUCHECK webgl=${state.webgl} webgpu=${state.webgpu}`; }
+// Each change is also logged, with the info tables once both APIs settle,
+// so a browser that prints console output to stdout (the guest) reports it.
+function publish() {
+  const title = `GPUCHECK webgl=${state.webgl} webgpu=${state.webgpu}`;
+  if (title === document.title) return;
+  document.title = title;
+  const settled = !Object.values(state).includes("pending");
+  const info = settled ? Object.fromEntries(["webgl", "webgpu"].map(api =>
+    [api, Array.from(document.querySelectorAll(`#${api}-info tr`), tr => Array.from(tr.cells, td => td.textContent.trim()).join(": "))])) : undefined;
+  console.log(title + (info ? " " + JSON.stringify(info) : ""));
+}
 publish();
 function badge(api, cls, text) {
   const el = document.getElementById(`${api}-badge`);
