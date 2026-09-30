@@ -78,12 +78,18 @@ displayPan.addEventListener("click", () => {
 });
 new ResizeObserver(updateDisplayPan).observe(displayStage);
 window.addEventListener("resize", updateDisplayPan);
-// After a click on the display, align its top with the viewport. Doing this on
-// release keeps the guest's press and release at the same display position.
+// Two seconds after a click on the display, align its top with the viewport.
+// Waiting for release and the delay keeps the guest's press, release and any
+// immediate follow-up click at the same display position.
+let scrollTimer = 0;
 canvas.addEventListener("pointerup", () => {
   if (panDisplay) return;
-  const top = displayStage.getBoundingClientRect().top;
-  if (Math.abs(top) >= 1) window.scrollBy({ top, behavior: "instant" });
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(() => {
+    if (panDisplay) return;
+    const top = displayStage.getBoundingClientRect().top;
+    if (Math.abs(top) >= 1) window.scrollBy({ top, behavior: "instant" });
+  }, 2000);
 });
 // Icon buttons show their label on hover or keyboard focus; a click or tap
 // shows it briefly, since touch has no hover.
@@ -147,6 +153,7 @@ const storagePanel = createStoragePanel({
       activeMachine = null;
       restarting = false;
       lockConfiguration(false);
+      showStopButton(false);
       setStatus('guest stopped', 'idle');
       throw error;
     } finally { release(); }
@@ -695,6 +702,7 @@ async function boot(mode) {
     );
     lockConfiguration(false);
     for (const button of launchButtons) button.disabled = true;
+    showStopButton(true);
     if (consoleMode) terminal?.focus();
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
@@ -724,8 +732,36 @@ async function boot(mode) {
   }
 }
 
+// Once a guest runs, the boot button becomes its stop button.
+const bootButton = document.getElementById("boot");
+function showStopButton(running) {
+  const [bootIcon, stopIcon] = bootButton.querySelectorAll("svg");
+  bootIcon.hidden = running;
+  stopIcon.hidden = !running;
+  bootButton.querySelector(".label").textContent = running ? "Stop guest" : "Boot guest";
+  if (running) bootButton.disabled = false;
+}
+async function stopGuest() {
+  if (!activeMachine || restarting) return;
+  restarting = true;
+  lockConfiguration(true);
+  setStatus("stopping…", "booting");
+  await persistentHome?.flush().catch(() => {});
+  activeMachine.close();
+  await activeMachine.closed.catch(() => {});
+  // Reload releases the old guest's listeners, streams, workers and network,
+  // as restart does. Drop auto-boot so the page stays stopped.
+  sessionStorage.removeItem(resumeKey);
+  const url = new URL(location.href);
+  url.searchParams.delete("firefox");
+  location.replace(url);
+}
+
 for (const button of launchButtons) {
-  button.addEventListener("click", () => void boot(button.dataset.mode));
+  button.addEventListener("click", () => {
+    if (button === bootButton && activeMachine) void stopGuest();
+    else void boot(button.dataset.mode);
+  });
 }
 
 // Firefox mode is intended for unattended Chromium testing. Boot immediately;
