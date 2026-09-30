@@ -1,0 +1,1340 @@
+{
+ "packet": "Firefox WebGPU W2 guest GPU hostcall channel",
+ "date": "2026-09-29",
+ "doc": "docs/firefox-webgpu-w2-20260929.md",
+ "taskRoot": "/mnt/p6/build/firefox-webgpu-w2-20260929",
+ "scope": "runtime adapter only; no Firefox/kernel/Mesa source edits; not promoted into web/linux images; not deployed",
+ "files": {
+  "web/linux/dist/guest-gpu-hostcall.js": {
+   "sha256": "6f8c6b340ec125aeea05cfc2885b651dca8a28fa6b4e0299ba17c139e6bd5f8f"
+  },
+  "web/linux/dist/guest-gpu-owner.js": {
+   "sha256": "06d588a51d0fa875473eb6b275339b4c407ee9d144f5ebd35c3a1efe8ccffa1d"
+  },
+  "web/linux/dist/worker.js": {
+   "sha256": "ad30668f547744509b912af4d982f91b49fd16cdd4b9bcb6a1e5ba6feb93a463"
+  },
+  "web/linux/dist/index.js": {
+   "sha256": "910afb5af0b39d070e21087281e0b65ea73fb08dcccdfe6a11b0ac30cd8e70a8"
+  },
+  "web/linux/tests/guest-gpu-hostcall/gpu-hostcall-test.c": {
+   "sha256": "b514c6939a9e432169d9e04f26cf9e697317fef309c748c1d68db28cb8a883b5"
+  },
+  "web/linux/tests/guest-gpu-hostcall/build.py": {
+   "sha256": "41c64c85aeb50f358e55a5e055b8f140dc893c92af6c4c044474759f3065a8f6"
+  },
+  "web/linux/tests/guest-gpu-hostcall/run-guest.mjs": {
+   "sha256": "ff809c289bf9404c1560836d1ed1ccd0164eabdfbd19d423903547e6a3fc13ed"
+  },
+  "web/linux/tests/guest-gpu-hostcall/index.html": {
+   "sha256": "67982e2a9fcd24d4d47abb6e88b1258ba9dadef0dba0a0e9511c8a16642395e3"
+  }
+ },
+ "diffStat": {
+  "web/linux/dist/worker.js": "+14/-1",
+  "web/linux/dist/index.js": "+9/-0",
+  "newFiles": [
+   "web/linux/dist/guest-gpu-hostcall.js (463 lines)",
+   "web/linux/dist/guest-gpu-owner.js (429 lines)"
+  ]
+ },
+ "abi": {
+  "syscalls": {
+   "0x6a470001": "gpu_hostcall(op,a0..a4) -> >=0 | -errno",
+   "0x6a470002": "gpu_hostcall_stats(u32 out[11]) -> 0 | -EFAULT (local)",
+   "0x6a470003": "gpu_hostcall_control(cmd,arg), test hooks, -EPERM unless enabled"
+  },
+  "ops": {
+   "1": "ECHO(value)",
+   "2": "CHECKSUM(ptr,len,out_u32) FNV-1a-32",
+   "3": "FILL(ptr,len,seed)",
+   "4": "ADAPTER_INFO(out,cap,len_out) JSON",
+   "5": "WRITEBUFFER_PROBE(src,len,out,cap,len_out) JSON",
+   "6": "SLEEP(ms<=10000) async",
+   "0x100": "TEST_HANG",
+   "0x101": "TEST_CLOSE",
+   "0x102": "TEST_TERMINATE"
+  },
+  "control": {
+   "1": "RESPAWN",
+   "2": "SET_STALL_MS(100..60000)"
+  },
+  "statsWords": [
+   "version",
+   "owner_state",
+   "owner_gen",
+   "slot",
+   "heartbeat",
+   "calls",
+   "dead_reason",
+   "flags",
+   "thread_calls",
+   "stall_ms",
+   "thread_yields"
+  ],
+  "errors": {
+   "ENOSYS": "no hub / op 0",
+   "EBUSY": "re-entry from signal handler during own call",
+   "ENODEV": "owner dead, request not taken",
+   "EIO": "owner lost after taking request",
+   "EAGAIN": "no free slot (256)",
+   "EFAULT": "NULL/out-of-range/crossing-end pointer, incl. outputs; memory re-read per access",
+   "EINVAL": "len>256MiB, negative len, unknown op, sleep>10s, odd writeBuffer len, bad control",
+   "ENOSPC": "output too small (len_out = needed)",
+   "EPERM": "test hooks disabled",
+   "ETIMEDOUT": "respawn timeout"
+  },
+  "hub": "SharedArrayBuffer; header words 0-11 (magic GPH1, owner state/gen, heartbeat, doorbell, flags, next gen, dead reason, stall ms, startup ms, calls, tokens), pending bitmap 16-23, 256 slots x 16 words from word 32 (token,state,seq,op,gen,args[5],result,result2)",
+  "slotState": "(seq << 2) | state; seq 30-bit per-slot, never 0; owner completes by exact BUSY->DONE CAS"
+ },
+ "concurrencyDesign": [
+  "one slot per guest thread, claimed by CAS at first call, released at worker_exit",
+  "owner waits on doorbell with Atomics.waitAsync and serves slots concurrently",
+  "per-process WebAssembly.Memory relayed to owner once per slot",
+  "cooperative caller wait: 1 ms pure Atomics.wait, then 1 ms slices alternating with sched_yield(124) kernel entry so the vCPU keeps interrupts, scheduling, signals and exit",
+  "unwinding/exiting call abandons its slot; stale completions rejected by seq"
+ ],
+ "ownerLoss": [
+  "heartbeat every 50 ms; caller marks owner dead after stall_ms (default 3000, test 1000) without heartbeat and asks page to terminate it",
+  "page marks dead on Worker error, terminate, machine close",
+  "taken request -> -EIO, untaken -> -ENODEV, later calls -ENODEV immediately",
+  "no automatic respawn; test hook CTL_RESPAWN only"
+ ],
+ "runs": {
+  "guest-run1": {
+   "build": "build-run1",
+   "buildSha256": "4253d0b17ad8d6d91d1aebb173b039b9897e099b74d1a32b1ba731046a7bd9e6",
+   "note": "headless SwiftShader, earlier smaller test before wait fix",
+   "pass": true,
+   "passes": 118,
+   "failures": 0,
+   "failLines": [],
+   "elapsedMs": 7764,
+   "browserExit": {
+    "code": 0,
+    "signal": null
+   },
+   "serverClosed": true,
+   "resultSha256": "5d31af69a179953f9c9ab27e0b360a4c23914b80db00e35544a1b3125ef5ee17",
+   "adapterInfo": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "",
+    "description": "",
+    "subgroupMinSize": 4,
+    "subgroupMaxSize": 4,
+    "isFallbackAdapter": true,
+    "subgroupMatrixConfigs": []
+   },
+   "first_call": {
+    "ms": "16"
+   },
+   "latency": {
+    "rounds": "10000",
+    "total_ns": "283810000",
+    "mean_ns": "28381",
+    "min_ns": "10000",
+    "p50_ns": "20000",
+    "p90_ns": "30000",
+    "p99_ns": "80000",
+    "p999_ns": "290000",
+    "max_ns": "2175000",
+    "clock_pair_ns": "4465"
+   },
+   "concurrent": {
+    "threads": "4+main",
+    "rounds_each": "2000",
+    "total_ns": "211180000",
+    "calls_per_s": "47352",
+    "slots": "1,2,3,4",
+    "main": "0"
+   },
+   "interleave": {
+    "sleep_ms": "400",
+    "echoes_done_ms": "54",
+    "sleeper_done_ms": "435"
+   },
+   "slot_reuse": {
+    "slot": "1"
+   },
+   "loss": {
+    "hang": {
+     "gen": "1",
+     "first": "-5",
+     "first_ms": "1001",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "terminate": {
+     "gen": "2",
+     "first": "-5",
+     "first_ms": "0",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "3"
+    },
+    "close": {
+     "gen": "3",
+     "first": "-5",
+     "first_ms": "1001",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "blocked-thread": {
+     "first": "-5",
+     "other": "-5",
+     "other_ms": "167"
+    }
+   },
+   "respawn": {
+    "hang": {
+     "ms": "15",
+     "gen": "2"
+    },
+    "terminate": {
+     "ms": "21",
+     "gen": "3"
+    },
+    "close": {
+     "ms": "15",
+     "gen": "4"
+    }
+   },
+   "writeBuffer": [
+    {
+     "bytes": 65536,
+     "sharedArrayBuffer": true,
+     "medianCallMs": null,
+     "timingRounds": null,
+     "firstCallMs": {
+      "sharedView": 0.38,
+      "sharedBufferOffset": 0.115,
+      "copySlice": 0.1
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    },
+    {
+     "bytes": 4194304,
+     "sharedArrayBuffer": true,
+     "medianCallMs": null,
+     "timingRounds": null,
+     "firstCallMs": {
+      "sharedView": 6.345,
+      "sharedBufferOffset": 4.25,
+      "copySlice": 2.48
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    }
+   ]
+  },
+  "guest-run2": {
+   "build": "build-run2",
+   "buildSha256": "9049016ec9237c98937af35ad859fa7020d562935dd9f451c1e5539356570a5c",
+   "note": "headless SwiftShader; failed, preserved",
+   "pass": false,
+   "passes": 116,
+   "failures": 2,
+   "failLines": [
+    "GUEST_GPUHC FAIL threads use distinct slots",
+    "GUEST_GPUHC FAIL echoes finished before sleeper"
+   ],
+   "elapsedMs": 8012,
+   "browserExit": {
+    "code": 0,
+    "signal": null
+   },
+   "serverClosed": true,
+   "resultSha256": "6f0c58513c80d7b4e5ab6b76b4a2e073bf38774f98e8797d0e86a2f29c2ef87a",
+   "adapterInfo": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "",
+    "description": "",
+    "subgroupMinSize": 4,
+    "subgroupMaxSize": 4,
+    "isFallbackAdapter": true,
+    "subgroupMatrixConfigs": []
+   },
+   "first_call": {
+    "ms": "17"
+   },
+   "latency": {
+    "rounds": "10000",
+    "total_ns": "294190000",
+    "mean_ns": "29419",
+    "min_ns": "10000",
+    "p50_ns": "20000",
+    "p90_ns": "35000",
+    "p99_ns": "80000",
+    "p999_ns": "370000",
+    "max_ns": "2360000",
+    "clock_pair_ns": "4960"
+   },
+   "concurrent": {
+    "threads": "4+main",
+    "rounds_each": "2000",
+    "total_ns": "205000000",
+    "calls_per_s": "48780",
+    "slots": "3,1,2,2",
+    "main": "0"
+   },
+   "interleave": {
+    "sleep_ms": "400",
+    "echoes_done_ms": "446",
+    "sleeper_done_ms": "436"
+   },
+   "slot_reuse": {
+    "slot": "1"
+   },
+   "loss": {
+    "hang": {
+     "gen": "1",
+     "first": "-5",
+     "first_ms": "1002",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "terminate": {
+     "gen": "2",
+     "first": "-5",
+     "first_ms": "0",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "3"
+    },
+    "close": {
+     "gen": "3",
+     "first": "-5",
+     "first_ms": "1000",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "blocked-thread": {
+     "first": "-5",
+     "other": "-5",
+     "other_ms": "168"
+    }
+   },
+   "respawn": {
+    "hang": {
+     "ms": "15",
+     "gen": "2"
+    },
+    "terminate": {
+     "ms": "14",
+     "gen": "3"
+    },
+    "close": {
+     "ms": "15",
+     "gen": "4"
+    }
+   },
+   "writeBuffer": [
+    {
+     "bytes": 65536,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 0.01,
+      "sharedBufferOffset": 0.01,
+      "copySlice": 0.055
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 0.35,
+      "sharedBufferOffset": 0.12,
+      "copySlice": 0.1
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    },
+    {
+     "bytes": 4194304,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 0.97,
+      "sharedBufferOffset": 0.995,
+      "copySlice": 2.28
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 3.895,
+      "sharedBufferOffset": 5.275,
+      "copySlice": 2.425
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    }
+   ]
+  },
+  "guest-run3": {
+   "build": "build-run3",
+   "buildSha256": "2da865139590a7f40b0b4a6a0658dae31a2dbe97b9697042933778fd87e3327f",
+   "note": "NVIDIA headful; failed overlap check (thread-start latency), preserved",
+   "pass": false,
+   "passes": 147,
+   "failures": 1,
+   "failLines": [
+    "GUEST_GPUHC FAIL four blocked callers overlap on two CPUs"
+   ],
+   "elapsedMs": 24145,
+   "browserExit": {
+    "code": 0,
+    "signal": null
+   },
+   "serverClosed": true,
+   "resultSha256": "8572fea60fe0870340f522c14d9af7344f9f03be70d3389cf5bc09b7a4c94617",
+   "adapterInfo": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "device": "",
+    "description": "",
+    "subgroupMinSize": 32,
+    "subgroupMaxSize": 32,
+    "isFallbackAdapter": false,
+    "subgroupMatrixConfigs": []
+   },
+   "first_call": {
+    "ms": "33"
+   },
+   "latency": {
+    "rounds": "10000",
+    "total_ns": "618895000",
+    "mean_ns": "61889",
+    "min_ns": "10000",
+    "p50_ns": "35000",
+    "p90_ns": "80000",
+    "p99_ns": "405000",
+    "p999_ns": "1345000",
+    "max_ns": "2380000",
+    "clock_pair_ns": "11760"
+   },
+   "concurrent": {
+    "threads": "4+main",
+    "rounds_each": "2000",
+    "total_ns": "316870000",
+    "main_ns": "238470000",
+    "calls_per_s": "31558",
+    "thread_ms": "119,80,314,103",
+    "slots": "3,1,2,4",
+    "main": "0"
+   },
+   "interleave": {
+    "sleep_ms": "400",
+    "sleepers": "2",
+    "nanosleep_50_us": "115490",
+    "echoes_done_ms": "133",
+    "sleeper_done_ms": "520,545",
+    "sleeper_yields": "325,335"
+   },
+   "parallel": {
+    "sleepers": "4",
+    "sleep_ms": "500",
+    "total_ms": "823",
+    "start_ms": "285,314,233,234"
+   },
+   "signal": {
+    "handler_after_ms": "1",
+    "nested": "-16",
+    "call": "0",
+    "call_ms": "1501",
+    "handler_before_end": "1"
+   },
+   "exit_blocked": {
+    "exit_ms": "464",
+    "child_slot": "1",
+    "reuse_slot": "1",
+    "main_slot": "0",
+    "rounds_after": "67409",
+    "wrong": "0"
+   },
+   "slot_reuse": {
+    "slot": "1"
+   },
+   "loss": {
+    "hang": {
+     "gen": "1",
+     "first": "-5",
+     "first_ms": "1001",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "terminate": {
+     "gen": "2",
+     "first": "-5",
+     "first_ms": "1",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "3"
+    },
+    "close": {
+     "gen": "3",
+     "first": "-5",
+     "first_ms": "1001",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "blocked-thread": {
+     "first": "-5",
+     "other": "-5",
+     "other_ms": "117"
+    }
+   },
+   "respawn": {
+    "hang": {
+     "ms": "37",
+     "gen": "2"
+    },
+    "terminate": {
+     "ms": "30",
+     "gen": "3"
+    },
+    "close": {
+     "ms": "35",
+     "gen": "4"
+    }
+   },
+   "writeBuffer": [
+    {
+     "bytes": 65536,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 0.02,
+      "sharedBufferOffset": 0.025,
+      "copySlice": 0.145
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 0.705,
+      "sharedBufferOffset": 0.305,
+      "copySlice": 0.3
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    },
+    {
+     "bytes": 4194304,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 2.58,
+      "sharedBufferOffset": 2.575,
+      "copySlice": 9.705
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 18.875,
+      "sharedBufferOffset": 10.93,
+      "copySlice": 8.225
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    }
+   ],
+   "browserEnv": {
+    "DISPLAY": ":0",
+    "XDG_CACHE_HOME": "/mnt/p6/build/firefox-webgpu-w2-20260929/guest-run3/xdg",
+    "TMPDIR": "/mnt/p6/build/firefox-webgpu-w2-20260929/tmp",
+    "primeVariablesRemoved": true
+   }
+  },
+  "guest-run4": {
+   "build": "build-run4",
+   "buildSha256": "fadf6742e0663cd034c1132b672b8bbbaa6a5b040a31bd81fb5fab77ecdad35a",
+   "note": "NVIDIA headful",
+   "pass": true,
+   "passes": 150,
+   "failures": 0,
+   "failLines": [],
+   "elapsedMs": 28505,
+   "browserExit": {
+    "code": 0,
+    "signal": null
+   },
+   "serverClosed": true,
+   "resultSha256": "74252be663b9de839e9c55587ae727a7c65a141284e2a18cd7468147deb7ba0b",
+   "adapterInfo": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "device": "",
+    "description": "",
+    "subgroupMinSize": 32,
+    "subgroupMaxSize": 32,
+    "isFallbackAdapter": false,
+    "subgroupMatrixConfigs": []
+   },
+   "first_call": {
+    "ms": "44"
+   },
+   "latency": {
+    "rounds": "10000",
+    "total_ns": "889610000",
+    "mean_ns": "88961",
+    "min_ns": "15000",
+    "p50_ns": "45000",
+    "p90_ns": "100000",
+    "p99_ns": "870000",
+    "p999_ns": "2810000",
+    "max_ns": "6175000",
+    "clock_pair_ns": "10475"
+   },
+   "concurrent": {
+    "threads": "4+main",
+    "rounds_each": "2000",
+    "total_ns": "236490000",
+    "main_ns": "166770000",
+    "calls_per_s": "42285",
+    "thread_ms": "228,357,250,203",
+    "slots": "1,2,4,3",
+    "main": "0"
+   },
+   "interleave": {
+    "sleep_ms": "400",
+    "sleepers": "2",
+    "control_nanosleep_50_us": "50880",
+    "nanosleep_50_us": "51665",
+    "sleeper_start_ms": "202,205",
+    "measure_start_ms": "230",
+    "echoes_done_ms": "295",
+    "sleeper_done_ms": "605,613",
+    "sleeper_yields": "330,318"
+   },
+   "parallel": {
+    "sleepers": "4",
+    "sleep_ms": "500",
+    "total_ms": "964",
+    "overlap_ms": "335",
+    "tail_ms": "502",
+    "start_ms": "290,423,291,461"
+   },
+   "signal": {
+    "handler_after_ms": "8",
+    "nested": "-16",
+    "call": "0",
+    "call_ms": "1507",
+    "handler_before_end": "1"
+   },
+   "exit_blocked": {
+    "exit_ms": "500",
+    "child_slot": "1",
+    "reuse_slot": "1",
+    "main_slot": "0",
+    "rounds_after": "43061",
+    "wrong": "0"
+   },
+   "slot_reuse": {
+    "slot": "1"
+   },
+   "loss": {
+    "hang": {
+     "gen": "1",
+     "first": "-5",
+     "first_ms": "1002",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "terminate": {
+     "gen": "2",
+     "first": "-5",
+     "first_ms": "2",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "3"
+    },
+    "close": {
+     "gen": "3",
+     "first": "-5",
+     "first_ms": "1002",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "blocked-thread": {
+     "first": "-5",
+     "other": "-5",
+     "other_ms": "90"
+    }
+   },
+   "respawn": {
+    "hang": {
+     "ms": "29",
+     "gen": "2"
+    },
+    "terminate": {
+     "ms": "31",
+     "gen": "3"
+    },
+    "close": {
+     "ms": "35",
+     "gen": "4"
+    }
+   },
+   "writeBuffer": [
+    {
+     "bytes": 65536,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 0.04,
+      "sharedBufferOffset": 0.07,
+      "copySlice": 0.255
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 0.675,
+      "sharedBufferOffset": 0.22,
+      "copySlice": 0.285
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    },
+    {
+     "bytes": 4194304,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 3.05,
+      "sharedBufferOffset": 3.035,
+      "copySlice": 7.42
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 12.345,
+      "sharedBufferOffset": 14.225,
+      "copySlice": 9.6
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    }
+   ],
+   "browserEnv": {
+    "DISPLAY": ":0",
+    "XDG_CACHE_HOME": "/mnt/p6/build/firefox-webgpu-w2-20260929/guest-run4/xdg",
+    "TMPDIR": "/mnt/p6/build/firefox-webgpu-w2-20260929/tmp",
+    "primeVariablesRemoved": true
+   }
+  },
+  "guest-run5": {
+   "build": "build-run4",
+   "buildSha256": "fadf6742e0663cd034c1132b672b8bbbaa6a5b040a31bd81fb5fab77ecdad35a",
+   "note": "NVIDIA headful",
+   "pass": true,
+   "passes": 150,
+   "failures": 0,
+   "failLines": [],
+   "elapsedMs": 21702,
+   "browserExit": {
+    "code": 0,
+    "signal": null
+   },
+   "serverClosed": true,
+   "resultSha256": "058c3b801171406fc1d696ba711ce16ebd4c8d983c4844262c59a9fc02e26075",
+   "adapterInfo": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "device": "",
+    "description": "",
+    "subgroupMinSize": 32,
+    "subgroupMaxSize": 32,
+    "isFallbackAdapter": false,
+    "subgroupMatrixConfigs": []
+   },
+   "first_call": {
+    "ms": "43"
+   },
+   "latency": {
+    "rounds": "10000",
+    "total_ns": "683315000",
+    "mean_ns": "68331",
+    "min_ns": "10000",
+    "p50_ns": "40000",
+    "p90_ns": "85000",
+    "p99_ns": "455000",
+    "p999_ns": "1480000",
+    "max_ns": "6575000",
+    "clock_pair_ns": "10170"
+   },
+   "concurrent": {
+    "threads": "4+main",
+    "rounds_each": "2000",
+    "total_ns": "73310000",
+    "main_ns": "71045000",
+    "calls_per_s": "136407",
+    "thread_ms": "85,100,84,87",
+    "slots": "2,1,4,3",
+    "main": "0"
+   },
+   "interleave": {
+    "sleep_ms": "400",
+    "sleepers": "2",
+    "control_nanosleep_50_us": "50760",
+    "nanosleep_50_us": "50395",
+    "sleeper_start_ms": "157,199",
+    "measure_start_ms": "223",
+    "echoes_done_ms": "288",
+    "sleeper_done_ms": "565,600",
+    "sleeper_yields": "314,307"
+   },
+   "parallel": {
+    "sleepers": "4",
+    "sleep_ms": "500",
+    "total_ms": "748",
+    "overlap_ms": "418",
+    "tail_ms": "503",
+    "start_ms": "159,243,198,236"
+   },
+   "signal": {
+    "handler_after_ms": "0",
+    "nested": "-16",
+    "call": "0",
+    "call_ms": "1501",
+    "handler_before_end": "1"
+   },
+   "exit_blocked": {
+    "exit_ms": "505",
+    "child_slot": "1",
+    "reuse_slot": "1",
+    "main_slot": "0",
+    "rounds_after": "79923",
+    "wrong": "0"
+   },
+   "slot_reuse": {
+    "slot": "1"
+   },
+   "loss": {
+    "hang": {
+     "gen": "1",
+     "first": "-5",
+     "first_ms": "1001",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "terminate": {
+     "gen": "2",
+     "first": "-5",
+     "first_ms": "1",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "3"
+    },
+    "close": {
+     "gen": "3",
+     "first": "-5",
+     "first_ms": "1000",
+     "next": "-19",
+     "next_ms": "0",
+     "dead_reason": "2"
+    },
+    "blocked-thread": {
+     "first": "-5",
+     "other": "-5",
+     "other_ms": "118"
+    }
+   },
+   "respawn": {
+    "hang": {
+     "ms": "31",
+     "gen": "2"
+    },
+    "terminate": {
+     "ms": "28",
+     "gen": "3"
+    },
+    "close": {
+     "ms": "25",
+     "gen": "4"
+    }
+   },
+   "writeBuffer": [
+    {
+     "bytes": 65536,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 0.02,
+      "sharedBufferOffset": 0.025,
+      "copySlice": 0.125
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 1.25,
+      "sharedBufferOffset": 0.19,
+      "copySlice": 0.245
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    },
+    {
+     "bytes": 4194304,
+     "sharedArrayBuffer": true,
+     "medianCallMs": {
+      "sharedView": 2.6,
+      "sharedBufferOffset": 2.41,
+      "copySlice": 8.355
+     },
+     "timingRounds": 9,
+     "firstCallMs": {
+      "sharedView": 11.71,
+      "sharedBufferOffset": 8.195,
+      "copySlice": 8
+     },
+     "mismatches": {
+      "sharedView": 0,
+      "sharedBufferOffset": 0,
+      "copySlice": 0
+     },
+     "snapshotAtCall": {
+      "sharedView": true,
+      "sharedBufferOffset": true,
+      "copySlice": true
+     }
+    }
+   ],
+   "browserEnv": {
+    "DISPLAY": ":0",
+    "XDG_CACHE_HOME": "/mnt/p6/build/firefox-webgpu-w2-20260929/guest-run5/xdg",
+    "TMPDIR": "/mnt/p6/build/firefox-webgpu-w2-20260929/tmp",
+    "primeVariablesRemoved": true
+   }
+  }
+ },
+ "regressions": {
+  "jit": {
+   "run": "regress-jit-run1",
+   "build": "regress-jit-build-run1",
+   "pass": true,
+   "passes": 62,
+   "bench": {
+    "iterations": 10000000,
+    "nativeNs": 25.881,
+    "jitNs": 25.114,
+    "ratio": 0.97,
+    "rounds": [
+     {
+      "round": 0,
+      "nativeNs": 29.954,
+      "jitNs": 25.114
+     },
+     {
+      "round": 1,
+      "nativeNs": 25.881,
+      "jitNs": 27.93
+     },
+     {
+      "round": 2,
+      "nativeNs": 25.93,
+      "jitNs": 27.418
+     }
+    ]
+   }
+  },
+  "aurora": {
+   "run": "regress-aurora-run1",
+   "pass": true,
+   "checks": 23
+  },
+  "consoleBoot": {
+   "run": "regress-console-run1",
+   "runner": "regress-tools/console-boot/run.mjs",
+   "pass": true,
+   "promptMs": 11436,
+   "marker": "W2CON_42"
+  },
+  "firefoxW1": {
+   "regress-firefox-w1-run1": {
+    "code": "current W2 worker.js/index.js",
+    "pass": true,
+    "candidateVersion": "c27a1a7c6e6a",
+    "browserExit": {
+     "code": 0,
+     "signal": null
+    },
+    "serverClosed": true,
+    "error": null,
+    "phases": [
+     {
+      "label": "cold",
+      "pass": true,
+      "launchElapsedMs": 24385,
+      "probeMs": [
+       2548,
+       897,
+       894,
+       756
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     },
+     {
+      "label": "warm",
+      "pass": true,
+      "launchElapsedMs": 31314,
+      "probeMs": [
+       1393,
+       378,
+       121,
+       316
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     }
+    ]
+   },
+   "regress-firefox-w1-control-run1": {
+    "code": "control: original HEAD worker.js/index.js via regress-tools/control-root",
+    "pass": true,
+    "candidateVersion": "c27a1a7c6e6a",
+    "browserExit": {
+     "code": 0,
+     "signal": null
+    },
+    "serverClosed": true,
+    "error": null,
+    "phases": [
+     {
+      "label": "cold",
+      "pass": true,
+      "launchElapsedMs": 26219,
+      "probeMs": [
+       1415,
+       611,
+       678,
+       108
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     },
+     {
+      "label": "warm",
+      "pass": true,
+      "launchElapsedMs": 22386,
+      "probeMs": [
+       2004,
+       394,
+       474,
+       89
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     }
+    ],
+    "uptimeBeforeAfter": [
+     "16:36:56 up 24 days, 12:51,  1 user,  load average: 5.62, 9.16, 8.25",
+     " 16:43:06 up 24 days, 12:57,  1 user,  load average: 13.98, 13.08, 10.41"
+    ]
+   },
+   "regress-firefox-w1-run2": {
+    "code": "current W2 worker.js/index.js, back-to-back after control",
+    "pass": false,
+    "candidateVersion": "c27a1a7c6e6a",
+    "browserExit": {
+     "code": 0,
+     "signal": null
+    },
+    "serverClosed": true,
+    "error": "Error: guest input result after WebGPU probe deadline",
+    "phases": [
+     {
+      "label": "cold",
+      "pass": true,
+      "launchElapsedMs": 24377,
+      "probeMs": [
+       1205,
+       290,
+       63,
+       30
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     }
+    ],
+    "uptimeBeforeAfter": [
+     "16:43:06 up 24 days, 12:57,  1 user,  load average: 13.98, 13.08, 10.41",
+     " 16:49:28 up 24 days, 13:04,  1 user,  load average: 12.97, 13.97, 11.76"
+    ],
+    "diagnosis": "cold passed; warm probe resolved null x4 but the post-probe input check timed out: failure.png shows the guest field containing \"wasmpperf\" (duplicated p keystroke) so the fixture workload (input === \"wasmperf\") never ran. Load average 13-14 on 8 cores. Firefox never issues the private GPU syscalls; the control on original code passed at the same load. Likely input duplication under load (e.g. X key autorepeat when the key-up is delayed); cause not proven."
+   },
+   "regress-firefox-w1-run3": {
+    "code": "current W2 worker.js/index.js, retry",
+    "pass": false,
+    "candidateVersion": "c27a1a7c6e6a",
+    "browserExit": {
+     "code": 0,
+     "signal": null
+    },
+    "serverClosed": true,
+    "error": "Error: guest input result after WebGPU probe deadline",
+    "phases": [],
+    "uptimeBeforeAfter": [
+     "16:50:00 up 24 days, 13:04,  1 user,  load average: 12.71, 13.76, 11.77",
+     " 16:54:42 up 24 days, 13:09,  1 user,  load average: 10.72, 13.19, 12.17"
+    ],
+    "diagnosis": "cold probe resolved null x4 after 176 s at load avg 12-14; failure.png shows the guest field containing \"waasmperf\" (duplicated a keystroke), the same input-duplication symptom as run2. Not caused by the hostcall path (Firefox issues no GPU syscalls)."
+   },
+   "regress-firefox-w1-run4": {
+    "code": "current W2 worker.js/index.js, rerun at low host load (load avg ~3)",
+    "pass": true,
+    "candidateVersion": "c27a1a7c6e6a",
+    "browserExit": {
+     "code": 0,
+     "signal": null
+    },
+    "serverClosed": true,
+    "error": null,
+    "phases": [
+     {
+      "label": "cold",
+      "pass": true,
+      "launchElapsedMs": 15624,
+      "probeMs": [
+       1017,
+       395,
+       351,
+       44
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     },
+     {
+      "label": "warm",
+      "pass": true,
+      "launchElapsedMs": 14498,
+      "probeMs": [
+       490,
+       187,
+       596,
+       133
+      ],
+      "adapters": [
+       null,
+       null,
+       null,
+       null
+      ]
+     }
+    ],
+    "uptimeBeforeAfter": [
+     "21:03:42 up 24 days, 17:18,  1 user,  load average: 2.91, 2.99, 2.99",
+     " 21:07:00 up 24 days, 17:21,  1 user,  load average: 8.34, 5.59, 4.01"
+    ]
+   },
+   "w1-original-gate": {
+    "run": "/mnt/p6/build/firefox-webgpu-w1-20260929/webgpu-gate-run1",
+    "launchElapsedMs": [
+     7902,
+     6688
+    ],
+    "note": "earlier, lower host load"
+   }
+  }
+ },
+ "limitations": [
+  "long waits are 1 ms slice polling with sched_yield, not a kernel-blocking wait",
+  "microsecond race between owner current(slot,seq) check and guest-memory write on abandon",
+  "internal sched_yield does not run JIT replay/exec check",
+  "probe GPU buffers not tracked on abandon; W4 needs per-process object tables",
+  "guest thread start ~150-460 ms (Worker spawn)",
+  "dead owner is final for the machine",
+  "host load average 6-10 on 8 cores from other agents during headful runs; latencies are noisy",
+  "SwiftShader numbers come from headless runs; NVIDIA from headful DISPLAY=:0"
+ ],
+ "adapterNvidia": {
+  "gpu": "NVIDIA GeForce MX110 (GM108M, lspci 01:00.0); host also has Intel UHD 620 (00:02.0)",
+  "powerPreference": "high-performance",
+  "info": {
+   "vendor": "nvidia",
+   "architecture": "maxwell",
+   "device": "",
+   "description": "",
+   "subgroupMinSize": 32,
+   "subgroupMaxSize": 32,
+   "isFallbackAdapter": false,
+   "subgroupMatrixConfigs": []
+  },
+  "isFallbackAdapter": false,
+  "features": [
+   "bgra8unorm-storage",
+   "chromium-experimental-multi-draw-indirect",
+   "chromium-experimental-timestamp-query-inside-passes",
+   "clip-distances",
+   "core-features-and-limits",
+   "depth-clip-control",
+   "depth32float-stencil8",
+   "dual-source-blending",
+   "float32-blendable",
+   "float32-filterable",
+   "indirect-first-instance",
+   "primitive-index",
+   "rg11b10ufloat-renderable",
+   "subgroup-size-control",
+   "subgroups",
+   "texture-component-swizzle",
+   "texture-compression-bc",
+   "texture-compression-bc-sliced-3d",
+   "texture-formats-tier1",
+   "texture-formats-tier2",
+   "timestamp-query"
+  ],
+  "limits": {
+   "maxTextureDimension1D": 16384,
+   "maxTextureDimension2D": 16384,
+   "maxTextureDimension3D": 2048,
+   "maxTextureArrayLayers": 2048,
+   "maxBindGroups": 4,
+   "maxBindGroupsPlusVertexBuffers": 24,
+   "maxBindingsPerBindGroup": 1000,
+   "maxDynamicUniformBuffersPerPipelineLayout": 10,
+   "maxDynamicStorageBuffersPerPipelineLayout": 8,
+   "maxSampledTexturesPerShaderStage": 48,
+   "maxSamplersPerShaderStage": 16,
+   "maxStorageBuffersPerShaderStage": 16,
+   "maxStorageTexturesPerShaderStage": 8,
+   "maxUniformBuffersPerShaderStage": 12,
+   "maxUniformBufferBindingSize": 65536,
+   "maxStorageBufferBindingSize": 2147483644,
+   "minUniformBufferOffsetAlignment": 256,
+   "minStorageBufferOffsetAlignment": 256,
+   "maxVertexBuffers": 8,
+   "maxBufferSize": 4294967292,
+   "maxVertexAttributes": 30,
+   "maxVertexBufferArrayStride": 2048,
+   "maxInterStageShaderVariables": 28,
+   "maxColorAttachments": 8,
+   "maxColorAttachmentBytesPerSample": 128,
+   "maxComputeWorkgroupStorageSize": 49152,
+   "maxComputeInvocationsPerWorkgroup": 1024,
+   "maxComputeWorkgroupSizeX": 1024,
+   "maxComputeWorkgroupSizeY": 1024,
+   "maxComputeWorkgroupSizeZ": 64,
+   "maxComputeWorkgroupsPerDimension": 65535,
+   "maxImmediateSize": 64,
+   "maxStorageBuffersInFragmentStage": 16,
+   "maxStorageTexturesInFragmentStage": 8,
+   "maxStorageBuffersInVertexStage": 16,
+   "maxStorageTexturesInVertexStage": 8
+  },
+  "preferredCanvasFormat": "rgba8unorm",
+  "device": {
+   "ok": true,
+   "features": [
+    "core-features-and-limits"
+   ],
+   "maxBufferSize": 268435456
+  },
+  "scope": "worker",
+  "crossOriginIsolated": true,
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+ },
+ "adapterSwiftShader": {
+  "vendor": "google",
+  "architecture": "swiftshader",
+  "device": "",
+  "description": "",
+  "subgroupMinSize": 4,
+  "subgroupMaxSize": 4,
+  "isFallbackAdapter": true,
+  "subgroupMatrixConfigs": []
+ },
+ "writeBufferFinding": "GPUQueue.writeBuffer accepts SharedArrayBuffer-backed views and (buffer, offset, size) and snapshots at call time: 0 mismatches after overwriting the source immediately, on NVIDIA and SwiftShader. Copying into a non-shared ArrayBuffer only adds cost (NVIDIA 4 MiB median ~2.4-3.1 ms direct vs 7.4-8.4 ms copy). W4 can pass guest ranges directly; keep the probe as a runtime check."
+}

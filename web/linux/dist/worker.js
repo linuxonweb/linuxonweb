@@ -7,11 +7,15 @@ import { allocate_shared_memory, HALT_KERNEL, kernel_imports, memory_bytes, user
 import { ensureUserDestination, growForSyscallResult } from "./user-memory-growth-adapter.js";
 import { installFirefoxCallbackAdapter } from "./firefox-callback-adapter.mjs";
 import { cloneJitControl, createJitControl, JitThread, jitSyscall, JIT_SYSCALL_MAX, JIT_SYSCALL_MIN, } from "./guest-jit.js";
+import { GpuHostcallClient, gpuHostcallSyscall, GPU_HC_MAX, GPU_HC_MIN } from "./guest-gpu-hostcall.js";
 const unavailable = () => {
     throw new Error("not available on worker thread");
 };
 const channel = platform.worker_channel();
 const postMessage = channel.post;
+// Guest GPU hostcall hub (guest-gpu-hostcall.js); one client per Worker/thread.
+let gpu_hub = null;
+let gpu_client = null;
 function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent, }) {
     const HALT_USER = Symbol("halt user");
     let context = parent;
@@ -396,6 +400,8 @@ function create_instance(context) {
         // Private guest JIT syscalls never reach the kernel.
         if (nr >= JIT_SYSCALL_MIN && nr <= JIT_SYSCALL_MAX)
           return jitSyscall(local_jit, context.memory, nr, arg0, arg1, arg2, arg3);
+        if (nr >= GPU_HC_MIN && nr <= GPU_HC_MAX)
+          return gpuHostcallSyscall(gpu_client, context.memory, nr, arg0, arg1, arg2, arg3, arg4, arg5);
         const original_instance = instance;
         traceAbortWrite(nr, arg0, arg1, arg2);
         const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
@@ -744,7 +750,11 @@ function create_instance(context) {
         },
     };
 }
-function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy_status, framebuffer, }) {
+function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy_status, framebuffer, gpu, }) {
+    gpu_hub = gpu instanceof SharedArrayBuffer ? gpu : null;
+    // A long hostcall wait yields through sched_yield (124) so this virtual CPU keeps
+    // taking interrupts, scheduling and signals (see guest-gpu-hostcall.js).
+    gpu_client = gpu_hub ? new GpuHostcallClient(gpu_hub, postMessage, () => instance.exports.syscall(124, 0, 0, 0, 0, 0, 0)) : null;
     let user_context = initial_user_context;
     if (user_copy_status) {
         assert(user_context);
@@ -810,6 +820,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
                     user,
                     user_copy_status,
                     framebuffer,
+                    gpu: gpu_hub,
                 });
                 if (!user_copy_status)
                     return 0;
@@ -837,6 +848,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
             },
             worker_exit() {
                 user.release_jit();
+                gpu_client?.release();
                 postMessage({ type: "worker_exit" });
             },
         }),

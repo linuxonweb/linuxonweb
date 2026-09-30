@@ -7,6 +7,7 @@ import { read_wasm_memories } from "./wasm_binary.js";
 import { close_virtio_device, virtio_device_description, virtio_imports, } from "./virtio/core.js";
 import { allocate_shared_memory, kernel_imports, MachineTerminationReason, } from "./wasm.js";
 import { createFramebufferHost, framebuffer_imports, } from "./framebuffer.js";
+import { createGpuHostcallHost } from "./guest-gpu-hostcall.js";
 export { VirtioController, } from "./virtio/core.js";
 export { blockDevice } from "./virtio/block.js";
 export { consoleDevice } from "./virtio/console.js";
@@ -105,6 +106,8 @@ export async function spawnMachine(options) {
     let finish_promise;
     let framebuffer_host = null;
     const audio_host = options.audio ? createAudioHost() : null;
+    // Guest GPU hostcall hub; its owner Worker starts only at the first guest call.
+    const gpu_host = options.gpuHostcall === false ? null : createGpuHostcallHost(options.gpuHostcall ?? {});
     const framebuffer_mode = {
         width: options.framebuffer?.width ?? 1024,
         height: options.framebuffer?.height ?? 768,
@@ -129,6 +132,7 @@ export async function spawnMachine(options) {
         finish_promise = (async () => {
             framebuffer_host?.close();
             framebuffer_host = null;
+            gpu_host?.close();
             await audio_host?.close();
             const device_closes = devices.map((device) => close_virtio_device(device));
             for (const result of await Promise.allSettled(device_closes)) {
@@ -284,6 +288,9 @@ export async function spawnMachine(options) {
                                 Atomics.notify(message.status, 0);
                             }
                             break;
+                        case "gpu_hostcall":
+                            gpu_host?.handle(message);
+                            break;
                         case "worker_exit": {
                             // The worker closes itself after posting this message. Calling
                             // terminate() here races that orderly shutdown and leaks the
@@ -320,6 +327,7 @@ export async function spawnMachine(options) {
                 user,
                 user_copy_status: null,
                 framebuffer: framebuffer_mode,
+                gpu: gpu_host?.hub ?? null,
             });
             return 0;
         };
@@ -404,6 +412,7 @@ export async function spawnMachine(options) {
             memory: wasm_memory,
             resumeAudio: () => audio_host?.resume(),
             get audioStats() { return audio_host?.stats ?? null; },
+            gpuHostcall: gpu_host,
             bootConsole: boot_console.readable,
             closed: closed_promise.promise,
             close,
