@@ -44,16 +44,39 @@ export const UNIFORM_LIMITS = Object.freeze({ maxGroups: 4, maxBindings: 16, max
 const UNIFORM_MEMBER_BYTES = Object.freeze({ vec4: 16, mat4x4: 64 });
 // Opt-in A4 sampled-texture profile (combined image samplers); requires the uniform profile.
 export const TEXTURE_LIMITS = Object.freeze({ maxTextures: 4, maxDimension: 128, maxSamplers: 8, samplerBindingOffset: 16 });
+// Opt-in A5 depth-attachment profile; requires the texture profile. Depth does
+// not change shader validation, so shaderOptions() never forwards it.
+export const DEPTH_FORMATS = Object.freeze(['depth32float', 'depth16unorm']);
+export const DEPTH_COMPARE = Object.freeze(['never', 'less', 'equal', 'less-equal', 'greater', 'not-equal', 'greater-equal', 'always']);
 const profileOptions = options => {
-  if (options === undefined) return { allowUniforms: false, allowTextures: false };
-  record(options, ['allowUniforms', 'allowTextures'], 'shader options');
+  if (options === undefined) return { allowUniforms: false, allowTextures: false, allowDepth: false };
+  record(options, ['allowUniforms', 'allowTextures', 'allowDepth'], 'shader options');
   const allowUniforms = choice(options.allowUniforms ?? false, [false, true], 'uniform option');
   const allowTextures = choice(options.allowTextures ?? false, [false, true], 'texture option');
+  const allowDepth = choice(options.allowDepth ?? false, [false, true], 'depth option');
   if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
-  return { allowUniforms, allowTextures };
+  if (allowDepth && !allowTextures) fail('depth profile requires the texture profile');
+  return { allowUniforms, allowTextures, allowDepth };
 };
+/** Pipeline depth state: null (no depth attachment) or format/compare/write. */
+export function validateDepthState(input) {
+  if (input === null || input === undefined) return null;
+  record(input, ['format', 'depthCompare', 'depthWriteEnabled'], 'pipeline depth');
+  return { format: choice(input.format, DEPTH_FORMATS, 'depth format'),
+    depthCompare: choice(input.depthCompare, DEPTH_COMPARE, 'depth compare'),
+    depthWriteEnabled: choice(input.depthWriteEnabled, [false, true], 'depth write') };
+}
+/** Pass depth attachment: load clear/load, store store/discard, clearValue in [0,1]. */
+export function validateDepthAttachment(input) {
+  record(input, ['target', 'loadOp', 'storeOp', 'clearValue'], 'depth attachment');
+  const loadOp = choice(input.loadOp, ['clear', 'load'], 'depth load operation');
+  const storeOp = choice(input.storeOp, ['store', 'discard'], 'depth store operation');
+  if (loadOp === 'clear') finite(input.clearValue, 0, 1, 'depth clear value');
+  else if (own(input, 'clearValue')) fail('depth clear value requires clear load');
+  return { target: input.target, loadOp, storeOp, ...(loadOp === 'clear' ? { clearValue: input.clearValue } : {}) };
+}
 const uniformsAllowed = options => profileOptions(options).allowUniforms;
-const shaderOptions = ({ allowUniforms, allowTextures }) =>
+const shaderOptions = ({ allowUniforms, allowTextures }) => // allowDepth deliberately excluded
   allowTextures ? [{ allowUniforms, allowTextures }] : allowUniforms ? [{ allowUniforms }] : [];
 export { profileOptions };
 
@@ -165,9 +188,9 @@ export function validateTranslatedShader(input, expectedStage, options) {
 
 /** Backend-neutral profile and vertex declarations; no GPU enums/native objects here. */
 export function validatePipelineDescriptor(input, validateShader = validateTranslatedShader, options) {
-  const profile = profileOptions(options), { allowUniforms, allowTextures } = profile;
+  const profile = profileOptions(options), { allowUniforms, allowTextures, allowDepth } = profile;
   record(input, ['vertex', 'fragment', 'vertexBuffers', 'colorFormat', 'topology', 'frontFace', 'cullMode', 'sampleCount',
-    ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'pipeline');
+    ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : []), ...(allowDepth ? ['depth'] : [])], 'pipeline');
   const vertex = validateShader(input.vertex, 'vertex', ...shaderOptions(profile));
   const fragment = validateShader(input.fragment, 'fragment', ...shaderOptions(profile));
   const colorFormat = choice(input.colorFormat ?? 'rgba8unorm', ['rgba8unorm'], 'color format');
@@ -240,8 +263,9 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
         output.interpolation.mode !== input.interpolation.mode ||
         output.interpolation.sampling !== input.interpolation.sampling) fail('vertex/fragment interface mismatch');
   }
+  const depth = allowDepth ? validateDepthState(input.depth) : null;
   return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount, uniforms,
-    ...(allowTextures ? { textures } : {}) });
+    ...(allowTextures ? { textures } : {}), ...(allowDepth ? { depth } : {}) });
 }
 
 /** Draw-time combined image samplers, in pipeline-layout order; textures must hold uploaded contents. */
@@ -329,7 +353,9 @@ function webgpuPipeline(descriptor, vertex, fragment, layout) {
   fragment: { module: fragment, entryPoint: descriptor.fragment.entryPoint,
     targets: [{ format: descriptor.colorFormat, writeMask: 0xf }] },
   primitive: { topology: descriptor.topology, frontFace: descriptor.frontFace, cullMode: descriptor.cullMode,
-    unclippedDepth: false }, multisample: { count: descriptor.sampleCount, mask: 0xffffffff, alphaToCoverageEnabled: false } };
+    unclippedDepth: false }, multisample: { count: descriptor.sampleCount, mask: 0xffffffff, alphaToCoverageEnabled: false },
+  ...(descriptor.depth ? { depthStencil: { format: descriptor.depth.format, depthWriteEnabled: descriptor.depth.depthWriteEnabled,
+    depthCompare: descriptor.depth.depthCompare } } : {}) };
 }
 
 /**
@@ -337,12 +363,15 @@ function webgpuPipeline(descriptor, vertex, fragment, layout) {
  * the host adapter owns wire IDs and the device. Async methods serialize GPU error
  * scopes. The caller must not interleave its own error scopes on this same device.
  */
-export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false, allowTextures = false } = {}) {
+export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false, allowTextures = false, allowDepth = false } = {}) {
   if (!device?.queue || !device?.lost?.then) fail('existing WebGPU device required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
   choice(allowUniforms, [false, true], 'uniform option'); choice(allowTextures, [false, true], 'texture option');
   if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
-  const uniformOptions = allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
+  choice(allowDepth, [false, true], 'depth option');
+  if (allowDepth && !allowTextures) fail('depth profile requires the texture profile');
+  const uniformOptions = allowDepth ? { allowUniforms, allowTextures, allowDepth } :
+    allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
   const resources = new Map(), native = new Map(), cancelWaits = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
   const counters = { buffersCreated: 0, buffersDestroyed: 0, texturesCreated: 0, texturesDestroyed: 0,
@@ -423,12 +452,13 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         descriptor.vertexBuffers.flatMap(b => b.attributes).length > (limits.maxVertexAttributes ?? 16) ||
         descriptor.vertexBuffers.some(b => b.stride > (limits.maxVertexBufferArrayStride ?? 2048))) fail('pipeline exceeds device limits');
   };
-  const validateDraw = (input, target) => {
+  const validateDraw = (input, target, depthTarget = null) => {
     record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor',
       ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'draw');
     const pipeline = get(input.pipeline, 'pipeline'), descriptor = pipeline.descriptor;
     const textures = validateDrawTextures(input.textures, descriptor, allowTextures, handle => get(handle, 'sampled-texture'), handle => get(handle, 'sampler'));
     if (descriptor.colorFormat !== target.descriptor.format) fail('pipeline/target format mismatch');
+    if (allowDepth && (descriptor.depth?.format ?? null) !== (depthTarget?.descriptor.format ?? null)) fail('pipeline/pass depth format mismatch');
     const vertexCount = integer(input.vertexCount, 3, GRAPHICS_LIMITS.maxVertices, 'vertex count');
     if (vertexCount % 3) fail('initial triangle profile requires complete triangles');
     const uniforms = validateDrawUniforms(input.uniforms, descriptor, allowUniforms, handle => get(handle, 'uniform-buffer'));
@@ -576,21 +606,45 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         return add('target', object, descriptor);
       });
     },
+    createDepthTarget(input) {
+      if (!allowDepth) fail('depth profile not enabled');
+      record(input, ['width', 'height', 'format'], 'depth target');
+      const width = integer(input.width, 1, TEXTURE_LIMITS.maxDimension, 'depth width');
+      const height = integer(input.height, 1, TEXTURE_LIMITS.maxDimension, 'depth height');
+      const format = choice(input.format, DEPTH_FORMATS, 'depth format');
+      const descriptor = Object.freeze({ width, height, format }), size = width * height * (format === 'depth16unorm' ? 2 : 4);
+      return enqueue(async () => {
+        budget(size);
+        const object = await makeNative('texture', size, () => device.createTexture({
+          size: [width, height, 1], format, sampleCount: 1, mipLevelCount: 1,
+          dimension: '2d', usage: GPUTextureUsage.RENDER_ATTACHMENT }));
+        return add('depth-target', object, descriptor);
+      });
+    },
     begin(input) {
       available(); if (recording) fail('a render pass is already being recorded');
-      record(input, ['target', 'loadOp', 'storeOp', 'clearColor'], 'render pass'); get(input.target, 'target');
+      record(input, ['target', 'loadOp', 'storeOp', 'clearColor', ...(allowDepth ? ['depth'] : [])], 'render pass');
+      const colorTarget = get(input.target, 'target');
+      let depth = null;
+      if (allowDepth && input.depth !== undefined && input.depth !== null) {
+        depth = Object.freeze(validateDepthAttachment(input.depth));
+        const entry = get(depth.target, 'depth-target');
+        if (entry.descriptor.width !== colorTarget.descriptor.width || entry.descriptor.height !== colorTarget.descriptor.height)
+          fail('depth attachment extent must match the color target');
+      }
       const loadOp = choice(input.loadOp, ['clear', 'load'], 'attachment load operation');
       const storeOp = choice(input.storeOp, ['store'], 'attachment store operation');
       let clearColor;
       if (loadOp === 'clear') clearColor = Object.freeze(array(input.clearColor, 4, 4, 'clear color')
         .map(c => finite(c, 0, 1, 'clear color component')));
       else if (own(input, 'clearColor')) fail('clear color is only accepted with clear load operation');
-      recording = { target: input.target, loadOp, storeOp, clearColor, draws: [] };
+      recording = { target: input.target, loadOp, storeOp, clearColor, depth, draws: [] };
     },
     draw(input) {
       available(); if (!recording) fail('draw requires a recording render pass');
       if (recording.draws.length >= GRAPHICS_LIMITS.maxDraws) fail('render pass draw budget exceeded', 'budget');
-      recording.draws.push(validateDraw(input, get(recording.target, 'target')));
+      recording.draws.push(validateDraw(input, get(recording.target, 'target'),
+        recording.depth ? get(recording.depth.target, 'depth-target') : null));
     },
     abort() { available(); recording = null; },
     end() {
@@ -599,13 +653,17 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
       return enqueue(async () => {
         const target = get(pass.target, 'target');
         if (pass.loadOp === 'load' && !target.initialized) fail('load requires a successfully stored target');
+        const depthTarget = pass.depth ? get(pass.depth.target, 'depth-target') : null;
+        if (pass.depth?.loadOp === 'load' && !depthTarget.initialized) fail('depth load requires a successfully stored depth target');
         // Recheck all live references and ranges before any native encoder or submit.
-        const draws = pass.draws.map(d => validateDraw(d, target));
+        const draws = pass.draws.map(d => validateDraw(d, target, depthTarget));
         const command = await checked(() => {
           const encoder = device.createCommandEncoder();
           const attachment = { view: target.object.createView(), loadOp: pass.loadOp, storeOp: pass.storeOp };
           if (pass.clearColor) attachment.clearValue = pass.clearColor;
-          const render = encoder.beginRenderPass({ colorAttachments: [attachment] });
+          const render = encoder.beginRenderPass({ colorAttachments: [attachment], ...(depthTarget ? { depthStencilAttachment: {
+            view: depthTarget.object.createView(), depthLoadOp: pass.depth.loadOp, depthStoreOp: pass.depth.storeOp,
+            ...(pass.depth.loadOp === 'clear' ? { depthClearValue: pass.depth.clearValue } : {}) } } : {}) });
           for (const draw of draws) {
             const pipeline = get(draw.pipeline, 'pipeline'); render.setPipeline(pipeline.object);
             pipeline.groupLayouts.forEach((layout, group) => render.setBindGroup(group, device.createBindGroup({ layout,
@@ -622,9 +680,10 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
           }
           render.end(); return encoder.finish();
         });
-        target.initialized = false;
+        target.initialized = false; if (depthTarget) depthTarget.initialized = false;
         await checked(async () => { device.queue.submit([command]); await wait(device.queue.onSubmittedWorkDone()); });
-        target.initialized = true; counters.passes++; counters.draws += draws.length;
+        target.initialized = true; if (depthTarget) depthTarget.initialized = pass.depth.storeOp === 'store';
+        counters.passes++; counters.draws += draws.length;
         event({ type: 'pass', draws: draws.length });
       });
     },

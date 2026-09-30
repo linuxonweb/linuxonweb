@@ -34,7 +34,7 @@ export async function serveFallback(connection, backend, onEvent, options = {}) 
   function contextFactory() {
     const lease = createWebGLContextLease(), gl = lease.gl;
     contexts.add(lease); counts.contextsCreated++;
-    for (const kind of ['Buffer', 'Texture', 'Sampler', 'Framebuffer', 'VertexArray', 'Program', 'Shader', 'Sync']) {
+    for (const kind of ['Buffer', 'Texture', 'Sampler', 'Framebuffer', 'VertexArray', 'Program', 'Shader', 'Sync', ...(options.allowDepth ? ['Renderbuffer'] : [])]) {
       counts.gl[kind] ??= { created: 0, deleted: 0 };
       const createName = kind === 'Sync' ? 'fenceSync' : 'create' + kind, deleteName = 'delete' + kind;
       const create = gl[createName].bind(gl), destroy = gl[deleteName].bind(gl);
@@ -58,7 +58,7 @@ export async function serveFallback(connection, backend, onEvent, options = {}) 
     if (globalThis.Worker === ObservedWorker) globalThis.Worker = NativeWorker;
   };
   try {
-    const host = await serveGPU(transport, { gpu, allowGraphics: true, allowWebGL: true, allowUniforms: !!options.allowUniforms, allowTextures: !!options.allowTextures, timeoutMs: 120000, onEvent,
+    const host = await serveGPU(transport, { gpu, allowGraphics: true, allowWebGL: true, allowUniforms: !!options.allowUniforms, allowTextures: !!options.allowTextures, ...(options.allowDepth ? { allowDepth: true } : {}), timeoutMs: 120000, onEvent,
       graphicsTranslatorOptions: { url: new URL('./candidate/wgsl.wasm', import.meta.url), sha256: '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2' },
       webglTranslatorOptions: { url: new URL('./candidate/glsl.wasm', import.meta.url), sha256: '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5' }, webglContextFactory: contextFactory });
     return { ...host, ownership: { ...counts, gl: structuredClone(counts.gl), liveWorkers: workers.size, liveDevices: devices.size,

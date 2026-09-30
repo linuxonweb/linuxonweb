@@ -15,8 +15,10 @@ enum resource_kind { R_IMAGE=1, R_BUFFER, R_MEMORY, R_SHADER, R_SET_LAYOUT, R_PI
 /* Inline owned graphics snapshots contain no caller pointers. Binding array
  * order is the normalized host slot order; binding numbers remain Vulkan IDs. */
 struct graphics_view { uint64_t image; };
-struct graphics_pass { VkFormat format; VkSampleCountFlagBits samples; VkAttachmentLoadOp load; VkAttachmentStoreOp store; VkImageLayout initial, final; };
-struct graphics_framebuffer { uint64_t view, image; unsigned width,height; struct graphics_pass pass; };
+struct graphics_pass { VkFormat format; VkSampleCountFlagBits samples; VkAttachmentLoadOp load; VkAttachmentStoreOp store; VkImageLayout initial, final;
+    /* A5: optional depth attachment 1; depth_format==0 means colour-only. */
+    VkFormat depth_format; VkAttachmentLoadOp depth_load; VkAttachmentStoreOp depth_store; VkImageLayout depth_initial, depth_final; };
+struct graphics_framebuffer { uint64_t view, image; unsigned width,height; struct graphics_pass pass; uint64_t depth_view, depth_image; };
 struct graphics_binding { unsigned binding,stride,count; VkVertexInputAttributeDescription attributes[8]; };
 /* A3 uniform-buffer descriptor shapes: at most 4 sets x 4 single-descriptor
  * UNIFORM_BUFFER bindings (8 per pipeline layout), vertex/fragment stages. */
@@ -25,9 +27,9 @@ struct uniform_set_layout { unsigned count; uint32_t bindings[4]; VkShaderStageF
 struct uniform_pipeline_layout { unsigned set_count; struct uniform_set_layout sets[4]; };
 struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_t buffers[4]; uint32_t offsets[4], ranges[4]; uint64_t views[4], samplers[4]; };
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
-    struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; };
+    struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare; };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
-    unsigned vertex, uniform, graphics_target, graphics_layout, graphics_initialized, sampled, staging, sampler_capacity; VkShaderStageFlagBits shader_stage;
+    unsigned vertex, uniform, graphics_target, graphics_layout, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
     union { struct graphics_view view; struct graphics_pass pass; struct graphics_framebuffer framebuffer; struct graphics_pipeline pipeline;
         struct uniform_set_layout set_layout; struct uniform_pipeline_layout layout; struct uniform_set set; } graphics;
@@ -36,7 +38,7 @@ static struct resource resources[MAX_RES];
 static uint64_t next_resource = 1;
 enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER, C_UNIFORM_BARRIER, C_TEXTURE_COPY };
 struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
-struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; };
+struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; };
 struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4]; };
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSize offset; VkImageLayout old_layout, new_layout; VkClearColorValue color;
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
@@ -112,21 +114,27 @@ static VKAPI_ATTR void VKAPI_CALL memory_properties(VkPhysicalDevice p, VkPhysic
     out->memoryTypeCount=2; out->memoryTypes[0].propertyFlags=VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     out->memoryTypes[1].propertyFlags=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 }
+/* A5 depth format code shared with the host DEPTH_TARGET request: 1=depth32float, 2=depth16unorm. */
+static unsigned depth_code(VkFormat f) {return f==VK_FORMAT_D32_SFLOAT?1:f==VK_FORMAT_D16_UNORM?2:0;}
 static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreateInfo *i,const VkAllocationCallbacks *a,VkImage *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO||i->pNext||i->flags||
-        i->imageType!=VK_IMAGE_TYPE_2D||i->format!=VK_FORMAT_R8G8B8A8_UNORM||!i->extent.width||!i->extent.height||
+        i->imageType!=VK_IMAGE_TYPE_2D||!i->extent.width||!i->extent.height||
         i->extent.width>128||i->extent.height>128||i->extent.depth!=1||i->mipLevels!=1||i->arrayLayers!=1||
         i->samples!=VK_SAMPLE_COUNT_1_BIT||i->tiling!=VK_IMAGE_TILING_OPTIMAL||
-        !((live->clear_supported && i->usage==(VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
+        !((i->format==VK_FORMAT_R8G8B8A8_UNORM && ((live->clear_supported && i->usage==(VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
           (live->graphics_supported && i->usage==(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
-          (live->texture_supported && i->usage==(VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)))||
+          (live->texture_supported && i->usage==(VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)))) ||
+          (live->depth_supported && depth_code(i->format) && i->usage==VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))||
         i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount||i->initialLayout!=VK_IMAGE_LAYOUT_UNDEFINED)
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
     struct resource *r=resource_new(R_IMAGE); if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->width=i->extent.width;r->height=i->extent.height;r->size=(size_t)r->width*r->height*4;r->layout=VK_IMAGE_LAYOUT_UNDEFINED;
     r->graphics_target=(i->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)!=0;r->sampled=(i->usage & VK_IMAGE_USAGE_SAMPLED_BIT)!=0;
+    /* A5: depth images are host-only attachments; 4 or 2 bytes per texel is the
+     * reported (never mapped) size. Contents are not readable by the guest. */
+    r->depth=depth_code(i->format);if(r->depth==2)r->size=(size_t)r->width*r->height*2;
     *out=HANDLE(VkImage,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCreateInfo *i,const VkAllocationCallbacks *a,VkBuffer *out) {
@@ -176,7 +184,8 @@ static VkResult bind_memory(VkDevice d,uint64_t id,unsigned kind,VkDeviceMemory 
     if (!device_valid(d)||!r||!m||offset||r->memory||m->bound||m->size<r->size||m->type!=(kind==R_BUFFER)) return VK_ERROR_INITIALIZATION_FAILED;
     if (kind==R_IMAGE) {
         uint32_t dimensions[2]={r->width,r->height};
-        if (r->graphics_target) {VkResult result=compute_resource(GPU_GRAPHICS_TARGET,dimensions,8,&r->host);if(result!=VK_SUCCESS)return result;}
+        if (r->depth) {uint32_t d3[3]={r->width,r->height,r->depth};VkResult result=compute_resource(GPU_DEPTH_TARGET,d3,12,&r->host);if(result!=VK_SUCCESS)return result;}
+        else if (r->graphics_target) {VkResult result=compute_resource(GPU_GRAPHICS_TARGET,dimensions,8,&r->host);if(result!=VK_SUCCESS)return result;}
         else if (r->sampled) {VkResult result=compute_resource(GPU_TEXTURE,dimensions,8,&r->host);if(result!=VK_SUCCESS)return result;}
         else if (live->failed||gpu_resource(&live->session,GPU_TARGET,dimensions,8,&r->host)) {live->failed=1;return VK_ERROR_DEVICE_LOST;}
     }
@@ -231,6 +240,7 @@ static struct recorded *record_command(VkCommandBuffer cb,unsigned op) {
     struct recorded *r=&command.commands[command.count++];memset(r,0,sizeof(*r));r->op=op;return r;
 }
 static int full_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_COLOR_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
+static int depth_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_DEPTH_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
 static void invalid_command(VkCommandBuffer cb) {if(cb==&command&&command.state)command.state=4;}
 #include "compute.inc"
 #include "graphics.inc"
@@ -241,15 +251,15 @@ static VKAPI_ATTR void VKAPI_CALL pipeline_barrier(VkCommandBuffer cb,VkPipeline
     if(command.graphics.in_pass||flags||mc||!((ic==1&&ib&&!bc)||(bc==1&&bb&&!ic))){invalid_command(cb);return;}
     struct recorded *r;
     if(ic) {
-        if(ib->sType!=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER||ib->pNext||!full_range(&ib->subresourceRange)||
+        struct resource *image=resource_get(RID(ib->image),R_IMAGE);
+        if(ib->sType!=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER||ib->pNext||!(image&&image->depth?depth_range(&ib->subresourceRange):full_range(&ib->subresourceRange))||
            ib->srcQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED||ib->dstQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED){invalid_command(cb);return;}
         int to_dst=ib->newLayout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->dstAccessMask==VK_ACCESS_TRANSFER_WRITE_BIT&&
           ((ib->oldLayout==VK_IMAGE_LAYOUT_UNDEFINED&&src==VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT&&!ib->srcAccessMask)||
            (ib->oldLayout==VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&src==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->srcAccessMask==VK_ACCESS_TRANSFER_READ_BIT));
         int to_src=ib->oldLayout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&ib->newLayout==VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&
           src==VK_PIPELINE_STAGE_TRANSFER_BIT&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->srcAccessMask==VK_ACCESS_TRANSFER_WRITE_BIT&&ib->dstAccessMask==VK_ACCESS_TRANSFER_READ_BIT;
-        struct resource *image=resource_get(RID(ib->image),R_IMAGE);
-        if(!image||(image->sampled?!texture_image_barrier(src,dst,ib):image->graphics_target?!graphics_image_barrier(src,dst,ib):(!to_dst&&!to_src))){invalid_command(cb);return;}
+        if(!image||(image->depth?!depth_image_barrier(src,dst,ib):image->sampled?!texture_image_barrier(src,dst,ib):image->graphics_target?!graphics_image_barrier(src,dst,ib):(!to_dst&&!to_src))){invalid_command(cb);return;}
         r=record_command(cb,1);if(r){r->image=RID(ib->image);r->old_layout=ib->oldLayout;r->new_layout=ib->newLayout;}
     } else {
         if(live->graphics_supported && record_vertex_barrier(cb,src,dst,bb))return;
@@ -290,7 +300,7 @@ static VkResult execute_submit(void) {
     VkResult result=VK_ERROR_INITIALIZATION_FAILED;
     VkImageLayout layouts[MAX_RES];unsigned initialized[MAX_RES],used_vertices[MAX_RES]={0},used_uniforms[MAX_RES]={0};
     unsigned written[MAX_RES]={0},ready[MAX_RES]={0},dirty[MAX_RES]={0};
-    struct resource *pass_image=NULL;const struct graphics_pass *pass=NULL;
+    struct resource *pass_image=NULL,*pass_depth=NULL;const struct graphics_pass *pass=NULL;
     unsigned pass_start=0,pass_draws=0;
     for(unsigned i=0;i<MAX_RES;i++){layouts[i]=resources[i].layout;initialized[i]=resources[i].graphics_initialized;}
     for(unsigned n=0;n<command.count;n++) {
@@ -301,7 +311,10 @@ static VkResult execute_submit(void) {
             if(!i||!i->host||!resource_get(i->memory,R_MEMORY))goto submit_done;
             if(c->op==1){
                 if(c->old_layout!=VK_IMAGE_LAYOUT_UNDEFINED&&layouts[i-resources]!=c->old_layout)goto submit_done;
-                if(i->graphics_target) {
+                if(i->depth) {
+                    if(c->new_layout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)goto submit_done;
+                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)initialized[i-resources]=0;
+                } else if(i->graphics_target) {
                     if(c->new_layout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)goto submit_done;
                     if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)initialized[i-resources]=0;
                 } else if(i->sampled) {
@@ -310,8 +323,8 @@ static VkResult execute_submit(void) {
                 } else if(c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)goto submit_done;
                 layouts[i-resources]=c->new_layout;break;
             }
-            if(c->op==2){if(i->graphics_target||i->sampled||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)goto submit_done;break;}
-            if(i->sampled||!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
+            if(c->op==2){if(i->depth||i->graphics_target||i->sampled||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)goto submit_done;break;}
+            if(i->depth||i->sampled||!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
                b->size<i->size||(i->graphics_target&&!initialized[i-resources]))goto submit_done;
             written[b-resources]=1;break;
         case 4:
@@ -337,8 +350,14 @@ static VkResult execute_submit(void) {
             pass_image=graphics_framebuffer_image(c->graphics.begin.framebuffer,pass);
             if(!pass_image||layouts[pass_image-resources]!=pass->initial||
                (pass->load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_image-resources]))goto submit_done;
+            pass_depth=NULL;
+            if(pass->depth_format) {
+                pass_depth=graphics_framebuffer_depth(c->graphics.begin.framebuffer,pass);
+                if(!pass_depth||layouts[pass_depth-resources]!=pass->depth_initial||
+                   (pass->depth_load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_depth-resources]))goto submit_done;
+            }
             pass_start=n;pass_draws=0;
-            if(!graphics_prepare_begin(&c->graphics.begin,pass_image,&prepared[n]))goto submit_done;
+            if(!graphics_prepare_begin(&c->graphics.begin,pass_image,pass_depth,&prepared[n]))goto submit_done;
             break;
         case C_GRAPHICS_DRAW:
             if(!pass_image||!graphics_prepare_draw(&c->graphics.draw,pass,pass_image,&prepared[pass_start],pass_draws++,used_vertices,used_uniforms,layouts,initialized))goto submit_done;
@@ -346,7 +365,9 @@ static VkResult execute_submit(void) {
         case C_GRAPHICS_END:
             if(!pass_image)goto submit_done;
             graphics_json_append(&prepared[pass_start],"]}");if(prepared[pass_start].bad)goto submit_done;
-            layouts[pass_image-resources]=pass->final;initialized[pass_image-resources]=1;pass_image=NULL;pass=NULL;
+            layouts[pass_image-resources]=pass->final;initialized[pass_image-resources]=1;
+            if(pass_depth){layouts[pass_depth-resources]=pass->depth_final;initialized[pass_depth-resources]=pass->depth_store==VK_ATTACHMENT_STORE_OP_STORE;}
+            pass_image=NULL;pass_depth=NULL;pass=NULL;
             break;
         case C_VERTEX_BARRIER:
             if(!live->graphics_supported||!b||!b->vertex||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
@@ -366,18 +387,21 @@ static VkResult execute_submit(void) {
     if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS||graphics_upload_uniforms(used_uniforms)!=VK_SUCCESS)goto submit_lost;
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
-        if(c->op==1){i->layout=c->new_layout;if((i->graphics_target||i->sampled)&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=0;}
+        if(c->op==1){i->layout=c->new_layout;if((i->graphics_target||i->sampled||i->depth)&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=0;}
         if(c->op==C_TEXTURE_COPY&&texture_execute_copy(c)!=VK_SUCCESS)goto submit_lost;
         if(c->op==2){unsigned char payload[20];memcpy(payload,&i->host,4);memcpy(payload+4,c->color.float32,16);if(host_empty(GPU_CLEAR,payload,20)!=VK_SUCCESS)goto submit_lost;}
         if(c->op>=5 && c->op<=8){if(execute_compute(c)!=VK_SUCCESS)goto submit_lost;}
         if(c->op==C_GRAPHICS_BEGIN) {
-            i=graphics_framebuffer_image(c->graphics.begin.framebuffer,&c->graphics.begin.pass);
+            const struct graphics_pass *bp=&c->graphics.begin.pass;
+            i=graphics_framebuffer_image(c->graphics.begin.framebuffer,bp);
+            struct resource *depth=bp->depth_format?graphics_framebuffer_depth(c->graphics.begin.framebuffer,bp):NULL;
             /* Once native submission starts, even allocation errors cannot
              * promise unchanged application resources. Poison on all failures. */
             if(host_empty(GPU_GRAPHICS_PASS,prepared[n].bytes,(uint32_t)prepared[n].used)!=VK_SUCCESS) {
-                i->graphics_initialized=0;goto submit_lost;
+                i->graphics_initialized=0;if(depth)depth->graphics_initialized=0;goto submit_lost;
             }
-            i->graphics_initialized=1;i->layout=c->graphics.begin.pass.final;
+            i->graphics_initialized=1;i->layout=bp->final;
+            if(depth){depth->graphics_initialized=bp->depth_store==VK_ATTACHMENT_STORE_OP_STORE;depth->layout=bp->depth_final;}
         }
         if(c->op==3){unsigned char data[65536];uint32_t size=0;struct resource *m=resource_get(b->memory,R_MEMORY);
             if(host_call(i->graphics_target?GPU_GRAPHICS_READBACK:GPU_READBACK,&i->host,4,data,sizeof(data),&size)!=VK_SUCCESS||size!=i->size)goto submit_lost;

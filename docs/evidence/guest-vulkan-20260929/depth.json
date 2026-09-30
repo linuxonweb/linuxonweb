@@ -1,0 +1,586 @@
+{
+ "packet": "A5 depth attachments in graphics",
+ "date": "2026-09-29",
+ "branch": "claude-opus-5-5-guest-gpu-jit",
+ "head": "a7a59cc21ce53f2ef86a789eb7e07da47ca62d38",
+ "workingTreeUncommitted": true,
+ "taskRoot": "/mnt/p6/build/guest-vulkan-a5-20260929",
+ "filesystem": "ext4 (verified by runner statfs check)",
+ "ports": {
+  "http": 4197,
+  "cdp": 9407
+ },
+ "runner": "web/linux/tests/guest-vulkan/run-finite.mjs",
+ "command": "PKG_RUN=5 REQUIRE_WEBGPU_VENDOR=nvidia node run-finite.mjs /mnt/p6/build/guest-vulkan-a5-20260929/all-run1 /mnt/p6/build/guest-vulkan-a5-20260929",
+ "browser": {
+  "executable": "/home/a/.local/archpkg/pacman/usr/bin/chromium",
+  "mode": "headful on DISPLAY=:0",
+  "flags": [
+   "--enable-unsafe-webgpu",
+   "--enable-features=Vulkan",
+   "--ignore-gpu-blocklist",
+   "--disable-gpu-vsync",
+   "--disable-frame-rate-limit",
+   "--window-size=800,600"
+  ],
+  "webgpuRequest": "requestAdapter({powerPreference:'high-performance'})",
+  "primeOffloadEnv": "not set (stripped from child env)",
+  "nvidiaDriver": "580.173.02",
+  "gpu": "NVIDIA GeForce MX110"
+ },
+ "authoritativeRun": {
+  "path": "/mnt/p6/build/guest-vulkan-a5-20260929/all-run1/result.json",
+  "sha256": "ac4e3a4a30dbfd8c163e5a407bf43b0bb4b6eb88436e5370e5c18aebf063105c",
+  "pass": true,
+  "chromiumMode": "headful-display0-gpu",
+  "browserExit": {
+   "code": 0,
+   "signal": null
+  },
+  "serverClosed": true,
+  "httpErrors": [
+   {
+    "url": "/favicon.ico",
+    "error": "unsupported route"
+   },
+   {
+    "url": "/favicon.ico",
+    "error": "unsupported route"
+   }
+  ],
+  "head": "a7a59cc21ce53f2ef86a789eb7e07da47ca62d38",
+  "headServedDifferingFromWorkingTree": [],
+  "canceledFetchEvents": "one net::ERR_ABORTED each on graphics-webgpu, texture-webgl2, depth-webgl2; cause not established; no Runtime exceptions",
+  "suites": [
+   {
+    "suite": "direct-live",
+    "pass": true,
+    "guestChecks": 140,
+    "elapsedMs": 6106,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 140,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "direct-unavailable",
+    "pass": true,
+    "guestChecks": 17,
+    "elapsedMs": 5602,
+    "backend": null,
+    "adapter": null,
+    "priorA4GuestChecks": 17,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "direct-clear",
+    "pass": true,
+    "guestChecks": 1087,
+    "elapsedMs": 5231,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 1087,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "direct-loss-transport",
+    "pass": true,
+    "guestChecks": 640,
+    "elapsedMs": 5114,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 640,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "direct-loss-device",
+    "pass": true,
+    "guestChecks": 640,
+    "elapsedMs": 5562,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 640,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "direct-exhaustion",
+    "pass": true,
+    "guestChecks": 1213,
+    "elapsedMs": 5140,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 1213,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "loader",
+    "pass": true,
+    "guestChecks": 901,
+    "elapsedMs": 4934,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 901,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "compute",
+    "pass": true,
+    "guestChecks": 501,
+    "elapsedMs": 8047,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 501,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "graphics-webgl2",
+    "pass": true,
+    "guestChecks": 232753,
+    "elapsedMs": 7113,
+    "backend": "webgl2",
+    "adapter": {
+     "vendor": "WebKit",
+     "description": "ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)",
+     "isFallbackAdapter": null
+    },
+    "priorA4GuestChecks": 232753,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "graphics-webgpu",
+    "pass": true,
+    "guestChecks": 232745,
+    "elapsedMs": 5874,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 232745,
+    "cdpEvents": 1
+   },
+   {
+    "suite": "uniform-webgl2",
+    "pass": true,
+    "guestChecks": 201269,
+    "elapsedMs": 8383,
+    "backend": "webgl2",
+    "adapter": {
+     "vendor": "WebKit",
+     "description": "ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)",
+     "isFallbackAdapter": null
+    },
+    "priorA4GuestChecks": 201269,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "uniform-webgpu",
+    "pass": true,
+    "guestChecks": 201269,
+    "elapsedMs": 5190,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 201269,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "texture-webgl2",
+    "pass": true,
+    "guestChecks": 18182,
+    "elapsedMs": 5535,
+    "backend": "webgl2",
+    "adapter": {
+     "vendor": "WebKit",
+     "description": "ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)",
+     "isFallbackAdapter": null
+    },
+    "priorA4GuestChecks": 18182,
+    "cdpEvents": 1
+   },
+   {
+    "suite": "texture-webgpu",
+    "pass": true,
+    "guestChecks": 18182,
+    "elapsedMs": 5279,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": 18182,
+    "cdpEvents": 0
+   },
+   {
+    "suite": "depth-webgl2",
+    "pass": true,
+    "guestChecks": 42620,
+    "elapsedMs": 5484,
+    "backend": "webgl2",
+    "adapter": {
+     "vendor": "WebKit",
+     "description": "ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)",
+     "isFallbackAdapter": null
+    },
+    "priorA4GuestChecks": "new",
+    "cdpEvents": 1,
+    "markers": [
+     "GUEST_VK_DEPTH_PIXELS_PASS round=1 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=2 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=3 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=4 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=5 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=6 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=7 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=8 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=9 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=10 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=11 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=12 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=13 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_ROUNDS_PASS format=d32-sfloat rounds=13",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=14 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=15 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_NEGATIVE_PASS format=d32-sfloat refused_submits=5 recovered=1",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=101 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=102 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=103 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=104 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=105 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=106 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=107 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=108 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=109 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=110 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=111 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=112 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=113 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_ROUNDS_PASS format=d16-unorm rounds=13",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=114 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=115 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_NEGATIVE_PASS format=d16-unorm refused_submits=5 recovered=1",
+     "GUEST_VK_DEPTH_FORMATS_PASS formats=2 rounds=30",
+     "GUEST_VK_SYNC teardown_released=0",
+     "GUEST_VK_DEPTH_EXIT status=0 checks=42620"
+    ],
+    "hostCounters": {
+     "commands": 133,
+     "graphicsPasses": 32,
+     "graphicsDraws": 54,
+     "graphicsUploads": 30,
+     "graphicsUniformUploads": 0,
+     "graphicsTextureUploads": 0,
+     "graphicsReadbacks": 30,
+     "graphicsTranslations": 2,
+     "released": 19
+    },
+    "acquisitionError": "WebGPU API unavailable",
+    "ownership": {
+     "workersCreated": 1,
+     "workersTerminated": 1,
+     "devicesCreated": 0,
+     "devicesDestroyed": 0,
+     "buffersCreated": 0,
+     "buffersDestroyed": 0,
+     "texturesCreated": 0,
+     "texturesDestroyed": 0,
+     "contextsCreated": 1,
+     "contextsClosed": 1,
+     "connectionsClosed": 1,
+     "submits": 0,
+     "adapterRequests": 0,
+     "gl": {
+      "Buffer": {
+       "created": 31,
+       "deleted": 31
+      },
+      "Texture": {
+       "created": 1,
+       "deleted": 1
+      },
+      "Sampler": {
+       "created": 0,
+       "deleted": 0
+      },
+      "Framebuffer": {
+       "created": 1,
+       "deleted": 1
+      },
+      "VertexArray": {
+       "created": 32,
+       "deleted": 32
+      },
+      "Program": {
+       "created": 11,
+       "deleted": 11
+      },
+      "Shader": {
+       "created": 22,
+       "deleted": 22
+      },
+      "Sync": {
+       "created": 62,
+       "deleted": 62
+      },
+      "Renderbuffer": {
+       "created": 4,
+       "deleted": 4
+      }
+     },
+     "liveWorkers": 0,
+     "liveDevices": 0,
+     "liveBuffers": 0,
+     "liveTextures": 0,
+     "liveContexts": 0,
+     "liveGL": 0,
+     "beforeEmergencyCleanup": true
+    }
+   },
+   {
+    "suite": "depth-webgpu",
+    "pass": true,
+    "guestChecks": 42620,
+    "elapsedMs": 7402,
+    "backend": "webgpu",
+    "adapter": {
+     "vendor": "nvidia",
+     "architecture": "maxwell",
+     "description": "",
+     "isFallbackAdapter": false
+    },
+    "priorA4GuestChecks": "new",
+    "cdpEvents": 0,
+    "markers": [
+     "GUEST_VK_DEPTH_PIXELS_PASS round=1 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=2 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=3 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=4 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=5 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=6 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=7 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=8 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=9 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=10 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=11 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=12 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=13 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_ROUNDS_PASS format=d32-sfloat rounds=13",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=14 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=15 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_NEGATIVE_PASS format=d32-sfloat refused_submits=5 recovered=1",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=101 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=102 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=103 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=104 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=105 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=106 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=107 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=108 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=109 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=110 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=111 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=112 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=113 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_ROUNDS_PASS format=d16-unorm rounds=13",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=114 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_PIXELS_PASS round=115 width=16 height=16 exact=1024 tail=32",
+     "GUEST_VK_DEPTH_NEGATIVE_PASS format=d16-unorm refused_submits=5 recovered=1",
+     "GUEST_VK_DEPTH_FORMATS_PASS formats=2 rounds=30",
+     "GUEST_VK_SYNC teardown_released=0",
+     "GUEST_VK_DEPTH_EXIT status=0 checks=42620"
+    ],
+    "hostCounters": {
+     "commands": 133,
+     "graphicsPasses": 32,
+     "graphicsDraws": 54,
+     "graphicsUploads": 30,
+     "graphicsUniformUploads": 0,
+     "graphicsTextureUploads": 0,
+     "graphicsReadbacks": 30,
+     "graphicsTranslations": 2,
+     "released": 19
+    },
+    "acquisitionError": null,
+    "ownership": {
+     "workersCreated": 1,
+     "workersTerminated": 1,
+     "devicesCreated": 1,
+     "devicesDestroyed": 1,
+     "buffersCreated": 31,
+     "buffersDestroyed": 31,
+     "texturesCreated": 5,
+     "texturesDestroyed": 5,
+     "contextsCreated": 0,
+     "contextsClosed": 0,
+     "connectionsClosed": 1,
+     "submits": 62,
+     "adapterRequests": 1,
+     "gl": {},
+     "liveWorkers": 0,
+     "liveDevices": 0,
+     "liveBuffers": 0,
+     "liveTextures": 0,
+     "liveContexts": 0,
+     "liveGL": 0,
+     "beforeEmergencyCleanup": true
+    }
+   }
+  ]
+ },
+ "depthArtifacts": {
+  "client": {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-build-run5/guest-vulkan-public-client.wasm",
+   "bytes": 433856,
+   "sha256": "c7566c8f8ea93def11db4dc21e04b4400d08c753b8187133f4722fb8d64ddf05",
+   "publicVulkanSymbols": 51
+  },
+  "package": {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-package-run5/initramfs.cpio",
+   "bytes": 40929644,
+   "sha256": "fa18972cbf4664e67d6827711381de99dfcee16bba892c73d842b6e6cb62eb59"
+  },
+  "shaders": {
+   "depth.vert": {
+    "sha256": "82a84601b8a267e8e6eb477065e53e4687fc4ada80b53f7d3fef4aed85506b1e",
+    "bytes": 988
+   },
+   "depth.frag": {
+    "sha256": "2767646d0184ab7bf388b6279d10e84cb5ba97ad4d448b0e355a743b35317c70",
+    "bytes": 384
+   }
+  },
+  "shaderFixtures": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-shaders-run1",
+  "translators": "unchanged from A4",
+  "rebuildScript": "/mnt/p6/build/guest-vulkan-a5-20260929/rebuild.sh"
+ },
+ "hello": {
+  "depthProfile": 1,
+  "depthFormats": [
+   "d32-sfloat",
+   "d16-unorm"
+  ],
+  "maxDepthDimension": 128,
+  "requires": "textureProfile:1, uniformProfile:1 and graphicsProfile:1",
+  "newOpcode": {
+   "28": "DEPTH_TARGET u32 width,height,format(1=depth32float,2=depth16unorm)"
+  }
+ },
+ "profile": {
+  "formats": [
+   "VK_FORMAT_D32_SFLOAT",
+   "VK_FORMAT_D16_UNORM"
+  ],
+  "formatFeatures": "optimal DEPTH_STENCIL_ATTACHMENT only",
+  "imageUsage": "DEPTH_STENCIL_ATTACHMENT exactly",
+  "maxExtent": 128,
+  "mipLevels": 1,
+  "arrayLayers": 1,
+  "samples": 1,
+  "loadOps": [
+   "CLEAR",
+   "LOAD",
+   "DONT_CARE (sent as clear to 1.0)"
+  ],
+  "storeOps": [
+   "STORE",
+   "DONT_CARE (sent as discard)"
+  ],
+  "layouts": "DEPTH_STENCIL_ATTACHMENT_OPTIMAL initial/final; UNDEFINED->DSA barrier required",
+  "pipelineState": [
+   "depthTestEnable",
+   "depthWriteEnable",
+   "depthCompareOp (all 8)"
+  ],
+  "rejected": [
+   "stencil formats (D24S8, D32S8, X8D24, S8)",
+   "stencil ops/test",
+   "depth bounds",
+   "depth bias",
+   "SAMPLED/TRANSFER usage",
+   "depth readback/copy",
+   "UNDEFINED initial layout in pass",
+   "mips/layers/>128",
+   "linear tiling"
+  ]
+ },
+ "backends": {
+  "webgpu": "depth32float/depth16unorm texture + depthStencilAttachment; pipeline depthStencil",
+  "webgl2": "DEPTH_COMPONENT32F/DEPTH_COMPONENT16 renderbuffer on FBO DEPTH_ATTACHMENT; depthFunc/depthMask"
+ },
+ "failedRunsPreserved": [
+  {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-build-run1-failed-initializer",
+   "cause": "icd.c initializer error under -Werror; fixed, depth-build-run1 builds"
+  },
+  {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-run1",
+   "cause": "host.mjs required draw.uniforms/draw.textures arrays; the ICD omits empty lists. First submit failed (1171 checks). Fixed by defaulting to []."
+  },
+  {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-run2",
+   "cause": "client.c round 14 lacked expect(RED,RED,GREEN) and compared stale expectations (x=12 y=0). Test fix only."
+  },
+  {
+   "path": "/mnt/p6/build/guest-vulkan-a5-20260929/depth-run3",
+   "cause": "guest passed 42,620 checks; guest.html acceptance lacked derived released (19) and depth-target (4) counts. Counter fix only."
+  }
+ ],
+ "additionalPassingRuns": [
+  "/mnt/p6/build/guest-vulkan-a5-20260929/depth-run4",
+  "/mnt/p6/build/guest-vulkan-a5-20260929/depth-run5"
+ ],
+ "limitations": [
+  "bounded nonconformant profile; no CTS",
+  "no stencil, no depth bias/bounds/clamp, no packed depth-stencil formats",
+  "depth images attachment-only: no sampling, readback or copies",
+  "single sample, 1 mip/layer, max 128x128, one subpass",
+  "DONT_CARE load implemented as clear to 1.0",
+  "constant-depth quads only; edges excluded as in A3/A4",
+  "WebGL2 ran on Intel ANGLE (OpenGL 4.6), WebGPU on NVIDIA MX110 via Dawn Vulkan",
+  "no WSI/swapchain",
+  "accepted web/linux images and web/sites unchanged; nothing deployed"
+ ]
+}

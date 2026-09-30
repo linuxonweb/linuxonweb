@@ -4,7 +4,18 @@
 static int graphics_pass_compatible(const struct graphics_pass *a,const struct graphics_pass *b) {
     /* Creation restricts both to the same single-color, single-subpass shape.
      * Load/store operations and initial/final layouts are not compatibility. */
-    return a->format==b->format&&a->samples==b->samples;
+    return a->format==b->format&&a->samples==b->samples&&a->depth_format==b->depth_format;
+}
+/* A5: the framebuffer's depth image, or NULL when the pass has none or the
+ * captured view/image no longer matches. */
+static struct resource *graphics_framebuffer_depth(uint64_t id,const struct graphics_pass *pass) {
+    struct resource *f=resource_get(id,R_FRAMEBUFFER);
+    if(!f||!pass->depth_format||!graphics_pass_compatible(&f->graphics.framebuffer.pass,pass))return NULL;
+    const struct graphics_framebuffer *fb=&f->graphics.framebuffer;
+    struct resource *v=resource_get(fb->depth_view,R_IMAGE_VIEW),*i=resource_get(fb->depth_image,R_IMAGE);
+    if(!v||v->graphics.view.image!=fb->depth_image||!i||!i->depth||depth_code(pass->depth_format)!=i->depth||!i->host||
+       !resource_get(i->memory,R_MEMORY)||i->width!=fb->width||i->height!=fb->height)return NULL;
+    return i;
 }
 static struct resource *graphics_framebuffer_image(uint64_t id,const struct graphics_pass *pass) {
     struct resource *f=resource_get(id,R_FRAMEBUFFER);
@@ -22,16 +33,23 @@ static VKAPI_ATTR void VKAPI_CALL begin_graphics_pass(VkCommandBuffer cb,const V
     struct resource *p=resource_get(RID(info->renderPass),R_RENDER_PASS);
     struct resource *i=p?graphics_framebuffer_image(RID(info->framebuffer),&p->graphics.pass):NULL;
     if(!i||info->renderArea.offset.x||info->renderArea.offset.y||info->renderArea.extent.width!=i->width||
-       info->renderArea.extent.height!=i->height||info->clearValueCount>1||
+       info->renderArea.extent.height!=i->height||info->clearValueCount>(p->graphics.pass.depth_format?2u:1u)||
        (info->clearValueCount&&!info->pClearValues)||
-       (p->graphics.pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR&&info->clearValueCount!=1)){invalid_command(cb);return;}
+       (p->graphics.pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR&&info->clearValueCount<1)||
+       (p->graphics.pass.depth_format&&p->graphics.pass.depth_load==VK_ATTACHMENT_LOAD_OP_CLEAR&&info->clearValueCount!=2)||
+       (p->graphics.pass.depth_format&&!graphics_framebuffer_depth(RID(info->framebuffer),&p->graphics.pass))){invalid_command(cb);return;}
     VkClearColorValue clear={{0}};
     if(p->graphics.pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR) {
         clear=info->pClearValues[0].color;
         for(unsigned n=0;n<4;n++)if(!(clear.float32[n]>=0&&clear.float32[n]<=1)){invalid_command(cb);return;}
     }
+    float depth_clear=1.0f;
+    if(p->graphics.pass.depth_format&&p->graphics.pass.depth_load==VK_ATTACHMENT_LOAD_OP_CLEAR) {
+        depth_clear=info->pClearValues[1].depthStencil.depth;
+        if(!(depth_clear>=0&&depth_clear<=1)){invalid_command(cb);return;}
+    }
     struct recorded *r=record_command(cb,C_GRAPHICS_BEGIN);
-    if(r){r->graphics.begin=(struct graphics_begin_record){RID(info->framebuffer),p->graphics.pass,clear};command.graphics.in_pass=1;}
+    if(r){r->graphics.begin=(struct graphics_begin_record){RID(info->framebuffer),p->graphics.pass,clear,depth_clear};command.graphics.in_pass=1;}
 }
 static VKAPI_ATTR void VKAPI_CALL end_graphics_pass(VkCommandBuffer cb) {
     if(cb!=&command||command.state!=2)return;
@@ -93,11 +111,31 @@ static int graphics_image_barrier(VkPipelineStageFlags src,VkPipelineStageFlags 
         src==VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&
         b->srcAccessMask==VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT&&b->dstAccessMask==VK_ACCESS_TRANSFER_READ_BIT;
 }
-static int graphics_prepare_begin(const struct graphics_begin_record *r,struct resource *image,struct graphics_json *j) {
+/* A5 depth image transitions: UNDEFINED or DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+ * to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, for use by the fragment test stages. */
+static int depth_image_barrier(VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkImageMemoryBarrier *b) {
+    const VkPipelineStageFlags tests=VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT|VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    const VkAccessFlags rw=VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT|VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    if(!live->depth_supported||b->newLayout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL||dst!=tests||
+       (b->dstAccessMask!=rw&&b->dstAccessMask!=VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT))return 0;
+    if(b->oldLayout==VK_IMAGE_LAYOUT_UNDEFINED)return src==VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT&&!b->srcAccessMask;
+    return b->oldLayout==VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL&&(src==VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT||src==tests)&&
+        b->srcAccessMask==VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+}
+static int graphics_prepare_begin(const struct graphics_begin_record *r,struct resource *image,struct resource *depth,struct graphics_json *j) {
     graphics_json_append(j,"{\"target\":%u,\"loadOp\":\"%s\",\"storeOp\":\"store\"",image->host,
         r->pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR?"clear":"load");
     if(r->pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR)graphics_json_append(j,",\"clearColor\":[%.9g,%.9g,%.9g,%.9g]",
         r->clear.float32[0],r->clear.float32[1],r->clear.float32[2],r->clear.float32[3]);
+    /* A5: DONT_CARE load becomes a defined clear to 1.0 (a valid implementation
+     * of undefined contents); DONT_CARE store discards. */
+    if(depth) {
+        int load=r->pass.depth_load==VK_ATTACHMENT_LOAD_OP_LOAD;
+        graphics_json_append(j,",\"depth\":{\"target\":%u,\"loadOp\":\"%s\",\"storeOp\":\"%s\"",depth->host,load?"load":"clear",
+            r->pass.depth_store==VK_ATTACHMENT_STORE_OP_STORE?"store":"discard");
+        if(!load)graphics_json_append(j,",\"clearValue\":%.9g",(double)r->depth_clear);
+        graphics_json_append(j,"}");
+    }
     graphics_json_append(j,",\"draws\":[");return !j->bad;
 }
 static int graphics_prepare_draw(const struct graphics_draw_record *r,const struct graphics_pass *pass,

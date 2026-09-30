@@ -6,14 +6,18 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image_view(VkDevice d,const VkImage
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!live->graphics_supported||!i||a||i->sType!=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO||i->pNext||i->flags||
-       i->viewType!=VK_IMAGE_VIEW_TYPE_2D||i->format!=VK_FORMAT_R8G8B8A8_UNORM||!full_range(&i->subresourceRange))return VK_ERROR_INITIALIZATION_FAILED;
+       i->viewType!=VK_IMAGE_VIEW_TYPE_2D)return VK_ERROR_INITIALIZATION_FAILED;
+    /* A5: depth views must name the image's own depth format and DEPTH aspect. */
+    int depth_view=live->depth_supported&&depth_code(i->format);
+    if(depth_view?!depth_range(&i->subresourceRange):(i->format!=VK_FORMAT_R8G8B8A8_UNORM||!full_range(&i->subresourceRange)))return VK_ERROR_INITIALIZATION_FAILED;
     const VkComponentMapping c=i->components;
     if((c.r!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.r!=VK_COMPONENT_SWIZZLE_R)||
        (c.g!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.g!=VK_COMPONENT_SWIZZLE_G)||
        (c.b!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.b!=VK_COMPONENT_SWIZZLE_B)||
        (c.a!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.a!=VK_COMPONENT_SWIZZLE_A))return VK_ERROR_FEATURE_NOT_PRESENT;
     struct resource *image=resource_get(RID(i->image),R_IMAGE);
-    if(!image||!(image->graphics_target||image->sampled)||!image->host||!resource_get(image->memory,R_MEMORY))return VK_ERROR_INITIALIZATION_FAILED;
+    if(!image||!(depth_view?image->depth==depth_code(i->format):(image->graphics_target||image->sampled))||!image->host||
+       !resource_get(image->memory,R_MEMORY))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_IMAGE_VIEW);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.view.image=image->id;*out=HANDLE(VkImageView,r->id);return VK_SUCCESS;
 }
@@ -23,7 +27,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_render_pass(VkDevice d,const VkRend
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!live->graphics_supported||!i||a||i->sType!=VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO||i->pNext||i->flags||
-       i->attachmentCount!=1||!i->pAttachments||i->subpassCount!=1||!i->pSubpasses||i->dependencyCount)return VK_ERROR_INITIALIZATION_FAILED;
+       !i->attachmentCount||i->attachmentCount>(live->depth_supported?2u:1u)||!i->pAttachments||i->subpassCount!=1||!i->pSubpasses||i->dependencyCount)return VK_ERROR_INITIALIZATION_FAILED;
     const VkAttachmentDescription attachment=i->pAttachments[0];const VkSubpassDescription subpass=i->pSubpasses[0];
     if(attachment.flags||attachment.format!=VK_FORMAT_R8G8B8A8_UNORM||attachment.samples!=VK_SAMPLE_COUNT_1_BIT||
        (attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||
@@ -31,10 +35,24 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_render_pass(VkDevice d,const VkRend
        attachment.stencilStoreOp!=VK_ATTACHMENT_STORE_OP_DONT_CARE||attachment.initialLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||
        attachment.finalLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||subpass.flags||subpass.pipelineBindPoint!=VK_PIPELINE_BIND_POINT_GRAPHICS||
        subpass.inputAttachmentCount||subpass.colorAttachmentCount!=1||!subpass.pColorAttachments||subpass.pResolveAttachments||
-       subpass.pDepthStencilAttachment||subpass.preserveAttachmentCount||subpass.pColorAttachments[0].attachment||
+       (i->attachmentCount==2)!=(subpass.pDepthStencilAttachment!=NULL)||subpass.preserveAttachmentCount||subpass.pColorAttachments[0].attachment||
        subpass.pColorAttachments[0].layout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)return VK_ERROR_FEATURE_NOT_PRESENT;
+    struct graphics_pass pass={.format=attachment.format,.samples=attachment.samples,.load=attachment.loadOp,.store=attachment.storeOp,.initial=attachment.initialLayout,.final=attachment.finalLayout};
+    if(i->attachmentCount==2) {
+        /* A5: attachment 1 is a D32/D16 depth attachment in DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+         * throughout; stencil operations must be DONT_CARE (no stencil formats exist). */
+        const VkAttachmentDescription depth=i->pAttachments[1];const VkAttachmentReference *ref=subpass.pDepthStencilAttachment;
+        if(depth.flags||!depth_code(depth.format)||depth.samples!=VK_SAMPLE_COUNT_1_BIT||
+           (depth.loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&depth.loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD&&depth.loadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE)||
+           (depth.storeOp!=VK_ATTACHMENT_STORE_OP_STORE&&depth.storeOp!=VK_ATTACHMENT_STORE_OP_DONT_CARE)||
+           depth.stencilLoadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE||depth.stencilStoreOp!=VK_ATTACHMENT_STORE_OP_DONT_CARE||
+           depth.initialLayout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL||depth.finalLayout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL||
+           ref->attachment!=1||ref->layout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)return VK_ERROR_FEATURE_NOT_PRESENT;
+        pass.depth_format=depth.format;pass.depth_load=depth.loadOp;pass.depth_store=depth.storeOp;
+        pass.depth_initial=depth.initialLayout;pass.depth_final=depth.finalLayout;
+    }
     struct resource *r=resource_new(R_RENDER_PASS);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
-    r->graphics.pass=(struct graphics_pass){attachment.format,attachment.samples,attachment.loadOp,attachment.storeOp,attachment.initialLayout,attachment.finalLayout};
+    r->graphics.pass=pass;
     *out=HANDLE(VkRenderPass,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_render_pass(VkDevice d,VkRenderPass h,const VkAllocationCallbacks *a){destroy_compute_resource(d,RID(h),R_RENDER_PASS,a);}
@@ -45,13 +63,22 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_framebuffer(VkDevice d,const VkFram
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!live->graphics_supported||!i||a||i->sType!=VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO||i->pNext||i->flags||
-       i->attachmentCount!=1||!i->pAttachments||i->layers!=1)return VK_ERROR_INITIALIZATION_FAILED;
+       !i->attachmentCount||i->attachmentCount>2||!i->pAttachments||i->layers!=1)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *pass=resource_get(RID(i->renderPass),R_RENDER_PASS),*view=resource_get(RID(i->pAttachments[0]),R_IMAGE_VIEW);
     struct resource *image=view?resource_get(view->graphics.view.image,R_IMAGE):NULL;
     if(!pass||!image||!image->graphics_target||!image->host||!resource_get(image->memory,R_MEMORY)||
-       i->width!=image->width||i->height!=image->height)return VK_ERROR_INITIALIZATION_FAILED;
+       i->width!=image->width||i->height!=image->height||i->attachmentCount!=(pass->graphics.pass.depth_format?2u:1u))return VK_ERROR_INITIALIZATION_FAILED;
+    struct resource *depth_view=NULL,*depth=NULL;
+    if(i->attachmentCount==2) {
+        /* A5: the depth view's image must match the pass format and the framebuffer extent exactly. */
+        depth_view=resource_get(RID(i->pAttachments[1]),R_IMAGE_VIEW);
+        depth=depth_view?resource_get(depth_view->graphics.view.image,R_IMAGE):NULL;
+        if(!depth||!depth->depth||depth->depth!=depth_code(pass->graphics.pass.depth_format)||!depth->host||
+           !resource_get(depth->memory,R_MEMORY)||depth->width!=image->width||depth->height!=image->height)return VK_ERROR_INITIALIZATION_FAILED;
+    }
     struct resource *r=resource_new(R_FRAMEBUFFER);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
-    r->graphics.framebuffer=(struct graphics_framebuffer){view->id,image->id,i->width,i->height,pass->graphics.pass};
+    r->graphics.framebuffer=(struct graphics_framebuffer){view->id,image->id,i->width,i->height,pass->graphics.pass,
+        depth_view?depth_view->id:0,depth?depth->id:0};
     *out=HANDLE(VkFramebuffer,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_framebuffer(VkDevice d,VkFramebuffer h,const VkAllocationCallbacks *a){destroy_compute_resource(d,RID(h),R_FRAMEBUFFER,a);}
@@ -119,12 +146,26 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     if(!out||count!=1)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!live->graphics_supported||cache||!i||a||i->sType!=VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO||i->pNext||i->flags||
-       i->stageCount!=2||!i->pStages||i->subpass||i->basePipelineHandle||i->basePipelineIndex!=-1||i->pTessellationState||i->pDepthStencilState||i->pDynamicState)
+       i->stageCount!=2||!i->pStages||i->subpass||i->basePipelineHandle||i->basePipelineIndex!=-1||i->pTessellationState||i->pDynamicState||
+       (!live->depth_supported&&i->pDepthStencilState))
         return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *layout=resource_get(RID(i->layout),R_PIPELINE_LAYOUT),*pass=resource_get(RID(i->renderPass),R_RENDER_PASS);
     if(!layout||!layout->graphics_layout||!pass)return VK_ERROR_INITIALIZATION_FAILED;
     struct graphics_pipeline p={0};p.pass=pass->graphics.pass;p.uniforms=layout->graphics.layout;
     if(!graphics_vertex_layout(i->pVertexInputState,&p)||!graphics_viewport(i->pViewportState,&p))return VK_ERROR_FEATURE_NOT_PRESENT;
+    /* A5: depth-stencil state is required exactly when the render pass has a
+     * depth attachment. Stencil, depth bounds and depth bias are unsupported. */
+    const VkPipelineDepthStencilStateCreateInfo *ds=i->pDepthStencilState;
+    if(live->depth_supported) {
+        if(!!ds!=!!p.pass.depth_format)return VK_ERROR_INITIALIZATION_FAILED;
+        if(ds) {
+            if(ds->sType!=VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO||ds->pNext||ds->flags||
+               (unsigned)ds->depthCompareOp>VK_COMPARE_OP_ALWAYS)return VK_ERROR_INITIALIZATION_FAILED;
+            if(ds->stencilTestEnable||ds->depthBoundsTestEnable)return VK_ERROR_FEATURE_NOT_PRESENT;
+            p.depth_test=ds->depthTestEnable!=VK_FALSE;p.depth_write=p.depth_test&&ds->depthWriteEnable!=VK_FALSE;
+            p.depth_compare=p.depth_test?ds->depthCompareOp:VK_COMPARE_OP_ALWAYS;
+        }
+    }
     const VkPipelineInputAssemblyStateCreateInfo *assembly=i->pInputAssemblyState;
     const VkPipelineRasterizationStateCreateInfo *raster=i->pRasterizationState;
     const VkPipelineMultisampleStateCreateInfo *samples=i->pMultisampleState;
@@ -179,6 +220,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
             ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
     }
     if(textures)graphics_json_append(&j,"]");
+    /* A5: WebGPU-style depth state; a disabled test is always/no-write. */
+    if(live->depth_supported) {
+        static const char *const compare[]={"never","less","equal","less-equal","greater","not-equal","greater-equal","always"};
+        if(p.pass.depth_format)graphics_json_append(&j,",\"depth\":{\"format\":\"%s\",\"depthCompare\":\"%s\",\"depthWriteEnabled\":%s}",
+            depth_code(p.pass.depth_format)==1?"depth32float":"depth16unorm",compare[p.depth_compare],p.depth_write?"true":"false");
+        else graphics_json_append(&j,",\"depth\":null");
+    }
     graphics_json_append(&j,"}");if(j.bad)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_GRAPHICS_PIPELINE);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.pipeline=p;

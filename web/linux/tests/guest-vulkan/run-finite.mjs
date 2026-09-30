@@ -18,7 +18,7 @@ const HTTP_PORT = 4197, CDP_PORT = 9407;
 const a4 = '/mnt/p6/build/guest-vulkan-a4-20260929', K = process.env.PKG_RUN || '1';
 const compute = '/mnt/p6/build/guest-vulkan-compute-20260926';
 const direct = ['live', 'unavailable', 'clear', 'loss-transport', 'loss-device', 'exhaustion'];
-const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu', 'texture-webgl2', 'texture-webgpu'];
+const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu', 'texture-webgl2', 'texture-webgpu', 'depth-webgl2', 'depth-webgpu'];
 const suites = process.argv[4] ? process.argv[4].split(',') : allSuites;
 if (suites.some(item => !allSuites.includes(item))) throw Error('unknown suite');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -50,8 +50,9 @@ const packages = {
   graphics: { dir: `${task}/graphics-package-run${K}`, prefix: '/linux/tests/guest-vulkan-webgl/candidate/' },
   uniform: { dir: `${task}/uniform-package-run${K}`, prefix: '/linux/tests/guest-vulkan-uniform/candidate/' },
   texture: { dir: `${task}/texture-package-run${K}`, prefix: '/linux/tests/guest-vulkan-texture/candidate/' },
+  depth: { dir: `${task}/depth-package-run${K}`, prefix: '/linux/tests/guest-vulkan-depth/candidate/' },
 };
-const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item.startsWith('texture-') ? 'texture' : item));
+const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item.startsWith('texture-') ? 'texture' : item.startsWith('depth-') ? 'depth' : item));
 const metadataBySuite = {};
 for (const name of needed) {
   const { dir, prefix } = packages[name]; await disk(dir);
@@ -70,7 +71,7 @@ for (const name of needed) {
 }
 const translators = [];
 if (needed.has('compute')) translators.push(['/linux/tests/guest-vulkan-compute/translator/candidate/translator.wasm', compute + '/translator-build-run4/translator.wasm', 'e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea']);
-if (needed.has('graphics') || needed.has('uniform') || needed.has('texture')) translators.push(
+if (needed.has('graphics') || needed.has('uniform') || needed.has('texture') || needed.has('depth')) translators.push(
   ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', a4 + '/glsl-translator-build-run1/translator.wasm', '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5'],
   ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', a4 + '/wgsl-translator-build-run1/translator.wasm', '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2']);
 for (const [url, source, expected] of translators) {
@@ -108,7 +109,7 @@ const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
 // CHROMIUM_MODE=swiftshader reproduces the earlier headless SwiftShader configuration for comparison runs only.
 const swiftshader = process.env.CHROMIUM_MODE === 'swiftshader';
 const args = [...(swiftshader ? ['--headless', '--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
-  : ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--ignore-gpu-blocklist', '--window-size=800,600']), '--disable-dev-shm-usage',
+  : ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--ignore-gpu-blocklist', '--disable-gpu-vsync', '--disable-frame-rate-limit', '--window-size=800,600']), '--disable-dev-shm-usage',
   '--no-first-run', '--no-default-browser-check', '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=' + CDP_PORT,
   '--user-data-dir=' + path.join(out, 'profile'), '--disk-cache-dir=' + path.join(out, 'cache'), 'about:blank'];
 await fs.writeFile(path.join(out, 'command.json'), JSON.stringify([executable, ...args], null, 2) + '\n');
@@ -137,10 +138,11 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
 const pageFor = suite => suite.startsWith('direct-') ? `/linux/tests/guest-vulkan/index.html?candidate=${suite === 'direct-live' ? 'candidate' : 'candidate-' + suite.slice(7)}`
   : suite === 'loader' ? '/linux/tests/guest-vulkan-loader/index.html?candidate=candidate-clear'
   : suite === 'compute' ? '/linux/tests/guest-vulkan-compute/index.html?candidate=candidate-compute'
+  : suite.startsWith('depth-') ? '/linux/tests/guest-vulkan-depth/guest.html?backend=' + suite.slice('depth-'.length)
   : suite.startsWith('texture-') ? '/linux/tests/guest-vulkan-texture/guest.html?backend=' + suite.slice('texture-'.length)
   : suite.startsWith('uniform-') ? '/linux/tests/guest-vulkan-uniform/guest.html?backend=' + suite.slice('uniform-'.length)
   : '/linux/tests/guest-vulkan-webgl/guest.html?backend=' + suite.slice('graphics-'.length);
-const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM|_TEXTURE)?_EXIT status=(\d+) checks=(\d+)$/m;
+const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM|_TEXTURE|_DEPTH)?_EXIT status=(\d+) checks=(\d+)$/m;
 try {
   let target; const startup = Date.now() + 15000;
   for (;;) {
@@ -185,6 +187,7 @@ try {
     if (suite.startsWith('graphics-')) current.pass &&= guest.host?.backend === suite.slice('graphics-'.length);
     if (suite.startsWith('uniform-')) current.pass &&= guest.host?.backend === suite.slice('uniform-'.length) && guest.mode === 'uniform';
     if (suite.startsWith('texture-')) current.pass &&= guest.host?.backend === suite.slice('texture-'.length) && guest.mode === 'texture';
+    if (suite.startsWith('depth-')) current.pass &&= guest.host?.backend === suite.slice('depth-'.length) && guest.mode === 'depth';
     current.adapter = guest.host?.adapter ?? null;
     if (process.env.REQUIRE_WEBGPU_VENDOR && guest.host?.backend === 'webgpu') current.pass &&= current.adapter?.vendor === process.env.REQUIRE_WEBGPU_VENDOR;
     report.runs.push(current);

@@ -23,11 +23,11 @@ def main():
     parser.add_argument('--shader-dir',type=Path,required=True)
     parser.add_argument('--host-profile',choices=['graphics','webgl'],default='graphics')
     parser.add_argument('--present-x11',action='store_true')
-    parser.add_argument('--app',choices=['graphics','uniform','texture'],default='graphics')
+    parser.add_argument('--app',choices=['graphics','uniform','texture','depth'],default='graphics')
     args=parser.parse_args()
-    if args.app in ('uniform','texture') and (args.host_profile!='webgl' or args.present_x11):
+    if args.app in ('uniform','texture','depth') and (args.host_profile!='webgl' or args.present_x11):
         raise ValueError(args.app+' application requires the dual-backend host profile without X11')
-    app_dir={'uniform':'guest-vulkan-uniform','texture':'guest-vulkan-texture'}.get(args.app,'guest-vulkan-graphics')
+    app_dir={'uniform':'guest-vulkan-uniform','texture':'guest-vulkan-texture','depth':'guest-vulkan-depth'}.get(args.app,'guest-vulkan-graphics')
     out,storage=checked_storage(args.output);out.mkdir(parents=True,exist_ok=False)
     here=Path(__file__).resolve().parent
     lock=json.loads((here.parent/'guest-vulkan-loader/source-lock.json').read_text())
@@ -84,6 +84,8 @@ def main():
         'bad-param.frag':'c2f5314a734fbf9a692c48aa8dbb269cfde5943a95fb78eb72e3fadc7527b73d',
         'bad-fetch.frag':'9b5fea1e53047d29751abb4a60a89c82a58d4c0b5c1bcf3d4f48efd5b63f249c',
         'bad-binding.frag':'45cf2db2a1961aa781475523856cfd75db365462b54f36f465f579106f95e789'} if args.app=='texture' else {
+        'depth.vert':'82a84601b8a267e8e6eb477065e53e4687fc4ada80b53f7d3fef4aed85506b1e',
+        'depth.frag':'2767646d0184ab7bf388b6279d10e84cb5ba97ad4d448b0e355a743b35317c70'} if args.app=='depth' else {
         'pair-a.vert':'3c5c5f393543b169146cb487d2754661eb881233c54023cc4ad357802519314f',
         'pair-a.frag':'6302e16384abb31306db37b6e39702d4e98e65734f2ec7d31d1b49c30243f3e4',
         'pair-b.vert':'13469cb19a3cde7d666ac87631f7b9640d4c932727ad2e984803078a0a4183f5',
@@ -152,6 +154,7 @@ def main():
             'translator/index.mjs','translator/worker.mjs','translator/abi.mjs')]
     if args.app=='uniform': host_files += ['guest-vulkan-uniform/guest.html']
     if args.app=='texture': host_files += ['guest-vulkan-texture/guest.html']
+    if args.app=='depth': host_files += ['guest-vulkan-depth/guest.html']
     host_sources={relative:digest((here.parent/relative).read_bytes()) for relative in host_files}
     report={'pass':True,'testOnly':True,'artifact':str(artifact),'bytes':artifact.stat().st_size,'sha256':digest(artifact.read_bytes()),
         'scope':'Compiled public Vulkan SPIR-V graphics client; actual guest execution required; partial nonconformant ICD',

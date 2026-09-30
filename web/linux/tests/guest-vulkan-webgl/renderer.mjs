@@ -2,7 +2,7 @@
 import { GRAPHICS_LIMITS, GraphicsRendererError, validatePipelineDescriptor,
   validateTargetDescriptor, UNIFORM_LIMITS, validateUniformReflection, validateVertexIndex,
   validateDrawUniforms, validateUniformBufferDescriptor, TEXTURE_LIMITS, profileOptions, validateDrawTextures,
-  validateTextureDescriptor, validateSamplerDescriptor, validateTextureUpload } from '../guest-vulkan-graphics/renderer.mjs';
+  validateTextureDescriptor, validateSamplerDescriptor, validateTextureUpload, DEPTH_FORMATS, validateDepthAttachment } from '../guest-vulkan-graphics/renderer.mjs';
 export { GraphicsRendererError };
 // WebGL vertexAttribPointer permits at most 255 bytes; this profile aligns to 4.
 export const WEBGL_LIMITS = Object.freeze({ ...GRAPHICS_LIMITS, maxStride: 252, integerViewport: true });
@@ -99,19 +99,24 @@ function rectangle(input, target, viewport) {
 }
 
 /** Async API serializes context use. Readback uses a PBO and yielding fence waits. */
-export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 10000, allowUniforms = false, allowTextures = false } = {}) {
+export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 10000, allowUniforms = false, allowTextures = false, allowDepth = false } = {}) {
   if (!gl?.texStorage2D || !gl?.fenceSync || !gl?.getBufferSubData || !gl.canvas?.addEventListener) fail('WebGL2 context required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
   integer(fenceTimeoutMs, 1, 30000, 'fence timeout');
   choice(allowUniforms, [false, true], 'uniform option'); choice(allowTextures, [false, true], 'texture option');
   if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
-  const uniformOptions = allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
+  choice(allowDepth, [false, true], 'depth option');
+  if (allowDepth && !allowTextures) fail('depth profile requires the texture profile');
+  const uniformOptions = allowDepth ? { allowUniforms, allowTextures, allowDepth } :
+    allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
+  const glCompare = Object.freeze({ never: gl.NEVER, less: gl.LESS, equal: gl.EQUAL, 'less-equal': gl.LEQUAL, greater: gl.GREATER,
+    'not-equal': gl.NOTEQUAL, 'greater-equal': gl.GEQUAL, always: gl.ALWAYS });
   const resources = new Map(), native = new Map(), waiters = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
   const counters = { passes: 0, draws: 0, uploads: 0, uniformUploads: 0, readbacks: 0, fences: 0, indexDraws: 0,
     ...(allowTextures ? { textureUploads: 0 } : {}) };
   const ownership = Object.fromEntries(['Buffer', 'Texture', 'Framebuffer', 'VertexArray', 'Program', 'Shader', 'Sync',
-    ...(allowTextures ? ['Sampler'] : [])].map(kind => [kind, { created: 0, deleted: 0 }]));
+    ...(allowTextures ? ['Sampler'] : []), ...(allowDepth ? ['Renderbuffer'] : [])].map(kind => [kind, { created: 0, deleted: 0 }]));
   const unbindTextureUnits = () => {
     for (let unit = 0; unit < TEXTURE_LIMITS.maxTextures; unit++) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, null); gl.bindSampler(unit, null); }
     gl.activeTexture(gl.TEXTURE0);
@@ -219,12 +224,13 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
   const provoking = gl.getExtension('WEBGL_provoking_vertex');
   if (provoking) provoking.provokingVertexWEBGL(provoking.FIRST_VERTEX_CONVENTION_WEBGL);
   try { checkGL(); } catch (error) { dispose('failed', error.message); throw error; }
-  const validateDraw = (input, target) => {
+  const validateDraw = (input, target, depthTarget = null) => {
     record(input, ['pipeline', 'vertexBuffers', 'vertexCount', 'firstVertex', 'instanceCount', 'firstInstance', 'viewport', 'scissor',
       ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'draw');
     const pipeline = get(input.pipeline, 'pipeline'), descriptor = pipeline.descriptor;
     const textures = validateDrawTextures(input.textures, descriptor, allowTextures, handle => get(handle, 'sampled-texture'), handle => get(handle, 'sampler'));
     if (descriptor.colorFormat !== target.descriptor.format) fail('pipeline/target format mismatch');
+    if (allowDepth && (descriptor.depth?.format ?? null) !== (depthTarget?.descriptor.format ?? null)) fail('pipeline/pass depth format mismatch');
     const vertexCount = integer(input.vertexCount, 3, WEBGL_LIMITS.maxVertices, 'vertex count');
     if (vertexCount % 3) fail('triangle profile requires complete triangles');
     const uniforms = validateDrawUniforms(input.uniforms, descriptor, allowUniforms, handle => get(handle, 'uniform-buffer'));
@@ -437,19 +443,44 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
         }
       });
     },
+    createDepthTarget(input) {
+      if (!allowDepth) fail('depth profile not enabled');
+      record(input, ['width', 'height', 'format'], 'depth target');
+      const width = integer(input.width, 1, TEXTURE_LIMITS.maxDimension, 'depth width');
+      const height = integer(input.height, 1, TEXTURE_LIMITS.maxDimension, 'depth height');
+      const format = choice(input.format, DEPTH_FORMATS, 'depth format');
+      const descriptor = Object.freeze({ width, height, format }), size = width * height * (format === 'depth16unorm' ? 2 : 4);
+      return enqueue(() => {
+        budget(size); let renderbuffer, accepted = false;
+        try {
+          renderbuffer = make('Renderbuffer', size); gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+          gl.renderbufferStorage(gl.RENDERBUFFER, format === 'depth16unorm' ? gl.DEPTH_COMPONENT16 : gl.DEPTH_COMPONENT32F, width, height); checkGL();
+          const handle = add('depth-target', [renderbuffer], descriptor); accepted = true; return handle;
+        } finally { gl.bindRenderbuffer(gl.RENDERBUFFER, null); if (!accepted) release(renderbuffer); }
+      });
+    },
     begin(input) {
       available(); if (recording) fail('render pass already recording');
-      record(input, ['target', 'loadOp', 'storeOp', 'clearColor'], 'render pass'); get(input.target, 'target');
+      record(input, ['target', 'loadOp', 'storeOp', 'clearColor', ...(allowDepth ? ['depth'] : [])], 'render pass');
+      const colorTarget = get(input.target, 'target');
+      let depth = null;
+      if (allowDepth && input.depth !== undefined && input.depth !== null) {
+        depth = Object.freeze(validateDepthAttachment(input.depth));
+        const entry = get(depth.target, 'depth-target');
+        if (entry.descriptor.width !== colorTarget.descriptor.width || entry.descriptor.height !== colorTarget.descriptor.height)
+          fail('depth attachment extent must match the color target');
+      }
       const loadOp = choice(input.loadOp, ['clear', 'load'], 'load operation'), storeOp = choice(input.storeOp, ['store'], 'store operation');
       let clearColor;
       if (loadOp === 'clear') clearColor = Object.freeze(array(input.clearColor, 4, 4, 'clear color').map(c => finite(c, 0, 1, 'clear color component')));
       else if (own(input, 'clearColor')) fail('clear color requires clear load operation');
-      recording = { target: input.target, loadOp, storeOp, clearColor, draws: [] };
+      recording = { target: input.target, loadOp, storeOp, clearColor, depth, draws: [] };
     },
     draw(input) {
       available(); if (!recording) fail('draw requires a recording pass');
       if (recording.draws.length >= WEBGL_LIMITS.maxDraws) fail('render pass draw budget exceeded', 'budget');
-      recording.draws.push(validateDraw(input, get(recording.target, 'target')));
+      recording.draws.push(validateDraw(input, get(recording.target, 'target'),
+        recording.depth ? get(recording.depth.target, 'depth-target') : null));
     },
     abort() { available(); recording = null; },
     end() {
@@ -458,8 +489,10 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
       return enqueue(async () => {
         const target = get(pass.target, 'target');
         if (pass.loadOp === 'load' && !target.initialized) fail('load requires a successfully stored target');
+        const depthTarget = pass.depth ? get(pass.depth.target, 'depth-target') : null;
+        if (pass.depth?.loadOp === 'load' && !depthTarget.initialized) fail('depth load requires a successfully stored depth target');
         // This entire loop runs before any native allocation, clear or draw.
-        const draws = pass.draws.map(draw => validateDraw(draw, target));
+        const draws = pass.draws.map(draw => validateDraw(draw, target, depthTarget));
         const needsIndices = draw => !provoking && get(draw.pipeline, 'pipeline').descriptor.fragment.inputs.some(item => item.interpolation?.mode === 'flat');
         const indexCount = Math.max(0, ...draws.filter(needsIndices).map(draw => draw.vertexCount));
         // Reserve one reused index stream before any attachment effects. A
@@ -477,8 +510,14 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           gl.disable(gl.DITHER); gl.disable(gl.BLEND); gl.disable(gl.DEPTH_TEST); gl.disable(gl.STENCIL_TEST);
           gl.disable(gl.CULL_FACE); gl.disable(gl.RASTERIZER_DISCARD); gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE); gl.disable(gl.SAMPLE_COVERAGE);
           gl.disable(gl.SCISSOR_TEST); gl.colorMask(true, true, true, true);
+          if (depthTarget) {
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthTarget.objects[0]); checkGL();
+            if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) fail('color+depth framebuffer incomplete', 'unavailable');
+            depthTarget.initialized = false;
+          }
           target.initialized = false;
           if (pass.loadOp === 'clear') { gl.clearColor(...pass.clearColor); gl.clear(gl.COLOR_BUFFER_BIT); }
+          if (pass.depth?.loadOp === 'clear') { gl.depthMask(true); gl.clearDepth(pass.depth.clearValue); gl.clear(gl.DEPTH_BUFFER_BIT); }
           for (const draw of draws) {
             const pipeline = get(draw.pipeline, 'pipeline'); gl.useProgram(pipeline.objects[0]);
             draw.uniforms?.forEach((u, point) => gl.bindBufferRange(gl.UNIFORM_BUFFER, point, get(u.buffer, 'uniform-buffer').objects[0], u.offset, u.size));
@@ -497,6 +536,9 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
             });
             const v = draw.viewport, s = draw.scissor;
             gl.viewport(v.x, v.y, v.width, v.height); gl.depthRange(v.minDepth, v.maxDepth);
+            const depthState = pipeline.descriptor.depth;
+            if (depthState) { gl.enable(gl.DEPTH_TEST); gl.depthFunc(glCompare[depthState.depthCompare]); gl.depthMask(depthState.depthWriteEnabled); }
+            else gl.disable(gl.DEPTH_TEST);
             gl.enable(gl.SCISSOR_TEST); gl.scissor(s.x, s.y, s.width, s.height);
             if (needsIndices(draw)) {
               for (let i = 0; i < draw.vertexCount; i += 3) {
@@ -506,10 +548,16 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
               gl.drawElements(gl.TRIANGLES, draw.vertexCount, gl.UNSIGNED_INT, 0); counters.indexDraws++;
             } else gl.drawArrays(gl.TRIANGLES, draw.firstVertex, draw.vertexCount);
           }
+          if (pass.depth?.storeOp === 'discard') gl.invalidateFramebuffer(gl.FRAMEBUFFER, [gl.DEPTH_ATTACHMENT]);
           checkGL(); await fence(); available(); target.initialized = true;
+          if (depthTarget) depthTarget.initialized = pass.depth.storeOp === 'store';
           counters.passes++; counters.draws += draws.length; event({ type: 'pass', draws: draws.length });
         } catch (error) { terminal(error); }
         finally {
+          if (depthTarget) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, target.objects[0]); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+            gl.disable(gl.DEPTH_TEST); gl.depthMask(true);
+          }
           gl.useProgram(null); gl.bindVertexArray(null); gl.bindBuffer(gl.ARRAY_BUFFER, null); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
           if (allowUniforms) for (let point = 0; point < UNIFORM_LIMITS.maxUniforms; point++) gl.bindBufferBase(gl.UNIFORM_BUFFER, point, null);
           if (allowTextures) unbindTextureUnits();

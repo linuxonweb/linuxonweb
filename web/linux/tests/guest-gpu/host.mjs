@@ -2,16 +2,16 @@
 export const MAGIC = 0x31555047, VERSION = 1, MAX_PAYLOAD = 1048576;
 export const OP = Object.freeze({ HELLO: 0, SHADER: 1, BUFFER: 2, PIPELINE: 3, TARGET: 4, DRAW: 5, READBACK: 6, DESTROY: 7, CLOSE: 8, CLEAR: 9, SPIRV_SHADER: 10, COMPUTE_PIPELINE: 11, STORAGE_BUFFER: 12, STORAGE_UPLOAD: 13, COMPUTE_DISPATCH: 14, STORAGE_READBACK: 15,
   GRAPHICS_SHADER: 16, GRAPHICS_PIPELINE: 17, VERTEX_BUFFER: 18, VERTEX_UPLOAD: 19, GRAPHICS_TARGET: 20, GRAPHICS_PASS: 21, GRAPHICS_READBACK: 22,
-  UNIFORM_BUFFER: 23, UNIFORM_UPLOAD: 24, TEXTURE: 25, TEXTURE_UPLOAD: 26, SAMPLER: 27 });
+  UNIFORM_BUFFER: 23, UNIFORM_UPLOAD: 24, TEXTURE: 25, TEXTURE_UPLOAD: 26, SAMPLER: 27, DEPTH_TARGET: 28 });
 const encoder = new TextEncoder(), decoder = new TextDecoder('utf-8', { fatal: true });
 const fail = (message, status = -22) => { throw Object.assign(new Error(message), {status}); };
 const words = (...values) => { const bytes = new Uint8Array(values.length * 4), view = new DataView(bytes.buffer); values.forEach((n, i) => view.setUint32(i * 4, n, true)); return bytes; };
-export function decodeHeader(bytes, allowClear = false, allowCompute = false, allowGraphics = false, allowUniforms = false, allowTextures = false) {
+export function decodeHeader(bytes, allowClear = false, allowCompute = false, allowGraphics = false, allowUniforms = false, allowTextures = false, allowDepth = false) {
   if (bytes.byteLength !== 16) fail('short header');
   const v = new DataView(bytes.buffer, bytes.byteOffset, 16);
   if (v.getUint32(0, true) !== MAGIC || v.getUint16(4, true) !== VERSION) fail('unsupported protocol');
   const opcode = v.getUint16(6, true), request = v.getUint32(8, true), length = v.getUint32(12, true);
-  if (opcode > (allowGraphics && allowUniforms && allowTextures ? OP.SAMPLER : allowGraphics && allowUniforms ? OP.UNIFORM_UPLOAD : allowGraphics ? OP.GRAPHICS_READBACK : allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
+  if (opcode > (allowGraphics && allowUniforms && allowTextures && allowDepth ? OP.DEPTH_TARGET : allowGraphics && allowUniforms && allowTextures ? OP.SAMPLER : allowGraphics && allowUniforms ? OP.UNIFORM_UPLOAD : allowGraphics ? OP.GRAPHICS_READBACK : allowCompute ? OP.STORAGE_READBACK : allowClear ? OP.CLEAR : OP.CLOSE) || !request || length > MAX_PAYLOAD) fail('invalid opcode, sequence or length');
   return { opcode, request, length };
 }
 export function encodeReply(opcode, request, status, body = new Uint8Array()) {
@@ -33,7 +33,7 @@ export function createWebGLContextLease() {
 
 /** One device and resource table per connection. No guest memory/shared views. */
 export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
-  allowGraphics = false, allowUniforms = false, allowTextures = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
+  allowGraphics = false, allowUniforms = false, allowTextures = false, allowDepth = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
   allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease } = {}) {
   const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
   let device, contextLease, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
@@ -119,6 +119,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     if (allowWebGL && !allowGraphics) fail('WebGL fallback requires the graphics profile');
     if (allowUniforms && !allowGraphics) fail('uniform profile requires the graphics profile');
     if (allowTextures && !allowUniforms) fail('texture profile requires the uniform profile');
+    if (allowDepth && !allowTextures) fail('depth profile requires the texture profile');
     const uniformOptions = allowUniforms ? (allowTextures ? { allowUniforms, allowTextures } : { allowUniforms }) : undefined;
     let adapter;
     try {
@@ -167,12 +168,13 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       validateGraphicsShader = webgl ? renderer.validateWebGLShader : renderer.validateTranslatedShader;
       graphicsRenderer = webgl ? renderer.createWebGLRenderer(contextLease.gl, { onEvent(event) {
         if (event.type === 'lost' && !closed) { lost = true; report.error = event.message; cleanup(); }
-      }, ...(uniformOptions ?? {}) }) : renderer.createGraphicsRenderer(device, uniformOptions);
+      }, ...(uniformOptions ?? {}), ...(allowDepth ? { allowDepth } : {}) }) :
+        renderer.createGraphicsRenderer(device, allowDepth ? { ...uniformOptions, allowDepth } : uniformOptions);
     }
     onEvent({ type: 'adapter', backend: report.backend, ...report.adapter });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
-      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics, allowUniforms, allowTextures);
+      const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics, allowUniforms, allowTextures, allowDepth);
       if (request <= lastRequest) fail('non-monotonic request id'); lastRequest = request;
       const payload = await connection.readExactly(length); if (payload.length !== length) fail('truncated payload');
       const v = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
@@ -187,7 +189,8 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}),
             ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:report.backend==='webgl2'} : {}),
             ...(allowUniforms ? {uniformProfile:1,maxUniformRange:16384,uniformOffsetAlignment:256,maxUniformBuffer:65536} : {}),
-            ...(allowTextures ? {textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}), adapter: report.adapter })); break;
+            ...(allowTextures ? {textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}),
+            ...(allowDepth ? {depthProfile:1,depthFormats:['d32-sfloat','d16-unorm'],maxDepthDimension:128} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -325,7 +328,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           case OP.GRAPHICS_PIPELINE: {
             if (!allowGraphics) fail('graphics not negotiated');
             const descriptor = record(parseGraphics(payload), ['vertex','fragment','vertexBuffers','colorFormat','topology','frontFace','cullMode','sampleCount',
-              ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : [])], 'graphics pipeline');
+              ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : []), ...(allowDepth ? ['depth'] : [])], 'graphics pipeline');
             const vertex = shaderReference(descriptor.vertex, 'vertex'), fragment = shaderReference(descriptor.fragment, 'fragment');
             // Charge copies retained by the pipeline even after shader IDs are destroyed.
             const bytes = vertex.bytes + fragment.bytes + length;
@@ -379,6 +382,13 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             const descriptor = record(parseGraphics(payload), ['magFilter','minFilter','addressModeU','addressModeV'], 'sampler');
             body = await addGraphics('graphics-sampler', 0, () => graphicsRenderer.createSampler(descriptor)); break;
           }
+          case OP.DEPTH_TARGET: {
+            if (!allowDepth) fail('depth not negotiated');
+            exact(12); const width = v.getUint32(0,true), height = v.getUint32(4,true), code = v.getUint32(8,true);
+            const format = code === 1 ? 'depth32float' : code === 2 ? 'depth16unorm' : null;
+            if (!width || !height || width > 128 || height > 128 || !format) fail('invalid depth target');
+            body = await addGraphics('graphics-depth', width*height*(code === 1 ? 4 : 2), () => graphicsRenderer.createDepthTarget({width,height,format}), {width,height,format}); break;
+          }
           case OP.GRAPHICS_TARGET: {
             if (!allowGraphics) fail('graphics not negotiated');
             exact(8); const width = v.getUint32(0,true), height = v.getUint32(4,true);
@@ -387,8 +397,15 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           }
           case OP.GRAPHICS_PASS: {
             if (!allowGraphics) fail('graphics not negotiated');
-            const pass = record(parseGraphics(payload), ['target','loadOp','storeOp','clearColor','draws'], 'graphics pass');
+            const pass = record(parseGraphics(payload), ['target','loadOp','storeOp','clearColor','draws',...(allowDepth ? ['depth'] : [])], 'graphics pass');
             const target = get(pass.target, 'graphics-target');
+            let depth = null;
+            if (allowDepth && pass.depth !== undefined && pass.depth !== null) {
+              record(pass.depth, ['target','loadOp','storeOp','clearValue'], 'depth attachment');
+              const attachment = get(pass.depth.target, 'graphics-depth');
+              if (attachment.width !== target.width || attachment.height !== target.height) fail('depth attachment extent mismatch');
+              depth = { ...pass.depth, target:attachment.object };
+            }
             if (!Array.isArray(pass.draws) || pass.draws.length > 256) fail('invalid graphics draw count');
             const draws = pass.draws.map(draw => {
               record(draw, ['pipeline','vertexBuffers','vertexCount','firstVertex','instanceCount','firstInstance','viewport','scissor',
@@ -400,21 +417,24 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
                 return { ...binding, buffer:get(binding.buffer, 'graphics-vertex').object };
               });
               if (!allowUniforms) return { ...draw, pipeline:pipeline.object, vertexBuffers };
-              if (!Array.isArray(draw.uniforms) || draw.uniforms.length > 8) fail('invalid graphics uniform bindings');
-              const uniforms = draw.uniforms.map(binding => {
+              // The guest omits empty binding lists (a pipeline without descriptors).
+              const drawUniforms = draw.uniforms ?? [], drawTextures = draw.textures ?? [];
+              if (!Array.isArray(drawUniforms) || drawUniforms.length > 8) fail('invalid graphics uniform bindings');
+              const uniforms = drawUniforms.map(binding => {
                 record(binding, ['group','binding','buffer','offset','size'], 'uniform binding');
                 return { ...binding, buffer:get(binding.buffer, 'graphics-uniform').object };
               });
               if (!allowTextures) return { ...draw, pipeline:pipeline.object, vertexBuffers, uniforms };
-              if (!Array.isArray(draw.textures) || draw.textures.length > 4) fail('invalid graphics texture bindings');
-              const textures = draw.textures.map(binding => {
+              if (!Array.isArray(drawTextures) || drawTextures.length > 4) fail('invalid graphics texture bindings');
+              const textures = drawTextures.map(binding => {
                 record(binding, ['group','binding','texture','sampler'], 'texture binding');
                 return { ...binding, texture:get(binding.texture, 'graphics-texture').object, sampler:get(binding.sampler, 'graphics-sampler').object };
               });
               return { ...draw, pipeline:pipeline.object, vertexBuffers, uniforms, textures };
             });
             try {
-              graphicsRenderer.begin({target:target.object,loadOp:pass.loadOp,storeOp:pass.storeOp,...(Object.hasOwn(pass,'clearColor') ? {clearColor:pass.clearColor} : {})});
+              graphicsRenderer.begin({target:target.object,loadOp:pass.loadOp,storeOp:pass.storeOp,...(Object.hasOwn(pass,'clearColor') ? {clearColor:pass.clearColor} : {}),
+                ...(depth ? {depth} : {})});
               for (const draw of draws) graphicsRenderer.draw(draw);
               await graphicsRenderer.end();
             } catch (error) { if (graphicsRenderer.getStats().state === 'open') graphicsRenderer.abort(); throw error; }
