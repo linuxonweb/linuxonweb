@@ -108,8 +108,14 @@ is free.
   `6febc628`, run on an idle host (no concurrent browser gates).
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
-Running: gputest G2 (cube CPIO), Firefox WebGPU W4a (host executor).
-Next: Vulkan A6-A7 (WSI, vkcube), gputest G2-G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
+- Done: gputest G2 cube demo (`docs/gputest-demo-20260930.md`, `/mnt/p6/build/gputest-g2-20260930`):
+  `web/linux/tests/gputest-demo/` vkcube-lite (depth cube, uniform MVP, XImage
+  presentation, `GPUTEST_FPS` lines) packed by `tools/guest-rootfs/package-gputest-demo.py`
+  into `web/linux/gpu/gputest.cpio` (1,316,864 B, `1a65cf4b`). Real page gates:
+  `?gputest=1` NVIDIA WebGPU 48 FPS/72 s; `&gpubackend=webgl` Intel ANGLE 39 FPS;
+  `&firefox=1` 14 FPS (capped 15) beside Firefox. Rotation verified by screenshot diff.
+Running: Firefox WebGPU W4a (host executor).
+Next: Vulkan A6-A7 (WSI, vkcube), gputest G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it

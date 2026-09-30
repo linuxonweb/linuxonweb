@@ -1,0 +1,218 @@
+{
+  "packet": "gputest G2 rotating-cube Vulkan demo CPIO",
+  "date": "2026-09-30",
+  "taskRoot": "/mnt/p6/build/gputest-g2-20260930",
+  "cpio": {
+    "path": "web/linux/gpu/gputest.cpio",
+    "bytes": 1316864,
+    "sha256": "1a65cf4b5430d3adabe3ee817b23313268a7915f277a316d2b47dba0d0b14fd7",
+    "members": [
+      "/gputest-init",
+      "/gputest-waiter",
+      "/bin/vkcube-lite"
+    ],
+    "directoryEntries": 0,
+    "owner": "0:0",
+    "reproducible": "package-run2 gputest.cpio == gputest-again.cpio byte-identical"
+  },
+  "wasm": {
+    "path": "build-run1/vkcube-lite.wasm",
+    "bytes": 1314503,
+    "sha256": "e32798061c254aeb89103a9a692d94b78894f6f4bce447dc46bf55dce3135b91"
+  },
+  "runner": "run-g2.mjs (dev server 4202, headful Chromium CDP 9412, DISPLAY=:0, --enable-unsafe-webgpu --enable-features=Vulkan)",
+  "gates": {
+    "webgpu": {
+      "runDir": "gate-webgpu-run1",
+      "query": "?gputest=1",
+      "pass": true,
+      "checks": {
+        "firstFps": true,
+        "rotation": true,
+        "observed": true,
+        "noPageErrors": true
+      },
+      "firstFpsAfterNavigateMs": 8018,
+      "observedMs": 70013,
+      "fps": {
+        "lines": 36,
+        "lastFrames": 3499,
+        "maxUptime": 72,
+        "backend": [
+          "webgpu"
+        ],
+        "meanFps": 48.25,
+        "minFps": 46.3,
+        "maxFps": 58.9
+      },
+      "hostSession": "gputest: session 1 backend=webgpu adapter={\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"fallback\":false}",
+      "geometry": {
+        "screenW": 1280,
+        "screenH": 720,
+        "size": 384,
+        "x": 864,
+        "y": 48,
+        "scale": 3
+      },
+      "rotationDiff": [
+        {
+          "changedFraction": 0.464,
+          "pixels": 147456,
+          "screenshotsApartMs": 3000
+        },
+        {
+          "changedFraction": 0.4613,
+          "pixels": 147456,
+          "screenshotsApartMs": 3000
+        }
+      ],
+      "pageExceptions": 0,
+      "consoleErrors": 0,
+      "failedRequests": [
+        "http://127.0.0.1:4202/favicon.ico",
+        "net::ERR_ABORTED"
+      ],
+      "exit": {
+        "browser": {
+          "code": 0,
+          "signal": null
+        },
+        "server": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    },
+    "webgl2": {
+      "runDir": "gate-webgl-run1",
+      "query": "?gputest=1&gpubackend=webgl",
+      "pass": true,
+      "checks": {
+        "firstFps": true,
+        "rotation": true,
+        "observed": true,
+        "noPageErrors": true
+      },
+      "firstFpsAfterNavigateMs": 8030,
+      "observedMs": 48919,
+      "fps": {
+        "lines": 25,
+        "lastFrames": 1960,
+        "maxUptime": 50,
+        "backend": [
+          "webgl2"
+        ],
+        "meanFps": 39.07,
+        "minFps": 37.4,
+        "maxFps": 39.7
+      },
+      "hostSession": "gputest: session 1 backend=webgl2 adapter={\"vendor\":\"WebKit\",\"description\":\"ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)\",\"fallback\":null}",
+      "geometry": {
+        "screenW": 1280,
+        "screenH": 720,
+        "size": 384,
+        "x": 864,
+        "y": 48,
+        "scale": 3
+      },
+      "rotationDiff": [
+        {
+          "changedFraction": 0.4724,
+          "pixels": 147456,
+          "screenshotsApartMs": 3000
+        },
+        {
+          "changedFraction": 0.4753,
+          "pixels": 147456,
+          "screenshotsApartMs": 3000
+        }
+      ],
+      "pageExceptions": 0,
+      "consoleErrors": 0,
+      "failedRequests": [
+        "http://127.0.0.1:4202/favicon.ico",
+        "net::ERR_ABORTED"
+      ],
+      "exit": {
+        "browser": {
+          "code": 0,
+          "signal": null
+        },
+        "server": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    },
+    "firefox_webgpu": {
+      "runDir": "gate-firefox-run1",
+      "query": "?gputest=1&firefox=1",
+      "pass": true,
+      "checks": {
+        "firstFps": true,
+        "rotation": true,
+        "observed": true,
+        "noPageErrors": true
+      },
+      "firstFpsAfterNavigateMs": 30713,
+      "observedMs": 57931,
+      "fps": {
+        "lines": 29,
+        "lastFrames": 841,
+        "maxUptime": 59,
+        "backend": [
+          "webgpu"
+        ],
+        "meanFps": 14.33,
+        "minFps": 10.5,
+        "maxFps": 15
+      },
+      "hostSession": "gputest: session 1 backend=webgpu adapter={\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"fallback\":false}",
+      "geometry": {
+        "screenW": 1280,
+        "screenH": 720,
+        "size": 256,
+        "x": 992,
+        "y": 48,
+        "scale": 2
+      },
+      "rotationDiff": [
+        {
+          "changedFraction": 0.4447,
+          "pixels": 65536,
+          "screenshotsApartMs": 3000
+        },
+        {
+          "changedFraction": 0.4584,
+          "pixels": 65536,
+          "screenshotsApartMs": 3000
+        }
+      ],
+      "pageExceptions": 0,
+      "consoleErrors": 0,
+      "failedRequests": [
+        "http://127.0.0.1:4202/favicon.ico",
+        "http://127.0.0.1:4202/dns?name=%28none%29",
+        "http://127.0.0.1:4202/dns?name=%28none%29",
+        "net::ERR_ABORTED"
+      ],
+      "exit": {
+        "browser": {
+          "code": 0,
+          "signal": null
+        },
+        "server": {
+          "code": 0,
+          "signal": null
+        }
+      }
+    }
+  },
+  "limits": [
+    "128x128 colour+D32 attachments, nearest-scaled CPU copy via XPutImage (not Vulkan WSI)",
+    "WebGL2 forced path ran on Intel ANGLE (Chromium picks the integrated GPU for WebGL), not NVIDIA",
+    "rotation diff uses the requested window geometry; aurora-wm decorates/places the window slightly differently, the clip still covers the cube window",
+    "host session-loss exit (status 3) is implemented but not gated here",
+    "experimental nonconformant ICD profile; no OpenGL (Zink deferred)"
+  ]
+}

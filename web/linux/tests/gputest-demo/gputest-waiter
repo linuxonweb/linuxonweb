@@ -1,0 +1,27 @@
+#!/bin/busybox sh
+# gputest G2: waits for the X server socket, then runs the Vulkan cube demo.
+# Output goes to the console (page log). Firefox mode (firefox=1 on the kernel
+# command line) still starts the cube, but later, smaller and FPS-capped so
+# Firefox keeps most of the guest CPU. Bounded retries after a non-zero exit.
+i=0
+while [ "$i" -lt 900 ]; do
+  [ -e /tmp/.X11-unix/X0 ] && break
+  i=$((i + 1)); /bin/busybox sleep 1
+done
+# /proc is mounted by the rootfs /init; read the command line only after X is up.
+args="--scale 3"
+delay=0
+case " $(/bin/busybox cat /proc/cmdline) " in
+  *" firefox=1 "*) args="--scale 2 --max-fps 15"; delay=20 ;;
+esac
+[ "$delay" -gt 0 ] && /bin/busybox sleep "$delay"
+attempt=1
+while :; do
+  echo "GPUTEST_CUBE_WAITER start attempt=$attempt waited=${i}s delay=${delay}s args=$args"
+  DISPLAY=:0 /bin/vkcube-lite $args
+  status=$?
+  echo "GPUTEST_CUBE_WAITER exit status=$status attempt=$attempt"
+  [ "$status" -eq 0 ] && break
+  [ "$attempt" -ge 3 ] && { echo "GPUTEST_CUBE_WAITER giving up after $attempt attempts"; break; }
+  attempt=$((attempt + 1)); /bin/busybox sleep 5
+done

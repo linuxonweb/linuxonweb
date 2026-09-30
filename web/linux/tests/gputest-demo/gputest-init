@@ -1,0 +1,6 @@
+#!/bin/busybox sh
+# gputest G2 adapter init (rdinit=/gputest-init, only with ?gputest=1).
+# Starts the cube waiter as a separate script and hands PID 1 to the unchanged
+# rootfs /init. No subshells: the waiter is its own busybox sh process.
+/bin/busybox sh /gputest-waiter &
+exec /init "$@"
