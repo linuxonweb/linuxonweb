@@ -10,6 +10,7 @@ import {
   createNetwork,
   attach_guest,
   wsTcpProxyNetwork,
+  vsockDevice,
 } from "./dist/index.js";
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
@@ -18,6 +19,7 @@ import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
 import { systemAsset, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
+import { gputestEnabled, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_RDINIT } from './gputest.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -102,6 +104,8 @@ for (const button of document.querySelectorAll(".toolbar .tool")) {
   });
 }
 const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
+// ?gputest=1 serves the guest Vulkan ICD over vsock and appends gpu/gputest.cpio.
+const gputestMode = gputestEnabled();
 const settingsKey = "linuxonweb.machine-settings.v1";
 const resumeKey = "linuxonweb.restart-mode.v1";
 const modes = ["guest", "console", "startx", "firefox"];
@@ -147,7 +151,7 @@ const storagePanel = createStoragePanel({
       await persistentHome?.destroy(); persistentHome = null;
       await deletePersistentHome();
       sessionStorage.removeItem(resumeKey);
-      const url = new URL(location.href); url.searchParams.delete('firefox');
+      const url = new URL(location.href); url.searchParams.delete('firefox'); url.searchParams.delete('gputest');
       location.replace(url);
     } catch (error) {
       activeMachine = null;
@@ -231,10 +235,16 @@ function openConsole() {
   });
 }
 
+let gpuHost = null;
+let gpuLogTail = '';
 function writeConsole(value, source = "guest") {
   guestLogs.write(value, source);
   terminal?.write(value);
   const text = typeof value === 'string' ? value : new TextDecoder().decode(value);
+  if (gpuHost && source === 'guest') {
+    gpuLogTail = (gpuLogTail + text).slice(-64);
+    if (gpuLogTail.includes('GUEST_GPU_LISTENING')) { gpuLogTail = ''; gpuHost.wake(); }
+  }
   homeLogTail = (homeLogTail + text).slice(-512);
   if (homeLogTail.includes('home: persistent storage mounted')) {
     homeLogTail = '';
@@ -440,6 +450,7 @@ async function boot(mode) {
     `boot mode=${mode}, display=${FB_W}x${FB_H}, cpus=${cpuInput.value}, ram=${ramSelect.selectedOptions[0].text}`,
   );
   let initramfs;
+  let gputestInit = false;
   const rootfs = null;
   try {
     releaseHomeLock = await acquireHomeLock();
@@ -447,6 +458,10 @@ async function boot(mode) {
     const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
     const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
     initramfs = new Uint8Array(await new Response(body).arrayBuffer());
+    if (gputestMode) {
+      const demo = await loadGputestArchive(hostLog);
+      if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
+    }
     storagePanel.message('Home ready · waiting for guest mount');
   } catch (error) {
     await persistentHome?.destroy().catch(() => {}); persistentHome = null;
@@ -623,6 +638,8 @@ async function boot(mode) {
     attached.attachment.device,
     fileSystemDevice(persistentHome, { tag: 'home', cache: true }),
   ];
+  const vsock = gputestMode ? vsockDevice() : null;
+  if (vsock) devices.push(vsock);
   if (rootfs) {
     devices.push(
       blockDevice({
@@ -642,6 +659,7 @@ async function boot(mode) {
   const cleanupBoot = () => {
     if (bootClosed) return;
     bootClosed = true;
+    gpuHost?.stop(); gpuHost = null;
     inputEvents.abort();
     mobileKeyboard.setKeyHandler(null);
     cancelGuestGesture();
@@ -668,11 +686,12 @@ async function boot(mode) {
     const consoleMode = mode === "console";
     const rootCommand = rootfs
       ? `root=/dev/vda rootfstype=ext4 rw rootwait init=${consoleMode ? "/bin/sh" : "/init"}`
-      : 'rdinit=/init';
+      : `rdinit=${gputestInit ? GPUTEST_RDINIT : '/init'}`;
     const modeFlags = [
       `demo.mode=${mode}`,
       'home.persistent=1',
       mode === "firefox" ? "firefox=1" : "",
+      gputestInit ? "gputest=1" : "",
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
     ]
       .filter(Boolean)
@@ -706,6 +725,8 @@ async function boot(mode) {
     if (consoleMode) terminal?.focus();
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
+    // Serve guest GPU sessions until the machine closes (cleanupBoot stops it).
+    if (vsock && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog });
     bootReader = machine.bootConsole.getReader();
     (async () => {
       for (;;) {
@@ -779,6 +800,7 @@ async function stopGuest() {
   sessionStorage.removeItem(resumeKey);
   const url = new URL(location.href);
   url.searchParams.delete("firefox");
+  url.searchParams.delete("gputest");
   location.replace(url);
 }
 
@@ -793,10 +815,11 @@ for (const button of launchButtons) {
 
 // Firefox mode is intended for unattended Chromium testing. Boot immediately;
 // guest init waits 10 seconds after X is ready before launching /bin/firefox.
-if (resumeMode || firefoxMode) {
+// ?gputest=1 alone auto-boots X; combined with ?firefox=1 it boots Firefox.
+if (resumeMode || firefoxMode || gputestMode) {
   // Resume the confirmed launch mode after a clean restart. Defaults are
   // 4 GiB for Firefox and 1 GiB otherwise; validated preferences take priority.
-  const mode = resumeMode || "firefox";
+  const mode = resumeMode || (firefoxMode ? "firefox" : "startx");
   setStatus(`${mode}: auto-booting…`, "booting");
   hostLog(`auto-boot enabled for ${mode}`);
   queueMicrotask(() => void boot(mode));

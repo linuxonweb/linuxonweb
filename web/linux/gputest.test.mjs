@@ -1,0 +1,56 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { gputestEnabled, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_VSOCK_PORT } from './gputest.mjs';
+
+test('gputest query flag', () => {
+  assert.equal(gputestEnabled('?gputest=1'), true);
+  assert.equal(gputestEnabled('?gputest=1&firefox=1'), true);
+  assert.equal(gputestEnabled('?gputest=0'), false);
+  assert.equal(gputestEnabled(''), false);
+});
+
+test('appendCpio pads the first archive to four bytes', () => {
+  const out = appendCpio(new Uint8Array([1, 2, 3, 4, 5]), new Uint8Array([9, 8]));
+  assert.deepEqual([...out], [1, 2, 3, 4, 5, 0, 0, 0, 9, 8]);
+  assert.deepEqual([...appendCpio(new Uint8Array([1, 2, 3, 4]), new Uint8Array([7]))], [1, 2, 3, 4, 7]);
+});
+
+test('missing, failing or non-newc archives keep normal boot', async () => {
+  const lines = [];
+  const log = line => lines.push(line);
+  assert.equal(await loadGputestArchive(log, async () => new Response('no', { status: 404 })), null);
+  assert.equal(await loadGputestArchive(log, async () => { throw new Error('offline'); }), null);
+  assert.equal(await loadGputestArchive(log, async () => new Response('<!doctype html>'.padEnd(200))), null);
+  assert.match(lines[0], /HTTP 404; normal boot/);
+  assert.match(lines[1], /offline/);
+  const newc = new TextEncoder().encode('070701'.padEnd(120, '0'));
+  assert.deepEqual(await loadGputestArchive(log, async () => new Response(newc)), newc);
+});
+
+test('host loop retries, serves each session and stops', async () => {
+  const calls = [], served = [], lines = [];
+  let attempt = 0;
+  const vsock = { async connect(port, options) {
+    calls.push([port, options.timeoutMs]); attempt++;
+    if (attempt < 3) throw new Error('guest reset vsock connection');
+    return { close() {} , id: attempt };
+  } };
+  let host;
+  const serveGPU = async (connection, options) => {
+    served.push({ id: connection.id, options });
+    options.onEvent({ type: 'adapter', backend: 'webgpu', vendor: 'test' });
+    if (served.length === 2) host.stop();
+    return { commands: 1, graphicsPasses: 0, graphicsDraws: 0, graphicsReadbacks: 0, error: null };
+  };
+  host = startGpuHost({ vsock, log: line => lines.push(line), gpu: null, retryMs: 5, importHost: async () => ({ serveGPU }) });
+  await host.done;
+  assert.equal(calls.length, 4);
+  assert.ok(calls.every(([port]) => port === GPUTEST_VSOCK_PORT));
+  assert.equal(served.length, 2);
+  const o = served[0].options;
+  assert.ok(o.allowGraphics && o.allowWebGL && o.allowUniforms && o.allowTextures && o.allowDepth);
+  assert.equal(o.graphicsTranslatorOptions.sha256, '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2');
+  assert.equal(o.webglTranslatorOptions.sha256, '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5');
+  assert.equal(lines.filter(line => line.includes('connect retry')).length, 1, 'repeated identical failures are logged once');
+  assert.ok(lines.some(line => line.includes('session 2 backend=webgpu')));
+});
