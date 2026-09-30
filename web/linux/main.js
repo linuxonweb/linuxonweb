@@ -733,14 +733,39 @@ async function boot(mode) {
 }
 
 // Once a guest runs, the boot button becomes its stop button.
+// SVG elements have no `hidden` property, so one icon swaps its shapes.
 const bootButton = document.getElementById("boot");
+const bootIcon = bootButton.querySelector("svg");
+const powerShapes = bootIcon.innerHTML;
+const stopConfirm = document.getElementById("stop-confirm");
 function showStopButton(running) {
-  const [bootIcon, stopIcon] = bootButton.querySelectorAll("svg");
-  bootIcon.hidden = running;
-  stopIcon.hidden = !running;
+  bootIcon.innerHTML = running ? '<rect x="6" y="6" width="12" height="12" rx="1.5" />' : powerShapes;
+  bootButton.classList.toggle("stop", running);
   bootButton.querySelector(".label").textContent = running ? "Stop guest" : "Boot guest";
   if (running) bootButton.disabled = false;
+  else setStopConfirmOpen(false);
 }
+function setStopConfirmOpen(open) {
+  stopConfirm.hidden = !open;
+  if (open) bootButton.setAttribute("aria-expanded", "true");
+  else bootButton.removeAttribute("aria-expanded");
+  if (open) document.getElementById("stop-cancel").focus();
+}
+stopConfirm.addEventListener("click", (ev) => ev.stopPropagation());
+stopConfirm.addEventListener("keydown", (ev) => {
+  if (ev.key !== "Escape") return;
+  setStopConfirmOpen(false);
+  bootButton.focus();
+});
+document.addEventListener("click", () => setStopConfirmOpen(false));
+document.getElementById("stop-cancel").addEventListener("click", () => {
+  setStopConfirmOpen(false);
+  bootButton.focus();
+});
+document.getElementById("stop-yes").addEventListener("click", () => {
+  setStopConfirmOpen(false);
+  void stopGuest();
+});
 async function stopGuest() {
   if (!activeMachine || restarting) return;
   restarting = true;
@@ -758,9 +783,11 @@ async function stopGuest() {
 }
 
 for (const button of launchButtons) {
-  button.addEventListener("click", () => {
-    if (button === bootButton && activeMachine) void stopGuest();
-    else void boot(button.dataset.mode);
+  button.addEventListener("click", (ev) => {
+    if (button === bootButton && activeMachine) {
+      ev.stopPropagation();
+      setStopConfirmOpen(stopConfirm.hidden);
+    } else void boot(button.dataset.mode);
   });
 }
 

@@ -165,6 +165,18 @@
       }
       .tool:hover .label, .tool:focus-visible .label, .tool.show-label .label { opacity: 1; }
       #settings-toggle[aria-expanded="true"] .label { opacity: 0; }
+      /* A running guest turns the boot button into a light-blue stop button;
+         stopping asks for confirmation in a small popover below it. */
+      .stop-wrap { position: relative; }
+      #boot.stop, .stop-yes { border-color: #8fd3ff; background: #8fd3ff; color: #06233a; }
+      #boot.stop:hover, .stop-yes:hover { background: #b8e4ff; }
+      #boot[aria-expanded="true"] .label { opacity: 0; }
+      .stop-confirm { position: absolute; z-index: 30; top: 52px; left: 0; width: min(290px, calc(100vw - 32px)); padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48); }
+      .stop-confirm[hidden] { display: none; }
+      .stop-confirm p { margin: 0; }
+      .stop-title { font-weight: 650; }
+      .stop-copy { margin-top: 6px !important; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+      .stop-confirm .settings-actions { margin-top: 14px; }
       #keyboard-toggle[aria-expanded="true"], .keyboard-key[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: #15312d; }
       .mobile-keyboard { position: relative; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
       .mobile-keyboard[hidden] { display: none; }
@@ -342,7 +354,14 @@
             <div class="settings-actions"><button id="settings-apply" class="action primary" type="button" disabled>Apply changes</button></div>
           </section>
         </div>
-        <button class="action primary launch tool" id="boot" data-mode="guest" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg><svg class="stop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" hidden><rect x="6" y="6" width="12" height="12" rx="1.5" /></svg><span class="label">Boot guest</span></button>
+        <div class="stop-wrap">
+          <button class="action primary launch tool" id="boot" data-mode="guest" type="button" aria-controls="stop-confirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg><span class="label">Boot guest</span></button>
+          <section id="stop-confirm" class="stop-confirm" role="dialog" aria-label="Stop guest" hidden>
+            <p class="stop-title">Stop the running guest?</p>
+            <p class="stop-copy">/home is saved first; unsaved work in guest apps is lost.</p>
+            <div class="settings-actions"><button id="stop-cancel" class="action" type="button">Cancel</button><button id="stop-yes" class="action stop-yes" type="button">Stop</button></div>
+          </section>
+        </div>
         <button class="action launch tool" id="start-console" data-mode="console" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3" /><path d="M13 15h4" /></svg><span class="label">Start console</span></button>
         <button class="action launch tool" id="start-x" data-mode="startx" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8" /><path d="M12 16v4" /></svg><span class="label">Start X</span></button>
         <button class="action launch tool" id="start-firefox" data-mode="firefox" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z" /></svg><span class="label">Start Firefox</span></button>
