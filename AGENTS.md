@@ -114,7 +114,14 @@ is free.
   into `web/linux/gpu/gputest.cpio` (1,316,864 B, `1a65cf4b`). Real page gates:
   `?gputest=1` NVIDIA WebGPU 48 FPS/72 s; `&gpubackend=webgl` Intel ANGLE 39 FPS;
   `&firefox=1` 14 FPS (capped 15) beside Firefox. Rotation verified by screenshot diff.
-Running: Firefox WebGPU W4a (host executor).
+- Done: Firefox WebGPU W4a host executor (`docs/firefox-webgpu-w4a-20260930.md`,
+  `/mnt/p6/build/firefox-webgpu-w4a-20260930`): gpu_hostcall op 0x10 with
+  `WGQ1`/`WGR1` messages, 25 calls (server/adapter/device/buffer/map/encoder
+  copy+clear/queue write+submit/poll events/stats) in `web/linux/dist/guest-gpu-wgpu.js`,
+  full Firefox ids with epoch checks, per-call error policy + poll events.
+  Guest test 102/0 on NVIDIA (maxwell); W2 regression 150/0. Decoder wasm is
+  still served from the W3 build dir (ship it in W4c). No textures/passes/shaders.
+Running: Vulkan A6a (WSI surfaces/swapchain objects).
 Next: Vulkan A6-A7 (WSI, vkcube), gputest G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:

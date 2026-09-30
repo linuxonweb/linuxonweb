@@ -16,7 +16,8 @@ import shlex
 import subprocess
 import sys
 
-TASK = Path('/mnt/p6/build/firefox-webgpu-w2-20260929')
+# GPUHC_TASK lets a later packet rerun this regression under its own task root.
+TASK = Path(os.environ.get('GPUHC_TASK', '/mnt/p6/build/firefox-webgpu-w2-20260929'))
 CC = ('/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8'
       '/bin/wasm32-unknown-linux-musl-clang')
 BINARY = 'bin/guest-gpu-hostcall-test'

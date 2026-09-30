@@ -18,9 +18,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
-const HTTP_PORT = 4198, CDP_PORT = 9408;
+// GPUHC_TASK / GPUHC_HTTP_PORT / GPUHC_CDP_PORT let a later packet rerun this regression on its own ports.
+const HTTP_PORT = Number(process.env.GPUHC_HTTP_PORT || 4198), CDP_PORT = Number(process.env.GPUHC_CDP_PORT || 9408);
 const here = path.dirname(fileURLToPath(import.meta.url)), repo = path.resolve(here, '../../../..');
-const task = '/mnt/p6/build/firefox-webgpu-w2-20260929';
+const task = process.env.GPUHC_TASK || '/mnt/p6/build/firefox-webgpu-w2-20260929';
 const mode = 'gpu-hostcall';
 const [outArg, buildArg] = process.argv.slice(2);
 if (!outArg || !buildArg) throw Error('usage: OUT BUILD_DIR');

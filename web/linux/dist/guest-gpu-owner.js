@@ -11,6 +11,7 @@ import {
     OP_SLEEP, OP_TEST_CLOSE, OP_TEST_HANG, OP_TEST_TERMINATE, OP_WRITEBUFFER_PROBE, OWNER_ALIVE, OWNER_STARTING,
     S_ARGS, S_GEN, S_OP, S_RESULT, S_RESULT2, S_STATE, STATE_BUSY, STATE_DONE, STATE_REQUEST, slotState, slotWord,
 } from "./guest-gpu-hostcall.js";
+import { handleWgpuCall, OP_WGPU } from "./guest-gpu-wgpu.js";
 
 let hub = null;
 let myGen = 0;
@@ -338,6 +339,11 @@ function serve(slot) {
             case OP_WRITEBUFFER_PROBE:
                 writeBufferProbe(memory, a[0], a[1], () => current(slot, seq))
                     .then((report) => completeWith(slot, seq, () => writeJson(memory, a[2], a[3], a[4], report)))
+                    .catch((error) => complete(slot, seq, errnoOf(error)));
+                return;
+            case OP_WGPU:
+                // Firefox wgpu server calls (W4a executor, docs/firefox-webgpu-w4a-20260930.md).
+                handleWgpuCall(memory, a).then((write) => completeWith(slot, seq, write))
                     .catch((error) => complete(slot, seq, errnoOf(error)));
                 return;
             case OP_SLEEP: {

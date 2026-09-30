@@ -1,0 +1,137 @@
+{
+  "packet": "Firefox WebGPU W4a host wgpu executor over gpu_hostcall op 0x10",
+  "date": "2026-09-30",
+  "pass": true,
+  "taskRoot": "/mnt/p6/build/firefox-webgpu-w4a-20260930",
+  "protocol": {
+    "op": 16,
+    "requestMagic": "WGQ1 0x31514757",
+    "responseMagic": "WGR1 0x31524757",
+    "version": 1,
+    "calls": 25,
+    "errorTypes": "Firefox ErrorBufferType 0-4"
+  },
+  "sources": {
+    "web/linux/dist/guest-gpu-wgpu.js": "bc89607dd8c8da3357aae1b1e72a00f1b31e4e4243ff342689e8ce5dde7e41ea",
+    "web/linux/dist/guest-gpu-owner.js": "251d5d412ca69fdddd87e055d147a96d3d70dc7451db6dd7ff6ec546ece8b95a",
+    "web/linux/tests/firefox-webgpu-executor/wgpu-executor-test.c": "c35ccf9444682dbe420cf81b4d6b57e19dd81cd2f6a0bcee25e0c74790bcff3c",
+    "web/linux/tests/firefox-webgpu-executor/build.py": "ea7e57a6d50f8a95d6cbdc87f77c29e39289b759732fdfb049297ba528992783",
+    "web/linux/tests/firefox-webgpu-executor/run-guest.mjs": "61a1eafb0a0892618d1e6eb87a14906d3ae76c8adb6de78bb3c536d942ac37ad",
+    "web/linux/tests/firefox-webgpu-executor/index.html": "7694958f72648457ae51b3553238e1b35e7de5f940bf83cdfaa0a2dd71d1996c",
+    "web/linux/tests/guest-gpu-hostcall/build.py": "445ee3d917bee7d0ecb8a5883746198beb3bb5c2346aab3c969fec90d1fc63c8",
+    "web/linux/tests/guest-gpu-hostcall/run-guest.mjs": "2f3e12aed8f0d9d79cf5982f01d87d564ea4d6f6664c5bd83518e77f008f61e6"
+  },
+  "build": {
+    "dir": "build-run1",
+    "guestBinaryBytes": 90206,
+    "guestBinarySha256": "bc288ddd3e8f70f401de09f0191bde3572cb9f8648775290489bfa03bcc55559",
+    "archiveBytes": 40586052,
+    "archiveSha256": "6c442a05682b1ecfe621c3ef391f441e92961e02ba680c61c44375729814d0ba",
+    "decoderWasm": "/mnt/p6/build/firefox-webgpu-w3-20260929/decoder-build-run2/firefox-webgpu-decoder.wasm",
+    "decoderWasmSha256": "2f0c575b700a9220aea6365a60201f29600ff446c26eeeb78d703ccb11cd248e"
+  },
+  "guestRun": {
+    "dir": "guest-run1",
+    "pass": true,
+    "passes": 102,
+    "failures": 0,
+    "exitStatus": 0,
+    "configuration": {
+      "memoryKiB": [
+        1048576
+      ],
+      "cpus": [
+        2
+      ],
+      "verified": true
+    },
+    "adapter": {
+      "name": "nvidia maxwell",
+      "driver": "WebGPU (host passthrough)",
+      "vendor": "nvidia",
+      "architecture": "maxwell",
+      "pci_vendor": 4318,
+      "device_type": 2,
+      "fallback": 0,
+      "features_bits": "0x140000000000767",
+      "maxBufferSize": 4294967292,
+      "maxTextureDimension2D": 16384,
+      "maxStorageBufferBindingSize": 2147483644,
+      "pciVendorHex": "0x10de",
+      "line": "GUEST_WGPU ADAPTER name=\"nvidia maxwell\" driver=\"WebGPU (host passthrough)\" vendor=\"nvidia\" architecture=\"maxwell\" pci_vendor=0x10de device_type=2 fallback=0 features_bits=0x140000000000767 maxBufferSize=4294967292 maxTextureDimension2D=16384 maxStorageBufferBindingSize=2147483644",
+      "featureBitsSet": 10,
+      "note": "runner parseGuest stored hex fields as 0 in guest-run1/result.json; values here are taken from the recorded guest line"
+    },
+    "requestAdapterMs": {
+      "ms": 23
+    },
+    "requestDeviceMs": {
+      "ms": 24
+    },
+    "latency": {
+      "calls": 99,
+      "mean_us": 1228,
+      "unrelated_events": 2
+    },
+    "stats": [
+      "GUEST_WGPU STATS before-drop globals=1 adapters=1 devices=2 buffers=4 encoders=0 cmdbufs=0 pending=0 events=0 mapped=0 calls=89 errors=24 dropped=0",
+      "GUEST_WGPU STATS end globals=1 adapters=0 devices=0 buffers=0 encoders=0 cmdbufs=0 pending=0 events=0 mapped=0 calls=107 errors=26 dropped=0",
+      "GUEST_WGPU STATS after-delete globals=0 adapters=0 devices=0 buffers=0 encoders=0 cmdbufs=0 pending=0 events=0 mapped=0 calls=110 errors=27 dropped=0"
+    ],
+    "deviceLost": [
+      "GUEST_WGPU DEVICE_LOST polls=4 status=1 msg=Device was destroyed."
+    ],
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "serverClosed": true,
+    "elapsedMs": 3904,
+    "resultSha256": "2a50512966bb677d761efbb857a5312759ceb8b113ff51b40e9eeac6b864d846"
+  },
+  "w2Regression": {
+    "build": "w2-regress-build-run1",
+    "run": "w2-regress-guest-run1",
+    "pass": true,
+    "passes": 150,
+    "failures": 0,
+    "latency": {
+      "rounds": 10000,
+      "total_ns": 284225000,
+      "mean_ns": 28422,
+      "min_ns": 10000,
+      "p50_ns": 20000,
+      "p90_ns": 30000,
+      "p99_ns": 65000,
+      "p999_ns": 170000,
+      "max_ns": 525000,
+      "clock_pair_ns": 4605
+    },
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "resultSha256": "6484d8ccff32a9a398d90451080473cf3d485eef640d00a01f3816f60cbd112b"
+  },
+  "host": {
+    "browser": "/home/a/.local/archpkg/pacman/usr/bin/chromium headful DISPLAY=:0",
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--enable-features=Vulkan",
+      "--ignore-gpu-blocklist"
+    ],
+    "powerPreference": "high-performance",
+    "ports": {
+      "http": 4201,
+      "cdp": 9411
+    }
+  },
+  "limitations": [
+    "Firefox not relinked (W4b/W4c)",
+    "only CreateCommandEncoder, CopyBufferToBuffer, ClearBuffer, debug markers, QueueWriteAction::Buffer executed",
+    "decoder wasm served from W3 build dir by the runner, not shipped in web/linux/dist",
+    "encoder validation errors surface at finish (WebGPU) not per command",
+    "PCI device id 0, device type heuristic",
+    "no owner-respawn test in W4a"
+  ]
+}
