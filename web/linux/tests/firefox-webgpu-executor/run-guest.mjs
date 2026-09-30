@@ -116,7 +116,8 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
 function parseGuest(guest) {
   const lines = guest.lines.map(line => line.text);
   const summary = lines.map(line => /^GUEST_WGPU SUMMARY passes=(\d+) failures=(\d+)/.exec(line)).find(Boolean);
-  const fields = line => Object.fromEntries([...line.matchAll(/(\w+)=(-?\d+)/g)].map(m => [m[1], Number(m[2])]));
+  const number = text => { const value = BigInt(text); return value >= BigInt(Number.MIN_SAFE_INTEGER) && value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : text; };
+  const fields = line => Object.fromEntries([...line.matchAll(/(\w+)=(-?(?:0x[0-9a-fA-F]+|\d+))\b/g)].map(m => [m[1], number(m[2])]));
   const strings = line => Object.fromEntries([...line.matchAll(/(\w+)="([^"]*)"/g)].map(m => [m[1], m[2]]));
   const tagged = tag => lines.filter(line => line.startsWith('GUEST_WGPU ' + tag + ' '));
   const memory = guest.bootConfigurationEvidence.flatMap(e => [...e.text.matchAll(/Memory:\s*\d+K\/(\d+)K/g)].map(m => Number(m[1])));
