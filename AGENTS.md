@@ -108,7 +108,8 @@ is free.
   `6febc628`, run on an idle host (no concurrent browser gates).
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
-Next: Vulkan A6-A7 (WSI, vkcube), gputest G1-G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
+Running: gputest G2 (cube CPIO), Firefox WebGPU W4a (host executor).
+Next: Vulkan A6-A7 (WSI, vkcube), gputest G2-G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
@@ -123,7 +124,12 @@ User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
   Forcing does not add a GL driver (no libGL/EGL/glxtest in the guest), and
   WebGPU stays a null adapter until W4.
 - `?gputest=1` packets (A5 landed; unblocked):
-  - G1: main-page host wiring. Add vsockDevice. Retry `vsock.connect(4050)`
+  - G1 DONE (`7e69a15`, `/mnt/p6/build/gputest-g1-20260930`): `web/linux/gputest.mjs`
+    + main.js wiring, pinned translators in `web/linux/gpu/`. E2E with a test
+    CPIO: A5 depth client 42,620 checks on NVIDIA WebGPU. Lessons: CPIO without
+    directory entries; no `( ) &` subshells in `/gputest-init` (no /proc yet),
+    use a separate waiter script. Sites deploy must include `web/linux/tests/`.
+  - G1 (original spec): main-page host wiring. Add vsockDevice. Retry `vsock.connect(4050)`
     and serve with `serveGPU` (WebGPU high-performance, WebGL2 fallback,
     graphics/uniform/texture/depth), using translator wasm shipped under
     `web/linux`. Append the demo CPIO to the initramfs (decompressed for
