@@ -4,8 +4,8 @@ The user explicitly resumed the goal: guest GPU in Linux-wasm, Vulkan usable by
 ordinary guest apps, Firefox GPU and JIT, then OpenGL via Vulkan (Zink).
 Branch: `claude-opus-5-5-guest-gpu-jit` (from `8ba982e`). The Codex-era weekly
 quota stop below is superseded for this work: if the 5-hour usage window runs
-out, pause and resume after it resets. Subagents use Opus 5.5 with short,
-bounded packets. Storage policy below still applies to every packet.
+out, pause and resume after it resets. Subagents use Opus 5.5; size each
+packet to finish in about 20 minutes (user, 2026-09-30) and chain packets. Storage policy below still applies to every packet.
 
 Current packets (update as they finish):
 - Done: Vulkan gap research `docs/vulkan-gap-zink-vkcube-20260928.md`
@@ -29,8 +29,11 @@ Current packets (update as they finish):
   <=128, samplers, combined image samplers; all earlier suites plus textures
   pass (`/mnt/p6/build/guest-vulkan-a4-20260929/all-run1`). First runs on a
   physical GPU: WebGPU on NVIDIA MX110 (Dawn Vulkan), WebGL2 on Intel ANGLE.
-- Running: Vulkan A5 depth (task dir `/mnt/p6/build/guest-vulkan-a5-20260929`,
-  ports 4197/9407).
+- Done: Vulkan A5 depth (`a9ee52c`, `docs/guest-vulkan-depth-20260929.md`):
+  opt-in `allowDepth`, D32/D16 attachments, compare ops/writes, LOAD/CLEAR.
+  Depth app 42,620 checks on NVIDIA WebGPU and Intel WebGL2; all earlier
+  suites pass (`/mnt/p6/build/guest-vulkan-a5-20260929/all-run1`). No
+  stencil/bias/clamp, no depth sampling/readback, <=128x128, no WSI.
 - Done: Firefox GPU check page (`7d02735`): packager
   `tools/guest-rootfs/package-firefox-gpu-check.py` adds the WebGL/WebGPU cube
   page plus `distribution.ini` (toolbar+menu bookmark, default homepage) to
@@ -89,6 +92,35 @@ User priority (2026-09-29): finish guest Vulkan first, then Firefox WebGPU
 Zink/OpenGL is deferred until after that. JIT continues in parallel when a slot
 is free.
 Next: Vulkan A5-A7 (depth, WSI, vkcube), Firefox WebGPU W1-W9, JIT 3 (PBL diagnosis; not started yet), later Zink B2+.
+
+User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
+- `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
+  working, alone and combined with `gputest`.
+- Firefox prefs: `package-firefox-gpu-check.py` `[Preferences]` now forces
+  webgl.force-enabled, webgl.enable-webgl2,
+  webgl.disable-fail-if-major-performance-caveat, dom.webgpu.enabled (+workers)
+  and gfx.webgpu.ignore-blocklist on the default branch (like about:config).
+  The page also records `webglcontextcreationerror`. Candidate
+  `/mnt/p6/build/firefox-gpu-check-20260929/candidate-run5` (`d5103be54146`,
+  commit `c31cf89`); gate `guest-run5` passes cold/warm; not promoted.
+  Forcing does not add a GL driver (no libGL/EGL/glxtest in the guest), and
+  WebGPU stays a null adapter until W4.
+- `?gputest=1` packets (A5 landed; unblocked):
+  - G1: main-page host wiring. Add vsockDevice. Retry `vsock.connect(4050)`
+    and serve with `serveGPU` (WebGPU high-performance, WebGL2 fallback,
+    graphics/uniform/texture/depth), using translator wasm shipped under
+    `web/linux`. Append the demo CPIO to the initramfs (decompressed for
+    Firefox) and set `rdinit=/gputest-init`.
+  - G2: demo CPIO with an animated depth-tested rotating cube (uniform MVP)
+    presented via XImage in a loop, printing FPS. `/gputest-init` starts it
+    after X is up, then `exec /init`. Adapter only: no rootfs `/init` change.
+  - G3: main-page gate on NVIDIA for `?gputest=1` and
+    `?gputest=1&firefox=1`.
+  - There is no OpenGL demo until Zink.
+- Web UI (`30d992f`): Boot button turns into Stop after boot (flush home,
+  close, reload without auto-boot); portrait resolutions 512x960, 720x1280,
+  900x1600; display click scrolls to top after 2 s. Headless check
+  `/mnt/p6/build/ui-stop-20260930/test.mjs` passes.
 
 User rules (2026-09-28): native wasm only, no x86 emulation. Prefer adapter
 code (host runtime adapters, guest shims, link wrappers, packed JS/pref
