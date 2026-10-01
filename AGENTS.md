@@ -129,7 +129,15 @@ is free.
 - Paused: W4b Firefox wgpu wrapper draft (uncommitted, `web/linux/tests/firefox-webgpu-wrapper/`,
   goldens in `/mnt/p6/build/firefox-webgpu-w4b-20260930/goldens-run1`). W4a runner hex parser fixed (`aa93cf0`).
 
-User priority (2026-09-30, supersedes 09-29): guest Vulkan usable by Firefox and
+User priority (2026-10-01, supersedes 09-30): full guest Vulkan + OpenGL for
+ordinary apps, measured with a glxgears-style benchmark: software GL (Mesa
+softpipe; llvmpipe needs an LLVM JIT) vs OpenGL on Zink on the guest ICD vs
+native Vulkan gears, on the NVIDIA recipe; then STOP for confirmation. Firefox
+WebGL relink (F1b) and W4b are paused. Packets: B2e (running) -> B2c push
+constants -> B2b blocking waits -> caps (1 MiB alloc, 128 px, Z24/S8, present);
+S1 softpipe Mesa build + `glgears` EGL app with XPutImage + FPS (parallel);
+V1 `vkgears` (same geometry, Vulkan); S2 three-way score table.
+Previous priority (2026-09-30, supersedes 09-29): guest Vulkan usable by Firefox and
 apps, Firefox WebGL/WebGL2 on guest Vulkan via Zink (no Vulkan WebGL backend in
 Firefox; design `docs/firefox-webgl-zink-design-20260930.md`), then STOP for
 user confirmation. Chain: Zink B2a (exts/features/limits, CPU device type) ->
