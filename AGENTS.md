@@ -168,11 +168,15 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   resources under `GUEST_VK_ZINK`, independentBlend; 20/20 suites. Guest EGL
   init OK (1.4, 6 pbuffer configs, glsl 460); eglCreateContext fails because the
   ICD rejects Zink's vkCreateBuffer usage 0x1ff.
+- Done: glgears S1 (`f9c1ce7`, `docs/glgears-s1-20261001.md`): glxgears port on
+  surfaceless EGL (FBO readback -> XPutImage), `tools/glgears/build-glgears.sh`,
+  `web/linux/gpu/gputest-glgears.cpio`, page `?gputest=1&gputestapp=glgears&gldriver=softpipe|zink&glmode=bench|present|nopresent`.
+  Softpipe 300x300 on the NVIDIA recipe: ~87 FPS presented, ~185 FPS nopresent.
+  Zink: EGL init OK, eglCreateContext fails (vkCreateBuffer usage 0x1ff, B2f).
 - Running (10-01): B2f general buffer usage + memory suballocation -> Zink
   context/GL strings/clear readback (`/mnt/p6/build/zink-b2f-20261001`, ports
-  4209/9419); S1-continue softpipe glgears page gate
-  (`/mnt/p6/build/glgears-s1-20261001`, ports 4208/9418; app, build script,
-  packager and `?gputestapp=glgears&gldriver=&glmode=` wiring are uncommitted).
+  4209/9419); V1 vkgears (same gears, Vulkan, 128x128 ICD cap, gputestapp=vkgears;
+  `/mnt/p6/build/vkgears-v1-20261001`, ports 4211/9421, builds on a HEAD ICD snapshot).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
