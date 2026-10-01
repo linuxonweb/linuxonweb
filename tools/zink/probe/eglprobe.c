@@ -144,6 +144,22 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
     int pass = st == GL_FRAMEBUFFER_COMPLETE && okv && okf && okl && px_in[0] > 200 && px_in[2] < 50 && px_out[2] > 200 && px_out[0] < 50 && !err;
     printf("DRAW %s %s fbo=0x%x shaders=%d/%d link=%d inside=%u,%u,%u,%u outside=%u,%u,%u,%u glerr=0x%x\n", label, pass ? "PASS" : "FAIL",
            st, okv, okf, okl, px_in[0], px_in[1], px_in[2], px_in[3], px_out[0], px_out[1], px_out[2], px_out[3], err);
+    { /* B2g face culling: lower-left triangle is CCW, upper-right is CW (GL window coordinates). */
+      P(PFNGLENABLEPROC, glEnable); P(PFNGLDISABLEPROC, glDisable); P(PFNGLCULLFACEPROC, glCullFace);
+      static const float both[] = { -1, -1, 0, -1, -1, 0,  1, 1, 1, 0, 0, 1 };
+      glBufferData(GL_ARRAY_BUFFER, sizeof both, both, GL_STATIC_DRAW); glEnable(GL_CULL_FACE);
+      int cull_pass = 1;
+      for (int mode = 0; mode < 2; mode++) {
+          glCullFace(mode ? GL_FRONT : GL_BACK); glClear(GL_COLOR_BUFFER_BIT); glDrawArrays(GL_TRIANGLES, 0, 6); glFinish();
+          unsigned char ccw[4] = {0}, cw[4] = {0};
+          glReadPixels(4, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, ccw); glReadPixels(28, 28, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, cw);
+          GLenum ce = glGetError(); int drawn_ccw = ccw[0] > 200 && ccw[2] < 50, drawn_cw = cw[0] > 200 && cw[2] < 50;
+          int ok = !ce && (mode ? !drawn_ccw && drawn_cw : drawn_ccw && !drawn_cw) && (ccw[2] > 200 || drawn_ccw) && (cw[2] > 200 || drawn_cw);
+          printf("CULL %s %s mode=%s ccw=%u,%u,%u,%u cw=%u,%u,%u,%u glerr=0x%x\n", label, ok ? "PASS" : "FAIL", mode ? "front" : "back",
+                 ccw[0], ccw[1], ccw[2], ccw[3], cw[0], cw[1], cw[2], cw[3], ce);
+          cull_pass &= ok;
+      }
+      glDisable(GL_CULL_FACE); pass &= cull_pass; }
     eglMakeCurrent(d, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(d, c);
     return !pass;

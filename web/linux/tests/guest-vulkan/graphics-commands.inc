@@ -98,25 +98,34 @@ static VKAPI_ATTR void VKAPI_CALL bind_vertex_buffers(VkCommandBuffer cb,uint32_
     }
     for(unsigned n=0;n<count;n++)command.graphics.vertices[first+n]=(struct graphics_vertex_ref){RID(buffers[n]),offsets[n]};
 }
+static struct recorded *draw_graphics_record(VkCommandBuffer cb,uint32_t count,uint32_t instances,uint32_t first,uint32_t first_instance);
 static VKAPI_ATTR void VKAPI_CALL draw_graphics(VkCommandBuffer cb,uint32_t count,uint32_t instances,uint32_t first,uint32_t first_instance) {
+    (void)draw_graphics_record(cb,count,instances,first,first_instance);
+}
+static struct recorded *draw_graphics_record(VkCommandBuffer cb,uint32_t count,uint32_t instances,uint32_t first,uint32_t first_instance) {
     SELECT_CB(cb);
-    if(cb!=&command||command.state!=2)return;
+    if(cb!=&command||command.state!=2)return NULL;
     if(!command.graphics.in_pass||!command.graphics.pipeline||count<3||count>65536||count%3||first>65536||instances!=1||first_instance) {
-        invalid_command(cb);return;
+#ifdef GUEST_VK_ZINK
+        ZINK_TRACE("draw REJECT in_pass=%u pipeline=%u count=%u first=%u instances=%u first_instance=%u\n",command.graphics.in_pass,
+            command.graphics.pipeline?1u:0u,count,first,instances,first_instance);
+#endif
+        invalid_command(cb);return NULL;
     }
     /* A3: every non-empty set of the pipeline layout must be bound first. */
     struct resource *pipeline=resource_get(command.graphics.pipeline,R_GRAPHICS_PIPELINE);
-    if(!pipeline){invalid_command(cb);return;}
+    if(!pipeline){invalid_command(cb);return NULL;}
     const struct uniform_pipeline_layout *u=&pipeline->graphics.pipeline.uniforms;
-    for(unsigned s=0;s<u->set_count;s++)if(u->sets[s].count&&!command.graphics.sets[s]){invalid_command(cb);return;}
+    for(unsigned s=0;s<u->set_count;s++)if(u->sets[s].count&&!command.graphics.sets[s]){invalid_command(cb);return NULL;}
     /* B2d: a dynamic viewport/scissor pipeline needs both set before the draw. */
     unsigned dynamic=pipeline->graphics.pipeline.dynamic_viewport;
-    if(dynamic&&(command.graphics.dynamic_set&3u)!=3u){invalid_command(cb);return;}
+    if(dynamic&&(command.graphics.dynamic_set&3u)!=3u){invalid_command(cb);return NULL;}
     struct recorded *r=record_command(cb,C_GRAPHICS_DRAW);
     if(r){r->graphics.draw.pipeline=command.graphics.pipeline;r->graphics.draw.count=count;r->graphics.draw.first=first;
         memcpy(r->graphics.draw.vertices,command.graphics.vertices,sizeof(r->graphics.draw.vertices));
         memcpy(r->graphics.draw.sets,command.graphics.sets,sizeof(r->graphics.draw.sets));
         r->graphics.draw.dynamic=dynamic;r->graphics.draw.viewport=command.graphics.viewport;r->graphics.draw.scissor=command.graphics.scissor;}
+    return r;
 }
 static int record_vertex_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {
     SELECT_CB(cb);
@@ -169,6 +178,17 @@ static int graphics_prepare_begin(const struct graphics_begin_record *r,struct r
     }
     graphics_json_append(j,",\"draws\":[");return !j->bad;
 }
+#ifdef GUEST_VK_ZINK
+static uint32_t zink_index_piece(const struct graphics_pipeline *p,uint32_t count);
+static int zink_gather_indexed(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t start,uint32_t count,struct graphics_json *j);
+#endif
+static void graphics_draw_tail(struct graphics_json *j,uint32_t count,uint32_t first,VkViewport v,VkRect2D s) {
+    graphics_json_append(j,",\"vertexCount\":%u,\"firstVertex\":%u,\"instanceCount\":1,\"firstInstance\":0,"
+        "\"viewport\":{\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g,\"minDepth\":%.9g,\"maxDepth\":%.9g},"
+        "\"scissor\":{\"x\":%u,\"y\":%u,\"width\":%u,\"height\":%u}}",
+        count,first,v.x,v.y,v.width,v.height,v.minDepth,v.maxDepth,
+        (unsigned)s.offset.x,(unsigned)s.offset.y,s.extent.width,s.extent.height);
+}
 static int graphics_prepare_draw(const struct graphics_draw_record *r,const struct graphics_pass *pass,
         struct resource *image,struct graphics_json *j,unsigned draw_index,unsigned used[MAX_RES],unsigned used_uniforms[MAX_RES],
         const VkImageLayout layouts[MAX_RES],const unsigned initialized[MAX_RES]) {
@@ -182,7 +202,15 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
        s.extent.width>image->width-(unsigned)s.offset.x||s.extent.height>image->height-(unsigned)s.offset.y||
        r->count<3||r->count>65536||r->count%3||r->first>65536)return 0;
     graphics_json_append(j,"%s{\"pipeline\":%u,\"vertexBuffers\":[",draw_index?",":"",pipeline->host);
+#ifdef GUEST_VK_ZINK
+    /* B2g: indexed draws are expanded into gathered vertex streams, split
+     * into pieces of `piece` indices that each fit one ring chunk. */
+    const uint32_t piece=r->index_size?zink_index_piece(p,r->count):r->count;
+    if(r->index_size&&(!piece||!zink_gather_indexed(r,p,0,piece,j)))return 0;
+    for(unsigned n=0;n<p->binding_count&&!r->index_size;n++) {
+#else
     for(unsigned n=0;n<p->binding_count;n++) {
+#endif
         const struct graphics_binding *layout=&p->bindings[n];const struct graphics_vertex_ref *binding=&r->vertices[layout->binding];
         struct resource *b=resource_get(binding->buffer,R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
 #ifdef GUEST_VK_ZINK
@@ -211,6 +239,9 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         graphics_json_append(j,"%s{\"buffer\":%u,\"offset\":%u,\"size\":%u}",n?",":"",b->host,(unsigned)binding->offset,(unsigned)remaining);
     }
     graphics_json_append(j,"]");
+#ifdef GUEST_VK_ZINK
+    const size_t bindings_at=j->used;
+#endif
     /* A3: resolve bound uniform descriptors at submit (the set contents at
      * submission time are used, matching update-before-submit semantics). */
     unsigned emitted=0;
@@ -277,11 +308,21 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         }
     }
     if(textures)graphics_json_append(j,"]");
-    graphics_json_append(j,",\"vertexCount\":%u,\"firstVertex\":%u,\"instanceCount\":1,\"firstInstance\":0,"
-        "\"viewport\":{\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g,\"minDepth\":%.9g,\"maxDepth\":%.9g},"
-        "\"scissor\":{\"x\":%u,\"y\":%u,\"width\":%u,\"height\":%u}}",
-        r->count,r->first,v.x,v.y,v.width,v.height,v.minDepth,v.maxDepth,
-        (unsigned)s.offset.x,(unsigned)s.offset.y,s.extent.width,s.extent.height);
+#ifdef GUEST_VK_ZINK
+    if(r->index_size) {
+        const size_t bindings_end=j->used;
+        graphics_draw_tail(j,piece,0,v,s);
+        for(uint32_t start=piece;start<r->count&&!j->bad;start+=piece) {
+            const uint32_t n=r->count-start<piece?r->count-start:piece;
+            graphics_json_append(j,",{\"pipeline\":%u,\"vertexBuffers\":[",pipeline->host);
+            if(!zink_gather_indexed(r,p,start,n,j))return 0;
+            graphics_json_append(j,"]%.*s",(int)(bindings_end-bindings_at),j->bytes+bindings_at);
+            graphics_draw_tail(j,n,0,v,s);
+        }
+        return !j->bad;
+    }
+#endif
+    graphics_draw_tail(j,r->count,r->first,v,s);
     return !j->bad;
 }
 static VkResult graphics_upload_vertices(const unsigned used[MAX_RES]) {

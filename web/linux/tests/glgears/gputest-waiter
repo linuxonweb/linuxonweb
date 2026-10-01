@@ -23,8 +23,12 @@ for word in $cmdline; do
 done
 case "$cmdline" in *" firefox=1 "*) delay=20 ;; esac
 sizearg=; [ -n "$size" ] && sizearg="-size $size"
+# -readrgba for both drivers: GL_BGRA readback needs a Zink blit the guest ICD
+# lacks, and one read format keeps the softpipe/Zink comparison fair.
+sizearg="-readrgba $sizearg"
 if [ "$driver" = zink ]; then
-  export MESA_LOADER_DRIVER_OVERRIDE=zink LIBGL_ALWAYS_SOFTWARE=1
+  # GALLIUM_THREAD=0: the measured B2g configuration (no threaded context).
+  export MESA_LOADER_DRIVER_OVERRIDE=zink LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_THREAD=0
 else
   export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=softpipe
 fi

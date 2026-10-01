@@ -18,6 +18,8 @@
  * "N frames in 5.0 seconds = X FPS" lines plus a parseable GLGEARS_FPS line.
  *
  * Options: -nopresent  -seconds N (0 = forever)  -size WxH  -info  -interval S
+ *          -readrgba (read GL_RGBA, the renderbuffer's own format, and swizzle
+ *          on the CPU; Zink otherwise converts to BGRA with a GPU blit)
  * Exit codes: 0 ok, 1 usage, 2 EGL failure, 3 GL failure, 4 X11 failure.
  */
 #define _GNU_SOURCE
@@ -326,6 +328,8 @@ static int on_x_error(Display *d, XErrorEvent *e) {
     return 0;
 }
 static int on_x_io_error(Display *d) { (void)d; say("GLGEARS_X11_LOST display connection closed\n"); _exit(4); return 0; }
+static int read_rgba; /* -readrgba: pixels are RGBA, swap R/B while copying */
+static int check; /* -check: print a colour census of one frame at angle 0 */
 static int direct_bgra; /* XImage is 32bpp LSBFirst with 0xff0000/0xff00/0xff masks: copy BGRA rows as-is */
 
 static int x11_open(int w, int h) {
@@ -376,14 +380,21 @@ static unsigned long component(unsigned v, unsigned long mask) {
     while (!(mask & 1)) { mask >>= 1; shift++; }
     return (unsigned long)(((uint64_t)v * mask + 127) / 255) << shift;
 }
-/* bgra: bottom-up rows from glReadPixels(GL_BGRA, GL_UNSIGNED_BYTE). */
+/* bgra: bottom-up rows from glReadPixels(GL_BGRA, GL_UNSIGNED_BYTE), or
+ * GL_RGBA with -readrgba. */
 static void x11_present(const unsigned char *bgra, int w, int h) {
     for (int y = 0; y < h; y++) {
         const unsigned char *src = bgra + (size_t)(h - 1 - y) * w * 4;
-        if (direct_bgra) { memcpy(image->data + (size_t)y * image->bytes_per_line, src, (size_t)w * 4); continue; }
+        if (direct_bgra && !read_rgba) { memcpy(image->data + (size_t)y * image->bytes_per_line, src, (size_t)w * 4); continue; }
+        if (direct_bgra) {
+            unsigned char *dst = (unsigned char *)image->data + (size_t)y * image->bytes_per_line;
+            for (int x = 0; x < w * 4; x += 4) { dst[x] = src[x + 2]; dst[x + 1] = src[x + 1]; dst[x + 2] = src[x]; dst[x + 3] = src[x + 3]; }
+            continue;
+        }
+        const int r = read_rgba ? 0 : 2, b = read_rgba ? 2 : 0;
         for (int x = 0; x < w; x++) {
             const unsigned char *p = src + x * 4;
-            XPutPixel(image, x, y, component(p[2], image->red_mask) | component(p[1], image->green_mask) | component(p[0], image->blue_mask));
+            XPutPixel(image, x, y, component(p[r], image->red_mask) | component(p[1], image->green_mask) | component(p[b], image->blue_mask));
         }
     }
     XPutImage(dpy, win, gc, image, 0, 0, 0, 0, w, h);
@@ -408,7 +419,7 @@ static const char *driver_name(void) {
 }
 
 static void usage(void) {
-    say("usage: glgears [-nopresent] [-seconds N] [-size WxH] [-info] [-interval S]\n");
+    say("usage: glgears [-nopresent] [-seconds N] [-size WxH] [-info] [-interval S] [-readrgba] [-check]\n");
 }
 
 int main(int argc, char **argv) {
@@ -417,6 +428,8 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-nopresent")) present = 0;
         else if (!strcmp(argv[i], "-info")) info = 1;
+        else if (!strcmp(argv[i], "-readrgba")) read_rgba = 1;
+        else if (!strcmp(argv[i], "-check")) check = 1;
         else if (!strcmp(argv[i], "-seconds") && i + 1 < argc) seconds = atof(argv[++i]);
         else if (!strcmp(argv[i], "-interval") && i + 1 < argc) interval = atof(argv[++i]);
         else if (!strcmp(argv[i], "-size") && i + 1 < argc) {
@@ -425,7 +438,7 @@ int main(int argc, char **argv) {
     }
     if (interval <= 0) interval = 5.0;
     const char *driver = driver_name();
-    say("GLGEARS_START driver=%s present=%d size=%dx%d seconds=%g\n", driver, present, w, h, seconds);
+    say("GLGEARS_START driver=%s present=%d size=%dx%d seconds=%g read=%s\n", driver, present, w, h, seconds, read_rgba ? "rgba" : "bgra");
 
     PFNEGLGETPLATFORMDISPLAYEXTPROC gpd = (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
     EGLDisplay d = gpd ? gpd(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, NULL) : eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -470,14 +483,34 @@ int main(int argc, char **argv) {
     if (err != GL_NO_ERROR) { say("GLGEARS_ERROR GL error 0x%x after init\n", err); return 3; }
 
     unsigned char *pixels = NULL;
-    if (present) {
+    if (present || check) {
         pixels = malloc((size_t)w * h * 4);
-        if (!pixels || !x11_open(w, h)) { say("GLGEARS_ERROR X11 open failed\n"); return 4; }
+        if (!pixels) { say("GLGEARS_ERROR out of memory\n"); return 4; }
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
     }
+    if (present && !x11_open(w, h)) { say("GLGEARS_ERROR X11 open failed\n"); return 4; }
     say("GLGEARS_READY driver=%s renderer=\"%s\" version=\"%s\" present=%d size=%dx%d\n",
         driver, renderer, version ? version : "?", present, w, h);
 
+    if (check) {
+        /* Census of the angle-0 frame, comparable across drivers: pixels whose
+         * dominant channel is red/green/blue (the three gears), black, other. */
+        draw();
+        glReadPixels(0, 0, w, h, read_rgba ? GL_RGBA : GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+        long red = 0, green = 0, blue = 0, black = 0, other = 0;
+        for (long n = 0; n < (long)w * h; n++) {
+            const unsigned char *q = pixels + n * 4;
+            int r = q[read_rgba ? 0 : 2], g = q[1], b = q[read_rgba ? 2 : 0];
+            if (r < 16 && g < 16 && b < 16) black++;
+            else if (r > g + 16 && r > b + 16) red++;
+            else if (g > r + 16 && g > b + 16) green++;
+            else if (b > r + 16 && b > g + 16) blue++;
+            else other++;
+        }
+        err = glGetError();
+        say("GLGEARS_CHECK driver=%s size=%dx%d red=%ld green=%ld blue=%ld black=%ld other=%ld glerr=0x%x\n",
+            driver, w, h, red, green, blue, black, other, err);
+    }
     double t_start = now_s(), t_last = t_start, t_rot = t_start;
     int frames = 0, total = 0;
     for (;;) {
@@ -489,7 +522,7 @@ int main(int argc, char **argv) {
 
         draw();
         if (present) {
-            glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+            glReadPixels(0, 0, w, h, read_rgba ? GL_RGBA : GL_BGRA, GL_UNSIGNED_BYTE, pixels);
             x11_present(pixels, w, h);
             if (!x11_events()) break;
         } else {

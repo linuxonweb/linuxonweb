@@ -539,6 +539,12 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
             const depthState = pipeline.descriptor.depth;
             if (depthState) { gl.enable(gl.DEPTH_TEST); gl.depthFunc(glCompare[depthState.depthCompare]); gl.depthMask(depthState.depthWriteEnabled); }
             else gl.disable(gl.DEPTH_TEST);
+            // Guest row 0 is GL window row 0 (no Y flip), and GL's winding area
+            // has the opposite sign to Vulkan's, so the front face is inverted.
+            if (pipeline.descriptor.cullMode !== 'none') {
+              gl.enable(gl.CULL_FACE); gl.cullFace(pipeline.descriptor.cullMode === 'front' ? gl.FRONT : gl.BACK);
+              gl.frontFace(pipeline.descriptor.frontFace === 'ccw' ? gl.CW : gl.CCW);
+            } else gl.disable(gl.CULL_FACE);
             gl.enable(gl.SCISSOR_TEST); gl.scissor(s.x, s.y, s.width, s.height);
             if (needsIndices(draw)) {
               for (let i = 0; i < draw.vertexCount; i += 3) {

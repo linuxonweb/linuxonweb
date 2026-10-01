@@ -189,8 +189,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     if(!assembly||assembly->sType!=VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO||assembly->pNext||assembly->flags||
        assembly->topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST||assembly->primitiveRestartEnable||
        !raster||raster->sType!=VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO||raster->pNext||raster->flags||
-       raster->depthClampEnable||raster->rasterizerDiscardEnable||raster->polygonMode!=VK_POLYGON_MODE_FILL||raster->cullMode!=VK_CULL_MODE_NONE||
-       raster->frontFace!=VK_FRONT_FACE_COUNTER_CLOCKWISE||raster->depthBiasEnable||raster->lineWidth!=1||
+       raster->depthClampEnable||raster->rasterizerDiscardEnable||raster->polygonMode!=VK_POLYGON_MODE_FILL||
+#ifdef GUEST_VK_ZINK
+       raster->cullMode>VK_CULL_MODE_BACK_BIT||(raster->frontFace!=VK_FRONT_FACE_COUNTER_CLOCKWISE&&raster->frontFace!=VK_FRONT_FACE_CLOCKWISE)||
+#else
+       raster->cullMode!=VK_CULL_MODE_NONE||raster->frontFace!=VK_FRONT_FACE_COUNTER_CLOCKWISE||
+#endif
+       raster->depthBiasEnable||raster->lineWidth!=1||
        !samples||samples->sType!=VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO||samples->pNext||samples->flags||
        samples->rasterizationSamples!=VK_SAMPLE_COUNT_1_BIT||samples->sampleShadingEnable||samples->pSampleMask||samples->alphaToCoverageEnable||samples->alphaToOneEnable||
        !blend||blend->sType!=VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO||blend->pNext||blend->flags||blend->logicOpEnable||
@@ -217,6 +222,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
         graphics_json_append(&j,"]}");
     }
     graphics_json_append(&j,"]");
+#ifdef GUEST_VK_ZINK
+    /* B2g: face culling (emitted only when not the NONE/CCW default). */
+    p.cull_mode=raster->cullMode;p.front_face=raster->frontFace;
+    if(p.cull_mode!=VK_CULL_MODE_NONE)graphics_json_append(&j,",\"cullMode\":\"%s\"",p.cull_mode==VK_CULL_MODE_FRONT_BIT?"front":"back");
+    if(p.front_face!=VK_FRONT_FACE_COUNTER_CLOCKWISE)graphics_json_append(&j,",\"frontFace\":\"cw\"");
+#endif
     /* A3: declared layout bindings; stages bit0=vertex, bit1=fragment. The
      * host checks every reflected shader uniform against this list. */
     unsigned emitted=0;

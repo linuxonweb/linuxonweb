@@ -212,6 +212,17 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   binding 128 / >=3 sets, depth_clip_enable, dynamic viewport/scissor, generic
   vertex/index/UBO backing, push constants -> UBO, Copy/Fill/UpdateBuffer,
   `zink_context_destroy` spin (B2b).
+- Done: Zink B2d (`81c9722`, `docs/zink-b2d-20261001.md`): first GL draws via
+  Zink (ES2 + compat) on WebGPU and WebGL2; H1 virtual GPU (`9a5ecb8`).
+- Done: Zink B2g + S2 gears table (`docs/zink-b2g-glgears-20261001.md`):
+  indexed draws (submit-time gather), cull/frontFace (WebGL inverts),
+  descriptor pool reset/free, vertex/fragment interpolation matching; glgears
+  on Zink pixel census identical to softpipe. S2 at 128x128 (present/nopresent
+  FPS), NVIDIA WebGPU: softpipe 166.9/443.2, GL-on-Zink 85.5/233.1, vkgears
+  118.3/437.1; Intel WebGL2: Zink 51.8/116.0, vkgears 56.3/137.9
+  (`/mnt/p6/build/gears-s2-20261001`). Regression `zink-b2d-20261001/all-run4`
+  20/20. Milestone reached: STOP for user confirmation before next packets
+  (caps >128 px, B2b blocking waits, push constants, GL >2.x).
 - Done: Zink B2d (`docs/zink-b2d-20261001.md`, `/mnt/p6/build/zink-b2d-20261001`):
   first GL draws through Zink on the guest ICD. eglprobe ES2 + GL compat
   clear/draw pass on NVIDIA WebGPU (`zinkb/guest-webgpu-run15`) and Intel WebGL2

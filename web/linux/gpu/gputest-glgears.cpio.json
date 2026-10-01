@@ -1,7 +1,7 @@
 {
   "archive": "/mnt/p6/project/linux/linuxonweb/web/linux/gpu/gputest-glgears.cpio",
-  "bytes": 20473344,
-  "sha256": "997e8c30bc15f61b76c859567764aaa4eb8824f54ca6a164573f290e47994f10",
+  "bytes": 20821504,
+  "sha256": "2f711c08b1ea474cab908f352daec8a2c8f6ab6647af89582180506285006e0a",
   "format": "newc, uncompressed, no directory entries, uid/gid 0, mtime 0",
   "members": [
     {
@@ -13,15 +13,15 @@
     {
       "path": "/gputest-waiter",
       "mode": "0o755",
-      "bytes": 2226,
-      "sha256": "f13684d0634171d6392601bf9c5e7d760e27d394f473d8b595cf43c6a62b4528"
+      "bytes": 2497,
+      "sha256": "7c499666431a3b2837885256df43c26dde190a8849bbcea65675882d414caebc"
     },
     {
       "path": "/bin/glgears",
       "mode": "0o755",
-      "bytes": 20469989,
-      "sha256": "9a1fed432500a596e48444c2953c00381697ac2232919de02ce1c70f71d75981"
+      "bytes": 20818186,
+      "sha256": "d7548a09ec749b8014bb7f5f19a248883985037d753f1e1a190e93c8c8149f4c"
     }
   ],
-  "wasmSource": "/mnt/p6/build/glgears-s1-20261001/link/run2/glgears.wasm"
+  "wasmSource": "/mnt/p6/build/glgears-zink-20261001/link/run11/glgears.wasm"
 }

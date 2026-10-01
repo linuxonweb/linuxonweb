@@ -195,8 +195,10 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
   const fragment = validateShader(input.fragment, 'fragment', ...shaderOptions(profile));
   const colorFormat = choice(input.colorFormat ?? 'rgba8unorm', ['rgba8unorm'], 'color format');
   const topology = choice(input.topology ?? 'triangle-list', ['triangle-list'], 'primitive topology');
-  const frontFace = choice(input.frontFace ?? 'ccw', ['ccw'], 'front face');
-  const cullMode = choice(input.cullMode ?? 'none', ['none'], 'cull mode');
+  // Vulkan and WebGPU both decide winding as seen in the final image, so the
+  // guest's frontFace/cullMode pass through (the WebGL renderer inverts it).
+  const frontFace = choice(input.frontFace ?? 'ccw', ['ccw', 'cw'], 'front face');
+  const cullMode = choice(input.cullMode ?? 'none', ['none', 'front', 'back'], 'cull mode');
   const sampleCount = choice(input.sampleCount ?? 1, [1], 'sample count');
   const supplied = new Map();
   const vertexBuffers = array(input.vertexBuffers, 0, GRAPHICS_LIMITS.maxVertexBuffers, 'vertex layouts').map(layout => {
@@ -263,7 +265,10 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
     const output = outputs.get(input.location);
     if (!output || output.type.components !== input.type.components ||
         output.interpolation.mode !== input.interpolation.mode ||
-        output.interpolation.sampling !== input.interpolation.sampling) fail('vertex/fragment interface mismatch');
+        output.interpolation.sampling !== input.interpolation.sampling)
+      fail(`vertex/fragment interface mismatch at location ${input.location}: ` +
+        (output ? `out ${output.type.components}/${output.interpolation.mode}/${output.interpolation.sampling}` : 'no output') +
+        ` in ${input.type.components}/${input.interpolation.mode}/${input.interpolation.sampling}`);
   }
   const depth = allowDepth ? validateDepthState(input.depth) : null;
   return freeze({ vertex, fragment, vertexBuffers, colorFormat, topology, frontFace, cullMode, sampleCount, uniforms,

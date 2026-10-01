@@ -46,7 +46,8 @@ struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_
     uint64_t views[UNIFORM_SET_BINDINGS], samplers[UNIFORM_SET_BINDINGS]; };
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare;
-    unsigned dynamic_viewport; /* B2d: viewport+scissor come from vkCmdSetViewport/Scissor at draw time */ };
+    unsigned dynamic_viewport; /* B2d: viewport+scissor come from vkCmdSetViewport/Scissor at draw time */
+    VkCullModeFlags cull_mode; VkFrontFace front_face; /* B2g (Zink only): NONE/FRONT/BACK, CCW/CW */ };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
     unsigned bgra; /* B2e: image created as B8G8R8A8_UNORM (host stores RGBA; guest bytes swap R/B). */
     unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
@@ -74,7 +75,12 @@ struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
 /* framebuffer==0 marks a B2a dynamic-rendering begin that names image views directly. */
 struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; uint64_t view, depth_view; };
 struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4];
-    unsigned dynamic; VkViewport viewport; VkRect2D scissor; };
+    unsigned dynamic; VkViewport viewport; VkRect2D scissor;
+#ifdef GUEST_VK_ZINK
+    /* B2g: vkCmdDrawIndexed (index_size 2/4; 0 = non-indexed). first is firstIndex. */
+    uint64_t index_buffer; VkDeviceSize index_offset; unsigned index_size; int32_t vertex_offset;
+#endif
+};
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSize offset; VkImageLayout old_layout, new_layout; VkClearColorValue color;
 #ifdef GUEST_VK_ZINK
     VkBufferImageCopy region; unsigned has_region; /* B2f: sub-rectangle image->buffer copy */
@@ -82,7 +88,11 @@ struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSi
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
 };
 struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4];
-    unsigned dynamic_set; VkViewport viewport; VkRect2D scissor; /* B2d: bit0 viewport, bit1 scissor recorded */ };
+    unsigned dynamic_set; VkViewport viewport; VkRect2D scissor; /* B2d: bit0 viewport, bit1 scissor recorded */
+#ifdef GUEST_VK_ZINK
+    uint64_t index_buffer; VkDeviceSize index_offset; unsigned index_size; /* B2g: vkCmdBindIndexBuffer */
+#endif
+};
 struct VkCommandBuffer_T { VK_LOADER_DATA loader; unsigned state, count; uint64_t pipeline, set, pipeline_layout;
     struct graphics_command_state graphics; struct recorded commands[MAX_CMDS]; };
 #ifdef GUEST_VK_ZINK
@@ -466,7 +476,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL begin_command(VkCommandBuffer cb,const VkC
 static struct recorded *record_command(VkCommandBuffer cb,unsigned op) {
     SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return NULL;
-    if(command.count>=MAX_CMDS){command.state=4;return NULL;}
+    if(command.count>=MAX_CMDS){
+#ifdef GUEST_VK_ZINK
+        ZINK_TRACE("record_command REJECT full (%u commands)\n",command.count);
+#endif
+        command.state=4;return NULL;}
     struct recorded *r=&command.commands[command.count++];memset(r,0,sizeof(*r));r->op=op;return r;
 }
 static int full_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_COLOR_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}

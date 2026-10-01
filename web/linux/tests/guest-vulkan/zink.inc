@@ -29,20 +29,27 @@ static void zink_ring_reset(void) {
     for(unsigned k=0;k<2;k++){zink_rings[k].chunk=0;memset(zink_rings[k].used,0,sizeof(zink_rings[k].used));}
     zink_ring_entry_count=0;
 }
+/* Reserves size bytes of ring chunk memory (uploaded at submit) without the
+ * source-window sharing of zink_ring_stage; the caller fills them. */
+static unsigned char *zink_ring_alloc(unsigned kind,uint32_t size,uint32_t *host,uint32_t *offset) {
+    if(kind>1||size>ZINK_RING_CHUNK||!size)return NULL;
+    struct zink_ring *r=&zink_rings[kind];uint32_t align=kind?256u:4u;
+    if(!r->bytes&&!(r->bytes=calloc(ZINK_RING_CHUNKS,ZINK_RING_CHUNK)))return NULL;
+    uint32_t at=(r->used[r->chunk]+align-1)&~(align-1);
+    if(at+size>ZINK_RING_CHUNK){if(r->chunk+1>=ZINK_RING_CHUNKS){ZINK_TRACE("ring REJECT kind=%u full\n",kind);return NULL;}r->chunk++;at=0;}
+    if(!r->host[r->chunk]){uint32_t chunk_size=ZINK_RING_CHUNK,h=0;
+        if(compute_resource(kind?GPU_UNIFORM_BUFFER:GPU_VERTEX_BUFFER,&chunk_size,4,&h)!=VK_SUCCESS)return NULL;r->host[r->chunk]=h;}
+    r->used[r->chunk]=at+size;*host=r->host[r->chunk];*offset=at;
+    return r->bytes+(size_t)r->chunk*ZINK_RING_CHUNK+at;
+}
 static int zink_ring_stage(unsigned kind,const unsigned char *src,uint32_t avail,uint32_t size,uint32_t *host,uint32_t *offset) {
     if(kind>1||avail>size||size>ZINK_RING_CHUNK||!size)return 0;
     for(unsigned n=0;n<zink_ring_entry_count;n++){const struct zink_ring_entry *e=&zink_ring_entries[n];
         if(e->kind==kind&&e->src==src&&e->avail==avail&&e->size==size){*host=e->host;*offset=e->offset;return 1;}}
-    struct zink_ring *r=&zink_rings[kind];uint32_t align=kind?256u:4u;
-    if(!r->bytes&&!(r->bytes=calloc(ZINK_RING_CHUNKS,ZINK_RING_CHUNK)))return 0;
-    uint32_t at=(r->used[r->chunk]+align-1)&~(align-1);
-    if(at+size>ZINK_RING_CHUNK){if(r->chunk+1>=ZINK_RING_CHUNKS){ZINK_TRACE("ring REJECT kind=%u full\n",kind);return 0;}r->chunk++;at=0;}
-    if(!r->host[r->chunk]){uint32_t chunk_size=ZINK_RING_CHUNK,h=0;
-        if(compute_resource(kind?GPU_UNIFORM_BUFFER:GPU_VERTEX_BUFFER,&chunk_size,4,&h)!=VK_SUCCESS)return 0;r->host[r->chunk]=h;}
-    unsigned char *dst=r->bytes+(size_t)r->chunk*ZINK_RING_CHUNK+at;memcpy(dst,src,avail);memset(dst+avail,0,size-avail);
-    r->used[r->chunk]=at+size;*host=r->host[r->chunk];*offset=at;
+    unsigned char *dst=zink_ring_alloc(kind,size,host,offset);if(!dst)return 0;
+    memcpy(dst,src,avail);memset(dst+avail,0,size-avail);
     if(zink_ring_entry_count<sizeof(zink_ring_entries)/sizeof(zink_ring_entries[0]))
-        zink_ring_entries[zink_ring_entry_count++]=(struct zink_ring_entry){src,avail,size,*host,at,kind};
+        zink_ring_entries[zink_ring_entry_count++]=(struct zink_ring_entry){src,avail,size,*host,*offset,kind};
     return 1;
 }
 static VkResult zink_ring_upload(void) {
@@ -54,6 +61,84 @@ static VkResult zink_ring_upload(void) {
             if(host_empty(k?GPU_UNIFORM_UPLOAD:GPU_VERTEX_UPLOAD,data,size+12)!=VK_SUCCESS)return VK_ERROR_DEVICE_LOST;
         }}
     return VK_SUCCESS;
+}
+/* ---- B2g: indexed draws -----------------------------------------------
+ * The host protocol draws non-indexed triangle lists. vkCmdDrawIndexed is
+ * expanded at submit: each vertex binding is gathered through the current
+ * index buffer bytes into the vertex ring with the pipeline's own stride (so
+ * the host pipeline is unchanged) and drawn with vertexCount=indexCount,
+ * firstVertex=0. A draw whose gathered stream exceeds one ring chunk is split
+ * on triangle boundaries. Stride-0 bindings are staged once per piece. */
+static uint32_t zink_attribute_span(const struct graphics_binding *layout) {
+    uint32_t span=0;
+    for(unsigned k=0;k<layout->count;k++){const VkVertexInputAttributeDescription *a=&layout->attributes[k];
+        uint32_t end=a->offset+graphics_format_components(a->format)*4;if(end>span)span=end;}
+    return span;
+}
+static uint32_t zink_index_piece(const struct graphics_pipeline *p,uint32_t count) {
+    uint32_t stride=0;
+    for(unsigned n=0;n<p->binding_count;n++)if(p->bindings[n].stride>stride)stride=p->bindings[n].stride;
+    if(!stride||(uint64_t)count*stride<=ZINK_RING_CHUNK)return count;
+    return ZINK_RING_CHUNK/stride/3*3;
+}
+static int zink_gather_indexed(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t start,uint32_t count,struct graphics_json *j) {
+    struct resource *ib=resource_get(r->index_buffer,R_BUFFER),*im=ib?resource_get(ib->memory,R_MEMORY):NULL;
+    const unsigned size=r->index_size;
+    if(!count||count%3||(size!=2&&size!=4)||!ib||!im||!im->bytes||r->index_offset>ib->size||
+       ((uint64_t)r->first+r->count)*size>ib->size-r->index_offset||start+count>r->count) {
+        ZINK_TRACE("draw_indexed REJECT index buffer first=%u count=%u size=%u\n",r->first,r->count,size);return 0;
+    }
+    const unsigned char *indices=im->bytes+ib->offset+r->index_offset+((size_t)r->first+start)*size;
+    for(unsigned n=0;n<p->binding_count;n++) {
+        const struct graphics_binding *layout=&p->bindings[n];const struct graphics_vertex_ref *binding=&r->vertices[layout->binding];
+        struct resource *b=resource_get(binding->buffer,R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
+        const uint32_t span=zink_attribute_span(layout),stride=layout->stride;
+        if(!b||!b->generic||!(b->usage&VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)||!m||!m->bytes||binding->offset>=b->size||!span||(stride&&span>stride)) {
+            ZINK_TRACE("draw_indexed REJECT vertex binding %u span=%u stride=%u\n",layout->binding,span,stride);return 0;
+        }
+        const unsigned char *src=m->bytes+b->offset+binding->offset;const uint64_t remaining=b->size-binding->offset;
+        uint32_t host=0,offset=0,bytes;
+        if(!stride) {
+            bytes=(span+3)&~3u;
+            if(span>remaining||!zink_ring_stage(0,src,span,bytes,&host,&offset))return 0;
+        } else {
+            bytes=(uint32_t)(((uint64_t)(count-1)*stride+span+3)&~3ull);
+            unsigned char *dst=bytes<=ZINK_RING_CHUNK?zink_ring_alloc(0,bytes,&host,&offset):NULL;
+            if(!dst){ZINK_TRACE("draw_indexed REJECT gather %u bytes\n",bytes);return 0;}
+            for(uint32_t k=0;k<count;k++) {
+                uint32_t index;if(size==2){uint16_t v;memcpy(&v,indices+(size_t)k*2,2);index=v;}else memcpy(&index,indices+(size_t)k*4,4);
+                int64_t vertex=(int64_t)index+r->vertex_offset;
+                if(vertex<0||(uint64_t)vertex*stride+span>remaining) {
+                    ZINK_TRACE("draw_indexed REJECT index %u (+%d) beyond %llu bytes\n",index,r->vertex_offset,(unsigned long long)remaining);return 0;
+                }
+                memcpy(dst+(size_t)k*stride,src+(size_t)vertex*stride,span);
+            }
+        }
+        graphics_json_append(j,"%s{\"buffer\":%u,\"offset\":%u,\"size\":%u}",n?",":"",host,offset,bytes);
+    }
+    return !j->bad;
+}
+static VKAPI_ATTR void VKAPI_CALL zink_bind_index_buffer(VkCommandBuffer cb,VkBuffer buffer,VkDeviceSize offset,VkIndexType type) {
+    SELECT_CB(cb);
+    if(cb!=&command||command.state!=2)return;
+    struct resource *b=resource_get(RID(buffer),R_BUFFER);
+    unsigned size=type==VK_INDEX_TYPE_UINT16?2u:type==VK_INDEX_TYPE_UINT32?4u:0u;
+    if(!live->graphics_supported||!b||!b->generic||!(b->usage&VK_BUFFER_USAGE_INDEX_BUFFER_BIT)||!size||offset>=b->size||offset%size) {
+        ZINK_TRACE("bind_index_buffer REJECT type=%d offset=%llu generic=%u usage=0x%x\n",(int)type,(unsigned long long)offset,
+            b?b->generic:0u,b?(unsigned)b->usage:0u);invalid_command(cb);return;
+    }
+    command.graphics.index_buffer=b->id;command.graphics.index_offset=offset;command.graphics.index_size=size;
+}
+static VKAPI_ATTR void VKAPI_CALL zink_bind_index_buffer2(VkCommandBuffer cb,VkBuffer buffer,VkDeviceSize offset,VkDeviceSize size,VkIndexType type) {
+    (void)size;zink_bind_index_buffer(cb,buffer,offset,type); /* the submit-time bound check uses the whole buffer */
+}
+static VKAPI_ATTR void VKAPI_CALL zink_draw_indexed(VkCommandBuffer cb,uint32_t count,uint32_t instances,uint32_t first,int32_t vertex_offset,uint32_t first_instance) {
+    SELECT_CB(cb);
+    if(cb!=&command||command.state!=2)return;
+    if(!command.graphics.index_size){ZINK_TRACE("draw_indexed REJECT no index buffer\n");invalid_command(cb);return;}
+    struct recorded *r=draw_graphics_record(cb,count,instances,first,first_instance);
+    if(r){r->graphics.draw.index_buffer=command.graphics.index_buffer;r->graphics.draw.index_offset=command.graphics.index_offset;
+        r->graphics.draw.index_size=command.graphics.index_size;r->graphics.draw.vertex_offset=vertex_offset;}
 }
 static void zink_cleanup(void) {
     if(zink_null_ubo_host&&live&&!live->failed)(void)host_empty(GPU_DESTROY,&zink_null_ubo_host,4);
@@ -557,6 +642,60 @@ static void zink_trace_spirv(const char *stage,const uint32_t *w,size_t count) {
         fputc('\n',stderr);
     }
 }
+/* B2g: Vulkan takes varying interpolation (Flat/NoPerspective/Centroid/
+ * Sample) from the fragment input alone; WGSL/GLSL ES require the vertex
+ * output to match. Zink decorates only the fragment side (GL flat shading),
+ * so the vertex module is re-created with the fragment's decorations on the
+ * outputs at the same Location. Returns the new word count (0 = unchanged or
+ * unsupported; *out is malloc'd only on success). */
+#define ZINK_VARYINGS 32
+static unsigned zink_interp_bit(uint32_t decoration) {
+    return decoration==14?1u:decoration==13?2u:decoration==16?4u:decoration==17?8u:0u;
+}
+static unsigned zink_varyings(const uint32_t *w,size_t count,uint32_t storage,uint32_t *vars,uint32_t *locations,unsigned *masks) {
+    unsigned n=0;
+    for(size_t at=5;at<count&&w[at]>>16;at+=w[at]>>16)
+        if((w[at]&65535)==59&&(w[at]>>16)>=4&&w[at+3]==storage&&n<ZINK_VARYINGS){vars[n]=w[at+2];locations[n]=~0u;masks[n]=0;n++;}
+    for(size_t at=5;at<count&&w[at]>>16;at+=w[at]>>16) {
+        unsigned length=w[at]>>16;
+        if((w[at]&65535)!=71||length<3)continue;
+        for(unsigned v=0;v<n;v++)if(vars[v]==w[at+1]) {
+            if(w[at+2]==30&&length==4)locations[v]=w[at+3];
+            else masks[v]|=zink_interp_bit(w[at+2]);
+        }
+    }
+    return n;
+}
+static size_t zink_match_interpolation(const uint32_t *vw,size_t vcount,const uint32_t *fw,size_t fcount,uint32_t **out) {
+    uint32_t vv[ZINK_VARYINGS],vl[ZINK_VARYINGS],fv[ZINK_VARYINGS],fl[ZINK_VARYINGS];unsigned vm[ZINK_VARYINGS],fm[ZINK_VARYINGS],want[ZINK_VARYINGS];
+    const unsigned vn=zink_varyings(vw,vcount,3,vv,vl,vm),fn=zink_varyings(fw,fcount,1,fv,fl,fm);
+    unsigned changed=0,added=0;
+    for(unsigned v=0;v<vn;v++) {
+        want[v]=vm[v];
+        if(vl[v]==~0u)continue;
+        for(unsigned f=0;f<fn;f++)if(fl[f]==vl[v])want[v]=fm[f];
+        if(want[v]!=vm[v])changed=1;
+        for(unsigned b=1;b<16;b<<=1)added+=!!(want[v]&b);
+    }
+    if(!changed)return 0;
+    uint32_t *w=malloc((vcount+added*3)*4);if(!w)return 0;
+    size_t o=0;int inserted=0;
+    memcpy(w,vw,5*4);o=5;
+    for(size_t at=5;at<vcount;) {
+        unsigned length=vw[at]>>16,op=vw[at]&65535,skip=0;
+        if(!length||length>vcount-at){free(w);return 0;}
+        if(op==71&&!inserted) {
+            for(unsigned v=0;v<vn;v++)for(unsigned b=1,d;b<16;b<<=1)
+                if(want[v]&b){d=b==1?14:b==2?13:b==4?16:17;w[o++]=(3u<<16)|71;w[o++]=vv[v];w[o++]=d;}
+            inserted=1;
+        }
+        if(op==71&&length==3&&zink_interp_bit(vw[at+2]))for(unsigned v=0;v<vn;v++)if(vv[v]==vw[at+1])skip=1;
+        if(!skip){memcpy(&w[o],&vw[at],length*4);o+=length;}
+        at+=length;
+    }
+    if(!inserted){free(w);return 0;}
+    *out=w;return o;
+}
 static VKAPI_ATTR VkResult VKAPI_CALL zink_create_graphics_pipelines(VkDevice d,VkPipelineCache cache,uint32_t count,
         const VkGraphicsPipelineCreateInfo *i,const VkAllocationCallbacks *a,VkPipeline *out) {
     (void)cache; /* zink_create_pipeline_cache handles are empty placeholders */
@@ -650,6 +789,17 @@ static VKAPI_ATTR VkResult VKAPI_CALL zink_create_graphics_pipelines(VkDevice d,
         if(result!=VK_SUCCESS){ZINK_TRACE("pipeline REJECT %s shader module result=%d (host translation)\n",name,(int)result);break;}
         stages[n].module=temp[n];stages[n].pNext=NULL;
     }
+    for(unsigned n=0;n<2&&result==VK_SUCCESS;n++)if(stages[n].stage==VK_SHADER_STAGE_VERTEX_BIT) {
+        struct resource *vs=resource_get(RID(stages[n].module),R_SHADER),*fs=resource_get(RID(stages[!n].module),R_SHADER);
+        uint32_t *words=NULL;size_t words_count;VkShaderModule patched=VK_NULL_HANDLE;
+        if(!vs||!fs||!vs->bytes||!fs->bytes||!(words_count=zink_match_interpolation((const uint32_t *)vs->bytes,vs->size/4,(const uint32_t *)fs->bytes,fs->size/4,&words)))break;
+        zink_trace_spirv("vs-interp",words,words_count);
+        VkShaderModuleCreateInfo info={VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,NULL,0,words_count*4,words};
+        result=create_shader(d,&info,NULL,&patched);free(words);
+        if(result!=VK_SUCCESS){ZINK_TRACE("pipeline REJECT interpolation-matched vs result=%d\n",(int)result);break;}
+        if(temp[n])destroy_shader(d,temp[n],NULL);
+        temp[n]=patched;stages[n].module=patched;
+    }
     if(result==VK_SUCCESS) {
         c.pStages=stages;
         result=create_graphics_pipelines(d,VK_NULL_HANDLE,1,&c,NULL,out);
@@ -700,6 +850,23 @@ static VKAPI_ATTR void VKAPI_CALL zink_set_depth_bias(VkCommandBuffer cb,float c
 static VKAPI_ATTR void VKAPI_CALL zink_set_blend_constants(VkCommandBuffer cb,const float c[4]){(void)cb;(void)c;}
 static VKAPI_ATTR void VKAPI_CALL zink_set_stencil_reference(VkCommandBuffer cb,VkStencilFaceFlags f,uint32_t r){(void)cb;(void)f;(void)r;}
 
+/* B2g: Zink recycles its descriptor pools (reset when a batch completes) and
+ * frees sets on context teardown; without these every pool fills up. */
+static VKAPI_ATTR VkResult VKAPI_CALL zink_reset_descriptor_pool(VkDevice d,VkDescriptorPool h,VkDescriptorPoolResetFlags f) {
+    (void)f;struct resource *p=resource_get(RID(h),R_DESC_POOL);if(!device_valid(d)||!p)return VK_ERROR_INITIALIZATION_FAILED;
+    for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET&&resources[n].parent==p->id)resource_drop(&resources[n]);
+    return VK_SUCCESS;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zink_free_descriptor_sets(VkDevice d,VkDescriptorPool h,uint32_t count,const VkDescriptorSet *sets) {
+    struct resource *p=resource_get(RID(h),R_DESC_POOL);if(!device_valid(d)||!p||(count&&!sets))return VK_ERROR_INITIALIZATION_FAILED;
+    for(uint32_t n=0;n<count;n++) {
+        if(sets[n]==VK_NULL_HANDLE)continue;
+        struct resource *s=resource_get(RID(sets[n]),R_DESC_SET);
+        if(s&&s->parent==p->id)resource_drop(s);
+    }
+    return VK_SUCCESS;
+}
+
 static PFN_vkVoidFunction zink_proc(const char *name) {
 #define Z(api,fn) if(!strcmp(name,#api))return (PFN_vkVoidFunction)fn;
     Z(vkFlushMappedMemoryRanges,zink_mapped_ranges) Z(vkInvalidateMappedMemoryRanges,zink_mapped_ranges)
@@ -711,6 +878,9 @@ static PFN_vkVoidFunction zink_proc(const char *name) {
     Z(vkBindImageMemory2,zink_bind_image2) Z(vkBindImageMemory2KHR,zink_bind_image2)
     Z(vkGetDeviceMemoryCommitment,zink_memory_commitment)
     Z(vkCmdBindVertexBuffers2,zink_bind_vertex_buffers2) Z(vkCmdBindVertexBuffers2EXT,zink_bind_vertex_buffers2)
+    Z(vkCmdBindIndexBuffer,zink_bind_index_buffer) Z(vkCmdDrawIndexed,zink_draw_indexed)
+    Z(vkCmdBindIndexBuffer2,zink_bind_index_buffer2) Z(vkCmdBindIndexBuffer2KHR,zink_bind_index_buffer2)
+    Z(vkResetDescriptorPool,zink_reset_descriptor_pool) Z(vkFreeDescriptorSets,zink_free_descriptor_sets)
     Z(vkGetDescriptorSetLayoutSupport,zink_set_layout_support) Z(vkGetDescriptorSetLayoutSupportKHR,zink_set_layout_support)
     Z(vkCreateGraphicsPipelines,zink_create_graphics_pipelines) Z(vkCreateShaderModule,zink_create_shader_module)
     Z(vkCmdSetViewport,zink_set_viewport) Z(vkCmdSetScissor,zink_set_scissor) Z(vkCmdSetLineWidth,zink_set_line_width)
