@@ -1,7 +1,7 @@
 {
   "archive": "/mnt/p6/project/linux/linuxonweb/web/linux/gpu/gputest-vkgears.cpio",
-  "bytes": 1331200,
-  "sha256": "338e88c1dc067468feb6a5ae2ebe8de69a6084eac639842f218064d28bebd7c6",
+  "bytes": 1332224,
+  "sha256": "e613ed9e099cce18a9894bc9fe0d1ad84ee72c94de590d0d182ad14e614e86fc",
   "format": "newc, uncompressed, no directory entries, uid/gid 0, mtime 0",
   "members": [
     {
@@ -19,9 +19,9 @@
     {
       "path": "/bin/vkgears",
       "mode": "0o755",
-      "bytes": 1328412,
-      "sha256": "fc6e10d524ce9652943aef1346cdeac276324103f639ed2f2227ca02926f37dc"
+      "bytes": 1329341,
+      "sha256": "2b8ec7425a9a5c62987d6ee0893f92592ba248b7ced78b39e83302aa1edd5874"
     }
   ],
-  "wasmSource": "/mnt/p6/build/vkgears-v1-20261001/build-run5/vkgears.wasm"
+  "wasmSource": "/mnt/p6/build/vk-webgpu-hc-20261001/build-run2/vkgears.wasm"
 }

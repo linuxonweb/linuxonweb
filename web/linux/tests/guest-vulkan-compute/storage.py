@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-TASKS = (Path('/mnt/p6/build/zink-b2c-20261001'), Path('/mnt/p6/build/zink-b2f-20261001'), Path('/mnt/p6/build/zink-b2e-20260930'), Path('/mnt/p6/build/zink-b2a-20260930'), Path('/mnt/p6/build/guest-vulkan-a6a-20260930'), Path('/mnt/p6/build/guest-vulkan-a5-20260929'), Path('/mnt/p6/build/guest-vulkan-a4-20260929'), Path('/mnt/p6/build/guest-vulkan-a3-20260928'), Path('/mnt/p6/build/guest-vulkan-a1a2-20260928'), Path('/mnt/p6/build/guest-vulkan-compute-20260926'),)
+TASKS = (Path('/mnt/p6/build/vk-webgpu-hc-20261001'), Path('/mnt/p6/build/gpu-host-p1-20261001'), Path('/mnt/p6/build/zink-b2d-20261001'), Path('/mnt/p6/build/zink-b2c-20261001'), Path('/mnt/p6/build/zink-b2f-20261001'), Path('/mnt/p6/build/zink-b2e-20260930'), Path('/mnt/p6/build/zink-b2a-20260930'), Path('/mnt/p6/build/guest-vulkan-a6a-20260930'), Path('/mnt/p6/build/guest-vulkan-a5-20260929'), Path('/mnt/p6/build/guest-vulkan-a4-20260929'), Path('/mnt/p6/build/guest-vulkan-a3-20260928'), Path('/mnt/p6/build/guest-vulkan-a1a2-20260928'), Path('/mnt/p6/build/guest-vulkan-compute-20260926'),)
 
 def checked_storage(output):
     output = Path(output).resolve()

@@ -12,6 +12,7 @@ import {
     S_ARGS, S_GEN, S_OP, S_RESULT, S_RESULT2, S_STATE, STATE_BUSY, STATE_DONE, STATE_REQUEST, slotState, slotWord,
 } from "./guest-gpu-hostcall.js";
 import { handleWgpuCall, OP_WGPU } from "./guest-gpu-wgpu.js";
+import { configureVk, handleVkCall, OP_VK_CALL, OP_VK_CLOSE, OP_VK_OPEN } from "./guest-gpu-vk.js";
 
 let hub = null;
 let myGen = 0;
@@ -291,7 +292,7 @@ function complete(slot, seq, result, result2 = 0) {
 }
 
 function errnoOf(error) {
-    if (error instanceof GuestFault)
+    if (error instanceof GuestFault || (Number.isInteger(error?.errno) && error.errno > 0 && error.errno < 4096))
         return -error.errno;
     postMessage({ type: "log", message: "op failed: " + describeError(error).message });
     return -EIO;
@@ -344,6 +345,14 @@ function serve(slot) {
             case OP_WGPU:
                 // Firefox wgpu server calls (W4a executor, docs/firefox-webgpu-w4a-20260930.md).
                 handleWgpuCall(memory, a).then((write) => completeWith(slot, seq, write))
+                    .catch((error) => complete(slot, seq, errnoOf(error)));
+                return;
+            case OP_VK_OPEN:
+            case OP_VK_CALL:
+            case OP_VK_CLOSE:
+                // Guest Vulkan ICD sessions (guest-gpu-vk.js), the default guest GPU transport.
+                handleVkCall(memory, op, a, (message) => postMessage({ type: "log", message }))
+                    .then((write) => completeWith(slot, seq, write))
                     .catch((error) => complete(slot, seq, errnoOf(error)));
                 return;
             case OP_SLEEP: {
@@ -411,6 +420,7 @@ self.onmessage = ({ data }) => {
         case "init": {
             hub = new Int32Array(data.hub);
             myGen = data.gen;
+            configureVk(data.config?.vk);
             for (const { slot, gen, memory } of data.attachments)
                 attachments.set(slot, { gen, memory });
             heartbeatTimer = setInterval(() => Atomics.add(hub, H_HEARTBEAT, 1), 50);

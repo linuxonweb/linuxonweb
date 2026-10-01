@@ -22,7 +22,7 @@ sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
 TESTS = HERE.parent
 DEFAULT_SNAPSHOT = Path('/mnt/p6/build/vkgears-v1-20261001/icd-snapshot/web/linux/tests')
-TASK_ROOTS = (Path('/mnt/p6/build/vkgears-v1-20261001'),)
+TASK_ROOTS = (Path('/mnt/p6/build/vkgears-v1-20261001'), Path('/mnt/p6/build/vk-webgpu-hc-20261001'))
 CC = '/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang'
 X11 = {'x11': 'gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13',
        'proto': '7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1',

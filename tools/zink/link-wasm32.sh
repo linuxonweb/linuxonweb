@@ -27,7 +27,7 @@ run cc-zink-static-vk "$CC" "${CFLAGS[@]}" -std=c11 -Wall -Wextra -Werror -c "$H
 run cc-mmap-shim "$CC" "${CFLAGS[@]}" -I"$SHIMS" -c "$SHIMS/mmap-shim.c" -o "$O/obj/mmap-shim.o" || exit 1
 run cc-unwind-stubs "$CC" "${CFLAGS[@]}" -c "$SHIMS/unwind-stubs.c" -o "$O/obj/unwind-stubs.o" || exit 1
 # 2. guest Vulkan ICD + vsock transport (same flags as guest-vulkan-graphics/build.py, no WSI)
-ICDF=(-std=c11 -O2 -Wall -Wextra -Werror -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections -I"$T/icd/vk-headers-231")
+ICDF=(-DGUEST_VK_ZINK=1 -std=c11 -O2 -Wall -Wextra -Werror -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections -I"$T/icd/vk-headers-231")
 run cc-icd "$CC" "${ICDF[@]}" -c "$T/icd/src/guest-vulkan/icd.c" -o "$O/obj/icd.o" || exit 1
 run cc-transport "$CC" "${ICDF[@]}" -c "$T/icd/src/guest-gpu/guest-gpu.c" -o "$O/obj/transport.o" || exit 1
 # 3. probe

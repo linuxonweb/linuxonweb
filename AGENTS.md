@@ -7,7 +7,7 @@ quota stop below is superseded for this work: if the 5-hour usage window runs
 out, pause and resume after it resets. Subagents use Opus 5.5; size each
 packet to finish in about 20 minutes (user, 2026-09-30) and chain packets. Storage policy below still applies to every packet.
 
-Current packets (update as they finish):
+Current packets (update as they finish; latest direction 2026-10-01: WebGPU-default guest Vulkan, H1 below):
 - Done: Vulkan gap research `docs/vulkan-gap-zink-vkcube-20260928.md`
   (Mesa 26.2.3, Vulkan-Tools v1.3.231; tracks A vkcube, B Zink, C Firefox GL).
 - Done: JIT design `docs/guest-jit-design-20260928.md` (private jit_install
@@ -212,6 +212,19 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   binding 128 / >=3 sets, depth_clip_enable, dynamic viewport/scissor, generic
   vertex/index/UBO backing, push constants -> UBO, Copy/Fill/UpdateBuffer,
   `zink_context_destroy` spin (B2b).
+
+User direction (2026-10-01, latest): WebGPU backend first and as the default
+for guest Vulkan ("virtual GPU in linux wasm or a better way"); three.js was
+considered and rejected (see the H1 doc). Subagents are forbidden: work inline.
+- Done: H1 hostcall virtual GPU (`docs/guest-vulkan-webgpu-backend-20261001.md`,
+  `/mnt/p6/build/vk-webgpu-hc-20261001`): guest ICD talks to the GPU-owner
+  Worker over `gpu_hostcall` ops 0x20-0x22 (`web/linux/dist/guest-gpu-vk.js`,
+  unchanged `serveGPU` executor, WebGPU first / WebGL2 fallback), vsock is the
+  fallback. Opt-in per page via `ownerConfig.vk` (main page on; isolated test
+  pages stay on vsock). Guest env `GUEST_GPU_TRANSPORT`, `GUEST_GPU_BACKEND`.
+  vkgears matched NVIDIA WebGPU: nopresent 224->281 FPS, present 51->59
+  (128px 60->76); WebGL2 119->137 / 36->44. Hostcall vkgears CPIO promoted.
+  Next: B2d (Zink first draw) on this transport, then the three-way gears table.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it

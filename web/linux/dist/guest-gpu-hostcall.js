@@ -339,7 +339,7 @@ export function gpuHostcallSyscall(client, memory, nr, a0, a1, a2, a3, a4, a5) {
 // relays memory attachments, and marks/terminates dead owners.
 
 export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STALL_MS, startupMs = DEFAULT_STARTUP_MS,
-    ownerUrl = new URL("./guest-gpu-owner.js", import.meta.url), log = () => { } } = {}) {
+    ownerUrl = new URL("./guest-gpu-owner.js", import.meta.url), log = () => { }, ownerConfig = {} } = {}) {
     if (typeof SharedArrayBuffer !== "function" || typeof Worker !== "function")
         return null;
     const sab = new SharedArrayBuffer(HUB_BYTES);
@@ -407,7 +407,7 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
             note({ kind: "owner-error", gen, message: String(event.message ?? event) });
             markDead(DEAD_ERROR, gen);
         };
-        worker.postMessage({ type: "init", hub: sab, gen, attachments: [...attachments].map(([slot, a]) => ({ slot, ...a })) });
+        worker.postMessage({ type: "init", hub: sab, gen, config: ownerConfig, attachments: [...attachments].map(([slot, a]) => ({ slot, ...a })) });
         note({ kind: "owner-spawned", gen });
     }
     return {

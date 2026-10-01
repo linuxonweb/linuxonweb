@@ -712,6 +712,11 @@ async function boot(mode) {
       devicetree: { memory: { reg: [0, memory] } },
       audio: true,
       framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32, backend: activeConfiguration.backend },
+      // Guest Vulkan uses the gpu_hostcall channel by default (dist/guest-gpu-vk.js).
+      gpuHostcall: {
+        ownerConfig: { vk: { backend: gpuBackend } },
+        log: (event) => { if (event.kind === "owner-log" || event.kind === "owner-error") hostLog(`gpu-owner: ${event.message}`); },
+      },
     });
     activeMachine = machine;
     mobileKeyboard.setKeyHandler((code, down) => pointer.key(code, down));
