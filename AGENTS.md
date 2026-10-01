@@ -150,9 +150,15 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   `gfx.x11-egl.force-enabled` in `wasm.js` (a `once` pref). Candidate `2c3830fbec61`
   (`/mnt/p6/build/firefox-webgl-f1a-20260930/candidate-run2`, not promoted) passes
   cold/warm. WebGL reaches Zink: "CPU device requested but none found" (needs B2a).
-- Running: B2a (relaunched after the 429; continues the partial icd.c/zink.inc
-  edits) in `/mnt/p6/build/zink-b2a-20260930`, ports 4205/9415. Then relink F1a
-  with the new ICD archive and gate WebGL/WebGL2 pixels.
+- Done: Zink B2a (`6742a69`, `docs/zink-b2a-20260930.md`): 7 Zink exts, features2
+  chain, CPU device type (LIBGL_ALWAYS_SOFTWARE / GUEST_VK_DEVICE_TYPE), limits,
+  renderpass2/dynamic rendering/update templates/timeline counters/null UBO,
+  push ranges accepted (not executed). 20/20 suites incl. zinkcaps
+  (`/mnt/p6/build/zink-b2a-20260930/all-run2`). Guest `zink_create_screen` OK;
+  EGL init fails: surfaceless EGL needs BGRA8 configs.
+- Running: B2e BGRA8 + max texture size -> eglprobe GL strings/clear pixels
+  (`/mnt/p6/build/zink-b2e-20260930`, ports 4207/9417). Next: B2c push constants
+  (first draw), B2b blocking waits, then relink F1a and gate WebGL/WebGL2.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
