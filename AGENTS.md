@@ -144,8 +144,15 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   (`/mnt/p6/build/zink-b3-20260930/link/run3`). Vulkan lookup via
   `tools/zink/shims/zink_static_vk.c` (replaces u_dl.c, bypasses the 1.3.231 loader).
 - Main page serves guest GPU sessions in Firefox mode by default (`7136d3b`, `?gpu=0` opts out).
-- Running: B2a ICD extensions (`/mnt/p6/build/zink-b2a-20260930`, ports 4205/9415);
-  F1a Firefox EGL/Zink static link adapter (`/mnt/p6/build/firefox-webgl-f1a-20260930`, 4206/9416).
+- Done: F1a (`dfbc7f6`, `docs/firefox-webgl-f1a-20260930.md`): Mesa EGL+Zink+ICD
+  linked into Firefox (+18.65 MB, no new duplicate symbols) with NSPR static
+  `libEGL.so`/`libGL.so`, glxtest adapter reporting TEST_TYPE EGL, and
+  `gfx.x11-egl.force-enabled` in `wasm.js` (a `once` pref). Candidate `2c3830fbec61`
+  (`/mnt/p6/build/firefox-webgl-f1a-20260930/candidate-run2`, not promoted) passes
+  cold/warm. WebGL reaches Zink: "CPU device requested but none found" (needs B2a).
+- Running: B2a (relaunched after the 429; continues the partial icd.c/zink.inc
+  edits) in `/mnt/p6/build/zink-b2a-20260930`, ports 4205/9415. Then relink F1a
+  with the new ICD archive and gate WebGL/WebGL2 pixels.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
