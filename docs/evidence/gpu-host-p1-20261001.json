@@ -1,0 +1,1368 @@
+{
+  "packet": "P1 host GPU per-frame overhead",
+  "date": "2026-10-01",
+  "taskRoot": "/mnt/p6/build/gpu-host-p1-20261001",
+  "baseCommit": "d66ae18",
+  "changeCommit": "f08df1e21c7bced65632ee91d9b30924fe327a36",
+  "files": [
+    "web/linux/tests/guest-vulkan-graphics/renderer.mjs",
+    "web/linux/tests/guest-vulkan{,-compute,-graphics,-loader}/storage.py"
+  ],
+  "recipe": "headful DISPLAY=:0 chromium --enable-unsafe-webgpu --enable-features=Vulkan --ignore-gpu-blocklist, high-performance adapter (NVIDIA maxwell / MX110 via Dawn Vulkan), __NV_PRIME*/DRI_PRIME stripped",
+  "fpsMethod": "page ?gputest=1&gputestapp=vkgears&vkmode=MODE&gpubackend=webgpu[&vksize=128x128]; 50 s observed after the first VKGEARS_FPS line; median of the 5 s intervals excluding the first; two repeats per phase; before runs used the unmodified worktree (d66ae18)",
+  "fps": {
+    "nopresent-128": {
+      "after": [
+        {
+          "run": "fps-after-nopresent-128-r1",
+          "repeat": 1,
+          "medianFps": 233.54,
+          "intervals": 10,
+          "minFps": 203.824,
+          "maxFps": 400.974,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 1.76,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-after-nopresent-128-r2",
+          "repeat": 2,
+          "medianFps": 231.98,
+          "intervals": 11,
+          "minFps": 175.793,
+          "maxFps": 341.312,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 2.96,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "before": [
+        {
+          "run": "fps-before-nopresent-128-r1",
+          "repeat": 1,
+          "medianFps": 185.39,
+          "intervals": 10,
+          "minFps": 180.59,
+          "maxFps": 188.031,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 2.03,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": false,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": false
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-before-nopresent-128-r2",
+          "repeat": 2,
+          "medianFps": 189.38,
+          "intervals": 11,
+          "minFps": 182.494,
+          "maxFps": 190.285,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 3.49,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "meanOfMedians": {
+        "before": 187.39,
+        "after": 232.76,
+        "gainPercent": 24.21,
+        "frameMsBefore": 5.34,
+        "frameMsAfter": 4.3,
+        "frameMsSaved": 1.04
+      }
+    },
+    "nopresent-default": {
+      "after": [
+        {
+          "run": "fps-after-nopresent-default-r1",
+          "repeat": 1,
+          "medianFps": 240.09,
+          "intervals": 10,
+          "minFps": 234.62,
+          "maxFps": 242.765,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 1.16,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-after-nopresent-default-r2",
+          "repeat": 2,
+          "medianFps": 238.93,
+          "intervals": 11,
+          "minFps": 230.78,
+          "maxFps": 240.998,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 3.51,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "before": [
+        {
+          "run": "fps-before-nopresent-default-r1",
+          "repeat": 1,
+          "medianFps": 185.22,
+          "intervals": 11,
+          "minFps": 157.832,
+          "maxFps": 196.501,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 1.77,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": false,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": false
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-before-nopresent-default-r2",
+          "repeat": 2,
+          "medianFps": 185.25,
+          "intervals": 10,
+          "minFps": 182.848,
+          "maxFps": 187.203,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 1.38,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "meanOfMedians": {
+        "before": 185.24,
+        "after": 239.51,
+        "gainPercent": 29.3,
+        "frameMsBefore": 5.4,
+        "frameMsAfter": 4.18,
+        "frameMsSaved": 1.22
+      }
+    },
+    "present-128": {
+      "after": [
+        {
+          "run": "fps-after-present-128-r1",
+          "repeat": 1,
+          "medianFps": 80.59,
+          "intervals": 11,
+          "minFps": 78.06,
+          "maxFps": 95.29,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 4.45,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-after-present-128-r2",
+          "repeat": 2,
+          "medianFps": 77.91,
+          "intervals": 11,
+          "minFps": 76.366,
+          "maxFps": 82.146,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 1.33,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "before": [
+        {
+          "run": "fps-before-present-128-r1",
+          "repeat": 1,
+          "medianFps": 63.04,
+          "intervals": 10,
+          "minFps": 52.083,
+          "maxFps": 72.968,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 2.91,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-before-present-128-r2",
+          "repeat": 2,
+          "medianFps": 64.44,
+          "intervals": 10,
+          "minFps": 61.593,
+          "maxFps": 65.082,
+          "size": "128x128",
+          "render": "128x128",
+          "loadavg1Median": 2.12,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "meanOfMedians": {
+        "before": 63.74,
+        "after": 79.25,
+        "gainPercent": 24.33,
+        "frameMsBefore": 15.69,
+        "frameMsAfter": 12.62,
+        "frameMsSaved": 3.07
+      }
+    },
+    "present-default": {
+      "after": [
+        {
+          "run": "fps-after-present-default-r1",
+          "repeat": 1,
+          "medianFps": 69.69,
+          "intervals": 11,
+          "minFps": 67.83,
+          "maxFps": 71.191,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 2.61,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-after-present-default-r2",
+          "repeat": 2,
+          "medianFps": 72.13,
+          "intervals": 11,
+          "minFps": 69.631,
+          "maxFps": 73.384,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 3.94,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": null,
+            "signal": null
+          }
+        }
+      ],
+      "before": [
+        {
+          "run": "fps-before-present-default-r1",
+          "repeat": 1,
+          "medianFps": 56.21,
+          "intervals": 11,
+          "minFps": 55.181,
+          "maxFps": 61.61,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 2.84,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        },
+        {
+          "run": "fps-before-present-default-r2",
+          "repeat": 2,
+          "medianFps": 51.88,
+          "intervals": 10,
+          "minFps": 43,
+          "maxFps": 59.971,
+          "size": "300x300",
+          "render": "128x128",
+          "loadavg1Median": 2.76,
+          "nvidiaAdapterLogged": true,
+          "runnerPass": true,
+          "runnerChecks": {
+            "fps": true,
+            "noFailure": true,
+            "noPageErrors": true,
+            "nvidia": true
+          },
+          "serverExit": {
+            "code": 0,
+            "signal": null
+          }
+        }
+      ],
+      "meanOfMedians": {
+        "before": 54.05,
+        "after": 70.91,
+        "gainPercent": 31.21,
+        "frameMsBefore": 18.5,
+        "frameMsAfter": 14.1,
+        "frameMsSaved": 4.4
+      }
+    }
+  },
+  "semantics": {
+    "run": "/mnt/p6/build/gpu-host-p1-20261001/semantics-run1",
+    "loadavg": "0.95 1.88 1.44 2/2593 3844955",
+    "pageExceptions": 0,
+    "consoleErrors": 0,
+    "scenarios": {
+      "encode-error": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-green-encode-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-load",
+            "status": 0,
+            "state": "open"
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-green-encode-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-load",
+            "status": 0,
+            "state": "open"
+          }
+        ],
+        "finalOld": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 3,
+          "buffersDestroyed": 3,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 0
+        },
+        "finalNew": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 0
+        }
+      },
+      "submit-error": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-blue-submit-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "pass-load",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "pass-white",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-white",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "pass-blue-submit-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "pass-load",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "pass-white",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-white",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        ],
+        "finalOld": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 3,
+          "buffersDestroyed": 3,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 0
+        },
+        "finalNew": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 0
+        }
+      },
+      "readback-error": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "readback-encode-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-again",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "readback-encode-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "readback-again",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          }
+        ],
+        "finalOld": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 4,
+          "buffersDestroyed": 4,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 1,
+          "readbacks": 2,
+          "uploads": 0
+        },
+        "finalNew": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 3,
+          "buffersDestroyed": 3,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 1,
+          "readbacks": 2,
+          "uploads": 0
+        }
+      },
+      "upload-error": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-native-error",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "pass-after",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              0,
+              255,
+              0,
+              255
+            ]
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-native-error",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "pass-after",
+            "status": -5,
+            "state": "failed"
+          },
+          {
+            "step": "readback-after",
+            "status": -19,
+            "state": "failed"
+          }
+        ],
+        "finalOld": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 3,
+          "buffersDestroyed": 3,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 0
+        },
+        "finalNew": {
+          "state": "failed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 1,
+          "readbacks": 1,
+          "uploads": 1
+        }
+      },
+      "upload-validation": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-out-of-range",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "upload-ok",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "pass-after",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              0,
+              255,
+              0,
+              255
+            ]
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-out-of-range",
+            "status": -22,
+            "state": "open"
+          },
+          {
+            "step": "upload-ok",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "pass-after",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-after",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              0,
+              255,
+              0,
+              255
+            ]
+          }
+        ],
+        "finalOld": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 3,
+          "buffersDestroyed": 3,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 1
+        },
+        "finalNew": {
+          "state": "closed",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 2,
+          "readbacks": 2,
+          "uploads": 1
+        }
+      },
+      "device-loss": {
+        "old": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-ok",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "pass-after-loss",
+            "status": -19,
+            "state": "lost"
+          },
+          {
+            "step": "readback-after-loss",
+            "status": -19,
+            "state": "lost"
+          }
+        ],
+        "new": [
+          {
+            "step": "pass-red",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "readback-red",
+            "status": 0,
+            "state": "open",
+            "pixel": [
+              255,
+              0,
+              0,
+              255
+            ]
+          },
+          {
+            "step": "upload-ok",
+            "status": 0,
+            "state": "open"
+          },
+          {
+            "step": "pass-after-loss",
+            "status": -19,
+            "state": "lost"
+          },
+          {
+            "step": "readback-after-loss",
+            "status": -19,
+            "state": "lost"
+          }
+        ],
+        "finalOld": {
+          "state": "lost",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 1,
+          "readbacks": 1,
+          "uploads": 1
+        },
+        "finalNew": {
+          "state": "lost",
+          "nativeObjects": 0,
+          "allocatedBytes": 0,
+          "buffersCreated": 2,
+          "buffersDestroyed": 2,
+          "texturesCreated": 1,
+          "texturesDestroyed": 1,
+          "passes": 1,
+          "readbacks": 1,
+          "uploads": 1
+        }
+      }
+    },
+    "hostOnlyFrameMs": {
+      "nopresent": {
+        "old": [
+          1.8577,
+          2.7207,
+          2.9103
+        ],
+        "new": [
+          0.68,
+          1.2223,
+          1.2693
+        ],
+        "medianOld": 2.7207,
+        "medianNew": 1.2223
+      },
+      "present": {
+        "old": [
+          5.5453,
+          5.519,
+          5.4983
+        ],
+        "new": [
+          1.7673,
+          1.7683,
+          1.8937
+        ],
+        "medianOld": 5.519,
+        "medianNew": 1.7683
+      }
+    },
+    "note": "host-only microbenchmark: renderer driven directly in the page (no guest); 63,360 B vertex + 256 B uniform upload + clear pass (+128x128 readback), 300 frames x 3 rounds"
+  },
+  "regression": {
+    "run": "/mnt/p6/build/gpu-host-p1-20261001/all-run1",
+    "head": "f08df1e21c7bced65632ee91d9b30924fe327a36",
+    "pass": true,
+    "chromiumMode": "headful-display0-gpu",
+    "suites": [
+      {
+        "suite": "direct-live",
+        "pass": true,
+        "checks": 140,
+        "expected": 140,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 5019
+      },
+      {
+        "suite": "direct-unavailable",
+        "pass": true,
+        "checks": 17,
+        "expected": 17,
+        "match": true,
+        "adapter": null,
+        "hostLifetimePass": true,
+        "elapsedMs": 3821
+      },
+      {
+        "suite": "direct-clear",
+        "pass": true,
+        "checks": 1087,
+        "expected": 1087,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3695
+      },
+      {
+        "suite": "direct-loss-transport",
+        "pass": true,
+        "checks": 640,
+        "expected": 640,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3789
+      },
+      {
+        "suite": "direct-loss-device",
+        "pass": true,
+        "checks": 640,
+        "expected": 640,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3813
+      },
+      {
+        "suite": "direct-exhaustion",
+        "pass": true,
+        "checks": 1213,
+        "expected": 1213,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3939
+      },
+      {
+        "suite": "loader",
+        "pass": true,
+        "checks": 901,
+        "expected": 901,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3728
+      },
+      {
+        "suite": "compute",
+        "pass": true,
+        "checks": 501,
+        "expected": 501,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4053
+      },
+      {
+        "suite": "graphics-webgl2",
+        "pass": true,
+        "checks": 232753,
+        "expected": 232753,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4515
+      },
+      {
+        "suite": "graphics-webgpu",
+        "pass": true,
+        "checks": 232745,
+        "expected": 232745,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4121
+      },
+      {
+        "suite": "uniform-webgl2",
+        "pass": true,
+        "checks": 201269,
+        "expected": 201269,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4089
+      },
+      {
+        "suite": "uniform-webgpu",
+        "pass": true,
+        "checks": 201269,
+        "expected": 201269,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 3895
+      },
+      {
+        "suite": "texture-webgl2",
+        "pass": true,
+        "checks": 18182,
+        "expected": 18182,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4442
+      },
+      {
+        "suite": "texture-webgpu",
+        "pass": true,
+        "checks": 18182,
+        "expected": 18182,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4228
+      },
+      {
+        "suite": "depth-webgl2",
+        "pass": true,
+        "checks": 42620,
+        "expected": 42620,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4742
+      },
+      {
+        "suite": "depth-webgpu",
+        "pass": true,
+        "checks": 42620,
+        "expected": 42620,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4313
+      },
+      {
+        "suite": "wsi-webgl2",
+        "pass": true,
+        "checks": 276963,
+        "expected": 276963,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4347
+      },
+      {
+        "suite": "wsi-webgpu",
+        "pass": true,
+        "checks": 276963,
+        "expected": 276963,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4224
+      },
+      {
+        "suite": "zinkcaps-webgl2",
+        "pass": true,
+        "checks": 91309,
+        "expected": 91309,
+        "match": true,
+        "adapter": {
+          "vendor": "WebKit"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4364
+      },
+      {
+        "suite": "zinkcaps-webgpu",
+        "pass": true,
+        "checks": 91309,
+        "expected": 91309,
+        "match": true,
+        "adapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell"
+        },
+        "hostLifetimePass": true,
+        "elapsedMs": 4105
+      }
+    ],
+    "allMatch": true
+  },
+  "keptRuns": [
+    "fps-before-nopresent-{default,128}-r1: runner pass=false only because the original nvidia check matched VK_DEVICE_NAME (ICD name); page-log shows adapter {vendor:nvidia, architecture:maxwell}; fixed in run-p1.mjs for later runs",
+    "fps-after-present-default-r2: dev server did not exit within 5 s of SIGTERM (result written with server exit null); the owned child PID was verified and SIGKILLed by hand"
+  ]
+}
