@@ -1,0 +1,46 @@
+{
+ "packet": "F1a",
+ "date": "2026-09-30",
+ "taskRoot": "/mnt/p6/build/firefox-webgl-f1a-20260930",
+ "firefox": {
+  "base": "W1 3a1af53de3306e5380c84fa900bcc505f09bae6ffb856be03972c9b9b2aa3db6",
+  "baseBytes": 157454290,
+  "candidate": "46d28cd851e13e6f561a6572db21b392d42935d911d55a0334fed0b503e2c9ca",
+  "candidateBytes": 176105527,
+  "growthBytes": 18651237,
+  "pulledMembers": {
+   "libgallium_zink.a": 656,
+   "libEGL_mesa.a": 16,
+   "libguest_vk_icd.a": 2
+  },
+  "newDuplicates": 0
+ },
+ "candidate": {
+  "path": "candidate-run2",
+  "version": "2c3830fbec61",
+  "archiveSha256": "4c53f5064a5b2c47cecc4460c4bac5bb6bb998ba1a99e41dd354a5f9ee0762be",
+  "bytes": 91210736,
+  "promoted": false,
+  "sourceVersion": "d5103be54146"
+ },
+ "guest": {
+  "run1": {
+   "candidate": "361bc925a7a5",
+   "startup": "pass cold/warm",
+   "webgl": "tryNativeGL () - X11_EGL off (once pref via distribution.ini only)"
+  },
+  "run2": {
+   "candidate": "2c3830fbec61",
+   "startup": "pass cold 59.4 s / warm 33.1 s zero images",
+   "webgl": "none",
+   "mesa": [
+    "ZINK: CPU device requested but none found!",
+    "ZINK: failed to choose pdev",
+    "egl: failed to create dri2 screen"
+   ],
+   "error": "tryNativeGL (FEATURE_FAILURE_NO_DISPLAY)",
+   "webgpu": "null adapter"
+  }
+ },
+ "blockedOn": "B2a guest ICD CPU device type + Zink extensions/features"
+}
