@@ -1,0 +1,111 @@
+{
+  "packet": "V2 vkgears per-frame overhead profile",
+  "date": "2026-10-01",
+  "baseCommit": "8af39db",
+  "method": "Instrumented COPIES only (git archive HEAD snapshot): guest-gpu.c per-op write/wait/read timers (GUEST_GPU_PROF=1), vkgears.c per-frame record/submit/wait/x11 timers, host.mjs per-op idle/payload/handler/reply timers, renderer.mjs per-checked() action vs popErrorScope timers. Served from a shadow web root; no repo source changed.",
+  "taskDir": "/mnt/p6/build/vkgears-v2-20261001",
+  "artifacts": {
+    "guestBuild": "/mnt/p6/build/vkgears-v2-20261001/build-run2 (vkgears.wasm 1,330,493 B, sha256 5fec61ae789898e9d1f316531cf822541edcbca57709600e3cc0da307ebc750b)",
+    "failedBuild": "/mnt/p6/build/vkgears-v2-20261001/build-run1 (clock_gettime undeclared under -std=c11; fixed with _POSIX_C_SOURCE)",
+    "package": "/mnt/p6/build/vkgears-v2-20261001/package-run1/gputest-vkgears.cpio (1,333,760 B, sha256 2bc451a0270c9617b00d6bce021f6f2b218243664331c72e6905f25be2a7d9d9)",
+    "shadowRoot": "/mnt/p6/build/vkgears-v2-20261001/root",
+    "runner": "/mnt/p6/build/vkgears-v2-20261001/run-v2.mjs",
+    "run": "/mnt/p6/build/vkgears-v2-20261001/gate-webgpu-run1",
+    "guestLines": "gate-webgpu-run1/guest-prof.txt",
+    "hostSnapshots": "gate-webgpu-run1/prof-snaps.json",
+    "hostBreakdown": "gate-webgpu-run1/host-breakdown.txt"
+  },
+  "environment": {
+    "query": "?gputest=1&gputestapp=vkgears",
+    "adapter": { "vendor": "nvidia", "architecture": "maxwell" },
+    "browser": "/home/a/.local/archpkg/pacman/usr/bin/chromium --enable-unsafe-webgpu --enable-features=Vulkan --ignore-gpu-blocklist, headful DISPLAY=:0, PRIME env stripped",
+    "render": "128x128, window 300x300",
+    "hostLoad": "load average 0.68 at start, 2.59 at end; concurrent B2f agent possibly running guest gates on 4209/9419",
+    "gate": "pass (present/nopresent FPS, rotation screenshots, no page errors)",
+    "webgl2": "not measured (time budget)"
+  },
+  "fps": {
+    "present": { "meanFps": 59.604, "minFps": 57.168, "maxFps": 66.981, "intervals": 11 },
+    "nopresent": { "meanFps": 183.88, "minFps": 177.752, "maxFps": 191.251, "intervals": 5 },
+    "v1Reference": { "present": 59, "nopresent": 189 },
+    "noiseNote": "Instrumented FPS matches uninstrumented V1 within ~3%; per-interval spread 57-67 / 178-191. Not repeated as a separate run."
+  },
+  "perFrame": {
+    "nopresent": {
+      "frameMs": 5.23,
+      "roundTrips": 3,
+      "ops": { "VERTEX_UPLOAD(19)": 1, "UNIFORM_UPLOAD(24)": 1, "GRAPHICS_PASS(21)": 1 },
+      "bytesGuestToHost": 65367,
+      "bytesHostToGuest": 60,
+      "guest": { "recordMs": 0.014, "submitMs": 5.20, "queueWaitIdleMs": 0.004, "blockedOnHostMs": 4.86, "sendMs": 0.12, "recvMs": 0.10, "icdOwnCpuMs": 0.12 },
+      "guestWaitPerOpMs": { "VERTEX_UPLOAD": 0.76, "UNIFORM_UPLOAD": 0.57, "GRAPHICS_PASS": 3.44 },
+      "host": {
+        "frameMs": 5.48,
+        "idleWaitingForGuestMs": 1.05,
+        "readPayloadMs": 0.105,
+        "writeReplyMs": 0.101,
+        "handlerMs": { "VERTEX_UPLOAD": 0.41, "UNIFORM_UPLOAD": 0.32, "GRAPHICS_PASS": 3.47 },
+        "split": {
+          "decodeAndValidateMs": 0.20,
+          "encodeMs": 0.07,
+          "writeBufferMs": 0.06,
+          "submitAndOnSubmittedWorkDoneMs": 2.54,
+          "popErrorScopeMs": 1.27
+        }
+      }
+    },
+    "present": {
+      "frameMs": 16.8,
+      "roundTrips": 4,
+      "ops": { "VERTEX_UPLOAD(19)": 1, "UNIFORM_UPLOAD(24)": 1, "GRAPHICS_PASS(21)": 1, "GRAPHICS_READBACK(22)": 1 },
+      "bytesGuestToHost": 65387,
+      "bytesHostToGuest": 65616,
+      "guest": { "recordMs": 0.025, "submitMs": 12.93, "queueWaitIdleMs": 0.004, "x11PresentMs": 4.0, "blockedOnHostMs": 12.34, "sendMs": 0.19, "recvMs": 0.21, "icdOwnCpuMs": 0.19 },
+      "guestWaitPerOpMs": { "VERTEX_UPLOAD": 1.79, "UNIFORM_UPLOAD": 0.78, "GRAPHICS_PASS": 4.78, "GRAPHICS_READBACK": 5.01 },
+      "host": {
+        "idleWaitingForGuestMs": 6.68,
+        "handlerMs": { "VERTEX_UPLOAD": 0.95, "UNIFORM_UPLOAD": 0.42, "GRAPHICS_PASS": 4.38, "GRAPHICS_READBACK": 4.41 },
+        "writeReplyReadbackMs": 0.29,
+        "split": {
+          "stagingCreateMs": 0.02,
+          "encodeMs": 0.10,
+          "writeBufferMs": 0.08,
+          "passSubmitAndOnSubmittedWorkDoneMs": 3.31,
+          "readbackSubmitAndMapAsyncMs": 2.53,
+          "repackUnmapMs": 0.09,
+          "popErrorScopeMs": 3.70
+        },
+        "note": "Present slows unrelated ops (pass 3.47->4.38 ms, vertex popErrorScope 0.32->0.84 ms): the host runs serveGPU on the page main thread, which also paints the guest framebuffer, and the GPU process is busier."
+      }
+    }
+  },
+  "optimisations": [
+    { "rank": 1, "name": "Drop per-op error scopes (one scope set per submit, or async error reporting)", "saveNopresentMs": 1.2, "savePresentMs": 3.6,
+      "files": ["web/linux/tests/guest-vulkan-graphics/renderer.mjs:406-425 checked()", "web/linux/tests/guest-gpu/host.mjs (reply status for deferred errors)"],
+      "zinkConflict": "None with B2f/B2c/B2b guest code; host.mjs is also edited by B2f, so land after B2f or rebase. Deferred errors need a reporting slot (next reply or fence wait), which B2b fences can carry." },
+    { "rank": 2, "name": "Pipelined fences: reply to GRAPHICS_PASS after queue.submit, await completion only at fence/WaitIdle/readback", "saveNopresentMs": 2.5, "savePresentMs": 2.5,
+      "files": ["renderer.mjs:650-688 end()", "host.mjs GRAPHICS_PASS + new FENCE_WAIT op", "guest-vulkan/transfer.inc:327-460 execute_submit, :500 wait_fences, :581-582 queue_idle/device_idle"],
+      "zinkConflict": "Directly overlaps B2b (blocking waits/timeline semaphores): both need host-side completion tracking. Design it as part of B2b, not separately. Needs a frames-in-flight cap." },
+    { "rank": 3, "name": "Present path: no CPU upscale, direct BGRX from host, async (one-frame-late) readback ring with persistent staging", "saveNopresentMs": 0, "savePresentMs": 5.0,
+      "files": ["web/linux/tests/vkgears/vkgears.c:290-305 x11_present", "renderer.mjs:690-715 readback()", "host.mjs GRAPHICS_READBACK", "transfer.inc:441-442 readback memcpy/swap_rb"],
+      "zinkConflict": "Readback ring touches B2f memory/suballocation (mapped readback buffers) and A6b present; vkgears.c change is app-only and conflict-free." },
+    { "rank": 4, "name": "One round trip per submit (batch uploads+pass+readback into one SUBMIT message)", "saveNopresentMs": 0.7, "savePresentMs": 1.0,
+      "files": ["transfer.inc:421-445", "graphics-commands.inc:238-260", "host.mjs new op", "guest-gpu.c protocol enum"],
+      "zinkConflict": "Touches the same execute_submit code as B2f buffers and B2c push constants (push constants would ride in the batch). Do after B2f/B2c." },
+    { "rank": 5, "name": "Dirty tracking: skip unchanged vertex uploads (63.3 KB/frame, static after frame 1)", "saveNopresentMs": 0.45, "savePresentMs": 0.9,
+      "files": ["graphics-commands.inc:238-249 graphics_upload_vertices", "transfer.inc memory map/flush paths"],
+      "zinkConflict": "Strong overlap with B2f suballocation: tracking must be per suballocated range of host-backed memory. Implement inside B2f's buffer layer (flush ranges or shadow compare)." },
+    { "rank": 6, "name": "Move serveGPU into a dedicated Worker (isolate from main-thread framebuffer painting)", "saveNopresentMs": 0.2, "savePresentMs": 1.0,
+      "files": ["web/linux/gputest.mjs:107-150", "host.mjs", "vsock connection bridge"],
+      "zinkConflict": "None in guest; Firefox-mode GPU host shares gputest.mjs." },
+    { "rank": 7, "name": "Cache bind groups per (pipeline, uniform buffer, range)", "saveNopresentMs": 0.03, "savePresentMs": 0.03,
+      "files": ["renderer.mjs:666-671"],
+      "zinkConflict": "B2c push constants (if emulated via UBO + dynamic offsets) changes bind group keys; do with B2c." },
+    { "rank": 8, "name": "Persistent host vertex/uniform buffers", "saveNopresentMs": 0, "savePresentMs": 0,
+      "note": "Already persistent: buffers are created once (ops 18/20) and only writeBuffer runs per frame (0.03-0.05 ms)." }
+  ],
+  "projected": {
+    "nopresent": "5.2 ms -> ~1.3 ms with ranks 1,2,4,5 (GPU latency then bounds throughput; needs a frames-in-flight cap)",
+    "present": "16.8 ms -> ~10.7 ms with ranks 1,2 (~93 FPS); ~5.7 ms adding rank 3 (~175 FPS, near softpipe 202)"
+  }
+}

@@ -184,8 +184,11 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
 - Done: glgears `&glsize=WxH` (`8af39db`): softpipe at 128x128 gives 202 FPS
   presented / 452 nopresent, which beats vkgears on the ICD (189 nopresent). ICD
   per-frame overhead dominates.
-- Running (10-01): V2 vkgears frame-cost profile + ICD optimisation plan
-  (`/mnt/p6/build/vkgears-v2-20261001`, ports 4211/9421, measurement only).
+- Done: V2 vkgears profile (`docs/vkgears-v2-profile-20261001.md`): 93% of a
+  nopresent frame (5.2 ms) is the guest blocked on host awaits. Ranked fixes:
+  (1) one error scope per submit (-1.2 ms nopresent / -3.6 ms present),
+  (2) pipelined fences = B2b (-2.5 ms), (3) present path without CPU upscale +
+  one-frame-late staging ring (-5 ms present). Projected ~175 FPS present.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
