@@ -108,6 +108,10 @@ const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
 const gputestMode = gputestEnabled();
 // ?gpubackend=webgpu|webgl forces the gputest host backend (default auto).
 const gpuBackend = gpuBackendParam();
+// ?gpu=1 serves guest GPU sessions (vsock 4050) without the demo archive.
+// Firefox mode serves them by default (guest WebGL on Zink); ?gpu=0 opts out.
+const gpuParam = new URLSearchParams(location.search).get("gpu");
+const guestGpuEnabled = mode => gputestMode || gpuParam === "1" || (mode === "firefox" && gpuParam !== "0");
 const settingsKey = "linuxonweb.machine-settings.v1";
 const resumeKey = "linuxonweb.restart-mode.v1";
 const modes = ["guest", "console", "startx", "firefox"];
@@ -640,7 +644,7 @@ async function boot(mode) {
     attached.attachment.device,
     fileSystemDevice(persistentHome, { tag: 'home', cache: true }),
   ];
-  const vsock = gputestMode ? vsockDevice() : null;
+  const vsock = guestGpuEnabled(mode) ? vsockDevice() : null;
   if (vsock) devices.push(vsock);
   if (rootfs) {
     devices.push(
