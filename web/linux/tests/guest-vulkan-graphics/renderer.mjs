@@ -363,6 +363,8 @@ function webgpuPipeline(descriptor, vertex, fragment, layout) {
  * the host adapter owns wire IDs and the device. Async methods serialize GPU error
  * scopes. The caller must not interleave its own error scopes on this same device.
  */
+const STAGING_CACHE_BYTES = 1 << 20;
+
 export function createGraphicsRenderer(device, { onEvent = () => {}, allowUniforms = false, allowTextures = false, allowDepth = false } = {}) {
   if (!device?.queue || !device?.lost?.then) fail('existing WebGPU device required', 'unavailable');
   if (typeof onEvent !== 'function') fail('onEvent must be a function');
@@ -374,6 +376,9 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
     allowTextures ? { allowUniforms, allowTextures } : allowUniforms ? { allowUniforms } : undefined;
   const resources = new Map(), native = new Map(), cancelWaits = new Set();
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
+  // P1: error-scope results of acknowledged uploads that are still in flight, and one
+  // cached readback staging buffer (outside the logical byte budget while idle).
+  let deferred = [], staging = null;
   const counters = { buffersCreated: 0, buffersDestroyed: 0, texturesCreated: 0, texturesDestroyed: 0,
     passes: 0, draws: 0, readbacks: 0, uploads: 0, uniformUploads: 0, ...(allowTextures ? { textureUploads: 0, samplersCreated: 0 } : {}) };
   const event = e => { try { onEvent(e); } catch { /* diagnostics cannot change renderer state */ } };
@@ -390,11 +395,17 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
     counters[entry.kind === 'buffer' ? 'buffersDestroyed' : 'texturesDestroyed']++;
     try { object.destroy(); } catch (error) { event({ type: 'destroy-error', message: String(error.message) }); }
   };
+  const dropStaging = () => {
+    if (!staging) return;
+    const { object } = staging; staging = null; counters.buffersDestroyed++;
+    try { object.destroy(); } catch (error) { event({ type: 'destroy-error', message: String(error.message) }); }
+  };
   const dispose = (nextState, reason) => {
     if (state !== 'open') return;
-    state = nextState; cause = reason; recording = null; resources.clear();
+    state = nextState; cause = reason; recording = null; resources.clear(); deferred = [];
     for (const cancel of cancelWaits) cancel(); cancelWaits.clear();
     for (const object of native.keys()) releaseNative(object);
+    dropStaging();
     event({ type: nextState, message: reason });
   };
   device.lost.then(info => dispose('lost', `device lost: ${info?.message ?? 'unknown'}`),
@@ -403,26 +414,80 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
     const result = tail.then(() => { available(); return action(); });
     tail = result.catch(() => {}); return result;
   };
-  const checked = async action => {
-    available();
-    const filters = ['internal', 'out-of-memory', 'validation']; let count = 0, result, caught;
+  // Error scopes. Attribution happens when the native call is made, so a scope set
+  // is pushed around each native call and popped immediately; the pop promises are
+  // awaited later, together with any other promise of the same operation (one GPU
+  // process round trip instead of one per call). Pops resolve in wire order.
+  const FILTERS = ['internal', 'out-of-memory', 'validation'];
+  const scoped = action => {
+    let count = 0, result, caught;
     try {
-      for (const filter of filters) { device.pushErrorScope(filter); count++; }
-      result = await wait(action());
+      for (const filter of FILTERS) { device.pushErrorScope(filter); count++; }
+      result = action();
     } catch (error) { caught = error; }
-    const pending = [];
-    while (count) { const filter = filters[--count];
-      try { pending.push(Promise.resolve(device.popErrorScope()).then(error => ({ filter, error }))); }
+    const pops = [];
+    while (count) { const filter = FILTERS[--count];
+      try { pops.push(Promise.resolve(device.popErrorScope()).then(error => ({ filter, error }))); }
       catch (error) { caught ??= error; }
     }
-    let errors = [];
-    try { errors = await wait(Promise.all(pending)); } catch (error) { caught ??= error; }
-    available();
-    const scoped = errors.find(e => e.error);
-    if (scoped) fail(`WebGPU ${scoped.filter}: ${scoped.error.message}`,
-      scoped.filter === 'out-of-memory' ? 'budget' : scoped.filter === 'validation' ? 'validation' : 'gpu');
+    return { result, caught, pops: Promise.all(pops) };
+  };
+  // Classification is unchanged from the serial version: the first scoped error in
+  // pop order wins (validation, out-of-memory, internal), then a thrown exception.
+  const classify = (errors, caught) => {
+    const hit = errors.find(e => e.error);
+    if (hit) fail(`WebGPU ${hit.filter}: ${hit.error.message}`,
+      hit.filter === 'out-of-memory' ? 'budget' : hit.filter === 'validation' ? 'validation' : 'gpu');
     if (caught) { if (caught instanceof GraphicsRendererError) throw caught; fail(`WebGPU operation: ${caught.message ?? caught}`, 'gpu'); }
+  };
+  const takeDeferred = () => { const list = deferred; deferred = []; return Promise.all(list); };
+  // An upload already acknowledged to the guest cannot be failed retroactively:
+  // any scoped error it produced is terminal for the renderer.
+  const settleDeferred = results => {
+    const hit = results.flat().find(e => e.error);
+    if (!hit) return;
+    const message = `WebGPU ${hit.filter} after acknowledged upload: ${hit.error.message}`;
+    dispose('failed', message); fail(message, 'gpu');
+  };
+  // Awaits this operation's scope sets (and extra promises) together with every
+  // deferred upload scope set. Returns the per-set error lists for classification.
+  const settle = async (sets, extra = []) => {
+    // A rejected extra promise (work-done, mapAsync) is captured separately so the
+    // scope results are still classified first, as in the serial version.
+    let prior = [], lists = [], caught, rejected = null;
+    const work = Promise.all(extra).then(() => {}, error => { rejected = { error }; });
+    try { [prior, lists] = await wait(Promise.all([takeDeferred(), Promise.all(sets), work])); }
+    catch (error) { caught = error; }
+    if (rejected) caught ??= rejected.error;
+    available(); settleDeferred(prior);
+    return { lists: lists.length ? lists : sets.map(() => []), caught };
+  };
+  const checked = async action => {
+    available();
+    let count = 0, result, caught;
+    try {
+      for (const filter of FILTERS) { device.pushErrorScope(filter); count++; }
+      result = await wait(action());
+    } catch (error) { caught = error; }
+    const pops = [];
+    while (count) { const filter = FILTERS[--count];
+      try { pops.push(Promise.resolve(device.popErrorScope()).then(error => ({ filter, error }))); }
+      catch (error) { caught ??= error; }
+    }
+    const settled = await settle([Promise.all(pops)]);
+    classify(settled.lists[0], caught ?? settled.caught);
     return result;
+  };
+  // Uploads: JavaScript range/alignment checks already ran, so the queue write can
+  // only fail natively (out of memory, internal, device loss). Its scope results are
+  // deferred and settled by the next awaited operation; at most MAX_DEFERRED pend.
+  const MAX_DEFERRED = 32;
+  const deferredWrite = async action => {
+    available();
+    const write = scoped(action);
+    if (write.caught) { const settled = await settle([write.pops]); classify(settled.lists[0], write.caught ?? settled.caught); }
+    deferred.push(write.pops);
+    if (deferred.length >= MAX_DEFERRED) { const settled = await settle([]); classify([], settled.caught); }
   };
   const budget = allocation => {
     if (resources.size >= GRAPHICS_LIMITS.maxResources || allocation > GRAPHICS_LIMITS.maxBytes - bytes) fail('renderer resource budget exceeded', 'budget');
@@ -536,7 +601,7 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
       return enqueue(async () => {
         const entry = get(handle, 'uniform-buffer');
         if (offset > entry.descriptor.size || copy.byteLength > entry.descriptor.size - offset) fail('upload exceeds uniform buffer');
-        await checked(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uniformUploads++;
+        await deferredWrite(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uniformUploads++;
       });
     },
     createTexture(input) {
@@ -557,7 +622,7 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         const entry = get(handle, 'sampled-texture'), { width, height } = entry.descriptor;
         if (copy.byteLength !== width * height * 4) fail('texture upload size changed');
         entry.initialized = false;
-        await checked(() => device.queue.writeTexture({ texture: entry.object }, copy, { offset: 0, bytesPerRow: width * 4, rowsPerImage: height }, [width, height, 1]));
+        await deferredWrite(() => device.queue.writeTexture({ texture: entry.object }, copy, { offset: 0, bytesPerRow: width * 4, rowsPerImage: height }, [width, height, 1]));
         entry.initialized = true; counters.textureUploads++;
       });
     },
@@ -592,7 +657,7 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
       return enqueue(async () => {
         const entry = get(handle, 'vertex-buffer');
         if (offset > entry.descriptor.size || copy.byteLength > entry.descriptor.size - offset) fail('upload exceeds vertex buffer');
-        await checked(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uploads++;
+        await deferredWrite(() => device.queue.writeBuffer(entry.object, offset, copy)); counters.uploads++;
       });
     },
     createTarget(input) {
@@ -657,7 +722,8 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         if (pass.depth?.loadOp === 'load' && !depthTarget.initialized) fail('depth load requires a successfully stored depth target');
         // Recheck all live references and ranges before any native encoder or submit.
         const draws = pass.draws.map(d => validateDraw(d, target, depthTarget));
-        const command = await checked(() => {
+        available();
+        const encode = scoped(() => {
           const encoder = device.createCommandEncoder();
           const attachment = { view: target.object.createView(), loadOp: pass.loadOp, storeOp: pass.storeOp };
           if (pass.clearColor) attachment.clearValue = pass.clearColor;
@@ -680,8 +746,19 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
           }
           render.end(); return encoder.finish();
         });
+        if (encode.caught) { const settled = await settle([encode.pops]); classify(settled.lists[0], encode.caught ?? settled.caught); }
+        // Submit without waiting for the encode scopes. If encoding failed, the command
+        // buffer is invalid and the submit is a no-op (validation error, no effects), so
+        // restoring the attachment state below matches the serial version exactly.
+        const previous = [target.initialized, depthTarget?.initialized];
         target.initialized = false; if (depthTarget) depthTarget.initialized = false;
-        await checked(async () => { device.queue.submit([command]); await wait(device.queue.onSubmittedWorkDone()); });
+        const submit = scoped(() => { device.queue.submit([encode.result]); return device.queue.onSubmittedWorkDone(); });
+        const settled = await settle([encode.pops, submit.pops], submit.caught ? [] : [submit.result]);
+        if (settled.lists[0].some(e => e.error)) {
+          target.initialized = previous[0]; if (depthTarget) depthTarget.initialized = previous[1];
+          classify(settled.lists[0]);
+        }
+        classify(settled.lists[1], submit.caught ?? settled.caught);
         target.initialized = true; if (depthTarget) depthTarget.initialized = pass.depth.storeOp === 'store';
         counters.passes++; counters.draws += draws.length;
         event({ type: 'pass', draws: draws.length });
@@ -695,21 +772,35 @@ export function createGraphicsRenderer(device, { onEvent = () => {}, allowUnifor
         const { width, height } = target.descriptor, row = Math.ceil(width * 4 / 256) * 256, size = row * height;
         // Staging does not consume a public resource handle, but does consume bytes.
         if (size > GRAPHICS_LIMITS.maxBytes - bytes || size > (limits.maxBufferSize ?? Infinity)) fail('readback budget exceeded', 'budget');
-        let staging;
+        // One cached staging buffer of the exact size is reused across readbacks. While
+        // in use it is a tracked native object (same byte budget as a fresh buffer);
+        // while idle it is held outside the budget, bounded by STAGING_CACHE_BYTES.
+        let buffer = null, keep = false;
         try {
-          staging = await makeNative('buffer', size, () => device.createBuffer({ size,
-            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ }));
-          const command = await checked(() => {
+          if (staging?.size === size) { buffer = staging.object; staging = null; native.set(buffer, { kind: 'buffer', bytes: size }); bytes += size; }
+          else {
+            dropStaging();
+            buffer = await makeNative('buffer', size, () => device.createBuffer({ size,
+              usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ }));
+          }
+          const encode = scoped(() => {
             const encoder = device.createCommandEncoder();
-            encoder.copyTextureToBuffer({ texture: target.object }, { buffer: staging, bytesPerRow: row, rowsPerImage: height }, [width, height, 1]);
+            encoder.copyTextureToBuffer({ texture: target.object }, { buffer, bytesPerRow: row, rowsPerImage: height }, [width, height, 1]);
             return encoder.finish();
           });
-          await checked(async () => { device.queue.submit([command]); await wait(staging.mapAsync(GPUMapMode.READ)); });
-          const mapped = new Uint8Array(staging.getMappedRange()), pixels = new Uint8Array(width * height * 4);
+          if (encode.caught) { const settled = await settle([encode.pops]); classify(settled.lists[0], encode.caught ?? settled.caught); }
+          const submit = scoped(() => { device.queue.submit([encode.result]); return buffer.mapAsync(GPUMapMode.READ); });
+          const settled = await settle([encode.pops, submit.pops], submit.caught ? [] : [submit.result]);
+          classify(settled.lists[0]);
+          classify(settled.lists[1], submit.caught ?? settled.caught);
+          const mapped = new Uint8Array(buffer.getMappedRange()), pixels = new Uint8Array(width * height * 4);
           for (let y = 0; y < height; y++) pixels.set(mapped.subarray(y * row, y * row + width * 4), y * width * 4);
-          staging.unmap(); counters.readbacks++;
+          buffer.unmap(); counters.readbacks++; keep = size <= STAGING_CACHE_BYTES;
           return { width, height, format: 'rgba8unorm', rowOrder: 'top-to-bottom', pixels };
-        } finally { releaseNative(staging); }
+        } finally {
+          if (keep && state === 'open' && native.has(buffer)) { native.delete(buffer); bytes -= size; staging = { object: buffer, size }; }
+          else releaseNative(buffer);
+        }
       });
     },
     destroy(handle) {

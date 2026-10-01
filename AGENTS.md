@@ -194,6 +194,12 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   (1) one error scope per submit (-1.2 ms nopresent / -3.6 ms present),
   (2) pipelined fences = B2b (-2.5 ms), (3) present path without CPU upscale +
   one-frame-late staging ring (-5 ms present). Projected ~175 FPS present.
+- Done: P1 host per-frame overhead (`docs/gpu-host-p1-20261001.md`,
+  `/mnt/p6/build/gpu-host-p1-20261001`): WebGPU renderer pops error scopes per
+  call and awaits them with work-done in one round trip, defers upload scopes
+  (native upload error -> terminal -5 on next op), reuses one readback staging
+  buffer. vkgears NVIDIA: nopresent 185->240 FPS, present 54->71 (128px 64->79).
+  20/20 suites unchanged. WebGL2 fence poll (setTimeout 4 ms) is the next host cost.
 - Done: Zink B2c stall fix (`docs/zink-b2c-20261001.md`, `/mnt/p6/build/zink-b2c-20261001`):
   the "stall" was two silent Wasm `call_indirect` traps. (1) wasm32-musl clang
   uses the generic Itanium C++ ABI: member-function-pointer calls with an odd
