@@ -1,4 +1,4 @@
-// Finite owner of one static test server (HTTP 4197) and one headful Chromium (CDP 9407) on DISPLAY=:0.
+// Finite owner of one static test server (HTTP 4197, or HTTP_PORT) and one headful Chromium (CDP 9407, or CDP_PORT) on DISPLAY=:0.
 // WebGPU uses the high-performance (NVIDIA) adapter through Chromium's Vulkan backend; WebGL2 stays on ANGLE.
 // Runs isolated guest Vulkan packages in the real 1 GiB / 2 CPU guest; no deployment.
 // Usage: PKG_RUN=N node run-finite.mjs OUTPUT TASK_ROOT [suite,...]
@@ -14,11 +14,11 @@ import { createHash } from 'node:crypto';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), repo = path.resolve(here, '../../../..');
 const out = path.resolve(process.argv[2] || ''), task = path.resolve(process.argv[3] || '');
-const HTTP_PORT = 4197, CDP_PORT = 9407;
+const HTTP_PORT = Number(process.env.HTTP_PORT || 4197), CDP_PORT = Number(process.env.CDP_PORT || 9407);
 const a4 = '/mnt/p6/build/guest-vulkan-a4-20260929', K = process.env.PKG_RUN || '1';
 const compute = '/mnt/p6/build/guest-vulkan-compute-20260926';
 const direct = ['live', 'unavailable', 'clear', 'loss-transport', 'loss-device', 'exhaustion'];
-const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu', 'texture-webgl2', 'texture-webgpu', 'depth-webgl2', 'depth-webgpu'];
+const allSuites = [...direct.map(mode => 'direct-' + mode), 'loader', 'compute', 'graphics-webgl2', 'graphics-webgpu', 'uniform-webgl2', 'uniform-webgpu', 'texture-webgl2', 'texture-webgpu', 'depth-webgl2', 'depth-webgpu', 'wsi-webgl2', 'wsi-webgpu'];
 const suites = process.argv[4] ? process.argv[4].split(',') : allSuites;
 if (suites.some(item => !allSuites.includes(item))) throw Error('unknown suite');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -51,8 +51,9 @@ const packages = {
   uniform: { dir: `${task}/uniform-package-run${K}`, prefix: '/linux/tests/guest-vulkan-uniform/candidate/' },
   texture: { dir: `${task}/texture-package-run${K}`, prefix: '/linux/tests/guest-vulkan-texture/candidate/' },
   depth: { dir: `${task}/depth-package-run${K}`, prefix: '/linux/tests/guest-vulkan-depth/candidate/' },
+  wsi: { dir: `${task}/wsi-package-run${K}`, prefix: '/linux/tests/guest-vulkan-wsi/candidate/' },
 };
-const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item.startsWith('texture-') ? 'texture' : item.startsWith('depth-') ? 'depth' : item));
+const needed = new Set(suites.map(item => item.startsWith('graphics-') ? 'graphics' : item.startsWith('uniform-') ? 'uniform' : item.startsWith('texture-') ? 'texture' : item.startsWith('depth-') ? 'depth' : item.startsWith('wsi-') ? 'wsi' : item));
 const metadataBySuite = {};
 for (const name of needed) {
   const { dir, prefix } = packages[name]; await disk(dir);
@@ -71,7 +72,7 @@ for (const name of needed) {
 }
 const translators = [];
 if (needed.has('compute')) translators.push(['/linux/tests/guest-vulkan-compute/translator/candidate/translator.wasm', compute + '/translator-build-run4/translator.wasm', 'e4a7cadc55a68b712eb9b56758fd7624860cecc9f4da6ada8ac7928c61455fea']);
-if (needed.has('graphics') || needed.has('uniform') || needed.has('texture') || needed.has('depth')) translators.push(
+if (needed.has('graphics') || needed.has('uniform') || needed.has('texture') || needed.has('depth') || needed.has('wsi')) translators.push(
   ['/linux/tests/guest-vulkan-webgl/candidate/glsl.wasm', a4 + '/glsl-translator-build-run1/translator.wasm', '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5'],
   ['/linux/tests/guest-vulkan-webgl/candidate/wgsl.wasm', a4 + '/wgsl-translator-build-run1/translator.wasm', '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2']);
 for (const [url, source, expected] of translators) {
@@ -138,11 +139,12 @@ const snapshot = () => evaluate(`({result:document.documentElement?.dataset.resu
 const pageFor = suite => suite.startsWith('direct-') ? `/linux/tests/guest-vulkan/index.html?candidate=${suite === 'direct-live' ? 'candidate' : 'candidate-' + suite.slice(7)}`
   : suite === 'loader' ? '/linux/tests/guest-vulkan-loader/index.html?candidate=candidate-clear'
   : suite === 'compute' ? '/linux/tests/guest-vulkan-compute/index.html?candidate=candidate-compute'
+  : suite.startsWith('wsi-') ? '/linux/tests/guest-vulkan-wsi/guest.html?backend=' + suite.slice('wsi-'.length)
   : suite.startsWith('depth-') ? '/linux/tests/guest-vulkan-depth/guest.html?backend=' + suite.slice('depth-'.length)
   : suite.startsWith('texture-') ? '/linux/tests/guest-vulkan-texture/guest.html?backend=' + suite.slice('texture-'.length)
   : suite.startsWith('uniform-') ? '/linux/tests/guest-vulkan-uniform/guest.html?backend=' + suite.slice('uniform-'.length)
   : '/linux/tests/guest-vulkan-webgl/guest.html?backend=' + suite.slice('graphics-'.length);
-const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM|_TEXTURE|_DEPTH)?_EXIT status=(\d+) checks=(\d+)$/m;
+const exitPattern = /^GUEST_VK(?:_LOADER|_COMPUTE|_GRAPHICS|_UNIFORM|_TEXTURE|_DEPTH|_WSI)?_EXIT status=(\d+) checks=(\d+)$/m;
 try {
   let target; const startup = Date.now() + 15000;
   for (;;) {
@@ -188,6 +190,7 @@ try {
     if (suite.startsWith('uniform-')) current.pass &&= guest.host?.backend === suite.slice('uniform-'.length) && guest.mode === 'uniform';
     if (suite.startsWith('texture-')) current.pass &&= guest.host?.backend === suite.slice('texture-'.length) && guest.mode === 'texture';
     if (suite.startsWith('depth-')) current.pass &&= guest.host?.backend === suite.slice('depth-'.length) && guest.mode === 'depth';
+    if (suite.startsWith('wsi-')) current.pass &&= guest.host?.backend === suite.slice('wsi-'.length) && guest.mode === 'wsi';
     current.adapter = guest.host?.adapter ?? null;
     if (process.env.REQUIRE_WEBGPU_VENDOR && guest.host?.backend === 'webgpu') current.pass &&= current.adapter?.vendor === process.env.REQUIRE_WEBGPU_VENDOR;
     report.runs.push(current);

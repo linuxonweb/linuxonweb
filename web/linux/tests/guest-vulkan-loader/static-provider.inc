@@ -4,7 +4,9 @@
     VkResult result = loader_scanned_icd_init(inst, icd_tramp_list);
     if (result != VK_SUCCESS) return result;
     uint32_t version;
-    if (!loader_get_icd_interface_version(vk_icdNegotiateLoaderICDInterfaceVersion, &version) || version != 2) {
+    /* Interface 3 only adds driver-owned VkSurfaceKHR objects (A6a WSI build);
+     * both remain the same built-in provider. */
+    if (!loader_get_icd_interface_version(vk_icdNegotiateLoaderICDInterfaceVersion, &version) || (version != 2 && version != 3)) {
         loader_scanned_icd_clear(inst, icd_tramp_list);
         return VK_ERROR_INCOMPATIBLE_DRIVER;
     }

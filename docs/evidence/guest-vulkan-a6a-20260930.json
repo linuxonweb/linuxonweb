@@ -1,0 +1,132 @@
+{
+ "packet": "guest-vulkan A6a WSI surfaces/swapchain objects",
+ "date": "2026-09-30",
+ "doc": "docs/guest-vulkan-wsi-20260930.md",
+ "baseCommit": "7943992 + uncommitted tree",
+ "taskRoot": "/mnt/p6/build/guest-vulkan-a6a-20260930",
+ "authoritativeRun": {
+  "dir": "/mnt/p6/build/guest-vulkan-a6a-20260930/all-run2",
+  "resultSha256": "490b6c1d468cadbdb7707d665ca9e8652a3b2318e651e712b3a7d18dc09bb702",
+  "pass": true,
+  "browserExit": 0,
+  "serverClosed": true,
+  "httpErrors": [
+   "/favicon.ico"
+  ],
+  "mode": "headful-display0-gpu",
+  "ports": {
+   "http": 4203,
+   "cdp": 9413
+  },
+  "adapters": {
+   "webgpu": "nvidia/maxwell (isFallbackAdapter=false)",
+   "webgl2": "ANGLE (Intel, Mesa Intel UHD Graphics 620 (KBL GT2), OpenGL 4.6)"
+  },
+  "suitesPassed": "18/18",
+  "checks": {
+   "direct-live": 140,
+   "direct-unavailable": 17,
+   "direct-clear": 1087,
+   "direct-loss-transport": 640,
+   "direct-loss-device": 640,
+   "direct-exhaustion": 1213,
+   "loader": 901,
+   "compute": 501,
+   "graphics-webgl2": 232753,
+   "graphics-webgpu": 232745,
+   "uniform-webgl2": 201269,
+   "uniform-webgpu": 201269,
+   "texture-webgl2": 18182,
+   "texture-webgpu": 18182,
+   "depth-webgl2": 42620,
+   "depth-webgpu": 42620,
+   "wsi-webgl2": 276963,
+   "wsi-webgpu": 276963
+  },
+  "nonWsiCountsEqualA5": true,
+  "a5Reference": "/mnt/p6/build/guest-vulkan-a5-20260929/all-run1"
+ },
+ "wsiMarkers": [
+  "GUEST_VK_WSI_SURFACES_CREATED xlib=2 xcb=1 support_family0=1",
+  "GUEST_VK_WSI_SWAPCHAIN_REJECTED count=16",
+  "GUEST_VK_WSI_SWAPCHAIN_PASS images=3 extent=96x80 mode=fifo rendered=4 acquire=feature_not_present present=feature_not_present",
+  "GUEST_VK_WSI_RETIRE_PASS old=out_of_date replacement_images=2 replace_retired=refused in_use=refused",
+  "GUEST_VK_WSI_XCB_PASS images=2 extent=64x48 surface_first=out_of_date",
+  "GUEST_VK_WSI_CLAMPED_PASS images=2 extent=128x128",
+  "GUEST_VK_WSI_LIVE swapchains=0 leaked=0",
+  "GUEST_VK_WSI_SURFACES live=0 leaked=0",
+  "GUEST_VK_RESOURCES live=0 allocated_bytes=0"
+ ],
+ "wsiWebgpuHost": {
+  "commands": 40,
+  "graphicsPasses": 9,
+  "graphicsReadbacks": 9,
+  "draws": 0,
+  "submits": 18,
+  "buffersCreatedDestroyed": [
+   9,
+   9
+  ],
+  "texturesCreatedDestroyed": [
+   9,
+   9
+  ],
+  "workers": 1,
+  "devices": 1,
+  "liveBeforeEmergencyCleanup": 0
+ },
+ "canceledFetchEvents": {
+  "wsi-webgl2": 1,
+  "wsi-webgpu": 2,
+  "cause": "not established"
+ },
+ "artifacts": {
+  "wsiBuild": {
+   "dir": "/mnt/p6/build/guest-vulkan-a6a-20260930/wsi-build-run6",
+   "bytes": 1308644,
+   "sha256": "2022abc1bd9a4f9924d02b515e3ca9e56ef88ab89604c742e5a95491e1765152",
+   "publicVkSymbols": 53
+  },
+  "wsiPackage": {
+   "dir": "/mnt/p6/build/guest-vulkan-a6a-20260930/wsi-package-run5",
+   "initramfsBytes": 41804432,
+   "sha256": "089460233d2162be5b7f601cb0bf5938c691aae70f11b7bb370409ce49fb8eb2"
+  },
+  "otherPackages": "*-build-run6 / *-package-run5 (direct-package-<mode>-run5)",
+  "wsiHeaders": {
+   "dir": "/mnt/p6/build/guest-vulkan-a6a-20260930/wsi-headers-run1",
+   "revision": "98f440ce6868c94f5ec6e198cc1adda4760e8849",
+   "vulkan_xlib.h": "e2efd24ada4479131f932dea1cd2f4dad9b3aad44aae60330fde9679a70f3d52",
+   "vulkan_xcb.h": "972d6d7f2ff66bc3d8f627bd66cffcc75ba9fb1d16a7acec7fd9d93dd85c243c"
+  }
+ },
+ "sourceSha256": {
+  "web/linux/tests/guest-vulkan/wsi.inc": "2ba2b23528c312451135a97a8e8db0241e617c8a8cbec10747c1884b428aac4b",
+  "web/linux/tests/guest-vulkan/icd.c": "777dee6d3d7894b42af27a11af21362b35e9ef201290e8b05c597cdc44bdf9b5",
+  "web/linux/tests/guest-vulkan/transfer.inc": "af2d7d2d7deb37a6eb39060f879fc3c670ed20c8cf9546e531d303155c4d2348",
+  "web/linux/tests/guest-vulkan-wsi/client.c": "7534915447fbf4ab9bb7d5c1cc5f6074218f06ad2e9952f3c01a0b948c87b87c",
+  "web/linux/tests/guest-vulkan-wsi/guest.html": "ec3a3d381447a496621a8a3ef42d7d97183295aa12b9f1526b0f348c535cbe93",
+  "web/linux/tests/guest-vulkan-loader/static-provider.inc": "a37554141a67655c4888749d61ab5f663156ceddade3c4430cf2368822c3ff2a"
+ },
+ "commands": {
+  "rebuild": "/mnt/p6/build/guest-vulkan-a6a-20260930/rebuild-all.sh 6 5",
+  "regression": "cd web/linux/tests/guest-vulkan && HTTP_PORT=4203 CDP_PORT=9413 PKG_RUN=5 REQUIRE_WEBGPU_VENDOR=nvidia timeout 1500 node run-finite.mjs /mnt/p6/build/guest-vulkan-a6a-20260930/all-run2 /mnt/p6/build/guest-vulkan-a6a-20260930",
+  "env": "TMPDIR=TMP=TEMP=/mnt/p6/build/guest-vulkan-a6a-20260930/tmp"
+ },
+ "reviewFix": "wsi_create_swapchain retires oldSwapchain before allocation, so it is retired even if creation fails",
+ "preservedEarlierRuns": {
+  "all-run1": "pass, 6-suite subset, package-run4",
+  "wsi-run1": "fail, page watchdog 135 s",
+  "wsi-run2": "fail, 'wsi client acceptance mismatch' with guest exit 0/276963 checks (package-run3); cause not re-established",
+  "wsi-build-run1-storage-guard-fail.log": "fail, storage guard"
+ },
+ "limits": [
+  "no acquire/present (VK_ERROR_FEATURE_NOT_PRESENT; A6b)",
+  "extent clamped to <=128x128",
+  "single format R8G8B8A8_UNORM/SRGB_NONLINEAR; X visual not inspected",
+  "FIFO and IMMEDIATE advertised; no pacing",
+  "retired swapchain holds window until destroyed",
+  "nonconformant bounded profile; not vkcube/Zink/Firefox"
+ ],
+ "next": "A6b: acquire + present via XPutImage (presentation-x11.inc path) with FIFO pacing; then A7 vkcube loop"
+}

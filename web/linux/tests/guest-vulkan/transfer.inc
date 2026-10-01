@@ -30,6 +30,7 @@ struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindi
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare; };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
     unsigned vertex, uniform, graphics_target, graphics_layout, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
+    uint64_t swapchain; /* A6a: nonzero for images/memory owned by a VkSwapchainKHR (not app-destroyable). */
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
     union { struct graphics_view view; struct graphics_pass pass; struct graphics_framebuffer framebuffer; struct graphics_pipeline pipeline;
         struct uniform_set_layout set_layout; struct uniform_pipeline_layout layout; struct uniform_set set; } graphics;
@@ -153,7 +154,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCre
     *out=HANDLE(VkBuffer,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_image(VkDevice d,VkImage h,const VkAllocationCallbacks *a) {
-    (void)a;struct resource *r=resource_get(RID(h),R_IMAGE);if (device_valid(d)&&r) resource_drop(r);
+    (void)a;struct resource *r=resource_get(RID(h),R_IMAGE);if (device_valid(d)&&r&&!r->swapchain) resource_drop(r);
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_buffer(VkDevice d,VkBuffer h,const VkAllocationCallbacks *a) {
     (void)a;struct resource *r=resource_get(RID(h),R_BUFFER);if (device_valid(d)&&r) resource_drop(r);
@@ -177,7 +178,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL allocate_memory(VkDevice d,const VkMemoryA
 }
 static VKAPI_ATTR void VKAPI_CALL free_memory(VkDevice d,VkDeviceMemory h,const VkAllocationCallbacks *a) {
     (void)a;struct resource *r=resource_get(RID(h),R_MEMORY);
-    if (device_valid(d)&&r&&!r->bound) resource_drop(r);
+    if (device_valid(d)&&r&&!r->bound&&!r->swapchain) resource_drop(r);
 }
 static VkResult bind_memory(VkDevice d,uint64_t id,unsigned kind,VkDeviceMemory h,VkDeviceSize offset) {
     struct resource *r=resource_get(id,kind),*m=resource_get(RID(h),R_MEMORY);

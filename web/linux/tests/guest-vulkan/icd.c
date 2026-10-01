@@ -17,6 +17,7 @@ struct VkInstance_T {
     VkDevice device;
     int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, depth_supported, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
+    uint32_t instance_extensions_enabled; /* Bit per instance_extension_table index. */
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
 _Static_assert(offsetof(struct VkPhysicalDevice_T, loader) == 0, "physical loader prefix");
@@ -63,8 +64,23 @@ static void zero_body(void *node, size_t size) {
  * entry; the NULL sentinel keeps the current tables empty. Enabled device
  * extensions are recorded as a bit per table index. */
 struct extension_entry { const char *name; uint32_t version; };
+#ifdef GUEST_VK_WSI
+/* A6a WSI build only. Instance extensions are enumerated before HELLO, so the
+ * surface extensions are listed unconditionally; surface support then reports
+ * VK_FALSE unless the host negotiated the graphics profile. VK_KHR_swapchain is
+ * listed only for a graphics-profile device (device_table()). */
+enum { WSI_EXT_SURFACE, WSI_EXT_XLIB, WSI_EXT_XCB };
+static const struct extension_entry instance_extension_table[] = {
+    {VK_KHR_SURFACE_EXTENSION_NAME, 25}, {VK_KHR_XLIB_SURFACE_EXTENSION_NAME, 6}, {VK_KHR_XCB_SURFACE_EXTENSION_NAME, 6}, {NULL, 0} };
+static const struct extension_entry device_extension_table[] = { {VK_KHR_SWAPCHAIN_EXTENSION_NAME, 70}, {NULL, 0} };
+#else
 static const struct extension_entry instance_extension_table[] = { {NULL, 0} };
 static const struct extension_entry device_extension_table[] = { {NULL, 0} };
+#endif
+static const struct extension_entry empty_extension_table[] = { {NULL, 0} };
+static const struct extension_entry *device_table(void) {
+    return live && live->graphics_supported ? device_extension_table : empty_extension_table;
+}
 static VkResult enumerate_extensions(const struct extension_entry *table, uint32_t *count, VkExtensionProperties *out) {
     uint32_t total = 0;
     while (table[total].name) total++;
@@ -116,6 +132,10 @@ static int hello(VkInstance instance) {
     return 0;
 }
 static void transfer_cleanup(void);
+#ifdef GUEST_VK_WSI
+static void wsi_device_cleanup(void);
+static void wsi_instance_cleanup(void);
+#endif
 static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo *info,
         const VkAllocationCallbacks *allocator, VkInstance *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
@@ -125,7 +145,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
         !chain_valid(info->pNext, instance_chain, 1) ||
         info->flags || allocator || live) return VK_ERROR_INITIALIZATION_FAILED;
     if (info->enabledLayerCount) return VK_ERROR_LAYER_NOT_PRESENT;
-    if (!extensions_supported(instance_extension_table, info->enabledExtensionCount, info->ppEnabledExtensionNames, NULL))
+    uint32_t enabled_instance_extensions = 0;
+    if (!extensions_supported(instance_extension_table, info->enabledExtensionCount, info->ppEnabledExtensionNames, &enabled_instance_extensions))
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     /* A 1.1 implementation must accept every requested apiVersion; the
      * effective instance/device version is the reported 1.1. */
@@ -141,6 +162,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
     if (gpu_accept(&instance->session, 4050) || hello(instance)) {
         gpu_close(&instance->session); free(instance); return VK_ERROR_INITIALIZATION_FAILED;
     }
+    instance->instance_extensions_enabled = enabled_instance_extensions;
     live = instance; audit.instances_created++; audit.live_instances++;
     *out = instance;
     return VK_SUCCESS;
@@ -148,6 +170,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
 static VKAPI_ATTR void VKAPI_CALL destroy_device(VkDevice device, const VkAllocationCallbacks *allocator) {
     (void)allocator;
     if (!device_valid(device)) return;
+#ifdef GUEST_VK_WSI
+    wsi_device_cleanup();
+#endif
     transfer_cleanup();
     live->device = NULL; free(device); audit.devices_destroyed++; audit.live_devices--;
 }
@@ -155,6 +180,9 @@ static VKAPI_ATTR void VKAPI_CALL destroy_instance(VkInstance instance, const Vk
     (void)allocator;
     if (!live || instance != live) return;
     if (instance->device) destroy_device(instance->device, NULL);
+#ifdef GUEST_VK_WSI
+    wsi_instance_cleanup();
+#endif
     unsigned char reply[512]; uint32_t n = 0;
     audit.close_status = gpu_call(&instance->session, GPU_CLOSE, NULL, 0, reply, sizeof(reply), &n);
     if (!audit.close_status && n) audit.close_status = -1;
@@ -306,7 +334,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL device_extensions(VkPhysicalDevice physica
     if (!physical_valid(physical)) return VK_ERROR_INITIALIZATION_FAILED;
     if (layer) return VK_ERROR_LAYER_NOT_PRESENT;
     if (!count) return VK_ERROR_INITIALIZATION_FAILED;
-    return enumerate_extensions(device_extension_table, count, out);
+    return enumerate_extensions(device_table(), count, out);
 }
 static int any_features(const VkPhysicalDeviceFeatures *f) {
     if (!f) return 0;
@@ -381,7 +409,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, c
         info->flags || allocator || live->device) return VK_ERROR_INITIALIZATION_FAILED;
     if (info->enabledLayerCount) return VK_ERROR_LAYER_NOT_PRESENT;
     uint32_t enabled_extensions = 0;
-    if (!extensions_supported(device_extension_table, info->enabledExtensionCount, info->ppEnabledExtensionNames, &enabled_extensions))
+    if (!extensions_supported(device_table(), info->enabledExtensionCount, info->ppEnabledExtensionNames, &enabled_extensions))
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     VkResult chain = device_chain(physical, info);
     if (chain != VK_SUCCESS) return chain;
@@ -403,6 +431,9 @@ static VKAPI_ATTR void VKAPI_CALL device_queue(VkDevice device, uint32_t family,
     if (out) *out = device_valid(device) && !family && !index ? &device->queue : VK_NULL_HANDLE;
 }
 #include "transfer.inc"
+#ifdef GUEST_VK_WSI
+#include "wsi.inc"
+#endif
 /* Core 1.1 physical-device queries. Base structures reuse the 1.0 answers;
  * recognized 1.1 structures in output chains are filled with this profile's
  * honest (mostly unsupported) values; unrecognized structures are skipped. */
@@ -528,6 +559,10 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
     PROC(vkGetDeviceQueue, device_queue)
     PROC(vkGetDeviceQueue2, device_queue2)
 #undef PROC
+#ifdef GUEST_VK_WSI
+    PFN_vkVoidFunction wsi = wsi_device_proc(name);
+    if (wsi) return wsi;
+#endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
     if (graphics) return graphics;
     PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
@@ -535,7 +570,15 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
 }
 VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t *version) {
     if (!version || *version < 2) return VK_ERROR_INCOMPATIBLE_DRIVER;
+#ifdef GUEST_VK_WSI
+    /* Interface 3: the driver owns VkSurfaceKHR objects (loader wsi.c calls
+     * CreateXlib/XcbSurfaceKHR and passes the driver surface to queries). */
+    if (*version < 3) return VK_ERROR_INCOMPATIBLE_DRIVER;
+    *version = 3;
+    return VK_SUCCESS;
+#else
     *version = 2; return VK_SUCCESS;
+#endif
 }
 VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance instance, const char *name) {
     if (!name) return NULL;
@@ -575,6 +618,10 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
     PROC(vkGetPhysicalDeviceExternalFenceProperties, external_fence_properties)
     PROC(vkGetPhysicalDeviceExternalSemaphoreProperties, external_semaphore_properties)
 #undef PROC
+#ifdef GUEST_VK_WSI
+    PFN_vkVoidFunction wsi = wsi_instance_proc(name);
+    if (wsi) return wsi;
+#endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
     if (graphics) return graphics;
     PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;

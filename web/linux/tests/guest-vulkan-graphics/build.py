@@ -20,14 +20,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-audit',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--shader-dir',type=Path,required=True)
+    parser.add_argument('--shader-dir',type=Path,required=False)
     parser.add_argument('--host-profile',choices=['graphics','webgl'],default='graphics')
     parser.add_argument('--present-x11',action='store_true')
-    parser.add_argument('--app',choices=['graphics','uniform','texture','depth'],default='graphics')
+    parser.add_argument('--app',choices=['graphics','uniform','texture','depth','wsi'],default='graphics')
     args=parser.parse_args()
-    if args.app in ('uniform','texture','depth') and (args.host_profile!='webgl' or args.present_x11):
+    if args.app in ('uniform','texture','depth','wsi') and (args.host_profile!='webgl' or args.present_x11):
         raise ValueError(args.app+' application requires the dual-backend host profile without X11')
-    app_dir={'uniform':'guest-vulkan-uniform','texture':'guest-vulkan-texture','depth':'guest-vulkan-depth'}.get(args.app,'guest-vulkan-graphics')
+    if args.app!='wsi' and not args.shader_dir: raise ValueError('--shader-dir is required for '+args.app)
+    app_dir={'uniform':'guest-vulkan-uniform','texture':'guest-vulkan-texture','depth':'guest-vulkan-depth','wsi':'guest-vulkan-wsi'}.get(args.app,'guest-vulkan-graphics')
     out,storage=checked_storage(args.output);out.mkdir(parents=True,exist_ok=False)
     here=Path(__file__).resolve().parent
     lock=json.loads((here.parent/'guest-vulkan-loader/source-lock.json').read_text())
@@ -38,20 +39,21 @@ def main():
     sources={}
     for relative in (app_dir+'/client.c','guest-vulkan-loader/unknown-disabled.c','guest-vulkan-loader/static-provider.inc',
             'guest-vulkan-loader/port.py','guest-vulkan-loader/build.py','guest-vulkan-graphics/build.py','guest-vulkan-graphics/storage.py','guest-vulkan-loader/storage.py','guest-vulkan-loader/source-lock.json',
-            'guest-vulkan/icd.c','guest-vulkan/icd.h','guest-vulkan/transfer.inc', 'guest-vulkan/compute.inc','guest-vulkan/graphics.inc','guest-vulkan/graphics-commands.inc','guest-vulkan/uniform.inc','guest-vulkan/texture.inc','guest-gpu/guest-gpu.c','guest-gpu/guest-gpu.h'):
+            'guest-vulkan/icd.c','guest-vulkan/icd.h','guest-vulkan/transfer.inc', 'guest-vulkan/compute.inc','guest-vulkan/graphics.inc','guest-vulkan/graphics-commands.inc','guest-vulkan/uniform.inc','guest-vulkan/texture.inc','guest-vulkan/wsi.inc','guest-gpu/guest-gpu.c','guest-gpu/guest-gpu.h'):
         data=(here.parent/relative).read_bytes();target=out/'frozen'/relative
         target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
         sources[relative]={'source':str(here.parent/relative),'sha256':digest(data)}
-    x11_inputs={};x11_libraries=[];x11_flags=[]
-    if args.present_x11:
+    x11_inputs={};x11_libraries=[];x11_flags=[];wsi_flags=[]
+    if args.present_x11 or args.app=='wsi':
         if args.host_profile!='webgl':raise ValueError('X11 presentation gate requires dual-backend host profile')
-        relative='guest-vulkan-graphics/presentation-x11.inc';data=(here.parent/relative).read_bytes()
-        (out/'frozen'/relative).write_bytes(data);sources[relative]={'source':str(here.parent/relative),'sha256':digest(data)}
+        if args.present_x11:
+            relative='guest-vulkan-graphics/presentation-x11.inc';data=(here.parent/relative).read_bytes()
+            (out/'frozen'/relative).write_bytes(data);sources[relative]={'source':str(here.parent/relative),'sha256':digest(data)}
         packages={'x11':'gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13',
           'proto':'7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1',
           'xcb':'wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0',
           'xau':'r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12'}
-        for key in ('x11','proto'):
+        for key in (('x11','proto','xcb') if args.app=='wsi' else ('x11','proto')):
             include=Path('/nix/store')/packages[key]/'include'
             for source in sorted(include.rglob('*')):
                 if source.is_file():
@@ -61,7 +63,18 @@ def main():
         for key,name in [('x11','libX11.a'),('xcb','libxcb.a'),('xau','libXau.a')]:
             source=Path('/nix/store')/packages[key]/'lib'/name;data=source.read_bytes();target=out/'x11-inputs'/name
             target.write_bytes(data);x11_inputs[str(source)]=digest(data);x11_libraries.append(str(target))
-        x11_flags+=['-DGUEST_PRESENT_X11=1']
+        if args.present_x11: x11_flags+=['-DGUEST_PRESENT_X11=1']
+        if args.app=='wsi':
+            # A6a: loader wsi.c X platforms plus the ICD's WSI surface/swapchain objects.
+            wsi_flags=['-DVK_USE_PLATFORM_XLIB_KHR','-DVK_USE_PLATFORM_XCB_KHR',*x11_flags]
+            # The loader source audit froze only the core/beta headers; the two platform headers come from the same
+            # Vulkan-Headers commit 98f440ce (v1.3.231), retrieved once into the A6a task and pinned here by hash.
+            wsi_headers=Path('/mnt/p6/build/guest-vulkan-a6a-20260930/wsi-headers-run1/include/vulkan')
+            for name,sha in (('vulkan_xlib.h','e2efd24ada4479131f932dea1cd2f4dad9b3aad44aae60330fde9679a70f3d52'),
+                             ('vulkan_xcb.h','972d6d7f2ff66bc3d8f627bd66cffcc75ba9fb1d16a7acec7fd9d93dd85c243c')):
+                data=(wsi_headers/name).read_bytes()
+                if digest(data)!=sha: raise ValueError('pinned WSI header changed: '+name)
+                (out/'headers-source/include/vulkan'/name).write_bytes(data);x11_inputs[str(wsi_headers/name)]=sha
     shader_sources={}
     generated=[]
     expected={
@@ -91,7 +104,8 @@ def main():
         'pair-b.vert':'13469cb19a3cde7d666ac87631f7b9640d4c932727ad2e984803078a0a4183f5',
         'pair-b.frag':'4042e45c744fb5ef2b227c18cf87468d371af1d8ee581f1e30e8f026f4f4d5e8',
         'resource.frag':'de7e4f2a0fc86fd2762faffa5e88afaf7cf9d1b6eba4d5d59e432d12ea53200f'}
-    manifest=(args.shader_dir/'fixtures.json').read_bytes()
+    if args.app=='wsi': expected={}
+    manifest=(args.shader_dir/'fixtures.json').read_bytes() if args.shader_dir else b'{"shaders":[]}\n'
     (out/'frozen'/app_dir/'fixtures.json').write_bytes(manifest)
     for tag,sha in expected.items():
         data=(args.shader_dir/(tag+'.spv')).read_bytes()
@@ -114,7 +128,7 @@ def main():
     loader_flags=flags+['-I'+str(out/'loader-source/loader'),'-I'+str(out/'loader-source/loader/generated'),
         '-D_GNU_SOURCE','-DHAVE_ALLOCA_H','-DHAVE_SECURE_GETENV','-DAPI_NAME="Vulkan"','-DVK_ENABLE_BETA_EXTENSIONS',
         '-DFALLBACK_CONFIG_DIRS="/etc/xdg"','-DFALLBACK_DATA_DIRS="/usr/local/share:/usr/share"','-DSYSCONFDIR="/etc"',
-        '-fno-strict-aliasing','-fno-builtin-memcmp','-Wno-unused-parameter','-Wno-unused-function','-Wno-missing-field-initializers']
+        '-fno-strict-aliasing','-fno-builtin-memcmp','-Wno-unused-parameter','-Wno-unused-function','-Wno-missing-field-initializers',*wsi_flags]
     # Upstream metadata requires beta declarations; ICD advertises none.
     # No WSI, Linux PCI sorting, assembly, generic unknown thunks.
     names=['allocation','cJSON','debug_utils','extension_manual','get_environment','gpa_helper','loader','log','terminator','trampoline','wsi']
@@ -125,7 +139,8 @@ def main():
     archive=out/'libvulkan-guest-static.a'
     run('archive',['llvm-ar','rcs',str(archive),*[str(p) for p in objects]])
     for name,relative in [('client',app_dir+'/client.c'),('icd','guest-vulkan/icd.c'),('transport','guest-gpu/guest-gpu.c')]:
-        run('compile-'+name,[cc,*flags,*(x11_flags if name=='client' else []),'-c',str(out/'frozen'/relative),'-o',str(obj/(name+'.o'))])
+        extra=(wsi_flags+(['-DGUEST_VK_WSI=1'] if name=='icd' else []) if name!='transport' else []) if args.app=='wsi' else (x11_flags if name=='client' else [])
+        run('compile-'+name,[cc,*flags,*extra,'-c',str(out/'frozen'/relative),'-o',str(obj/(name+'.o'))])
     run('client-symbols',['llvm-nm','--undefined-only',str(obj/'client.o')])
     client_symbols=(out/'client-symbols.log').read_text()
     public=re.findall(r'\bU (vk\w+)$',client_symbols,re.M)
@@ -155,10 +170,11 @@ def main():
     if args.app=='uniform': host_files += ['guest-vulkan-uniform/guest.html']
     if args.app=='texture': host_files += ['guest-vulkan-texture/guest.html']
     if args.app=='depth': host_files += ['guest-vulkan-depth/guest.html']
+    if args.app=='wsi': host_files += ['guest-vulkan-wsi/guest.html']
     host_sources={relative:digest((here.parent/relative).read_bytes()) for relative in host_files}
     report={'pass':True,'testOnly':True,'artifact':str(artifact),'bytes':artifact.stat().st_size,'sha256':digest(artifact.read_bytes()),
         'scope':'Compiled public Vulkan SPIR-V graphics client; actual guest execution required; partial nonconformant ICD',
-        'presentX11':args.present_x11,'x11Inputs':x11_inputs,
+        'presentX11':args.present_x11,'wsi':args.app=='wsi','wsiFlags':wsi_flags,'x11Inputs':x11_inputs,
         'upstream':lock,'shaders':shader_sources,'fixtureManifestSha256':digest(manifest),'sources':sources,'hostSources':host_sources,'hostProfile':args.host_profile,'app':args.app,'imports':imports,'storage':storage,
         'publicClientSymbols':public,'loaderArchive':str(archive),'loaderObjects':names+['unknown-disabled'],
         'portPatchSha256':digest((out/'static-loader-port.patch').read_bytes()),'linkMap':str(out/'link.map')}
