@@ -65,6 +65,49 @@ for sec in SECTIONS:
         out += lines
         table.append(name)
         wrapped.append((ret, name, params, names))
+# B2c: trace-only wrappers (no stubs) for every other prototype of the pinned
+# header (core 1.2/1.3 names and all extensions) plus the local maintenance5
+# prototype from zink-ext.h, so GUEST_VK_TRACE_CALLS covers every proc the ICD
+# returns.
+EXTRA = [("void", "vkGetRenderingAreaGranularityKHR",
+          "VkDevice device, const VkRenderingAreaInfoKHR* pRenderingAreaInfo, VkExtent2D* pGranularity")]
+seen = {w[1] for w in wrapped}
+def parse_names(params):
+    return [re.findall(r"(\w+)\s*(?:\[\w*\])?$", p.strip())[0] for p in params.split(",") if p.strip() not in ("void", "")]
+trace_only = []
+for sec, body in blocks.items():
+    if sec in SECTIONS:
+        continue
+    for ret, name, params in proto.findall(body):
+        if name in seen:
+            continue
+        params = " ".join(params.split())
+        seen.add(name)
+        trace_only.append((ret, name, params, parse_names(params)))
+for ret, name, params in EXTRA:
+    if name not in seen:
+        seen.add(name)
+        trace_only.append((ret, name, params, parse_names(params)))
+# B2c: every other prototype also gets a typed UNIMPL stub. Zink fills names
+# the ICD does not return with its void() zink_stub_function_not_loaded, and a
+# call through a typed pointer then traps in wasm (call_indirect signature
+# mismatch) and silently kills the guest thread; e.g. Mesa 26 calls
+# vkCmdBindVertexBuffers2 unconditionally. A typed stub logs and invalidates.
+for ret, name, params, names in trace_only:
+    cb = names[0] if params.startswith("VkCommandBuffer ") else None
+    lines = ["static VKAPI_ATTR %s VKAPI_CALL zstub_%s(%s) {" % (ret, name, params)]
+    lines += ["    " + "".join("(void)%s;" % n for n in names)]
+    lines += ["    ZINK_TRACE(\"UNIMPL %s\\n\");" % name]
+    if cb:
+        lines += ["    invalid_command(%s);" % cb]
+    if ret == "VkResult":
+        lines += ["    return VK_ERROR_FEATURE_NOT_PRESENT;"]
+    elif ret != "void":
+        lines += ["    return 0;"]
+    lines += ["}"]
+    out += lines
+    table.append(name)
+wrapped += trace_only
 # call tracing wrappers (GUEST_VK_TRACE_CALLS=1): every prototype above gets a
 # typed forwarder that prints "GUEST_VK_TRACE CALL <name>" before the real call.
 for ret, name, params, names in wrapped:

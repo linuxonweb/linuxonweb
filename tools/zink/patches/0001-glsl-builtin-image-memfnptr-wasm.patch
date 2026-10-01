@@ -1,0 +1,27 @@
+--- a/src/compiler/glsl/builtin_functions.cpp
++++ b/src/compiler/glsl/builtin_functions.cpp
+@@ -8958,8 +8958,24 @@
+                         unsigned flags,
+                         enum ir_intrinsic_id id)
+ {
++#if defined(__wasm__)
++   /* linuxonweb: the wasm32-unknown-linux-musl clang target uses the generic
++    * Itanium C++ ABI, whose member-function-pointer call treats an odd "ptr"
++    * as a vtable offset.  On wasm "ptr" is a function-table index, so an odd
++    * index (e.g. _image_prototype) is dispatched through a non-existent vtable
++    * and traps with "function signature mismatch".  Dispatch the three known
++    * prototypes directly; equality comparison of member pointers is safe.
++    */
++   ir_function_signature *sig =
++      prototype == &builtin_builder::_image_size_prototype ?
++         _image_size_prototype(image_type, num_arguments, flags) :
++      prototype == &builtin_builder::_image_samples_prototype ?
++         _image_samples_prototype(image_type, num_arguments, flags) :
++         _image_prototype(image_type, num_arguments, flags);
++#else
+    ir_function_signature *sig = (this->*prototype)(image_type,
+                                                    num_arguments, flags);
++#endif
+ 
+    if (flags & IMAGE_FUNCTION_EMIT_STUB) {
+       ir_factory body(&sig->body, linalloc);

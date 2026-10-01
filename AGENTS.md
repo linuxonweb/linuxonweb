@@ -194,6 +194,18 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   (1) one error scope per submit (-1.2 ms nopresent / -3.6 ms present),
   (2) pipelined fences = B2b (-2.5 ms), (3) present path without CPU upscale +
   one-frame-late staging ring (-5 ms present). Projected ~175 FPS present.
+- Done: Zink B2c stall fix (`docs/zink-b2c-20261001.md`, `/mnt/p6/build/zink-b2c-20261001`):
+  the "stall" was two silent Wasm `call_indirect` traps. (1) wasm32-musl clang
+  uses the generic Itanium C++ ABI: member-function-pointer calls with an odd
+  table index trap (Mesa GLSL `builtin_builder::_image`); fixed by the minimal
+  Mesa patch `tools/zink/patches/0001-*.patch`, applied to a copy by
+  `tools/zink/mesa-overrides.sh` (Mesa trees untouched). **Firefox uses the same
+  toolchain: audit it for the same trap.** (2) `vkCmdBindVertexBuffers2` added;
+  all 550 other procs are typed UNIMPL stubs. Shader compile/link OK; the first
+  draw fails cleanly. 20/20 suites unchanged. Next B2d: pipeline layouts with
+  binding 128 / >=3 sets, depth_clip_enable, dynamic viewport/scissor, generic
+  vertex/index/UBO backing, push constants -> UBO, Copy/Fill/UpdateBuffer,
+  `zink_context_destroy` spin (B2b).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it

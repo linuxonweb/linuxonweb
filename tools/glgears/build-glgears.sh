@@ -55,6 +55,9 @@ run cc-transport "$CC" "${ICDF[@]}" -c "$ICD_SRC/guest-gpu/guest-gpu.c" -o "$O/o
 # 3. app
 run cc-glgears "$CC" "${CFLAGS[@]}" -std=c11 -Wall -Wextra -Werror -Wno-unused-parameter -I"$MESA/include" \
   -I"$O/x11/x11-include" -I"$O/x11/proto-include" -c "$O/glgears.c" -o "$O/obj/glgears.o" || exit 1
+# 3b. Mesa override objects (tools/zink/patches/*.patch, see tools/zink/mesa-overrides.sh):
+#     B2c fixes the Itanium-ABI member-function-pointer trap in GLSL builtins.
+. "$ROOT/tools/zink/mesa-overrides.sh"; mesa_overrides "$MESA" "$B" "$O" || exit 1
 
 # 4. static archives: exactly the archive inputs of the failed libgallium .so edge
 cd "$B" || exit 1
@@ -75,7 +78,7 @@ LINKF=(-pthread -matomics -mbulk-memory -static -nostdlib++
   -Wl,--gc-sections,--import-memory,--export-table,--shared-memory
   -Wl,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576
   -Wl,--error-limit=0)
-OBJS=("$O/obj/glgears.o" "$O/obj/zink_static_vk.o" "$O/obj/mmap-shim.o" "$O/obj/unwind-stubs.o")
+OBJS=("$O/obj/glgears.o" "$O/obj/zink_static_vk.o" "$O/obj/mmap-shim.o" "$O/obj/unwind-stubs.o" "${OVR[@]}")
 LIBS=("$O/lib/libEGL_mesa.a" "$O/lib/libgallium_s1.a" "$O/lib/libguest_vk_icd.a"
   "$O/x11/libX11.a" "$O/x11/libxcb.a" "$O/x11/libXau.a" -lc++ -lc++abi -lm)
 run link "$CXX" "${LINKF[@]}" "${OBJS[@]}" "${LIBS[@]}" -Wl,-Map="$O/link.map" -o "$O/glgears.wasm"

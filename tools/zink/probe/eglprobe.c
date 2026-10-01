@@ -83,6 +83,13 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
     GLenum st = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     glViewport(0, 0, 32, 32);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f); glClear(GL_COLOR_BUFFER_BIT);
+    { /* B2e: read back the clear before any draw (the draw may need push constants). */
+      unsigned char c0[4] = {9,9,9,9}, c1[4] = {9,9,9,9};
+      glReadPixels(4, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c0); glReadPixels(28, 28, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c1);
+      GLenum ce = glGetError();
+      int cpass = st == GL_FRAMEBUFFER_COMPLETE && c0[0] == 0 && c0[1] == 0 && c0[2] == 255 && c0[3] == 255 && !memcmp(c0, c1, 4) && ce == GL_NO_ERROR;
+      printf("CLEAR %s %s fbo=0x%x px4=%u,%u,%u,%u px28=%u,%u,%u,%u glerr=0x%x\n", label, cpass ? "PASS" : "FAIL", st,
+             c0[0], c0[1], c0[2], c0[3], c1[0], c1[1], c1[2], c1[3], ce); }
     int core = api == EGL_OPENGL_API && strstr(label, "core");
     const char *vs, *fs;
     if (es == 3) { vs = "#version 300 es\nin vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
@@ -93,12 +100,15 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
                    fs = "#version 150\nuniform vec4 u; uniform sampler2D t; out vec4 o; void main(){o=u*texture(t,vec2(0.5));}"; }
     else { vs = "#version 110\nattribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
            fs = "#version 110\nuniform vec4 u; uniform sampler2D t; void main(){gl_FragColor=u*texture2D(t,vec2(0.5));}"; }
-    GLuint v = glCreateShader(GL_VERTEX_SHADER), f = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(v, 1, &vs, NULL); glCompileShader(v); glShaderSource(f, 1, &fs, NULL); glCompileShader(f);
+#define STEP(x) do { printf("STEP %s " x "\n", label); fflush(stdout); } while (0)
+    STEP("create-shader");
+    GLuint v = glCreateShader(GL_VERTEX_SHADER), f = glCreateShader(GL_FRAGMENT_SHADER); STEP("created");
+    glShaderSource(v, 1, &vs, NULL); STEP("source-v"); glCompileShader(v); STEP("compiled-v");
+    glShaderSource(f, 1, &fs, NULL); glCompileShader(f); printf("STEP %s compiled\n", label); fflush(stdout);
     GLint okv = 0, okf = 0, okl = 0; glGetShaderiv(v, GL_COMPILE_STATUS, &okv); glGetShaderiv(f, GL_COMPILE_STATUS, &okf);
     if (!okv || !okf) { char log[512] = ""; glGetShaderInfoLog(okv ? f : v, sizeof log, NULL, log); printf("  shader log: %s\n", log); }
     GLuint pr = glCreateProgram(); glAttachShader(pr, v); glAttachShader(pr, f); glBindAttribLocation(pr, 0, "p");
-    glLinkProgram(pr); glGetProgramiv(pr, GL_LINK_STATUS, &okl); glUseProgram(pr);
+    STEP("link"); glLinkProgram(pr); STEP("linked-call"); glGetProgramiv(pr, GL_LINK_STATUS, &okl); glUseProgram(pr); printf("STEP %s linked=%d\n", label, okl); fflush(stdout);
     P(PFNGLGENTEXTURESPROC, glGenTextures); P(PFNGLACTIVETEXTUREPROC, glActiveTexture); P(PFNGLBINDTEXTUREPROC, glBindTexture);
     P(PFNGLTEXPARAMETERIPROC, glTexParameteri); P(PFNGLTEXIMAGE2DPROC, glTexImage2D); P(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
     P(PFNGLUNIFORM4FPROC, glUniform4f); P(PFNGLUNIFORM1IPROC, glUniform1i);
@@ -110,8 +120,8 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
     GLuint va = 0; if (core || es == 3) { glGenVertexArrays(1, &va); glBindVertexArray(va); }
     static const float tri[] = { -1, -1, 0, -1, -1, 0 }; /* lower-left quadrant triangle */
     GLuint b; glGenBuffers(1, &b); glBindBuffer(GL_ARRAY_BUFFER, b); glBufferData(GL_ARRAY_BUFFER, sizeof tri, tri, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0); glEnableVertexAttribArray(0);
-    glDrawArrays(GL_TRIANGLES, 0, 3); glFinish();
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0); glEnableVertexAttribArray(0); printf("STEP %s draw\n", label); fflush(stdout);
+    glDrawArrays(GL_TRIANGLES, 0, 3); printf("STEP %s drawn\n", label); fflush(stdout); glFinish(); printf("STEP %s finished\n", label); fflush(stdout);
     unsigned char px_in[4] = {0}, px_out[4] = {0};
     glReadPixels(4, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, px_in);
     glReadPixels(28, 28, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, px_out);
@@ -126,6 +136,7 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
 
 int main(int argc, char **argv) {
     const char *only = argc > 1 ? argv[1] : NULL;
+    setvbuf(stdout, NULL, _IONBF, 0); /* B2a guest run: keep output if Mesa aborts mid-probe */
 #ifdef __wasm__
     setenv("MESA_LOADER_DRIVER_OVERRIDE", "zink", 0);
     setenv("LIBGL_ALWAYS_SOFTWARE", "1", 0);

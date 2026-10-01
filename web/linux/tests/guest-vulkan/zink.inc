@@ -236,6 +236,20 @@ static VKAPI_ATTR VkResult VKAPI_CALL zink_bind_image2(VkDevice d,uint32_t n,con
     for(uint32_t k=0;k<n;k++){if(!b||b[k].pNext)return VK_ERROR_INITIALIZATION_FAILED;VkResult r=bind_image(d,b[k].image,b[k].memory,b[k].memoryOffset);if(r!=VK_SUCCESS)return r;}
     return VK_SUCCESS;
 }
+/* B2c: Mesa 26 Zink binds vertex buffers only through vkCmdBindVertexBuffers2
+ * (core 1.3 / EXT_extended_dynamic_state), even with no dynamic state. Before
+ * this entry point existed Zink's void() not-loaded stub trapped in wasm
+ * (call_indirect signature mismatch). Sizes are advisory; dynamic strides are
+ * not supported (the pipeline stride applies) and NULL slots are rejected. */
+static VKAPI_ATTR void VKAPI_CALL zink_bind_vertex_buffers2(VkCommandBuffer cb,uint32_t first,uint32_t count,const VkBuffer *buffers,
+        const VkDeviceSize *offsets,const VkDeviceSize *sizes,const VkDeviceSize *strides) {
+    (void)sizes;
+    if(strides){ZINK_TRACE("bind_vertex_buffers2 REJECT dynamic strides\n");invalid_command(cb);return;}
+    for(uint32_t n=0;buffers&&n<count;n++)if(!buffers[n]){ZINK_TRACE("bind_vertex_buffers2 REJECT null slot %u\n",first+n);invalid_command(cb);return;}
+    for(uint32_t n=0;buffers&&n<count;n++){struct resource *b=resource_get(RID(buffers[n]),R_BUFFER);
+        if(b&&b->generic&&!b->vertex)ZINK_TRACE("bind_vertex_buffers2 REJECT generic buffer usage=0x%x (no host vertex buffer yet)\n",(unsigned)b->usage);}
+    bind_vertex_buffers(cb,first,count,buffers,offsets);
+}
 static VKAPI_ATTR void VKAPI_CALL zink_memory_commitment(VkDevice d,VkDeviceMemory m,VkDeviceSize *out) {(void)d;(void)m;if(out)*out=0;}
 
 static PFN_vkVoidFunction zink_proc(const char *name) {
@@ -248,6 +262,7 @@ static PFN_vkVoidFunction zink_proc(const char *name) {
     Z(vkBindBufferMemory2,zink_bind_buffer2) Z(vkBindBufferMemory2KHR,zink_bind_buffer2)
     Z(vkBindImageMemory2,zink_bind_image2) Z(vkBindImageMemory2KHR,zink_bind_image2)
     Z(vkGetDeviceMemoryCommitment,zink_memory_commitment)
+    Z(vkCmdBindVertexBuffers2,zink_bind_vertex_buffers2) Z(vkCmdBindVertexBuffers2EXT,zink_bind_vertex_buffers2)
     Z(vkGetDescriptorSetLayoutSupport,zink_set_layout_support) Z(vkGetDescriptorSetLayoutSupportKHR,zink_set_layout_support)
     if(device_ext_enabled(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) {
         Z(vkGetSemaphoreCounterValueKHR,zink_get_semaphore_counter_value) Z(vkGetSemaphoreCounterValue,zink_get_semaphore_counter_value)

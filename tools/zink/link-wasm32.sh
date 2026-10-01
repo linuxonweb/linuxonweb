@@ -32,6 +32,8 @@ run cc-icd "$CC" "${ICDF[@]}" -c "$T/icd/src/guest-vulkan/icd.c" -o "$O/obj/icd.
 run cc-transport "$CC" "${ICDF[@]}" -c "$T/icd/src/guest-gpu/guest-gpu.c" -o "$O/obj/transport.o" || exit 1
 # 3. probe
 run cc-eglprobe "$CC" "${CFLAGS[@]}" -std=c11 -I"$T/mesa-26.2.3/include" -c "$T/probe/eglprobe.c" -o "$O/obj/eglprobe.o" || exit 1
+# 3b. Mesa override objects (tools/zink/patches, see mesa-overrides.sh)
+. "$HERE/mesa-overrides.sh"; mesa_overrides "$T/mesa-26.2.3" "$B" "$O" || exit 1
 
 # 4. static archives (P1). Inputs are exactly those of the failed .so link edges in build.ninja.
 GALLIUM_ARCHIVES=(src/gallium/frontends/dri/libdri.a src/mesa/libmesa.a src/compiler/glsl/libglsl.a
@@ -59,7 +61,7 @@ LINKF=(-pthread -matomics -mbulk-memory -static -nostdlib++
   -Wl,--gc-sections,--import-memory,--export-table,--shared-memory
   -Wl,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576
   -Wl,--error-limit=0)
-OBJS=("$O/obj/eglprobe.o" "$O/obj/zink_static_vk.o" "$O/obj/mmap-shim.o" "$O/obj/unwind-stubs.o")
+OBJS=("$O/obj/eglprobe.o" "$O/obj/zink_static_vk.o" "$O/obj/mmap-shim.o" "$O/obj/unwind-stubs.o" "${OVR[@]}")
 LIBS=("$O/lib/libEGL_mesa.a" "$O/lib/libGLESv2_mesa.a" "$O/lib/libgallium_zink.a" "$O/lib/libguest_vk_icd.a" -lc++ -lc++abi -lm)
 run link "$CXX" "${LINKF[@]}" "${OBJS[@]}" "${LIBS[@]}" -Wl,-Map="$O/link.map" -o "$O/eglprobe.wasm"
 rc=$?

@@ -1,0 +1,127 @@
+{
+ "packet": "zink-b2c-20261001",
+ "base": "d66ae18",
+ "taskDir": "/mnt/p6/build/zink-b2c-20261001",
+ "stallRootCause": [
+  {
+   "run": "1-4",
+   "site": "glCompileShader -> builtin_builder::_image (builtin_functions.cpp)",
+   "cause": "Itanium member-function-pointer call with odd wasm table index (elem 7391) dispatched as virtual -> function signature mismatch trap",
+   "fix": "tools/zink/patches/0001-glsl-builtin-image-memfnptr-wasm.patch via tools/zink/mesa-overrides.sh"
+  },
+  {
+   "run": "5",
+   "site": "glDrawArrays -> zink_bind_vertex_buffers_internal",
+   "cause": "VKCTX(CmdBindVertexBuffers2) NULL -> zink_stub_function_not_loaded void() -> signature mismatch trap",
+   "fix": "zink_bind_vertex_buffers2 in zink.inc + 550 typed zstub_ UNIMPL stubs"
+  }
+ ],
+ "eglprobeRuns": {
+  "run1": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run2": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run3": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run4": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run5": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run6": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  },
+  "run7": {
+   "cpioServed": true,
+   "done": false,
+   "eglInit": true,
+   "gles2Ctx": true,
+   "gles2Clear": true,
+   "gles2Draw": false,
+   "compatClear": false,
+   "compatDraw": false
+  }
+ },
+ "gateB": {
+  "pass": false,
+  "reason": "vkCreatePipelineLayout rejects Zink binding 128; pipelines/dynamic state/generic vertex buffers/push constants missing",
+  "glgearsZinkFps": null
+ },
+ "regression": {
+  "run": "/mnt/p6/build/zink-b2c-20261001/all-run1",
+  "pass": true,
+  "suites": {
+   "direct-live": 140,
+   "direct-unavailable": 17,
+   "direct-clear": 1087,
+   "direct-loss-transport": 640,
+   "direct-loss-device": 640,
+   "direct-exhaustion": 1213,
+   "loader": 901,
+   "compute": 501,
+   "graphics-webgl2": 232753,
+   "graphics-webgpu": 232745,
+   "uniform-webgl2": 201269,
+   "uniform-webgpu": 201269,
+   "texture-webgl2": 18182,
+   "texture-webgpu": 18182,
+   "depth-webgl2": 42620,
+   "depth-webgpu": 42620,
+   "wsi-webgl2": 276963,
+   "wsi-webgpu": 276963,
+   "zinkcaps-webgl2": 91309,
+   "zinkcaps-webgpu": 91309
+  },
+  "webgpuAdapter": "nvidia maxwell",
+  "webgl2Adapter": "ANGLE Intel UHD 620"
+ },
+ "patchSha256": "e1e125b79cbd6166cb2de95c08fe4e886428d0c29b4607865707ba44e41daace",
+ "zinkStubsIncSha256": "c990a31a3117916be0aae4682cff223bf4e0f0eae9b6c3a3097743c24a765caa",
+ "zinkIncSha256": "391738bf2534191625dfe0c725f61b4b581069e56d6d282a2cad28ac11316592"
+}

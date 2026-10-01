@@ -836,6 +836,1796 @@ static VKAPI_ATTR void VKAPI_CALL zstub_vkSubmitDebugUtilsMessageEXT(VkInstance 
     (void)instance;(void)messageSeverity;(void)messageTypes;(void)pCallbackData;
     ZINK_TRACE("UNIMPL vkSubmitDebugUtilsMessageEXT\n");
 }
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndirectCount\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndexedIndirectCount\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pRenderPass;
+    ZINK_TRACE("UNIMPL vkCreateRenderPass2\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginRenderPass2(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
+    (void)commandBuffer;(void)pRenderPassBegin;(void)pSubpassBeginInfo;
+    ZINK_TRACE("UNIMPL vkCmdBeginRenderPass2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdNextSubpass2(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
+    (void)commandBuffer;(void)pSubpassBeginInfo;(void)pSubpassEndInfo;
+    ZINK_TRACE("UNIMPL vkCmdNextSubpass2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndRenderPass2(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
+    (void)commandBuffer;(void)pSubpassEndInfo;
+    ZINK_TRACE("UNIMPL vkCmdEndRenderPass2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkResetQueryPool(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
+    (void)device;(void)queryPool;(void)firstQuery;(void)queryCount;
+    ZINK_TRACE("UNIMPL vkResetQueryPool\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetSemaphoreCounterValue(VkDevice device, VkSemaphore semaphore, uint64_t* pValue) {
+    (void)device;(void)semaphore;(void)pValue;
+    ZINK_TRACE("UNIMPL vkGetSemaphoreCounterValue\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout) {
+    (void)device;(void)pWaitInfo;(void)timeout;
+    ZINK_TRACE("UNIMPL vkWaitSemaphores\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
+    (void)device;(void)pSignalInfo;
+    ZINK_TRACE("UNIMPL vkSignalSemaphore\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL zstub_vkGetBufferDeviceAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetBufferDeviceAddress\n");
+    return 0;
+}
+static VKAPI_ATTR uint64_t VKAPI_CALL zstub_vkGetBufferOpaqueCaptureAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetBufferOpaqueCaptureAddress\n");
+    return 0;
+}
+static VKAPI_ATTR uint64_t VKAPI_CALL zstub_vkGetDeviceMemoryOpaqueCaptureAddress(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetDeviceMemoryOpaqueCaptureAddress\n");
+    return 0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceToolProperties(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
+    (void)physicalDevice;(void)pToolCount;(void)pToolProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceToolProperties\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreatePrivateDataSlot(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pPrivateDataSlot;
+    ZINK_TRACE("UNIMPL vkCreatePrivateDataSlot\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyPrivateDataSlot(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)privateDataSlot;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyPrivateDataSlot\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkSetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
+    (void)device;(void)objectType;(void)objectHandle;(void)privateDataSlot;(void)data;
+    ZINK_TRACE("UNIMPL vkSetPrivateData\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
+    (void)device;(void)objectType;(void)objectHandle;(void)privateDataSlot;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetPrivateData\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetEvent2(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
+    (void)commandBuffer;(void)event;(void)pDependencyInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetEvent2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdResetEvent2(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
+    (void)commandBuffer;(void)event;(void)stageMask;
+    ZINK_TRACE("UNIMPL vkCmdResetEvent2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWaitEvents2(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
+    (void)commandBuffer;(void)eventCount;(void)pEvents;(void)pDependencyInfos;
+    ZINK_TRACE("UNIMPL vkCmdWaitEvents2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdPipelineBarrier2(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
+    (void)commandBuffer;(void)pDependencyInfo;
+    ZINK_TRACE("UNIMPL vkCmdPipelineBarrier2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteTimestamp2(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
+    (void)commandBuffer;(void)stage;(void)queryPool;(void)query;
+    ZINK_TRACE("UNIMPL vkCmdWriteTimestamp2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
+    (void)queue;(void)submitCount;(void)pSubmits;(void)fence;
+    ZINK_TRACE("UNIMPL vkQueueSubmit2\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyBuffer2(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
+    (void)commandBuffer;(void)pCopyBufferInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyBuffer2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyImage2(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
+    (void)commandBuffer;(void)pCopyImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyImage2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyBufferToImage2(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
+    (void)commandBuffer;(void)pCopyBufferToImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyBufferToImage2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyImageToBuffer2(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
+    (void)commandBuffer;(void)pCopyImageToBufferInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyImageToBuffer2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBlitImage2(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
+    (void)commandBuffer;(void)pBlitImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdBlitImage2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdResolveImage2(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
+    (void)commandBuffer;(void)pResolveImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdResolveImage2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
+    (void)commandBuffer;(void)pRenderingInfo;
+    ZINK_TRACE("UNIMPL vkCmdBeginRendering\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndRendering(VkCommandBuffer commandBuffer) {
+    (void)commandBuffer;
+    ZINK_TRACE("UNIMPL vkCmdEndRendering\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
+    (void)commandBuffer;(void)cullMode;
+    ZINK_TRACE("UNIMPL vkCmdSetCullMode\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetFrontFace(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
+    (void)commandBuffer;(void)frontFace;
+    ZINK_TRACE("UNIMPL vkCmdSetFrontFace\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPrimitiveTopology(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
+    (void)commandBuffer;(void)primitiveTopology;
+    ZINK_TRACE("UNIMPL vkCmdSetPrimitiveTopology\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
+    (void)commandBuffer;(void)viewportCount;(void)pViewports;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportWithCount\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
+    (void)commandBuffer;(void)scissorCount;(void)pScissors;
+    ZINK_TRACE("UNIMPL vkCmdSetScissorWithCount\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindVertexBuffers2(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
+    (void)commandBuffer;(void)firstBinding;(void)bindingCount;(void)pBuffers;(void)pOffsets;(void)pSizes;(void)pStrides;
+    ZINK_TRACE("UNIMPL vkCmdBindVertexBuffers2\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
+    (void)commandBuffer;(void)depthTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthTestEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthWriteEnable(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
+    (void)commandBuffer;(void)depthWriteEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthWriteEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthCompareOp(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
+    (void)commandBuffer;(void)depthCompareOp;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthCompareOp\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthBoundsTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
+    (void)commandBuffer;(void)depthBoundsTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthBoundsTestEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetStencilTestEnable(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
+    (void)commandBuffer;(void)stencilTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetStencilTestEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetStencilOp(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
+    (void)commandBuffer;(void)faceMask;(void)failOp;(void)passOp;(void)depthFailOp;(void)compareOp;
+    ZINK_TRACE("UNIMPL vkCmdSetStencilOp\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRasterizerDiscardEnable(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
+    (void)commandBuffer;(void)rasterizerDiscardEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetRasterizerDiscardEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthBiasEnable(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
+    (void)commandBuffer;(void)depthBiasEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthBiasEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPrimitiveRestartEnable(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
+    (void)commandBuffer;(void)primitiveRestartEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetPrimitiveRestartEnable\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceBufferMemoryRequirements(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceBufferMemoryRequirements\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceImageMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceImageMemoryRequirements\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceImageSparseMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pSparseMemoryRequirementCount;(void)pSparseMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceImageSparseMemoryRequirements\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, const VkAllocationCallbacks* pAllocator) {
+    (void)instance;(void)surface;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroySurfaceKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported) {
+    (void)physicalDevice;(void)queueFamilyIndex;(void)surface;(void)pSupported;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceSupportKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities) {
+    (void)physicalDevice;(void)surface;(void)pSurfaceCapabilities;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceCapabilitiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats) {
+    (void)physicalDevice;(void)surface;(void)pSurfaceFormatCount;(void)pSurfaceFormats;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceFormatsKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes) {
+    (void)physicalDevice;(void)surface;(void)pPresentModeCount;(void)pPresentModes;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfacePresentModesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pSwapchain;
+    ZINK_TRACE("UNIMPL vkCreateSwapchainKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)swapchain;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroySwapchainKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages) {
+    (void)device;(void)swapchain;(void)pSwapchainImageCount;(void)pSwapchainImages;
+    ZINK_TRACE("UNIMPL vkGetSwapchainImagesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex) {
+    (void)device;(void)swapchain;(void)timeout;(void)semaphore;(void)fence;(void)pImageIndex;
+    ZINK_TRACE("UNIMPL vkAcquireNextImageKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
+    (void)queue;(void)pPresentInfo;
+    ZINK_TRACE("UNIMPL vkQueuePresentKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDeviceGroupPresentCapabilitiesKHR(VkDevice device, VkDeviceGroupPresentCapabilitiesKHR* pDeviceGroupPresentCapabilities) {
+    (void)device;(void)pDeviceGroupPresentCapabilities;
+    ZINK_TRACE("UNIMPL vkGetDeviceGroupPresentCapabilitiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDeviceGroupSurfacePresentModesKHR(VkDevice device, VkSurfaceKHR surface, VkDeviceGroupPresentModeFlagsKHR* pModes) {
+    (void)device;(void)surface;(void)pModes;
+    ZINK_TRACE("UNIMPL vkGetDeviceGroupSurfacePresentModesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDevicePresentRectanglesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pRectCount, VkRect2D* pRects) {
+    (void)physicalDevice;(void)surface;(void)pRectCount;(void)pRects;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDevicePresentRectanglesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo, uint32_t* pImageIndex) {
+    (void)device;(void)pAcquireInfo;(void)pImageIndex;
+    ZINK_TRACE("UNIMPL vkAcquireNextImage2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPropertiesKHR* pProperties) {
+    (void)physicalDevice;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceDisplayPropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlanePropertiesKHR* pProperties) {
+    (void)physicalDevice;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceDisplayPlanePropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDisplayPlaneSupportedDisplaysKHR(VkPhysicalDevice physicalDevice, uint32_t planeIndex, uint32_t* pDisplayCount, VkDisplayKHR* pDisplays) {
+    (void)physicalDevice;(void)planeIndex;(void)pDisplayCount;(void)pDisplays;
+    ZINK_TRACE("UNIMPL vkGetDisplayPlaneSupportedDisplaysKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDisplayModePropertiesKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModePropertiesKHR* pProperties) {
+    (void)physicalDevice;(void)display;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetDisplayModePropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateDisplayModeKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, const VkDisplayModeCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDisplayModeKHR* pMode) {
+    (void)physicalDevice;(void)display;(void)pCreateInfo;(void)pAllocator;(void)pMode;
+    ZINK_TRACE("UNIMPL vkCreateDisplayModeKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDisplayPlaneCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkDisplayModeKHR mode, uint32_t planeIndex, VkDisplayPlaneCapabilitiesKHR* pCapabilities) {
+    (void)physicalDevice;(void)mode;(void)planeIndex;(void)pCapabilities;
+    ZINK_TRACE("UNIMPL vkGetDisplayPlaneCapabilitiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateDisplayPlaneSurfaceKHR(VkInstance instance, const VkDisplaySurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
+    (void)instance;(void)pCreateInfo;(void)pAllocator;(void)pSurface;
+    ZINK_TRACE("UNIMPL vkCreateDisplayPlaneSurfaceKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateSharedSwapchainsKHR(VkDevice device, uint32_t swapchainCount, const VkSwapchainCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchains) {
+    (void)device;(void)swapchainCount;(void)pCreateInfos;(void)pAllocator;(void)pSwapchains;
+    ZINK_TRACE("UNIMPL vkCreateSharedSwapchainsKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginRenderingKHR(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
+    (void)commandBuffer;(void)pRenderingInfo;
+    ZINK_TRACE("UNIMPL vkCmdBeginRenderingKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndRenderingKHR(VkCommandBuffer commandBuffer) {
+    (void)commandBuffer;
+    ZINK_TRACE("UNIMPL vkCmdEndRenderingKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) {
+    (void)physicalDevice;(void)pFeatures;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceFeatures2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties) {
+    (void)physicalDevice;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceProperties2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceFormatProperties2KHR(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties2* pFormatProperties) {
+    (void)physicalDevice;(void)format;(void)pFormatProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceFormatProperties2KHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo, VkImageFormatProperties2* pImageFormatProperties) {
+    (void)physicalDevice;(void)pImageFormatInfo;(void)pImageFormatProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceImageFormatProperties2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceQueueFamilyProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties2* pQueueFamilyProperties) {
+    (void)physicalDevice;(void)pQueueFamilyPropertyCount;(void)pQueueFamilyProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceQueueFamilyProperties2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceMemoryProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties2* pMemoryProperties) {
+    (void)physicalDevice;(void)pMemoryProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceMemoryProperties2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceSparseImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSparseImageFormatInfo2* pFormatInfo, uint32_t* pPropertyCount, VkSparseImageFormatProperties2* pProperties) {
+    (void)physicalDevice;(void)pFormatInfo;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSparseImageFormatProperties2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceGroupPeerMemoryFeaturesKHR(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags* pPeerMemoryFeatures) {
+    (void)device;(void)heapIndex;(void)localDeviceIndex;(void)remoteDeviceIndex;(void)pPeerMemoryFeatures;
+    ZINK_TRACE("UNIMPL vkGetDeviceGroupPeerMemoryFeaturesKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDeviceMaskKHR(VkCommandBuffer commandBuffer, uint32_t deviceMask) {
+    (void)commandBuffer;(void)deviceMask;
+    ZINK_TRACE("UNIMPL vkCmdSetDeviceMaskKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDispatchBaseKHR(VkCommandBuffer commandBuffer, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
+    (void)commandBuffer;(void)baseGroupX;(void)baseGroupY;(void)baseGroupZ;(void)groupCountX;(void)groupCountY;(void)groupCountZ;
+    ZINK_TRACE("UNIMPL vkCmdDispatchBaseKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkEnumeratePhysicalDeviceGroupsKHR(VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
+    (void)instance;(void)pPhysicalDeviceGroupCount;(void)pPhysicalDeviceGroupProperties;
+    ZINK_TRACE("UNIMPL vkEnumeratePhysicalDeviceGroupsKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceExternalBufferPropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) {
+    (void)physicalDevice;(void)pExternalBufferInfo;(void)pExternalBufferProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceExternalBufferPropertiesKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetMemoryFdKHR(VkDevice device, const VkMemoryGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    (void)device;(void)pGetFdInfo;(void)pFd;
+    ZINK_TRACE("UNIMPL vkGetMemoryFdKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetMemoryFdPropertiesKHR(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, int fd, VkMemoryFdPropertiesKHR* pMemoryFdProperties) {
+    (void)device;(void)handleType;(void)fd;(void)pMemoryFdProperties;
+    ZINK_TRACE("UNIMPL vkGetMemoryFdPropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) {
+    (void)physicalDevice;(void)pExternalSemaphoreInfo;(void)pExternalSemaphoreProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceExternalSemaphorePropertiesKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkImportSemaphoreFdKHR(VkDevice device, const VkImportSemaphoreFdInfoKHR* pImportSemaphoreFdInfo) {
+    (void)device;(void)pImportSemaphoreFdInfo;
+    ZINK_TRACE("UNIMPL vkImportSemaphoreFdKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetSemaphoreFdKHR(VkDevice device, const VkSemaphoreGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    (void)device;(void)pGetFdInfo;(void)pFd;
+    ZINK_TRACE("UNIMPL vkGetSemaphoreFdKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdPushDescriptorSetKHR(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites) {
+    (void)commandBuffer;(void)pipelineBindPoint;(void)layout;(void)set;(void)descriptorWriteCount;(void)pDescriptorWrites;
+    ZINK_TRACE("UNIMPL vkCmdPushDescriptorSetKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdPushDescriptorSetWithTemplateKHR(VkCommandBuffer commandBuffer, VkDescriptorUpdateTemplate descriptorUpdateTemplate, VkPipelineLayout layout, uint32_t set, const void* pData) {
+    (void)commandBuffer;(void)descriptorUpdateTemplate;(void)layout;(void)set;(void)pData;
+    ZINK_TRACE("UNIMPL vkCmdPushDescriptorSetWithTemplateKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateDescriptorUpdateTemplateKHR(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pDescriptorUpdateTemplate;
+    ZINK_TRACE("UNIMPL vkCreateDescriptorUpdateTemplateKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyDescriptorUpdateTemplateKHR(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)descriptorUpdateTemplate;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyDescriptorUpdateTemplateKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkUpdateDescriptorSetWithTemplateKHR(VkDevice device, VkDescriptorSet descriptorSet, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const void* pData) {
+    (void)device;(void)descriptorSet;(void)descriptorUpdateTemplate;(void)pData;
+    ZINK_TRACE("UNIMPL vkUpdateDescriptorSetWithTemplateKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pRenderPass;
+    ZINK_TRACE("UNIMPL vkCreateRenderPass2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginRenderPass2KHR(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
+    (void)commandBuffer;(void)pRenderPassBegin;(void)pSubpassBeginInfo;
+    ZINK_TRACE("UNIMPL vkCmdBeginRenderPass2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdNextSubpass2KHR(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
+    (void)commandBuffer;(void)pSubpassBeginInfo;(void)pSubpassEndInfo;
+    ZINK_TRACE("UNIMPL vkCmdNextSubpass2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
+    (void)commandBuffer;(void)pSubpassEndInfo;
+    ZINK_TRACE("UNIMPL vkCmdEndRenderPass2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetSwapchainStatusKHR(VkDevice device, VkSwapchainKHR swapchain) {
+    (void)device;(void)swapchain;
+    ZINK_TRACE("UNIMPL vkGetSwapchainStatusKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceExternalFencePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) {
+    (void)physicalDevice;(void)pExternalFenceInfo;(void)pExternalFenceProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceExternalFencePropertiesKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkImportFenceFdKHR(VkDevice device, const VkImportFenceFdInfoKHR* pImportFenceFdInfo) {
+    (void)device;(void)pImportFenceFdInfo;
+    ZINK_TRACE("UNIMPL vkImportFenceFdKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetFenceFdKHR(VkDevice device, const VkFenceGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    (void)device;(void)pGetFdInfo;(void)pFd;
+    ZINK_TRACE("UNIMPL vkGetFenceFdKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, uint32_t* pCounterCount, VkPerformanceCounterKHR* pCounters, VkPerformanceCounterDescriptionKHR* pCounterDescriptions) {
+    (void)physicalDevice;(void)queueFamilyIndex;(void)pCounterCount;(void)pCounters;(void)pCounterDescriptions;
+    ZINK_TRACE("UNIMPL vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(VkPhysicalDevice physicalDevice, const VkQueryPoolPerformanceCreateInfoKHR* pPerformanceQueryCreateInfo, uint32_t* pNumPasses) {
+    (void)physicalDevice;(void)pPerformanceQueryCreateInfo;(void)pNumPasses;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquireProfilingLockKHR(VkDevice device, const VkAcquireProfilingLockInfoKHR* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkAcquireProfilingLockKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkReleaseProfilingLockKHR(VkDevice device) {
+    (void)device;
+    ZINK_TRACE("UNIMPL vkReleaseProfilingLockKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, VkSurfaceCapabilities2KHR* pSurfaceCapabilities) {
+    (void)physicalDevice;(void)pSurfaceInfo;(void)pSurfaceCapabilities;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceCapabilities2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, uint32_t* pSurfaceFormatCount, VkSurfaceFormat2KHR* pSurfaceFormats) {
+    (void)physicalDevice;(void)pSurfaceInfo;(void)pSurfaceFormatCount;(void)pSurfaceFormats;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceFormats2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceDisplayProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayProperties2KHR* pProperties) {
+    (void)physicalDevice;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceDisplayProperties2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceDisplayPlaneProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlaneProperties2KHR* pProperties) {
+    (void)physicalDevice;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceDisplayPlaneProperties2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDisplayModeProperties2KHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModeProperties2KHR* pProperties) {
+    (void)physicalDevice;(void)display;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetDisplayModeProperties2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDisplayPlaneCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkDisplayPlaneInfo2KHR* pDisplayPlaneInfo, VkDisplayPlaneCapabilities2KHR* pCapabilities) {
+    (void)physicalDevice;(void)pDisplayPlaneInfo;(void)pCapabilities;
+    ZINK_TRACE("UNIMPL vkGetDisplayPlaneCapabilities2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetImageMemoryRequirements2KHR(VkDevice device, const VkImageMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetImageMemoryRequirements2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetBufferMemoryRequirements2KHR(VkDevice device, const VkBufferMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetBufferMemoryRequirements2KHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetImageSparseMemoryRequirements2KHR(VkDevice device, const VkImageSparseMemoryRequirementsInfo2* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pSparseMemoryRequirementCount;(void)pSparseMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetImageSparseMemoryRequirements2KHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateSamplerYcbcrConversionKHR(VkDevice device, const VkSamplerYcbcrConversionCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSamplerYcbcrConversion* pYcbcrConversion) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pYcbcrConversion;
+    ZINK_TRACE("UNIMPL vkCreateSamplerYcbcrConversionKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroySamplerYcbcrConversionKHR(VkDevice device, VkSamplerYcbcrConversion ycbcrConversion, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)ycbcrConversion;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroySamplerYcbcrConversionKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBindBufferMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindBufferMemoryInfo* pBindInfos) {
+    (void)device;(void)bindInfoCount;(void)pBindInfos;
+    ZINK_TRACE("UNIMPL vkBindBufferMemory2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBindImageMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo* pBindInfos) {
+    (void)device;(void)bindInfoCount;(void)pBindInfos;
+    ZINK_TRACE("UNIMPL vkBindImageMemory2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDescriptorSetLayoutSupportKHR(VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, VkDescriptorSetLayoutSupport* pSupport) {
+    (void)device;(void)pCreateInfo;(void)pSupport;
+    ZINK_TRACE("UNIMPL vkGetDescriptorSetLayoutSupportKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndirectCountKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndexedIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndexedIndirectCountKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceFragmentShadingRatesKHR(VkPhysicalDevice physicalDevice, uint32_t* pFragmentShadingRateCount, VkPhysicalDeviceFragmentShadingRateKHR* pFragmentShadingRates) {
+    (void)physicalDevice;(void)pFragmentShadingRateCount;(void)pFragmentShadingRates;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceFragmentShadingRatesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetFragmentShadingRateKHR(VkCommandBuffer commandBuffer, const VkExtent2D* pFragmentSize, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
+    (void)commandBuffer;(void)pFragmentSize;(void)combinerOps;
+    ZINK_TRACE("UNIMPL vkCmdSetFragmentShadingRateKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkWaitForPresentKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout) {
+    (void)device;(void)swapchain;(void)presentId;(void)timeout;
+    ZINK_TRACE("UNIMPL vkWaitForPresentKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL zstub_vkGetBufferDeviceAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetBufferDeviceAddressKHR\n");
+    return 0;
+}
+static VKAPI_ATTR uint64_t VKAPI_CALL zstub_vkGetBufferOpaqueCaptureAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetBufferOpaqueCaptureAddressKHR\n");
+    return 0;
+}
+static VKAPI_ATTR uint64_t VKAPI_CALL zstub_vkGetDeviceMemoryOpaqueCaptureAddressKHR(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetDeviceMemoryOpaqueCaptureAddressKHR\n");
+    return 0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateDeferredOperationKHR(VkDevice device, const VkAllocationCallbacks* pAllocator, VkDeferredOperationKHR* pDeferredOperation) {
+    (void)device;(void)pAllocator;(void)pDeferredOperation;
+    ZINK_TRACE("UNIMPL vkCreateDeferredOperationKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyDeferredOperationKHR(VkDevice device, VkDeferredOperationKHR operation, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)operation;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyDeferredOperationKHR\n");
+}
+static VKAPI_ATTR uint32_t VKAPI_CALL zstub_vkGetDeferredOperationMaxConcurrencyKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    (void)device;(void)operation;
+    ZINK_TRACE("UNIMPL vkGetDeferredOperationMaxConcurrencyKHR\n");
+    return 0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDeferredOperationResultKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    (void)device;(void)operation;
+    ZINK_TRACE("UNIMPL vkGetDeferredOperationResultKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkDeferredOperationJoinKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    (void)device;(void)operation;
+    ZINK_TRACE("UNIMPL vkDeferredOperationJoinKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPipelineExecutablePropertiesKHR(VkDevice device, const VkPipelineInfoKHR* pPipelineInfo, uint32_t* pExecutableCount, VkPipelineExecutablePropertiesKHR* pProperties) {
+    (void)device;(void)pPipelineInfo;(void)pExecutableCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPipelineExecutablePropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPipelineExecutableStatisticsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pStatisticCount, VkPipelineExecutableStatisticKHR* pStatistics) {
+    (void)device;(void)pExecutableInfo;(void)pStatisticCount;(void)pStatistics;
+    ZINK_TRACE("UNIMPL vkGetPipelineExecutableStatisticsKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPipelineExecutableInternalRepresentationsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pInternalRepresentationCount, VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations) {
+    (void)device;(void)pExecutableInfo;(void)pInternalRepresentationCount;(void)pInternalRepresentations;
+    ZINK_TRACE("UNIMPL vkGetPipelineExecutableInternalRepresentationsKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
+    (void)commandBuffer;(void)event;(void)pDependencyInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetEvent2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdResetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
+    (void)commandBuffer;(void)event;(void)stageMask;
+    ZINK_TRACE("UNIMPL vkCmdResetEvent2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
+    (void)commandBuffer;(void)eventCount;(void)pEvents;(void)pDependencyInfos;
+    ZINK_TRACE("UNIMPL vkCmdWaitEvents2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
+    (void)commandBuffer;(void)pDependencyInfo;
+    ZINK_TRACE("UNIMPL vkCmdPipelineBarrier2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteTimestamp2KHR(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
+    (void)commandBuffer;(void)stage;(void)queryPool;(void)query;
+    ZINK_TRACE("UNIMPL vkCmdWriteTimestamp2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
+    (void)queue;(void)submitCount;(void)pSubmits;(void)fence;
+    ZINK_TRACE("UNIMPL vkQueueSubmit2KHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
+    (void)commandBuffer;(void)stage;(void)dstBuffer;(void)dstOffset;(void)marker;
+    ZINK_TRACE("UNIMPL vkCmdWriteBufferMarker2AMD\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetQueueCheckpointData2NV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointData2NV* pCheckpointData) {
+    (void)queue;(void)pCheckpointDataCount;(void)pCheckpointData;
+    ZINK_TRACE("UNIMPL vkGetQueueCheckpointData2NV\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
+    (void)commandBuffer;(void)pCopyBufferInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyBuffer2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyImage2KHR(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
+    (void)commandBuffer;(void)pCopyImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyImage2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyBufferToImage2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
+    (void)commandBuffer;(void)pCopyBufferToImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyBufferToImage2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyImageToBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
+    (void)commandBuffer;(void)pCopyImageToBufferInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyImageToBuffer2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBlitImage2KHR(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
+    (void)commandBuffer;(void)pBlitImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdBlitImage2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdResolveImage2KHR(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
+    (void)commandBuffer;(void)pResolveImageInfo;
+    ZINK_TRACE("UNIMPL vkCmdResolveImage2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) {
+    (void)commandBuffer;(void)indirectDeviceAddress;
+    ZINK_TRACE("UNIMPL vkCmdTraceRaysIndirect2KHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceBufferMemoryRequirementsKHR(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceBufferMemoryRequirementsKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceImageMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceImageMemoryRequirementsKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceImageSparseMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pSparseMemoryRequirementCount;(void)pSparseMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetDeviceImageSparseMemoryRequirementsKHR\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
+    (void)instance;(void)pCreateInfo;(void)pAllocator;(void)pCallback;
+    ZINK_TRACE("UNIMPL vkCreateDebugReportCallbackEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
+    (void)instance;(void)callback;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyDebugReportCallbackEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDebugReportMessageEXT(VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage) {
+    (void)instance;(void)flags;(void)objectType;(void)object;(void)location;(void)messageCode;(void)pLayerPrefix;(void)pMessage;
+    ZINK_TRACE("UNIMPL vkDebugReportMessageEXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkDebugMarkerSetObjectTagEXT(VkDevice device, const VkDebugMarkerObjectTagInfoEXT* pTagInfo) {
+    (void)device;(void)pTagInfo;
+    ZINK_TRACE("UNIMPL vkDebugMarkerSetObjectTagEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkDebugMarkerSetObjectNameEXT(VkDevice device, const VkDebugMarkerObjectNameInfoEXT* pNameInfo) {
+    (void)device;(void)pNameInfo;
+    ZINK_TRACE("UNIMPL vkDebugMarkerSetObjectNameEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDebugMarkerBeginEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
+    (void)commandBuffer;(void)pMarkerInfo;
+    ZINK_TRACE("UNIMPL vkCmdDebugMarkerBeginEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDebugMarkerEndEXT(VkCommandBuffer commandBuffer) {
+    (void)commandBuffer;
+    ZINK_TRACE("UNIMPL vkCmdDebugMarkerEndEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDebugMarkerInsertEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
+    (void)commandBuffer;(void)pMarkerInfo;
+    ZINK_TRACE("UNIMPL vkCmdDebugMarkerInsertEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindTransformFeedbackBuffersEXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes) {
+    (void)commandBuffer;(void)firstBinding;(void)bindingCount;(void)pBuffers;(void)pOffsets;(void)pSizes;
+    ZINK_TRACE("UNIMPL vkCmdBindTransformFeedbackBuffersEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
+    (void)commandBuffer;(void)firstCounterBuffer;(void)counterBufferCount;(void)pCounterBuffers;(void)pCounterBufferOffsets;
+    ZINK_TRACE("UNIMPL vkCmdBeginTransformFeedbackEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
+    (void)commandBuffer;(void)firstCounterBuffer;(void)counterBufferCount;(void)pCounterBuffers;(void)pCounterBufferOffsets;
+    ZINK_TRACE("UNIMPL vkCmdEndTransformFeedbackEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags, uint32_t index) {
+    (void)commandBuffer;(void)queryPool;(void)query;(void)flags;(void)index;
+    ZINK_TRACE("UNIMPL vkCmdBeginQueryIndexedEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, uint32_t index) {
+    (void)commandBuffer;(void)queryPool;(void)query;(void)index;
+    ZINK_TRACE("UNIMPL vkCmdEndQueryIndexedEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndirectByteCountEXT(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t firstInstance, VkBuffer counterBuffer, VkDeviceSize counterBufferOffset, uint32_t counterOffset, uint32_t vertexStride) {
+    (void)commandBuffer;(void)instanceCount;(void)firstInstance;(void)counterBuffer;(void)counterBufferOffset;(void)counterOffset;(void)vertexStride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndirectByteCountEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateCuModuleNVX(VkDevice device, const VkCuModuleCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuModuleNVX* pModule) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pModule;
+    ZINK_TRACE("UNIMPL vkCreateCuModuleNVX\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateCuFunctionNVX(VkDevice device, const VkCuFunctionCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuFunctionNVX* pFunction) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pFunction;
+    ZINK_TRACE("UNIMPL vkCreateCuFunctionNVX\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyCuModuleNVX(VkDevice device, VkCuModuleNVX module, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)module;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyCuModuleNVX\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyCuFunctionNVX(VkDevice device, VkCuFunctionNVX function, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)function;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyCuFunctionNVX\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCuLaunchKernelNVX(VkCommandBuffer commandBuffer, const VkCuLaunchInfoNVX* pLaunchInfo) {
+    (void)commandBuffer;(void)pLaunchInfo;
+    ZINK_TRACE("UNIMPL vkCmdCuLaunchKernelNVX\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR uint32_t VKAPI_CALL zstub_vkGetImageViewHandleNVX(VkDevice device, const VkImageViewHandleInfoNVX* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetImageViewHandleNVX\n");
+    return 0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetImageViewAddressNVX(VkDevice device, VkImageView imageView, VkImageViewAddressPropertiesNVX* pProperties) {
+    (void)device;(void)imageView;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetImageViewAddressNVX\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndirectCountAMD\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawIndexedIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawIndexedIndirectCountAMD\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetShaderInfoAMD(VkDevice device, VkPipeline pipeline, VkShaderStageFlagBits shaderStage, VkShaderInfoTypeAMD infoType, size_t* pInfoSize, void* pInfo) {
+    (void)device;(void)pipeline;(void)shaderStage;(void)infoType;(void)pInfoSize;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetShaderInfoAMD\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceExternalImageFormatPropertiesNV(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkExternalMemoryHandleTypeFlagsNV externalHandleType, VkExternalImageFormatPropertiesNV* pExternalImageFormatProperties) {
+    (void)physicalDevice;(void)format;(void)type;(void)tiling;(void)usage;(void)flags;(void)externalHandleType;(void)pExternalImageFormatProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceExternalImageFormatPropertiesNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBeginConditionalRenderingEXT(VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT* pConditionalRenderingBegin) {
+    (void)commandBuffer;(void)pConditionalRenderingBegin;
+    ZINK_TRACE("UNIMPL vkCmdBeginConditionalRenderingEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdEndConditionalRenderingEXT(VkCommandBuffer commandBuffer) {
+    (void)commandBuffer;
+    ZINK_TRACE("UNIMPL vkCmdEndConditionalRenderingEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportWScalingNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportWScalingNV* pViewportWScalings) {
+    (void)commandBuffer;(void)firstViewport;(void)viewportCount;(void)pViewportWScalings;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportWScalingNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkReleaseDisplayEXT(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
+    (void)physicalDevice;(void)display;
+    ZINK_TRACE("UNIMPL vkReleaseDisplayEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilities2EXT* pSurfaceCapabilities) {
+    (void)physicalDevice;(void)surface;(void)pSurfaceCapabilities;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSurfaceCapabilities2EXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkDisplayPowerControlEXT(VkDevice device, VkDisplayKHR display, const VkDisplayPowerInfoEXT* pDisplayPowerInfo) {
+    (void)device;(void)display;(void)pDisplayPowerInfo;
+    ZINK_TRACE("UNIMPL vkDisplayPowerControlEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkRegisterDeviceEventEXT(VkDevice device, const VkDeviceEventInfoEXT* pDeviceEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
+    (void)device;(void)pDeviceEventInfo;(void)pAllocator;(void)pFence;
+    ZINK_TRACE("UNIMPL vkRegisterDeviceEventEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkRegisterDisplayEventEXT(VkDevice device, VkDisplayKHR display, const VkDisplayEventInfoEXT* pDisplayEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
+    (void)device;(void)display;(void)pDisplayEventInfo;(void)pAllocator;(void)pFence;
+    ZINK_TRACE("UNIMPL vkRegisterDisplayEventEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetSwapchainCounterEXT(VkDevice device, VkSwapchainKHR swapchain, VkSurfaceCounterFlagBitsEXT counter, uint64_t* pCounterValue) {
+    (void)device;(void)swapchain;(void)counter;(void)pCounterValue;
+    ZINK_TRACE("UNIMPL vkGetSwapchainCounterEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetRefreshCycleDurationGOOGLE(VkDevice device, VkSwapchainKHR swapchain, VkRefreshCycleDurationGOOGLE* pDisplayTimingProperties) {
+    (void)device;(void)swapchain;(void)pDisplayTimingProperties;
+    ZINK_TRACE("UNIMPL vkGetRefreshCycleDurationGOOGLE\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPastPresentationTimingGOOGLE(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pPresentationTimingCount, VkPastPresentationTimingGOOGLE* pPresentationTimings) {
+    (void)device;(void)swapchain;(void)pPresentationTimingCount;(void)pPresentationTimings;
+    ZINK_TRACE("UNIMPL vkGetPastPresentationTimingGOOGLE\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle, uint32_t discardRectangleCount, const VkRect2D* pDiscardRectangles) {
+    (void)commandBuffer;(void)firstDiscardRectangle;(void)discardRectangleCount;(void)pDiscardRectangles;
+    ZINK_TRACE("UNIMPL vkCmdSetDiscardRectangleEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, const VkSwapchainKHR* pSwapchains, const VkHdrMetadataEXT* pMetadata) {
+    (void)device;(void)swapchainCount;(void)pSwapchains;(void)pMetadata;
+    ZINK_TRACE("UNIMPL vkSetHdrMetadataEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetSampleLocationsEXT(VkCommandBuffer commandBuffer, const VkSampleLocationsInfoEXT* pSampleLocationsInfo) {
+    (void)commandBuffer;(void)pSampleLocationsInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetSampleLocationsEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPhysicalDeviceMultisamplePropertiesEXT(VkPhysicalDevice physicalDevice, VkSampleCountFlagBits samples, VkMultisamplePropertiesEXT* pMultisampleProperties) {
+    (void)physicalDevice;(void)samples;(void)pMultisampleProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceMultisamplePropertiesEXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetImageDrmFormatModifierPropertiesEXT(VkDevice device, VkImage image, VkImageDrmFormatModifierPropertiesEXT* pProperties) {
+    (void)device;(void)image;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetImageDrmFormatModifierPropertiesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateValidationCacheEXT(VkDevice device, const VkValidationCacheCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkValidationCacheEXT* pValidationCache) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pValidationCache;
+    ZINK_TRACE("UNIMPL vkCreateValidationCacheEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyValidationCacheEXT(VkDevice device, VkValidationCacheEXT validationCache, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)validationCache;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyValidationCacheEXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkMergeValidationCachesEXT(VkDevice device, VkValidationCacheEXT dstCache, uint32_t srcCacheCount, const VkValidationCacheEXT* pSrcCaches) {
+    (void)device;(void)dstCache;(void)srcCacheCount;(void)pSrcCaches;
+    ZINK_TRACE("UNIMPL vkMergeValidationCachesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetValidationCacheDataEXT(VkDevice device, VkValidationCacheEXT validationCache, size_t* pDataSize, void* pData) {
+    (void)device;(void)validationCache;(void)pDataSize;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetValidationCacheDataEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindShadingRateImageNV(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
+    (void)commandBuffer;(void)imageView;(void)imageLayout;
+    ZINK_TRACE("UNIMPL vkCmdBindShadingRateImageNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportShadingRatePaletteNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkShadingRatePaletteNV* pShadingRatePalettes) {
+    (void)commandBuffer;(void)firstViewport;(void)viewportCount;(void)pShadingRatePalettes;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportShadingRatePaletteNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoarseSampleOrderNV(VkCommandBuffer commandBuffer, VkCoarseSampleOrderTypeNV sampleOrderType, uint32_t customSampleOrderCount, const VkCoarseSampleOrderCustomNV* pCustomSampleOrders) {
+    (void)commandBuffer;(void)sampleOrderType;(void)customSampleOrderCount;(void)pCustomSampleOrders;
+    ZINK_TRACE("UNIMPL vkCmdSetCoarseSampleOrderNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateAccelerationStructureNV(VkDevice device, const VkAccelerationStructureCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureNV* pAccelerationStructure) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pAccelerationStructure;
+    ZINK_TRACE("UNIMPL vkCreateAccelerationStructureNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyAccelerationStructureNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)accelerationStructure;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyAccelerationStructureNV\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetAccelerationStructureMemoryRequirementsNV(VkDevice device, const VkAccelerationStructureMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2KHR* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetAccelerationStructureMemoryRequirementsNV\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBindAccelerationStructureMemoryNV(VkDevice device, uint32_t bindInfoCount, const VkBindAccelerationStructureMemoryInfoNV* pBindInfos) {
+    (void)device;(void)bindInfoCount;(void)pBindInfos;
+    ZINK_TRACE("UNIMPL vkBindAccelerationStructureMemoryNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBuildAccelerationStructureNV(VkCommandBuffer commandBuffer, const VkAccelerationStructureInfoNV* pInfo, VkBuffer instanceData, VkDeviceSize instanceOffset, VkBool32 update, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkBuffer scratch, VkDeviceSize scratchOffset) {
+    (void)commandBuffer;(void)pInfo;(void)instanceData;(void)instanceOffset;(void)update;(void)dst;(void)src;(void)scratch;(void)scratchOffset;
+    ZINK_TRACE("UNIMPL vkCmdBuildAccelerationStructureNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyAccelerationStructureNV(VkCommandBuffer commandBuffer, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkCopyAccelerationStructureModeKHR mode) {
+    (void)commandBuffer;(void)dst;(void)src;(void)mode;
+    ZINK_TRACE("UNIMPL vkCmdCopyAccelerationStructureNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdTraceRaysNV(VkCommandBuffer commandBuffer, VkBuffer raygenShaderBindingTableBuffer, VkDeviceSize raygenShaderBindingOffset, VkBuffer missShaderBindingTableBuffer, VkDeviceSize missShaderBindingOffset, VkDeviceSize missShaderBindingStride, VkBuffer hitShaderBindingTableBuffer, VkDeviceSize hitShaderBindingOffset, VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer, VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride, uint32_t width, uint32_t height, uint32_t depth) {
+    (void)commandBuffer;(void)raygenShaderBindingTableBuffer;(void)raygenShaderBindingOffset;(void)missShaderBindingTableBuffer;(void)missShaderBindingOffset;(void)missShaderBindingStride;(void)hitShaderBindingTableBuffer;(void)hitShaderBindingOffset;(void)hitShaderBindingStride;(void)callableShaderBindingTableBuffer;(void)callableShaderBindingOffset;(void)callableShaderBindingStride;(void)width;(void)height;(void)depth;
+    ZINK_TRACE("UNIMPL vkCmdTraceRaysNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateRayTracingPipelinesNV(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoNV* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
+    (void)device;(void)pipelineCache;(void)createInfoCount;(void)pCreateInfos;(void)pAllocator;(void)pPipelines;
+    ZINK_TRACE("UNIMPL vkCreateRayTracingPipelinesNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetRayTracingShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    (void)device;(void)pipeline;(void)firstGroup;(void)groupCount;(void)dataSize;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetRayTracingShaderGroupHandlesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetRayTracingShaderGroupHandlesNV(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    (void)device;(void)pipeline;(void)firstGroup;(void)groupCount;(void)dataSize;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetRayTracingShaderGroupHandlesNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetAccelerationStructureHandleNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, size_t dataSize, void* pData) {
+    (void)device;(void)accelerationStructure;(void)dataSize;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetAccelerationStructureHandleNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteAccelerationStructuresPropertiesNV(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureNV* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    (void)commandBuffer;(void)accelerationStructureCount;(void)pAccelerationStructures;(void)queryType;(void)queryPool;(void)firstQuery;
+    ZINK_TRACE("UNIMPL vkCmdWriteAccelerationStructuresPropertiesNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCompileDeferredNV(VkDevice device, VkPipeline pipeline, uint32_t shader) {
+    (void)device;(void)pipeline;(void)shader;
+    ZINK_TRACE("UNIMPL vkCompileDeferredNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetMemoryHostPointerPropertiesEXT(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties) {
+    (void)device;(void)handleType;(void)pHostPointer;(void)pMemoryHostPointerProperties;
+    ZINK_TRACE("UNIMPL vkGetMemoryHostPointerPropertiesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteBufferMarkerAMD(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
+    (void)commandBuffer;(void)pipelineStage;(void)dstBuffer;(void)dstOffset;(void)marker;
+    ZINK_TRACE("UNIMPL vkCmdWriteBufferMarkerAMD\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(VkPhysicalDevice physicalDevice, uint32_t* pTimeDomainCount, VkTimeDomainEXT* pTimeDomains) {
+    (void)physicalDevice;(void)pTimeDomainCount;(void)pTimeDomains;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceCalibrateableTimeDomainsEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetCalibratedTimestampsEXT(VkDevice device, uint32_t timestampCount, const VkCalibratedTimestampInfoEXT* pTimestampInfos, uint64_t* pTimestamps, uint64_t* pMaxDeviation) {
+    (void)device;(void)timestampCount;(void)pTimestampInfos;(void)pTimestamps;(void)pMaxDeviation;
+    ZINK_TRACE("UNIMPL vkGetCalibratedTimestampsEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) {
+    (void)commandBuffer;(void)taskCount;(void)firstTask;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksIndirectNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)drawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksIndirectNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksIndirectCountNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksIndirectCountNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetExclusiveScissorNV(VkCommandBuffer commandBuffer, uint32_t firstExclusiveScissor, uint32_t exclusiveScissorCount, const VkRect2D* pExclusiveScissors) {
+    (void)commandBuffer;(void)firstExclusiveScissor;(void)exclusiveScissorCount;(void)pExclusiveScissors;
+    ZINK_TRACE("UNIMPL vkCmdSetExclusiveScissorNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCheckpointNV(VkCommandBuffer commandBuffer, const void* pCheckpointMarker) {
+    (void)commandBuffer;(void)pCheckpointMarker;
+    ZINK_TRACE("UNIMPL vkCmdSetCheckpointNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetQueueCheckpointDataNV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointDataNV* pCheckpointData) {
+    (void)queue;(void)pCheckpointDataCount;(void)pCheckpointData;
+    ZINK_TRACE("UNIMPL vkGetQueueCheckpointDataNV\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkInitializePerformanceApiINTEL(VkDevice device, const VkInitializePerformanceApiInfoINTEL* pInitializeInfo) {
+    (void)device;(void)pInitializeInfo;
+    ZINK_TRACE("UNIMPL vkInitializePerformanceApiINTEL\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkUninitializePerformanceApiINTEL(VkDevice device) {
+    (void)device;
+    ZINK_TRACE("UNIMPL vkUninitializePerformanceApiINTEL\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCmdSetPerformanceMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceMarkerInfoINTEL* pMarkerInfo) {
+    (void)commandBuffer;(void)pMarkerInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetPerformanceMarkerINTEL\n");
+    invalid_command(commandBuffer);
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCmdSetPerformanceStreamMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceStreamMarkerInfoINTEL* pMarkerInfo) {
+    (void)commandBuffer;(void)pMarkerInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetPerformanceStreamMarkerINTEL\n");
+    invalid_command(commandBuffer);
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCmdSetPerformanceOverrideINTEL(VkCommandBuffer commandBuffer, const VkPerformanceOverrideInfoINTEL* pOverrideInfo) {
+    (void)commandBuffer;(void)pOverrideInfo;
+    ZINK_TRACE("UNIMPL vkCmdSetPerformanceOverrideINTEL\n");
+    invalid_command(commandBuffer);
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquirePerformanceConfigurationINTEL(VkDevice device, const VkPerformanceConfigurationAcquireInfoINTEL* pAcquireInfo, VkPerformanceConfigurationINTEL* pConfiguration) {
+    (void)device;(void)pAcquireInfo;(void)pConfiguration;
+    ZINK_TRACE("UNIMPL vkAcquirePerformanceConfigurationINTEL\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkReleasePerformanceConfigurationINTEL(VkDevice device, VkPerformanceConfigurationINTEL configuration) {
+    (void)device;(void)configuration;
+    ZINK_TRACE("UNIMPL vkReleasePerformanceConfigurationINTEL\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkQueueSetPerformanceConfigurationINTEL(VkQueue queue, VkPerformanceConfigurationINTEL configuration) {
+    (void)queue;(void)configuration;
+    ZINK_TRACE("UNIMPL vkQueueSetPerformanceConfigurationINTEL\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPerformanceParameterINTEL(VkDevice device, VkPerformanceParameterTypeINTEL parameter, VkPerformanceValueINTEL* pValue) {
+    (void)device;(void)parameter;(void)pValue;
+    ZINK_TRACE("UNIMPL vkGetPerformanceParameterINTEL\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkSetLocalDimmingAMD(VkDevice device, VkSwapchainKHR swapChain, VkBool32 localDimmingEnable) {
+    (void)device;(void)swapChain;(void)localDimmingEnable;
+    ZINK_TRACE("UNIMPL vkSetLocalDimmingAMD\n");
+}
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL zstub_vkGetBufferDeviceAddressEXT(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetBufferDeviceAddressEXT\n");
+    return 0;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceToolPropertiesEXT(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
+    (void)physicalDevice;(void)pToolCount;(void)pToolProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceToolPropertiesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkCooperativeMatrixPropertiesNV* pProperties) {
+    (void)physicalDevice;(void)pPropertyCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceCooperativeMatrixPropertiesNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(VkPhysicalDevice physicalDevice, uint32_t* pCombinationCount, VkFramebufferMixedSamplesCombinationNV* pCombinations) {
+    (void)physicalDevice;(void)pCombinationCount;(void)pCombinations;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateHeadlessSurfaceEXT(VkInstance instance, const VkHeadlessSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
+    (void)instance;(void)pCreateInfo;(void)pAllocator;(void)pSurface;
+    ZINK_TRACE("UNIMPL vkCreateHeadlessSurfaceEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetLineStippleEXT(VkCommandBuffer commandBuffer, uint32_t lineStippleFactor, uint16_t lineStipplePattern) {
+    (void)commandBuffer;(void)lineStippleFactor;(void)lineStipplePattern;
+    ZINK_TRACE("UNIMPL vkCmdSetLineStippleEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkResetQueryPoolEXT(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
+    (void)device;(void)queryPool;(void)firstQuery;(void)queryCount;
+    ZINK_TRACE("UNIMPL vkResetQueryPoolEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCullModeEXT(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
+    (void)commandBuffer;(void)cullMode;
+    ZINK_TRACE("UNIMPL vkCmdSetCullModeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetFrontFaceEXT(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
+    (void)commandBuffer;(void)frontFace;
+    ZINK_TRACE("UNIMPL vkCmdSetFrontFaceEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPrimitiveTopologyEXT(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
+    (void)commandBuffer;(void)primitiveTopology;
+    ZINK_TRACE("UNIMPL vkCmdSetPrimitiveTopologyEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportWithCountEXT(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
+    (void)commandBuffer;(void)viewportCount;(void)pViewports;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportWithCountEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetScissorWithCountEXT(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
+    (void)commandBuffer;(void)scissorCount;(void)pScissors;
+    ZINK_TRACE("UNIMPL vkCmdSetScissorWithCountEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindVertexBuffers2EXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
+    (void)commandBuffer;(void)firstBinding;(void)bindingCount;(void)pBuffers;(void)pOffsets;(void)pSizes;(void)pStrides;
+    ZINK_TRACE("UNIMPL vkCmdBindVertexBuffers2EXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
+    (void)commandBuffer;(void)depthTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthTestEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthWriteEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
+    (void)commandBuffer;(void)depthWriteEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthWriteEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthCompareOpEXT(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
+    (void)commandBuffer;(void)depthCompareOp;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthCompareOpEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthBoundsTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
+    (void)commandBuffer;(void)depthBoundsTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthBoundsTestEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetStencilTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
+    (void)commandBuffer;(void)stencilTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetStencilTestEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetStencilOpEXT(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
+    (void)commandBuffer;(void)faceMask;(void)failOp;(void)passOp;(void)depthFailOp;(void)compareOp;
+    ZINK_TRACE("UNIMPL vkCmdSetStencilOpEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetGeneratedCommandsMemoryRequirementsNV(VkDevice device, const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    (void)device;(void)pInfo;(void)pMemoryRequirements;
+    ZINK_TRACE("UNIMPL vkGetGeneratedCommandsMemoryRequirementsNV\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdPreprocessGeneratedCommandsNV(VkCommandBuffer commandBuffer, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
+    (void)commandBuffer;(void)pGeneratedCommandsInfo;
+    ZINK_TRACE("UNIMPL vkCmdPreprocessGeneratedCommandsNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdExecuteGeneratedCommandsNV(VkCommandBuffer commandBuffer, VkBool32 isPreprocessed, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
+    (void)commandBuffer;(void)isPreprocessed;(void)pGeneratedCommandsInfo;
+    ZINK_TRACE("UNIMPL vkCmdExecuteGeneratedCommandsNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindPipelineShaderGroupNV(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline, uint32_t groupIndex) {
+    (void)commandBuffer;(void)pipelineBindPoint;(void)pipeline;(void)groupIndex;
+    ZINK_TRACE("UNIMPL vkCmdBindPipelineShaderGroupNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateIndirectCommandsLayoutNV(VkDevice device, const VkIndirectCommandsLayoutCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkIndirectCommandsLayoutNV* pIndirectCommandsLayout) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pIndirectCommandsLayout;
+    ZINK_TRACE("UNIMPL vkCreateIndirectCommandsLayoutNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyIndirectCommandsLayoutNV(VkDevice device, VkIndirectCommandsLayoutNV indirectCommandsLayout, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)indirectCommandsLayout;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyIndirectCommandsLayoutNV\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquireDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, VkDisplayKHR display) {
+    (void)physicalDevice;(void)drmFd;(void)display;
+    ZINK_TRACE("UNIMPL vkAcquireDrmDisplayEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, uint32_t connectorId, VkDisplayKHR* display) {
+    (void)physicalDevice;(void)drmFd;(void)connectorId;(void)display;
+    ZINK_TRACE("UNIMPL vkGetDrmDisplayEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreatePrivateDataSlotEXT(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pPrivateDataSlot;
+    ZINK_TRACE("UNIMPL vkCreatePrivateDataSlotEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyPrivateDataSlotEXT(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)privateDataSlot;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyPrivateDataSlotEXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkSetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
+    (void)device;(void)objectType;(void)objectHandle;(void)privateDataSlot;(void)data;
+    ZINK_TRACE("UNIMPL vkSetPrivateDataEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
+    (void)device;(void)objectType;(void)objectHandle;(void)privateDataSlot;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetPrivateDataEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetFragmentShadingRateEnumNV(VkCommandBuffer commandBuffer, VkFragmentShadingRateNV shadingRate, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
+    (void)commandBuffer;(void)shadingRate;(void)combinerOps;
+    ZINK_TRACE("UNIMPL vkCmdSetFragmentShadingRateEnumNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetImageSubresourceLayout2EXT(VkDevice device, VkImage image, const VkImageSubresource2EXT* pSubresource, VkSubresourceLayout2EXT* pLayout) {
+    (void)device;(void)image;(void)pSubresource;(void)pLayout;
+    ZINK_TRACE("UNIMPL vkGetImageSubresourceLayout2EXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDeviceFaultInfoEXT(VkDevice device, VkDeviceFaultCountsEXT* pFaultCounts, VkDeviceFaultInfoEXT* pFaultInfo) {
+    (void)device;(void)pFaultCounts;(void)pFaultInfo;
+    ZINK_TRACE("UNIMPL vkGetDeviceFaultInfoEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkAcquireWinrtDisplayNV(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
+    (void)physicalDevice;(void)display;
+    ZINK_TRACE("UNIMPL vkAcquireWinrtDisplayNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetWinrtDisplayNV(VkPhysicalDevice physicalDevice, uint32_t deviceRelativeId, VkDisplayKHR* pDisplay) {
+    (void)physicalDevice;(void)deviceRelativeId;(void)pDisplay;
+    ZINK_TRACE("UNIMPL vkGetWinrtDisplayNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetVertexInputEXT(VkCommandBuffer commandBuffer, uint32_t vertexBindingDescriptionCount, const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions, uint32_t vertexAttributeDescriptionCount, const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) {
+    (void)commandBuffer;(void)vertexBindingDescriptionCount;(void)pVertexBindingDescriptions;(void)vertexAttributeDescriptionCount;(void)pVertexAttributeDescriptions;
+    ZINK_TRACE("UNIMPL vkCmdSetVertexInputEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(VkDevice device, VkRenderPass renderpass, VkExtent2D* pMaxWorkgroupSize) {
+    (void)device;(void)renderpass;(void)pMaxWorkgroupSize;
+    ZINK_TRACE("UNIMPL vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSubpassShadingHUAWEI(VkCommandBuffer commandBuffer) {
+    (void)commandBuffer;
+    ZINK_TRACE("UNIMPL vkCmdSubpassShadingHUAWEI\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBindInvocationMaskHUAWEI(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
+    (void)commandBuffer;(void)imageView;(void)imageLayout;
+    ZINK_TRACE("UNIMPL vkCmdBindInvocationMaskHUAWEI\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetMemoryRemoteAddressNV(VkDevice device, const VkMemoryGetRemoteAddressInfoNV* pMemoryGetRemoteAddressInfo, VkRemoteAddressNV* pAddress) {
+    (void)device;(void)pMemoryGetRemoteAddressInfo;(void)pAddress;
+    ZINK_TRACE("UNIMPL vkGetMemoryRemoteAddressNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPipelinePropertiesEXT(VkDevice device, const VkPipelineInfoEXT* pPipelineInfo, VkBaseOutStructure* pPipelineProperties) {
+    (void)device;(void)pPipelineInfo;(void)pPipelineProperties;
+    ZINK_TRACE("UNIMPL vkGetPipelinePropertiesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPatchControlPointsEXT(VkCommandBuffer commandBuffer, uint32_t patchControlPoints) {
+    (void)commandBuffer;(void)patchControlPoints;
+    ZINK_TRACE("UNIMPL vkCmdSetPatchControlPointsEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRasterizerDiscardEnableEXT(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
+    (void)commandBuffer;(void)rasterizerDiscardEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetRasterizerDiscardEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthBiasEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
+    (void)commandBuffer;(void)depthBiasEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthBiasEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetLogicOpEXT(VkCommandBuffer commandBuffer, VkLogicOp logicOp) {
+    (void)commandBuffer;(void)logicOp;
+    ZINK_TRACE("UNIMPL vkCmdSetLogicOpEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPrimitiveRestartEnableEXT(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
+    (void)commandBuffer;(void)primitiveRestartEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetPrimitiveRestartEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetColorWriteEnableEXT(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkBool32* pColorWriteEnables) {
+    (void)commandBuffer;(void)attachmentCount;(void)pColorWriteEnables;
+    ZINK_TRACE("UNIMPL vkCmdSetColorWriteEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride) {
+    (void)commandBuffer;(void)drawCount;(void)pVertexInfo;(void)instanceCount;(void)firstInstance;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawMultiEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawIndexedInfoEXT* pIndexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride, const int32_t* pVertexOffset) {
+    (void)commandBuffer;(void)drawCount;(void)pIndexInfo;(void)instanceCount;(void)firstInstance;(void)stride;(void)pVertexOffset;
+    ZINK_TRACE("UNIMPL vkCmdDrawMultiIndexedEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateMicromapEXT(VkDevice device, const VkMicromapCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkMicromapEXT* pMicromap) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pMicromap;
+    ZINK_TRACE("UNIMPL vkCreateMicromapEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyMicromapEXT(VkDevice device, VkMicromapEXT micromap, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)micromap;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyMicromapEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBuildMicromapsEXT(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
+    (void)commandBuffer;(void)infoCount;(void)pInfos;
+    ZINK_TRACE("UNIMPL vkCmdBuildMicromapsEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBuildMicromapsEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
+    (void)device;(void)deferredOperation;(void)infoCount;(void)pInfos;
+    ZINK_TRACE("UNIMPL vkBuildMicromapsEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapInfoEXT* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyMicromapEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyMicromapToMemoryEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyMicromapToMemoryEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyMemoryToMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyMemoryToMicromapEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkWriteMicromapsPropertiesEXT(VkDevice device, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
+    (void)device;(void)micromapCount;(void)pMicromaps;(void)queryType;(void)dataSize;(void)pData;(void)stride;
+    ZINK_TRACE("UNIMPL vkWriteMicromapsPropertiesEXT\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapInfoEXT* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyMicromapEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyMicromapToMemoryEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyMicromapToMemoryEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyMemoryToMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyMemoryToMicromapEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteMicromapsPropertiesEXT(VkCommandBuffer commandBuffer, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    (void)commandBuffer;(void)micromapCount;(void)pMicromaps;(void)queryType;(void)queryPool;(void)firstQuery;
+    ZINK_TRACE("UNIMPL vkCmdWriteMicromapsPropertiesEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceMicromapCompatibilityEXT(VkDevice device, const VkMicromapVersionInfoEXT* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
+    (void)device;(void)pVersionInfo;(void)pCompatibility;
+    ZINK_TRACE("UNIMPL vkGetDeviceMicromapCompatibilityEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetMicromapBuildSizesEXT(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkMicromapBuildInfoEXT* pBuildInfo, VkMicromapBuildSizesInfoEXT* pSizeInfo) {
+    (void)device;(void)buildType;(void)pBuildInfo;(void)pSizeInfo;
+    ZINK_TRACE("UNIMPL vkGetMicromapBuildSizesEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkSetDeviceMemoryPriorityEXT(VkDevice device, VkDeviceMemory memory, float priority) {
+    (void)device;(void)memory;(void)priority;
+    ZINK_TRACE("UNIMPL vkSetDeviceMemoryPriorityEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDescriptorSetLayoutHostMappingInfoVALVE(VkDevice device, const VkDescriptorSetBindingReferenceVALVE* pBindingReference, VkDescriptorSetLayoutHostMappingInfoVALVE* pHostMapping) {
+    (void)device;(void)pBindingReference;(void)pHostMapping;
+    ZINK_TRACE("UNIMPL vkGetDescriptorSetLayoutHostMappingInfoVALVE\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDescriptorSetHostMappingVALVE(VkDevice device, VkDescriptorSet descriptorSet, void** ppData) {
+    (void)device;(void)descriptorSet;(void)ppData;
+    ZINK_TRACE("UNIMPL vkGetDescriptorSetHostMappingVALVE\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetTessellationDomainOriginEXT(VkCommandBuffer commandBuffer, VkTessellationDomainOrigin domainOrigin) {
+    (void)commandBuffer;(void)domainOrigin;
+    ZINK_TRACE("UNIMPL vkCmdSetTessellationDomainOriginEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthClampEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClampEnable) {
+    (void)commandBuffer;(void)depthClampEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthClampEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetPolygonModeEXT(VkCommandBuffer commandBuffer, VkPolygonMode polygonMode) {
+    (void)commandBuffer;(void)polygonMode;
+    ZINK_TRACE("UNIMPL vkCmdSetPolygonModeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRasterizationSamplesEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits rasterizationSamples) {
+    (void)commandBuffer;(void)rasterizationSamples;
+    ZINK_TRACE("UNIMPL vkCmdSetRasterizationSamplesEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetSampleMaskEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits samples, const VkSampleMask* pSampleMask) {
+    (void)commandBuffer;(void)samples;(void)pSampleMask;
+    ZINK_TRACE("UNIMPL vkCmdSetSampleMaskEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetAlphaToCoverageEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToCoverageEnable) {
+    (void)commandBuffer;(void)alphaToCoverageEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetAlphaToCoverageEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetAlphaToOneEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToOneEnable) {
+    (void)commandBuffer;(void)alphaToOneEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetAlphaToOneEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetLogicOpEnableEXT(VkCommandBuffer commandBuffer, VkBool32 logicOpEnable) {
+    (void)commandBuffer;(void)logicOpEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetLogicOpEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetColorBlendEnableEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkBool32* pColorBlendEnables) {
+    (void)commandBuffer;(void)firstAttachment;(void)attachmentCount;(void)pColorBlendEnables;
+    ZINK_TRACE("UNIMPL vkCmdSetColorBlendEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetColorBlendEquationEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendEquationEXT* pColorBlendEquations) {
+    (void)commandBuffer;(void)firstAttachment;(void)attachmentCount;(void)pColorBlendEquations;
+    ZINK_TRACE("UNIMPL vkCmdSetColorBlendEquationEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetColorWriteMaskEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorComponentFlags* pColorWriteMasks) {
+    (void)commandBuffer;(void)firstAttachment;(void)attachmentCount;(void)pColorWriteMasks;
+    ZINK_TRACE("UNIMPL vkCmdSetColorWriteMaskEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRasterizationStreamEXT(VkCommandBuffer commandBuffer, uint32_t rasterizationStream) {
+    (void)commandBuffer;(void)rasterizationStream;
+    ZINK_TRACE("UNIMPL vkCmdSetRasterizationStreamEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetConservativeRasterizationModeEXT(VkCommandBuffer commandBuffer, VkConservativeRasterizationModeEXT conservativeRasterizationMode) {
+    (void)commandBuffer;(void)conservativeRasterizationMode;
+    ZINK_TRACE("UNIMPL vkCmdSetConservativeRasterizationModeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetExtraPrimitiveOverestimationSizeEXT(VkCommandBuffer commandBuffer, float extraPrimitiveOverestimationSize) {
+    (void)commandBuffer;(void)extraPrimitiveOverestimationSize;
+    ZINK_TRACE("UNIMPL vkCmdSetExtraPrimitiveOverestimationSizeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthClipEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClipEnable) {
+    (void)commandBuffer;(void)depthClipEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthClipEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetSampleLocationsEnableEXT(VkCommandBuffer commandBuffer, VkBool32 sampleLocationsEnable) {
+    (void)commandBuffer;(void)sampleLocationsEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetSampleLocationsEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetColorBlendAdvancedEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendAdvancedEXT* pColorBlendAdvanced) {
+    (void)commandBuffer;(void)firstAttachment;(void)attachmentCount;(void)pColorBlendAdvanced;
+    ZINK_TRACE("UNIMPL vkCmdSetColorBlendAdvancedEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetProvokingVertexModeEXT(VkCommandBuffer commandBuffer, VkProvokingVertexModeEXT provokingVertexMode) {
+    (void)commandBuffer;(void)provokingVertexMode;
+    ZINK_TRACE("UNIMPL vkCmdSetProvokingVertexModeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetLineRasterizationModeEXT(VkCommandBuffer commandBuffer, VkLineRasterizationModeEXT lineRasterizationMode) {
+    (void)commandBuffer;(void)lineRasterizationMode;
+    ZINK_TRACE("UNIMPL vkCmdSetLineRasterizationModeEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetLineStippleEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stippledLineEnable) {
+    (void)commandBuffer;(void)stippledLineEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetLineStippleEnableEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetDepthClipNegativeOneToOneEXT(VkCommandBuffer commandBuffer, VkBool32 negativeOneToOne) {
+    (void)commandBuffer;(void)negativeOneToOne;
+    ZINK_TRACE("UNIMPL vkCmdSetDepthClipNegativeOneToOneEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportWScalingEnableNV(VkCommandBuffer commandBuffer, VkBool32 viewportWScalingEnable) {
+    (void)commandBuffer;(void)viewportWScalingEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportWScalingEnableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetViewportSwizzleNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportSwizzleNV* pViewportSwizzles) {
+    (void)commandBuffer;(void)firstViewport;(void)viewportCount;(void)pViewportSwizzles;
+    ZINK_TRACE("UNIMPL vkCmdSetViewportSwizzleNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageToColorEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageToColorEnable) {
+    (void)commandBuffer;(void)coverageToColorEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageToColorEnableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageToColorLocationNV(VkCommandBuffer commandBuffer, uint32_t coverageToColorLocation) {
+    (void)commandBuffer;(void)coverageToColorLocation;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageToColorLocationNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageModulationModeNV(VkCommandBuffer commandBuffer, VkCoverageModulationModeNV coverageModulationMode) {
+    (void)commandBuffer;(void)coverageModulationMode;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageModulationModeNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageModulationTableEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageModulationTableEnable) {
+    (void)commandBuffer;(void)coverageModulationTableEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageModulationTableEnableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageModulationTableNV(VkCommandBuffer commandBuffer, uint32_t coverageModulationTableCount, const float* pCoverageModulationTable) {
+    (void)commandBuffer;(void)coverageModulationTableCount;(void)pCoverageModulationTable;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageModulationTableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetShadingRateImageEnableNV(VkCommandBuffer commandBuffer, VkBool32 shadingRateImageEnable) {
+    (void)commandBuffer;(void)shadingRateImageEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetShadingRateImageEnableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRepresentativeFragmentTestEnableNV(VkCommandBuffer commandBuffer, VkBool32 representativeFragmentTestEnable) {
+    (void)commandBuffer;(void)representativeFragmentTestEnable;
+    ZINK_TRACE("UNIMPL vkCmdSetRepresentativeFragmentTestEnableNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetCoverageReductionModeNV(VkCommandBuffer commandBuffer, VkCoverageReductionModeNV coverageReductionMode) {
+    (void)commandBuffer;(void)coverageReductionMode;
+    ZINK_TRACE("UNIMPL vkCmdSetCoverageReductionModeNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetShaderModuleIdentifierEXT(VkDevice device, VkShaderModule shaderModule, VkShaderModuleIdentifierEXT* pIdentifier) {
+    (void)device;(void)shaderModule;(void)pIdentifier;
+    ZINK_TRACE("UNIMPL vkGetShaderModuleIdentifierEXT\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetShaderModuleCreateInfoIdentifierEXT(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo, VkShaderModuleIdentifierEXT* pIdentifier) {
+    (void)device;(void)pCreateInfo;(void)pIdentifier;
+    ZINK_TRACE("UNIMPL vkGetShaderModuleCreateInfoIdentifierEXT\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetPhysicalDeviceOpticalFlowImageFormatsNV(VkPhysicalDevice physicalDevice, const VkOpticalFlowImageFormatInfoNV* pOpticalFlowImageFormatInfo, uint32_t* pFormatCount, VkOpticalFlowImageFormatPropertiesNV* pImageFormatProperties) {
+    (void)physicalDevice;(void)pOpticalFlowImageFormatInfo;(void)pFormatCount;(void)pImageFormatProperties;
+    ZINK_TRACE("UNIMPL vkGetPhysicalDeviceOpticalFlowImageFormatsNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateOpticalFlowSessionNV(VkDevice device, const VkOpticalFlowSessionCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkOpticalFlowSessionNV* pSession) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pSession;
+    ZINK_TRACE("UNIMPL vkCreateOpticalFlowSessionNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyOpticalFlowSessionNV(VkDevice device, VkOpticalFlowSessionNV session, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)session;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyOpticalFlowSessionNV\n");
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBindOpticalFlowSessionImageNV(VkDevice device, VkOpticalFlowSessionNV session, VkOpticalFlowSessionBindingPointNV bindingPoint, VkImageView view, VkImageLayout layout) {
+    (void)device;(void)session;(void)bindingPoint;(void)view;(void)layout;
+    ZINK_TRACE("UNIMPL vkBindOpticalFlowSessionImageNV\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdOpticalFlowExecuteNV(VkCommandBuffer commandBuffer, VkOpticalFlowSessionNV session, const VkOpticalFlowExecuteInfoNV* pExecuteInfo) {
+    (void)commandBuffer;(void)session;(void)pExecuteInfo;
+    ZINK_TRACE("UNIMPL vkCmdOpticalFlowExecuteNV\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetFramebufferTilePropertiesQCOM(VkDevice device, VkFramebuffer framebuffer, uint32_t* pPropertiesCount, VkTilePropertiesQCOM* pProperties) {
+    (void)device;(void)framebuffer;(void)pPropertiesCount;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetFramebufferTilePropertiesQCOM\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetDynamicRenderingTilePropertiesQCOM(VkDevice device, const VkRenderingInfo* pRenderingInfo, VkTilePropertiesQCOM* pProperties) {
+    (void)device;(void)pRenderingInfo;(void)pProperties;
+    ZINK_TRACE("UNIMPL vkGetDynamicRenderingTilePropertiesQCOM\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateAccelerationStructureKHR(VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureKHR* pAccelerationStructure) {
+    (void)device;(void)pCreateInfo;(void)pAllocator;(void)pAccelerationStructure;
+    ZINK_TRACE("UNIMPL vkCreateAccelerationStructureKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkDestroyAccelerationStructureKHR(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks* pAllocator) {
+    (void)device;(void)accelerationStructure;(void)pAllocator;
+    ZINK_TRACE("UNIMPL vkDestroyAccelerationStructureKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBuildAccelerationStructuresKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
+    (void)commandBuffer;(void)infoCount;(void)pInfos;(void)ppBuildRangeInfos;
+    ZINK_TRACE("UNIMPL vkCmdBuildAccelerationStructuresKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdBuildAccelerationStructuresIndirectKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkDeviceAddress* pIndirectDeviceAddresses, const uint32_t* pIndirectStrides, const uint32_t* const* ppMaxPrimitiveCounts) {
+    (void)commandBuffer;(void)infoCount;(void)pInfos;(void)pIndirectDeviceAddresses;(void)pIndirectStrides;(void)ppMaxPrimitiveCounts;
+    ZINK_TRACE("UNIMPL vkCmdBuildAccelerationStructuresIndirectKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkBuildAccelerationStructuresKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
+    (void)device;(void)deferredOperation;(void)infoCount;(void)pInfos;(void)ppBuildRangeInfos;
+    ZINK_TRACE("UNIMPL vkBuildAccelerationStructuresKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureInfoKHR* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyAccelerationStructureKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyAccelerationStructureToMemoryKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyAccelerationStructureToMemoryKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCopyMemoryToAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
+    (void)device;(void)deferredOperation;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCopyMemoryToAccelerationStructureKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkWriteAccelerationStructuresPropertiesKHR(VkDevice device, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
+    (void)device;(void)accelerationStructureCount;(void)pAccelerationStructures;(void)queryType;(void)dataSize;(void)pData;(void)stride;
+    ZINK_TRACE("UNIMPL vkWriteAccelerationStructuresPropertiesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureInfoKHR* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyAccelerationStructureKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyAccelerationStructureToMemoryKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyAccelerationStructureToMemoryKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdCopyMemoryToAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
+    (void)commandBuffer;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkCmdCopyMemoryToAccelerationStructureKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL zstub_vkGetAccelerationStructureDeviceAddressKHR(VkDevice device, const VkAccelerationStructureDeviceAddressInfoKHR* pInfo) {
+    (void)device;(void)pInfo;
+    ZINK_TRACE("UNIMPL vkGetAccelerationStructureDeviceAddressKHR\n");
+    return 0;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdWriteAccelerationStructuresPropertiesKHR(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    (void)commandBuffer;(void)accelerationStructureCount;(void)pAccelerationStructures;(void)queryType;(void)queryPool;(void)firstQuery;
+    ZINK_TRACE("UNIMPL vkCmdWriteAccelerationStructuresPropertiesKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetDeviceAccelerationStructureCompatibilityKHR(VkDevice device, const VkAccelerationStructureVersionInfoKHR* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
+    (void)device;(void)pVersionInfo;(void)pCompatibility;
+    ZINK_TRACE("UNIMPL vkGetDeviceAccelerationStructureCompatibilityKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetAccelerationStructureBuildSizesKHR(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkAccelerationStructureBuildGeometryInfoKHR* pBuildInfo, const uint32_t* pMaxPrimitiveCounts, VkAccelerationStructureBuildSizesInfoKHR* pSizeInfo) {
+    (void)device;(void)buildType;(void)pBuildInfo;(void)pMaxPrimitiveCounts;(void)pSizeInfo;
+    ZINK_TRACE("UNIMPL vkGetAccelerationStructureBuildSizesKHR\n");
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdTraceRaysKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, uint32_t width, uint32_t height, uint32_t depth) {
+    (void)commandBuffer;(void)pRaygenShaderBindingTable;(void)pMissShaderBindingTable;(void)pHitShaderBindingTable;(void)pCallableShaderBindingTable;(void)width;(void)height;(void)depth;
+    ZINK_TRACE("UNIMPL vkCmdTraceRaysKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkCreateRayTracingPipelinesKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
+    (void)device;(void)deferredOperation;(void)pipelineCache;(void)createInfoCount;(void)pCreateInfos;(void)pAllocator;(void)pPipelines;
+    ZINK_TRACE("UNIMPL vkCreateRayTracingPipelinesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zstub_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    (void)device;(void)pipeline;(void)firstGroup;(void)groupCount;(void)dataSize;(void)pData;
+    ZINK_TRACE("UNIMPL vkGetRayTracingCaptureReplayShaderGroupHandlesKHR\n");
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, VkDeviceAddress indirectDeviceAddress) {
+    (void)commandBuffer;(void)pRaygenShaderBindingTable;(void)pMissShaderBindingTable;(void)pHitShaderBindingTable;(void)pCallableShaderBindingTable;(void)indirectDeviceAddress;
+    ZINK_TRACE("UNIMPL vkCmdTraceRaysIndirectKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR VkDeviceSize VKAPI_CALL zstub_vkGetRayTracingShaderGroupStackSizeKHR(VkDevice device, VkPipeline pipeline, uint32_t group, VkShaderGroupShaderKHR groupShader) {
+    (void)device;(void)pipeline;(void)group;(void)groupShader;
+    ZINK_TRACE("UNIMPL vkGetRayTracingShaderGroupStackSizeKHR\n");
+    return 0;
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdSetRayTracingPipelineStackSizeKHR(VkCommandBuffer commandBuffer, uint32_t pipelineStackSize) {
+    (void)commandBuffer;(void)pipelineStackSize;
+    ZINK_TRACE("UNIMPL vkCmdSetRayTracingPipelineStackSizeKHR\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksEXT(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
+    (void)commandBuffer;(void)groupCountX;(void)groupCountY;(void)groupCountZ;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksIndirectEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)drawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksIndirectEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdDrawMeshTasksIndirectCountEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    (void)commandBuffer;(void)buffer;(void)offset;(void)countBuffer;(void)countBufferOffset;(void)maxDrawCount;(void)stride;
+    ZINK_TRACE("UNIMPL vkCmdDrawMeshTasksIndirectCountEXT\n");
+    invalid_command(commandBuffer);
+}
+static VKAPI_ATTR void VKAPI_CALL zstub_vkGetRenderingAreaGranularityKHR(VkDevice device, const VkRenderingAreaInfoKHR* pRenderingAreaInfo, VkExtent2D* pGranularity) {
+    (void)device;(void)pRenderingAreaInfo;(void)pGranularity;
+    ZINK_TRACE("UNIMPL vkGetRenderingAreaGranularityKHR\n");
+}
 static PFN_vkCreateInstance zreal_vkCreateInstance;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
     ZINK_TRACE("CALL vkCreateInstance\n");
@@ -1736,6 +3526,1856 @@ static VKAPI_ATTR void VKAPI_CALL ztrace_vkSubmitDebugUtilsMessageEXT(VkInstance
     ZINK_TRACE("CALL vkSubmitDebugUtilsMessageEXT\n");
     zreal_vkSubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, pCallbackData);
 }
+static PFN_vkCmdDrawIndirectCount zreal_vkCmdDrawIndirectCount;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndirectCount\n");
+    zreal_vkCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkCmdDrawIndexedIndirectCount zreal_vkCmdDrawIndexedIndirectCount;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCount\n");
+    zreal_vkCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkCreateRenderPass2 zreal_vkCreateRenderPass2;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
+    ZINK_TRACE("CALL vkCreateRenderPass2\n");
+    return zreal_vkCreateRenderPass2(device, pCreateInfo, pAllocator, pRenderPass);
+}
+static PFN_vkCmdBeginRenderPass2 zreal_vkCmdBeginRenderPass2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderPass2(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
+    ZINK_TRACE("CALL vkCmdBeginRenderPass2\n");
+    zreal_vkCmdBeginRenderPass2(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
+}
+static PFN_vkCmdNextSubpass2 zreal_vkCmdNextSubpass2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdNextSubpass2(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
+    ZINK_TRACE("CALL vkCmdNextSubpass2\n");
+    zreal_vkCmdNextSubpass2(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
+}
+static PFN_vkCmdEndRenderPass2 zreal_vkCmdEndRenderPass2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderPass2(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
+    ZINK_TRACE("CALL vkCmdEndRenderPass2\n");
+    zreal_vkCmdEndRenderPass2(commandBuffer, pSubpassEndInfo);
+}
+static PFN_vkResetQueryPool zreal_vkResetQueryPool;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkResetQueryPool(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
+    ZINK_TRACE("CALL vkResetQueryPool\n");
+    zreal_vkResetQueryPool(device, queryPool, firstQuery, queryCount);
+}
+static PFN_vkGetSemaphoreCounterValue zreal_vkGetSemaphoreCounterValue;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSemaphoreCounterValue(VkDevice device, VkSemaphore semaphore, uint64_t* pValue) {
+    ZINK_TRACE("CALL vkGetSemaphoreCounterValue\n");
+    return zreal_vkGetSemaphoreCounterValue(device, semaphore, pValue);
+}
+static PFN_vkWaitSemaphores zreal_vkWaitSemaphores;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout) {
+    ZINK_TRACE("CALL vkWaitSemaphores\n");
+    return zreal_vkWaitSemaphores(device, pWaitInfo, timeout);
+}
+static PFN_vkSignalSemaphore zreal_vkSignalSemaphore;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
+    ZINK_TRACE("CALL vkSignalSemaphore\n");
+    return zreal_vkSignalSemaphore(device, pSignalInfo);
+}
+static PFN_vkGetBufferDeviceAddress zreal_vkGetBufferDeviceAddress;
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetBufferDeviceAddress\n");
+    return zreal_vkGetBufferDeviceAddress(device, pInfo);
+}
+static PFN_vkGetBufferOpaqueCaptureAddress zreal_vkGetBufferOpaqueCaptureAddress;
+static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetBufferOpaqueCaptureAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddress\n");
+    return zreal_vkGetBufferOpaqueCaptureAddress(device, pInfo);
+}
+static PFN_vkGetDeviceMemoryOpaqueCaptureAddress zreal_vkGetDeviceMemoryOpaqueCaptureAddress;
+static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetDeviceMemoryOpaqueCaptureAddress(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddress\n");
+    return zreal_vkGetDeviceMemoryOpaqueCaptureAddress(device, pInfo);
+}
+static PFN_vkGetPhysicalDeviceToolProperties zreal_vkGetPhysicalDeviceToolProperties;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceToolProperties(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceToolProperties\n");
+    return zreal_vkGetPhysicalDeviceToolProperties(physicalDevice, pToolCount, pToolProperties);
+}
+static PFN_vkCreatePrivateDataSlot zreal_vkCreatePrivateDataSlot;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePrivateDataSlot(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
+    ZINK_TRACE("CALL vkCreatePrivateDataSlot\n");
+    return zreal_vkCreatePrivateDataSlot(device, pCreateInfo, pAllocator, pPrivateDataSlot);
+}
+static PFN_vkDestroyPrivateDataSlot zreal_vkDestroyPrivateDataSlot;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPrivateDataSlot(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyPrivateDataSlot\n");
+    zreal_vkDestroyPrivateDataSlot(device, privateDataSlot, pAllocator);
+}
+static PFN_vkSetPrivateData zreal_vkSetPrivateData;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
+    ZINK_TRACE("CALL vkSetPrivateData\n");
+    return zreal_vkSetPrivateData(device, objectType, objectHandle, privateDataSlot, data);
+}
+static PFN_vkGetPrivateData zreal_vkGetPrivateData;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
+    ZINK_TRACE("CALL vkGetPrivateData\n");
+    zreal_vkGetPrivateData(device, objectType, objectHandle, privateDataSlot, pData);
+}
+static PFN_vkCmdSetEvent2 zreal_vkCmdSetEvent2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetEvent2(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
+    ZINK_TRACE("CALL vkCmdSetEvent2\n");
+    zreal_vkCmdSetEvent2(commandBuffer, event, pDependencyInfo);
+}
+static PFN_vkCmdResetEvent2 zreal_vkCmdResetEvent2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetEvent2(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
+    ZINK_TRACE("CALL vkCmdResetEvent2\n");
+    zreal_vkCmdResetEvent2(commandBuffer, event, stageMask);
+}
+static PFN_vkCmdWaitEvents2 zreal_vkCmdWaitEvents2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWaitEvents2(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
+    ZINK_TRACE("CALL vkCmdWaitEvents2\n");
+    zreal_vkCmdWaitEvents2(commandBuffer, eventCount, pEvents, pDependencyInfos);
+}
+static PFN_vkCmdPipelineBarrier2 zreal_vkCmdPipelineBarrier2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPipelineBarrier2(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
+    ZINK_TRACE("CALL vkCmdPipelineBarrier2\n");
+    zreal_vkCmdPipelineBarrier2(commandBuffer, pDependencyInfo);
+}
+static PFN_vkCmdWriteTimestamp2 zreal_vkCmdWriteTimestamp2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteTimestamp2(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
+    ZINK_TRACE("CALL vkCmdWriteTimestamp2\n");
+    zreal_vkCmdWriteTimestamp2(commandBuffer, stage, queryPool, query);
+}
+static PFN_vkQueueSubmit2 zreal_vkQueueSubmit2;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
+    ZINK_TRACE("CALL vkQueueSubmit2\n");
+    return zreal_vkQueueSubmit2(queue, submitCount, pSubmits, fence);
+}
+static PFN_vkCmdCopyBuffer2 zreal_vkCmdCopyBuffer2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBuffer2(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
+    ZINK_TRACE("CALL vkCmdCopyBuffer2\n");
+    zreal_vkCmdCopyBuffer2(commandBuffer, pCopyBufferInfo);
+}
+static PFN_vkCmdCopyImage2 zreal_vkCmdCopyImage2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImage2(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
+    ZINK_TRACE("CALL vkCmdCopyImage2\n");
+    zreal_vkCmdCopyImage2(commandBuffer, pCopyImageInfo);
+}
+static PFN_vkCmdCopyBufferToImage2 zreal_vkCmdCopyBufferToImage2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBufferToImage2(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
+    ZINK_TRACE("CALL vkCmdCopyBufferToImage2\n");
+    zreal_vkCmdCopyBufferToImage2(commandBuffer, pCopyBufferToImageInfo);
+}
+static PFN_vkCmdCopyImageToBuffer2 zreal_vkCmdCopyImageToBuffer2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImageToBuffer2(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
+    ZINK_TRACE("CALL vkCmdCopyImageToBuffer2\n");
+    zreal_vkCmdCopyImageToBuffer2(commandBuffer, pCopyImageToBufferInfo);
+}
+static PFN_vkCmdBlitImage2 zreal_vkCmdBlitImage2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBlitImage2(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
+    ZINK_TRACE("CALL vkCmdBlitImage2\n");
+    zreal_vkCmdBlitImage2(commandBuffer, pBlitImageInfo);
+}
+static PFN_vkCmdResolveImage2 zreal_vkCmdResolveImage2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResolveImage2(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
+    ZINK_TRACE("CALL vkCmdResolveImage2\n");
+    zreal_vkCmdResolveImage2(commandBuffer, pResolveImageInfo);
+}
+static PFN_vkCmdBeginRendering zreal_vkCmdBeginRendering;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
+    ZINK_TRACE("CALL vkCmdBeginRendering\n");
+    zreal_vkCmdBeginRendering(commandBuffer, pRenderingInfo);
+}
+static PFN_vkCmdEndRendering zreal_vkCmdEndRendering;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRendering(VkCommandBuffer commandBuffer) {
+    ZINK_TRACE("CALL vkCmdEndRendering\n");
+    zreal_vkCmdEndRendering(commandBuffer);
+}
+static PFN_vkCmdSetCullMode zreal_vkCmdSetCullMode;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
+    ZINK_TRACE("CALL vkCmdSetCullMode\n");
+    zreal_vkCmdSetCullMode(commandBuffer, cullMode);
+}
+static PFN_vkCmdSetFrontFace zreal_vkCmdSetFrontFace;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFrontFace(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
+    ZINK_TRACE("CALL vkCmdSetFrontFace\n");
+    zreal_vkCmdSetFrontFace(commandBuffer, frontFace);
+}
+static PFN_vkCmdSetPrimitiveTopology zreal_vkCmdSetPrimitiveTopology;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveTopology(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
+    ZINK_TRACE("CALL vkCmdSetPrimitiveTopology\n");
+    zreal_vkCmdSetPrimitiveTopology(commandBuffer, primitiveTopology);
+}
+static PFN_vkCmdSetViewportWithCount zreal_vkCmdSetViewportWithCount;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
+    ZINK_TRACE("CALL vkCmdSetViewportWithCount\n");
+    zreal_vkCmdSetViewportWithCount(commandBuffer, viewportCount, pViewports);
+}
+static PFN_vkCmdSetScissorWithCount zreal_vkCmdSetScissorWithCount;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
+    ZINK_TRACE("CALL vkCmdSetScissorWithCount\n");
+    zreal_vkCmdSetScissorWithCount(commandBuffer, scissorCount, pScissors);
+}
+static PFN_vkCmdBindVertexBuffers2 zreal_vkCmdBindVertexBuffers2;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindVertexBuffers2(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
+    ZINK_TRACE("CALL vkCmdBindVertexBuffers2\n");
+    zreal_vkCmdBindVertexBuffers2(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes, pStrides);
+}
+static PFN_vkCmdSetDepthTestEnable zreal_vkCmdSetDepthTestEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthTestEnable\n");
+    zreal_vkCmdSetDepthTestEnable(commandBuffer, depthTestEnable);
+}
+static PFN_vkCmdSetDepthWriteEnable zreal_vkCmdSetDepthWriteEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthWriteEnable(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthWriteEnable\n");
+    zreal_vkCmdSetDepthWriteEnable(commandBuffer, depthWriteEnable);
+}
+static PFN_vkCmdSetDepthCompareOp zreal_vkCmdSetDepthCompareOp;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthCompareOp(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
+    ZINK_TRACE("CALL vkCmdSetDepthCompareOp\n");
+    zreal_vkCmdSetDepthCompareOp(commandBuffer, depthCompareOp);
+}
+static PFN_vkCmdSetDepthBoundsTestEnable zreal_vkCmdSetDepthBoundsTestEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBoundsTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnable\n");
+    zreal_vkCmdSetDepthBoundsTestEnable(commandBuffer, depthBoundsTestEnable);
+}
+static PFN_vkCmdSetStencilTestEnable zreal_vkCmdSetStencilTestEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilTestEnable(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetStencilTestEnable\n");
+    zreal_vkCmdSetStencilTestEnable(commandBuffer, stencilTestEnable);
+}
+static PFN_vkCmdSetStencilOp zreal_vkCmdSetStencilOp;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilOp(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
+    ZINK_TRACE("CALL vkCmdSetStencilOp\n");
+    zreal_vkCmdSetStencilOp(commandBuffer, faceMask, failOp, passOp, depthFailOp, compareOp);
+}
+static PFN_vkCmdSetRasterizerDiscardEnable zreal_vkCmdSetRasterizerDiscardEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizerDiscardEnable(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
+    ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnable\n");
+    zreal_vkCmdSetRasterizerDiscardEnable(commandBuffer, rasterizerDiscardEnable);
+}
+static PFN_vkCmdSetDepthBiasEnable zreal_vkCmdSetDepthBiasEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBiasEnable(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthBiasEnable\n");
+    zreal_vkCmdSetDepthBiasEnable(commandBuffer, depthBiasEnable);
+}
+static PFN_vkCmdSetPrimitiveRestartEnable zreal_vkCmdSetPrimitiveRestartEnable;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveRestartEnable(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
+    ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnable\n");
+    zreal_vkCmdSetPrimitiveRestartEnable(commandBuffer, primitiveRestartEnable);
+}
+static PFN_vkGetDeviceBufferMemoryRequirements zreal_vkGetDeviceBufferMemoryRequirements;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceBufferMemoryRequirements(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirements\n");
+    zreal_vkGetDeviceBufferMemoryRequirements(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetDeviceImageMemoryRequirements zreal_vkGetDeviceImageMemoryRequirements;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirements\n");
+    zreal_vkGetDeviceImageMemoryRequirements(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetDeviceImageSparseMemoryRequirements zreal_vkGetDeviceImageSparseMemoryRequirements;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageSparseMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirements\n");
+    zreal_vkGetDeviceImageSparseMemoryRequirements(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
+}
+static PFN_vkDestroySurfaceKHR zreal_vkDestroySurfaceKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroySurfaceKHR\n");
+    zreal_vkDestroySurfaceKHR(instance, surface, pAllocator);
+}
+static PFN_vkGetPhysicalDeviceSurfaceSupportKHR zreal_vkGetPhysicalDeviceSurfaceSupportKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceSupportKHR\n");
+    return zreal_vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, pSupported);
+}
+static PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR zreal_vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilitiesKHR\n");
+    return zreal_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, pSurfaceCapabilities);
+}
+static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR zreal_vkGetPhysicalDeviceSurfaceFormatsKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormatsKHR\n");
+    return zreal_vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats);
+}
+static PFN_vkGetPhysicalDeviceSurfacePresentModesKHR zreal_vkGetPhysicalDeviceSurfacePresentModesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfacePresentModesKHR\n");
+    return zreal_vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, pPresentModeCount, pPresentModes);
+}
+static PFN_vkCreateSwapchainKHR zreal_vkCreateSwapchainKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain) {
+    ZINK_TRACE("CALL vkCreateSwapchainKHR\n");
+    return zreal_vkCreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
+}
+static PFN_vkDestroySwapchainKHR zreal_vkDestroySwapchainKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroySwapchainKHR\n");
+    zreal_vkDestroySwapchainKHR(device, swapchain, pAllocator);
+}
+static PFN_vkGetSwapchainImagesKHR zreal_vkGetSwapchainImagesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages) {
+    ZINK_TRACE("CALL vkGetSwapchainImagesKHR\n");
+    return zreal_vkGetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
+}
+static PFN_vkAcquireNextImageKHR zreal_vkAcquireNextImageKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex) {
+    ZINK_TRACE("CALL vkAcquireNextImageKHR\n");
+    return zreal_vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+}
+static PFN_vkQueuePresentKHR zreal_vkQueuePresentKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
+    ZINK_TRACE("CALL vkQueuePresentKHR\n");
+    return zreal_vkQueuePresentKHR(queue, pPresentInfo);
+}
+static PFN_vkGetDeviceGroupPresentCapabilitiesKHR zreal_vkGetDeviceGroupPresentCapabilitiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceGroupPresentCapabilitiesKHR(VkDevice device, VkDeviceGroupPresentCapabilitiesKHR* pDeviceGroupPresentCapabilities) {
+    ZINK_TRACE("CALL vkGetDeviceGroupPresentCapabilitiesKHR\n");
+    return zreal_vkGetDeviceGroupPresentCapabilitiesKHR(device, pDeviceGroupPresentCapabilities);
+}
+static PFN_vkGetDeviceGroupSurfacePresentModesKHR zreal_vkGetDeviceGroupSurfacePresentModesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceGroupSurfacePresentModesKHR(VkDevice device, VkSurfaceKHR surface, VkDeviceGroupPresentModeFlagsKHR* pModes) {
+    ZINK_TRACE("CALL vkGetDeviceGroupSurfacePresentModesKHR\n");
+    return zreal_vkGetDeviceGroupSurfacePresentModesKHR(device, surface, pModes);
+}
+static PFN_vkGetPhysicalDevicePresentRectanglesKHR zreal_vkGetPhysicalDevicePresentRectanglesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDevicePresentRectanglesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pRectCount, VkRect2D* pRects) {
+    ZINK_TRACE("CALL vkGetPhysicalDevicePresentRectanglesKHR\n");
+    return zreal_vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, pRectCount, pRects);
+}
+static PFN_vkAcquireNextImage2KHR zreal_vkAcquireNextImage2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo, uint32_t* pImageIndex) {
+    ZINK_TRACE("CALL vkAcquireNextImage2KHR\n");
+    return zreal_vkAcquireNextImage2KHR(device, pAcquireInfo, pImageIndex);
+}
+static PFN_vkGetPhysicalDeviceDisplayPropertiesKHR zreal_vkGetPhysicalDeviceDisplayPropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPropertiesKHR* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPropertiesKHR\n");
+    return zreal_vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, pPropertyCount, pProperties);
+}
+static PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR zreal_vkGetPhysicalDeviceDisplayPlanePropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlanePropertiesKHR* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlanePropertiesKHR\n");
+    return zreal_vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, pPropertyCount, pProperties);
+}
+static PFN_vkGetDisplayPlaneSupportedDisplaysKHR zreal_vkGetDisplayPlaneSupportedDisplaysKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneSupportedDisplaysKHR(VkPhysicalDevice physicalDevice, uint32_t planeIndex, uint32_t* pDisplayCount, VkDisplayKHR* pDisplays) {
+    ZINK_TRACE("CALL vkGetDisplayPlaneSupportedDisplaysKHR\n");
+    return zreal_vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, pDisplayCount, pDisplays);
+}
+static PFN_vkGetDisplayModePropertiesKHR zreal_vkGetDisplayModePropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayModePropertiesKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModePropertiesKHR* pProperties) {
+    ZINK_TRACE("CALL vkGetDisplayModePropertiesKHR\n");
+    return zreal_vkGetDisplayModePropertiesKHR(physicalDevice, display, pPropertyCount, pProperties);
+}
+static PFN_vkCreateDisplayModeKHR zreal_vkCreateDisplayModeKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDisplayModeKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, const VkDisplayModeCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDisplayModeKHR* pMode) {
+    ZINK_TRACE("CALL vkCreateDisplayModeKHR\n");
+    return zreal_vkCreateDisplayModeKHR(physicalDevice, display, pCreateInfo, pAllocator, pMode);
+}
+static PFN_vkGetDisplayPlaneCapabilitiesKHR zreal_vkGetDisplayPlaneCapabilitiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkDisplayModeKHR mode, uint32_t planeIndex, VkDisplayPlaneCapabilitiesKHR* pCapabilities) {
+    ZINK_TRACE("CALL vkGetDisplayPlaneCapabilitiesKHR\n");
+    return zreal_vkGetDisplayPlaneCapabilitiesKHR(physicalDevice, mode, planeIndex, pCapabilities);
+}
+static PFN_vkCreateDisplayPlaneSurfaceKHR zreal_vkCreateDisplayPlaneSurfaceKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDisplayPlaneSurfaceKHR(VkInstance instance, const VkDisplaySurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
+    ZINK_TRACE("CALL vkCreateDisplayPlaneSurfaceKHR\n");
+    return zreal_vkCreateDisplayPlaneSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
+}
+static PFN_vkCreateSharedSwapchainsKHR zreal_vkCreateSharedSwapchainsKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSharedSwapchainsKHR(VkDevice device, uint32_t swapchainCount, const VkSwapchainCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchains) {
+    ZINK_TRACE("CALL vkCreateSharedSwapchainsKHR\n");
+    return zreal_vkCreateSharedSwapchainsKHR(device, swapchainCount, pCreateInfos, pAllocator, pSwapchains);
+}
+static PFN_vkCmdBeginRenderingKHR zreal_vkCmdBeginRenderingKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderingKHR(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
+    ZINK_TRACE("CALL vkCmdBeginRenderingKHR\n");
+    zreal_vkCmdBeginRenderingKHR(commandBuffer, pRenderingInfo);
+}
+static PFN_vkCmdEndRenderingKHR zreal_vkCmdEndRenderingKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderingKHR(VkCommandBuffer commandBuffer) {
+    ZINK_TRACE("CALL vkCmdEndRenderingKHR\n");
+    zreal_vkCmdEndRenderingKHR(commandBuffer);
+}
+static PFN_vkGetPhysicalDeviceFeatures2KHR zreal_vkGetPhysicalDeviceFeatures2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures2KHR\n");
+    zreal_vkGetPhysicalDeviceFeatures2KHR(physicalDevice, pFeatures);
+}
+static PFN_vkGetPhysicalDeviceProperties2KHR zreal_vkGetPhysicalDeviceProperties2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceProperties2KHR\n");
+    zreal_vkGetPhysicalDeviceProperties2KHR(physicalDevice, pProperties);
+}
+static PFN_vkGetPhysicalDeviceFormatProperties2KHR zreal_vkGetPhysicalDeviceFormatProperties2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFormatProperties2KHR(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties2* pFormatProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties2KHR\n");
+    zreal_vkGetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, pFormatProperties);
+}
+static PFN_vkGetPhysicalDeviceImageFormatProperties2KHR zreal_vkGetPhysicalDeviceImageFormatProperties2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo, VkImageFormatProperties2* pImageFormatProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties2KHR\n");
+    return zreal_vkGetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, pImageFormatInfo, pImageFormatProperties);
+}
+static PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR zreal_vkGetPhysicalDeviceQueueFamilyProperties2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties2* pQueueFamilyProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties2KHR\n");
+    zreal_vkGetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
+}
+static PFN_vkGetPhysicalDeviceMemoryProperties2KHR zreal_vkGetPhysicalDeviceMemoryProperties2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMemoryProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties2* pMemoryProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties2KHR\n");
+    zreal_vkGetPhysicalDeviceMemoryProperties2KHR(physicalDevice, pMemoryProperties);
+}
+static PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR zreal_vkGetPhysicalDeviceSparseImageFormatProperties2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceSparseImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSparseImageFormatInfo2* pFormatInfo, uint32_t* pPropertyCount, VkSparseImageFormatProperties2* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties2KHR\n");
+    zreal_vkGetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, pFormatInfo, pPropertyCount, pProperties);
+}
+static PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR zreal_vkGetDeviceGroupPeerMemoryFeaturesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceGroupPeerMemoryFeaturesKHR(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags* pPeerMemoryFeatures) {
+    ZINK_TRACE("CALL vkGetDeviceGroupPeerMemoryFeaturesKHR\n");
+    zreal_vkGetDeviceGroupPeerMemoryFeaturesKHR(device, heapIndex, localDeviceIndex, remoteDeviceIndex, pPeerMemoryFeatures);
+}
+static PFN_vkCmdSetDeviceMaskKHR zreal_vkCmdSetDeviceMaskKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDeviceMaskKHR(VkCommandBuffer commandBuffer, uint32_t deviceMask) {
+    ZINK_TRACE("CALL vkCmdSetDeviceMaskKHR\n");
+    zreal_vkCmdSetDeviceMaskKHR(commandBuffer, deviceMask);
+}
+static PFN_vkCmdDispatchBaseKHR zreal_vkCmdDispatchBaseKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDispatchBaseKHR(VkCommandBuffer commandBuffer, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
+    ZINK_TRACE("CALL vkCmdDispatchBaseKHR\n");
+    zreal_vkCmdDispatchBaseKHR(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ);
+}
+static PFN_vkEnumeratePhysicalDeviceGroupsKHR zreal_vkEnumeratePhysicalDeviceGroupsKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDeviceGroupsKHR(VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
+    ZINK_TRACE("CALL vkEnumeratePhysicalDeviceGroupsKHR\n");
+    return zreal_vkEnumeratePhysicalDeviceGroupsKHR(instance, pPhysicalDeviceGroupCount, pPhysicalDeviceGroupProperties);
+}
+static PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR zreal_vkGetPhysicalDeviceExternalBufferPropertiesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalBufferPropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalBufferPropertiesKHR\n");
+    zreal_vkGetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice, pExternalBufferInfo, pExternalBufferProperties);
+}
+static PFN_vkGetMemoryFdKHR zreal_vkGetMemoryFdKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryFdKHR(VkDevice device, const VkMemoryGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    ZINK_TRACE("CALL vkGetMemoryFdKHR\n");
+    return zreal_vkGetMemoryFdKHR(device, pGetFdInfo, pFd);
+}
+static PFN_vkGetMemoryFdPropertiesKHR zreal_vkGetMemoryFdPropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryFdPropertiesKHR(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, int fd, VkMemoryFdPropertiesKHR* pMemoryFdProperties) {
+    ZINK_TRACE("CALL vkGetMemoryFdPropertiesKHR\n");
+    return zreal_vkGetMemoryFdPropertiesKHR(device, handleType, fd, pMemoryFdProperties);
+}
+static PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR zreal_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalSemaphorePropertiesKHR\n");
+    zreal_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice, pExternalSemaphoreInfo, pExternalSemaphoreProperties);
+}
+static PFN_vkImportSemaphoreFdKHR zreal_vkImportSemaphoreFdKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkImportSemaphoreFdKHR(VkDevice device, const VkImportSemaphoreFdInfoKHR* pImportSemaphoreFdInfo) {
+    ZINK_TRACE("CALL vkImportSemaphoreFdKHR\n");
+    return zreal_vkImportSemaphoreFdKHR(device, pImportSemaphoreFdInfo);
+}
+static PFN_vkGetSemaphoreFdKHR zreal_vkGetSemaphoreFdKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSemaphoreFdKHR(VkDevice device, const VkSemaphoreGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    ZINK_TRACE("CALL vkGetSemaphoreFdKHR\n");
+    return zreal_vkGetSemaphoreFdKHR(device, pGetFdInfo, pFd);
+}
+static PFN_vkCmdPushDescriptorSetKHR zreal_vkCmdPushDescriptorSetKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPushDescriptorSetKHR(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites) {
+    ZINK_TRACE("CALL vkCmdPushDescriptorSetKHR\n");
+    zreal_vkCmdPushDescriptorSetKHR(commandBuffer, pipelineBindPoint, layout, set, descriptorWriteCount, pDescriptorWrites);
+}
+static PFN_vkCmdPushDescriptorSetWithTemplateKHR zreal_vkCmdPushDescriptorSetWithTemplateKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPushDescriptorSetWithTemplateKHR(VkCommandBuffer commandBuffer, VkDescriptorUpdateTemplate descriptorUpdateTemplate, VkPipelineLayout layout, uint32_t set, const void* pData) {
+    ZINK_TRACE("CALL vkCmdPushDescriptorSetWithTemplateKHR\n");
+    zreal_vkCmdPushDescriptorSetWithTemplateKHR(commandBuffer, descriptorUpdateTemplate, layout, set, pData);
+}
+static PFN_vkCreateDescriptorUpdateTemplateKHR zreal_vkCreateDescriptorUpdateTemplateKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDescriptorUpdateTemplateKHR(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate) {
+    ZINK_TRACE("CALL vkCreateDescriptorUpdateTemplateKHR\n");
+    return zreal_vkCreateDescriptorUpdateTemplateKHR(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate);
+}
+static PFN_vkDestroyDescriptorUpdateTemplateKHR zreal_vkDestroyDescriptorUpdateTemplateKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDescriptorUpdateTemplateKHR(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyDescriptorUpdateTemplateKHR\n");
+    zreal_vkDestroyDescriptorUpdateTemplateKHR(device, descriptorUpdateTemplate, pAllocator);
+}
+static PFN_vkUpdateDescriptorSetWithTemplateKHR zreal_vkUpdateDescriptorSetWithTemplateKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkUpdateDescriptorSetWithTemplateKHR(VkDevice device, VkDescriptorSet descriptorSet, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const void* pData) {
+    ZINK_TRACE("CALL vkUpdateDescriptorSetWithTemplateKHR\n");
+    zreal_vkUpdateDescriptorSetWithTemplateKHR(device, descriptorSet, descriptorUpdateTemplate, pData);
+}
+static PFN_vkCreateRenderPass2KHR zreal_vkCreateRenderPass2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
+    ZINK_TRACE("CALL vkCreateRenderPass2KHR\n");
+    return zreal_vkCreateRenderPass2KHR(device, pCreateInfo, pAllocator, pRenderPass);
+}
+static PFN_vkCmdBeginRenderPass2KHR zreal_vkCmdBeginRenderPass2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderPass2KHR(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
+    ZINK_TRACE("CALL vkCmdBeginRenderPass2KHR\n");
+    zreal_vkCmdBeginRenderPass2KHR(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
+}
+static PFN_vkCmdNextSubpass2KHR zreal_vkCmdNextSubpass2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdNextSubpass2KHR(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
+    ZINK_TRACE("CALL vkCmdNextSubpass2KHR\n");
+    zreal_vkCmdNextSubpass2KHR(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
+}
+static PFN_vkCmdEndRenderPass2KHR zreal_vkCmdEndRenderPass2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
+    ZINK_TRACE("CALL vkCmdEndRenderPass2KHR\n");
+    zreal_vkCmdEndRenderPass2KHR(commandBuffer, pSubpassEndInfo);
+}
+static PFN_vkGetSwapchainStatusKHR zreal_vkGetSwapchainStatusKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainStatusKHR(VkDevice device, VkSwapchainKHR swapchain) {
+    ZINK_TRACE("CALL vkGetSwapchainStatusKHR\n");
+    return zreal_vkGetSwapchainStatusKHR(device, swapchain);
+}
+static PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR zreal_vkGetPhysicalDeviceExternalFencePropertiesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalFencePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalFencePropertiesKHR\n");
+    zreal_vkGetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice, pExternalFenceInfo, pExternalFenceProperties);
+}
+static PFN_vkImportFenceFdKHR zreal_vkImportFenceFdKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkImportFenceFdKHR(VkDevice device, const VkImportFenceFdInfoKHR* pImportFenceFdInfo) {
+    ZINK_TRACE("CALL vkImportFenceFdKHR\n");
+    return zreal_vkImportFenceFdKHR(device, pImportFenceFdInfo);
+}
+static PFN_vkGetFenceFdKHR zreal_vkGetFenceFdKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetFenceFdKHR(VkDevice device, const VkFenceGetFdInfoKHR* pGetFdInfo, int* pFd) {
+    ZINK_TRACE("CALL vkGetFenceFdKHR\n");
+    return zreal_vkGetFenceFdKHR(device, pGetFdInfo, pFd);
+}
+static PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR zreal_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, uint32_t* pCounterCount, VkPerformanceCounterKHR* pCounters, VkPerformanceCounterDescriptionKHR* pCounterDescriptions) {
+    ZINK_TRACE("CALL vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR\n");
+    return zreal_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDevice, queueFamilyIndex, pCounterCount, pCounters, pCounterDescriptions);
+}
+static PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR zreal_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(VkPhysicalDevice physicalDevice, const VkQueryPoolPerformanceCreateInfoKHR* pPerformanceQueryCreateInfo, uint32_t* pNumPasses) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR\n");
+    zreal_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(physicalDevice, pPerformanceQueryCreateInfo, pNumPasses);
+}
+static PFN_vkAcquireProfilingLockKHR zreal_vkAcquireProfilingLockKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireProfilingLockKHR(VkDevice device, const VkAcquireProfilingLockInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkAcquireProfilingLockKHR\n");
+    return zreal_vkAcquireProfilingLockKHR(device, pInfo);
+}
+static PFN_vkReleaseProfilingLockKHR zreal_vkReleaseProfilingLockKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkReleaseProfilingLockKHR(VkDevice device) {
+    ZINK_TRACE("CALL vkReleaseProfilingLockKHR\n");
+    zreal_vkReleaseProfilingLockKHR(device);
+}
+static PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR zreal_vkGetPhysicalDeviceSurfaceCapabilities2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, VkSurfaceCapabilities2KHR* pSurfaceCapabilities) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2KHR\n");
+    return zreal_vkGetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice, pSurfaceInfo, pSurfaceCapabilities);
+}
+static PFN_vkGetPhysicalDeviceSurfaceFormats2KHR zreal_vkGetPhysicalDeviceSurfaceFormats2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, uint32_t* pSurfaceFormatCount, VkSurfaceFormat2KHR* pSurfaceFormats) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormats2KHR\n");
+    return zreal_vkGetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, pSurfaceInfo, pSurfaceFormatCount, pSurfaceFormats);
+}
+static PFN_vkGetPhysicalDeviceDisplayProperties2KHR zreal_vkGetPhysicalDeviceDisplayProperties2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayProperties2KHR* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayProperties2KHR\n");
+    return zreal_vkGetPhysicalDeviceDisplayProperties2KHR(physicalDevice, pPropertyCount, pProperties);
+}
+static PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR zreal_vkGetPhysicalDeviceDisplayPlaneProperties2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPlaneProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlaneProperties2KHR* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlaneProperties2KHR\n");
+    return zreal_vkGetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice, pPropertyCount, pProperties);
+}
+static PFN_vkGetDisplayModeProperties2KHR zreal_vkGetDisplayModeProperties2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayModeProperties2KHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModeProperties2KHR* pProperties) {
+    ZINK_TRACE("CALL vkGetDisplayModeProperties2KHR\n");
+    return zreal_vkGetDisplayModeProperties2KHR(physicalDevice, display, pPropertyCount, pProperties);
+}
+static PFN_vkGetDisplayPlaneCapabilities2KHR zreal_vkGetDisplayPlaneCapabilities2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkDisplayPlaneInfo2KHR* pDisplayPlaneInfo, VkDisplayPlaneCapabilities2KHR* pCapabilities) {
+    ZINK_TRACE("CALL vkGetDisplayPlaneCapabilities2KHR\n");
+    return zreal_vkGetDisplayPlaneCapabilities2KHR(physicalDevice, pDisplayPlaneInfo, pCapabilities);
+}
+static PFN_vkGetImageMemoryRequirements2KHR zreal_vkGetImageMemoryRequirements2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageMemoryRequirements2KHR(VkDevice device, const VkImageMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetImageMemoryRequirements2KHR\n");
+    zreal_vkGetImageMemoryRequirements2KHR(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetBufferMemoryRequirements2KHR zreal_vkGetBufferMemoryRequirements2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetBufferMemoryRequirements2KHR(VkDevice device, const VkBufferMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetBufferMemoryRequirements2KHR\n");
+    zreal_vkGetBufferMemoryRequirements2KHR(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetImageSparseMemoryRequirements2KHR zreal_vkGetImageSparseMemoryRequirements2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSparseMemoryRequirements2KHR(VkDevice device, const VkImageSparseMemoryRequirementsInfo2* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements2KHR\n");
+    zreal_vkGetImageSparseMemoryRequirements2KHR(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
+}
+static PFN_vkCreateSamplerYcbcrConversionKHR zreal_vkCreateSamplerYcbcrConversionKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSamplerYcbcrConversionKHR(VkDevice device, const VkSamplerYcbcrConversionCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSamplerYcbcrConversion* pYcbcrConversion) {
+    ZINK_TRACE("CALL vkCreateSamplerYcbcrConversionKHR\n");
+    return zreal_vkCreateSamplerYcbcrConversionKHR(device, pCreateInfo, pAllocator, pYcbcrConversion);
+}
+static PFN_vkDestroySamplerYcbcrConversionKHR zreal_vkDestroySamplerYcbcrConversionKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySamplerYcbcrConversionKHR(VkDevice device, VkSamplerYcbcrConversion ycbcrConversion, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroySamplerYcbcrConversionKHR\n");
+    zreal_vkDestroySamplerYcbcrConversionKHR(device, ycbcrConversion, pAllocator);
+}
+static PFN_vkBindBufferMemory2KHR zreal_vkBindBufferMemory2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindBufferMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindBufferMemoryInfo* pBindInfos) {
+    ZINK_TRACE("CALL vkBindBufferMemory2KHR\n");
+    return zreal_vkBindBufferMemory2KHR(device, bindInfoCount, pBindInfos);
+}
+static PFN_vkBindImageMemory2KHR zreal_vkBindImageMemory2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindImageMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo* pBindInfos) {
+    ZINK_TRACE("CALL vkBindImageMemory2KHR\n");
+    return zreal_vkBindImageMemory2KHR(device, bindInfoCount, pBindInfos);
+}
+static PFN_vkGetDescriptorSetLayoutSupportKHR zreal_vkGetDescriptorSetLayoutSupportKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetLayoutSupportKHR(VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, VkDescriptorSetLayoutSupport* pSupport) {
+    ZINK_TRACE("CALL vkGetDescriptorSetLayoutSupportKHR\n");
+    zreal_vkGetDescriptorSetLayoutSupportKHR(device, pCreateInfo, pSupport);
+}
+static PFN_vkCmdDrawIndirectCountKHR zreal_vkCmdDrawIndirectCountKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndirectCountKHR\n");
+    zreal_vkCmdDrawIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkCmdDrawIndexedIndirectCountKHR zreal_vkCmdDrawIndexedIndirectCountKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountKHR\n");
+    zreal_vkCmdDrawIndexedIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR zreal_vkGetPhysicalDeviceFragmentShadingRatesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceFragmentShadingRatesKHR(VkPhysicalDevice physicalDevice, uint32_t* pFragmentShadingRateCount, VkPhysicalDeviceFragmentShadingRateKHR* pFragmentShadingRates) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceFragmentShadingRatesKHR\n");
+    return zreal_vkGetPhysicalDeviceFragmentShadingRatesKHR(physicalDevice, pFragmentShadingRateCount, pFragmentShadingRates);
+}
+static PFN_vkCmdSetFragmentShadingRateKHR zreal_vkCmdSetFragmentShadingRateKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFragmentShadingRateKHR(VkCommandBuffer commandBuffer, const VkExtent2D* pFragmentSize, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
+    ZINK_TRACE("CALL vkCmdSetFragmentShadingRateKHR\n");
+    zreal_vkCmdSetFragmentShadingRateKHR(commandBuffer, pFragmentSize, combinerOps);
+}
+static PFN_vkWaitForPresentKHR zreal_vkWaitForPresentKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitForPresentKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout) {
+    ZINK_TRACE("CALL vkWaitForPresentKHR\n");
+    return zreal_vkWaitForPresentKHR(device, swapchain, presentId, timeout);
+}
+static PFN_vkGetBufferDeviceAddressKHR zreal_vkGetBufferDeviceAddressKHR;
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetBufferDeviceAddressKHR\n");
+    return zreal_vkGetBufferDeviceAddressKHR(device, pInfo);
+}
+static PFN_vkGetBufferOpaqueCaptureAddressKHR zreal_vkGetBufferOpaqueCaptureAddressKHR;
+static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetBufferOpaqueCaptureAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddressKHR\n");
+    return zreal_vkGetBufferOpaqueCaptureAddressKHR(device, pInfo);
+}
+static PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR zreal_vkGetDeviceMemoryOpaqueCaptureAddressKHR;
+static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetDeviceMemoryOpaqueCaptureAddressKHR(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddressKHR\n");
+    return zreal_vkGetDeviceMemoryOpaqueCaptureAddressKHR(device, pInfo);
+}
+static PFN_vkCreateDeferredOperationKHR zreal_vkCreateDeferredOperationKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDeferredOperationKHR(VkDevice device, const VkAllocationCallbacks* pAllocator, VkDeferredOperationKHR* pDeferredOperation) {
+    ZINK_TRACE("CALL vkCreateDeferredOperationKHR\n");
+    return zreal_vkCreateDeferredOperationKHR(device, pAllocator, pDeferredOperation);
+}
+static PFN_vkDestroyDeferredOperationKHR zreal_vkDestroyDeferredOperationKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDeferredOperationKHR(VkDevice device, VkDeferredOperationKHR operation, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyDeferredOperationKHR\n");
+    zreal_vkDestroyDeferredOperationKHR(device, operation, pAllocator);
+}
+static PFN_vkGetDeferredOperationMaxConcurrencyKHR zreal_vkGetDeferredOperationMaxConcurrencyKHR;
+static VKAPI_ATTR uint32_t VKAPI_CALL ztrace_vkGetDeferredOperationMaxConcurrencyKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    ZINK_TRACE("CALL vkGetDeferredOperationMaxConcurrencyKHR\n");
+    return zreal_vkGetDeferredOperationMaxConcurrencyKHR(device, operation);
+}
+static PFN_vkGetDeferredOperationResultKHR zreal_vkGetDeferredOperationResultKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeferredOperationResultKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    ZINK_TRACE("CALL vkGetDeferredOperationResultKHR\n");
+    return zreal_vkGetDeferredOperationResultKHR(device, operation);
+}
+static PFN_vkDeferredOperationJoinKHR zreal_vkDeferredOperationJoinKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDeferredOperationJoinKHR(VkDevice device, VkDeferredOperationKHR operation) {
+    ZINK_TRACE("CALL vkDeferredOperationJoinKHR\n");
+    return zreal_vkDeferredOperationJoinKHR(device, operation);
+}
+static PFN_vkGetPipelineExecutablePropertiesKHR zreal_vkGetPipelineExecutablePropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutablePropertiesKHR(VkDevice device, const VkPipelineInfoKHR* pPipelineInfo, uint32_t* pExecutableCount, VkPipelineExecutablePropertiesKHR* pProperties) {
+    ZINK_TRACE("CALL vkGetPipelineExecutablePropertiesKHR\n");
+    return zreal_vkGetPipelineExecutablePropertiesKHR(device, pPipelineInfo, pExecutableCount, pProperties);
+}
+static PFN_vkGetPipelineExecutableStatisticsKHR zreal_vkGetPipelineExecutableStatisticsKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutableStatisticsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pStatisticCount, VkPipelineExecutableStatisticKHR* pStatistics) {
+    ZINK_TRACE("CALL vkGetPipelineExecutableStatisticsKHR\n");
+    return zreal_vkGetPipelineExecutableStatisticsKHR(device, pExecutableInfo, pStatisticCount, pStatistics);
+}
+static PFN_vkGetPipelineExecutableInternalRepresentationsKHR zreal_vkGetPipelineExecutableInternalRepresentationsKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutableInternalRepresentationsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pInternalRepresentationCount, VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations) {
+    ZINK_TRACE("CALL vkGetPipelineExecutableInternalRepresentationsKHR\n");
+    return zreal_vkGetPipelineExecutableInternalRepresentationsKHR(device, pExecutableInfo, pInternalRepresentationCount, pInternalRepresentations);
+}
+static PFN_vkCmdSetEvent2KHR zreal_vkCmdSetEvent2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
+    ZINK_TRACE("CALL vkCmdSetEvent2KHR\n");
+    zreal_vkCmdSetEvent2KHR(commandBuffer, event, pDependencyInfo);
+}
+static PFN_vkCmdResetEvent2KHR zreal_vkCmdResetEvent2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
+    ZINK_TRACE("CALL vkCmdResetEvent2KHR\n");
+    zreal_vkCmdResetEvent2KHR(commandBuffer, event, stageMask);
+}
+static PFN_vkCmdWaitEvents2KHR zreal_vkCmdWaitEvents2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
+    ZINK_TRACE("CALL vkCmdWaitEvents2KHR\n");
+    zreal_vkCmdWaitEvents2KHR(commandBuffer, eventCount, pEvents, pDependencyInfos);
+}
+static PFN_vkCmdPipelineBarrier2KHR zreal_vkCmdPipelineBarrier2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
+    ZINK_TRACE("CALL vkCmdPipelineBarrier2KHR\n");
+    zreal_vkCmdPipelineBarrier2KHR(commandBuffer, pDependencyInfo);
+}
+static PFN_vkCmdWriteTimestamp2KHR zreal_vkCmdWriteTimestamp2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteTimestamp2KHR(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
+    ZINK_TRACE("CALL vkCmdWriteTimestamp2KHR\n");
+    zreal_vkCmdWriteTimestamp2KHR(commandBuffer, stage, queryPool, query);
+}
+static PFN_vkQueueSubmit2KHR zreal_vkQueueSubmit2KHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
+    ZINK_TRACE("CALL vkQueueSubmit2KHR\n");
+    return zreal_vkQueueSubmit2KHR(queue, submitCount, pSubmits, fence);
+}
+static PFN_vkCmdWriteBufferMarker2AMD zreal_vkCmdWriteBufferMarker2AMD;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
+    ZINK_TRACE("CALL vkCmdWriteBufferMarker2AMD\n");
+    zreal_vkCmdWriteBufferMarker2AMD(commandBuffer, stage, dstBuffer, dstOffset, marker);
+}
+static PFN_vkGetQueueCheckpointData2NV zreal_vkGetQueueCheckpointData2NV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetQueueCheckpointData2NV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointData2NV* pCheckpointData) {
+    ZINK_TRACE("CALL vkGetQueueCheckpointData2NV\n");
+    zreal_vkGetQueueCheckpointData2NV(queue, pCheckpointDataCount, pCheckpointData);
+}
+static PFN_vkCmdCopyBuffer2KHR zreal_vkCmdCopyBuffer2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
+    ZINK_TRACE("CALL vkCmdCopyBuffer2KHR\n");
+    zreal_vkCmdCopyBuffer2KHR(commandBuffer, pCopyBufferInfo);
+}
+static PFN_vkCmdCopyImage2KHR zreal_vkCmdCopyImage2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImage2KHR(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
+    ZINK_TRACE("CALL vkCmdCopyImage2KHR\n");
+    zreal_vkCmdCopyImage2KHR(commandBuffer, pCopyImageInfo);
+}
+static PFN_vkCmdCopyBufferToImage2KHR zreal_vkCmdCopyBufferToImage2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBufferToImage2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
+    ZINK_TRACE("CALL vkCmdCopyBufferToImage2KHR\n");
+    zreal_vkCmdCopyBufferToImage2KHR(commandBuffer, pCopyBufferToImageInfo);
+}
+static PFN_vkCmdCopyImageToBuffer2KHR zreal_vkCmdCopyImageToBuffer2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImageToBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
+    ZINK_TRACE("CALL vkCmdCopyImageToBuffer2KHR\n");
+    zreal_vkCmdCopyImageToBuffer2KHR(commandBuffer, pCopyImageToBufferInfo);
+}
+static PFN_vkCmdBlitImage2KHR zreal_vkCmdBlitImage2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBlitImage2KHR(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
+    ZINK_TRACE("CALL vkCmdBlitImage2KHR\n");
+    zreal_vkCmdBlitImage2KHR(commandBuffer, pBlitImageInfo);
+}
+static PFN_vkCmdResolveImage2KHR zreal_vkCmdResolveImage2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResolveImage2KHR(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
+    ZINK_TRACE("CALL vkCmdResolveImage2KHR\n");
+    zreal_vkCmdResolveImage2KHR(commandBuffer, pResolveImageInfo);
+}
+static PFN_vkCmdTraceRaysIndirect2KHR zreal_vkCmdTraceRaysIndirect2KHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) {
+    ZINK_TRACE("CALL vkCmdTraceRaysIndirect2KHR\n");
+    zreal_vkCmdTraceRaysIndirect2KHR(commandBuffer, indirectDeviceAddress);
+}
+static PFN_vkGetDeviceBufferMemoryRequirementsKHR zreal_vkGetDeviceBufferMemoryRequirementsKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceBufferMemoryRequirementsKHR(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirementsKHR\n");
+    zreal_vkGetDeviceBufferMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetDeviceImageMemoryRequirementsKHR zreal_vkGetDeviceImageMemoryRequirementsKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirementsKHR\n");
+    zreal_vkGetDeviceImageMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkGetDeviceImageSparseMemoryRequirementsKHR zreal_vkGetDeviceImageSparseMemoryRequirementsKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageSparseMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirementsKHR\n");
+    zreal_vkGetDeviceImageSparseMemoryRequirementsKHR(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
+}
+static PFN_vkCreateDebugReportCallbackEXT zreal_vkCreateDebugReportCallbackEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
+    ZINK_TRACE("CALL vkCreateDebugReportCallbackEXT\n");
+    return zreal_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
+}
+static PFN_vkDestroyDebugReportCallbackEXT zreal_vkDestroyDebugReportCallbackEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyDebugReportCallbackEXT\n");
+    zreal_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
+}
+static PFN_vkDebugReportMessageEXT zreal_vkDebugReportMessageEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDebugReportMessageEXT(VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage) {
+    ZINK_TRACE("CALL vkDebugReportMessageEXT\n");
+    zreal_vkDebugReportMessageEXT(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
+}
+static PFN_vkDebugMarkerSetObjectTagEXT zreal_vkDebugMarkerSetObjectTagEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDebugMarkerSetObjectTagEXT(VkDevice device, const VkDebugMarkerObjectTagInfoEXT* pTagInfo) {
+    ZINK_TRACE("CALL vkDebugMarkerSetObjectTagEXT\n");
+    return zreal_vkDebugMarkerSetObjectTagEXT(device, pTagInfo);
+}
+static PFN_vkDebugMarkerSetObjectNameEXT zreal_vkDebugMarkerSetObjectNameEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDebugMarkerSetObjectNameEXT(VkDevice device, const VkDebugMarkerObjectNameInfoEXT* pNameInfo) {
+    ZINK_TRACE("CALL vkDebugMarkerSetObjectNameEXT\n");
+    return zreal_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
+}
+static PFN_vkCmdDebugMarkerBeginEXT zreal_vkCmdDebugMarkerBeginEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerBeginEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
+    ZINK_TRACE("CALL vkCmdDebugMarkerBeginEXT\n");
+    zreal_vkCmdDebugMarkerBeginEXT(commandBuffer, pMarkerInfo);
+}
+static PFN_vkCmdDebugMarkerEndEXT zreal_vkCmdDebugMarkerEndEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerEndEXT(VkCommandBuffer commandBuffer) {
+    ZINK_TRACE("CALL vkCmdDebugMarkerEndEXT\n");
+    zreal_vkCmdDebugMarkerEndEXT(commandBuffer);
+}
+static PFN_vkCmdDebugMarkerInsertEXT zreal_vkCmdDebugMarkerInsertEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerInsertEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
+    ZINK_TRACE("CALL vkCmdDebugMarkerInsertEXT\n");
+    zreal_vkCmdDebugMarkerInsertEXT(commandBuffer, pMarkerInfo);
+}
+static PFN_vkCmdBindTransformFeedbackBuffersEXT zreal_vkCmdBindTransformFeedbackBuffersEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindTransformFeedbackBuffersEXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes) {
+    ZINK_TRACE("CALL vkCmdBindTransformFeedbackBuffersEXT\n");
+    zreal_vkCmdBindTransformFeedbackBuffersEXT(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes);
+}
+static PFN_vkCmdBeginTransformFeedbackEXT zreal_vkCmdBeginTransformFeedbackEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
+    ZINK_TRACE("CALL vkCmdBeginTransformFeedbackEXT\n");
+    zreal_vkCmdBeginTransformFeedbackEXT(commandBuffer, firstCounterBuffer, counterBufferCount, pCounterBuffers, pCounterBufferOffsets);
+}
+static PFN_vkCmdEndTransformFeedbackEXT zreal_vkCmdEndTransformFeedbackEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
+    ZINK_TRACE("CALL vkCmdEndTransformFeedbackEXT\n");
+    zreal_vkCmdEndTransformFeedbackEXT(commandBuffer, firstCounterBuffer, counterBufferCount, pCounterBuffers, pCounterBufferOffsets);
+}
+static PFN_vkCmdBeginQueryIndexedEXT zreal_vkCmdBeginQueryIndexedEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags, uint32_t index) {
+    ZINK_TRACE("CALL vkCmdBeginQueryIndexedEXT\n");
+    zreal_vkCmdBeginQueryIndexedEXT(commandBuffer, queryPool, query, flags, index);
+}
+static PFN_vkCmdEndQueryIndexedEXT zreal_vkCmdEndQueryIndexedEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, uint32_t index) {
+    ZINK_TRACE("CALL vkCmdEndQueryIndexedEXT\n");
+    zreal_vkCmdEndQueryIndexedEXT(commandBuffer, queryPool, query, index);
+}
+static PFN_vkCmdDrawIndirectByteCountEXT zreal_vkCmdDrawIndirectByteCountEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectByteCountEXT(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t firstInstance, VkBuffer counterBuffer, VkDeviceSize counterBufferOffset, uint32_t counterOffset, uint32_t vertexStride) {
+    ZINK_TRACE("CALL vkCmdDrawIndirectByteCountEXT\n");
+    zreal_vkCmdDrawIndirectByteCountEXT(commandBuffer, instanceCount, firstInstance, counterBuffer, counterBufferOffset, counterOffset, vertexStride);
+}
+static PFN_vkCreateCuModuleNVX zreal_vkCreateCuModuleNVX;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateCuModuleNVX(VkDevice device, const VkCuModuleCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuModuleNVX* pModule) {
+    ZINK_TRACE("CALL vkCreateCuModuleNVX\n");
+    return zreal_vkCreateCuModuleNVX(device, pCreateInfo, pAllocator, pModule);
+}
+static PFN_vkCreateCuFunctionNVX zreal_vkCreateCuFunctionNVX;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateCuFunctionNVX(VkDevice device, const VkCuFunctionCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuFunctionNVX* pFunction) {
+    ZINK_TRACE("CALL vkCreateCuFunctionNVX\n");
+    return zreal_vkCreateCuFunctionNVX(device, pCreateInfo, pAllocator, pFunction);
+}
+static PFN_vkDestroyCuModuleNVX zreal_vkDestroyCuModuleNVX;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyCuModuleNVX(VkDevice device, VkCuModuleNVX module, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyCuModuleNVX\n");
+    zreal_vkDestroyCuModuleNVX(device, module, pAllocator);
+}
+static PFN_vkDestroyCuFunctionNVX zreal_vkDestroyCuFunctionNVX;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyCuFunctionNVX(VkDevice device, VkCuFunctionNVX function, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyCuFunctionNVX\n");
+    zreal_vkDestroyCuFunctionNVX(device, function, pAllocator);
+}
+static PFN_vkCmdCuLaunchKernelNVX zreal_vkCmdCuLaunchKernelNVX;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCuLaunchKernelNVX(VkCommandBuffer commandBuffer, const VkCuLaunchInfoNVX* pLaunchInfo) {
+    ZINK_TRACE("CALL vkCmdCuLaunchKernelNVX\n");
+    zreal_vkCmdCuLaunchKernelNVX(commandBuffer, pLaunchInfo);
+}
+static PFN_vkGetImageViewHandleNVX zreal_vkGetImageViewHandleNVX;
+static VKAPI_ATTR uint32_t VKAPI_CALL ztrace_vkGetImageViewHandleNVX(VkDevice device, const VkImageViewHandleInfoNVX* pInfo) {
+    ZINK_TRACE("CALL vkGetImageViewHandleNVX\n");
+    return zreal_vkGetImageViewHandleNVX(device, pInfo);
+}
+static PFN_vkGetImageViewAddressNVX zreal_vkGetImageViewAddressNVX;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetImageViewAddressNVX(VkDevice device, VkImageView imageView, VkImageViewAddressPropertiesNVX* pProperties) {
+    ZINK_TRACE("CALL vkGetImageViewAddressNVX\n");
+    return zreal_vkGetImageViewAddressNVX(device, imageView, pProperties);
+}
+static PFN_vkCmdDrawIndirectCountAMD zreal_vkCmdDrawIndirectCountAMD;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndirectCountAMD\n");
+    zreal_vkCmdDrawIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkCmdDrawIndexedIndirectCountAMD zreal_vkCmdDrawIndexedIndirectCountAMD;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountAMD\n");
+    zreal_vkCmdDrawIndexedIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkGetShaderInfoAMD zreal_vkGetShaderInfoAMD;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetShaderInfoAMD(VkDevice device, VkPipeline pipeline, VkShaderStageFlagBits shaderStage, VkShaderInfoTypeAMD infoType, size_t* pInfoSize, void* pInfo) {
+    ZINK_TRACE("CALL vkGetShaderInfoAMD\n");
+    return zreal_vkGetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, pInfo);
+}
+static PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV zreal_vkGetPhysicalDeviceExternalImageFormatPropertiesNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalImageFormatPropertiesNV(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkExternalMemoryHandleTypeFlagsNV externalHandleType, VkExternalImageFormatPropertiesNV* pExternalImageFormatProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalImageFormatPropertiesNV\n");
+    return zreal_vkGetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice, format, type, tiling, usage, flags, externalHandleType, pExternalImageFormatProperties);
+}
+static PFN_vkCmdBeginConditionalRenderingEXT zreal_vkCmdBeginConditionalRenderingEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginConditionalRenderingEXT(VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT* pConditionalRenderingBegin) {
+    ZINK_TRACE("CALL vkCmdBeginConditionalRenderingEXT\n");
+    zreal_vkCmdBeginConditionalRenderingEXT(commandBuffer, pConditionalRenderingBegin);
+}
+static PFN_vkCmdEndConditionalRenderingEXT zreal_vkCmdEndConditionalRenderingEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndConditionalRenderingEXT(VkCommandBuffer commandBuffer) {
+    ZINK_TRACE("CALL vkCmdEndConditionalRenderingEXT\n");
+    zreal_vkCmdEndConditionalRenderingEXT(commandBuffer);
+}
+static PFN_vkCmdSetViewportWScalingNV zreal_vkCmdSetViewportWScalingNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWScalingNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportWScalingNV* pViewportWScalings) {
+    ZINK_TRACE("CALL vkCmdSetViewportWScalingNV\n");
+    zreal_vkCmdSetViewportWScalingNV(commandBuffer, firstViewport, viewportCount, pViewportWScalings);
+}
+static PFN_vkReleaseDisplayEXT zreal_vkReleaseDisplayEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkReleaseDisplayEXT(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
+    ZINK_TRACE("CALL vkReleaseDisplayEXT\n");
+    return zreal_vkReleaseDisplayEXT(physicalDevice, display);
+}
+static PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT zreal_vkGetPhysicalDeviceSurfaceCapabilities2EXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilities2EXT* pSurfaceCapabilities) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2EXT\n");
+    return zreal_vkGetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice, surface, pSurfaceCapabilities);
+}
+static PFN_vkDisplayPowerControlEXT zreal_vkDisplayPowerControlEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDisplayPowerControlEXT(VkDevice device, VkDisplayKHR display, const VkDisplayPowerInfoEXT* pDisplayPowerInfo) {
+    ZINK_TRACE("CALL vkDisplayPowerControlEXT\n");
+    return zreal_vkDisplayPowerControlEXT(device, display, pDisplayPowerInfo);
+}
+static PFN_vkRegisterDeviceEventEXT zreal_vkRegisterDeviceEventEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkRegisterDeviceEventEXT(VkDevice device, const VkDeviceEventInfoEXT* pDeviceEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
+    ZINK_TRACE("CALL vkRegisterDeviceEventEXT\n");
+    return zreal_vkRegisterDeviceEventEXT(device, pDeviceEventInfo, pAllocator, pFence);
+}
+static PFN_vkRegisterDisplayEventEXT zreal_vkRegisterDisplayEventEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkRegisterDisplayEventEXT(VkDevice device, VkDisplayKHR display, const VkDisplayEventInfoEXT* pDisplayEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
+    ZINK_TRACE("CALL vkRegisterDisplayEventEXT\n");
+    return zreal_vkRegisterDisplayEventEXT(device, display, pDisplayEventInfo, pAllocator, pFence);
+}
+static PFN_vkGetSwapchainCounterEXT zreal_vkGetSwapchainCounterEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainCounterEXT(VkDevice device, VkSwapchainKHR swapchain, VkSurfaceCounterFlagBitsEXT counter, uint64_t* pCounterValue) {
+    ZINK_TRACE("CALL vkGetSwapchainCounterEXT\n");
+    return zreal_vkGetSwapchainCounterEXT(device, swapchain, counter, pCounterValue);
+}
+static PFN_vkGetRefreshCycleDurationGOOGLE zreal_vkGetRefreshCycleDurationGOOGLE;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRefreshCycleDurationGOOGLE(VkDevice device, VkSwapchainKHR swapchain, VkRefreshCycleDurationGOOGLE* pDisplayTimingProperties) {
+    ZINK_TRACE("CALL vkGetRefreshCycleDurationGOOGLE\n");
+    return zreal_vkGetRefreshCycleDurationGOOGLE(device, swapchain, pDisplayTimingProperties);
+}
+static PFN_vkGetPastPresentationTimingGOOGLE zreal_vkGetPastPresentationTimingGOOGLE;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPastPresentationTimingGOOGLE(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pPresentationTimingCount, VkPastPresentationTimingGOOGLE* pPresentationTimings) {
+    ZINK_TRACE("CALL vkGetPastPresentationTimingGOOGLE\n");
+    return zreal_vkGetPastPresentationTimingGOOGLE(device, swapchain, pPresentationTimingCount, pPresentationTimings);
+}
+static PFN_vkCmdSetDiscardRectangleEXT zreal_vkCmdSetDiscardRectangleEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle, uint32_t discardRectangleCount, const VkRect2D* pDiscardRectangles) {
+    ZINK_TRACE("CALL vkCmdSetDiscardRectangleEXT\n");
+    zreal_vkCmdSetDiscardRectangleEXT(commandBuffer, firstDiscardRectangle, discardRectangleCount, pDiscardRectangles);
+}
+static PFN_vkSetHdrMetadataEXT zreal_vkSetHdrMetadataEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, const VkSwapchainKHR* pSwapchains, const VkHdrMetadataEXT* pMetadata) {
+    ZINK_TRACE("CALL vkSetHdrMetadataEXT\n");
+    zreal_vkSetHdrMetadataEXT(device, swapchainCount, pSwapchains, pMetadata);
+}
+static PFN_vkCmdSetSampleLocationsEXT zreal_vkCmdSetSampleLocationsEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleLocationsEXT(VkCommandBuffer commandBuffer, const VkSampleLocationsInfoEXT* pSampleLocationsInfo) {
+    ZINK_TRACE("CALL vkCmdSetSampleLocationsEXT\n");
+    zreal_vkCmdSetSampleLocationsEXT(commandBuffer, pSampleLocationsInfo);
+}
+static PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT zreal_vkGetPhysicalDeviceMultisamplePropertiesEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMultisamplePropertiesEXT(VkPhysicalDevice physicalDevice, VkSampleCountFlagBits samples, VkMultisamplePropertiesEXT* pMultisampleProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceMultisamplePropertiesEXT\n");
+    zreal_vkGetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice, samples, pMultisampleProperties);
+}
+static PFN_vkGetImageDrmFormatModifierPropertiesEXT zreal_vkGetImageDrmFormatModifierPropertiesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetImageDrmFormatModifierPropertiesEXT(VkDevice device, VkImage image, VkImageDrmFormatModifierPropertiesEXT* pProperties) {
+    ZINK_TRACE("CALL vkGetImageDrmFormatModifierPropertiesEXT\n");
+    return zreal_vkGetImageDrmFormatModifierPropertiesEXT(device, image, pProperties);
+}
+static PFN_vkCreateValidationCacheEXT zreal_vkCreateValidationCacheEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateValidationCacheEXT(VkDevice device, const VkValidationCacheCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkValidationCacheEXT* pValidationCache) {
+    ZINK_TRACE("CALL vkCreateValidationCacheEXT\n");
+    return zreal_vkCreateValidationCacheEXT(device, pCreateInfo, pAllocator, pValidationCache);
+}
+static PFN_vkDestroyValidationCacheEXT zreal_vkDestroyValidationCacheEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyValidationCacheEXT(VkDevice device, VkValidationCacheEXT validationCache, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyValidationCacheEXT\n");
+    zreal_vkDestroyValidationCacheEXT(device, validationCache, pAllocator);
+}
+static PFN_vkMergeValidationCachesEXT zreal_vkMergeValidationCachesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkMergeValidationCachesEXT(VkDevice device, VkValidationCacheEXT dstCache, uint32_t srcCacheCount, const VkValidationCacheEXT* pSrcCaches) {
+    ZINK_TRACE("CALL vkMergeValidationCachesEXT\n");
+    return zreal_vkMergeValidationCachesEXT(device, dstCache, srcCacheCount, pSrcCaches);
+}
+static PFN_vkGetValidationCacheDataEXT zreal_vkGetValidationCacheDataEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetValidationCacheDataEXT(VkDevice device, VkValidationCacheEXT validationCache, size_t* pDataSize, void* pData) {
+    ZINK_TRACE("CALL vkGetValidationCacheDataEXT\n");
+    return zreal_vkGetValidationCacheDataEXT(device, validationCache, pDataSize, pData);
+}
+static PFN_vkCmdBindShadingRateImageNV zreal_vkCmdBindShadingRateImageNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindShadingRateImageNV(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
+    ZINK_TRACE("CALL vkCmdBindShadingRateImageNV\n");
+    zreal_vkCmdBindShadingRateImageNV(commandBuffer, imageView, imageLayout);
+}
+static PFN_vkCmdSetViewportShadingRatePaletteNV zreal_vkCmdSetViewportShadingRatePaletteNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportShadingRatePaletteNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkShadingRatePaletteNV* pShadingRatePalettes) {
+    ZINK_TRACE("CALL vkCmdSetViewportShadingRatePaletteNV\n");
+    zreal_vkCmdSetViewportShadingRatePaletteNV(commandBuffer, firstViewport, viewportCount, pShadingRatePalettes);
+}
+static PFN_vkCmdSetCoarseSampleOrderNV zreal_vkCmdSetCoarseSampleOrderNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoarseSampleOrderNV(VkCommandBuffer commandBuffer, VkCoarseSampleOrderTypeNV sampleOrderType, uint32_t customSampleOrderCount, const VkCoarseSampleOrderCustomNV* pCustomSampleOrders) {
+    ZINK_TRACE("CALL vkCmdSetCoarseSampleOrderNV\n");
+    zreal_vkCmdSetCoarseSampleOrderNV(commandBuffer, sampleOrderType, customSampleOrderCount, pCustomSampleOrders);
+}
+static PFN_vkCreateAccelerationStructureNV zreal_vkCreateAccelerationStructureNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateAccelerationStructureNV(VkDevice device, const VkAccelerationStructureCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureNV* pAccelerationStructure) {
+    ZINK_TRACE("CALL vkCreateAccelerationStructureNV\n");
+    return zreal_vkCreateAccelerationStructureNV(device, pCreateInfo, pAllocator, pAccelerationStructure);
+}
+static PFN_vkDestroyAccelerationStructureNV zreal_vkDestroyAccelerationStructureNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyAccelerationStructureNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyAccelerationStructureNV\n");
+    zreal_vkDestroyAccelerationStructureNV(device, accelerationStructure, pAllocator);
+}
+static PFN_vkGetAccelerationStructureMemoryRequirementsNV zreal_vkGetAccelerationStructureMemoryRequirementsNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetAccelerationStructureMemoryRequirementsNV(VkDevice device, const VkAccelerationStructureMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2KHR* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetAccelerationStructureMemoryRequirementsNV\n");
+    zreal_vkGetAccelerationStructureMemoryRequirementsNV(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkBindAccelerationStructureMemoryNV zreal_vkBindAccelerationStructureMemoryNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindAccelerationStructureMemoryNV(VkDevice device, uint32_t bindInfoCount, const VkBindAccelerationStructureMemoryInfoNV* pBindInfos) {
+    ZINK_TRACE("CALL vkBindAccelerationStructureMemoryNV\n");
+    return zreal_vkBindAccelerationStructureMemoryNV(device, bindInfoCount, pBindInfos);
+}
+static PFN_vkCmdBuildAccelerationStructureNV zreal_vkCmdBuildAccelerationStructureNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructureNV(VkCommandBuffer commandBuffer, const VkAccelerationStructureInfoNV* pInfo, VkBuffer instanceData, VkDeviceSize instanceOffset, VkBool32 update, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkBuffer scratch, VkDeviceSize scratchOffset) {
+    ZINK_TRACE("CALL vkCmdBuildAccelerationStructureNV\n");
+    zreal_vkCmdBuildAccelerationStructureNV(commandBuffer, pInfo, instanceData, instanceOffset, update, dst, src, scratch, scratchOffset);
+}
+static PFN_vkCmdCopyAccelerationStructureNV zreal_vkCmdCopyAccelerationStructureNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureNV(VkCommandBuffer commandBuffer, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkCopyAccelerationStructureModeKHR mode) {
+    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureNV\n");
+    zreal_vkCmdCopyAccelerationStructureNV(commandBuffer, dst, src, mode);
+}
+static PFN_vkCmdTraceRaysNV zreal_vkCmdTraceRaysNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysNV(VkCommandBuffer commandBuffer, VkBuffer raygenShaderBindingTableBuffer, VkDeviceSize raygenShaderBindingOffset, VkBuffer missShaderBindingTableBuffer, VkDeviceSize missShaderBindingOffset, VkDeviceSize missShaderBindingStride, VkBuffer hitShaderBindingTableBuffer, VkDeviceSize hitShaderBindingOffset, VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer, VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride, uint32_t width, uint32_t height, uint32_t depth) {
+    ZINK_TRACE("CALL vkCmdTraceRaysNV\n");
+    zreal_vkCmdTraceRaysNV(commandBuffer, raygenShaderBindingTableBuffer, raygenShaderBindingOffset, missShaderBindingTableBuffer, missShaderBindingOffset, missShaderBindingStride, hitShaderBindingTableBuffer, hitShaderBindingOffset, hitShaderBindingStride, callableShaderBindingTableBuffer, callableShaderBindingOffset, callableShaderBindingStride, width, height, depth);
+}
+static PFN_vkCreateRayTracingPipelinesNV zreal_vkCreateRayTracingPipelinesNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRayTracingPipelinesNV(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoNV* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
+    ZINK_TRACE("CALL vkCreateRayTracingPipelinesNV\n");
+    return zreal_vkCreateRayTracingPipelinesNV(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+}
+static PFN_vkGetRayTracingShaderGroupHandlesKHR zreal_vkGetRayTracingShaderGroupHandlesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesKHR\n");
+    return zreal_vkGetRayTracingShaderGroupHandlesKHR(device, pipeline, firstGroup, groupCount, dataSize, pData);
+}
+static PFN_vkGetRayTracingShaderGroupHandlesNV zreal_vkGetRayTracingShaderGroupHandlesNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingShaderGroupHandlesNV(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesNV\n");
+    return zreal_vkGetRayTracingShaderGroupHandlesNV(device, pipeline, firstGroup, groupCount, dataSize, pData);
+}
+static PFN_vkGetAccelerationStructureHandleNV zreal_vkGetAccelerationStructureHandleNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetAccelerationStructureHandleNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, size_t dataSize, void* pData) {
+    ZINK_TRACE("CALL vkGetAccelerationStructureHandleNV\n");
+    return zreal_vkGetAccelerationStructureHandleNV(device, accelerationStructure, dataSize, pData);
+}
+static PFN_vkCmdWriteAccelerationStructuresPropertiesNV zreal_vkCmdWriteAccelerationStructuresPropertiesNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteAccelerationStructuresPropertiesNV(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureNV* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesNV\n");
+    zreal_vkCmdWriteAccelerationStructuresPropertiesNV(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
+}
+static PFN_vkCompileDeferredNV zreal_vkCompileDeferredNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCompileDeferredNV(VkDevice device, VkPipeline pipeline, uint32_t shader) {
+    ZINK_TRACE("CALL vkCompileDeferredNV\n");
+    return zreal_vkCompileDeferredNV(device, pipeline, shader);
+}
+static PFN_vkGetMemoryHostPointerPropertiesEXT zreal_vkGetMemoryHostPointerPropertiesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryHostPointerPropertiesEXT(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties) {
+    ZINK_TRACE("CALL vkGetMemoryHostPointerPropertiesEXT\n");
+    return zreal_vkGetMemoryHostPointerPropertiesEXT(device, handleType, pHostPointer, pMemoryHostPointerProperties);
+}
+static PFN_vkCmdWriteBufferMarkerAMD zreal_vkCmdWriteBufferMarkerAMD;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteBufferMarkerAMD(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
+    ZINK_TRACE("CALL vkCmdWriteBufferMarkerAMD\n");
+    zreal_vkCmdWriteBufferMarkerAMD(commandBuffer, pipelineStage, dstBuffer, dstOffset, marker);
+}
+static PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT zreal_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(VkPhysicalDevice physicalDevice, uint32_t* pTimeDomainCount, VkTimeDomainEXT* pTimeDomains) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceCalibrateableTimeDomainsEXT\n");
+    return zreal_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice, pTimeDomainCount, pTimeDomains);
+}
+static PFN_vkGetCalibratedTimestampsEXT zreal_vkGetCalibratedTimestampsEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetCalibratedTimestampsEXT(VkDevice device, uint32_t timestampCount, const VkCalibratedTimestampInfoEXT* pTimestampInfos, uint64_t* pTimestamps, uint64_t* pMaxDeviation) {
+    ZINK_TRACE("CALL vkGetCalibratedTimestampsEXT\n");
+    return zreal_vkGetCalibratedTimestampsEXT(device, timestampCount, pTimestampInfos, pTimestamps, pMaxDeviation);
+}
+static PFN_vkCmdDrawMeshTasksNV zreal_vkCmdDrawMeshTasksNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksNV\n");
+    zreal_vkCmdDrawMeshTasksNV(commandBuffer, taskCount, firstTask);
+}
+static PFN_vkCmdDrawMeshTasksIndirectNV zreal_vkCmdDrawMeshTasksIndirectNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectNV\n");
+    zreal_vkCmdDrawMeshTasksIndirectNV(commandBuffer, buffer, offset, drawCount, stride);
+}
+static PFN_vkCmdDrawMeshTasksIndirectCountNV zreal_vkCmdDrawMeshTasksIndirectCountNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectCountNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountNV\n");
+    zreal_vkCmdDrawMeshTasksIndirectCountNV(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkCmdSetExclusiveScissorNV zreal_vkCmdSetExclusiveScissorNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetExclusiveScissorNV(VkCommandBuffer commandBuffer, uint32_t firstExclusiveScissor, uint32_t exclusiveScissorCount, const VkRect2D* pExclusiveScissors) {
+    ZINK_TRACE("CALL vkCmdSetExclusiveScissorNV\n");
+    zreal_vkCmdSetExclusiveScissorNV(commandBuffer, firstExclusiveScissor, exclusiveScissorCount, pExclusiveScissors);
+}
+static PFN_vkCmdSetCheckpointNV zreal_vkCmdSetCheckpointNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCheckpointNV(VkCommandBuffer commandBuffer, const void* pCheckpointMarker) {
+    ZINK_TRACE("CALL vkCmdSetCheckpointNV\n");
+    zreal_vkCmdSetCheckpointNV(commandBuffer, pCheckpointMarker);
+}
+static PFN_vkGetQueueCheckpointDataNV zreal_vkGetQueueCheckpointDataNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetQueueCheckpointDataNV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointDataNV* pCheckpointData) {
+    ZINK_TRACE("CALL vkGetQueueCheckpointDataNV\n");
+    zreal_vkGetQueueCheckpointDataNV(queue, pCheckpointDataCount, pCheckpointData);
+}
+static PFN_vkInitializePerformanceApiINTEL zreal_vkInitializePerformanceApiINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkInitializePerformanceApiINTEL(VkDevice device, const VkInitializePerformanceApiInfoINTEL* pInitializeInfo) {
+    ZINK_TRACE("CALL vkInitializePerformanceApiINTEL\n");
+    return zreal_vkInitializePerformanceApiINTEL(device, pInitializeInfo);
+}
+static PFN_vkUninitializePerformanceApiINTEL zreal_vkUninitializePerformanceApiINTEL;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkUninitializePerformanceApiINTEL(VkDevice device) {
+    ZINK_TRACE("CALL vkUninitializePerformanceApiINTEL\n");
+    zreal_vkUninitializePerformanceApiINTEL(device);
+}
+static PFN_vkCmdSetPerformanceMarkerINTEL zreal_vkCmdSetPerformanceMarkerINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceMarkerInfoINTEL* pMarkerInfo) {
+    ZINK_TRACE("CALL vkCmdSetPerformanceMarkerINTEL\n");
+    return zreal_vkCmdSetPerformanceMarkerINTEL(commandBuffer, pMarkerInfo);
+}
+static PFN_vkCmdSetPerformanceStreamMarkerINTEL zreal_vkCmdSetPerformanceStreamMarkerINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceStreamMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceStreamMarkerInfoINTEL* pMarkerInfo) {
+    ZINK_TRACE("CALL vkCmdSetPerformanceStreamMarkerINTEL\n");
+    return zreal_vkCmdSetPerformanceStreamMarkerINTEL(commandBuffer, pMarkerInfo);
+}
+static PFN_vkCmdSetPerformanceOverrideINTEL zreal_vkCmdSetPerformanceOverrideINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceOverrideINTEL(VkCommandBuffer commandBuffer, const VkPerformanceOverrideInfoINTEL* pOverrideInfo) {
+    ZINK_TRACE("CALL vkCmdSetPerformanceOverrideINTEL\n");
+    return zreal_vkCmdSetPerformanceOverrideINTEL(commandBuffer, pOverrideInfo);
+}
+static PFN_vkAcquirePerformanceConfigurationINTEL zreal_vkAcquirePerformanceConfigurationINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquirePerformanceConfigurationINTEL(VkDevice device, const VkPerformanceConfigurationAcquireInfoINTEL* pAcquireInfo, VkPerformanceConfigurationINTEL* pConfiguration) {
+    ZINK_TRACE("CALL vkAcquirePerformanceConfigurationINTEL\n");
+    return zreal_vkAcquirePerformanceConfigurationINTEL(device, pAcquireInfo, pConfiguration);
+}
+static PFN_vkReleasePerformanceConfigurationINTEL zreal_vkReleasePerformanceConfigurationINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkReleasePerformanceConfigurationINTEL(VkDevice device, VkPerformanceConfigurationINTEL configuration) {
+    ZINK_TRACE("CALL vkReleasePerformanceConfigurationINTEL\n");
+    return zreal_vkReleasePerformanceConfigurationINTEL(device, configuration);
+}
+static PFN_vkQueueSetPerformanceConfigurationINTEL zreal_vkQueueSetPerformanceConfigurationINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSetPerformanceConfigurationINTEL(VkQueue queue, VkPerformanceConfigurationINTEL configuration) {
+    ZINK_TRACE("CALL vkQueueSetPerformanceConfigurationINTEL\n");
+    return zreal_vkQueueSetPerformanceConfigurationINTEL(queue, configuration);
+}
+static PFN_vkGetPerformanceParameterINTEL zreal_vkGetPerformanceParameterINTEL;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPerformanceParameterINTEL(VkDevice device, VkPerformanceParameterTypeINTEL parameter, VkPerformanceValueINTEL* pValue) {
+    ZINK_TRACE("CALL vkGetPerformanceParameterINTEL\n");
+    return zreal_vkGetPerformanceParameterINTEL(device, parameter, pValue);
+}
+static PFN_vkSetLocalDimmingAMD zreal_vkSetLocalDimmingAMD;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetLocalDimmingAMD(VkDevice device, VkSwapchainKHR swapChain, VkBool32 localDimmingEnable) {
+    ZINK_TRACE("CALL vkSetLocalDimmingAMD\n");
+    zreal_vkSetLocalDimmingAMD(device, swapChain, localDimmingEnable);
+}
+static PFN_vkGetBufferDeviceAddressEXT zreal_vkGetBufferDeviceAddressEXT;
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddressEXT(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
+    ZINK_TRACE("CALL vkGetBufferDeviceAddressEXT\n");
+    return zreal_vkGetBufferDeviceAddressEXT(device, pInfo);
+}
+static PFN_vkGetPhysicalDeviceToolPropertiesEXT zreal_vkGetPhysicalDeviceToolPropertiesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceToolPropertiesEXT(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceToolPropertiesEXT\n");
+    return zreal_vkGetPhysicalDeviceToolPropertiesEXT(physicalDevice, pToolCount, pToolProperties);
+}
+static PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV zreal_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkCooperativeMatrixPropertiesNV* pProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceCooperativeMatrixPropertiesNV\n");
+    return zreal_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice, pPropertyCount, pProperties);
+}
+static PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV zreal_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(VkPhysicalDevice physicalDevice, uint32_t* pCombinationCount, VkFramebufferMixedSamplesCombinationNV* pCombinations) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV\n");
+    return zreal_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice, pCombinationCount, pCombinations);
+}
+static PFN_vkCreateHeadlessSurfaceEXT zreal_vkCreateHeadlessSurfaceEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateHeadlessSurfaceEXT(VkInstance instance, const VkHeadlessSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
+    ZINK_TRACE("CALL vkCreateHeadlessSurfaceEXT\n");
+    return zreal_vkCreateHeadlessSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
+}
+static PFN_vkCmdSetLineStippleEXT zreal_vkCmdSetLineStippleEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineStippleEXT(VkCommandBuffer commandBuffer, uint32_t lineStippleFactor, uint16_t lineStipplePattern) {
+    ZINK_TRACE("CALL vkCmdSetLineStippleEXT\n");
+    zreal_vkCmdSetLineStippleEXT(commandBuffer, lineStippleFactor, lineStipplePattern);
+}
+static PFN_vkResetQueryPoolEXT zreal_vkResetQueryPoolEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkResetQueryPoolEXT(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
+    ZINK_TRACE("CALL vkResetQueryPoolEXT\n");
+    zreal_vkResetQueryPoolEXT(device, queryPool, firstQuery, queryCount);
+}
+static PFN_vkCmdSetCullModeEXT zreal_vkCmdSetCullModeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCullModeEXT(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
+    ZINK_TRACE("CALL vkCmdSetCullModeEXT\n");
+    zreal_vkCmdSetCullModeEXT(commandBuffer, cullMode);
+}
+static PFN_vkCmdSetFrontFaceEXT zreal_vkCmdSetFrontFaceEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFrontFaceEXT(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
+    ZINK_TRACE("CALL vkCmdSetFrontFaceEXT\n");
+    zreal_vkCmdSetFrontFaceEXT(commandBuffer, frontFace);
+}
+static PFN_vkCmdSetPrimitiveTopologyEXT zreal_vkCmdSetPrimitiveTopologyEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveTopologyEXT(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
+    ZINK_TRACE("CALL vkCmdSetPrimitiveTopologyEXT\n");
+    zreal_vkCmdSetPrimitiveTopologyEXT(commandBuffer, primitiveTopology);
+}
+static PFN_vkCmdSetViewportWithCountEXT zreal_vkCmdSetViewportWithCountEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWithCountEXT(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
+    ZINK_TRACE("CALL vkCmdSetViewportWithCountEXT\n");
+    zreal_vkCmdSetViewportWithCountEXT(commandBuffer, viewportCount, pViewports);
+}
+static PFN_vkCmdSetScissorWithCountEXT zreal_vkCmdSetScissorWithCountEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetScissorWithCountEXT(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
+    ZINK_TRACE("CALL vkCmdSetScissorWithCountEXT\n");
+    zreal_vkCmdSetScissorWithCountEXT(commandBuffer, scissorCount, pScissors);
+}
+static PFN_vkCmdBindVertexBuffers2EXT zreal_vkCmdBindVertexBuffers2EXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindVertexBuffers2EXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
+    ZINK_TRACE("CALL vkCmdBindVertexBuffers2EXT\n");
+    zreal_vkCmdBindVertexBuffers2EXT(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes, pStrides);
+}
+static PFN_vkCmdSetDepthTestEnableEXT zreal_vkCmdSetDepthTestEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthTestEnableEXT\n");
+    zreal_vkCmdSetDepthTestEnableEXT(commandBuffer, depthTestEnable);
+}
+static PFN_vkCmdSetDepthWriteEnableEXT zreal_vkCmdSetDepthWriteEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthWriteEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthWriteEnableEXT\n");
+    zreal_vkCmdSetDepthWriteEnableEXT(commandBuffer, depthWriteEnable);
+}
+static PFN_vkCmdSetDepthCompareOpEXT zreal_vkCmdSetDepthCompareOpEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthCompareOpEXT(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
+    ZINK_TRACE("CALL vkCmdSetDepthCompareOpEXT\n");
+    zreal_vkCmdSetDepthCompareOpEXT(commandBuffer, depthCompareOp);
+}
+static PFN_vkCmdSetDepthBoundsTestEnableEXT zreal_vkCmdSetDepthBoundsTestEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBoundsTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnableEXT\n");
+    zreal_vkCmdSetDepthBoundsTestEnableEXT(commandBuffer, depthBoundsTestEnable);
+}
+static PFN_vkCmdSetStencilTestEnableEXT zreal_vkCmdSetStencilTestEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetStencilTestEnableEXT\n");
+    zreal_vkCmdSetStencilTestEnableEXT(commandBuffer, stencilTestEnable);
+}
+static PFN_vkCmdSetStencilOpEXT zreal_vkCmdSetStencilOpEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilOpEXT(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
+    ZINK_TRACE("CALL vkCmdSetStencilOpEXT\n");
+    zreal_vkCmdSetStencilOpEXT(commandBuffer, faceMask, failOp, passOp, depthFailOp, compareOp);
+}
+static PFN_vkGetGeneratedCommandsMemoryRequirementsNV zreal_vkGetGeneratedCommandsMemoryRequirementsNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetGeneratedCommandsMemoryRequirementsNV(VkDevice device, const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
+    ZINK_TRACE("CALL vkGetGeneratedCommandsMemoryRequirementsNV\n");
+    zreal_vkGetGeneratedCommandsMemoryRequirementsNV(device, pInfo, pMemoryRequirements);
+}
+static PFN_vkCmdPreprocessGeneratedCommandsNV zreal_vkCmdPreprocessGeneratedCommandsNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPreprocessGeneratedCommandsNV(VkCommandBuffer commandBuffer, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
+    ZINK_TRACE("CALL vkCmdPreprocessGeneratedCommandsNV\n");
+    zreal_vkCmdPreprocessGeneratedCommandsNV(commandBuffer, pGeneratedCommandsInfo);
+}
+static PFN_vkCmdExecuteGeneratedCommandsNV zreal_vkCmdExecuteGeneratedCommandsNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdExecuteGeneratedCommandsNV(VkCommandBuffer commandBuffer, VkBool32 isPreprocessed, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
+    ZINK_TRACE("CALL vkCmdExecuteGeneratedCommandsNV\n");
+    zreal_vkCmdExecuteGeneratedCommandsNV(commandBuffer, isPreprocessed, pGeneratedCommandsInfo);
+}
+static PFN_vkCmdBindPipelineShaderGroupNV zreal_vkCmdBindPipelineShaderGroupNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindPipelineShaderGroupNV(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline, uint32_t groupIndex) {
+    ZINK_TRACE("CALL vkCmdBindPipelineShaderGroupNV\n");
+    zreal_vkCmdBindPipelineShaderGroupNV(commandBuffer, pipelineBindPoint, pipeline, groupIndex);
+}
+static PFN_vkCreateIndirectCommandsLayoutNV zreal_vkCreateIndirectCommandsLayoutNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateIndirectCommandsLayoutNV(VkDevice device, const VkIndirectCommandsLayoutCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkIndirectCommandsLayoutNV* pIndirectCommandsLayout) {
+    ZINK_TRACE("CALL vkCreateIndirectCommandsLayoutNV\n");
+    return zreal_vkCreateIndirectCommandsLayoutNV(device, pCreateInfo, pAllocator, pIndirectCommandsLayout);
+}
+static PFN_vkDestroyIndirectCommandsLayoutNV zreal_vkDestroyIndirectCommandsLayoutNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyIndirectCommandsLayoutNV(VkDevice device, VkIndirectCommandsLayoutNV indirectCommandsLayout, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyIndirectCommandsLayoutNV\n");
+    zreal_vkDestroyIndirectCommandsLayoutNV(device, indirectCommandsLayout, pAllocator);
+}
+static PFN_vkAcquireDrmDisplayEXT zreal_vkAcquireDrmDisplayEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, VkDisplayKHR display) {
+    ZINK_TRACE("CALL vkAcquireDrmDisplayEXT\n");
+    return zreal_vkAcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+}
+static PFN_vkGetDrmDisplayEXT zreal_vkGetDrmDisplayEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, uint32_t connectorId, VkDisplayKHR* display) {
+    ZINK_TRACE("CALL vkGetDrmDisplayEXT\n");
+    return zreal_vkGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+}
+static PFN_vkCreatePrivateDataSlotEXT zreal_vkCreatePrivateDataSlotEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePrivateDataSlotEXT(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
+    ZINK_TRACE("CALL vkCreatePrivateDataSlotEXT\n");
+    return zreal_vkCreatePrivateDataSlotEXT(device, pCreateInfo, pAllocator, pPrivateDataSlot);
+}
+static PFN_vkDestroyPrivateDataSlotEXT zreal_vkDestroyPrivateDataSlotEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPrivateDataSlotEXT(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyPrivateDataSlotEXT\n");
+    zreal_vkDestroyPrivateDataSlotEXT(device, privateDataSlot, pAllocator);
+}
+static PFN_vkSetPrivateDataEXT zreal_vkSetPrivateDataEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
+    ZINK_TRACE("CALL vkSetPrivateDataEXT\n");
+    return zreal_vkSetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, data);
+}
+static PFN_vkGetPrivateDataEXT zreal_vkGetPrivateDataEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
+    ZINK_TRACE("CALL vkGetPrivateDataEXT\n");
+    zreal_vkGetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
+}
+static PFN_vkCmdSetFragmentShadingRateEnumNV zreal_vkCmdSetFragmentShadingRateEnumNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFragmentShadingRateEnumNV(VkCommandBuffer commandBuffer, VkFragmentShadingRateNV shadingRate, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
+    ZINK_TRACE("CALL vkCmdSetFragmentShadingRateEnumNV\n");
+    zreal_vkCmdSetFragmentShadingRateEnumNV(commandBuffer, shadingRate, combinerOps);
+}
+static PFN_vkGetImageSubresourceLayout2EXT zreal_vkGetImageSubresourceLayout2EXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSubresourceLayout2EXT(VkDevice device, VkImage image, const VkImageSubresource2EXT* pSubresource, VkSubresourceLayout2EXT* pLayout) {
+    ZINK_TRACE("CALL vkGetImageSubresourceLayout2EXT\n");
+    zreal_vkGetImageSubresourceLayout2EXT(device, image, pSubresource, pLayout);
+}
+static PFN_vkGetDeviceFaultInfoEXT zreal_vkGetDeviceFaultInfoEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceFaultInfoEXT(VkDevice device, VkDeviceFaultCountsEXT* pFaultCounts, VkDeviceFaultInfoEXT* pFaultInfo) {
+    ZINK_TRACE("CALL vkGetDeviceFaultInfoEXT\n");
+    return zreal_vkGetDeviceFaultInfoEXT(device, pFaultCounts, pFaultInfo);
+}
+static PFN_vkAcquireWinrtDisplayNV zreal_vkAcquireWinrtDisplayNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireWinrtDisplayNV(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
+    ZINK_TRACE("CALL vkAcquireWinrtDisplayNV\n");
+    return zreal_vkAcquireWinrtDisplayNV(physicalDevice, display);
+}
+static PFN_vkGetWinrtDisplayNV zreal_vkGetWinrtDisplayNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetWinrtDisplayNV(VkPhysicalDevice physicalDevice, uint32_t deviceRelativeId, VkDisplayKHR* pDisplay) {
+    ZINK_TRACE("CALL vkGetWinrtDisplayNV\n");
+    return zreal_vkGetWinrtDisplayNV(physicalDevice, deviceRelativeId, pDisplay);
+}
+static PFN_vkCmdSetVertexInputEXT zreal_vkCmdSetVertexInputEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetVertexInputEXT(VkCommandBuffer commandBuffer, uint32_t vertexBindingDescriptionCount, const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions, uint32_t vertexAttributeDescriptionCount, const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) {
+    ZINK_TRACE("CALL vkCmdSetVertexInputEXT\n");
+    zreal_vkCmdSetVertexInputEXT(commandBuffer, vertexBindingDescriptionCount, pVertexBindingDescriptions, vertexAttributeDescriptionCount, pVertexAttributeDescriptions);
+}
+static PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI zreal_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(VkDevice device, VkRenderPass renderpass, VkExtent2D* pMaxWorkgroupSize) {
+    ZINK_TRACE("CALL vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI\n");
+    return zreal_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize);
+}
+static PFN_vkCmdSubpassShadingHUAWEI zreal_vkCmdSubpassShadingHUAWEI;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSubpassShadingHUAWEI(VkCommandBuffer commandBuffer) {
+    ZINK_TRACE("CALL vkCmdSubpassShadingHUAWEI\n");
+    zreal_vkCmdSubpassShadingHUAWEI(commandBuffer);
+}
+static PFN_vkCmdBindInvocationMaskHUAWEI zreal_vkCmdBindInvocationMaskHUAWEI;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindInvocationMaskHUAWEI(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
+    ZINK_TRACE("CALL vkCmdBindInvocationMaskHUAWEI\n");
+    zreal_vkCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
+}
+static PFN_vkGetMemoryRemoteAddressNV zreal_vkGetMemoryRemoteAddressNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryRemoteAddressNV(VkDevice device, const VkMemoryGetRemoteAddressInfoNV* pMemoryGetRemoteAddressInfo, VkRemoteAddressNV* pAddress) {
+    ZINK_TRACE("CALL vkGetMemoryRemoteAddressNV\n");
+    return zreal_vkGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress);
+}
+static PFN_vkGetPipelinePropertiesEXT zreal_vkGetPipelinePropertiesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelinePropertiesEXT(VkDevice device, const VkPipelineInfoEXT* pPipelineInfo, VkBaseOutStructure* pPipelineProperties) {
+    ZINK_TRACE("CALL vkGetPipelinePropertiesEXT\n");
+    return zreal_vkGetPipelinePropertiesEXT(device, pPipelineInfo, pPipelineProperties);
+}
+static PFN_vkCmdSetPatchControlPointsEXT zreal_vkCmdSetPatchControlPointsEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPatchControlPointsEXT(VkCommandBuffer commandBuffer, uint32_t patchControlPoints) {
+    ZINK_TRACE("CALL vkCmdSetPatchControlPointsEXT\n");
+    zreal_vkCmdSetPatchControlPointsEXT(commandBuffer, patchControlPoints);
+}
+static PFN_vkCmdSetRasterizerDiscardEnableEXT zreal_vkCmdSetRasterizerDiscardEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizerDiscardEnableEXT(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
+    ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnableEXT\n");
+    zreal_vkCmdSetRasterizerDiscardEnableEXT(commandBuffer, rasterizerDiscardEnable);
+}
+static PFN_vkCmdSetDepthBiasEnableEXT zreal_vkCmdSetDepthBiasEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBiasEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthBiasEnableEXT\n");
+    zreal_vkCmdSetDepthBiasEnableEXT(commandBuffer, depthBiasEnable);
+}
+static PFN_vkCmdSetLogicOpEXT zreal_vkCmdSetLogicOpEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLogicOpEXT(VkCommandBuffer commandBuffer, VkLogicOp logicOp) {
+    ZINK_TRACE("CALL vkCmdSetLogicOpEXT\n");
+    zreal_vkCmdSetLogicOpEXT(commandBuffer, logicOp);
+}
+static PFN_vkCmdSetPrimitiveRestartEnableEXT zreal_vkCmdSetPrimitiveRestartEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveRestartEnableEXT(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
+    ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnableEXT\n");
+    zreal_vkCmdSetPrimitiveRestartEnableEXT(commandBuffer, primitiveRestartEnable);
+}
+static PFN_vkCmdSetColorWriteEnableEXT zreal_vkCmdSetColorWriteEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorWriteEnableEXT(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkBool32* pColorWriteEnables) {
+    ZINK_TRACE("CALL vkCmdSetColorWriteEnableEXT\n");
+    zreal_vkCmdSetColorWriteEnableEXT(commandBuffer, attachmentCount, pColorWriteEnables);
+}
+static PFN_vkCmdDrawMultiEXT zreal_vkCmdDrawMultiEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawMultiEXT\n");
+    zreal_vkCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+}
+static PFN_vkCmdDrawMultiIndexedEXT zreal_vkCmdDrawMultiIndexedEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawIndexedInfoEXT* pIndexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride, const int32_t* pVertexOffset) {
+    ZINK_TRACE("CALL vkCmdDrawMultiIndexedEXT\n");
+    zreal_vkCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
+}
+static PFN_vkCreateMicromapEXT zreal_vkCreateMicromapEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateMicromapEXT(VkDevice device, const VkMicromapCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkMicromapEXT* pMicromap) {
+    ZINK_TRACE("CALL vkCreateMicromapEXT\n");
+    return zreal_vkCreateMicromapEXT(device, pCreateInfo, pAllocator, pMicromap);
+}
+static PFN_vkDestroyMicromapEXT zreal_vkDestroyMicromapEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyMicromapEXT(VkDevice device, VkMicromapEXT micromap, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyMicromapEXT\n");
+    zreal_vkDestroyMicromapEXT(device, micromap, pAllocator);
+}
+static PFN_vkCmdBuildMicromapsEXT zreal_vkCmdBuildMicromapsEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildMicromapsEXT(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
+    ZINK_TRACE("CALL vkCmdBuildMicromapsEXT\n");
+    zreal_vkCmdBuildMicromapsEXT(commandBuffer, infoCount, pInfos);
+}
+static PFN_vkBuildMicromapsEXT zreal_vkBuildMicromapsEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBuildMicromapsEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
+    ZINK_TRACE("CALL vkBuildMicromapsEXT\n");
+    return zreal_vkBuildMicromapsEXT(device, deferredOperation, infoCount, pInfos);
+}
+static PFN_vkCopyMicromapEXT zreal_vkCopyMicromapEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCopyMicromapEXT\n");
+    return zreal_vkCopyMicromapEXT(device, deferredOperation, pInfo);
+}
+static PFN_vkCopyMicromapToMemoryEXT zreal_vkCopyMicromapToMemoryEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMicromapToMemoryEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCopyMicromapToMemoryEXT\n");
+    return zreal_vkCopyMicromapToMemoryEXT(device, deferredOperation, pInfo);
+}
+static PFN_vkCopyMemoryToMicromapEXT zreal_vkCopyMemoryToMicromapEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMemoryToMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCopyMemoryToMicromapEXT\n");
+    return zreal_vkCopyMemoryToMicromapEXT(device, deferredOperation, pInfo);
+}
+static PFN_vkWriteMicromapsPropertiesEXT zreal_vkWriteMicromapsPropertiesEXT;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWriteMicromapsPropertiesEXT(VkDevice device, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
+    ZINK_TRACE("CALL vkWriteMicromapsPropertiesEXT\n");
+    return zreal_vkWriteMicromapsPropertiesEXT(device, micromapCount, pMicromaps, queryType, dataSize, pData, stride);
+}
+static PFN_vkCmdCopyMicromapEXT zreal_vkCmdCopyMicromapEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyMicromapEXT\n");
+    zreal_vkCmdCopyMicromapEXT(commandBuffer, pInfo);
+}
+static PFN_vkCmdCopyMicromapToMemoryEXT zreal_vkCmdCopyMicromapToMemoryEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMicromapToMemoryEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyMicromapToMemoryEXT\n");
+    zreal_vkCmdCopyMicromapToMemoryEXT(commandBuffer, pInfo);
+}
+static PFN_vkCmdCopyMemoryToMicromapEXT zreal_vkCmdCopyMemoryToMicromapEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMemoryToMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyMemoryToMicromapEXT\n");
+    zreal_vkCmdCopyMemoryToMicromapEXT(commandBuffer, pInfo);
+}
+static PFN_vkCmdWriteMicromapsPropertiesEXT zreal_vkCmdWriteMicromapsPropertiesEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteMicromapsPropertiesEXT(VkCommandBuffer commandBuffer, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    ZINK_TRACE("CALL vkCmdWriteMicromapsPropertiesEXT\n");
+    zreal_vkCmdWriteMicromapsPropertiesEXT(commandBuffer, micromapCount, pMicromaps, queryType, queryPool, firstQuery);
+}
+static PFN_vkGetDeviceMicromapCompatibilityEXT zreal_vkGetDeviceMicromapCompatibilityEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceMicromapCompatibilityEXT(VkDevice device, const VkMicromapVersionInfoEXT* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
+    ZINK_TRACE("CALL vkGetDeviceMicromapCompatibilityEXT\n");
+    zreal_vkGetDeviceMicromapCompatibilityEXT(device, pVersionInfo, pCompatibility);
+}
+static PFN_vkGetMicromapBuildSizesEXT zreal_vkGetMicromapBuildSizesEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetMicromapBuildSizesEXT(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkMicromapBuildInfoEXT* pBuildInfo, VkMicromapBuildSizesInfoEXT* pSizeInfo) {
+    ZINK_TRACE("CALL vkGetMicromapBuildSizesEXT\n");
+    zreal_vkGetMicromapBuildSizesEXT(device, buildType, pBuildInfo, pSizeInfo);
+}
+static PFN_vkSetDeviceMemoryPriorityEXT zreal_vkSetDeviceMemoryPriorityEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetDeviceMemoryPriorityEXT(VkDevice device, VkDeviceMemory memory, float priority) {
+    ZINK_TRACE("CALL vkSetDeviceMemoryPriorityEXT\n");
+    zreal_vkSetDeviceMemoryPriorityEXT(device, memory, priority);
+}
+static PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE zreal_vkGetDescriptorSetLayoutHostMappingInfoVALVE;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetLayoutHostMappingInfoVALVE(VkDevice device, const VkDescriptorSetBindingReferenceVALVE* pBindingReference, VkDescriptorSetLayoutHostMappingInfoVALVE* pHostMapping) {
+    ZINK_TRACE("CALL vkGetDescriptorSetLayoutHostMappingInfoVALVE\n");
+    zreal_vkGetDescriptorSetLayoutHostMappingInfoVALVE(device, pBindingReference, pHostMapping);
+}
+static PFN_vkGetDescriptorSetHostMappingVALVE zreal_vkGetDescriptorSetHostMappingVALVE;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetHostMappingVALVE(VkDevice device, VkDescriptorSet descriptorSet, void** ppData) {
+    ZINK_TRACE("CALL vkGetDescriptorSetHostMappingVALVE\n");
+    zreal_vkGetDescriptorSetHostMappingVALVE(device, descriptorSet, ppData);
+}
+static PFN_vkCmdSetTessellationDomainOriginEXT zreal_vkCmdSetTessellationDomainOriginEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetTessellationDomainOriginEXT(VkCommandBuffer commandBuffer, VkTessellationDomainOrigin domainOrigin) {
+    ZINK_TRACE("CALL vkCmdSetTessellationDomainOriginEXT\n");
+    zreal_vkCmdSetTessellationDomainOriginEXT(commandBuffer, domainOrigin);
+}
+static PFN_vkCmdSetDepthClampEnableEXT zreal_vkCmdSetDepthClampEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClampEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClampEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthClampEnableEXT\n");
+    zreal_vkCmdSetDepthClampEnableEXT(commandBuffer, depthClampEnable);
+}
+static PFN_vkCmdSetPolygonModeEXT zreal_vkCmdSetPolygonModeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPolygonModeEXT(VkCommandBuffer commandBuffer, VkPolygonMode polygonMode) {
+    ZINK_TRACE("CALL vkCmdSetPolygonModeEXT\n");
+    zreal_vkCmdSetPolygonModeEXT(commandBuffer, polygonMode);
+}
+static PFN_vkCmdSetRasterizationSamplesEXT zreal_vkCmdSetRasterizationSamplesEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizationSamplesEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits rasterizationSamples) {
+    ZINK_TRACE("CALL vkCmdSetRasterizationSamplesEXT\n");
+    zreal_vkCmdSetRasterizationSamplesEXT(commandBuffer, rasterizationSamples);
+}
+static PFN_vkCmdSetSampleMaskEXT zreal_vkCmdSetSampleMaskEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleMaskEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits samples, const VkSampleMask* pSampleMask) {
+    ZINK_TRACE("CALL vkCmdSetSampleMaskEXT\n");
+    zreal_vkCmdSetSampleMaskEXT(commandBuffer, samples, pSampleMask);
+}
+static PFN_vkCmdSetAlphaToCoverageEnableEXT zreal_vkCmdSetAlphaToCoverageEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetAlphaToCoverageEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToCoverageEnable) {
+    ZINK_TRACE("CALL vkCmdSetAlphaToCoverageEnableEXT\n");
+    zreal_vkCmdSetAlphaToCoverageEnableEXT(commandBuffer, alphaToCoverageEnable);
+}
+static PFN_vkCmdSetAlphaToOneEnableEXT zreal_vkCmdSetAlphaToOneEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetAlphaToOneEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToOneEnable) {
+    ZINK_TRACE("CALL vkCmdSetAlphaToOneEnableEXT\n");
+    zreal_vkCmdSetAlphaToOneEnableEXT(commandBuffer, alphaToOneEnable);
+}
+static PFN_vkCmdSetLogicOpEnableEXT zreal_vkCmdSetLogicOpEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLogicOpEnableEXT(VkCommandBuffer commandBuffer, VkBool32 logicOpEnable) {
+    ZINK_TRACE("CALL vkCmdSetLogicOpEnableEXT\n");
+    zreal_vkCmdSetLogicOpEnableEXT(commandBuffer, logicOpEnable);
+}
+static PFN_vkCmdSetColorBlendEnableEXT zreal_vkCmdSetColorBlendEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendEnableEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkBool32* pColorBlendEnables) {
+    ZINK_TRACE("CALL vkCmdSetColorBlendEnableEXT\n");
+    zreal_vkCmdSetColorBlendEnableEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendEnables);
+}
+static PFN_vkCmdSetColorBlendEquationEXT zreal_vkCmdSetColorBlendEquationEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendEquationEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendEquationEXT* pColorBlendEquations) {
+    ZINK_TRACE("CALL vkCmdSetColorBlendEquationEXT\n");
+    zreal_vkCmdSetColorBlendEquationEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendEquations);
+}
+static PFN_vkCmdSetColorWriteMaskEXT zreal_vkCmdSetColorWriteMaskEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorWriteMaskEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorComponentFlags* pColorWriteMasks) {
+    ZINK_TRACE("CALL vkCmdSetColorWriteMaskEXT\n");
+    zreal_vkCmdSetColorWriteMaskEXT(commandBuffer, firstAttachment, attachmentCount, pColorWriteMasks);
+}
+static PFN_vkCmdSetRasterizationStreamEXT zreal_vkCmdSetRasterizationStreamEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizationStreamEXT(VkCommandBuffer commandBuffer, uint32_t rasterizationStream) {
+    ZINK_TRACE("CALL vkCmdSetRasterizationStreamEXT\n");
+    zreal_vkCmdSetRasterizationStreamEXT(commandBuffer, rasterizationStream);
+}
+static PFN_vkCmdSetConservativeRasterizationModeEXT zreal_vkCmdSetConservativeRasterizationModeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetConservativeRasterizationModeEXT(VkCommandBuffer commandBuffer, VkConservativeRasterizationModeEXT conservativeRasterizationMode) {
+    ZINK_TRACE("CALL vkCmdSetConservativeRasterizationModeEXT\n");
+    zreal_vkCmdSetConservativeRasterizationModeEXT(commandBuffer, conservativeRasterizationMode);
+}
+static PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT zreal_vkCmdSetExtraPrimitiveOverestimationSizeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetExtraPrimitiveOverestimationSizeEXT(VkCommandBuffer commandBuffer, float extraPrimitiveOverestimationSize) {
+    ZINK_TRACE("CALL vkCmdSetExtraPrimitiveOverestimationSizeEXT\n");
+    zreal_vkCmdSetExtraPrimitiveOverestimationSizeEXT(commandBuffer, extraPrimitiveOverestimationSize);
+}
+static PFN_vkCmdSetDepthClipEnableEXT zreal_vkCmdSetDepthClipEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClipEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClipEnable) {
+    ZINK_TRACE("CALL vkCmdSetDepthClipEnableEXT\n");
+    zreal_vkCmdSetDepthClipEnableEXT(commandBuffer, depthClipEnable);
+}
+static PFN_vkCmdSetSampleLocationsEnableEXT zreal_vkCmdSetSampleLocationsEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleLocationsEnableEXT(VkCommandBuffer commandBuffer, VkBool32 sampleLocationsEnable) {
+    ZINK_TRACE("CALL vkCmdSetSampleLocationsEnableEXT\n");
+    zreal_vkCmdSetSampleLocationsEnableEXT(commandBuffer, sampleLocationsEnable);
+}
+static PFN_vkCmdSetColorBlendAdvancedEXT zreal_vkCmdSetColorBlendAdvancedEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendAdvancedEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendAdvancedEXT* pColorBlendAdvanced) {
+    ZINK_TRACE("CALL vkCmdSetColorBlendAdvancedEXT\n");
+    zreal_vkCmdSetColorBlendAdvancedEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendAdvanced);
+}
+static PFN_vkCmdSetProvokingVertexModeEXT zreal_vkCmdSetProvokingVertexModeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetProvokingVertexModeEXT(VkCommandBuffer commandBuffer, VkProvokingVertexModeEXT provokingVertexMode) {
+    ZINK_TRACE("CALL vkCmdSetProvokingVertexModeEXT\n");
+    zreal_vkCmdSetProvokingVertexModeEXT(commandBuffer, provokingVertexMode);
+}
+static PFN_vkCmdSetLineRasterizationModeEXT zreal_vkCmdSetLineRasterizationModeEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineRasterizationModeEXT(VkCommandBuffer commandBuffer, VkLineRasterizationModeEXT lineRasterizationMode) {
+    ZINK_TRACE("CALL vkCmdSetLineRasterizationModeEXT\n");
+    zreal_vkCmdSetLineRasterizationModeEXT(commandBuffer, lineRasterizationMode);
+}
+static PFN_vkCmdSetLineStippleEnableEXT zreal_vkCmdSetLineStippleEnableEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineStippleEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stippledLineEnable) {
+    ZINK_TRACE("CALL vkCmdSetLineStippleEnableEXT\n");
+    zreal_vkCmdSetLineStippleEnableEXT(commandBuffer, stippledLineEnable);
+}
+static PFN_vkCmdSetDepthClipNegativeOneToOneEXT zreal_vkCmdSetDepthClipNegativeOneToOneEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClipNegativeOneToOneEXT(VkCommandBuffer commandBuffer, VkBool32 negativeOneToOne) {
+    ZINK_TRACE("CALL vkCmdSetDepthClipNegativeOneToOneEXT\n");
+    zreal_vkCmdSetDepthClipNegativeOneToOneEXT(commandBuffer, negativeOneToOne);
+}
+static PFN_vkCmdSetViewportWScalingEnableNV zreal_vkCmdSetViewportWScalingEnableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWScalingEnableNV(VkCommandBuffer commandBuffer, VkBool32 viewportWScalingEnable) {
+    ZINK_TRACE("CALL vkCmdSetViewportWScalingEnableNV\n");
+    zreal_vkCmdSetViewportWScalingEnableNV(commandBuffer, viewportWScalingEnable);
+}
+static PFN_vkCmdSetViewportSwizzleNV zreal_vkCmdSetViewportSwizzleNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportSwizzleNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportSwizzleNV* pViewportSwizzles) {
+    ZINK_TRACE("CALL vkCmdSetViewportSwizzleNV\n");
+    zreal_vkCmdSetViewportSwizzleNV(commandBuffer, firstViewport, viewportCount, pViewportSwizzles);
+}
+static PFN_vkCmdSetCoverageToColorEnableNV zreal_vkCmdSetCoverageToColorEnableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageToColorEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageToColorEnable) {
+    ZINK_TRACE("CALL vkCmdSetCoverageToColorEnableNV\n");
+    zreal_vkCmdSetCoverageToColorEnableNV(commandBuffer, coverageToColorEnable);
+}
+static PFN_vkCmdSetCoverageToColorLocationNV zreal_vkCmdSetCoverageToColorLocationNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageToColorLocationNV(VkCommandBuffer commandBuffer, uint32_t coverageToColorLocation) {
+    ZINK_TRACE("CALL vkCmdSetCoverageToColorLocationNV\n");
+    zreal_vkCmdSetCoverageToColorLocationNV(commandBuffer, coverageToColorLocation);
+}
+static PFN_vkCmdSetCoverageModulationModeNV zreal_vkCmdSetCoverageModulationModeNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationModeNV(VkCommandBuffer commandBuffer, VkCoverageModulationModeNV coverageModulationMode) {
+    ZINK_TRACE("CALL vkCmdSetCoverageModulationModeNV\n");
+    zreal_vkCmdSetCoverageModulationModeNV(commandBuffer, coverageModulationMode);
+}
+static PFN_vkCmdSetCoverageModulationTableEnableNV zreal_vkCmdSetCoverageModulationTableEnableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationTableEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageModulationTableEnable) {
+    ZINK_TRACE("CALL vkCmdSetCoverageModulationTableEnableNV\n");
+    zreal_vkCmdSetCoverageModulationTableEnableNV(commandBuffer, coverageModulationTableEnable);
+}
+static PFN_vkCmdSetCoverageModulationTableNV zreal_vkCmdSetCoverageModulationTableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationTableNV(VkCommandBuffer commandBuffer, uint32_t coverageModulationTableCount, const float* pCoverageModulationTable) {
+    ZINK_TRACE("CALL vkCmdSetCoverageModulationTableNV\n");
+    zreal_vkCmdSetCoverageModulationTableNV(commandBuffer, coverageModulationTableCount, pCoverageModulationTable);
+}
+static PFN_vkCmdSetShadingRateImageEnableNV zreal_vkCmdSetShadingRateImageEnableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetShadingRateImageEnableNV(VkCommandBuffer commandBuffer, VkBool32 shadingRateImageEnable) {
+    ZINK_TRACE("CALL vkCmdSetShadingRateImageEnableNV\n");
+    zreal_vkCmdSetShadingRateImageEnableNV(commandBuffer, shadingRateImageEnable);
+}
+static PFN_vkCmdSetRepresentativeFragmentTestEnableNV zreal_vkCmdSetRepresentativeFragmentTestEnableNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRepresentativeFragmentTestEnableNV(VkCommandBuffer commandBuffer, VkBool32 representativeFragmentTestEnable) {
+    ZINK_TRACE("CALL vkCmdSetRepresentativeFragmentTestEnableNV\n");
+    zreal_vkCmdSetRepresentativeFragmentTestEnableNV(commandBuffer, representativeFragmentTestEnable);
+}
+static PFN_vkCmdSetCoverageReductionModeNV zreal_vkCmdSetCoverageReductionModeNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageReductionModeNV(VkCommandBuffer commandBuffer, VkCoverageReductionModeNV coverageReductionMode) {
+    ZINK_TRACE("CALL vkCmdSetCoverageReductionModeNV\n");
+    zreal_vkCmdSetCoverageReductionModeNV(commandBuffer, coverageReductionMode);
+}
+static PFN_vkGetShaderModuleIdentifierEXT zreal_vkGetShaderModuleIdentifierEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetShaderModuleIdentifierEXT(VkDevice device, VkShaderModule shaderModule, VkShaderModuleIdentifierEXT* pIdentifier) {
+    ZINK_TRACE("CALL vkGetShaderModuleIdentifierEXT\n");
+    zreal_vkGetShaderModuleIdentifierEXT(device, shaderModule, pIdentifier);
+}
+static PFN_vkGetShaderModuleCreateInfoIdentifierEXT zreal_vkGetShaderModuleCreateInfoIdentifierEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetShaderModuleCreateInfoIdentifierEXT(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo, VkShaderModuleIdentifierEXT* pIdentifier) {
+    ZINK_TRACE("CALL vkGetShaderModuleCreateInfoIdentifierEXT\n");
+    zreal_vkGetShaderModuleCreateInfoIdentifierEXT(device, pCreateInfo, pIdentifier);
+}
+static PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV zreal_vkGetPhysicalDeviceOpticalFlowImageFormatsNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceOpticalFlowImageFormatsNV(VkPhysicalDevice physicalDevice, const VkOpticalFlowImageFormatInfoNV* pOpticalFlowImageFormatInfo, uint32_t* pFormatCount, VkOpticalFlowImageFormatPropertiesNV* pImageFormatProperties) {
+    ZINK_TRACE("CALL vkGetPhysicalDeviceOpticalFlowImageFormatsNV\n");
+    return zreal_vkGetPhysicalDeviceOpticalFlowImageFormatsNV(physicalDevice, pOpticalFlowImageFormatInfo, pFormatCount, pImageFormatProperties);
+}
+static PFN_vkCreateOpticalFlowSessionNV zreal_vkCreateOpticalFlowSessionNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateOpticalFlowSessionNV(VkDevice device, const VkOpticalFlowSessionCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkOpticalFlowSessionNV* pSession) {
+    ZINK_TRACE("CALL vkCreateOpticalFlowSessionNV\n");
+    return zreal_vkCreateOpticalFlowSessionNV(device, pCreateInfo, pAllocator, pSession);
+}
+static PFN_vkDestroyOpticalFlowSessionNV zreal_vkDestroyOpticalFlowSessionNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyOpticalFlowSessionNV(VkDevice device, VkOpticalFlowSessionNV session, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyOpticalFlowSessionNV\n");
+    zreal_vkDestroyOpticalFlowSessionNV(device, session, pAllocator);
+}
+static PFN_vkBindOpticalFlowSessionImageNV zreal_vkBindOpticalFlowSessionImageNV;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindOpticalFlowSessionImageNV(VkDevice device, VkOpticalFlowSessionNV session, VkOpticalFlowSessionBindingPointNV bindingPoint, VkImageView view, VkImageLayout layout) {
+    ZINK_TRACE("CALL vkBindOpticalFlowSessionImageNV\n");
+    return zreal_vkBindOpticalFlowSessionImageNV(device, session, bindingPoint, view, layout);
+}
+static PFN_vkCmdOpticalFlowExecuteNV zreal_vkCmdOpticalFlowExecuteNV;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdOpticalFlowExecuteNV(VkCommandBuffer commandBuffer, VkOpticalFlowSessionNV session, const VkOpticalFlowExecuteInfoNV* pExecuteInfo) {
+    ZINK_TRACE("CALL vkCmdOpticalFlowExecuteNV\n");
+    zreal_vkCmdOpticalFlowExecuteNV(commandBuffer, session, pExecuteInfo);
+}
+static PFN_vkGetFramebufferTilePropertiesQCOM zreal_vkGetFramebufferTilePropertiesQCOM;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetFramebufferTilePropertiesQCOM(VkDevice device, VkFramebuffer framebuffer, uint32_t* pPropertiesCount, VkTilePropertiesQCOM* pProperties) {
+    ZINK_TRACE("CALL vkGetFramebufferTilePropertiesQCOM\n");
+    return zreal_vkGetFramebufferTilePropertiesQCOM(device, framebuffer, pPropertiesCount, pProperties);
+}
+static PFN_vkGetDynamicRenderingTilePropertiesQCOM zreal_vkGetDynamicRenderingTilePropertiesQCOM;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDynamicRenderingTilePropertiesQCOM(VkDevice device, const VkRenderingInfo* pRenderingInfo, VkTilePropertiesQCOM* pProperties) {
+    ZINK_TRACE("CALL vkGetDynamicRenderingTilePropertiesQCOM\n");
+    return zreal_vkGetDynamicRenderingTilePropertiesQCOM(device, pRenderingInfo, pProperties);
+}
+static PFN_vkCreateAccelerationStructureKHR zreal_vkCreateAccelerationStructureKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateAccelerationStructureKHR(VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureKHR* pAccelerationStructure) {
+    ZINK_TRACE("CALL vkCreateAccelerationStructureKHR\n");
+    return zreal_vkCreateAccelerationStructureKHR(device, pCreateInfo, pAllocator, pAccelerationStructure);
+}
+static PFN_vkDestroyAccelerationStructureKHR zreal_vkDestroyAccelerationStructureKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyAccelerationStructureKHR(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks* pAllocator) {
+    ZINK_TRACE("CALL vkDestroyAccelerationStructureKHR\n");
+    zreal_vkDestroyAccelerationStructureKHR(device, accelerationStructure, pAllocator);
+}
+static PFN_vkCmdBuildAccelerationStructuresKHR zreal_vkCmdBuildAccelerationStructuresKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructuresKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
+    ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresKHR\n");
+    zreal_vkCmdBuildAccelerationStructuresKHR(commandBuffer, infoCount, pInfos, ppBuildRangeInfos);
+}
+static PFN_vkCmdBuildAccelerationStructuresIndirectKHR zreal_vkCmdBuildAccelerationStructuresIndirectKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructuresIndirectKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkDeviceAddress* pIndirectDeviceAddresses, const uint32_t* pIndirectStrides, const uint32_t* const* ppMaxPrimitiveCounts) {
+    ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresIndirectKHR\n");
+    zreal_vkCmdBuildAccelerationStructuresIndirectKHR(commandBuffer, infoCount, pInfos, pIndirectDeviceAddresses, pIndirectStrides, ppMaxPrimitiveCounts);
+}
+static PFN_vkBuildAccelerationStructuresKHR zreal_vkBuildAccelerationStructuresKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBuildAccelerationStructuresKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
+    ZINK_TRACE("CALL vkBuildAccelerationStructuresKHR\n");
+    return zreal_vkBuildAccelerationStructuresKHR(device, deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
+}
+static PFN_vkCopyAccelerationStructureKHR zreal_vkCopyAccelerationStructureKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCopyAccelerationStructureKHR\n");
+    return zreal_vkCopyAccelerationStructureKHR(device, deferredOperation, pInfo);
+}
+static PFN_vkCopyAccelerationStructureToMemoryKHR zreal_vkCopyAccelerationStructureToMemoryKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyAccelerationStructureToMemoryKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCopyAccelerationStructureToMemoryKHR\n");
+    return zreal_vkCopyAccelerationStructureToMemoryKHR(device, deferredOperation, pInfo);
+}
+static PFN_vkCopyMemoryToAccelerationStructureKHR zreal_vkCopyMemoryToAccelerationStructureKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMemoryToAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCopyMemoryToAccelerationStructureKHR\n");
+    return zreal_vkCopyMemoryToAccelerationStructureKHR(device, deferredOperation, pInfo);
+}
+static PFN_vkWriteAccelerationStructuresPropertiesKHR zreal_vkWriteAccelerationStructuresPropertiesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWriteAccelerationStructuresPropertiesKHR(VkDevice device, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
+    ZINK_TRACE("CALL vkWriteAccelerationStructuresPropertiesKHR\n");
+    return zreal_vkWriteAccelerationStructuresPropertiesKHR(device, accelerationStructureCount, pAccelerationStructures, queryType, dataSize, pData, stride);
+}
+static PFN_vkCmdCopyAccelerationStructureKHR zreal_vkCmdCopyAccelerationStructureKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureKHR\n");
+    zreal_vkCmdCopyAccelerationStructureKHR(commandBuffer, pInfo);
+}
+static PFN_vkCmdCopyAccelerationStructureToMemoryKHR zreal_vkCmdCopyAccelerationStructureToMemoryKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureToMemoryKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureToMemoryKHR\n");
+    zreal_vkCmdCopyAccelerationStructureToMemoryKHR(commandBuffer, pInfo);
+}
+static PFN_vkCmdCopyMemoryToAccelerationStructureKHR zreal_vkCmdCopyMemoryToAccelerationStructureKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMemoryToAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkCmdCopyMemoryToAccelerationStructureKHR\n");
+    zreal_vkCmdCopyMemoryToAccelerationStructureKHR(commandBuffer, pInfo);
+}
+static PFN_vkGetAccelerationStructureDeviceAddressKHR zreal_vkGetAccelerationStructureDeviceAddressKHR;
+static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetAccelerationStructureDeviceAddressKHR(VkDevice device, const VkAccelerationStructureDeviceAddressInfoKHR* pInfo) {
+    ZINK_TRACE("CALL vkGetAccelerationStructureDeviceAddressKHR\n");
+    return zreal_vkGetAccelerationStructureDeviceAddressKHR(device, pInfo);
+}
+static PFN_vkCmdWriteAccelerationStructuresPropertiesKHR zreal_vkCmdWriteAccelerationStructuresPropertiesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteAccelerationStructuresPropertiesKHR(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
+    ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesKHR\n");
+    zreal_vkCmdWriteAccelerationStructuresPropertiesKHR(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
+}
+static PFN_vkGetDeviceAccelerationStructureCompatibilityKHR zreal_vkGetDeviceAccelerationStructureCompatibilityKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceAccelerationStructureCompatibilityKHR(VkDevice device, const VkAccelerationStructureVersionInfoKHR* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
+    ZINK_TRACE("CALL vkGetDeviceAccelerationStructureCompatibilityKHR\n");
+    zreal_vkGetDeviceAccelerationStructureCompatibilityKHR(device, pVersionInfo, pCompatibility);
+}
+static PFN_vkGetAccelerationStructureBuildSizesKHR zreal_vkGetAccelerationStructureBuildSizesKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetAccelerationStructureBuildSizesKHR(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkAccelerationStructureBuildGeometryInfoKHR* pBuildInfo, const uint32_t* pMaxPrimitiveCounts, VkAccelerationStructureBuildSizesInfoKHR* pSizeInfo) {
+    ZINK_TRACE("CALL vkGetAccelerationStructureBuildSizesKHR\n");
+    zreal_vkGetAccelerationStructureBuildSizesKHR(device, buildType, pBuildInfo, pMaxPrimitiveCounts, pSizeInfo);
+}
+static PFN_vkCmdTraceRaysKHR zreal_vkCmdTraceRaysKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, uint32_t width, uint32_t height, uint32_t depth) {
+    ZINK_TRACE("CALL vkCmdTraceRaysKHR\n");
+    zreal_vkCmdTraceRaysKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, width, height, depth);
+}
+static PFN_vkCreateRayTracingPipelinesKHR zreal_vkCreateRayTracingPipelinesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRayTracingPipelinesKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
+    ZINK_TRACE("CALL vkCreateRayTracingPipelinesKHR\n");
+    return zreal_vkCreateRayTracingPipelinesKHR(device, deferredOperation, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+}
+static PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR zreal_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR;
+static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
+    ZINK_TRACE("CALL vkGetRayTracingCaptureReplayShaderGroupHandlesKHR\n");
+    return zreal_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(device, pipeline, firstGroup, groupCount, dataSize, pData);
+}
+static PFN_vkCmdTraceRaysIndirectKHR zreal_vkCmdTraceRaysIndirectKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, VkDeviceAddress indirectDeviceAddress) {
+    ZINK_TRACE("CALL vkCmdTraceRaysIndirectKHR\n");
+    zreal_vkCmdTraceRaysIndirectKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, indirectDeviceAddress);
+}
+static PFN_vkGetRayTracingShaderGroupStackSizeKHR zreal_vkGetRayTracingShaderGroupStackSizeKHR;
+static VKAPI_ATTR VkDeviceSize VKAPI_CALL ztrace_vkGetRayTracingShaderGroupStackSizeKHR(VkDevice device, VkPipeline pipeline, uint32_t group, VkShaderGroupShaderKHR groupShader) {
+    ZINK_TRACE("CALL vkGetRayTracingShaderGroupStackSizeKHR\n");
+    return zreal_vkGetRayTracingShaderGroupStackSizeKHR(device, pipeline, group, groupShader);
+}
+static PFN_vkCmdSetRayTracingPipelineStackSizeKHR zreal_vkCmdSetRayTracingPipelineStackSizeKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRayTracingPipelineStackSizeKHR(VkCommandBuffer commandBuffer, uint32_t pipelineStackSize) {
+    ZINK_TRACE("CALL vkCmdSetRayTracingPipelineStackSizeKHR\n");
+    zreal_vkCmdSetRayTracingPipelineStackSizeKHR(commandBuffer, pipelineStackSize);
+}
+static PFN_vkCmdDrawMeshTasksEXT zreal_vkCmdDrawMeshTasksEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksEXT(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksEXT\n");
+    zreal_vkCmdDrawMeshTasksEXT(commandBuffer, groupCountX, groupCountY, groupCountZ);
+}
+static PFN_vkCmdDrawMeshTasksIndirectEXT zreal_vkCmdDrawMeshTasksIndirectEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectEXT\n");
+    zreal_vkCmdDrawMeshTasksIndirectEXT(commandBuffer, buffer, offset, drawCount, stride);
+}
+static PFN_vkCmdDrawMeshTasksIndirectCountEXT zreal_vkCmdDrawMeshTasksIndirectCountEXT;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectCountEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
+    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountEXT\n");
+    zreal_vkCmdDrawMeshTasksIndirectCountEXT(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+static PFN_vkGetRenderingAreaGranularityKHR zreal_vkGetRenderingAreaGranularityKHR;
+static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetRenderingAreaGranularityKHR(VkDevice device, const VkRenderingAreaInfoKHR* pRenderingAreaInfo, VkExtent2D* pGranularity) {
+    ZINK_TRACE("CALL vkGetRenderingAreaGranularityKHR\n");
+    zreal_vkGetRenderingAreaGranularityKHR(device, pRenderingAreaInfo, pGranularity);
+}
 static PFN_vkVoidFunction zink_trace_proc(const char *name, PFN_vkVoidFunction real) {
     if (!real) return NULL;
     if (!strcmp(name, "vkCreateInstance")) { zreal_vkCreateInstance = (PFN_vkCreateInstance)real; return (PFN_vkVoidFunction)ztrace_vkCreateInstance; }
@@ -1918,6 +5558,376 @@ static PFN_vkVoidFunction zink_trace_proc(const char *name, PFN_vkVoidFunction r
     if (!strcmp(name, "vkCreateDebugUtilsMessengerEXT")) { zreal_vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreateDebugUtilsMessengerEXT; }
     if (!strcmp(name, "vkDestroyDebugUtilsMessengerEXT")) { zreal_vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)real; return (PFN_vkVoidFunction)ztrace_vkDestroyDebugUtilsMessengerEXT; }
     if (!strcmp(name, "vkSubmitDebugUtilsMessageEXT")) { zreal_vkSubmitDebugUtilsMessageEXT = (PFN_vkSubmitDebugUtilsMessageEXT)real; return (PFN_vkVoidFunction)ztrace_vkSubmitDebugUtilsMessageEXT; }
+    if (!strcmp(name, "vkCmdDrawIndirectCount")) { zreal_vkCmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndirectCount; }
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCount")) { zreal_vkCmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndexedIndirectCount; }
+    if (!strcmp(name, "vkCreateRenderPass2")) { zreal_vkCreateRenderPass2 = (PFN_vkCreateRenderPass2)real; return (PFN_vkVoidFunction)ztrace_vkCreateRenderPass2; }
+    if (!strcmp(name, "vkCmdBeginRenderPass2")) { zreal_vkCmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginRenderPass2; }
+    if (!strcmp(name, "vkCmdNextSubpass2")) { zreal_vkCmdNextSubpass2 = (PFN_vkCmdNextSubpass2)real; return (PFN_vkVoidFunction)ztrace_vkCmdNextSubpass2; }
+    if (!strcmp(name, "vkCmdEndRenderPass2")) { zreal_vkCmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndRenderPass2; }
+    if (!strcmp(name, "vkResetQueryPool")) { zreal_vkResetQueryPool = (PFN_vkResetQueryPool)real; return (PFN_vkVoidFunction)ztrace_vkResetQueryPool; }
+    if (!strcmp(name, "vkGetSemaphoreCounterValue")) { zreal_vkGetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)real; return (PFN_vkVoidFunction)ztrace_vkGetSemaphoreCounterValue; }
+    if (!strcmp(name, "vkWaitSemaphores")) { zreal_vkWaitSemaphores = (PFN_vkWaitSemaphores)real; return (PFN_vkVoidFunction)ztrace_vkWaitSemaphores; }
+    if (!strcmp(name, "vkSignalSemaphore")) { zreal_vkSignalSemaphore = (PFN_vkSignalSemaphore)real; return (PFN_vkVoidFunction)ztrace_vkSignalSemaphore; }
+    if (!strcmp(name, "vkGetBufferDeviceAddress")) { zreal_vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferDeviceAddress; }
+    if (!strcmp(name, "vkGetBufferOpaqueCaptureAddress")) { zreal_vkGetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferOpaqueCaptureAddress; }
+    if (!strcmp(name, "vkGetDeviceMemoryOpaqueCaptureAddress")) { zreal_vkGetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceMemoryOpaqueCaptureAddress; }
+    if (!strcmp(name, "vkGetPhysicalDeviceToolProperties")) { zreal_vkGetPhysicalDeviceToolProperties = (PFN_vkGetPhysicalDeviceToolProperties)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceToolProperties; }
+    if (!strcmp(name, "vkCreatePrivateDataSlot")) { zreal_vkCreatePrivateDataSlot = (PFN_vkCreatePrivateDataSlot)real; return (PFN_vkVoidFunction)ztrace_vkCreatePrivateDataSlot; }
+    if (!strcmp(name, "vkDestroyPrivateDataSlot")) { zreal_vkDestroyPrivateDataSlot = (PFN_vkDestroyPrivateDataSlot)real; return (PFN_vkVoidFunction)ztrace_vkDestroyPrivateDataSlot; }
+    if (!strcmp(name, "vkSetPrivateData")) { zreal_vkSetPrivateData = (PFN_vkSetPrivateData)real; return (PFN_vkVoidFunction)ztrace_vkSetPrivateData; }
+    if (!strcmp(name, "vkGetPrivateData")) { zreal_vkGetPrivateData = (PFN_vkGetPrivateData)real; return (PFN_vkVoidFunction)ztrace_vkGetPrivateData; }
+    if (!strcmp(name, "vkCmdSetEvent2")) { zreal_vkCmdSetEvent2 = (PFN_vkCmdSetEvent2)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetEvent2; }
+    if (!strcmp(name, "vkCmdResetEvent2")) { zreal_vkCmdResetEvent2 = (PFN_vkCmdResetEvent2)real; return (PFN_vkVoidFunction)ztrace_vkCmdResetEvent2; }
+    if (!strcmp(name, "vkCmdWaitEvents2")) { zreal_vkCmdWaitEvents2 = (PFN_vkCmdWaitEvents2)real; return (PFN_vkVoidFunction)ztrace_vkCmdWaitEvents2; }
+    if (!strcmp(name, "vkCmdPipelineBarrier2")) { zreal_vkCmdPipelineBarrier2 = (PFN_vkCmdPipelineBarrier2)real; return (PFN_vkVoidFunction)ztrace_vkCmdPipelineBarrier2; }
+    if (!strcmp(name, "vkCmdWriteTimestamp2")) { zreal_vkCmdWriteTimestamp2 = (PFN_vkCmdWriteTimestamp2)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteTimestamp2; }
+    if (!strcmp(name, "vkQueueSubmit2")) { zreal_vkQueueSubmit2 = (PFN_vkQueueSubmit2)real; return (PFN_vkVoidFunction)ztrace_vkQueueSubmit2; }
+    if (!strcmp(name, "vkCmdCopyBuffer2")) { zreal_vkCmdCopyBuffer2 = (PFN_vkCmdCopyBuffer2)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyBuffer2; }
+    if (!strcmp(name, "vkCmdCopyImage2")) { zreal_vkCmdCopyImage2 = (PFN_vkCmdCopyImage2)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyImage2; }
+    if (!strcmp(name, "vkCmdCopyBufferToImage2")) { zreal_vkCmdCopyBufferToImage2 = (PFN_vkCmdCopyBufferToImage2)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyBufferToImage2; }
+    if (!strcmp(name, "vkCmdCopyImageToBuffer2")) { zreal_vkCmdCopyImageToBuffer2 = (PFN_vkCmdCopyImageToBuffer2)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyImageToBuffer2; }
+    if (!strcmp(name, "vkCmdBlitImage2")) { zreal_vkCmdBlitImage2 = (PFN_vkCmdBlitImage2)real; return (PFN_vkVoidFunction)ztrace_vkCmdBlitImage2; }
+    if (!strcmp(name, "vkCmdResolveImage2")) { zreal_vkCmdResolveImage2 = (PFN_vkCmdResolveImage2)real; return (PFN_vkVoidFunction)ztrace_vkCmdResolveImage2; }
+    if (!strcmp(name, "vkCmdBeginRendering")) { zreal_vkCmdBeginRendering = (PFN_vkCmdBeginRendering)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginRendering; }
+    if (!strcmp(name, "vkCmdEndRendering")) { zreal_vkCmdEndRendering = (PFN_vkCmdEndRendering)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndRendering; }
+    if (!strcmp(name, "vkCmdSetCullMode")) { zreal_vkCmdSetCullMode = (PFN_vkCmdSetCullMode)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCullMode; }
+    if (!strcmp(name, "vkCmdSetFrontFace")) { zreal_vkCmdSetFrontFace = (PFN_vkCmdSetFrontFace)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetFrontFace; }
+    if (!strcmp(name, "vkCmdSetPrimitiveTopology")) { zreal_vkCmdSetPrimitiveTopology = (PFN_vkCmdSetPrimitiveTopology)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPrimitiveTopology; }
+    if (!strcmp(name, "vkCmdSetViewportWithCount")) { zreal_vkCmdSetViewportWithCount = (PFN_vkCmdSetViewportWithCount)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportWithCount; }
+    if (!strcmp(name, "vkCmdSetScissorWithCount")) { zreal_vkCmdSetScissorWithCount = (PFN_vkCmdSetScissorWithCount)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetScissorWithCount; }
+    if (!strcmp(name, "vkCmdBindVertexBuffers2")) { zreal_vkCmdBindVertexBuffers2 = (PFN_vkCmdBindVertexBuffers2)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindVertexBuffers2; }
+    if (!strcmp(name, "vkCmdSetDepthTestEnable")) { zreal_vkCmdSetDepthTestEnable = (PFN_vkCmdSetDepthTestEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthTestEnable; }
+    if (!strcmp(name, "vkCmdSetDepthWriteEnable")) { zreal_vkCmdSetDepthWriteEnable = (PFN_vkCmdSetDepthWriteEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthWriteEnable; }
+    if (!strcmp(name, "vkCmdSetDepthCompareOp")) { zreal_vkCmdSetDepthCompareOp = (PFN_vkCmdSetDepthCompareOp)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthCompareOp; }
+    if (!strcmp(name, "vkCmdSetDepthBoundsTestEnable")) { zreal_vkCmdSetDepthBoundsTestEnable = (PFN_vkCmdSetDepthBoundsTestEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthBoundsTestEnable; }
+    if (!strcmp(name, "vkCmdSetStencilTestEnable")) { zreal_vkCmdSetStencilTestEnable = (PFN_vkCmdSetStencilTestEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetStencilTestEnable; }
+    if (!strcmp(name, "vkCmdSetStencilOp")) { zreal_vkCmdSetStencilOp = (PFN_vkCmdSetStencilOp)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetStencilOp; }
+    if (!strcmp(name, "vkCmdSetRasterizerDiscardEnable")) { zreal_vkCmdSetRasterizerDiscardEnable = (PFN_vkCmdSetRasterizerDiscardEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRasterizerDiscardEnable; }
+    if (!strcmp(name, "vkCmdSetDepthBiasEnable")) { zreal_vkCmdSetDepthBiasEnable = (PFN_vkCmdSetDepthBiasEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthBiasEnable; }
+    if (!strcmp(name, "vkCmdSetPrimitiveRestartEnable")) { zreal_vkCmdSetPrimitiveRestartEnable = (PFN_vkCmdSetPrimitiveRestartEnable)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPrimitiveRestartEnable; }
+    if (!strcmp(name, "vkGetDeviceBufferMemoryRequirements")) { zreal_vkGetDeviceBufferMemoryRequirements = (PFN_vkGetDeviceBufferMemoryRequirements)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceBufferMemoryRequirements; }
+    if (!strcmp(name, "vkGetDeviceImageMemoryRequirements")) { zreal_vkGetDeviceImageMemoryRequirements = (PFN_vkGetDeviceImageMemoryRequirements)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceImageMemoryRequirements; }
+    if (!strcmp(name, "vkGetDeviceImageSparseMemoryRequirements")) { zreal_vkGetDeviceImageSparseMemoryRequirements = (PFN_vkGetDeviceImageSparseMemoryRequirements)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceImageSparseMemoryRequirements; }
+    if (!strcmp(name, "vkDestroySurfaceKHR")) { zreal_vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroySurfaceKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceSupportKHR")) { zreal_vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceSupportKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR")) { zreal_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceCapabilitiesKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceFormatsKHR")) { zreal_vkGetPhysicalDeviceSurfaceFormatsKHR = (PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceFormatsKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfacePresentModesKHR")) { zreal_vkGetPhysicalDeviceSurfacePresentModesKHR = (PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfacePresentModesKHR; }
+    if (!strcmp(name, "vkCreateSwapchainKHR")) { zreal_vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateSwapchainKHR; }
+    if (!strcmp(name, "vkDestroySwapchainKHR")) { zreal_vkDestroySwapchainKHR = (PFN_vkDestroySwapchainKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroySwapchainKHR; }
+    if (!strcmp(name, "vkGetSwapchainImagesKHR")) { zreal_vkGetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetSwapchainImagesKHR; }
+    if (!strcmp(name, "vkAcquireNextImageKHR")) { zreal_vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR)real; return (PFN_vkVoidFunction)ztrace_vkAcquireNextImageKHR; }
+    if (!strcmp(name, "vkQueuePresentKHR")) { zreal_vkQueuePresentKHR = (PFN_vkQueuePresentKHR)real; return (PFN_vkVoidFunction)ztrace_vkQueuePresentKHR; }
+    if (!strcmp(name, "vkGetDeviceGroupPresentCapabilitiesKHR")) { zreal_vkGetDeviceGroupPresentCapabilitiesKHR = (PFN_vkGetDeviceGroupPresentCapabilitiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceGroupPresentCapabilitiesKHR; }
+    if (!strcmp(name, "vkGetDeviceGroupSurfacePresentModesKHR")) { zreal_vkGetDeviceGroupSurfacePresentModesKHR = (PFN_vkGetDeviceGroupSurfacePresentModesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceGroupSurfacePresentModesKHR; }
+    if (!strcmp(name, "vkGetPhysicalDevicePresentRectanglesKHR")) { zreal_vkGetPhysicalDevicePresentRectanglesKHR = (PFN_vkGetPhysicalDevicePresentRectanglesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDevicePresentRectanglesKHR; }
+    if (!strcmp(name, "vkAcquireNextImage2KHR")) { zreal_vkAcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR)real; return (PFN_vkVoidFunction)ztrace_vkAcquireNextImage2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPropertiesKHR")) { zreal_vkGetPhysicalDeviceDisplayPropertiesKHR = (PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceDisplayPropertiesKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR")) { zreal_vkGetPhysicalDeviceDisplayPlanePropertiesKHR = (PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceDisplayPlanePropertiesKHR; }
+    if (!strcmp(name, "vkGetDisplayPlaneSupportedDisplaysKHR")) { zreal_vkGetDisplayPlaneSupportedDisplaysKHR = (PFN_vkGetDisplayPlaneSupportedDisplaysKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDisplayPlaneSupportedDisplaysKHR; }
+    if (!strcmp(name, "vkGetDisplayModePropertiesKHR")) { zreal_vkGetDisplayModePropertiesKHR = (PFN_vkGetDisplayModePropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDisplayModePropertiesKHR; }
+    if (!strcmp(name, "vkCreateDisplayModeKHR")) { zreal_vkCreateDisplayModeKHR = (PFN_vkCreateDisplayModeKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateDisplayModeKHR; }
+    if (!strcmp(name, "vkGetDisplayPlaneCapabilitiesKHR")) { zreal_vkGetDisplayPlaneCapabilitiesKHR = (PFN_vkGetDisplayPlaneCapabilitiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDisplayPlaneCapabilitiesKHR; }
+    if (!strcmp(name, "vkCreateDisplayPlaneSurfaceKHR")) { zreal_vkCreateDisplayPlaneSurfaceKHR = (PFN_vkCreateDisplayPlaneSurfaceKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateDisplayPlaneSurfaceKHR; }
+    if (!strcmp(name, "vkCreateSharedSwapchainsKHR")) { zreal_vkCreateSharedSwapchainsKHR = (PFN_vkCreateSharedSwapchainsKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateSharedSwapchainsKHR; }
+    if (!strcmp(name, "vkCmdBeginRenderingKHR")) { zreal_vkCmdBeginRenderingKHR = (PFN_vkCmdBeginRenderingKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginRenderingKHR; }
+    if (!strcmp(name, "vkCmdEndRenderingKHR")) { zreal_vkCmdEndRenderingKHR = (PFN_vkCmdEndRenderingKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndRenderingKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceFeatures2KHR")) { zreal_vkGetPhysicalDeviceFeatures2KHR = (PFN_vkGetPhysicalDeviceFeatures2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceFeatures2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceProperties2KHR")) { zreal_vkGetPhysicalDeviceProperties2KHR = (PFN_vkGetPhysicalDeviceProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceFormatProperties2KHR")) { zreal_vkGetPhysicalDeviceFormatProperties2KHR = (PFN_vkGetPhysicalDeviceFormatProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceFormatProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceImageFormatProperties2KHR")) { zreal_vkGetPhysicalDeviceImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceImageFormatProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceImageFormatProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceQueueFamilyProperties2KHR")) { zreal_vkGetPhysicalDeviceQueueFamilyProperties2KHR = (PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceQueueFamilyProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceMemoryProperties2KHR")) { zreal_vkGetPhysicalDeviceMemoryProperties2KHR = (PFN_vkGetPhysicalDeviceMemoryProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceMemoryProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSparseImageFormatProperties2KHR")) { zreal_vkGetPhysicalDeviceSparseImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSparseImageFormatProperties2KHR; }
+    if (!strcmp(name, "vkGetDeviceGroupPeerMemoryFeaturesKHR")) { zreal_vkGetDeviceGroupPeerMemoryFeaturesKHR = (PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceGroupPeerMemoryFeaturesKHR; }
+    if (!strcmp(name, "vkCmdSetDeviceMaskKHR")) { zreal_vkCmdSetDeviceMaskKHR = (PFN_vkCmdSetDeviceMaskKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDeviceMaskKHR; }
+    if (!strcmp(name, "vkCmdDispatchBaseKHR")) { zreal_vkCmdDispatchBaseKHR = (PFN_vkCmdDispatchBaseKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdDispatchBaseKHR; }
+    if (!strcmp(name, "vkEnumeratePhysicalDeviceGroupsKHR")) { zreal_vkEnumeratePhysicalDeviceGroupsKHR = (PFN_vkEnumeratePhysicalDeviceGroupsKHR)real; return (PFN_vkVoidFunction)ztrace_vkEnumeratePhysicalDeviceGroupsKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalBufferPropertiesKHR")) { zreal_vkGetPhysicalDeviceExternalBufferPropertiesKHR = (PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceExternalBufferPropertiesKHR; }
+    if (!strcmp(name, "vkGetMemoryFdKHR")) { zreal_vkGetMemoryFdKHR = (PFN_vkGetMemoryFdKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetMemoryFdKHR; }
+    if (!strcmp(name, "vkGetMemoryFdPropertiesKHR")) { zreal_vkGetMemoryFdPropertiesKHR = (PFN_vkGetMemoryFdPropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetMemoryFdPropertiesKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR")) { zreal_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR; }
+    if (!strcmp(name, "vkImportSemaphoreFdKHR")) { zreal_vkImportSemaphoreFdKHR = (PFN_vkImportSemaphoreFdKHR)real; return (PFN_vkVoidFunction)ztrace_vkImportSemaphoreFdKHR; }
+    if (!strcmp(name, "vkGetSemaphoreFdKHR")) { zreal_vkGetSemaphoreFdKHR = (PFN_vkGetSemaphoreFdKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetSemaphoreFdKHR; }
+    if (!strcmp(name, "vkCmdPushDescriptorSetKHR")) { zreal_vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdPushDescriptorSetKHR; }
+    if (!strcmp(name, "vkCmdPushDescriptorSetWithTemplateKHR")) { zreal_vkCmdPushDescriptorSetWithTemplateKHR = (PFN_vkCmdPushDescriptorSetWithTemplateKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdPushDescriptorSetWithTemplateKHR; }
+    if (!strcmp(name, "vkCreateDescriptorUpdateTemplateKHR")) { zreal_vkCreateDescriptorUpdateTemplateKHR = (PFN_vkCreateDescriptorUpdateTemplateKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateDescriptorUpdateTemplateKHR; }
+    if (!strcmp(name, "vkDestroyDescriptorUpdateTemplateKHR")) { zreal_vkDestroyDescriptorUpdateTemplateKHR = (PFN_vkDestroyDescriptorUpdateTemplateKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroyDescriptorUpdateTemplateKHR; }
+    if (!strcmp(name, "vkUpdateDescriptorSetWithTemplateKHR")) { zreal_vkUpdateDescriptorSetWithTemplateKHR = (PFN_vkUpdateDescriptorSetWithTemplateKHR)real; return (PFN_vkVoidFunction)ztrace_vkUpdateDescriptorSetWithTemplateKHR; }
+    if (!strcmp(name, "vkCreateRenderPass2KHR")) { zreal_vkCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateRenderPass2KHR; }
+    if (!strcmp(name, "vkCmdBeginRenderPass2KHR")) { zreal_vkCmdBeginRenderPass2KHR = (PFN_vkCmdBeginRenderPass2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginRenderPass2KHR; }
+    if (!strcmp(name, "vkCmdNextSubpass2KHR")) { zreal_vkCmdNextSubpass2KHR = (PFN_vkCmdNextSubpass2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdNextSubpass2KHR; }
+    if (!strcmp(name, "vkCmdEndRenderPass2KHR")) { zreal_vkCmdEndRenderPass2KHR = (PFN_vkCmdEndRenderPass2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndRenderPass2KHR; }
+    if (!strcmp(name, "vkGetSwapchainStatusKHR")) { zreal_vkGetSwapchainStatusKHR = (PFN_vkGetSwapchainStatusKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetSwapchainStatusKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalFencePropertiesKHR")) { zreal_vkGetPhysicalDeviceExternalFencePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceExternalFencePropertiesKHR; }
+    if (!strcmp(name, "vkImportFenceFdKHR")) { zreal_vkImportFenceFdKHR = (PFN_vkImportFenceFdKHR)real; return (PFN_vkVoidFunction)ztrace_vkImportFenceFdKHR; }
+    if (!strcmp(name, "vkGetFenceFdKHR")) { zreal_vkGetFenceFdKHR = (PFN_vkGetFenceFdKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetFenceFdKHR; }
+    if (!strcmp(name, "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR")) { zreal_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR = (PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR)real; return (PFN_vkVoidFunction)ztrace_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR")) { zreal_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR = (PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR; }
+    if (!strcmp(name, "vkAcquireProfilingLockKHR")) { zreal_vkAcquireProfilingLockKHR = (PFN_vkAcquireProfilingLockKHR)real; return (PFN_vkVoidFunction)ztrace_vkAcquireProfilingLockKHR; }
+    if (!strcmp(name, "vkReleaseProfilingLockKHR")) { zreal_vkReleaseProfilingLockKHR = (PFN_vkReleaseProfilingLockKHR)real; return (PFN_vkVoidFunction)ztrace_vkReleaseProfilingLockKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilities2KHR")) { zreal_vkGetPhysicalDeviceSurfaceCapabilities2KHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceCapabilities2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceFormats2KHR")) { zreal_vkGetPhysicalDeviceSurfaceFormats2KHR = (PFN_vkGetPhysicalDeviceSurfaceFormats2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceFormats2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayProperties2KHR")) { zreal_vkGetPhysicalDeviceDisplayProperties2KHR = (PFN_vkGetPhysicalDeviceDisplayProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceDisplayProperties2KHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPlaneProperties2KHR")) { zreal_vkGetPhysicalDeviceDisplayPlaneProperties2KHR = (PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceDisplayPlaneProperties2KHR; }
+    if (!strcmp(name, "vkGetDisplayModeProperties2KHR")) { zreal_vkGetDisplayModeProperties2KHR = (PFN_vkGetDisplayModeProperties2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDisplayModeProperties2KHR; }
+    if (!strcmp(name, "vkGetDisplayPlaneCapabilities2KHR")) { zreal_vkGetDisplayPlaneCapabilities2KHR = (PFN_vkGetDisplayPlaneCapabilities2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDisplayPlaneCapabilities2KHR; }
+    if (!strcmp(name, "vkGetImageMemoryRequirements2KHR")) { zreal_vkGetImageMemoryRequirements2KHR = (PFN_vkGetImageMemoryRequirements2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetImageMemoryRequirements2KHR; }
+    if (!strcmp(name, "vkGetBufferMemoryRequirements2KHR")) { zreal_vkGetBufferMemoryRequirements2KHR = (PFN_vkGetBufferMemoryRequirements2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferMemoryRequirements2KHR; }
+    if (!strcmp(name, "vkGetImageSparseMemoryRequirements2KHR")) { zreal_vkGetImageSparseMemoryRequirements2KHR = (PFN_vkGetImageSparseMemoryRequirements2KHR)real; return (PFN_vkVoidFunction)ztrace_vkGetImageSparseMemoryRequirements2KHR; }
+    if (!strcmp(name, "vkCreateSamplerYcbcrConversionKHR")) { zreal_vkCreateSamplerYcbcrConversionKHR = (PFN_vkCreateSamplerYcbcrConversionKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateSamplerYcbcrConversionKHR; }
+    if (!strcmp(name, "vkDestroySamplerYcbcrConversionKHR")) { zreal_vkDestroySamplerYcbcrConversionKHR = (PFN_vkDestroySamplerYcbcrConversionKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroySamplerYcbcrConversionKHR; }
+    if (!strcmp(name, "vkBindBufferMemory2KHR")) { zreal_vkBindBufferMemory2KHR = (PFN_vkBindBufferMemory2KHR)real; return (PFN_vkVoidFunction)ztrace_vkBindBufferMemory2KHR; }
+    if (!strcmp(name, "vkBindImageMemory2KHR")) { zreal_vkBindImageMemory2KHR = (PFN_vkBindImageMemory2KHR)real; return (PFN_vkVoidFunction)ztrace_vkBindImageMemory2KHR; }
+    if (!strcmp(name, "vkGetDescriptorSetLayoutSupportKHR")) { zreal_vkGetDescriptorSetLayoutSupportKHR = (PFN_vkGetDescriptorSetLayoutSupportKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDescriptorSetLayoutSupportKHR; }
+    if (!strcmp(name, "vkCmdDrawIndirectCountKHR")) { zreal_vkCmdDrawIndirectCountKHR = (PFN_vkCmdDrawIndirectCountKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndirectCountKHR; }
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCountKHR")) { zreal_vkCmdDrawIndexedIndirectCountKHR = (PFN_vkCmdDrawIndexedIndirectCountKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndexedIndirectCountKHR; }
+    if (!strcmp(name, "vkGetPhysicalDeviceFragmentShadingRatesKHR")) { zreal_vkGetPhysicalDeviceFragmentShadingRatesKHR = (PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceFragmentShadingRatesKHR; }
+    if (!strcmp(name, "vkCmdSetFragmentShadingRateKHR")) { zreal_vkCmdSetFragmentShadingRateKHR = (PFN_vkCmdSetFragmentShadingRateKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetFragmentShadingRateKHR; }
+    if (!strcmp(name, "vkWaitForPresentKHR")) { zreal_vkWaitForPresentKHR = (PFN_vkWaitForPresentKHR)real; return (PFN_vkVoidFunction)ztrace_vkWaitForPresentKHR; }
+    if (!strcmp(name, "vkGetBufferDeviceAddressKHR")) { zreal_vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferDeviceAddressKHR; }
+    if (!strcmp(name, "vkGetBufferOpaqueCaptureAddressKHR")) { zreal_vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferOpaqueCaptureAddressKHR; }
+    if (!strcmp(name, "vkGetDeviceMemoryOpaqueCaptureAddressKHR")) { zreal_vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceMemoryOpaqueCaptureAddressKHR; }
+    if (!strcmp(name, "vkCreateDeferredOperationKHR")) { zreal_vkCreateDeferredOperationKHR = (PFN_vkCreateDeferredOperationKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateDeferredOperationKHR; }
+    if (!strcmp(name, "vkDestroyDeferredOperationKHR")) { zreal_vkDestroyDeferredOperationKHR = (PFN_vkDestroyDeferredOperationKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroyDeferredOperationKHR; }
+    if (!strcmp(name, "vkGetDeferredOperationMaxConcurrencyKHR")) { zreal_vkGetDeferredOperationMaxConcurrencyKHR = (PFN_vkGetDeferredOperationMaxConcurrencyKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeferredOperationMaxConcurrencyKHR; }
+    if (!strcmp(name, "vkGetDeferredOperationResultKHR")) { zreal_vkGetDeferredOperationResultKHR = (PFN_vkGetDeferredOperationResultKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeferredOperationResultKHR; }
+    if (!strcmp(name, "vkDeferredOperationJoinKHR")) { zreal_vkDeferredOperationJoinKHR = (PFN_vkDeferredOperationJoinKHR)real; return (PFN_vkVoidFunction)ztrace_vkDeferredOperationJoinKHR; }
+    if (!strcmp(name, "vkGetPipelineExecutablePropertiesKHR")) { zreal_vkGetPipelineExecutablePropertiesKHR = (PFN_vkGetPipelineExecutablePropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPipelineExecutablePropertiesKHR; }
+    if (!strcmp(name, "vkGetPipelineExecutableStatisticsKHR")) { zreal_vkGetPipelineExecutableStatisticsKHR = (PFN_vkGetPipelineExecutableStatisticsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPipelineExecutableStatisticsKHR; }
+    if (!strcmp(name, "vkGetPipelineExecutableInternalRepresentationsKHR")) { zreal_vkGetPipelineExecutableInternalRepresentationsKHR = (PFN_vkGetPipelineExecutableInternalRepresentationsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetPipelineExecutableInternalRepresentationsKHR; }
+    if (!strcmp(name, "vkCmdSetEvent2KHR")) { zreal_vkCmdSetEvent2KHR = (PFN_vkCmdSetEvent2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetEvent2KHR; }
+    if (!strcmp(name, "vkCmdResetEvent2KHR")) { zreal_vkCmdResetEvent2KHR = (PFN_vkCmdResetEvent2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdResetEvent2KHR; }
+    if (!strcmp(name, "vkCmdWaitEvents2KHR")) { zreal_vkCmdWaitEvents2KHR = (PFN_vkCmdWaitEvents2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdWaitEvents2KHR; }
+    if (!strcmp(name, "vkCmdPipelineBarrier2KHR")) { zreal_vkCmdPipelineBarrier2KHR = (PFN_vkCmdPipelineBarrier2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdPipelineBarrier2KHR; }
+    if (!strcmp(name, "vkCmdWriteTimestamp2KHR")) { zreal_vkCmdWriteTimestamp2KHR = (PFN_vkCmdWriteTimestamp2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteTimestamp2KHR; }
+    if (!strcmp(name, "vkQueueSubmit2KHR")) { zreal_vkQueueSubmit2KHR = (PFN_vkQueueSubmit2KHR)real; return (PFN_vkVoidFunction)ztrace_vkQueueSubmit2KHR; }
+    if (!strcmp(name, "vkCmdWriteBufferMarker2AMD")) { zreal_vkCmdWriteBufferMarker2AMD = (PFN_vkCmdWriteBufferMarker2AMD)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteBufferMarker2AMD; }
+    if (!strcmp(name, "vkGetQueueCheckpointData2NV")) { zreal_vkGetQueueCheckpointData2NV = (PFN_vkGetQueueCheckpointData2NV)real; return (PFN_vkVoidFunction)ztrace_vkGetQueueCheckpointData2NV; }
+    if (!strcmp(name, "vkCmdCopyBuffer2KHR")) { zreal_vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyBuffer2KHR; }
+    if (!strcmp(name, "vkCmdCopyImage2KHR")) { zreal_vkCmdCopyImage2KHR = (PFN_vkCmdCopyImage2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyImage2KHR; }
+    if (!strcmp(name, "vkCmdCopyBufferToImage2KHR")) { zreal_vkCmdCopyBufferToImage2KHR = (PFN_vkCmdCopyBufferToImage2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyBufferToImage2KHR; }
+    if (!strcmp(name, "vkCmdCopyImageToBuffer2KHR")) { zreal_vkCmdCopyImageToBuffer2KHR = (PFN_vkCmdCopyImageToBuffer2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyImageToBuffer2KHR; }
+    if (!strcmp(name, "vkCmdBlitImage2KHR")) { zreal_vkCmdBlitImage2KHR = (PFN_vkCmdBlitImage2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdBlitImage2KHR; }
+    if (!strcmp(name, "vkCmdResolveImage2KHR")) { zreal_vkCmdResolveImage2KHR = (PFN_vkCmdResolveImage2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdResolveImage2KHR; }
+    if (!strcmp(name, "vkCmdTraceRaysIndirect2KHR")) { zreal_vkCmdTraceRaysIndirect2KHR = (PFN_vkCmdTraceRaysIndirect2KHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdTraceRaysIndirect2KHR; }
+    if (!strcmp(name, "vkGetDeviceBufferMemoryRequirementsKHR")) { zreal_vkGetDeviceBufferMemoryRequirementsKHR = (PFN_vkGetDeviceBufferMemoryRequirementsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceBufferMemoryRequirementsKHR; }
+    if (!strcmp(name, "vkGetDeviceImageMemoryRequirementsKHR")) { zreal_vkGetDeviceImageMemoryRequirementsKHR = (PFN_vkGetDeviceImageMemoryRequirementsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceImageMemoryRequirementsKHR; }
+    if (!strcmp(name, "vkGetDeviceImageSparseMemoryRequirementsKHR")) { zreal_vkGetDeviceImageSparseMemoryRequirementsKHR = (PFN_vkGetDeviceImageSparseMemoryRequirementsKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceImageSparseMemoryRequirementsKHR; }
+    if (!strcmp(name, "vkCreateDebugReportCallbackEXT")) { zreal_vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreateDebugReportCallbackEXT; }
+    if (!strcmp(name, "vkDestroyDebugReportCallbackEXT")) { zreal_vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)real; return (PFN_vkVoidFunction)ztrace_vkDestroyDebugReportCallbackEXT; }
+    if (!strcmp(name, "vkDebugReportMessageEXT")) { zreal_vkDebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)real; return (PFN_vkVoidFunction)ztrace_vkDebugReportMessageEXT; }
+    if (!strcmp(name, "vkDebugMarkerSetObjectTagEXT")) { zreal_vkDebugMarkerSetObjectTagEXT = (PFN_vkDebugMarkerSetObjectTagEXT)real; return (PFN_vkVoidFunction)ztrace_vkDebugMarkerSetObjectTagEXT; }
+    if (!strcmp(name, "vkDebugMarkerSetObjectNameEXT")) { zreal_vkDebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)real; return (PFN_vkVoidFunction)ztrace_vkDebugMarkerSetObjectNameEXT; }
+    if (!strcmp(name, "vkCmdDebugMarkerBeginEXT")) { zreal_vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDebugMarkerBeginEXT; }
+    if (!strcmp(name, "vkCmdDebugMarkerEndEXT")) { zreal_vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDebugMarkerEndEXT; }
+    if (!strcmp(name, "vkCmdDebugMarkerInsertEXT")) { zreal_vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDebugMarkerInsertEXT; }
+    if (!strcmp(name, "vkCmdBindTransformFeedbackBuffersEXT")) { zreal_vkCmdBindTransformFeedbackBuffersEXT = (PFN_vkCmdBindTransformFeedbackBuffersEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindTransformFeedbackBuffersEXT; }
+    if (!strcmp(name, "vkCmdBeginTransformFeedbackEXT")) { zreal_vkCmdBeginTransformFeedbackEXT = (PFN_vkCmdBeginTransformFeedbackEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginTransformFeedbackEXT; }
+    if (!strcmp(name, "vkCmdEndTransformFeedbackEXT")) { zreal_vkCmdEndTransformFeedbackEXT = (PFN_vkCmdEndTransformFeedbackEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndTransformFeedbackEXT; }
+    if (!strcmp(name, "vkCmdBeginQueryIndexedEXT")) { zreal_vkCmdBeginQueryIndexedEXT = (PFN_vkCmdBeginQueryIndexedEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginQueryIndexedEXT; }
+    if (!strcmp(name, "vkCmdEndQueryIndexedEXT")) { zreal_vkCmdEndQueryIndexedEXT = (PFN_vkCmdEndQueryIndexedEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndQueryIndexedEXT; }
+    if (!strcmp(name, "vkCmdDrawIndirectByteCountEXT")) { zreal_vkCmdDrawIndirectByteCountEXT = (PFN_vkCmdDrawIndirectByteCountEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndirectByteCountEXT; }
+    if (!strcmp(name, "vkCreateCuModuleNVX")) { zreal_vkCreateCuModuleNVX = (PFN_vkCreateCuModuleNVX)real; return (PFN_vkVoidFunction)ztrace_vkCreateCuModuleNVX; }
+    if (!strcmp(name, "vkCreateCuFunctionNVX")) { zreal_vkCreateCuFunctionNVX = (PFN_vkCreateCuFunctionNVX)real; return (PFN_vkVoidFunction)ztrace_vkCreateCuFunctionNVX; }
+    if (!strcmp(name, "vkDestroyCuModuleNVX")) { zreal_vkDestroyCuModuleNVX = (PFN_vkDestroyCuModuleNVX)real; return (PFN_vkVoidFunction)ztrace_vkDestroyCuModuleNVX; }
+    if (!strcmp(name, "vkDestroyCuFunctionNVX")) { zreal_vkDestroyCuFunctionNVX = (PFN_vkDestroyCuFunctionNVX)real; return (PFN_vkVoidFunction)ztrace_vkDestroyCuFunctionNVX; }
+    if (!strcmp(name, "vkCmdCuLaunchKernelNVX")) { zreal_vkCmdCuLaunchKernelNVX = (PFN_vkCmdCuLaunchKernelNVX)real; return (PFN_vkVoidFunction)ztrace_vkCmdCuLaunchKernelNVX; }
+    if (!strcmp(name, "vkGetImageViewHandleNVX")) { zreal_vkGetImageViewHandleNVX = (PFN_vkGetImageViewHandleNVX)real; return (PFN_vkVoidFunction)ztrace_vkGetImageViewHandleNVX; }
+    if (!strcmp(name, "vkGetImageViewAddressNVX")) { zreal_vkGetImageViewAddressNVX = (PFN_vkGetImageViewAddressNVX)real; return (PFN_vkVoidFunction)ztrace_vkGetImageViewAddressNVX; }
+    if (!strcmp(name, "vkCmdDrawIndirectCountAMD")) { zreal_vkCmdDrawIndirectCountAMD = (PFN_vkCmdDrawIndirectCountAMD)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndirectCountAMD; }
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCountAMD")) { zreal_vkCmdDrawIndexedIndirectCountAMD = (PFN_vkCmdDrawIndexedIndirectCountAMD)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawIndexedIndirectCountAMD; }
+    if (!strcmp(name, "vkGetShaderInfoAMD")) { zreal_vkGetShaderInfoAMD = (PFN_vkGetShaderInfoAMD)real; return (PFN_vkVoidFunction)ztrace_vkGetShaderInfoAMD; }
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalImageFormatPropertiesNV")) { zreal_vkGetPhysicalDeviceExternalImageFormatPropertiesNV = (PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceExternalImageFormatPropertiesNV; }
+    if (!strcmp(name, "vkCmdBeginConditionalRenderingEXT")) { zreal_vkCmdBeginConditionalRenderingEXT = (PFN_vkCmdBeginConditionalRenderingEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBeginConditionalRenderingEXT; }
+    if (!strcmp(name, "vkCmdEndConditionalRenderingEXT")) { zreal_vkCmdEndConditionalRenderingEXT = (PFN_vkCmdEndConditionalRenderingEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdEndConditionalRenderingEXT; }
+    if (!strcmp(name, "vkCmdSetViewportWScalingNV")) { zreal_vkCmdSetViewportWScalingNV = (PFN_vkCmdSetViewportWScalingNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportWScalingNV; }
+    if (!strcmp(name, "vkReleaseDisplayEXT")) { zreal_vkReleaseDisplayEXT = (PFN_vkReleaseDisplayEXT)real; return (PFN_vkVoidFunction)ztrace_vkReleaseDisplayEXT; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilities2EXT")) { zreal_vkGetPhysicalDeviceSurfaceCapabilities2EXT = (PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSurfaceCapabilities2EXT; }
+    if (!strcmp(name, "vkDisplayPowerControlEXT")) { zreal_vkDisplayPowerControlEXT = (PFN_vkDisplayPowerControlEXT)real; return (PFN_vkVoidFunction)ztrace_vkDisplayPowerControlEXT; }
+    if (!strcmp(name, "vkRegisterDeviceEventEXT")) { zreal_vkRegisterDeviceEventEXT = (PFN_vkRegisterDeviceEventEXT)real; return (PFN_vkVoidFunction)ztrace_vkRegisterDeviceEventEXT; }
+    if (!strcmp(name, "vkRegisterDisplayEventEXT")) { zreal_vkRegisterDisplayEventEXT = (PFN_vkRegisterDisplayEventEXT)real; return (PFN_vkVoidFunction)ztrace_vkRegisterDisplayEventEXT; }
+    if (!strcmp(name, "vkGetSwapchainCounterEXT")) { zreal_vkGetSwapchainCounterEXT = (PFN_vkGetSwapchainCounterEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetSwapchainCounterEXT; }
+    if (!strcmp(name, "vkGetRefreshCycleDurationGOOGLE")) { zreal_vkGetRefreshCycleDurationGOOGLE = (PFN_vkGetRefreshCycleDurationGOOGLE)real; return (PFN_vkVoidFunction)ztrace_vkGetRefreshCycleDurationGOOGLE; }
+    if (!strcmp(name, "vkGetPastPresentationTimingGOOGLE")) { zreal_vkGetPastPresentationTimingGOOGLE = (PFN_vkGetPastPresentationTimingGOOGLE)real; return (PFN_vkVoidFunction)ztrace_vkGetPastPresentationTimingGOOGLE; }
+    if (!strcmp(name, "vkCmdSetDiscardRectangleEXT")) { zreal_vkCmdSetDiscardRectangleEXT = (PFN_vkCmdSetDiscardRectangleEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDiscardRectangleEXT; }
+    if (!strcmp(name, "vkSetHdrMetadataEXT")) { zreal_vkSetHdrMetadataEXT = (PFN_vkSetHdrMetadataEXT)real; return (PFN_vkVoidFunction)ztrace_vkSetHdrMetadataEXT; }
+    if (!strcmp(name, "vkCmdSetSampleLocationsEXT")) { zreal_vkCmdSetSampleLocationsEXT = (PFN_vkCmdSetSampleLocationsEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetSampleLocationsEXT; }
+    if (!strcmp(name, "vkGetPhysicalDeviceMultisamplePropertiesEXT")) { zreal_vkGetPhysicalDeviceMultisamplePropertiesEXT = (PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceMultisamplePropertiesEXT; }
+    if (!strcmp(name, "vkGetImageDrmFormatModifierPropertiesEXT")) { zreal_vkGetImageDrmFormatModifierPropertiesEXT = (PFN_vkGetImageDrmFormatModifierPropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetImageDrmFormatModifierPropertiesEXT; }
+    if (!strcmp(name, "vkCreateValidationCacheEXT")) { zreal_vkCreateValidationCacheEXT = (PFN_vkCreateValidationCacheEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreateValidationCacheEXT; }
+    if (!strcmp(name, "vkDestroyValidationCacheEXT")) { zreal_vkDestroyValidationCacheEXT = (PFN_vkDestroyValidationCacheEXT)real; return (PFN_vkVoidFunction)ztrace_vkDestroyValidationCacheEXT; }
+    if (!strcmp(name, "vkMergeValidationCachesEXT")) { zreal_vkMergeValidationCachesEXT = (PFN_vkMergeValidationCachesEXT)real; return (PFN_vkVoidFunction)ztrace_vkMergeValidationCachesEXT; }
+    if (!strcmp(name, "vkGetValidationCacheDataEXT")) { zreal_vkGetValidationCacheDataEXT = (PFN_vkGetValidationCacheDataEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetValidationCacheDataEXT; }
+    if (!strcmp(name, "vkCmdBindShadingRateImageNV")) { zreal_vkCmdBindShadingRateImageNV = (PFN_vkCmdBindShadingRateImageNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindShadingRateImageNV; }
+    if (!strcmp(name, "vkCmdSetViewportShadingRatePaletteNV")) { zreal_vkCmdSetViewportShadingRatePaletteNV = (PFN_vkCmdSetViewportShadingRatePaletteNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportShadingRatePaletteNV; }
+    if (!strcmp(name, "vkCmdSetCoarseSampleOrderNV")) { zreal_vkCmdSetCoarseSampleOrderNV = (PFN_vkCmdSetCoarseSampleOrderNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoarseSampleOrderNV; }
+    if (!strcmp(name, "vkCreateAccelerationStructureNV")) { zreal_vkCreateAccelerationStructureNV = (PFN_vkCreateAccelerationStructureNV)real; return (PFN_vkVoidFunction)ztrace_vkCreateAccelerationStructureNV; }
+    if (!strcmp(name, "vkDestroyAccelerationStructureNV")) { zreal_vkDestroyAccelerationStructureNV = (PFN_vkDestroyAccelerationStructureNV)real; return (PFN_vkVoidFunction)ztrace_vkDestroyAccelerationStructureNV; }
+    if (!strcmp(name, "vkGetAccelerationStructureMemoryRequirementsNV")) { zreal_vkGetAccelerationStructureMemoryRequirementsNV = (PFN_vkGetAccelerationStructureMemoryRequirementsNV)real; return (PFN_vkVoidFunction)ztrace_vkGetAccelerationStructureMemoryRequirementsNV; }
+    if (!strcmp(name, "vkBindAccelerationStructureMemoryNV")) { zreal_vkBindAccelerationStructureMemoryNV = (PFN_vkBindAccelerationStructureMemoryNV)real; return (PFN_vkVoidFunction)ztrace_vkBindAccelerationStructureMemoryNV; }
+    if (!strcmp(name, "vkCmdBuildAccelerationStructureNV")) { zreal_vkCmdBuildAccelerationStructureNV = (PFN_vkCmdBuildAccelerationStructureNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdBuildAccelerationStructureNV; }
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureNV")) { zreal_vkCmdCopyAccelerationStructureNV = (PFN_vkCmdCopyAccelerationStructureNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyAccelerationStructureNV; }
+    if (!strcmp(name, "vkCmdTraceRaysNV")) { zreal_vkCmdTraceRaysNV = (PFN_vkCmdTraceRaysNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdTraceRaysNV; }
+    if (!strcmp(name, "vkCreateRayTracingPipelinesNV")) { zreal_vkCreateRayTracingPipelinesNV = (PFN_vkCreateRayTracingPipelinesNV)real; return (PFN_vkVoidFunction)ztrace_vkCreateRayTracingPipelinesNV; }
+    if (!strcmp(name, "vkGetRayTracingShaderGroupHandlesKHR")) { zreal_vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetRayTracingShaderGroupHandlesKHR; }
+    if (!strcmp(name, "vkGetRayTracingShaderGroupHandlesNV")) { zreal_vkGetRayTracingShaderGroupHandlesNV = (PFN_vkGetRayTracingShaderGroupHandlesNV)real; return (PFN_vkVoidFunction)ztrace_vkGetRayTracingShaderGroupHandlesNV; }
+    if (!strcmp(name, "vkGetAccelerationStructureHandleNV")) { zreal_vkGetAccelerationStructureHandleNV = (PFN_vkGetAccelerationStructureHandleNV)real; return (PFN_vkVoidFunction)ztrace_vkGetAccelerationStructureHandleNV; }
+    if (!strcmp(name, "vkCmdWriteAccelerationStructuresPropertiesNV")) { zreal_vkCmdWriteAccelerationStructuresPropertiesNV = (PFN_vkCmdWriteAccelerationStructuresPropertiesNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteAccelerationStructuresPropertiesNV; }
+    if (!strcmp(name, "vkCompileDeferredNV")) { zreal_vkCompileDeferredNV = (PFN_vkCompileDeferredNV)real; return (PFN_vkVoidFunction)ztrace_vkCompileDeferredNV; }
+    if (!strcmp(name, "vkGetMemoryHostPointerPropertiesEXT")) { zreal_vkGetMemoryHostPointerPropertiesEXT = (PFN_vkGetMemoryHostPointerPropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetMemoryHostPointerPropertiesEXT; }
+    if (!strcmp(name, "vkCmdWriteBufferMarkerAMD")) { zreal_vkCmdWriteBufferMarkerAMD = (PFN_vkCmdWriteBufferMarkerAMD)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteBufferMarkerAMD; }
+    if (!strcmp(name, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT")) { zreal_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT; }
+    if (!strcmp(name, "vkGetCalibratedTimestampsEXT")) { zreal_vkGetCalibratedTimestampsEXT = (PFN_vkGetCalibratedTimestampsEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetCalibratedTimestampsEXT; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksNV")) { zreal_vkCmdDrawMeshTasksNV = (PFN_vkCmdDrawMeshTasksNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksNV; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectNV")) { zreal_vkCmdDrawMeshTasksIndirectNV = (PFN_vkCmdDrawMeshTasksIndirectNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksIndirectNV; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectCountNV")) { zreal_vkCmdDrawMeshTasksIndirectCountNV = (PFN_vkCmdDrawMeshTasksIndirectCountNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksIndirectCountNV; }
+    if (!strcmp(name, "vkCmdSetExclusiveScissorNV")) { zreal_vkCmdSetExclusiveScissorNV = (PFN_vkCmdSetExclusiveScissorNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetExclusiveScissorNV; }
+    if (!strcmp(name, "vkCmdSetCheckpointNV")) { zreal_vkCmdSetCheckpointNV = (PFN_vkCmdSetCheckpointNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCheckpointNV; }
+    if (!strcmp(name, "vkGetQueueCheckpointDataNV")) { zreal_vkGetQueueCheckpointDataNV = (PFN_vkGetQueueCheckpointDataNV)real; return (PFN_vkVoidFunction)ztrace_vkGetQueueCheckpointDataNV; }
+    if (!strcmp(name, "vkInitializePerformanceApiINTEL")) { zreal_vkInitializePerformanceApiINTEL = (PFN_vkInitializePerformanceApiINTEL)real; return (PFN_vkVoidFunction)ztrace_vkInitializePerformanceApiINTEL; }
+    if (!strcmp(name, "vkUninitializePerformanceApiINTEL")) { zreal_vkUninitializePerformanceApiINTEL = (PFN_vkUninitializePerformanceApiINTEL)real; return (PFN_vkVoidFunction)ztrace_vkUninitializePerformanceApiINTEL; }
+    if (!strcmp(name, "vkCmdSetPerformanceMarkerINTEL")) { zreal_vkCmdSetPerformanceMarkerINTEL = (PFN_vkCmdSetPerformanceMarkerINTEL)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPerformanceMarkerINTEL; }
+    if (!strcmp(name, "vkCmdSetPerformanceStreamMarkerINTEL")) { zreal_vkCmdSetPerformanceStreamMarkerINTEL = (PFN_vkCmdSetPerformanceStreamMarkerINTEL)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPerformanceStreamMarkerINTEL; }
+    if (!strcmp(name, "vkCmdSetPerformanceOverrideINTEL")) { zreal_vkCmdSetPerformanceOverrideINTEL = (PFN_vkCmdSetPerformanceOverrideINTEL)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPerformanceOverrideINTEL; }
+    if (!strcmp(name, "vkAcquirePerformanceConfigurationINTEL")) { zreal_vkAcquirePerformanceConfigurationINTEL = (PFN_vkAcquirePerformanceConfigurationINTEL)real; return (PFN_vkVoidFunction)ztrace_vkAcquirePerformanceConfigurationINTEL; }
+    if (!strcmp(name, "vkReleasePerformanceConfigurationINTEL")) { zreal_vkReleasePerformanceConfigurationINTEL = (PFN_vkReleasePerformanceConfigurationINTEL)real; return (PFN_vkVoidFunction)ztrace_vkReleasePerformanceConfigurationINTEL; }
+    if (!strcmp(name, "vkQueueSetPerformanceConfigurationINTEL")) { zreal_vkQueueSetPerformanceConfigurationINTEL = (PFN_vkQueueSetPerformanceConfigurationINTEL)real; return (PFN_vkVoidFunction)ztrace_vkQueueSetPerformanceConfigurationINTEL; }
+    if (!strcmp(name, "vkGetPerformanceParameterINTEL")) { zreal_vkGetPerformanceParameterINTEL = (PFN_vkGetPerformanceParameterINTEL)real; return (PFN_vkVoidFunction)ztrace_vkGetPerformanceParameterINTEL; }
+    if (!strcmp(name, "vkSetLocalDimmingAMD")) { zreal_vkSetLocalDimmingAMD = (PFN_vkSetLocalDimmingAMD)real; return (PFN_vkVoidFunction)ztrace_vkSetLocalDimmingAMD; }
+    if (!strcmp(name, "vkGetBufferDeviceAddressEXT")) { zreal_vkGetBufferDeviceAddressEXT = (PFN_vkGetBufferDeviceAddressEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetBufferDeviceAddressEXT; }
+    if (!strcmp(name, "vkGetPhysicalDeviceToolPropertiesEXT")) { zreal_vkGetPhysicalDeviceToolPropertiesEXT = (PFN_vkGetPhysicalDeviceToolPropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceToolPropertiesEXT; }
+    if (!strcmp(name, "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV")) { zreal_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV = (PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV; }
+    if (!strcmp(name, "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV")) { zreal_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV = (PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV; }
+    if (!strcmp(name, "vkCreateHeadlessSurfaceEXT")) { zreal_vkCreateHeadlessSurfaceEXT = (PFN_vkCreateHeadlessSurfaceEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreateHeadlessSurfaceEXT; }
+    if (!strcmp(name, "vkCmdSetLineStippleEXT")) { zreal_vkCmdSetLineStippleEXT = (PFN_vkCmdSetLineStippleEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetLineStippleEXT; }
+    if (!strcmp(name, "vkResetQueryPoolEXT")) { zreal_vkResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)real; return (PFN_vkVoidFunction)ztrace_vkResetQueryPoolEXT; }
+    if (!strcmp(name, "vkCmdSetCullModeEXT")) { zreal_vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCullModeEXT; }
+    if (!strcmp(name, "vkCmdSetFrontFaceEXT")) { zreal_vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetFrontFaceEXT; }
+    if (!strcmp(name, "vkCmdSetPrimitiveTopologyEXT")) { zreal_vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPrimitiveTopologyEXT; }
+    if (!strcmp(name, "vkCmdSetViewportWithCountEXT")) { zreal_vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportWithCountEXT; }
+    if (!strcmp(name, "vkCmdSetScissorWithCountEXT")) { zreal_vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetScissorWithCountEXT; }
+    if (!strcmp(name, "vkCmdBindVertexBuffers2EXT")) { zreal_vkCmdBindVertexBuffers2EXT = (PFN_vkCmdBindVertexBuffers2EXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindVertexBuffers2EXT; }
+    if (!strcmp(name, "vkCmdSetDepthTestEnableEXT")) { zreal_vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthTestEnableEXT; }
+    if (!strcmp(name, "vkCmdSetDepthWriteEnableEXT")) { zreal_vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthWriteEnableEXT; }
+    if (!strcmp(name, "vkCmdSetDepthCompareOpEXT")) { zreal_vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthCompareOpEXT; }
+    if (!strcmp(name, "vkCmdSetDepthBoundsTestEnableEXT")) { zreal_vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthBoundsTestEnableEXT; }
+    if (!strcmp(name, "vkCmdSetStencilTestEnableEXT")) { zreal_vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetStencilTestEnableEXT; }
+    if (!strcmp(name, "vkCmdSetStencilOpEXT")) { zreal_vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetStencilOpEXT; }
+    if (!strcmp(name, "vkGetGeneratedCommandsMemoryRequirementsNV")) { zreal_vkGetGeneratedCommandsMemoryRequirementsNV = (PFN_vkGetGeneratedCommandsMemoryRequirementsNV)real; return (PFN_vkVoidFunction)ztrace_vkGetGeneratedCommandsMemoryRequirementsNV; }
+    if (!strcmp(name, "vkCmdPreprocessGeneratedCommandsNV")) { zreal_vkCmdPreprocessGeneratedCommandsNV = (PFN_vkCmdPreprocessGeneratedCommandsNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdPreprocessGeneratedCommandsNV; }
+    if (!strcmp(name, "vkCmdExecuteGeneratedCommandsNV")) { zreal_vkCmdExecuteGeneratedCommandsNV = (PFN_vkCmdExecuteGeneratedCommandsNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdExecuteGeneratedCommandsNV; }
+    if (!strcmp(name, "vkCmdBindPipelineShaderGroupNV")) { zreal_vkCmdBindPipelineShaderGroupNV = (PFN_vkCmdBindPipelineShaderGroupNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindPipelineShaderGroupNV; }
+    if (!strcmp(name, "vkCreateIndirectCommandsLayoutNV")) { zreal_vkCreateIndirectCommandsLayoutNV = (PFN_vkCreateIndirectCommandsLayoutNV)real; return (PFN_vkVoidFunction)ztrace_vkCreateIndirectCommandsLayoutNV; }
+    if (!strcmp(name, "vkDestroyIndirectCommandsLayoutNV")) { zreal_vkDestroyIndirectCommandsLayoutNV = (PFN_vkDestroyIndirectCommandsLayoutNV)real; return (PFN_vkVoidFunction)ztrace_vkDestroyIndirectCommandsLayoutNV; }
+    if (!strcmp(name, "vkAcquireDrmDisplayEXT")) { zreal_vkAcquireDrmDisplayEXT = (PFN_vkAcquireDrmDisplayEXT)real; return (PFN_vkVoidFunction)ztrace_vkAcquireDrmDisplayEXT; }
+    if (!strcmp(name, "vkGetDrmDisplayEXT")) { zreal_vkGetDrmDisplayEXT = (PFN_vkGetDrmDisplayEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetDrmDisplayEXT; }
+    if (!strcmp(name, "vkCreatePrivateDataSlotEXT")) { zreal_vkCreatePrivateDataSlotEXT = (PFN_vkCreatePrivateDataSlotEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreatePrivateDataSlotEXT; }
+    if (!strcmp(name, "vkDestroyPrivateDataSlotEXT")) { zreal_vkDestroyPrivateDataSlotEXT = (PFN_vkDestroyPrivateDataSlotEXT)real; return (PFN_vkVoidFunction)ztrace_vkDestroyPrivateDataSlotEXT; }
+    if (!strcmp(name, "vkSetPrivateDataEXT")) { zreal_vkSetPrivateDataEXT = (PFN_vkSetPrivateDataEXT)real; return (PFN_vkVoidFunction)ztrace_vkSetPrivateDataEXT; }
+    if (!strcmp(name, "vkGetPrivateDataEXT")) { zreal_vkGetPrivateDataEXT = (PFN_vkGetPrivateDataEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPrivateDataEXT; }
+    if (!strcmp(name, "vkCmdSetFragmentShadingRateEnumNV")) { zreal_vkCmdSetFragmentShadingRateEnumNV = (PFN_vkCmdSetFragmentShadingRateEnumNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetFragmentShadingRateEnumNV; }
+    if (!strcmp(name, "vkGetImageSubresourceLayout2EXT")) { zreal_vkGetImageSubresourceLayout2EXT = (PFN_vkGetImageSubresourceLayout2EXT)real; return (PFN_vkVoidFunction)ztrace_vkGetImageSubresourceLayout2EXT; }
+    if (!strcmp(name, "vkGetDeviceFaultInfoEXT")) { zreal_vkGetDeviceFaultInfoEXT = (PFN_vkGetDeviceFaultInfoEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceFaultInfoEXT; }
+    if (!strcmp(name, "vkAcquireWinrtDisplayNV")) { zreal_vkAcquireWinrtDisplayNV = (PFN_vkAcquireWinrtDisplayNV)real; return (PFN_vkVoidFunction)ztrace_vkAcquireWinrtDisplayNV; }
+    if (!strcmp(name, "vkGetWinrtDisplayNV")) { zreal_vkGetWinrtDisplayNV = (PFN_vkGetWinrtDisplayNV)real; return (PFN_vkVoidFunction)ztrace_vkGetWinrtDisplayNV; }
+    if (!strcmp(name, "vkCmdSetVertexInputEXT")) { zreal_vkCmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetVertexInputEXT; }
+    if (!strcmp(name, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI")) { zreal_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI = (PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI; }
+    if (!strcmp(name, "vkCmdSubpassShadingHUAWEI")) { zreal_vkCmdSubpassShadingHUAWEI = (PFN_vkCmdSubpassShadingHUAWEI)real; return (PFN_vkVoidFunction)ztrace_vkCmdSubpassShadingHUAWEI; }
+    if (!strcmp(name, "vkCmdBindInvocationMaskHUAWEI")) { zreal_vkCmdBindInvocationMaskHUAWEI = (PFN_vkCmdBindInvocationMaskHUAWEI)real; return (PFN_vkVoidFunction)ztrace_vkCmdBindInvocationMaskHUAWEI; }
+    if (!strcmp(name, "vkGetMemoryRemoteAddressNV")) { zreal_vkGetMemoryRemoteAddressNV = (PFN_vkGetMemoryRemoteAddressNV)real; return (PFN_vkVoidFunction)ztrace_vkGetMemoryRemoteAddressNV; }
+    if (!strcmp(name, "vkGetPipelinePropertiesEXT")) { zreal_vkGetPipelinePropertiesEXT = (PFN_vkGetPipelinePropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetPipelinePropertiesEXT; }
+    if (!strcmp(name, "vkCmdSetPatchControlPointsEXT")) { zreal_vkCmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPatchControlPointsEXT; }
+    if (!strcmp(name, "vkCmdSetRasterizerDiscardEnableEXT")) { zreal_vkCmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRasterizerDiscardEnableEXT; }
+    if (!strcmp(name, "vkCmdSetDepthBiasEnableEXT")) { zreal_vkCmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthBiasEnableEXT; }
+    if (!strcmp(name, "vkCmdSetLogicOpEXT")) { zreal_vkCmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetLogicOpEXT; }
+    if (!strcmp(name, "vkCmdSetPrimitiveRestartEnableEXT")) { zreal_vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPrimitiveRestartEnableEXT; }
+    if (!strcmp(name, "vkCmdSetColorWriteEnableEXT")) { zreal_vkCmdSetColorWriteEnableEXT = (PFN_vkCmdSetColorWriteEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetColorWriteEnableEXT; }
+    if (!strcmp(name, "vkCmdDrawMultiEXT")) { zreal_vkCmdDrawMultiEXT = (PFN_vkCmdDrawMultiEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMultiEXT; }
+    if (!strcmp(name, "vkCmdDrawMultiIndexedEXT")) { zreal_vkCmdDrawMultiIndexedEXT = (PFN_vkCmdDrawMultiIndexedEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMultiIndexedEXT; }
+    if (!strcmp(name, "vkCreateMicromapEXT")) { zreal_vkCreateMicromapEXT = (PFN_vkCreateMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkCreateMicromapEXT; }
+    if (!strcmp(name, "vkDestroyMicromapEXT")) { zreal_vkDestroyMicromapEXT = (PFN_vkDestroyMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkDestroyMicromapEXT; }
+    if (!strcmp(name, "vkCmdBuildMicromapsEXT")) { zreal_vkCmdBuildMicromapsEXT = (PFN_vkCmdBuildMicromapsEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdBuildMicromapsEXT; }
+    if (!strcmp(name, "vkBuildMicromapsEXT")) { zreal_vkBuildMicromapsEXT = (PFN_vkBuildMicromapsEXT)real; return (PFN_vkVoidFunction)ztrace_vkBuildMicromapsEXT; }
+    if (!strcmp(name, "vkCopyMicromapEXT")) { zreal_vkCopyMicromapEXT = (PFN_vkCopyMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkCopyMicromapEXT; }
+    if (!strcmp(name, "vkCopyMicromapToMemoryEXT")) { zreal_vkCopyMicromapToMemoryEXT = (PFN_vkCopyMicromapToMemoryEXT)real; return (PFN_vkVoidFunction)ztrace_vkCopyMicromapToMemoryEXT; }
+    if (!strcmp(name, "vkCopyMemoryToMicromapEXT")) { zreal_vkCopyMemoryToMicromapEXT = (PFN_vkCopyMemoryToMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkCopyMemoryToMicromapEXT; }
+    if (!strcmp(name, "vkWriteMicromapsPropertiesEXT")) { zreal_vkWriteMicromapsPropertiesEXT = (PFN_vkWriteMicromapsPropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkWriteMicromapsPropertiesEXT; }
+    if (!strcmp(name, "vkCmdCopyMicromapEXT")) { zreal_vkCmdCopyMicromapEXT = (PFN_vkCmdCopyMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyMicromapEXT; }
+    if (!strcmp(name, "vkCmdCopyMicromapToMemoryEXT")) { zreal_vkCmdCopyMicromapToMemoryEXT = (PFN_vkCmdCopyMicromapToMemoryEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyMicromapToMemoryEXT; }
+    if (!strcmp(name, "vkCmdCopyMemoryToMicromapEXT")) { zreal_vkCmdCopyMemoryToMicromapEXT = (PFN_vkCmdCopyMemoryToMicromapEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyMemoryToMicromapEXT; }
+    if (!strcmp(name, "vkCmdWriteMicromapsPropertiesEXT")) { zreal_vkCmdWriteMicromapsPropertiesEXT = (PFN_vkCmdWriteMicromapsPropertiesEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteMicromapsPropertiesEXT; }
+    if (!strcmp(name, "vkGetDeviceMicromapCompatibilityEXT")) { zreal_vkGetDeviceMicromapCompatibilityEXT = (PFN_vkGetDeviceMicromapCompatibilityEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceMicromapCompatibilityEXT; }
+    if (!strcmp(name, "vkGetMicromapBuildSizesEXT")) { zreal_vkGetMicromapBuildSizesEXT = (PFN_vkGetMicromapBuildSizesEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetMicromapBuildSizesEXT; }
+    if (!strcmp(name, "vkSetDeviceMemoryPriorityEXT")) { zreal_vkSetDeviceMemoryPriorityEXT = (PFN_vkSetDeviceMemoryPriorityEXT)real; return (PFN_vkVoidFunction)ztrace_vkSetDeviceMemoryPriorityEXT; }
+    if (!strcmp(name, "vkGetDescriptorSetLayoutHostMappingInfoVALVE")) { zreal_vkGetDescriptorSetLayoutHostMappingInfoVALVE = (PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE)real; return (PFN_vkVoidFunction)ztrace_vkGetDescriptorSetLayoutHostMappingInfoVALVE; }
+    if (!strcmp(name, "vkGetDescriptorSetHostMappingVALVE")) { zreal_vkGetDescriptorSetHostMappingVALVE = (PFN_vkGetDescriptorSetHostMappingVALVE)real; return (PFN_vkVoidFunction)ztrace_vkGetDescriptorSetHostMappingVALVE; }
+    if (!strcmp(name, "vkCmdSetTessellationDomainOriginEXT")) { zreal_vkCmdSetTessellationDomainOriginEXT = (PFN_vkCmdSetTessellationDomainOriginEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetTessellationDomainOriginEXT; }
+    if (!strcmp(name, "vkCmdSetDepthClampEnableEXT")) { zreal_vkCmdSetDepthClampEnableEXT = (PFN_vkCmdSetDepthClampEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthClampEnableEXT; }
+    if (!strcmp(name, "vkCmdSetPolygonModeEXT")) { zreal_vkCmdSetPolygonModeEXT = (PFN_vkCmdSetPolygonModeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetPolygonModeEXT; }
+    if (!strcmp(name, "vkCmdSetRasterizationSamplesEXT")) { zreal_vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRasterizationSamplesEXT; }
+    if (!strcmp(name, "vkCmdSetSampleMaskEXT")) { zreal_vkCmdSetSampleMaskEXT = (PFN_vkCmdSetSampleMaskEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetSampleMaskEXT; }
+    if (!strcmp(name, "vkCmdSetAlphaToCoverageEnableEXT")) { zreal_vkCmdSetAlphaToCoverageEnableEXT = (PFN_vkCmdSetAlphaToCoverageEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetAlphaToCoverageEnableEXT; }
+    if (!strcmp(name, "vkCmdSetAlphaToOneEnableEXT")) { zreal_vkCmdSetAlphaToOneEnableEXT = (PFN_vkCmdSetAlphaToOneEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetAlphaToOneEnableEXT; }
+    if (!strcmp(name, "vkCmdSetLogicOpEnableEXT")) { zreal_vkCmdSetLogicOpEnableEXT = (PFN_vkCmdSetLogicOpEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetLogicOpEnableEXT; }
+    if (!strcmp(name, "vkCmdSetColorBlendEnableEXT")) { zreal_vkCmdSetColorBlendEnableEXT = (PFN_vkCmdSetColorBlendEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetColorBlendEnableEXT; }
+    if (!strcmp(name, "vkCmdSetColorBlendEquationEXT")) { zreal_vkCmdSetColorBlendEquationEXT = (PFN_vkCmdSetColorBlendEquationEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetColorBlendEquationEXT; }
+    if (!strcmp(name, "vkCmdSetColorWriteMaskEXT")) { zreal_vkCmdSetColorWriteMaskEXT = (PFN_vkCmdSetColorWriteMaskEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetColorWriteMaskEXT; }
+    if (!strcmp(name, "vkCmdSetRasterizationStreamEXT")) { zreal_vkCmdSetRasterizationStreamEXT = (PFN_vkCmdSetRasterizationStreamEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRasterizationStreamEXT; }
+    if (!strcmp(name, "vkCmdSetConservativeRasterizationModeEXT")) { zreal_vkCmdSetConservativeRasterizationModeEXT = (PFN_vkCmdSetConservativeRasterizationModeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetConservativeRasterizationModeEXT; }
+    if (!strcmp(name, "vkCmdSetExtraPrimitiveOverestimationSizeEXT")) { zreal_vkCmdSetExtraPrimitiveOverestimationSizeEXT = (PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetExtraPrimitiveOverestimationSizeEXT; }
+    if (!strcmp(name, "vkCmdSetDepthClipEnableEXT")) { zreal_vkCmdSetDepthClipEnableEXT = (PFN_vkCmdSetDepthClipEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthClipEnableEXT; }
+    if (!strcmp(name, "vkCmdSetSampleLocationsEnableEXT")) { zreal_vkCmdSetSampleLocationsEnableEXT = (PFN_vkCmdSetSampleLocationsEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetSampleLocationsEnableEXT; }
+    if (!strcmp(name, "vkCmdSetColorBlendAdvancedEXT")) { zreal_vkCmdSetColorBlendAdvancedEXT = (PFN_vkCmdSetColorBlendAdvancedEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetColorBlendAdvancedEXT; }
+    if (!strcmp(name, "vkCmdSetProvokingVertexModeEXT")) { zreal_vkCmdSetProvokingVertexModeEXT = (PFN_vkCmdSetProvokingVertexModeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetProvokingVertexModeEXT; }
+    if (!strcmp(name, "vkCmdSetLineRasterizationModeEXT")) { zreal_vkCmdSetLineRasterizationModeEXT = (PFN_vkCmdSetLineRasterizationModeEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetLineRasterizationModeEXT; }
+    if (!strcmp(name, "vkCmdSetLineStippleEnableEXT")) { zreal_vkCmdSetLineStippleEnableEXT = (PFN_vkCmdSetLineStippleEnableEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetLineStippleEnableEXT; }
+    if (!strcmp(name, "vkCmdSetDepthClipNegativeOneToOneEXT")) { zreal_vkCmdSetDepthClipNegativeOneToOneEXT = (PFN_vkCmdSetDepthClipNegativeOneToOneEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetDepthClipNegativeOneToOneEXT; }
+    if (!strcmp(name, "vkCmdSetViewportWScalingEnableNV")) { zreal_vkCmdSetViewportWScalingEnableNV = (PFN_vkCmdSetViewportWScalingEnableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportWScalingEnableNV; }
+    if (!strcmp(name, "vkCmdSetViewportSwizzleNV")) { zreal_vkCmdSetViewportSwizzleNV = (PFN_vkCmdSetViewportSwizzleNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetViewportSwizzleNV; }
+    if (!strcmp(name, "vkCmdSetCoverageToColorEnableNV")) { zreal_vkCmdSetCoverageToColorEnableNV = (PFN_vkCmdSetCoverageToColorEnableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageToColorEnableNV; }
+    if (!strcmp(name, "vkCmdSetCoverageToColorLocationNV")) { zreal_vkCmdSetCoverageToColorLocationNV = (PFN_vkCmdSetCoverageToColorLocationNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageToColorLocationNV; }
+    if (!strcmp(name, "vkCmdSetCoverageModulationModeNV")) { zreal_vkCmdSetCoverageModulationModeNV = (PFN_vkCmdSetCoverageModulationModeNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageModulationModeNV; }
+    if (!strcmp(name, "vkCmdSetCoverageModulationTableEnableNV")) { zreal_vkCmdSetCoverageModulationTableEnableNV = (PFN_vkCmdSetCoverageModulationTableEnableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageModulationTableEnableNV; }
+    if (!strcmp(name, "vkCmdSetCoverageModulationTableNV")) { zreal_vkCmdSetCoverageModulationTableNV = (PFN_vkCmdSetCoverageModulationTableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageModulationTableNV; }
+    if (!strcmp(name, "vkCmdSetShadingRateImageEnableNV")) { zreal_vkCmdSetShadingRateImageEnableNV = (PFN_vkCmdSetShadingRateImageEnableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetShadingRateImageEnableNV; }
+    if (!strcmp(name, "vkCmdSetRepresentativeFragmentTestEnableNV")) { zreal_vkCmdSetRepresentativeFragmentTestEnableNV = (PFN_vkCmdSetRepresentativeFragmentTestEnableNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRepresentativeFragmentTestEnableNV; }
+    if (!strcmp(name, "vkCmdSetCoverageReductionModeNV")) { zreal_vkCmdSetCoverageReductionModeNV = (PFN_vkCmdSetCoverageReductionModeNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetCoverageReductionModeNV; }
+    if (!strcmp(name, "vkGetShaderModuleIdentifierEXT")) { zreal_vkGetShaderModuleIdentifierEXT = (PFN_vkGetShaderModuleIdentifierEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetShaderModuleIdentifierEXT; }
+    if (!strcmp(name, "vkGetShaderModuleCreateInfoIdentifierEXT")) { zreal_vkGetShaderModuleCreateInfoIdentifierEXT = (PFN_vkGetShaderModuleCreateInfoIdentifierEXT)real; return (PFN_vkVoidFunction)ztrace_vkGetShaderModuleCreateInfoIdentifierEXT; }
+    if (!strcmp(name, "vkGetPhysicalDeviceOpticalFlowImageFormatsNV")) { zreal_vkGetPhysicalDeviceOpticalFlowImageFormatsNV = (PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV)real; return (PFN_vkVoidFunction)ztrace_vkGetPhysicalDeviceOpticalFlowImageFormatsNV; }
+    if (!strcmp(name, "vkCreateOpticalFlowSessionNV")) { zreal_vkCreateOpticalFlowSessionNV = (PFN_vkCreateOpticalFlowSessionNV)real; return (PFN_vkVoidFunction)ztrace_vkCreateOpticalFlowSessionNV; }
+    if (!strcmp(name, "vkDestroyOpticalFlowSessionNV")) { zreal_vkDestroyOpticalFlowSessionNV = (PFN_vkDestroyOpticalFlowSessionNV)real; return (PFN_vkVoidFunction)ztrace_vkDestroyOpticalFlowSessionNV; }
+    if (!strcmp(name, "vkBindOpticalFlowSessionImageNV")) { zreal_vkBindOpticalFlowSessionImageNV = (PFN_vkBindOpticalFlowSessionImageNV)real; return (PFN_vkVoidFunction)ztrace_vkBindOpticalFlowSessionImageNV; }
+    if (!strcmp(name, "vkCmdOpticalFlowExecuteNV")) { zreal_vkCmdOpticalFlowExecuteNV = (PFN_vkCmdOpticalFlowExecuteNV)real; return (PFN_vkVoidFunction)ztrace_vkCmdOpticalFlowExecuteNV; }
+    if (!strcmp(name, "vkGetFramebufferTilePropertiesQCOM")) { zreal_vkGetFramebufferTilePropertiesQCOM = (PFN_vkGetFramebufferTilePropertiesQCOM)real; return (PFN_vkVoidFunction)ztrace_vkGetFramebufferTilePropertiesQCOM; }
+    if (!strcmp(name, "vkGetDynamicRenderingTilePropertiesQCOM")) { zreal_vkGetDynamicRenderingTilePropertiesQCOM = (PFN_vkGetDynamicRenderingTilePropertiesQCOM)real; return (PFN_vkVoidFunction)ztrace_vkGetDynamicRenderingTilePropertiesQCOM; }
+    if (!strcmp(name, "vkCreateAccelerationStructureKHR")) { zreal_vkCreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateAccelerationStructureKHR; }
+    if (!strcmp(name, "vkDestroyAccelerationStructureKHR")) { zreal_vkDestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkDestroyAccelerationStructureKHR; }
+    if (!strcmp(name, "vkCmdBuildAccelerationStructuresKHR")) { zreal_vkCmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdBuildAccelerationStructuresKHR; }
+    if (!strcmp(name, "vkCmdBuildAccelerationStructuresIndirectKHR")) { zreal_vkCmdBuildAccelerationStructuresIndirectKHR = (PFN_vkCmdBuildAccelerationStructuresIndirectKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdBuildAccelerationStructuresIndirectKHR; }
+    if (!strcmp(name, "vkBuildAccelerationStructuresKHR")) { zreal_vkBuildAccelerationStructuresKHR = (PFN_vkBuildAccelerationStructuresKHR)real; return (PFN_vkVoidFunction)ztrace_vkBuildAccelerationStructuresKHR; }
+    if (!strcmp(name, "vkCopyAccelerationStructureKHR")) { zreal_vkCopyAccelerationStructureKHR = (PFN_vkCopyAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkCopyAccelerationStructureKHR; }
+    if (!strcmp(name, "vkCopyAccelerationStructureToMemoryKHR")) { zreal_vkCopyAccelerationStructureToMemoryKHR = (PFN_vkCopyAccelerationStructureToMemoryKHR)real; return (PFN_vkVoidFunction)ztrace_vkCopyAccelerationStructureToMemoryKHR; }
+    if (!strcmp(name, "vkCopyMemoryToAccelerationStructureKHR")) { zreal_vkCopyMemoryToAccelerationStructureKHR = (PFN_vkCopyMemoryToAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkCopyMemoryToAccelerationStructureKHR; }
+    if (!strcmp(name, "vkWriteAccelerationStructuresPropertiesKHR")) { zreal_vkWriteAccelerationStructuresPropertiesKHR = (PFN_vkWriteAccelerationStructuresPropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkWriteAccelerationStructuresPropertiesKHR; }
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureKHR")) { zreal_vkCmdCopyAccelerationStructureKHR = (PFN_vkCmdCopyAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyAccelerationStructureKHR; }
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureToMemoryKHR")) { zreal_vkCmdCopyAccelerationStructureToMemoryKHR = (PFN_vkCmdCopyAccelerationStructureToMemoryKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyAccelerationStructureToMemoryKHR; }
+    if (!strcmp(name, "vkCmdCopyMemoryToAccelerationStructureKHR")) { zreal_vkCmdCopyMemoryToAccelerationStructureKHR = (PFN_vkCmdCopyMemoryToAccelerationStructureKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdCopyMemoryToAccelerationStructureKHR; }
+    if (!strcmp(name, "vkGetAccelerationStructureDeviceAddressKHR")) { zreal_vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetAccelerationStructureDeviceAddressKHR; }
+    if (!strcmp(name, "vkCmdWriteAccelerationStructuresPropertiesKHR")) { zreal_vkCmdWriteAccelerationStructuresPropertiesKHR = (PFN_vkCmdWriteAccelerationStructuresPropertiesKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdWriteAccelerationStructuresPropertiesKHR; }
+    if (!strcmp(name, "vkGetDeviceAccelerationStructureCompatibilityKHR")) { zreal_vkGetDeviceAccelerationStructureCompatibilityKHR = (PFN_vkGetDeviceAccelerationStructureCompatibilityKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetDeviceAccelerationStructureCompatibilityKHR; }
+    if (!strcmp(name, "vkGetAccelerationStructureBuildSizesKHR")) { zreal_vkGetAccelerationStructureBuildSizesKHR = (PFN_vkGetAccelerationStructureBuildSizesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetAccelerationStructureBuildSizesKHR; }
+    if (!strcmp(name, "vkCmdTraceRaysKHR")) { zreal_vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdTraceRaysKHR; }
+    if (!strcmp(name, "vkCreateRayTracingPipelinesKHR")) { zreal_vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)real; return (PFN_vkVoidFunction)ztrace_vkCreateRayTracingPipelinesKHR; }
+    if (!strcmp(name, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR")) { zreal_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = (PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR; }
+    if (!strcmp(name, "vkCmdTraceRaysIndirectKHR")) { zreal_vkCmdTraceRaysIndirectKHR = (PFN_vkCmdTraceRaysIndirectKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdTraceRaysIndirectKHR; }
+    if (!strcmp(name, "vkGetRayTracingShaderGroupStackSizeKHR")) { zreal_vkGetRayTracingShaderGroupStackSizeKHR = (PFN_vkGetRayTracingShaderGroupStackSizeKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetRayTracingShaderGroupStackSizeKHR; }
+    if (!strcmp(name, "vkCmdSetRayTracingPipelineStackSizeKHR")) { zreal_vkCmdSetRayTracingPipelineStackSizeKHR = (PFN_vkCmdSetRayTracingPipelineStackSizeKHR)real; return (PFN_vkVoidFunction)ztrace_vkCmdSetRayTracingPipelineStackSizeKHR; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksEXT")) { zreal_vkCmdDrawMeshTasksEXT = (PFN_vkCmdDrawMeshTasksEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksEXT; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectEXT")) { zreal_vkCmdDrawMeshTasksIndirectEXT = (PFN_vkCmdDrawMeshTasksIndirectEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksIndirectEXT; }
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectCountEXT")) { zreal_vkCmdDrawMeshTasksIndirectCountEXT = (PFN_vkCmdDrawMeshTasksIndirectCountEXT)real; return (PFN_vkVoidFunction)ztrace_vkCmdDrawMeshTasksIndirectCountEXT; }
+    if (!strcmp(name, "vkGetRenderingAreaGranularityKHR")) { zreal_vkGetRenderingAreaGranularityKHR = (PFN_vkGetRenderingAreaGranularityKHR)real; return (PFN_vkVoidFunction)ztrace_vkGetRenderingAreaGranularityKHR; }
     return real;
 }
 static PFN_vkVoidFunction zink_stub_proc(const char *name) {
@@ -2101,6 +6111,376 @@ static PFN_vkVoidFunction zink_stub_proc(const char *name) {
     if (!strcmp(name, "vkCreateDebugUtilsMessengerEXT")) return (PFN_vkVoidFunction)zstub_vkCreateDebugUtilsMessengerEXT;
     if (!strcmp(name, "vkDestroyDebugUtilsMessengerEXT")) return (PFN_vkVoidFunction)zstub_vkDestroyDebugUtilsMessengerEXT;
     if (!strcmp(name, "vkSubmitDebugUtilsMessageEXT")) return (PFN_vkVoidFunction)zstub_vkSubmitDebugUtilsMessageEXT;
+    if (!strcmp(name, "vkCmdDrawIndirectCount")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndirectCount;
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCount")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndexedIndirectCount;
+    if (!strcmp(name, "vkCreateRenderPass2")) return (PFN_vkVoidFunction)zstub_vkCreateRenderPass2;
+    if (!strcmp(name, "vkCmdBeginRenderPass2")) return (PFN_vkVoidFunction)zstub_vkCmdBeginRenderPass2;
+    if (!strcmp(name, "vkCmdNextSubpass2")) return (PFN_vkVoidFunction)zstub_vkCmdNextSubpass2;
+    if (!strcmp(name, "vkCmdEndRenderPass2")) return (PFN_vkVoidFunction)zstub_vkCmdEndRenderPass2;
+    if (!strcmp(name, "vkResetQueryPool")) return (PFN_vkVoidFunction)zstub_vkResetQueryPool;
+    if (!strcmp(name, "vkGetSemaphoreCounterValue")) return (PFN_vkVoidFunction)zstub_vkGetSemaphoreCounterValue;
+    if (!strcmp(name, "vkWaitSemaphores")) return (PFN_vkVoidFunction)zstub_vkWaitSemaphores;
+    if (!strcmp(name, "vkSignalSemaphore")) return (PFN_vkVoidFunction)zstub_vkSignalSemaphore;
+    if (!strcmp(name, "vkGetBufferDeviceAddress")) return (PFN_vkVoidFunction)zstub_vkGetBufferDeviceAddress;
+    if (!strcmp(name, "vkGetBufferOpaqueCaptureAddress")) return (PFN_vkVoidFunction)zstub_vkGetBufferOpaqueCaptureAddress;
+    if (!strcmp(name, "vkGetDeviceMemoryOpaqueCaptureAddress")) return (PFN_vkVoidFunction)zstub_vkGetDeviceMemoryOpaqueCaptureAddress;
+    if (!strcmp(name, "vkGetPhysicalDeviceToolProperties")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceToolProperties;
+    if (!strcmp(name, "vkCreatePrivateDataSlot")) return (PFN_vkVoidFunction)zstub_vkCreatePrivateDataSlot;
+    if (!strcmp(name, "vkDestroyPrivateDataSlot")) return (PFN_vkVoidFunction)zstub_vkDestroyPrivateDataSlot;
+    if (!strcmp(name, "vkSetPrivateData")) return (PFN_vkVoidFunction)zstub_vkSetPrivateData;
+    if (!strcmp(name, "vkGetPrivateData")) return (PFN_vkVoidFunction)zstub_vkGetPrivateData;
+    if (!strcmp(name, "vkCmdSetEvent2")) return (PFN_vkVoidFunction)zstub_vkCmdSetEvent2;
+    if (!strcmp(name, "vkCmdResetEvent2")) return (PFN_vkVoidFunction)zstub_vkCmdResetEvent2;
+    if (!strcmp(name, "vkCmdWaitEvents2")) return (PFN_vkVoidFunction)zstub_vkCmdWaitEvents2;
+    if (!strcmp(name, "vkCmdPipelineBarrier2")) return (PFN_vkVoidFunction)zstub_vkCmdPipelineBarrier2;
+    if (!strcmp(name, "vkCmdWriteTimestamp2")) return (PFN_vkVoidFunction)zstub_vkCmdWriteTimestamp2;
+    if (!strcmp(name, "vkQueueSubmit2")) return (PFN_vkVoidFunction)zstub_vkQueueSubmit2;
+    if (!strcmp(name, "vkCmdCopyBuffer2")) return (PFN_vkVoidFunction)zstub_vkCmdCopyBuffer2;
+    if (!strcmp(name, "vkCmdCopyImage2")) return (PFN_vkVoidFunction)zstub_vkCmdCopyImage2;
+    if (!strcmp(name, "vkCmdCopyBufferToImage2")) return (PFN_vkVoidFunction)zstub_vkCmdCopyBufferToImage2;
+    if (!strcmp(name, "vkCmdCopyImageToBuffer2")) return (PFN_vkVoidFunction)zstub_vkCmdCopyImageToBuffer2;
+    if (!strcmp(name, "vkCmdBlitImage2")) return (PFN_vkVoidFunction)zstub_vkCmdBlitImage2;
+    if (!strcmp(name, "vkCmdResolveImage2")) return (PFN_vkVoidFunction)zstub_vkCmdResolveImage2;
+    if (!strcmp(name, "vkCmdBeginRendering")) return (PFN_vkVoidFunction)zstub_vkCmdBeginRendering;
+    if (!strcmp(name, "vkCmdEndRendering")) return (PFN_vkVoidFunction)zstub_vkCmdEndRendering;
+    if (!strcmp(name, "vkCmdSetCullMode")) return (PFN_vkVoidFunction)zstub_vkCmdSetCullMode;
+    if (!strcmp(name, "vkCmdSetFrontFace")) return (PFN_vkVoidFunction)zstub_vkCmdSetFrontFace;
+    if (!strcmp(name, "vkCmdSetPrimitiveTopology")) return (PFN_vkVoidFunction)zstub_vkCmdSetPrimitiveTopology;
+    if (!strcmp(name, "vkCmdSetViewportWithCount")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportWithCount;
+    if (!strcmp(name, "vkCmdSetScissorWithCount")) return (PFN_vkVoidFunction)zstub_vkCmdSetScissorWithCount;
+    if (!strcmp(name, "vkCmdBindVertexBuffers2")) return (PFN_vkVoidFunction)zstub_vkCmdBindVertexBuffers2;
+    if (!strcmp(name, "vkCmdSetDepthTestEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthTestEnable;
+    if (!strcmp(name, "vkCmdSetDepthWriteEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthWriteEnable;
+    if (!strcmp(name, "vkCmdSetDepthCompareOp")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthCompareOp;
+    if (!strcmp(name, "vkCmdSetDepthBoundsTestEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthBoundsTestEnable;
+    if (!strcmp(name, "vkCmdSetStencilTestEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetStencilTestEnable;
+    if (!strcmp(name, "vkCmdSetStencilOp")) return (PFN_vkVoidFunction)zstub_vkCmdSetStencilOp;
+    if (!strcmp(name, "vkCmdSetRasterizerDiscardEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetRasterizerDiscardEnable;
+    if (!strcmp(name, "vkCmdSetDepthBiasEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthBiasEnable;
+    if (!strcmp(name, "vkCmdSetPrimitiveRestartEnable")) return (PFN_vkVoidFunction)zstub_vkCmdSetPrimitiveRestartEnable;
+    if (!strcmp(name, "vkGetDeviceBufferMemoryRequirements")) return (PFN_vkVoidFunction)zstub_vkGetDeviceBufferMemoryRequirements;
+    if (!strcmp(name, "vkGetDeviceImageMemoryRequirements")) return (PFN_vkVoidFunction)zstub_vkGetDeviceImageMemoryRequirements;
+    if (!strcmp(name, "vkGetDeviceImageSparseMemoryRequirements")) return (PFN_vkVoidFunction)zstub_vkGetDeviceImageSparseMemoryRequirements;
+    if (!strcmp(name, "vkDestroySurfaceKHR")) return (PFN_vkVoidFunction)zstub_vkDestroySurfaceKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceSupportKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceSupportKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceFormatsKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceFormatsKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfacePresentModesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfacePresentModesKHR;
+    if (!strcmp(name, "vkCreateSwapchainKHR")) return (PFN_vkVoidFunction)zstub_vkCreateSwapchainKHR;
+    if (!strcmp(name, "vkDestroySwapchainKHR")) return (PFN_vkVoidFunction)zstub_vkDestroySwapchainKHR;
+    if (!strcmp(name, "vkGetSwapchainImagesKHR")) return (PFN_vkVoidFunction)zstub_vkGetSwapchainImagesKHR;
+    if (!strcmp(name, "vkAcquireNextImageKHR")) return (PFN_vkVoidFunction)zstub_vkAcquireNextImageKHR;
+    if (!strcmp(name, "vkQueuePresentKHR")) return (PFN_vkVoidFunction)zstub_vkQueuePresentKHR;
+    if (!strcmp(name, "vkGetDeviceGroupPresentCapabilitiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceGroupPresentCapabilitiesKHR;
+    if (!strcmp(name, "vkGetDeviceGroupSurfacePresentModesKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceGroupSurfacePresentModesKHR;
+    if (!strcmp(name, "vkGetPhysicalDevicePresentRectanglesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDevicePresentRectanglesKHR;
+    if (!strcmp(name, "vkAcquireNextImage2KHR")) return (PFN_vkVoidFunction)zstub_vkAcquireNextImage2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceDisplayPropertiesKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceDisplayPlanePropertiesKHR;
+    if (!strcmp(name, "vkGetDisplayPlaneSupportedDisplaysKHR")) return (PFN_vkVoidFunction)zstub_vkGetDisplayPlaneSupportedDisplaysKHR;
+    if (!strcmp(name, "vkGetDisplayModePropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetDisplayModePropertiesKHR;
+    if (!strcmp(name, "vkCreateDisplayModeKHR")) return (PFN_vkVoidFunction)zstub_vkCreateDisplayModeKHR;
+    if (!strcmp(name, "vkGetDisplayPlaneCapabilitiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetDisplayPlaneCapabilitiesKHR;
+    if (!strcmp(name, "vkCreateDisplayPlaneSurfaceKHR")) return (PFN_vkVoidFunction)zstub_vkCreateDisplayPlaneSurfaceKHR;
+    if (!strcmp(name, "vkCreateSharedSwapchainsKHR")) return (PFN_vkVoidFunction)zstub_vkCreateSharedSwapchainsKHR;
+    if (!strcmp(name, "vkCmdBeginRenderingKHR")) return (PFN_vkVoidFunction)zstub_vkCmdBeginRenderingKHR;
+    if (!strcmp(name, "vkCmdEndRenderingKHR")) return (PFN_vkVoidFunction)zstub_vkCmdEndRenderingKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceFeatures2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceFeatures2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceFormatProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceFormatProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceImageFormatProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceImageFormatProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceQueueFamilyProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceQueueFamilyProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceMemoryProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceMemoryProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSparseImageFormatProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSparseImageFormatProperties2KHR;
+    if (!strcmp(name, "vkGetDeviceGroupPeerMemoryFeaturesKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceGroupPeerMemoryFeaturesKHR;
+    if (!strcmp(name, "vkCmdSetDeviceMaskKHR")) return (PFN_vkVoidFunction)zstub_vkCmdSetDeviceMaskKHR;
+    if (!strcmp(name, "vkCmdDispatchBaseKHR")) return (PFN_vkVoidFunction)zstub_vkCmdDispatchBaseKHR;
+    if (!strcmp(name, "vkEnumeratePhysicalDeviceGroupsKHR")) return (PFN_vkVoidFunction)zstub_vkEnumeratePhysicalDeviceGroupsKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalBufferPropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceExternalBufferPropertiesKHR;
+    if (!strcmp(name, "vkGetMemoryFdKHR")) return (PFN_vkVoidFunction)zstub_vkGetMemoryFdKHR;
+    if (!strcmp(name, "vkGetMemoryFdPropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetMemoryFdPropertiesKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR;
+    if (!strcmp(name, "vkImportSemaphoreFdKHR")) return (PFN_vkVoidFunction)zstub_vkImportSemaphoreFdKHR;
+    if (!strcmp(name, "vkGetSemaphoreFdKHR")) return (PFN_vkVoidFunction)zstub_vkGetSemaphoreFdKHR;
+    if (!strcmp(name, "vkCmdPushDescriptorSetKHR")) return (PFN_vkVoidFunction)zstub_vkCmdPushDescriptorSetKHR;
+    if (!strcmp(name, "vkCmdPushDescriptorSetWithTemplateKHR")) return (PFN_vkVoidFunction)zstub_vkCmdPushDescriptorSetWithTemplateKHR;
+    if (!strcmp(name, "vkCreateDescriptorUpdateTemplateKHR")) return (PFN_vkVoidFunction)zstub_vkCreateDescriptorUpdateTemplateKHR;
+    if (!strcmp(name, "vkDestroyDescriptorUpdateTemplateKHR")) return (PFN_vkVoidFunction)zstub_vkDestroyDescriptorUpdateTemplateKHR;
+    if (!strcmp(name, "vkUpdateDescriptorSetWithTemplateKHR")) return (PFN_vkVoidFunction)zstub_vkUpdateDescriptorSetWithTemplateKHR;
+    if (!strcmp(name, "vkCreateRenderPass2KHR")) return (PFN_vkVoidFunction)zstub_vkCreateRenderPass2KHR;
+    if (!strcmp(name, "vkCmdBeginRenderPass2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdBeginRenderPass2KHR;
+    if (!strcmp(name, "vkCmdNextSubpass2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdNextSubpass2KHR;
+    if (!strcmp(name, "vkCmdEndRenderPass2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdEndRenderPass2KHR;
+    if (!strcmp(name, "vkGetSwapchainStatusKHR")) return (PFN_vkVoidFunction)zstub_vkGetSwapchainStatusKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalFencePropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceExternalFencePropertiesKHR;
+    if (!strcmp(name, "vkImportFenceFdKHR")) return (PFN_vkVoidFunction)zstub_vkImportFenceFdKHR;
+    if (!strcmp(name, "vkGetFenceFdKHR")) return (PFN_vkVoidFunction)zstub_vkGetFenceFdKHR;
+    if (!strcmp(name, "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR")) return (PFN_vkVoidFunction)zstub_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR;
+    if (!strcmp(name, "vkAcquireProfilingLockKHR")) return (PFN_vkVoidFunction)zstub_vkAcquireProfilingLockKHR;
+    if (!strcmp(name, "vkReleaseProfilingLockKHR")) return (PFN_vkVoidFunction)zstub_vkReleaseProfilingLockKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilities2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceCapabilities2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceFormats2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceFormats2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceDisplayProperties2KHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceDisplayPlaneProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceDisplayPlaneProperties2KHR;
+    if (!strcmp(name, "vkGetDisplayModeProperties2KHR")) return (PFN_vkVoidFunction)zstub_vkGetDisplayModeProperties2KHR;
+    if (!strcmp(name, "vkGetDisplayPlaneCapabilities2KHR")) return (PFN_vkVoidFunction)zstub_vkGetDisplayPlaneCapabilities2KHR;
+    if (!strcmp(name, "vkGetImageMemoryRequirements2KHR")) return (PFN_vkVoidFunction)zstub_vkGetImageMemoryRequirements2KHR;
+    if (!strcmp(name, "vkGetBufferMemoryRequirements2KHR")) return (PFN_vkVoidFunction)zstub_vkGetBufferMemoryRequirements2KHR;
+    if (!strcmp(name, "vkGetImageSparseMemoryRequirements2KHR")) return (PFN_vkVoidFunction)zstub_vkGetImageSparseMemoryRequirements2KHR;
+    if (!strcmp(name, "vkCreateSamplerYcbcrConversionKHR")) return (PFN_vkVoidFunction)zstub_vkCreateSamplerYcbcrConversionKHR;
+    if (!strcmp(name, "vkDestroySamplerYcbcrConversionKHR")) return (PFN_vkVoidFunction)zstub_vkDestroySamplerYcbcrConversionKHR;
+    if (!strcmp(name, "vkBindBufferMemory2KHR")) return (PFN_vkVoidFunction)zstub_vkBindBufferMemory2KHR;
+    if (!strcmp(name, "vkBindImageMemory2KHR")) return (PFN_vkVoidFunction)zstub_vkBindImageMemory2KHR;
+    if (!strcmp(name, "vkGetDescriptorSetLayoutSupportKHR")) return (PFN_vkVoidFunction)zstub_vkGetDescriptorSetLayoutSupportKHR;
+    if (!strcmp(name, "vkCmdDrawIndirectCountKHR")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndirectCountKHR;
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCountKHR")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndexedIndirectCountKHR;
+    if (!strcmp(name, "vkGetPhysicalDeviceFragmentShadingRatesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceFragmentShadingRatesKHR;
+    if (!strcmp(name, "vkCmdSetFragmentShadingRateKHR")) return (PFN_vkVoidFunction)zstub_vkCmdSetFragmentShadingRateKHR;
+    if (!strcmp(name, "vkWaitForPresentKHR")) return (PFN_vkVoidFunction)zstub_vkWaitForPresentKHR;
+    if (!strcmp(name, "vkGetBufferDeviceAddressKHR")) return (PFN_vkVoidFunction)zstub_vkGetBufferDeviceAddressKHR;
+    if (!strcmp(name, "vkGetBufferOpaqueCaptureAddressKHR")) return (PFN_vkVoidFunction)zstub_vkGetBufferOpaqueCaptureAddressKHR;
+    if (!strcmp(name, "vkGetDeviceMemoryOpaqueCaptureAddressKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceMemoryOpaqueCaptureAddressKHR;
+    if (!strcmp(name, "vkCreateDeferredOperationKHR")) return (PFN_vkVoidFunction)zstub_vkCreateDeferredOperationKHR;
+    if (!strcmp(name, "vkDestroyDeferredOperationKHR")) return (PFN_vkVoidFunction)zstub_vkDestroyDeferredOperationKHR;
+    if (!strcmp(name, "vkGetDeferredOperationMaxConcurrencyKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeferredOperationMaxConcurrencyKHR;
+    if (!strcmp(name, "vkGetDeferredOperationResultKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeferredOperationResultKHR;
+    if (!strcmp(name, "vkDeferredOperationJoinKHR")) return (PFN_vkVoidFunction)zstub_vkDeferredOperationJoinKHR;
+    if (!strcmp(name, "vkGetPipelineExecutablePropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkGetPipelineExecutablePropertiesKHR;
+    if (!strcmp(name, "vkGetPipelineExecutableStatisticsKHR")) return (PFN_vkVoidFunction)zstub_vkGetPipelineExecutableStatisticsKHR;
+    if (!strcmp(name, "vkGetPipelineExecutableInternalRepresentationsKHR")) return (PFN_vkVoidFunction)zstub_vkGetPipelineExecutableInternalRepresentationsKHR;
+    if (!strcmp(name, "vkCmdSetEvent2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdSetEvent2KHR;
+    if (!strcmp(name, "vkCmdResetEvent2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdResetEvent2KHR;
+    if (!strcmp(name, "vkCmdWaitEvents2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdWaitEvents2KHR;
+    if (!strcmp(name, "vkCmdPipelineBarrier2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdPipelineBarrier2KHR;
+    if (!strcmp(name, "vkCmdWriteTimestamp2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdWriteTimestamp2KHR;
+    if (!strcmp(name, "vkQueueSubmit2KHR")) return (PFN_vkVoidFunction)zstub_vkQueueSubmit2KHR;
+    if (!strcmp(name, "vkCmdWriteBufferMarker2AMD")) return (PFN_vkVoidFunction)zstub_vkCmdWriteBufferMarker2AMD;
+    if (!strcmp(name, "vkGetQueueCheckpointData2NV")) return (PFN_vkVoidFunction)zstub_vkGetQueueCheckpointData2NV;
+    if (!strcmp(name, "vkCmdCopyBuffer2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyBuffer2KHR;
+    if (!strcmp(name, "vkCmdCopyImage2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyImage2KHR;
+    if (!strcmp(name, "vkCmdCopyBufferToImage2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyBufferToImage2KHR;
+    if (!strcmp(name, "vkCmdCopyImageToBuffer2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyImageToBuffer2KHR;
+    if (!strcmp(name, "vkCmdBlitImage2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdBlitImage2KHR;
+    if (!strcmp(name, "vkCmdResolveImage2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdResolveImage2KHR;
+    if (!strcmp(name, "vkCmdTraceRaysIndirect2KHR")) return (PFN_vkVoidFunction)zstub_vkCmdTraceRaysIndirect2KHR;
+    if (!strcmp(name, "vkGetDeviceBufferMemoryRequirementsKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceBufferMemoryRequirementsKHR;
+    if (!strcmp(name, "vkGetDeviceImageMemoryRequirementsKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceImageMemoryRequirementsKHR;
+    if (!strcmp(name, "vkGetDeviceImageSparseMemoryRequirementsKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceImageSparseMemoryRequirementsKHR;
+    if (!strcmp(name, "vkCreateDebugReportCallbackEXT")) return (PFN_vkVoidFunction)zstub_vkCreateDebugReportCallbackEXT;
+    if (!strcmp(name, "vkDestroyDebugReportCallbackEXT")) return (PFN_vkVoidFunction)zstub_vkDestroyDebugReportCallbackEXT;
+    if (!strcmp(name, "vkDebugReportMessageEXT")) return (PFN_vkVoidFunction)zstub_vkDebugReportMessageEXT;
+    if (!strcmp(name, "vkDebugMarkerSetObjectTagEXT")) return (PFN_vkVoidFunction)zstub_vkDebugMarkerSetObjectTagEXT;
+    if (!strcmp(name, "vkDebugMarkerSetObjectNameEXT")) return (PFN_vkVoidFunction)zstub_vkDebugMarkerSetObjectNameEXT;
+    if (!strcmp(name, "vkCmdDebugMarkerBeginEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDebugMarkerBeginEXT;
+    if (!strcmp(name, "vkCmdDebugMarkerEndEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDebugMarkerEndEXT;
+    if (!strcmp(name, "vkCmdDebugMarkerInsertEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDebugMarkerInsertEXT;
+    if (!strcmp(name, "vkCmdBindTransformFeedbackBuffersEXT")) return (PFN_vkVoidFunction)zstub_vkCmdBindTransformFeedbackBuffersEXT;
+    if (!strcmp(name, "vkCmdBeginTransformFeedbackEXT")) return (PFN_vkVoidFunction)zstub_vkCmdBeginTransformFeedbackEXT;
+    if (!strcmp(name, "vkCmdEndTransformFeedbackEXT")) return (PFN_vkVoidFunction)zstub_vkCmdEndTransformFeedbackEXT;
+    if (!strcmp(name, "vkCmdBeginQueryIndexedEXT")) return (PFN_vkVoidFunction)zstub_vkCmdBeginQueryIndexedEXT;
+    if (!strcmp(name, "vkCmdEndQueryIndexedEXT")) return (PFN_vkVoidFunction)zstub_vkCmdEndQueryIndexedEXT;
+    if (!strcmp(name, "vkCmdDrawIndirectByteCountEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndirectByteCountEXT;
+    if (!strcmp(name, "vkCreateCuModuleNVX")) return (PFN_vkVoidFunction)zstub_vkCreateCuModuleNVX;
+    if (!strcmp(name, "vkCreateCuFunctionNVX")) return (PFN_vkVoidFunction)zstub_vkCreateCuFunctionNVX;
+    if (!strcmp(name, "vkDestroyCuModuleNVX")) return (PFN_vkVoidFunction)zstub_vkDestroyCuModuleNVX;
+    if (!strcmp(name, "vkDestroyCuFunctionNVX")) return (PFN_vkVoidFunction)zstub_vkDestroyCuFunctionNVX;
+    if (!strcmp(name, "vkCmdCuLaunchKernelNVX")) return (PFN_vkVoidFunction)zstub_vkCmdCuLaunchKernelNVX;
+    if (!strcmp(name, "vkGetImageViewHandleNVX")) return (PFN_vkVoidFunction)zstub_vkGetImageViewHandleNVX;
+    if (!strcmp(name, "vkGetImageViewAddressNVX")) return (PFN_vkVoidFunction)zstub_vkGetImageViewAddressNVX;
+    if (!strcmp(name, "vkCmdDrawIndirectCountAMD")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndirectCountAMD;
+    if (!strcmp(name, "vkCmdDrawIndexedIndirectCountAMD")) return (PFN_vkVoidFunction)zstub_vkCmdDrawIndexedIndirectCountAMD;
+    if (!strcmp(name, "vkGetShaderInfoAMD")) return (PFN_vkVoidFunction)zstub_vkGetShaderInfoAMD;
+    if (!strcmp(name, "vkGetPhysicalDeviceExternalImageFormatPropertiesNV")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceExternalImageFormatPropertiesNV;
+    if (!strcmp(name, "vkCmdBeginConditionalRenderingEXT")) return (PFN_vkVoidFunction)zstub_vkCmdBeginConditionalRenderingEXT;
+    if (!strcmp(name, "vkCmdEndConditionalRenderingEXT")) return (PFN_vkVoidFunction)zstub_vkCmdEndConditionalRenderingEXT;
+    if (!strcmp(name, "vkCmdSetViewportWScalingNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportWScalingNV;
+    if (!strcmp(name, "vkReleaseDisplayEXT")) return (PFN_vkVoidFunction)zstub_vkReleaseDisplayEXT;
+    if (!strcmp(name, "vkGetPhysicalDeviceSurfaceCapabilities2EXT")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSurfaceCapabilities2EXT;
+    if (!strcmp(name, "vkDisplayPowerControlEXT")) return (PFN_vkVoidFunction)zstub_vkDisplayPowerControlEXT;
+    if (!strcmp(name, "vkRegisterDeviceEventEXT")) return (PFN_vkVoidFunction)zstub_vkRegisterDeviceEventEXT;
+    if (!strcmp(name, "vkRegisterDisplayEventEXT")) return (PFN_vkVoidFunction)zstub_vkRegisterDisplayEventEXT;
+    if (!strcmp(name, "vkGetSwapchainCounterEXT")) return (PFN_vkVoidFunction)zstub_vkGetSwapchainCounterEXT;
+    if (!strcmp(name, "vkGetRefreshCycleDurationGOOGLE")) return (PFN_vkVoidFunction)zstub_vkGetRefreshCycleDurationGOOGLE;
+    if (!strcmp(name, "vkGetPastPresentationTimingGOOGLE")) return (PFN_vkVoidFunction)zstub_vkGetPastPresentationTimingGOOGLE;
+    if (!strcmp(name, "vkCmdSetDiscardRectangleEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDiscardRectangleEXT;
+    if (!strcmp(name, "vkSetHdrMetadataEXT")) return (PFN_vkVoidFunction)zstub_vkSetHdrMetadataEXT;
+    if (!strcmp(name, "vkCmdSetSampleLocationsEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetSampleLocationsEXT;
+    if (!strcmp(name, "vkGetPhysicalDeviceMultisamplePropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceMultisamplePropertiesEXT;
+    if (!strcmp(name, "vkGetImageDrmFormatModifierPropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkGetImageDrmFormatModifierPropertiesEXT;
+    if (!strcmp(name, "vkCreateValidationCacheEXT")) return (PFN_vkVoidFunction)zstub_vkCreateValidationCacheEXT;
+    if (!strcmp(name, "vkDestroyValidationCacheEXT")) return (PFN_vkVoidFunction)zstub_vkDestroyValidationCacheEXT;
+    if (!strcmp(name, "vkMergeValidationCachesEXT")) return (PFN_vkVoidFunction)zstub_vkMergeValidationCachesEXT;
+    if (!strcmp(name, "vkGetValidationCacheDataEXT")) return (PFN_vkVoidFunction)zstub_vkGetValidationCacheDataEXT;
+    if (!strcmp(name, "vkCmdBindShadingRateImageNV")) return (PFN_vkVoidFunction)zstub_vkCmdBindShadingRateImageNV;
+    if (!strcmp(name, "vkCmdSetViewportShadingRatePaletteNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportShadingRatePaletteNV;
+    if (!strcmp(name, "vkCmdSetCoarseSampleOrderNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoarseSampleOrderNV;
+    if (!strcmp(name, "vkCreateAccelerationStructureNV")) return (PFN_vkVoidFunction)zstub_vkCreateAccelerationStructureNV;
+    if (!strcmp(name, "vkDestroyAccelerationStructureNV")) return (PFN_vkVoidFunction)zstub_vkDestroyAccelerationStructureNV;
+    if (!strcmp(name, "vkGetAccelerationStructureMemoryRequirementsNV")) return (PFN_vkVoidFunction)zstub_vkGetAccelerationStructureMemoryRequirementsNV;
+    if (!strcmp(name, "vkBindAccelerationStructureMemoryNV")) return (PFN_vkVoidFunction)zstub_vkBindAccelerationStructureMemoryNV;
+    if (!strcmp(name, "vkCmdBuildAccelerationStructureNV")) return (PFN_vkVoidFunction)zstub_vkCmdBuildAccelerationStructureNV;
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureNV")) return (PFN_vkVoidFunction)zstub_vkCmdCopyAccelerationStructureNV;
+    if (!strcmp(name, "vkCmdTraceRaysNV")) return (PFN_vkVoidFunction)zstub_vkCmdTraceRaysNV;
+    if (!strcmp(name, "vkCreateRayTracingPipelinesNV")) return (PFN_vkVoidFunction)zstub_vkCreateRayTracingPipelinesNV;
+    if (!strcmp(name, "vkGetRayTracingShaderGroupHandlesKHR")) return (PFN_vkVoidFunction)zstub_vkGetRayTracingShaderGroupHandlesKHR;
+    if (!strcmp(name, "vkGetRayTracingShaderGroupHandlesNV")) return (PFN_vkVoidFunction)zstub_vkGetRayTracingShaderGroupHandlesNV;
+    if (!strcmp(name, "vkGetAccelerationStructureHandleNV")) return (PFN_vkVoidFunction)zstub_vkGetAccelerationStructureHandleNV;
+    if (!strcmp(name, "vkCmdWriteAccelerationStructuresPropertiesNV")) return (PFN_vkVoidFunction)zstub_vkCmdWriteAccelerationStructuresPropertiesNV;
+    if (!strcmp(name, "vkCompileDeferredNV")) return (PFN_vkVoidFunction)zstub_vkCompileDeferredNV;
+    if (!strcmp(name, "vkGetMemoryHostPointerPropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkGetMemoryHostPointerPropertiesEXT;
+    if (!strcmp(name, "vkCmdWriteBufferMarkerAMD")) return (PFN_vkVoidFunction)zstub_vkCmdWriteBufferMarkerAMD;
+    if (!strcmp(name, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT;
+    if (!strcmp(name, "vkGetCalibratedTimestampsEXT")) return (PFN_vkVoidFunction)zstub_vkGetCalibratedTimestampsEXT;
+    if (!strcmp(name, "vkCmdDrawMeshTasksNV")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksNV;
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectNV")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksIndirectNV;
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectCountNV")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksIndirectCountNV;
+    if (!strcmp(name, "vkCmdSetExclusiveScissorNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetExclusiveScissorNV;
+    if (!strcmp(name, "vkCmdSetCheckpointNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCheckpointNV;
+    if (!strcmp(name, "vkGetQueueCheckpointDataNV")) return (PFN_vkVoidFunction)zstub_vkGetQueueCheckpointDataNV;
+    if (!strcmp(name, "vkInitializePerformanceApiINTEL")) return (PFN_vkVoidFunction)zstub_vkInitializePerformanceApiINTEL;
+    if (!strcmp(name, "vkUninitializePerformanceApiINTEL")) return (PFN_vkVoidFunction)zstub_vkUninitializePerformanceApiINTEL;
+    if (!strcmp(name, "vkCmdSetPerformanceMarkerINTEL")) return (PFN_vkVoidFunction)zstub_vkCmdSetPerformanceMarkerINTEL;
+    if (!strcmp(name, "vkCmdSetPerformanceStreamMarkerINTEL")) return (PFN_vkVoidFunction)zstub_vkCmdSetPerformanceStreamMarkerINTEL;
+    if (!strcmp(name, "vkCmdSetPerformanceOverrideINTEL")) return (PFN_vkVoidFunction)zstub_vkCmdSetPerformanceOverrideINTEL;
+    if (!strcmp(name, "vkAcquirePerformanceConfigurationINTEL")) return (PFN_vkVoidFunction)zstub_vkAcquirePerformanceConfigurationINTEL;
+    if (!strcmp(name, "vkReleasePerformanceConfigurationINTEL")) return (PFN_vkVoidFunction)zstub_vkReleasePerformanceConfigurationINTEL;
+    if (!strcmp(name, "vkQueueSetPerformanceConfigurationINTEL")) return (PFN_vkVoidFunction)zstub_vkQueueSetPerformanceConfigurationINTEL;
+    if (!strcmp(name, "vkGetPerformanceParameterINTEL")) return (PFN_vkVoidFunction)zstub_vkGetPerformanceParameterINTEL;
+    if (!strcmp(name, "vkSetLocalDimmingAMD")) return (PFN_vkVoidFunction)zstub_vkSetLocalDimmingAMD;
+    if (!strcmp(name, "vkGetBufferDeviceAddressEXT")) return (PFN_vkVoidFunction)zstub_vkGetBufferDeviceAddressEXT;
+    if (!strcmp(name, "vkGetPhysicalDeviceToolPropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceToolPropertiesEXT;
+    if (!strcmp(name, "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV;
+    if (!strcmp(name, "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
+    if (!strcmp(name, "vkCreateHeadlessSurfaceEXT")) return (PFN_vkVoidFunction)zstub_vkCreateHeadlessSurfaceEXT;
+    if (!strcmp(name, "vkCmdSetLineStippleEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetLineStippleEXT;
+    if (!strcmp(name, "vkResetQueryPoolEXT")) return (PFN_vkVoidFunction)zstub_vkResetQueryPoolEXT;
+    if (!strcmp(name, "vkCmdSetCullModeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetCullModeEXT;
+    if (!strcmp(name, "vkCmdSetFrontFaceEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetFrontFaceEXT;
+    if (!strcmp(name, "vkCmdSetPrimitiveTopologyEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetPrimitiveTopologyEXT;
+    if (!strcmp(name, "vkCmdSetViewportWithCountEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportWithCountEXT;
+    if (!strcmp(name, "vkCmdSetScissorWithCountEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetScissorWithCountEXT;
+    if (!strcmp(name, "vkCmdBindVertexBuffers2EXT")) return (PFN_vkVoidFunction)zstub_vkCmdBindVertexBuffers2EXT;
+    if (!strcmp(name, "vkCmdSetDepthTestEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthTestEnableEXT;
+    if (!strcmp(name, "vkCmdSetDepthWriteEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthWriteEnableEXT;
+    if (!strcmp(name, "vkCmdSetDepthCompareOpEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthCompareOpEXT;
+    if (!strcmp(name, "vkCmdSetDepthBoundsTestEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthBoundsTestEnableEXT;
+    if (!strcmp(name, "vkCmdSetStencilTestEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetStencilTestEnableEXT;
+    if (!strcmp(name, "vkCmdSetStencilOpEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetStencilOpEXT;
+    if (!strcmp(name, "vkGetGeneratedCommandsMemoryRequirementsNV")) return (PFN_vkVoidFunction)zstub_vkGetGeneratedCommandsMemoryRequirementsNV;
+    if (!strcmp(name, "vkCmdPreprocessGeneratedCommandsNV")) return (PFN_vkVoidFunction)zstub_vkCmdPreprocessGeneratedCommandsNV;
+    if (!strcmp(name, "vkCmdExecuteGeneratedCommandsNV")) return (PFN_vkVoidFunction)zstub_vkCmdExecuteGeneratedCommandsNV;
+    if (!strcmp(name, "vkCmdBindPipelineShaderGroupNV")) return (PFN_vkVoidFunction)zstub_vkCmdBindPipelineShaderGroupNV;
+    if (!strcmp(name, "vkCreateIndirectCommandsLayoutNV")) return (PFN_vkVoidFunction)zstub_vkCreateIndirectCommandsLayoutNV;
+    if (!strcmp(name, "vkDestroyIndirectCommandsLayoutNV")) return (PFN_vkVoidFunction)zstub_vkDestroyIndirectCommandsLayoutNV;
+    if (!strcmp(name, "vkAcquireDrmDisplayEXT")) return (PFN_vkVoidFunction)zstub_vkAcquireDrmDisplayEXT;
+    if (!strcmp(name, "vkGetDrmDisplayEXT")) return (PFN_vkVoidFunction)zstub_vkGetDrmDisplayEXT;
+    if (!strcmp(name, "vkCreatePrivateDataSlotEXT")) return (PFN_vkVoidFunction)zstub_vkCreatePrivateDataSlotEXT;
+    if (!strcmp(name, "vkDestroyPrivateDataSlotEXT")) return (PFN_vkVoidFunction)zstub_vkDestroyPrivateDataSlotEXT;
+    if (!strcmp(name, "vkSetPrivateDataEXT")) return (PFN_vkVoidFunction)zstub_vkSetPrivateDataEXT;
+    if (!strcmp(name, "vkGetPrivateDataEXT")) return (PFN_vkVoidFunction)zstub_vkGetPrivateDataEXT;
+    if (!strcmp(name, "vkCmdSetFragmentShadingRateEnumNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetFragmentShadingRateEnumNV;
+    if (!strcmp(name, "vkGetImageSubresourceLayout2EXT")) return (PFN_vkVoidFunction)zstub_vkGetImageSubresourceLayout2EXT;
+    if (!strcmp(name, "vkGetDeviceFaultInfoEXT")) return (PFN_vkVoidFunction)zstub_vkGetDeviceFaultInfoEXT;
+    if (!strcmp(name, "vkAcquireWinrtDisplayNV")) return (PFN_vkVoidFunction)zstub_vkAcquireWinrtDisplayNV;
+    if (!strcmp(name, "vkGetWinrtDisplayNV")) return (PFN_vkVoidFunction)zstub_vkGetWinrtDisplayNV;
+    if (!strcmp(name, "vkCmdSetVertexInputEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetVertexInputEXT;
+    if (!strcmp(name, "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI")) return (PFN_vkVoidFunction)zstub_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
+    if (!strcmp(name, "vkCmdSubpassShadingHUAWEI")) return (PFN_vkVoidFunction)zstub_vkCmdSubpassShadingHUAWEI;
+    if (!strcmp(name, "vkCmdBindInvocationMaskHUAWEI")) return (PFN_vkVoidFunction)zstub_vkCmdBindInvocationMaskHUAWEI;
+    if (!strcmp(name, "vkGetMemoryRemoteAddressNV")) return (PFN_vkVoidFunction)zstub_vkGetMemoryRemoteAddressNV;
+    if (!strcmp(name, "vkGetPipelinePropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkGetPipelinePropertiesEXT;
+    if (!strcmp(name, "vkCmdSetPatchControlPointsEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetPatchControlPointsEXT;
+    if (!strcmp(name, "vkCmdSetRasterizerDiscardEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetRasterizerDiscardEnableEXT;
+    if (!strcmp(name, "vkCmdSetDepthBiasEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthBiasEnableEXT;
+    if (!strcmp(name, "vkCmdSetLogicOpEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetLogicOpEXT;
+    if (!strcmp(name, "vkCmdSetPrimitiveRestartEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetPrimitiveRestartEnableEXT;
+    if (!strcmp(name, "vkCmdSetColorWriteEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetColorWriteEnableEXT;
+    if (!strcmp(name, "vkCmdDrawMultiEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMultiEXT;
+    if (!strcmp(name, "vkCmdDrawMultiIndexedEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMultiIndexedEXT;
+    if (!strcmp(name, "vkCreateMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkCreateMicromapEXT;
+    if (!strcmp(name, "vkDestroyMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkDestroyMicromapEXT;
+    if (!strcmp(name, "vkCmdBuildMicromapsEXT")) return (PFN_vkVoidFunction)zstub_vkCmdBuildMicromapsEXT;
+    if (!strcmp(name, "vkBuildMicromapsEXT")) return (PFN_vkVoidFunction)zstub_vkBuildMicromapsEXT;
+    if (!strcmp(name, "vkCopyMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkCopyMicromapEXT;
+    if (!strcmp(name, "vkCopyMicromapToMemoryEXT")) return (PFN_vkVoidFunction)zstub_vkCopyMicromapToMemoryEXT;
+    if (!strcmp(name, "vkCopyMemoryToMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkCopyMemoryToMicromapEXT;
+    if (!strcmp(name, "vkWriteMicromapsPropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkWriteMicromapsPropertiesEXT;
+    if (!strcmp(name, "vkCmdCopyMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkCmdCopyMicromapEXT;
+    if (!strcmp(name, "vkCmdCopyMicromapToMemoryEXT")) return (PFN_vkVoidFunction)zstub_vkCmdCopyMicromapToMemoryEXT;
+    if (!strcmp(name, "vkCmdCopyMemoryToMicromapEXT")) return (PFN_vkVoidFunction)zstub_vkCmdCopyMemoryToMicromapEXT;
+    if (!strcmp(name, "vkCmdWriteMicromapsPropertiesEXT")) return (PFN_vkVoidFunction)zstub_vkCmdWriteMicromapsPropertiesEXT;
+    if (!strcmp(name, "vkGetDeviceMicromapCompatibilityEXT")) return (PFN_vkVoidFunction)zstub_vkGetDeviceMicromapCompatibilityEXT;
+    if (!strcmp(name, "vkGetMicromapBuildSizesEXT")) return (PFN_vkVoidFunction)zstub_vkGetMicromapBuildSizesEXT;
+    if (!strcmp(name, "vkSetDeviceMemoryPriorityEXT")) return (PFN_vkVoidFunction)zstub_vkSetDeviceMemoryPriorityEXT;
+    if (!strcmp(name, "vkGetDescriptorSetLayoutHostMappingInfoVALVE")) return (PFN_vkVoidFunction)zstub_vkGetDescriptorSetLayoutHostMappingInfoVALVE;
+    if (!strcmp(name, "vkGetDescriptorSetHostMappingVALVE")) return (PFN_vkVoidFunction)zstub_vkGetDescriptorSetHostMappingVALVE;
+    if (!strcmp(name, "vkCmdSetTessellationDomainOriginEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetTessellationDomainOriginEXT;
+    if (!strcmp(name, "vkCmdSetDepthClampEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthClampEnableEXT;
+    if (!strcmp(name, "vkCmdSetPolygonModeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetPolygonModeEXT;
+    if (!strcmp(name, "vkCmdSetRasterizationSamplesEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetRasterizationSamplesEXT;
+    if (!strcmp(name, "vkCmdSetSampleMaskEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetSampleMaskEXT;
+    if (!strcmp(name, "vkCmdSetAlphaToCoverageEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetAlphaToCoverageEnableEXT;
+    if (!strcmp(name, "vkCmdSetAlphaToOneEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetAlphaToOneEnableEXT;
+    if (!strcmp(name, "vkCmdSetLogicOpEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetLogicOpEnableEXT;
+    if (!strcmp(name, "vkCmdSetColorBlendEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetColorBlendEnableEXT;
+    if (!strcmp(name, "vkCmdSetColorBlendEquationEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetColorBlendEquationEXT;
+    if (!strcmp(name, "vkCmdSetColorWriteMaskEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetColorWriteMaskEXT;
+    if (!strcmp(name, "vkCmdSetRasterizationStreamEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetRasterizationStreamEXT;
+    if (!strcmp(name, "vkCmdSetConservativeRasterizationModeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetConservativeRasterizationModeEXT;
+    if (!strcmp(name, "vkCmdSetExtraPrimitiveOverestimationSizeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetExtraPrimitiveOverestimationSizeEXT;
+    if (!strcmp(name, "vkCmdSetDepthClipEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthClipEnableEXT;
+    if (!strcmp(name, "vkCmdSetSampleLocationsEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetSampleLocationsEnableEXT;
+    if (!strcmp(name, "vkCmdSetColorBlendAdvancedEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetColorBlendAdvancedEXT;
+    if (!strcmp(name, "vkCmdSetProvokingVertexModeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetProvokingVertexModeEXT;
+    if (!strcmp(name, "vkCmdSetLineRasterizationModeEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetLineRasterizationModeEXT;
+    if (!strcmp(name, "vkCmdSetLineStippleEnableEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetLineStippleEnableEXT;
+    if (!strcmp(name, "vkCmdSetDepthClipNegativeOneToOneEXT")) return (PFN_vkVoidFunction)zstub_vkCmdSetDepthClipNegativeOneToOneEXT;
+    if (!strcmp(name, "vkCmdSetViewportWScalingEnableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportWScalingEnableNV;
+    if (!strcmp(name, "vkCmdSetViewportSwizzleNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetViewportSwizzleNV;
+    if (!strcmp(name, "vkCmdSetCoverageToColorEnableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageToColorEnableNV;
+    if (!strcmp(name, "vkCmdSetCoverageToColorLocationNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageToColorLocationNV;
+    if (!strcmp(name, "vkCmdSetCoverageModulationModeNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageModulationModeNV;
+    if (!strcmp(name, "vkCmdSetCoverageModulationTableEnableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageModulationTableEnableNV;
+    if (!strcmp(name, "vkCmdSetCoverageModulationTableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageModulationTableNV;
+    if (!strcmp(name, "vkCmdSetShadingRateImageEnableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetShadingRateImageEnableNV;
+    if (!strcmp(name, "vkCmdSetRepresentativeFragmentTestEnableNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetRepresentativeFragmentTestEnableNV;
+    if (!strcmp(name, "vkCmdSetCoverageReductionModeNV")) return (PFN_vkVoidFunction)zstub_vkCmdSetCoverageReductionModeNV;
+    if (!strcmp(name, "vkGetShaderModuleIdentifierEXT")) return (PFN_vkVoidFunction)zstub_vkGetShaderModuleIdentifierEXT;
+    if (!strcmp(name, "vkGetShaderModuleCreateInfoIdentifierEXT")) return (PFN_vkVoidFunction)zstub_vkGetShaderModuleCreateInfoIdentifierEXT;
+    if (!strcmp(name, "vkGetPhysicalDeviceOpticalFlowImageFormatsNV")) return (PFN_vkVoidFunction)zstub_vkGetPhysicalDeviceOpticalFlowImageFormatsNV;
+    if (!strcmp(name, "vkCreateOpticalFlowSessionNV")) return (PFN_vkVoidFunction)zstub_vkCreateOpticalFlowSessionNV;
+    if (!strcmp(name, "vkDestroyOpticalFlowSessionNV")) return (PFN_vkVoidFunction)zstub_vkDestroyOpticalFlowSessionNV;
+    if (!strcmp(name, "vkBindOpticalFlowSessionImageNV")) return (PFN_vkVoidFunction)zstub_vkBindOpticalFlowSessionImageNV;
+    if (!strcmp(name, "vkCmdOpticalFlowExecuteNV")) return (PFN_vkVoidFunction)zstub_vkCmdOpticalFlowExecuteNV;
+    if (!strcmp(name, "vkGetFramebufferTilePropertiesQCOM")) return (PFN_vkVoidFunction)zstub_vkGetFramebufferTilePropertiesQCOM;
+    if (!strcmp(name, "vkGetDynamicRenderingTilePropertiesQCOM")) return (PFN_vkVoidFunction)zstub_vkGetDynamicRenderingTilePropertiesQCOM;
+    if (!strcmp(name, "vkCreateAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkCreateAccelerationStructureKHR;
+    if (!strcmp(name, "vkDestroyAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkDestroyAccelerationStructureKHR;
+    if (!strcmp(name, "vkCmdBuildAccelerationStructuresKHR")) return (PFN_vkVoidFunction)zstub_vkCmdBuildAccelerationStructuresKHR;
+    if (!strcmp(name, "vkCmdBuildAccelerationStructuresIndirectKHR")) return (PFN_vkVoidFunction)zstub_vkCmdBuildAccelerationStructuresIndirectKHR;
+    if (!strcmp(name, "vkBuildAccelerationStructuresKHR")) return (PFN_vkVoidFunction)zstub_vkBuildAccelerationStructuresKHR;
+    if (!strcmp(name, "vkCopyAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkCopyAccelerationStructureKHR;
+    if (!strcmp(name, "vkCopyAccelerationStructureToMemoryKHR")) return (PFN_vkVoidFunction)zstub_vkCopyAccelerationStructureToMemoryKHR;
+    if (!strcmp(name, "vkCopyMemoryToAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkCopyMemoryToAccelerationStructureKHR;
+    if (!strcmp(name, "vkWriteAccelerationStructuresPropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkWriteAccelerationStructuresPropertiesKHR;
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyAccelerationStructureKHR;
+    if (!strcmp(name, "vkCmdCopyAccelerationStructureToMemoryKHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyAccelerationStructureToMemoryKHR;
+    if (!strcmp(name, "vkCmdCopyMemoryToAccelerationStructureKHR")) return (PFN_vkVoidFunction)zstub_vkCmdCopyMemoryToAccelerationStructureKHR;
+    if (!strcmp(name, "vkGetAccelerationStructureDeviceAddressKHR")) return (PFN_vkVoidFunction)zstub_vkGetAccelerationStructureDeviceAddressKHR;
+    if (!strcmp(name, "vkCmdWriteAccelerationStructuresPropertiesKHR")) return (PFN_vkVoidFunction)zstub_vkCmdWriteAccelerationStructuresPropertiesKHR;
+    if (!strcmp(name, "vkGetDeviceAccelerationStructureCompatibilityKHR")) return (PFN_vkVoidFunction)zstub_vkGetDeviceAccelerationStructureCompatibilityKHR;
+    if (!strcmp(name, "vkGetAccelerationStructureBuildSizesKHR")) return (PFN_vkVoidFunction)zstub_vkGetAccelerationStructureBuildSizesKHR;
+    if (!strcmp(name, "vkCmdTraceRaysKHR")) return (PFN_vkVoidFunction)zstub_vkCmdTraceRaysKHR;
+    if (!strcmp(name, "vkCreateRayTracingPipelinesKHR")) return (PFN_vkVoidFunction)zstub_vkCreateRayTracingPipelinesKHR;
+    if (!strcmp(name, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR")) return (PFN_vkVoidFunction)zstub_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR;
+    if (!strcmp(name, "vkCmdTraceRaysIndirectKHR")) return (PFN_vkVoidFunction)zstub_vkCmdTraceRaysIndirectKHR;
+    if (!strcmp(name, "vkGetRayTracingShaderGroupStackSizeKHR")) return (PFN_vkVoidFunction)zstub_vkGetRayTracingShaderGroupStackSizeKHR;
+    if (!strcmp(name, "vkCmdSetRayTracingPipelineStackSizeKHR")) return (PFN_vkVoidFunction)zstub_vkCmdSetRayTracingPipelineStackSizeKHR;
+    if (!strcmp(name, "vkCmdDrawMeshTasksEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksEXT;
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksIndirectEXT;
+    if (!strcmp(name, "vkCmdDrawMeshTasksIndirectCountEXT")) return (PFN_vkVoidFunction)zstub_vkCmdDrawMeshTasksIndirectCountEXT;
+    if (!strcmp(name, "vkGetRenderingAreaGranularityKHR")) return (PFN_vkVoidFunction)zstub_vkGetRenderingAreaGranularityKHR;
     return NULL;
 }
 #endif
