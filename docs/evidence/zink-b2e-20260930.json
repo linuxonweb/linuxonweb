@@ -1,0 +1,242 @@
+{
+ "packet": "zink-b2e",
+ "date": "2026-09-30",
+ "branch": "claude-opus-5-5-guest-gpu-jit",
+ "base": "741e3b8 (uncommitted working tree)",
+ "taskRoot": "/mnt/p6/build/zink-b2e-20260930",
+ "result": "partial: BGRA8 + dim1D + independentBlend done, regression 20/20; gate B blocked at eglCreateContext (create_buffer usage 0x1ff)",
+ "bgra": {
+  "suite": "zinkcaps round 11",
+  "image": "16x16 B8G8R8A8_UNORM, dynamic rendering, clear (0,0,1,1) + red quad offset 0.25",
+  "expectedBytes": {
+   "background": [
+    255,
+    0,
+    0,
+    255
+   ],
+   "quadRect_x6_14_y6_14": [
+    0,
+    0,
+    255,
+    255
+   ]
+  },
+  "lines": [
+   "GUEST_VK_ZINKCAPS_PIXELS_PASS round=11 width=16 height=16 exact=1024 tail=32",
+   "GUEST_VK_ZINKCAPS_BGRA_PASS frames=1 refused=2 dim1d=128 independent_blend=1 srgb=0"
+  ],
+  "backends": {
+   "webgpu": "/mnt/p6/build/zink-b2e-20260930/all-run3/zinkcaps-webgpu.json",
+   "webgl2": "/mnt/p6/build/zink-b2e-20260930/all-run3/zinkcaps-webgl2.json"
+  }
+ },
+ "gateB": {
+  "env": "LIBGL_ALWAYS_SOFTWARE=1 GUEST_VK_DEVICE_TYPE=cpu MESA_LOADER_DRIVER_OVERRIDE=zink",
+  "mesa": "26.2.3",
+  "package": "/mnt/p6/build/zink-b2e-20260930/zinkb/package-run2/eglprobe.cpio",
+  "packageBytes": 19404800,
+  "runs": [
+   {
+    "dir": "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgpu-run1",
+    "backend": "webgpu nvidia",
+    "result": "EGL_INIT OK, no es2 configs (independentBlend missing), all contexts 0x3009"
+   },
+   {
+    "dir": "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgpu-run2",
+    "backend": "webgpu nvidia",
+    "result": "EGL_INIT OK, es2 renderable, gles2/gl-compat 0x3003, gl-core/gles3 0x3009"
+   },
+   {
+    "dir": "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgl2-run1",
+    "backend": "webgl2 ANGLE Intel UHD 620",
+    "result": "same as webgpu-run2"
+   }
+  ],
+  "keyLines": [
+   "EGL_INIT OK 1.4 vendor=Mesa Project",
+   "ZINKDIAG caps npot=1 glsl=460 max_tex2d=128 max_rt=1 mixed_depth=0 reset_query=1",
+   "ZINKDIAG fmt BGRA8888 rt|display=1 rt=1 sampler=1",
+   "GUEST_VK_TRACE create_buffer REJECT size=4 usage=0x1ff flags=0x0 pNext=0 sharing=0",
+   "MESA: error: ZINK: vkCreateBuffer failed",
+   "EGL user error 0x3003 (EGL_BAD_ALLOC) in eglCreateContext: dri2_create_context",
+   "CTX gles2 FAIL egl=0x3003",
+   "CTX gl-compat FAIL egl=0x3003",
+   "CTX gl-core FAIL egl=0x3009",
+   "CTX gles3 FAIL egl=0x3009"
+  ],
+  "glStrings": null,
+  "glClearPixels": null,
+  "draw": null
+ },
+ "limits": {
+  "GL_MAX_TEXTURE_SIZE": {
+   "zink": 128,
+   "es2Min": 64,
+   "es3WebGL2Min": 2048
+  },
+  "GL_MAX_DRAW_BUFFERS": {
+   "zink": 1,
+   "es2Min": 1,
+   "es3WebGL2Min": 4
+  },
+  "reachable": "ES 2.0 / GL 2.1 compat at best"
+ },
+ "regression": [
+  {
+   "suite": "direct-live",
+   "checks": 140,
+   "b2aChecks": 140,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "direct-unavailable",
+   "checks": 17,
+   "b2aChecks": 17,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "direct-clear",
+   "checks": 1087,
+   "b2aChecks": 1087,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "direct-loss-transport",
+   "checks": 640,
+   "b2aChecks": 640,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "direct-loss-device",
+   "checks": 640,
+   "b2aChecks": 640,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "direct-exhaustion",
+   "checks": 1213,
+   "b2aChecks": 1213,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "loader",
+   "checks": 901,
+   "b2aChecks": 901,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "compute",
+   "checks": 501,
+   "b2aChecks": 501,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "graphics-webgl2",
+   "checks": 232753,
+   "b2aChecks": 232753,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "graphics-webgpu",
+   "checks": 232745,
+   "b2aChecks": 232745,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "uniform-webgl2",
+   "checks": 201269,
+   "b2aChecks": 201269,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "uniform-webgpu",
+   "checks": 201269,
+   "b2aChecks": 201269,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "texture-webgl2",
+   "checks": 18182,
+   "b2aChecks": 18182,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run2"
+  },
+  {
+   "suite": "texture-webgpu",
+   "checks": 18182,
+   "b2aChecks": 18182,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "depth-webgl2",
+   "checks": 42620,
+   "b2aChecks": 42620,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "depth-webgpu",
+   "checks": 42620,
+   "b2aChecks": 42620,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "wsi-webgl2",
+   "checks": 276963,
+   "b2aChecks": 276963,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "wsi-webgpu",
+   "checks": 276963,
+   "b2aChecks": 276963,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "zinkcaps-webgl2",
+   "checks": 11824,
+   "b2aChecks": 10749,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  },
+  {
+   "suite": "zinkcaps-webgpu",
+   "checks": 11824,
+   "b2aChecks": 10749,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2e-20260930/all-run3"
+  }
+ ],
+ "failedRunsPreserved": [
+  "/mnt/p6/build/zink-b2e-20260930/all-run1 (zinkcaps BGRA view refused: 32-entry resource table)",
+  "/mnt/p6/build/zink-b2e-20260930/all-run2 (texture-webgpu page watchdog 135 s under host load 17; 13 prior suites passed)",
+  "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgpu-run1",
+  "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgpu-run2",
+  "/mnt/p6/build/zink-b2e-20260930/zinkb/guest-webgl2-run1"
+ ],
+ "nextBlockers": [
+  "universal buffer usage 0x1ff (generic buffer model)",
+  "suballocation: nonzero bind offsets, >64 KiB allocations, multiple bindings per memory, heap >1 MiB",
+  "broad image usage, multiple command pools/buffers, gate-B ICD snapshot re-sync (MAX_RES 128), barrier strictness",
+  "push constants (B2c) for draws",
+  "BGRA texture sampling test",
+  "host texture/RT limit above 128"
+ ]
+}

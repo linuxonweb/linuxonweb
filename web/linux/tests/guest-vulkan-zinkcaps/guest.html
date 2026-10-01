@@ -11,12 +11,12 @@ const report = window.guestVulkanResults = {logs:'', errors:[], events:[], host:
 /* Host expectations: ten render passes (two renderpass2 frames, three dynamic
  * rendering depth frames, one LOAD colour-only frame, three nullDescriptor or
  * update-template frames and one timeline-signalling frame), each followed by
- * one colour readback. Refused recordings/submissions are guest-side, so no host
+ * one colour readback, plus one B2e B8G8R8A8 frame (11). Refused recordings/submissions are guest-side, so no host
  * command fails. Every frame uploads its one vertex buffer (10); the params
  * buffer is uploaded by the four frames that bind the template set, plus one
  * zero upload creating the shared 16 KiB null uniform buffer (5). One VkInstance
  * is one vsock session. */
-const expected = report.expected = {passes:10, draws:13, uploads:10, uniformUploads:5, textureUploads:0, readbacks:10, failedCommands:[]};
+const expected = report.expected = {passes:11, draws:14, uploads:11, uniformUploads:6, textureUploads:0, readbacks:11, failedCommands:[]};
 const decoder = new TextDecoder(), vsock = vsockDevice();
 let machine, deadline, partial = '', sessionsStarted = 0, sessionsDone = 0, listening = 0, finished = false, stopping = false;
 function fail(error) {
@@ -40,7 +40,7 @@ function check() {
     'GUEST_VK_ZINKCAPS_MAINTENANCE trim=1 granularity_proc=','GUEST_VK_ZINKCAPS_TEMPLATES rejected=4 created=1','GUEST_VK_ZINKCAPS_RENDERPASS2 rejected=3 created=1',
     'GUEST_VK_ZINKCAPS_RENDERPASS2_PASS frames=2 refused=2','GUEST_VK_ZINKCAPS_DYNAMIC_PIPELINES rejected=5 created=2',
     'GUEST_VK_ZINKCAPS_DYNAMIC_DEPTH_PASS frames=3 format=d32-sfloat','GUEST_VK_ZINKCAPS_DYNAMIC_NEGATIVE refused=4',
-    'GUEST_VK_ZINKCAPS_NULL_DESCRIPTOR_PASS frames=2 refused=1','GUEST_VK_ZINKCAPS_TIMELINE_PASS final=11 signals=3 waits=6 refused=4','GUEST_VK_ZINKCAPS_PASS frames=10',
+    'GUEST_VK_ZINKCAPS_NULL_DESCRIPTOR_PASS frames=2 refused=1','GUEST_VK_ZINKCAPS_TIMELINE_PASS final=11 signals=3 waits=6 refused=4','GUEST_VK_ZINKCAPS_BGRA_PASS frames=1 refused=2 dim1d=128 independent_blend=1 srgb=0','GUEST_VK_ZINKCAPS_PASS frames=11',
     'GUEST_VK_RESOURCES live=0 allocated_bytes=0','GUEST_VK_CLOSE status=0'];
   report.missingLines=lines.filter(line=>!report.logs.includes(line));
   report.pixelRounds=(report.logs.match(/^GUEST_VK_ZINKCAPS_PIXELS_PASS round=\d+ /gm)||[]).length;
@@ -58,7 +58,7 @@ function check() {
     !!h.adapter && report.hosts.length===1 && report.hellos.length>=report.hosts.length && report.hosts[report.hosts.length-1]===h && report.hellos.every(item=>item.version===1 && item.backend===report.backend && item.graphicsProfile===1 &&
       JSON.stringify(item.adapter)===JSON.stringify(h.adapter)) &&
     JSON.stringify(failed)===JSON.stringify(expected.failedCommands) &&
-    report.missingLines.length===0 && report.pixelRounds===10 &&
+    report.missingLines.length===0 && report.pixelRounds===11 &&
     report.bootConfigurationEvidence.some(line=>/Memory:.*1048576K/.test(line)) &&
     report.bootConfigurationEvidence.some(line=>/smp: Brought up 1 node, 2 CPUs/.test(line));
   if (!report.pass) { fail('zinkcaps client acceptance mismatch'); return; }

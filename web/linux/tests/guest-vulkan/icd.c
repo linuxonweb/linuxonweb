@@ -9,6 +9,16 @@
 #ifdef GUEST_VK_ZINK
 #include "zink-ext.h"
 #endif
+/* B2e: Zink builds add VK_FORMAT_B8G8R8A8_UNORM wherever R8G8B8A8_UNORM is a
+ * colour format. The host keeps every colour image as RGBA holding the logical
+ * channels, so clears, blending and sampling are unchanged; only guest-visible
+ * bytes (buffer<->image copies, readback) swap R and B. */
+static inline int color_format(VkFormat f) {
+#ifdef GUEST_VK_ZINK
+    if (f == VK_FORMAT_B8G8R8A8_UNORM) return 1;
+#endif
+    return f == VK_FORMAT_R8G8B8A8_UNORM;
+}
 
 struct VkPhysicalDevice_T { VK_LOADER_DATA loader; };
 struct VkQueue_T { VK_LOADER_DATA loader; };
@@ -277,6 +287,11 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
     if (live->graphics_supported) {
         snprintf(out->deviceName, sizeof(out->deviceName), "EXPERIMENTAL bounded SPIR-V graphics; NOT conformant");
         out->limits.maxImageDimension2D=128;out->limits.maxImageArrayLayers=1;
+#ifdef GUEST_VK_ZINK
+        /* B2e: Zink derives GL MAX_TEXTURE_SIZE from MIN3(dim1D, dim2D, 16384).
+         * 1D images stay unsupported; this only removes the 0 from the minimum. */
+        out->limits.maxImageDimension1D=128;
+#endif
         out->limits.maxFramebufferWidth=out->limits.maxFramebufferHeight=128;out->limits.maxFramebufferLayers=1;
         out->limits.maxColorAttachments=out->limits.maxFragmentOutputAttachments=1;
         out->limits.maxVertexInputBindings=out->limits.maxVertexInputAttributes=8;
@@ -324,6 +339,12 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
 static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, VkPhysicalDeviceFeatures *out) {
     (void)physical;
     if (out) memset(out, 0, sizeof(*out));
+#ifdef GUEST_VK_ZINK
+    /* B2e: with maxColorAttachments=1 there is only one blend state per pipeline, so
+     * independentBlend holds trivially. Zink maps it to blend_equation_separate, which
+     * Mesa requires for OpenGL ES 2.0 / OpenGL 2.0. */
+    if (out && live && live->graphics_supported) out->independentBlend = VK_TRUE;
+#endif
 }
 /* Loader-required queries describe negotiated bounded usages only. Graphics
  * adds one attachment format and three vertex formats; no sampled/storage or
@@ -349,15 +370,15 @@ static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, V
 static void format_properties_body(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
-    if (physical_valid(physical) && live->clear_supported && format == VK_FORMAT_R8G8B8A8_UNORM)
+    if (physical_valid(physical) && live->clear_supported && color_format(format))
         out->optimalTilingFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
     if (physical_valid(physical) && live->graphics_supported) {
-        if (format == VK_FORMAT_R8G8B8A8_UNORM)
+        if (color_format(format))
             out->optimalTilingFeatures |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT;
         if (format == VK_FORMAT_R32G32_SFLOAT || format == VK_FORMAT_R32G32B32_SFLOAT || format == VK_FORMAT_R32G32B32A32_SFLOAT)
             out->bufferFeatures = VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
     }
-    if (physical_valid(physical) && live->texture_supported && format == VK_FORMAT_R8G8B8A8_UNORM)
+    if (physical_valid(physical) && live->texture_supported && color_format(format))
         out->optimalTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
             VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
     /* A5: D24_UNORM_S8_UINT and every stencil format stay unsupported. */
@@ -381,7 +402,7 @@ static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat
     if (!out) return VK_ERROR_FORMAT_NOT_SUPPORTED;
     memset(out, 0, sizeof(*out));
     if (!physical_valid(physical)) return VK_ERROR_FORMAT_NOT_SUPPORTED;
-    int color = format == VK_FORMAT_R8G8B8A8_UNORM &&
+    int color = color_format(format) &&
         ((live->clear_supported && usage == (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
           (live->graphics_supported && usage == (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
           (live->texture_supported && usage == (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)));
@@ -422,7 +443,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL device_extensions(VkPhysicalDevice physica
 static int any_features(const VkPhysicalDeviceFeatures *f) {
     if (!f) return 0;
 #define F(name) if (f->name) return 1;
+#ifdef GUEST_VK_ZINK
+    F(robustBufferAccess) F(fullDrawIndexUint32) F(imageCubeArray) /* independentBlend is advertised (B2e) */
+#else
     F(robustBufferAccess) F(fullDrawIndexUint32) F(imageCubeArray) F(independentBlend)
+#endif
     F(geometryShader) F(tessellationShader) F(sampleRateShading) F(dualSrcBlend)
     F(logicOp) F(multiDrawIndirect) F(drawIndirectFirstInstance) F(depthClamp)
     F(depthBiasClamp) F(fillModeNonSolid) F(depthBounds) F(wideLines) F(largePoints)

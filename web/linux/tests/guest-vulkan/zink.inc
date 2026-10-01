@@ -107,7 +107,7 @@ static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const 
        (c->loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||c->storeOp!=VK_ATTACHMENT_STORE_OP_STORE||
        r->renderArea.offset.x||r->renderArea.offset.y||r->renderArea.extent.width!=i->width||r->renderArea.extent.height!=i->height){invalid_command(cb);return;}
     struct graphics_begin_record b={0};
-    b.pass=(struct graphics_pass){.format=VK_FORMAT_R8G8B8A8_UNORM,.samples=VK_SAMPLE_COUNT_1_BIT,.load=c->loadOp,.store=c->storeOp,
+    b.pass=(struct graphics_pass){.format=image_color_format(i),.samples=VK_SAMPLE_COUNT_1_BIT,.load=c->loadOp,.store=c->storeOp,
         .initial=c->imageLayout,.final=c->imageLayout};
     b.view=v->id;b.depth_clear=1.0f;
     if(c->loadOp==VK_ATTACHMENT_LOAD_OP_CLEAR) {

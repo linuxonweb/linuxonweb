@@ -9,14 +9,14 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image_view(VkDevice d,const VkImage
        i->viewType!=VK_IMAGE_VIEW_TYPE_2D)return VK_ERROR_INITIALIZATION_FAILED;
     /* A5: depth views must name the image's own depth format and DEPTH aspect. */
     int depth_view=live->depth_supported&&depth_code(i->format);
-    if(depth_view?!depth_range(&i->subresourceRange):(i->format!=VK_FORMAT_R8G8B8A8_UNORM||!full_range(&i->subresourceRange)))return VK_ERROR_INITIALIZATION_FAILED;
+    if(depth_view?!depth_range(&i->subresourceRange):(!color_format(i->format)||!full_range(&i->subresourceRange)))return VK_ERROR_INITIALIZATION_FAILED;
     const VkComponentMapping c=i->components;
     if((c.r!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.r!=VK_COMPONENT_SWIZZLE_R)||
        (c.g!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.g!=VK_COMPONENT_SWIZZLE_G)||
        (c.b!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.b!=VK_COMPONENT_SWIZZLE_B)||
        (c.a!=VK_COMPONENT_SWIZZLE_IDENTITY&&c.a!=VK_COMPONENT_SWIZZLE_A))return VK_ERROR_FEATURE_NOT_PRESENT;
     struct resource *image=resource_get(RID(i->image),R_IMAGE);
-    if(!image||!(depth_view?image->depth==depth_code(i->format):(image->graphics_target||image->sampled))||!image->host||
+    if(!image||!(depth_view?image->depth==depth_code(i->format):((image->graphics_target||image->sampled)&&i->format==image_color_format(image)))||!image->host||
        !resource_get(image->memory,R_MEMORY))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_IMAGE_VIEW);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics.view.image=image->id;*out=HANDLE(VkImageView,r->id);return VK_SUCCESS;
@@ -29,7 +29,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_render_pass(VkDevice d,const VkRend
     if(!device_valid(d)||!live->graphics_supported||!i||a||i->sType!=VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO||i->pNext||i->flags||
        !i->attachmentCount||i->attachmentCount>(live->depth_supported?2u:1u)||!i->pAttachments||i->subpassCount!=1||!i->pSubpasses||i->dependencyCount)return VK_ERROR_INITIALIZATION_FAILED;
     const VkAttachmentDescription attachment=i->pAttachments[0];const VkSubpassDescription subpass=i->pSubpasses[0];
-    if(attachment.flags||attachment.format!=VK_FORMAT_R8G8B8A8_UNORM||attachment.samples!=VK_SAMPLE_COUNT_1_BIT||
+    if(attachment.flags||!color_format(attachment.format)||attachment.samples!=VK_SAMPLE_COUNT_1_BIT||
        (attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||
        attachment.storeOp!=VK_ATTACHMENT_STORE_OP_STORE||attachment.stencilLoadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE||
        attachment.stencilStoreOp!=VK_ATTACHMENT_STORE_OP_DONT_CARE||attachment.initialLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||
@@ -66,7 +66,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_framebuffer(VkDevice d,const VkFram
        !i->attachmentCount||i->attachmentCount>2||!i->pAttachments||i->layers!=1)return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *pass=resource_get(RID(i->renderPass),R_RENDER_PASS),*view=resource_get(RID(i->pAttachments[0]),R_IMAGE_VIEW);
     struct resource *image=view?resource_get(view->graphics.view.image,R_IMAGE):NULL;
-    if(!pass||!image||!image->graphics_target||!image->host||!resource_get(image->memory,R_MEMORY)||
+    if(!pass||!image||!image->graphics_target||!image->host||!resource_get(image->memory,R_MEMORY)||image_color_format(image)!=pass->graphics.pass.format||
        i->width!=image->width||i->height!=image->height||i->attachmentCount!=(pass->graphics.pass.depth_format?2u:1u))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *depth_view=NULL,*depth=NULL;
     if(i->attachmentCount==2) {
@@ -150,7 +150,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
      * VkPipelineRenderingCreateInfo (1 RGBA8 color, optional D32/D16 depth). */
     const VkPipelineRenderingCreateInfo *rendering=i&&i->pNext&&live->dynamic_rendering&&!i->renderPass?i->pNext:NULL;
     if(rendering&&(rendering->sType!=VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO||rendering->pNext||rendering->viewMask||
-       rendering->colorAttachmentCount!=1||!rendering->pColorAttachmentFormats||rendering->pColorAttachmentFormats[0]!=VK_FORMAT_R8G8B8A8_UNORM||
+       rendering->colorAttachmentCount!=1||!rendering->pColorAttachmentFormats||!color_format(rendering->pColorAttachmentFormats[0])||
        (rendering->depthAttachmentFormat&&(!live->depth_supported||!depth_code(rendering->depthAttachmentFormat)))||
        rendering->stencilAttachmentFormat))return VK_ERROR_FEATURE_NOT_PRESENT;
 #else
@@ -164,7 +164,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     if(!layout||!layout->graphics_layout||(!pass&&!rendering))return VK_ERROR_INITIALIZATION_FAILED;
     struct graphics_pipeline p={0};p.uniforms=layout->graphics.layout;
 #ifdef GUEST_VK_ZINK
-    if(rendering)p.pass=(struct graphics_pass){.format=VK_FORMAT_R8G8B8A8_UNORM,.samples=VK_SAMPLE_COUNT_1_BIT,.depth_format=rendering->depthAttachmentFormat};
+    if(rendering)p.pass=(struct graphics_pass){.format=rendering->pColorAttachmentFormats[0],.samples=VK_SAMPLE_COUNT_1_BIT,.depth_format=rendering->depthAttachmentFormat};
     else
 #endif
     p.pass=pass->graphics.pass;

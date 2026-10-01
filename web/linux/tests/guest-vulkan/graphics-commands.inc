@@ -32,7 +32,7 @@ static struct resource *graphics_framebuffer_image(uint64_t id,const struct grap
 static struct resource *graphics_begin_image(const struct graphics_begin_record *b) {
     if(b->framebuffer)return graphics_framebuffer_image(b->framebuffer,&b->pass);
     struct resource *v=resource_get(b->view,R_IMAGE_VIEW),*i=v?resource_get(v->graphics.view.image,R_IMAGE):NULL;
-    if(!i||!i->graphics_target||!i->host||!resource_get(i->memory,R_MEMORY)||b->pass.format!=VK_FORMAT_R8G8B8A8_UNORM)return NULL;
+    if(!i||!i->graphics_target||!i->host||!resource_get(i->memory,R_MEMORY)||b->pass.format!=image_color_format(i))return NULL;
     return i;
 }
 static struct resource *graphics_begin_depth(const struct graphics_begin_record *b) {

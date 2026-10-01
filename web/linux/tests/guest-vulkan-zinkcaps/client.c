@@ -132,6 +132,7 @@ int main(void){
     VkRenderPass pass2=VK_NULL_HANDLE;VkFramebuffer fb=VK_NULL_HANDLE;
     VkPipeline rp2_pipe=VK_NULL_HANDLE,dyn_depth=VK_NULL_HANDLE,dyn_tint=VK_NULL_HANDLE;
     VkSemaphore tl=VK_NULL_HANDLE,tl2=VK_NULL_HANDLE;
+    VkImage bgra_image=VK_NULL_HANDLE;VkDeviceMemory bgra_mem=VK_NULL_HANDLE;VkImageView bgra_view=VK_NULL_HANDLE;VkPipeline dyn_bgra=VK_NULL_HANDLE;
     struct sigaction action={0};action.sa_handler=deadline;sigemptyset(&action.sa_mask);if(sigaction(SIGALRM,&action,NULL))return 2;alarm(110);signal(SIGPIPE,SIG_IGN);
     puts("GUEST_VK_ZINKCAPS_SCOPE public static Khronos loader; Zink startup extensions (maintenance1/5, update templates, renderpass2, dynamic rendering, robustness2 nullDescriptor, timeline semaphores); bounded nonconformant ICD");
     VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.apiVersion=VK_API_VERSION_1_1,.pApplicationName="public-zinkcaps"};VkInstanceCreateInfo ii={.sType=VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,.pApplicationInfo=&app};
@@ -142,6 +143,7 @@ int main(void){
     CHECK(properties.apiVersion==VK_API_VERSION_1_1&&properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_OTHER);
     CHECK(lim->maxPushConstantsSize>=128&&lim->maxStorageBufferRange>=(1u<<27)&&lim->maxUniformBufferRange>=16384&&lim->maxBoundDescriptorSets>=4);
     CHECK(lim->maxImageDimension2D==128&&lim->framebufferDepthSampleCounts==VK_SAMPLE_COUNT_1_BIT);
+    CHECK(lim->maxImageDimension1D==128);   /* B2e: Zink's max_texture_2d_size is MIN3(dim1D, dim2D, 16384). */
     const unsigned max_stride=lim->maxVertexInputBindingStride;CHECK(max_stride==252||max_stride==2048);
     printf("GUEST_VK_ZINKCAPS_LIMITS push=%u storage_range=%u uniform_range=%u sets=%u dimension=%u max_stride=%u\n",lim->maxPushConstantsSize,lim->maxStorageBufferRange,
         lim->maxUniformBufferRange,lim->maxBoundDescriptorSets,lim->maxImageDimension2D,max_stride);fflush(stdout);
@@ -177,6 +179,7 @@ int main(void){
     CHECK(tlf.timelineSemaphore==VK_TRUE&&drf.dynamicRendering==VK_TRUE&&m5f.maintenance5==VK_TRUE);
     CHECK(dcf.depthClipEnable==VK_FALSE&&vadf.vertexAttributeInstanceRateDivisor==VK_FALSE&&tff.transformFeedback==VK_FALSE&&tff.geometryStreams==VK_FALSE);
     CHECK(f2.features.robustBufferAccess==VK_FALSE&&f2.features.geometryShader==VK_FALSE&&f2.features.depthClamp==VK_FALSE);
+    CHECK(f2.features.independentBlend==VK_TRUE);   /* B2e: Zink's blend_equation_separate, required for ES 2.0 */
     {
         VkPhysicalDeviceTimelineSemaphoreProperties tlp={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES};
         VkPhysicalDeviceRobustness2PropertiesEXT robp={.sType=VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT,.pNext=&tlp};
@@ -441,12 +444,56 @@ int main(void){
         wi.flags=0;ssi.semaphore=tl2;ssi.value=1;CHECK(vkSignalSemaphore(device,&ssi)==VK_SUCCESS);CHECK(vkWaitSemaphores(device,&wi,0)==VK_SUCCESS);
         printf("GUEST_VK_ZINKCAPS_TIMELINE_PASS final=11 signals=3 waits=6 refused=4\n");fflush(stdout);
     }
-    printf("GUEST_VK_ZINKCAPS_PASS frames=10\n");fflush(stdout);
+    /* ---- B2e: B8G8R8A8_UNORM colour attachment (Zink's EGL/GBM config format). The host stores
+     * RGBA; guest-visible bytes are B,G,R,A. ---- */
+    {
+        VkFormatProperties fr,fb2,fsr;vkGetPhysicalDeviceFormatProperties(physical,VK_FORMAT_R8G8B8A8_UNORM,&fr);
+        vkGetPhysicalDeviceFormatProperties(physical,VK_FORMAT_B8G8R8A8_UNORM,&fb2);vkGetPhysicalDeviceFormatProperties(physical,VK_FORMAT_B8G8R8A8_SRGB,&fsr);
+        const VkFormatFeatureFlags need=VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT|VK_FORMAT_FEATURE_TRANSFER_SRC_BIT;
+        CHECK(fb2.optimalTilingFeatures==fr.optimalTilingFeatures&&(fb2.optimalTilingFeatures&need)==need&&!fb2.linearTilingFeatures&&!fb2.bufferFeatures);
+        CHECK(!fsr.optimalTilingFeatures&&!fsr.linearTilingFeatures&&!fsr.bufferFeatures);
+        VkImageFormatProperties ip;
+        CHECK(vkGetPhysicalDeviceImageFormatProperties(physical,VK_FORMAT_B8G8R8A8_UNORM,VK_IMAGE_TYPE_2D,VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT,0,&ip)==VK_SUCCESS);
+        CHECK(ip.maxExtent.width==128&&ip.maxExtent.height==128&&ip.maxMipLevels==1&&ip.sampleCounts==VK_SAMPLE_COUNT_1_BIT);
+        CHECK(vkGetPhysicalDeviceImageFormatProperties(physical,VK_FORMAT_B8G8R8A8_SRGB,VK_IMAGE_TYPE_2D,VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT,0,&ip)==VK_ERROR_FORMAT_NOT_SUPPORTED);
+        VkImageCreateInfo bi2={.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,.imageType=VK_IMAGE_TYPE_2D,.format=VK_FORMAT_B8G8R8A8_UNORM,.extent={W,H,1},.mipLevels=1,.arrayLayers=1,
+            .samples=VK_SAMPLE_COUNT_1_BIT,.tiling=VK_IMAGE_TILING_OPTIMAL,.usage=VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT,.sharingMode=VK_SHARING_MODE_EXCLUSIVE};
+        VkImage bad_image=VK_NULL_HANDLE;bi2.format=VK_FORMAT_B8G8R8A8_SRGB;CHECK(vkCreateImage(device,&bi2,NULL,&bad_image)!=VK_SUCCESS&&!bad_image);
+        bi2.format=VK_FORMAT_B8G8R8A8_UNORM;CHECK(vkCreateImage(device,&bi2,NULL,&bgra_image)==VK_SUCCESS);
+        VkMemoryRequirements bmr;vkGetImageMemoryRequirements(device,bgra_image,&bmr);CHECK(bmr.size==PIXELS&&bmr.memoryTypeBits==1);
+        VkMemoryAllocateInfo bai={.sType=VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,.allocationSize=bmr.size};
+        CHECK(vkAllocateMemory(device,&bai,NULL,&bgra_mem)==VK_SUCCESS);CHECK(vkBindImageMemory(device,bgra_image,bgra_mem,0)==VK_SUCCESS);
+        VkImageViewCreateInfo bvi={.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,.image=bgra_image,.viewType=VK_IMAGE_VIEW_TYPE_2D,.format=VK_FORMAT_R8G8B8A8_UNORM,
+            .subresourceRange={VK_IMAGE_ASPECT_COLOR_BIT,0,1,0,1}};
+        VkImageView bad_view=VK_NULL_HANDLE;CHECK(vkCreateImageView(device,&bvi,NULL,&bad_view)!=VK_SUCCESS&&!bad_view);   /* RGBA view of a BGRA image */
+        bvi.format=VK_FORMAT_B8G8R8A8_UNORM;CHECK(vkCreateImageView(device,&bvi,NULL,&bgra_view)==VK_SUCCESS);
+        VkFormat bgra=VK_FORMAT_B8G8R8A8_UNORM;
+        VkPipelineRenderingCreateInfo pr={.sType=VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,.colorAttachmentCount=1,.pColorAttachmentFormats=&bgra};
+        CHECK(pipeline(offset_vs,tint_fs,0,uniform_layout,VK_NULL_HANDLE,&pr,NULL,&dyn_bgra)==VK_SUCCESS);
+        /* Clear to blue, then a red quad at offset (0.25,0.25): blue reads back as bytes 255,0,0,255 and red as 0,0,255,255. */
+        VkImage saved_image=color_image;VkImageLayout saved_layout=cold;color_image=bgra_image;cold=VK_IMAGE_LAYOUT_UNDEFINED;
+        VkRenderingAttachmentInfo bc=color_attachment(bgra_view,VK_ATTACHMENT_LOAD_OP_CLEAR);bc.clearValue.color=(VkClearColorValue){{0,0,1,1}};
+        VkRenderingInfo binfo={.sType=VK_STRUCTURE_TYPE_RENDERING_INFO,.renderArea={{0,0},{W,H}},.layerCount=1,.colorAttachmentCount=1,.pColorAttachments=&bc};
+        set_params(pmap,0.25f,0.25f,RED);
+        CHECK(vkResetCommandBuffer(cb,0)==VK_SUCCESS);CHECK(vkBeginCommandBuffer(cb,&begin_info)==VK_SUCCESS);
+        color_barrier(cold,VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);buffer_barrier(params,2);buffer_barrier(qverts,1);
+        vkCmdBeginRendering(cb,&binfo);vkCmdBindPipeline(cb,VK_PIPELINE_BIND_POINT_GRAPHICS,dyn_bgra);
+        vkCmdBindDescriptorSets(cb,VK_PIPELINE_BIND_POINT_GRAPHICS,uniform_layout,0,1,&tset,0,NULL);vkCmdBindVertexBuffers(cb,0,1,&qverts,&zero_offset);
+        vkCmdDraw(cb,6,1,0,0);vkCmdEndRendering(cb);record_readback();CHECK(vkEndCommandBuffer(cb)==VK_SUCCESS);
+        static const unsigned char BGRA_BLUE[4]={255,0,0,255},BGRA_RED[4]={0,0,255,255};
+        fill(BGRA_BLUE);rect(6,6,14,14,BGRA_RED);const int ok=submit_frame(11);color_image=saved_image;cold=saved_layout;CHECK(ok);
+        printf("GUEST_VK_ZINKCAPS_BGRA_PASS frames=1 refused=2 dim1d=%u independent_blend=1 srgb=0\n",lim->maxImageDimension1D);fflush(stdout);
+    }
+    printf("GUEST_VK_ZINKCAPS_PASS frames=11\n");fflush(stdout);
     result=0;
 done:
     if(device){
         if(tl)vkDestroySemaphore(device,tl,NULL);if(tl2)vkDestroySemaphore(device,tl2,NULL);
         if(cb)vkFreeCommandBuffers(device,cpool,1,&cb);if(cpool)vkDestroyCommandPool(device,cpool,NULL);
+        if(dyn_bgra)vkDestroyPipeline(device,dyn_bgra,NULL);if(bgra_view)vkDestroyImageView(device,bgra_view,NULL);
+        if(bgra_image)vkDestroyImage(device,bgra_image,NULL);if(bgra_mem)vkFreeMemory(device,bgra_mem,NULL);
         if(rp2_pipe)vkDestroyPipeline(device,rp2_pipe,NULL);if(dyn_depth)vkDestroyPipeline(device,dyn_depth,NULL);if(dyn_tint)vkDestroyPipeline(device,dyn_tint,NULL);
         if(fb)vkDestroyFramebuffer(device,fb,NULL);if(pass2)vkDestroyRenderPass(device,pass2,NULL);
         if(tmpl)vkDestroyDescriptorUpdateTemplate(device,tmpl,NULL);if(pool)vkDestroyDescriptorPool(device,pool,NULL);

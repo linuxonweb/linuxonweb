@@ -1,7 +1,13 @@
 /* Direct-call experimental command profile, deliberately NOT a conformant ICD.
  * One primary command buffer; whole rgba8 images; synchronous submission only.
  * Handles are monotonically allocated IDs, never guest addresses. */
+#ifdef GUEST_VK_ZINK
+/* B2e: Zink and the zinkcaps suite hold more than 32 live objects (the BGRA
+ * frame is the 33rd); the direct exhaustion suite keeps the 32-entry table. */
+#define MAX_RES 128
+#else
 #define MAX_RES 32
+#endif
 #define MAX_CMDS 16
 #if VK_USE_64_BIT_PTR_DEFINES
 #define RID(h) ((uint64_t)(uintptr_t)(h))
@@ -29,6 +35,7 @@ struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare; };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
+    unsigned bgra; /* B2e: image created as B8G8R8A8_UNORM (host stores RGBA; guest bytes swap R/B). */
     unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
     uint64_t swapchain; /* A6a: nonzero for images/memory owned by a VkSwapchainKHR (not app-destroyable). */
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
@@ -125,6 +132,10 @@ static VKAPI_ATTR void VKAPI_CALL memory_properties(VkPhysicalDevice p, VkPhysic
     out->memoryTypes[1].propertyFlags=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 }
 /* A5 depth format code shared with the host DEPTH_TARGET request: 1=depth32float, 2=depth16unorm. */
+/* B2e helpers: the colour format an image was created with, and the R/B byte
+ * swap applied to guest-visible texel bytes of B8G8R8A8 images. */
+static VkFormat image_color_format(const struct resource *i) {return i->bgra?VK_FORMAT_B8G8R8A8_UNORM:VK_FORMAT_R8G8B8A8_UNORM;}
+static void swap_rb(unsigned char *p,size_t n) {for(size_t k=0;k+3<n;k+=4){unsigned char t=p[k];p[k]=p[k+2];p[k+2]=t;}}
 static unsigned depth_code(VkFormat f) {return f==VK_FORMAT_D32_SFLOAT?1:f==VK_FORMAT_D16_UNORM?2:0;}
 static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreateInfo *i,const VkAllocationCallbacks *a,VkImage *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
@@ -133,14 +144,19 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreat
         i->imageType!=VK_IMAGE_TYPE_2D||!i->extent.width||!i->extent.height||
         i->extent.width>128||i->extent.height>128||i->extent.depth!=1||i->mipLevels!=1||i->arrayLayers!=1||
         i->samples!=VK_SAMPLE_COUNT_1_BIT||i->tiling!=VK_IMAGE_TILING_OPTIMAL||
-        !((i->format==VK_FORMAT_R8G8B8A8_UNORM && ((live->clear_supported && i->usage==(VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
+        !((color_format(i->format) && ((live->clear_supported && i->usage==(VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
           (live->graphics_supported && i->usage==(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
           (live->texture_supported && i->usage==(VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)))) ||
           (live->depth_supported && depth_code(i->format) && i->usage==VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))||
-        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount||i->initialLayout!=VK_IMAGE_LAYOUT_UNDEFINED)
+        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount||i->initialLayout!=VK_IMAGE_LAYOUT_UNDEFINED) {
+        if (i) ZINK_TRACE("create_image REJECT format=%d type=%d %ux%ux%u mips=%u layers=%u samples=%d tiling=%d usage=0x%x flags=0x%x pNext=%d\n",
+            (int)i->format,(int)i->imageType,i->extent.width,i->extent.height,i->extent.depth,i->mipLevels,i->arrayLayers,(int)i->samples,(int)i->tiling,
+            (unsigned)i->usage,(unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0);
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
+    }
     struct resource *r=resource_new(R_IMAGE); if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->width=i->extent.width;r->height=i->extent.height;r->size=(size_t)r->width*r->height*4;r->layout=VK_IMAGE_LAYOUT_UNDEFINED;
+    r->bgra=i->format==VK_FORMAT_B8G8R8A8_UNORM;
     r->graphics_target=(i->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)!=0;r->sampled=(i->usage & VK_IMAGE_USAGE_SAMPLED_BIT)!=0;
     /* A5: depth images are host-only attachments; 4 or 2 bytes per texel is the
      * reported (never mapped) size. Contents are not readable by the guest. */
@@ -156,7 +172,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCre
           !(live->graphics_supported && i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT && !(i->size%4)) &&
           !(live->uniform_supported && i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT && !(i->size%16)) &&
           !(live->texture_supported && i->usage==VK_BUFFER_USAGE_TRANSFER_SRC_BIT && !(i->size%4)))||
-        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount) return VK_ERROR_FEATURE_NOT_PRESENT;
+        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount) {
+        if (i) ZINK_TRACE("create_buffer REJECT size=%llu usage=0x%x flags=0x%x pNext=%d sharing=%d\n",(unsigned long long)i->size,(unsigned)i->usage,
+            (unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,(int)i->sharingMode);
+        return VK_ERROR_FEATURE_NOT_PRESENT;
+    }
     struct resource *r=resource_new(R_BUFFER);if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->size=(size_t)i->size;r->storage=i->usage==VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;r->vertex=i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     r->uniform=i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;r->staging=i->usage==VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -179,7 +199,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL allocate_memory(VkDevice d,const VkMemoryA
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO||i->pNext||
-        !i->allocationSize||i->allocationSize>65536||i->memoryTypeIndex>1||i->allocationSize>1024*1024-allocated_bytes) return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+        !i->allocationSize||i->allocationSize>65536||i->memoryTypeIndex>1||i->allocationSize>1024*1024-allocated_bytes) {
+        if (i) ZINK_TRACE("allocate_memory REJECT size=%llu type=%u pNext=%d allocated=%zu\n",(unsigned long long)i->allocationSize,i->memoryTypeIndex,
+            i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,(size_t)allocated_bytes);
+        return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    }
     struct resource *r=resource_new(R_MEMORY); if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->size=(size_t)i->allocationSize;r->type=i->memoryTypeIndex;allocated_bytes+=r->size;
     if (r->type==1 && !(r->bytes=calloc(1,r->size))) {resource_drop(r);return VK_ERROR_OUT_OF_HOST_MEMORY;}
@@ -415,7 +439,7 @@ static VkResult execute_submit(void) {
         }
         if(c->op==3){unsigned char data[65536];uint32_t size=0;struct resource *m=resource_get(b->memory,R_MEMORY);
             if(host_call(i->graphics_target?GPU_GRAPHICS_READBACK:GPU_READBACK,&i->host,4,data,sizeof(data),&size)!=VK_SUCCESS||size!=i->size)goto submit_lost;
-            memcpy(m->bytes,data,size);
+            memcpy(m->bytes,data,size);if(i->bgra)swap_rb(m->bytes,size);
         }
     }
     command.state=3;result=VK_SUCCESS;goto submit_done;
