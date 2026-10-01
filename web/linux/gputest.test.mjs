@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gputestEnabled, gpuBackendParam, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_VSOCK_PORT } from './gputest.mjs';
+import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_CPIO_URL, GPUTEST_VSOCK_PORT } from './gputest.mjs';
 
 test('gputest query flag', () => {
   assert.equal(gputestEnabled('?gputest=1'), true);
@@ -80,4 +80,20 @@ test('forced backends shape serveGPU options', async () => {
     assert.equal(lines.some(line => line.includes('webgpu-unavailable')), backend !== 'webgl');
   }
   assert.throws(() => startGpuHost({ vsock: {}, log() {}, backend: 'vulkan' }), /unknown GPU backend/);
+});
+
+test('gputestapp selects allowlisted archives and glgears flags', async () => {
+  assert.equal(gputestAppParam('?gputest=1'), 'cube');
+  assert.equal(gputestAppParam('?gputest=1&gputestapp=GLGEARS'), 'glgears');
+  assert.equal(gputestAppParam('?gputestapp=../../etc'), 'cube');
+  assert.equal(GPUTEST_APPS.cube, GPUTEST_CPIO_URL);
+  assert.match(GPUTEST_APPS.glgears.pathname, /\/gpu\/gputest-glgears\.cpio$/);
+  assert.deepEqual(gputestCmdlineFlags('?gputest=1'), []);
+  assert.deepEqual(gputestCmdlineFlags('?gputest=1&gputestapp=glgears'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=zink&glmode=nopresent'), ['gputest.app=glgears', 'gputest.gldriver=zink', 'gputest.glmode=nopresent']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=x%20y&glmode=rm'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
+  let fetched;
+  const newc = new TextEncoder().encode('070701'.padEnd(120, '0'));
+  assert.deepEqual(await loadGputestArchive(() => {}, async url => { fetched = url; return new Response(newc); }, GPUTEST_APPS.glgears), newc);
+  assert.equal(fetched, GPUTEST_APPS.glgears);
 });

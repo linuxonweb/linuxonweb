@@ -1,0 +1,319 @@
+{
+ "packet": "S1",
+ "date": "2026-10-01",
+ "doc": "docs/glgears-s1-20261001.md",
+ "recipe": {
+  "server": "web/desktop/dev-server.mjs :4208",
+  "browser": "/home/a/.local/archpkg/pacman/usr/bin/chromium headful DISPLAY=:0 --enable-unsafe-webgpu --enable-features=Vulkan --ignore-gpu-blocklist, CDP 9418",
+  "runner": "/mnt/p6/build/glgears-s1-20261001/run-s1.mjs"
+ },
+ "glStrings": {
+  "EGL_VERSION": "1.5 (Mesa Project)",
+  "GL_RENDERER": "softpipe",
+  "GL_VERSION": "3.3 (Compatibility Profile) Mesa 26.2.3",
+  "GL_VENDOR": "Mesa"
+ },
+ "softpipeFps300x300": {
+  "present": [
+   87.838,
+   87.13
+  ],
+  "nopresent": [
+   189.886,
+   183.183
+  ],
+  "source": "GLGEARS_DONE avg_fps, 30 s each, run1/run2"
+ },
+ "zink": {
+  "status": "fails at eglCreateContext EGL_BAD_ALLOC (0x3003) after MESA: error: ZINK: vkCreateBuffer failed; with B2a ICD (run1) fails earlier at eglInitialize 0x3001 (no BGRA8)",
+  "blockedBy": "B2f"
+ },
+ "builds": {
+  "link_run1": {
+   "icd": "icd/src (B2a 6742a69, icd.c ece10e6d)",
+   "wasm": {
+    "bytes": 20467857,
+    "sha256": "d4ec454a1c6194a633ca5d30db07484d9ac8440ef51cb5e196ef8827fdbb3d21"
+   },
+   "cpio": {
+    "dir": "package-run1",
+    "bytes": 20470784,
+    "sha256": "814374d824713f591d4e8466bb422894bbcd4788f834506ba1344bac1511f734"
+   }
+  },
+  "link_run2": {
+   "icd": "icd/src-2a26a22 (git archive B2e, icd.c 6603af33)",
+   "wasm": {
+    "bytes": 20469989,
+    "sha256": "9a1fed432500a596e48444c2953c00381697ac2232919de02ce1c70f71d75981"
+   },
+   "cpio": {
+    "dir": "package-run2",
+    "bytes": 20472832,
+    "sha256": "3e33929de7b3161b67f84f4597cbdd94ae297c6ff19c1ce9a8ea57b42823713d",
+    "reproducible": true,
+    "served": "web/linux/gpu/gputest-glgears.cpio"
+   }
+  },
+  "glgears_c_sha256": "8d629cfca6cce52824c27d7999152e4a9c0c176bff3f76304f16d533da6c31ec",
+  "wasmImports": [
+   "env.memory",
+   "linux.copy_siginfo",
+   "linux.get_thread_area",
+   "linux.syscall"
+  ]
+ },
+ "runs": [
+  {
+   "dir": "/mnt/p6/build/glgears-s1-20261001/gate-softpipe-run1",
+   "query": "?gputest=1&gputestapp=glgears&gldriver=softpipe",
+   "pass": true,
+   "checks": {
+    "presentFps": true,
+    "nopresentFps": true,
+    "rotation": true,
+    "noFailure": true,
+    "noPageErrors": true
+   },
+   "timelineMs": {
+    "waiter": 6012,
+    "start": 6012,
+    "ready": 6012,
+    "firstFps": 10024,
+    "nopresentPhase": 36755,
+    "nopresentExit": 66901
+   },
+   "fpsSummary": {
+    "present": {
+     "lines": 11,
+     "frames": 4883,
+     "seconds": 55.2,
+     "meanFps": 88.46,
+     "minFps": 82.29,
+     "maxFps": 91.146
+    },
+    "nopresent": {
+     "lines": 5,
+     "frames": 4766,
+     "seconds": 25,
+     "meanFps": 190.64,
+     "minFps": 186.671,
+     "maxFps": 192.164
+    }
+   },
+   "done": [
+    "GLGEARS_DONE driver=softpipe renderer=\"softpipe\" frames=2636 seconds=30.01 avg_fps=87.838 present=1 size=300x300",
+    "GLGEARS_DONE driver=softpipe renderer=\"softpipe\" frames=5697 seconds=30.00 avg_fps=189.886 present=0 size=300x300"
+   ],
+   "errors": [],
+   "rotationSamples": [
+    {
+     "atMs": 34695,
+     "changedFraction": 0.06,
+     "litFractionA": 0.4064
+    },
+    {
+     "atMs": 93698,
+     "changedFraction": 0.0653,
+     "litFractionA": 0.3857
+    }
+   ],
+   "hostAdapter": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "description": ""
+   },
+   "consoleErrors": 0,
+   "pageExceptions": 0,
+   "failedRequests": [
+    "http://127.0.0.1:4208/favicon.ico"
+   ],
+   "exit": {
+    "browser": {
+     "code": 0,
+     "signal": null
+    },
+    "server": {
+     "code": 0,
+     "signal": null
+    }
+   }
+  },
+  {
+   "dir": "/mnt/p6/build/glgears-s1-20261001/gate-softpipe-run2",
+   "query": "?gputest=1&gputestapp=glgears&gldriver=softpipe",
+   "pass": true,
+   "checks": {
+    "presentFps": true,
+    "nopresentFps": true,
+    "rotation": true,
+    "noFailure": true,
+    "noPageErrors": true
+   },
+   "timelineMs": {
+    "waiter": 6013,
+    "start": 6013,
+    "ready": 6013,
+    "firstFps": 10022,
+    "nopresentPhase": 37890,
+    "nopresentExit": 66018
+   },
+   "fpsSummary": {
+    "present": {
+     "lines": 11,
+     "frames": 4871,
+     "seconds": 55.06,
+     "meanFps": 88.467,
+     "minFps": 68.363,
+     "maxFps": 96.994
+    },
+    "nopresent": {
+     "lines": 5,
+     "frames": 4632,
+     "seconds": 25,
+     "meanFps": 185.28,
+     "minFps": 152.722,
+     "maxFps": 196.613
+    }
+   },
+   "done": [
+    "GLGEARS_DONE driver=softpipe renderer=\"softpipe\" frames=2615 seconds=30.01 avg_fps=87.130 present=1 size=300x300",
+    "GLGEARS_DONE driver=softpipe renderer=\"softpipe\" frames=5496 seconds=30.00 avg_fps=183.183 present=0 size=300x300"
+   ],
+   "errors": [],
+   "rotationSamples": [
+    {
+     "atMs": 35797,
+     "changedFraction": 0.0864,
+     "litFractionA": 0.407
+    },
+    {
+     "atMs": 92790,
+     "changedFraction": 0.062,
+     "litFractionA": 0.3851
+    }
+   ],
+   "hostAdapter": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "description": ""
+   },
+   "consoleErrors": 0,
+   "pageExceptions": 0,
+   "failedRequests": [
+    "http://127.0.0.1:4208/favicon.ico"
+   ],
+   "exit": {
+    "browser": {
+     "code": 0,
+     "signal": null
+    },
+    "server": {
+     "code": 0,
+     "signal": null
+    }
+   }
+  },
+  {
+   "dir": "/mnt/p6/build/glgears-s1-20261001/gate-zink-run1",
+   "query": "?gputest=1&gputestapp=glgears&gldriver=zink",
+   "pass": false,
+   "checks": {
+    "presentFps": false,
+    "nopresentFps": false,
+    "rotation": false,
+    "noFailure": false,
+    "noPageErrors": true
+   },
+   "timelineMs": {
+    "waiter": 6010,
+    "start": 6010,
+    "nopresentPhase": 6010,
+    "nopresentExit": 6010,
+    "failure": 6010
+   },
+   "fpsSummary": {
+    "present": null,
+    "nopresent": null
+   },
+   "done": [],
+   "errors": [
+    "MESA-EGL: warning: egl: failed to create dri2 screen",
+    "MESA-EGL: warning: DRI2: failed to create screen",
+    "GLGEARS_ERROR eglInitialize failed egl=0x3001 driver=zink"
+   ],
+   "rotationSamples": [],
+   "hostAdapter": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "description": ""
+   },
+   "consoleErrors": 0,
+   "pageExceptions": 0,
+   "failedRequests": [
+    "http://127.0.0.1:4208/favicon.ico",
+    "net::ERR_ABORTED"
+   ],
+   "exit": {
+    "browser": {
+     "code": 0,
+     "signal": null
+    },
+    "server": {
+     "code": 0,
+     "signal": null
+    }
+   }
+  },
+  {
+   "dir": "/mnt/p6/build/glgears-s1-20261001/gate-zink-run2",
+   "query": "?gputest=1&gputestapp=glgears&gldriver=zink",
+   "pass": false,
+   "checks": {
+    "presentFps": false,
+    "nopresentFps": false,
+    "rotation": false,
+    "noFailure": false,
+    "noPageErrors": true
+   },
+   "timelineMs": {
+    "waiter": 6011,
+    "start": 6011,
+    "nopresentPhase": 6011,
+    "nopresentExit": 6011,
+    "failure": 6011
+   },
+   "fpsSummary": {
+    "present": null,
+    "nopresent": null
+   },
+   "done": [],
+   "errors": [
+    "MESA: error: ZINK: vkCreateBuffer failed",
+    "GLGEARS_ERROR eglCreateContext failed egl=0x3003 configs=1"
+   ],
+   "rotationSamples": [],
+   "hostAdapter": {
+    "vendor": "nvidia",
+    "architecture": "maxwell",
+    "description": ""
+   },
+   "consoleErrors": 0,
+   "pageExceptions": 0,
+   "failedRequests": [
+    "http://127.0.0.1:4208/favicon.ico"
+   ],
+   "exit": {
+    "browser": {
+     "code": 0,
+     "signal": null
+    },
+    "server": {
+     "code": 0,
+     "signal": null
+    }
+   }
+  }
+ ],
+ "unitTests": "node --test web/linux/gputest.test.mjs: 7/7 pass"
+}

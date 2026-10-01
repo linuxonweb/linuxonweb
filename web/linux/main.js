@@ -19,7 +19,7 @@ import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
 import { systemAsset, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
-import { gputestEnabled, gpuBackendParam, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_RDINIT } from './gputest.mjs';
+import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
@@ -465,7 +465,7 @@ async function boot(mode) {
     const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
     initramfs = new Uint8Array(await new Response(body).arrayBuffer());
     if (gputestMode) {
-      const demo = await loadGputestArchive(hostLog);
+      const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam()]);
       if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
     }
     storagePanel.message('Home ready · waiting for guest mount');
@@ -698,6 +698,7 @@ async function boot(mode) {
       'home.persistent=1',
       mode === "firefox" ? "firefox=1" : "",
       gputestInit ? "gputest=1" : "",
+      ...(gputestInit ? gputestCmdlineFlags() : []),
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
     ]
       .filter(Boolean)

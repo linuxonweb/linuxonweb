@@ -18,6 +18,37 @@ export function gputestEnabled(search = globalThis.location?.search ?? '') {
 }
 
 /**
+ * `?gputestapp=` selects an allowlisted demo archive (default `cube`, the
+ * gputest.cpio Vulkan cube). Unknown values fall back to the default.
+ */
+export const GPUTEST_APPS = Object.freeze({
+  cube: GPUTEST_CPIO_URL,
+  glgears: new URL('./gpu/gputest-glgears.cpio', import.meta.url),
+});
+export function gputestAppParam(search = globalThis.location?.search ?? '') {
+  const value = (new URLSearchParams(search).get('gputestapp') || '').toLowerCase();
+  return Object.hasOwn(GPUTEST_APPS, value) ? value : 'cube';
+}
+
+/**
+ * Kernel command-line flags for the selected demo's waiter (read from
+ * /proc/cmdline after X is up). glgears: `&gldriver=softpipe|zink` (default
+ * softpipe) and `&glmode=bench|present|nopresent` (default bench). Only
+ * allowlisted values are passed through.
+ */
+export const GL_DRIVERS = Object.freeze(['softpipe', 'zink']);
+export const GL_MODES = Object.freeze(['bench', 'present', 'nopresent']);
+export function gputestCmdlineFlags(search = globalThis.location?.search ?? '') {
+  const app = gputestAppParam(search);
+  if (app === 'cube') return [];
+  const params = new URLSearchParams(search);
+  const driver = (params.get('gldriver') || '').toLowerCase();
+  const mode = (params.get('glmode') || '').toLowerCase();
+  return [`gputest.app=${app}`, `gputest.gldriver=${GL_DRIVERS.includes(driver) ? driver : 'softpipe'}`,
+    `gputest.glmode=${GL_MODES.includes(mode) ? mode : 'bench'}`];
+}
+
+/**
  * `?gpubackend=webgpu|webgl` forces the host backend for tests: `webgpu`
  * disables the WebGL2 fallback, `webgl` skips WebGPU acquisition. Anything
  * else (or absent) is `auto`: WebGPU first, WebGL2 on acquisition failure.
@@ -30,15 +61,15 @@ export function gpuBackendParam(search = globalThis.location?.search ?? '') {
 }
 
 /** Fetches the demo archive; null (logged) when absent or unavailable. */
-export async function loadGputestArchive(log, fetchImpl = fetch) {
+export async function loadGputestArchive(log, fetchImpl = fetch, url = GPUTEST_CPIO_URL) {
   let response;
-  try { response = await fetchImpl(GPUTEST_CPIO_URL, { cache: 'no-store' }); }
-  catch (error) { log(`gputest: ${GPUTEST_CPIO_URL.pathname} unavailable (${error.message}); normal boot`); return null; }
-  if (!response.ok) { log(`gputest: ${GPUTEST_CPIO_URL.pathname} HTTP ${response.status}; normal boot`); return null; }
+  try { response = await fetchImpl(url, { cache: 'no-store' }); }
+  catch (error) { log(`gputest: ${url.pathname} unavailable (${error.message}); normal boot`); return null; }
+  if (!response.ok) { log(`gputest: ${url.pathname} HTTP ${response.status}; normal boot`); return null; }
   const bytes = new Uint8Array(await response.arrayBuffer());
   // Every newc header starts with "070701"; reject HTML fallbacks and gzip.
   if (bytes.length < 110 || new TextDecoder().decode(bytes.subarray(0, 6)) !== '070701') {
-    log(`gputest: ${GPUTEST_CPIO_URL.pathname} is not an uncompressed newc CPIO; normal boot`, 'error');
+    log(`gputest: ${url.pathname} is not an uncompressed newc CPIO; normal boot`, 'error');
     return null;
   }
   log(`gputest: appending ${bytes.length}-byte demo archive, rdinit=${GPUTEST_RDINIT}`);

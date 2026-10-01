@@ -1,0 +1,6 @@
+#!/bin/busybox sh
+# S1 glgears adapter init (rdinit=/gputest-init, only with ?gputest=1&gputestapp=glgears).
+# Starts the glgears waiter as a separate script and hands PID 1 to the unchanged
+# rootfs /init. No subshells: the waiter is its own busybox sh process.
+/bin/busybox sh /gputest-waiter &
+exec /init "$@"
