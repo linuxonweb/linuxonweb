@@ -133,7 +133,7 @@ User priority (2026-10-01, supersedes 09-30): full guest Vulkan + OpenGL for
 ordinary apps, measured with a glxgears-style benchmark: software GL (Mesa
 softpipe; llvmpipe needs an LLVM JIT) vs OpenGL on Zink on the guest ICD vs
 native Vulkan gears, on the NVIDIA recipe; then STOP for confirmation. Firefox
-WebGL relink (F1b) and W4b are paused. Packets: B2e (running) -> B2c push
+WebGL relink (F1b) and W4b are paused. Packets: B2e (done) -> B2f buffers/suballoc -> B2c push
 constants -> B2b blocking waits -> caps (1 MiB alloc, 128 px, Z24/S8, present);
 S1 softpipe Mesa build + `glgears` EGL app with XPutImage + FPS (parallel);
 V1 `vkgears` (same geometry, Vulkan); S2 three-way score table.
@@ -164,9 +164,15 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   push ranges accepted (not executed). 20/20 suites incl. zinkcaps
   (`/mnt/p6/build/zink-b2a-20260930/all-run2`). Guest `zink_create_screen` OK;
   EGL init fails: surfaceless EGL needs BGRA8 configs.
-- Running: B2e BGRA8 + max texture size -> eglprobe GL strings/clear pixels
-  (`/mnt/p6/build/zink-b2e-20260930`, ports 4207/9417). Next: B2c push constants
-  (first draw), B2b blocking waits, then relink F1a and gate WebGL/WebGL2.
+- Done: Zink B2e (`2a26a22`, `docs/zink-b2e-20260930.md`): BGRA8, 128 px
+  resources under `GUEST_VK_ZINK`, independentBlend; 20/20 suites. Guest EGL
+  init OK (1.4, 6 pbuffer configs, glsl 460); eglCreateContext fails because the
+  ICD rejects Zink's vkCreateBuffer usage 0x1ff.
+- Running (10-01): B2f general buffer usage + memory suballocation -> Zink
+  context/GL strings/clear readback (`/mnt/p6/build/zink-b2f-20261001`, ports
+  4209/9419); S1-continue softpipe glgears page gate
+  (`/mnt/p6/build/glgears-s1-20261001`, ports 4208/9418; app, build script,
+  packager and `?gputestapp=glgears&gldriver=&glmode=` wiring are uncommitted).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
