@@ -121,20 +121,23 @@ is free.
   full Firefox ids with epoch checks, per-call error policy + poll events.
   Guest test 102/0 on NVIDIA (maxwell); W2 regression 150/0. Decoder wasm is
   still served from the W3 build dir (ship it in W4c). No textures/passes/shaders.
-PAUSED by user 2026-09-30 for review; both agents died on the 5 h limit (429),
-work is uncommitted in the tree:
-- A6a WSI (partial, not reviewed): modified `guest-vulkan/{icd.c,transfer.inc,
-  run-finite.mjs,storage.py}`, graphics/loader/compute build+storage tweaks, new
-  `guest-vulkan/wsi.inc`, `web/linux/tests/guest-vulkan-wsi/{client.c,guest.html}`.
-  `/mnt/p6/build/guest-vulkan-a6a-20260930/all-run1` passes wsi-webgpu and
-  wsi-webgl2 (276,963 checks each), depth-webgpu, loader, uniform, texture. Still
-  needed: review, full ten-suite regression, doc/evidence, commit; then A6b
-  (acquire/present via XPutImage, FIFO pacing).
-- W4b Firefox wgpu wrapper (early partial): `web/linux/tests/firefox-webgpu-wrapper/`
-  (`wgpu-server-wrap.c`, `wgpu-server-abi.h`, pack_info golden generator and
-  goldens in `/mnt/p6/build/firefox-webgpu-w4b-20260930/goldens-run1`). Not built or
-  guest-tested; relaunch W4b from these files. W4a runner hex parser fixed (`aa93cf0`).
-Next: Vulkan A6-A7 (WSI, vkcube), gputest G3, Firefox WebGPU W3-W9, JIT 3b, later Zink B2+.
+- Done: Vulkan A6a WSI objects (`056172b`, `docs/guest-vulkan-wsi-20260930.md`):
+  ICD interface 3 surfaces (xlib/xcb), VK_KHR_swapchain on graphics devices,
+  swapchain images; acquire/present return FEATURE_NOT_PRESENT (A6b). Full
+  regression 18/18 suites (`/mnt/p6/build/guest-vulkan-a6a-20260930/all-run2`,
+  NVIDIA WebGPU + Intel WebGL2; wsi 276,963 checks each).
+- Paused: W4b Firefox wgpu wrapper draft (uncommitted, `web/linux/tests/firefox-webgpu-wrapper/`,
+  goldens in `/mnt/p6/build/firefox-webgpu-w4b-20260930/goldens-run1`). W4a runner hex parser fixed (`aa93cf0`).
+
+User priority (2026-09-30, supersedes 09-29): guest Vulkan usable by Firefox and
+apps, Firefox WebGL/WebGL2 on guest Vulkan via Zink (no Vulkan WebGL backend in
+Firefox; design `docs/firefox-webgl-zink-design-20260930.md`), then STOP for
+user confirmation. Chain: Zink B2a (exts/features/limits, CPU device type) ->
+B2b (blocking fences/timeline semaphores) -> B2c/B2d as needed; B3 static Mesa
+Zink+EGL wasm32 build (`tools/zink/`, `/mnt/p6/build/zink-b3-20260930`, running)
+-> guest eglprobe pixels -> F1 Firefox EGL adapter (PR_LoadStaticLibrary table,
+EGL_PLATFORM=surfaceless, gfx.x11-egl.force-enabled, GPU host in Firefox mode).
+W4b/W4c, JIT 3b and G3 wait until after that milestone.
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
