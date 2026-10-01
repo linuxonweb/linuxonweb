@@ -214,7 +214,7 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   `zink_context_destroy` spin (B2b).
 - Done: Zink B2d (`81c9722`, `docs/zink-b2d-20261001.md`): first GL draws via
   Zink (ES2 + compat) on WebGPU and WebGL2; H1 virtual GPU (`9a5ecb8`).
-- Done: Zink B2g + S2 gears table (`docs/zink-b2g-glgears-20261001.md`):
+- Done: Zink B2g + S2 gears table (`1d75be3`, `docs/zink-b2g-glgears-20261001.md`):
   indexed draws (submit-time gather), cull/frontFace (WebGL inverts),
   descriptor pool reset/free, vertex/fragment interpolation matching; glgears
   on Zink pixel census identical to softpipe. S2 at 128x128 (present/nopresent
