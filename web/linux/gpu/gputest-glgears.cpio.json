@@ -1,7 +1,7 @@
 {
   "archive": "/mnt/p6/project/linux/linuxonweb/web/linux/gpu/gputest-glgears.cpio",
-  "bytes": 20472832,
-  "sha256": "3e33929de7b3161b67f84f4597cbdd94ae297c6ff19c1ce9a8ea57b42823713d",
+  "bytes": 20473344,
+  "sha256": "997e8c30bc15f61b76c859567764aaa4eb8824f54ca6a164573f290e47994f10",
   "format": "newc, uncompressed, no directory entries, uid/gid 0, mtime 0",
   "members": [
     {
@@ -13,8 +13,8 @@
     {
       "path": "/gputest-waiter",
       "mode": "0o755",
-      "bytes": 1925,
-      "sha256": "f516dc8486f002a228e9a6e3430c456a1ba37eadc69dddb9ab6c2768e7214d11"
+      "bytes": 2226,
+      "sha256": "f13684d0634171d6392601bf9c5e7d760e27d394f473d8b595cf43c6a62b4528"
     },
     {
       "path": "/bin/glgears",

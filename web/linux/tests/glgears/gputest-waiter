@@ -4,6 +4,7 @@
 #   gputest.gldriver=softpipe|zink   Mesa driver (default softpipe)
 #   gputest.glmode=bench|present|nopresent
 #     bench (default): 30 s presented (-info), 30 s -nopresent, then presented forever
+#   gputest.glsize=WxH                optional window/FBO size (default 300x300)
 #   firefox=1: start 20 s later so Firefox gets the CPU first.
 i=0
 while [ "$i" -lt 900 ]; do
@@ -11,31 +12,35 @@ while [ "$i" -lt 900 ]; do
   i=$((i + 1)); /bin/busybox sleep 1
 done
 cmdline=" $(/bin/busybox cat /proc/cmdline) "
-driver=softpipe; mode=bench; delay=0
+driver=softpipe; mode=bench; delay=0; size=
 case "$cmdline" in *" gputest.gldriver=zink "*) driver=zink ;; esac
 case "$cmdline" in
   *" gputest.glmode=present "*) mode=present ;;
   *" gputest.glmode=nopresent "*) mode=nopresent ;;
 esac
+for word in $cmdline; do
+  case "$word" in gputest.glsize=*) size="${word#gputest.glsize=}" ;; esac
+done
 case "$cmdline" in *" firefox=1 "*) delay=20 ;; esac
+sizearg=; [ -n "$size" ] && sizearg="-size $size"
 if [ "$driver" = zink ]; then
   export MESA_LOADER_DRIVER_OVERRIDE=zink LIBGL_ALWAYS_SOFTWARE=1
 else
   export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=softpipe
 fi
 export DISPLAY=:0
-echo "GLGEARS_WAITER driver=$driver mode=$mode waited=${i}s delay=${delay}s"
+echo "GLGEARS_WAITER driver=$driver mode=$mode size=${size:-default} waited=${i}s delay=${delay}s"
 [ "$delay" -gt 0 ] && /bin/busybox sleep "$delay"
 if [ "$mode" = bench ]; then
   echo "GLGEARS_WAITER phase=present seconds=30"
-  /bin/glgears -info -seconds 30
+  /bin/glgears -info -seconds 30 $sizearg
   echo "GLGEARS_WAITER exit status=$? phase=present"
   echo "GLGEARS_WAITER phase=nopresent seconds=30"
-  /bin/glgears -nopresent -seconds 30
+  /bin/glgears -nopresent -seconds 30 $sizearg
   echo "GLGEARS_WAITER exit status=$? phase=nopresent"
   mode=present
 fi
-args="-info"; [ "$mode" = nopresent ] && args="-info -nopresent"
+args="-info $sizearg"; [ "$mode" = nopresent ] && args="-info -nopresent $sizearg"
 attempt=1
 while :; do
   echo "GLGEARS_WAITER start attempt=$attempt args=$args"

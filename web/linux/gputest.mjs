@@ -34,7 +34,8 @@ export function gputestAppParam(search = globalThis.location?.search ?? '') {
 /**
  * Kernel command-line flags for the selected demo's waiter (read from
  * /proc/cmdline after X is up). glgears: `&gldriver=softpipe|zink` (default
- * softpipe) and `&glmode=bench|present|nopresent` (default bench). vkgears
+ * softpipe), `&glmode=bench|present|nopresent` (default bench) and optional
+ * `&glsize=WxH` (1..4096 each, default 300x300). vkgears
  * (Vulkan on the guest ICD, no Mesa driver): `&vkmode=bench|present|nopresent`
  * (default: `glmode`, else bench) and optional `&vksize=WxH` (1..4096 each).
  * Only allowlisted values are passed through.
@@ -48,14 +49,22 @@ export function gputestCmdlineFlags(search = globalThis.location?.search ?? '') 
   if (app === 'vkgears') {
     const vkmode = (params.get('vkmode') || params.get('glmode') || '').toLowerCase();
     const flags = [`gputest.app=${app}`, `gputest.vkmode=${GL_MODES.includes(vkmode) ? vkmode : 'bench'}`];
-    const size = /^([1-9]\d{0,3})x([1-9]\d{0,3})$/.exec((params.get('vksize') || '').toLowerCase());
-    if (size && +size[1] <= 4096 && +size[2] <= 4096) flags.push(`gputest.vksize=${size[1]}x${size[2]}`);
+    const size = sizeParam(params, 'vksize');
+    if (size) flags.push(`gputest.vksize=${size}`);
     return flags;
   }
   const driver = (params.get('gldriver') || '').toLowerCase();
   const mode = (params.get('glmode') || '').toLowerCase();
-  return [`gputest.app=${app}`, `gputest.gldriver=${GL_DRIVERS.includes(driver) ? driver : 'softpipe'}`,
+  const flags = [`gputest.app=${app}`, `gputest.gldriver=${GL_DRIVERS.includes(driver) ? driver : 'softpipe'}`,
     `gputest.glmode=${GL_MODES.includes(mode) ? mode : 'bench'}`];
+  const size = sizeParam(params, 'glsize');
+  if (size) flags.push(`gputest.glsize=${size}`);
+  return flags;
+}
+
+function sizeParam(params, name) {
+  const size = /^([1-9]\d{0,3})x([1-9]\d{0,3})$/.exec((params.get(name) || '').toLowerCase());
+  return size && +size[1] <= 4096 && +size[2] <= 4096 ? `${size[1]}x${size[2]}` : null;
 }
 
 /**

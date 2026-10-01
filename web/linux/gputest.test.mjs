@@ -92,6 +92,8 @@ test('gputestapp selects allowlisted archives and glgears flags', async () => {
   assert.deepEqual(gputestCmdlineFlags('?gputest=1&gputestapp=glgears'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
   assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=zink&glmode=nopresent'), ['gputest.app=glgears', 'gputest.gldriver=zink', 'gputest.glmode=nopresent']);
   assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=x%20y&glmode=rm'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&glsize=128x128'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench', 'gputest.glsize=128x128']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&glsize=0x5'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
   assert.equal(gputestAppParam('?gputest=1&gputestapp=VKgears'), 'vkgears');
   assert.match(GPUTEST_APPS.vkgears.pathname, /\/gpu\/gputest-vkgears\.cpio$/);
   assert.deepEqual(gputestCmdlineFlags('?gputest=1&gputestapp=vkgears'), ['gputest.app=vkgears', 'gputest.vkmode=bench']);
