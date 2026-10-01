@@ -1,0 +1,27 @@
+# Meson cross file for Mesa 26.2.3 Zink/EGL on wasm32-unknown-linux-musl (static).
+# Template: configure-wasm32.sh substitutes @TASKDIR@ (task dir) and @ROOT@ (repo root).
+[binaries]
+c = '/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang'
+cpp = '/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++'
+ar = '/usr/bin/llvm-ar'
+ranlib = '/usr/bin/llvm-ranlib'
+strip = '/usr/bin/llvm-strip'
+pkg-config = '/usr/bin/pkg-config'
+
+[built-in options]
+c_args = ['-pthread', '-matomics', '-mbulk-memory', '-isystem', '@ROOT@/tools/zink/shims/include', '-isystem', '@ROOT@/web/linux/firefox-shims', '-Wno-error=format', '-Wno-format']
+cpp_args = ['-pthread', '-matomics', '-mbulk-memory', '-isystem', '/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/wasm32-linux-musl/c++/v1', '-isystem', '/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/c++/v1', '-isystem', '@ROOT@/tools/zink/shims/include', '-isystem', '@ROOT@/web/linux/firefox-shims', '-Wno-error=format', '-Wno-format']
+c_link_args = ['-pthread', '-static']
+cpp_link_args = ['-pthread', '-static', '-nostdlib++', '-lc++', '-lc++abi']
+default_library = 'static'
+
+[properties]
+needs_exe_wrapper = true
+pkg_config_libdir = '@TASKDIR@/stubs/pkgconfig:/nix/store/0glh3nvnk5hzcy4jbi95nv8wqb63v5zv-libpthread-stubs-static-wasm32-unknown-linux-musl-0.5/lib/pkgconfig:/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/pkgconfig:/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/pkgconfig:/nix/store/2rm87922ikkpxhj225q7j5v5s38bp5gp-xtrans-static-wasm32-unknown-linux-musl-1.6.0/share/pkgconfig:/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/pkgconfig:/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/pkgconfig:/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/pkgconfig:/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/pkgconfig:/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/pkgconfig:/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/share/pkgconfig:/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/lib/pkgconfig:/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/pkgconfig:/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/pkgconfig:/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/pkgconfig:/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/pkgconfig:/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/pkgconfig:/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/pkgconfig:/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/pkgconfig:/nix/store/cdk6xsz7llq3vvk8dgg0fzp4nk5mkcik-xcb-proto-static-wasm32-unknown-linux-musl-1.17.0/share/pkgconfig:/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/pkgconfig:/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/pkgconfig:/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/pkgconfig:/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/pkgconfig:/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/pkgconfig:/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/pkgconfig:/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/lib/pkgconfig:/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/pkgconfig:/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/pkgconfig:/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/lib/pkgconfig:/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/lib/pkgconfig:/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/pkgconfig:/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/pkgconfig:/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/pkgconfig:/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/pkgconfig:/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/pkgconfig:/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/pkgconfig:/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/pkgconfig'
+
+[host_machine]
+system = 'linux'
+kernel = 'linux'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'

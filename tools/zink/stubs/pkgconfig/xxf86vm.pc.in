@@ -1,0 +1,7 @@
+# CONFIGURE-ONLY STUB (zink-b0b1/b3)
+prefix=@TASKDIR@/stubs
+includedir=${prefix}/include
+Name: Xxf86vm
+Description: configure-only stub
+Version: 1.1.6
+Cflags: -I${includedir}

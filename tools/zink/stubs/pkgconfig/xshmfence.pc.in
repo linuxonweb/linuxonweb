@@ -1,0 +1,7 @@
+# CONFIGURE-ONLY STUB (zink-b0b1/b3); no library behind it
+prefix=@TASKDIR@/stubs
+includedir=${prefix}/include
+Name: xshmfence
+Description: configure-only stub
+Version: 1.3.3
+Cflags: -I${includedir}
