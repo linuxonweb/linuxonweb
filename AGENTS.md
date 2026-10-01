@@ -138,6 +138,14 @@ Zink+EGL wasm32 build (`tools/zink/`, `/mnt/p6/build/zink-b3-20260930`, running)
 -> guest eglprobe pixels -> F1 Firefox EGL adapter (PR_LoadStaticLibrary table,
 EGL_PLATFORM=surfaceless, gfx.x11-egl.force-enabled, GPU host in Firefox mode).
 W4b/W4c, JIT 3b and G3 wait until after that milestone.
+- Done: Zink B3-prep (`95e5298`, `docs/zink-b3-static-build-20260930.md`): Mesa
+  26.2.3 Zink+EGL(surfaceless)+GLES2 static wasm32 archives, no Mesa patches;
+  `eglprobe.wasm` links with the guest ICD, 0 undefined, only guest imports
+  (`/mnt/p6/build/zink-b3-20260930/link/run3`). Vulkan lookup via
+  `tools/zink/shims/zink_static_vk.c` (replaces u_dl.c, bypasses the 1.3.231 loader).
+- Main page serves guest GPU sessions in Firefox mode by default (`7136d3b`, `?gpu=0` opts out).
+- Running: B2a ICD extensions (`/mnt/p6/build/zink-b2a-20260930`, ports 4205/9415);
+  F1a Firefox EGL/Zink static link adapter (`/mnt/p6/build/firefox-webgl-f1a-20260930`, 4206/9416).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
