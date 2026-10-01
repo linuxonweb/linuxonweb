@@ -1,0 +1,47 @@
+#!/bin/busybox sh
+# V1: waits for the X server socket, then runs vkgears (Vulkan through the
+# static loader + guest ICD; host WebGPU or WebGL2 over virtio-vsock).
+# Kernel command line (read after X is up, when /proc is mounted by /init):
+#   gputest.vkmode=bench|present|nopresent
+#     bench (default): 30 s presented (-info), 30 s -nopresent, then presented forever
+#   gputest.vksize=WxH  optional window size (default 300x300, like glxgears)
+#   firefox=1: start 20 s later so Firefox gets the CPU first.
+i=0
+while [ "$i" -lt 900 ]; do
+  [ -e /tmp/.X11-unix/X0 ] && break
+  i=$((i + 1)); /bin/busybox sleep 1
+done
+cmdline=" $(/bin/busybox cat /proc/cmdline) "
+mode=bench; delay=0; size=
+case "$cmdline" in
+  *" gputest.vkmode=present "*) mode=present ;;
+  *" gputest.vkmode=nopresent "*) mode=nopresent ;;
+esac
+for word in $cmdline; do
+  case "$word" in gputest.vksize=*) size="${word#gputest.vksize=}" ;; esac
+done
+case "$cmdline" in *" firefox=1 "*) delay=20 ;; esac
+sizearg=; [ -n "$size" ] && sizearg="-size $size"
+export DISPLAY=:0
+echo "VKGEARS_WAITER mode=$mode size=${size:-default} waited=${i}s delay=${delay}s"
+[ "$delay" -gt 0 ] && /bin/busybox sleep "$delay"
+if [ "$mode" = bench ]; then
+  echo "VKGEARS_WAITER phase=present seconds=30"
+  /bin/vkgears -info -seconds 30 $sizearg
+  echo "VKGEARS_WAITER exit status=$? phase=present"
+  echo "VKGEARS_WAITER phase=nopresent seconds=30"
+  /bin/vkgears -nopresent -seconds 30 $sizearg
+  echo "VKGEARS_WAITER exit status=$? phase=nopresent"
+  mode=present
+fi
+args="-info $sizearg"; [ "$mode" = nopresent ] && args="-info -nopresent $sizearg"
+attempt=1
+while :; do
+  echo "VKGEARS_WAITER start attempt=$attempt args=$args"
+  /bin/vkgears $args
+  status=$?
+  echo "VKGEARS_WAITER exit status=$status attempt=$attempt"
+  [ "$status" -eq 0 ] && break
+  [ "$attempt" -ge 3 ] && { echo "VKGEARS_WAITER giving up after $attempt attempts"; break; }
+  attempt=$((attempt + 1)); /bin/busybox sleep 5
+done

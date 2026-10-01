@@ -24,6 +24,7 @@ export function gputestEnabled(search = globalThis.location?.search ?? '') {
 export const GPUTEST_APPS = Object.freeze({
   cube: GPUTEST_CPIO_URL,
   glgears: new URL('./gpu/gputest-glgears.cpio', import.meta.url),
+  vkgears: new URL('./gpu/gputest-vkgears.cpio', import.meta.url),
 });
 export function gputestAppParam(search = globalThis.location?.search ?? '') {
   const value = (new URLSearchParams(search).get('gputestapp') || '').toLowerCase();
@@ -33,8 +34,10 @@ export function gputestAppParam(search = globalThis.location?.search ?? '') {
 /**
  * Kernel command-line flags for the selected demo's waiter (read from
  * /proc/cmdline after X is up). glgears: `&gldriver=softpipe|zink` (default
- * softpipe) and `&glmode=bench|present|nopresent` (default bench). Only
- * allowlisted values are passed through.
+ * softpipe) and `&glmode=bench|present|nopresent` (default bench). vkgears
+ * (Vulkan on the guest ICD, no Mesa driver): `&vkmode=bench|present|nopresent`
+ * (default: `glmode`, else bench) and optional `&vksize=WxH` (1..4096 each).
+ * Only allowlisted values are passed through.
  */
 export const GL_DRIVERS = Object.freeze(['softpipe', 'zink']);
 export const GL_MODES = Object.freeze(['bench', 'present', 'nopresent']);
@@ -42,6 +45,13 @@ export function gputestCmdlineFlags(search = globalThis.location?.search ?? '') 
   const app = gputestAppParam(search);
   if (app === 'cube') return [];
   const params = new URLSearchParams(search);
+  if (app === 'vkgears') {
+    const vkmode = (params.get('vkmode') || params.get('glmode') || '').toLowerCase();
+    const flags = [`gputest.app=${app}`, `gputest.vkmode=${GL_MODES.includes(vkmode) ? vkmode : 'bench'}`];
+    const size = /^([1-9]\d{0,3})x([1-9]\d{0,3})$/.exec((params.get('vksize') || '').toLowerCase());
+    if (size && +size[1] <= 4096 && +size[2] <= 4096) flags.push(`gputest.vksize=${size[1]}x${size[2]}`);
+    return flags;
+  }
   const driver = (params.get('gldriver') || '').toLowerCase();
   const mode = (params.get('glmode') || '').toLowerCase();
   return [`gputest.app=${app}`, `gputest.gldriver=${GL_DRIVERS.includes(driver) ? driver : 'softpipe'}`,

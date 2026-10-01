@@ -92,6 +92,14 @@ test('gputestapp selects allowlisted archives and glgears flags', async () => {
   assert.deepEqual(gputestCmdlineFlags('?gputest=1&gputestapp=glgears'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
   assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=zink&glmode=nopresent'), ['gputest.app=glgears', 'gputest.gldriver=zink', 'gputest.glmode=nopresent']);
   assert.deepEqual(gputestCmdlineFlags('?gputestapp=glgears&gldriver=x%20y&glmode=rm'), ['gputest.app=glgears', 'gputest.gldriver=softpipe', 'gputest.glmode=bench']);
+  assert.equal(gputestAppParam('?gputest=1&gputestapp=VKgears'), 'vkgears');
+  assert.match(GPUTEST_APPS.vkgears.pathname, /\/gpu\/gputest-vkgears\.cpio$/);
+  assert.deepEqual(gputestCmdlineFlags('?gputest=1&gputestapp=vkgears'), ['gputest.app=vkgears', 'gputest.vkmode=bench']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=vkgears&vkmode=nopresent&gldriver=zink'), ['gputest.app=vkgears', 'gputest.vkmode=nopresent']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=vkgears&glmode=present'), ['gputest.app=vkgears', 'gputest.vkmode=present']);
+  assert.deepEqual(gputestCmdlineFlags('?gputestapp=vkgears&vkmode=rm&vksize=128x128'), ['gputest.app=vkgears', 'gputest.vkmode=bench', 'gputest.vksize=128x128']);
+  for (const bad of ['0x10', '5000x10', '10x', 'x10', '10x10%20rdinit=/bin/sh', '-1x5', '012x5'])
+    assert.deepEqual(gputestCmdlineFlags(`?gputestapp=vkgears&vksize=${bad}`), ['gputest.app=vkgears', 'gputest.vkmode=bench'], bad);
   let fetched;
   const newc = new TextEncoder().encode('070701'.padEnd(120, '0'));
   assert.deepEqual(await loadGputestArchive(() => {}, async url => { fetched = url; return new Response(newc); }, GPUTEST_APPS.glgears), newc);
