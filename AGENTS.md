@@ -175,8 +175,13 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   Zink: EGL init OK, eglCreateContext fails (vkCreateBuffer usage 0x1ff, B2f).
 - Running (10-01): B2f general buffer usage + memory suballocation -> Zink
   context/GL strings/clear readback (`/mnt/p6/build/zink-b2f-20261001`, ports
-  4209/9419); V1 vkgears (same gears, Vulkan, 128x128 ICD cap, gputestapp=vkgears;
-  `/mnt/p6/build/vkgears-v1-20261001`, ports 4211/9421, builds on a HEAD ICD snapshot).
+  4209/9419).
+- Done: V1 vkgears (`fcfcde8`, `docs/vkgears-v1-20261001.md`): same gears in Vulkan
+  on the guest ICD, render 128x128 (ICD cap) upscaled to 300x300, page
+  `?gputestapp=vkgears[&vkmode=][&vksize=]`. NVIDIA WebGPU 59 FPS present / 189
+  nopresent; Intel WebGL2 43 / 120 (WebGL nopresent = issue only). Reproducible
+  CPIO `338e88c1`. Open: re-uploads all buffers per frame; glgears needs `-size`
+  passthrough for a matched 128x128 softpipe run (S2).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
