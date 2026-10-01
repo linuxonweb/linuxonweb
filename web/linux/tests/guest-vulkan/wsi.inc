@@ -159,7 +159,7 @@ static void wsi_swapchain_free(struct wsi_swapchain *c) {
  * the same resource/host path as vkCreateImage+vkAllocateMemory+vkBindImageMemory. */
 static VkResult wsi_image_new(VkDevice d, struct wsi_swapchain *c, unsigned index) {
     size_t size = (size_t)c->extent.width * c->extent.height * 4;
-    if (size > 1024 * 1024 - allocated_bytes) return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    if (size > GUEST_VK_HEAP_BYTES - allocated_bytes) return VK_ERROR_OUT_OF_DEVICE_MEMORY;
     struct resource *img = resource_new(R_IMAGE);
     if (!img) return VK_ERROR_OUT_OF_HOST_MEMORY;
     img->width = c->extent.width; img->height = c->extent.height; img->size = size; img->layout = VK_IMAGE_LAYOUT_UNDEFINED;

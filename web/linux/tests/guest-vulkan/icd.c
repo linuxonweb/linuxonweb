@@ -357,6 +357,11 @@ static int zink_trace_enabled(void) {
     if (cached < 0) { const char *t = getenv("GUEST_VK_TRACE"); cached = t && *t && strcmp(t, "0") != 0; }
     return cached;
 }
+static int zink_trace_calls(void) { /* GUEST_VK_TRACE_CALLS=1: trace every device-level call */
+    static int cached = -1;
+    if (cached < 0) { const char *t = getenv("GUEST_VK_TRACE_CALLS"); cached = t && *t && strcmp(t, "0") != 0; }
+    return cached;
+}
 #define ZINK_TRACE(...) do { if (zink_trace_enabled()) fprintf(stderr, "GUEST_VK_TRACE " __VA_ARGS__); } while (0)
 #else
 #define ZINK_TRACE(...) do { } while (0)
@@ -388,6 +393,19 @@ static void format_properties_body(VkPhysicalDevice physical, VkFormat format, V
 static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat format,
         VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
         VkImageFormatProperties *out);
+#ifdef GUEST_VK_ZINK
+/* B2f: any combination of transfer/sampled/color/input-attachment usage on a
+ * color format, provided the host roles exist (graphics for attachments,
+ * texture for sampling). */
+static int zink_color_usage_ok(VkFormat format, VkImageUsageFlags usage) {
+    const VkImageUsageFlags allowed = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    if (!color_format(format) || !usage || (usage & ~allowed)) return 0;
+    if ((usage & (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)) && !live->graphics_supported) return 0;
+    if ((usage & VK_IMAGE_USAGE_SAMPLED_BIT) && !live->texture_supported) return 0;
+    return live->graphics_supported || live->clear_supported;
+}
+#endif
 static VKAPI_ATTR VkResult VKAPI_CALL image_format_properties(VkPhysicalDevice physical, VkFormat format,
         VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
         VkImageFormatProperties *out) {
@@ -408,6 +426,12 @@ static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat
           (live->texture_supported && usage == (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)));
     int depth = live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM) &&
         usage == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+#ifdef GUEST_VK_ZINK
+    /* B2f: Zink allocates GL color resources with TRANSFER_SRC|DST|SAMPLED|
+     * COLOR_ATTACHMENT|INPUT_ATTACHMENT (0x97) and MUTABLE_FORMAT/EXTENDED_USAGE. */
+    if (!color && zink_color_usage_ok(format, usage)) color = 1;
+    flags &= ~(VkImageCreateFlags)(VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT | VK_IMAGE_CREATE_EXTENDED_USAGE_BIT);
+#endif
     if (!(color || depth) ||
         type != VK_IMAGE_TYPE_2D || tiling != VK_IMAGE_TILING_OPTIMAL || flags)
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
@@ -766,12 +790,23 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
 #endif
 #ifdef GUEST_VK_ZINK
     PFN_vkVoidFunction zink = live->graphics_supported ? zink_proc(name) : NULL;
-    if (zink) return zink;
+    if (zink) return zink_trace_calls() ? zink_trace_proc(name, zink) : zink;
 #endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
+#ifdef GUEST_VK_ZINK
+    if (graphics && zink_trace_calls()) return zink_trace_proc(name, graphics);
+#endif
     if (graphics) return graphics;
     PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
-    return compute ? compute : (live->clear_supported || live->compute_supported || live->graphics_supported) ? transfer_proc(name) : NULL;
+    PFN_vkVoidFunction found = compute ? compute : (live->clear_supported || live->compute_supported || live->graphics_supported) ? transfer_proc(name) : NULL;
+#ifdef GUEST_VK_ZINK
+    /* B2f: Zink calls core 1.0/1.1 commands it loads unconditionally; a NULL or
+     * void() stub traps in wasm, so hand out typed stubs that trace and fail. */
+    if (!found && live->graphics_supported) found = zink_stub_proc(name);
+    if (!found) ZINK_TRACE("device_proc MISS %s\n", name);
+    if (found && zink_trace_calls()) found = zink_trace_proc(name, found);
+#endif
+    return found;
 }
 VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t *version) {
     if (!version || *version < 2) return VK_ERROR_INCOMPATIBLE_DRIVER;

@@ -81,14 +81,17 @@ static VKAPI_ATTR VkResult VKAPI_CALL zink_create_render_pass2(VkDevice d,const 
     return create_render_pass(d,&v1,NULL,out);
 }
 static VKAPI_ATTR void VKAPI_CALL zink_begin_render_pass2(VkCommandBuffer cb,const VkRenderPassBeginInfo *b,const VkSubpassBeginInfo *s) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!s||s->sType!=VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO||s->pNext){invalid_command(cb);return;}
     begin_graphics_pass(cb,b,s->contents);
 }
 static VKAPI_ATTR void VKAPI_CALL zink_next_subpass2(VkCommandBuffer cb,const VkSubpassBeginInfo *b,const VkSubpassEndInfo *e) {
+    SELECT_CB(cb);
     (void)b;(void)e;invalid_command(cb); /* only single-subpass passes exist */
 }
 static VKAPI_ATTR void VKAPI_CALL zink_end_render_pass2(VkCommandBuffer cb,const VkSubpassEndInfo *e) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!e||e->sType!=VK_STRUCTURE_TYPE_SUBPASS_END_INFO||e->pNext){invalid_command(cb);return;}
     end_graphics_pass(cb);
@@ -96,6 +99,7 @@ static VKAPI_ATTR void VKAPI_CALL zink_end_render_pass2(VkCommandBuffer cb,const
 
 /* ---- dynamic rendering --------------------------------------------------- */
 static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const VkRenderingInfo *r) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!live->graphics_supported||!live->dynamic_rendering||command.graphics.in_pass||!r||r->sType!=VK_STRUCTURE_TYPE_RENDERING_INFO||
        r->pNext||r->flags||r->layerCount!=1||r->viewMask||r->colorAttachmentCount!=1||!r->pColorAttachments||
@@ -106,6 +110,9 @@ static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const 
        c->imageLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||c->resolveMode!=VK_RESOLVE_MODE_NONE||
        (c->loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||c->storeOp!=VK_ATTACHMENT_STORE_OP_STORE||
        r->renderArea.offset.x||r->renderArea.offset.y||r->renderArea.extent.width!=i->width||r->renderArea.extent.height!=i->height){invalid_command(cb);return;}
+    ZINK_TRACE("begin_rendering load=%d %ux%u clear=%g,%g,%g,%g depth=%d\n",(int)c->loadOp,i->width,i->height,
+        c->clearValue.color.float32[0],c->clearValue.color.float32[1],c->clearValue.color.float32[2],c->clearValue.color.float32[3],
+        r->pDepthAttachment&&r->pDepthAttachment->imageView?1:0);
     struct graphics_begin_record b={0};
     b.pass=(struct graphics_pass){.format=image_color_format(i),.samples=VK_SAMPLE_COUNT_1_BIT,.load=c->loadOp,.store=c->storeOp,
         .initial=c->imageLayout,.final=c->imageLayout};
@@ -135,6 +142,7 @@ static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const 
     if(rec){rec->graphics.begin=b;command.graphics.in_pass=1;}
 }
 static VKAPI_ATTR void VKAPI_CALL zink_end_rendering(VkCommandBuffer cb) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     end_graphics_pass(cb);
 }
@@ -187,8 +195,60 @@ static VKAPI_ATTR void VKAPI_CALL zink_rendering_area_granularity(VkDevice d,con
     (void)d;(void)i;if(g)*g=(VkExtent2D){1,1};
 }
 
+/* ---- B2f: core 1.0/1.1 entry points Zink loads at apiVersion 1.1 --------- */
+static VKAPI_ATTR VkResult VKAPI_CALL zink_mapped_ranges(VkDevice d,uint32_t n,const VkMappedMemoryRange *r) {
+    (void)d;(void)n;(void)r; return VK_SUCCESS; /* memory bytes stay guest-side and are read at submit */
+}
+static uint64_t zink_next_cache=0x7a000000;
+static VKAPI_ATTR VkResult VKAPI_CALL zink_create_pipeline_cache(VkDevice d,const VkPipelineCacheCreateInfo *i,const VkAllocationCallbacks *a,VkPipelineCache *out) {
+    (void)a; if(!device_valid(d)||!i||!out||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO)return VK_ERROR_INITIALIZATION_FAILED;
+    *out=(VkPipelineCache)(uintptr_t)(++zink_next_cache); return VK_SUCCESS; /* empty cache: nothing is serialized */
+}
+static VKAPI_ATTR void VKAPI_CALL zink_destroy_pipeline_cache(VkDevice d,VkPipelineCache c,const VkAllocationCallbacks *a) {(void)d;(void)c;(void)a;}
+static VKAPI_ATTR VkResult VKAPI_CALL zink_pipeline_cache_data(VkDevice d,VkPipelineCache c,size_t *size,void *data) {
+    (void)d;(void)c;(void)data; if(size)*size=0; return VK_SUCCESS;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zink_merge_pipeline_caches(VkDevice d,VkPipelineCache c,uint32_t n,const VkPipelineCache *s) {(void)d;(void)c;(void)n;(void)s;return VK_SUCCESS;}
+static VKAPI_ATTR void VKAPI_CALL zink_set_layout_support(VkDevice d,const VkDescriptorSetLayoutCreateInfo *i,VkDescriptorSetLayoutSupport *out) {
+    if(!out)return; VkDescriptorSetLayout l=VK_NULL_HANDLE; /* answer by trying the real (bounded) create */
+    out->supported=create_set_layout(d,i,NULL,&l)==VK_SUCCESS?VK_TRUE:VK_FALSE;
+    if(l)destroy_set_layout(d,l,NULL);
+    for(VkBaseOutStructure *e=out->pNext;e;e=e->pNext)if(e->sType==VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT)
+        ((VkDescriptorSetVariableDescriptorCountLayoutSupport *)e)->maxVariableDescriptorCount=0;
+    if(!out->supported)ZINK_TRACE("set_layout_support -> unsupported bindings=%u\n",i?i->bindingCount:0);
+}
+static void zink_no_dedicated(void *next) {
+    for(VkBaseOutStructure *e=next;e;e=e->pNext)if(e->sType==VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS){
+        VkMemoryDedicatedRequirements *r=(VkMemoryDedicatedRequirements *)e;r->prefersDedicatedAllocation=VK_FALSE;r->requiresDedicatedAllocation=VK_FALSE;}
+}
+static VKAPI_ATTR void VKAPI_CALL zink_buffer_requirements2(VkDevice d,const VkBufferMemoryRequirementsInfo2 *i,VkMemoryRequirements2 *out) {
+    if(!i||!out)return; buffer_requirements(d,i->buffer,&out->memoryRequirements); zink_no_dedicated(out->pNext);
+}
+static VKAPI_ATTR void VKAPI_CALL zink_image_requirements2(VkDevice d,const VkImageMemoryRequirementsInfo2 *i,VkMemoryRequirements2 *out) {
+    if(!i||!out)return; if(i->pNext){ZINK_TRACE("image_requirements2 REJECT pNext\n");memset(&out->memoryRequirements,0,sizeof(out->memoryRequirements));return;}
+    image_requirements(d,i->image,&out->memoryRequirements); zink_no_dedicated(out->pNext);
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zink_bind_buffer2(VkDevice d,uint32_t n,const VkBindBufferMemoryInfo *b) {
+    for(uint32_t k=0;k<n;k++){if(!b||b[k].pNext)return VK_ERROR_INITIALIZATION_FAILED;VkResult r=bind_buffer(d,b[k].buffer,b[k].memory,b[k].memoryOffset);if(r!=VK_SUCCESS)return r;}
+    return VK_SUCCESS;
+}
+static VKAPI_ATTR VkResult VKAPI_CALL zink_bind_image2(VkDevice d,uint32_t n,const VkBindImageMemoryInfo *b) {
+    for(uint32_t k=0;k<n;k++){if(!b||b[k].pNext)return VK_ERROR_INITIALIZATION_FAILED;VkResult r=bind_image(d,b[k].image,b[k].memory,b[k].memoryOffset);if(r!=VK_SUCCESS)return r;}
+    return VK_SUCCESS;
+}
+static VKAPI_ATTR void VKAPI_CALL zink_memory_commitment(VkDevice d,VkDeviceMemory m,VkDeviceSize *out) {(void)d;(void)m;if(out)*out=0;}
+
 static PFN_vkVoidFunction zink_proc(const char *name) {
 #define Z(api,fn) if(!strcmp(name,#api))return (PFN_vkVoidFunction)fn;
+    Z(vkFlushMappedMemoryRanges,zink_mapped_ranges) Z(vkInvalidateMappedMemoryRanges,zink_mapped_ranges)
+    Z(vkCreatePipelineCache,zink_create_pipeline_cache) Z(vkDestroyPipelineCache,zink_destroy_pipeline_cache)
+    Z(vkGetPipelineCacheData,zink_pipeline_cache_data) Z(vkMergePipelineCaches,zink_merge_pipeline_caches)
+    Z(vkGetBufferMemoryRequirements2,zink_buffer_requirements2) Z(vkGetBufferMemoryRequirements2KHR,zink_buffer_requirements2)
+    Z(vkGetImageMemoryRequirements2,zink_image_requirements2) Z(vkGetImageMemoryRequirements2KHR,zink_image_requirements2)
+    Z(vkBindBufferMemory2,zink_bind_buffer2) Z(vkBindBufferMemory2KHR,zink_bind_buffer2)
+    Z(vkBindImageMemory2,zink_bind_image2) Z(vkBindImageMemory2KHR,zink_bind_image2)
+    Z(vkGetDeviceMemoryCommitment,zink_memory_commitment)
+    Z(vkGetDescriptorSetLayoutSupport,zink_set_layout_support) Z(vkGetDescriptorSetLayoutSupportKHR,zink_set_layout_support)
     if(device_ext_enabled(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) {
         Z(vkGetSemaphoreCounterValueKHR,zink_get_semaphore_counter_value) Z(vkGetSemaphoreCounterValue,zink_get_semaphore_counter_value)
         Z(vkSignalSemaphoreKHR,zink_signal_semaphore) Z(vkSignalSemaphore,zink_signal_semaphore)

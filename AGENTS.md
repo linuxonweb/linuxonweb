@@ -173,9 +173,14 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   `web/linux/gpu/gputest-glgears.cpio`, page `?gputest=1&gputestapp=glgears&gldriver=softpipe|zink&glmode=bench|present|nopresent`.
   Softpipe 300x300 on the NVIDIA recipe: ~87 FPS presented, ~185 FPS nopresent.
   Zink: EGL init OK, eglCreateContext fails (vkCreateBuffer usage 0x1ff, B2f).
-- Running (10-01): B2f general buffer usage + memory suballocation -> Zink
-  context/GL strings/clear readback (`/mnt/p6/build/zink-b2f-20261001`, ports
-  4209/9419).
+- Done: Zink B2f (`docs/zink-b2f-20261001.md`, `/mnt/p6/build/zink-b2f-20261001`):
+  generic buffer usage, 256 MiB heap/suballocation/offset maps, multiple pools,
+  Zink colour images, typed trace-and-fail stubs (`zink-stubs.inc`,
+  `GUEST_VK_TRACE_CALLS=1`). Guest eglprobe on NVIDIA WebGPU: ES2 and GL 2.0
+  compat contexts, GL strings, exact glClear + glReadPixels pixels. First draw
+  stalls in shader compile (no Vulkan call traced). 20/20 suites (zinkcaps 91,309).
+  Next B2c: locate the compile stall (1.2/1.3 tracing), push constants,
+  viewport/scissor, buffer copy/fill/update, generic vertex/index/UBO binding.
 - Done: V1 vkgears (`fcfcde8`, `docs/vkgears-v1-20261001.md`): same gears in Vulkan
   on the guest ICD, render 128x128 (ICD cap) upscaled to 300x300, page
   `?gputestapp=vkgears[&vkmode=][&vksize=]`. NVIDIA WebGPU 59 FPS present / 189

@@ -44,6 +44,7 @@ static struct resource *graphics_begin_depth(const struct graphics_begin_record 
     return i;
 }
 static VKAPI_ATTR void VKAPI_CALL begin_graphics_pass(VkCommandBuffer cb,const VkRenderPassBeginInfo *info,VkSubpassContents contents) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!live->graphics_supported||command.graphics.in_pass||!info||info->sType!=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO||
        info->pNext||contents!=VK_SUBPASS_CONTENTS_INLINE){invalid_command(cb);return;}
@@ -69,11 +70,13 @@ static VKAPI_ATTR void VKAPI_CALL begin_graphics_pass(VkCommandBuffer cb,const V
     if(r){r->graphics.begin=(struct graphics_begin_record){RID(info->framebuffer),p->graphics.pass,clear,depth_clear,0,0};command.graphics.in_pass=1;}
 }
 static VKAPI_ATTR void VKAPI_CALL end_graphics_pass(VkCommandBuffer cb) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!command.graphics.in_pass){invalid_command(cb);return;}
     if(record_command(cb,C_GRAPHICS_END))command.graphics.in_pass=0;
 }
 static VKAPI_ATTR void VKAPI_CALL bind_pipeline(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipeline pipeline) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(point==VK_PIPELINE_BIND_POINT_COMPUTE){bind_compute_pipeline(cb,point,pipeline);return;}
     if(!live->graphics_supported||point!=VK_PIPELINE_BIND_POINT_GRAPHICS||!resource_get(RID(pipeline),R_GRAPHICS_PIPELINE)) {
@@ -82,6 +85,7 @@ static VKAPI_ATTR void VKAPI_CALL bind_pipeline(VkCommandBuffer cb,VkPipelineBin
     command.graphics.pipeline=RID(pipeline);
 }
 static VKAPI_ATTR void VKAPI_CALL bind_vertex_buffers(VkCommandBuffer cb,uint32_t first,uint32_t count,const VkBuffer *buffers,const VkDeviceSize *offsets) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!live->graphics_supported||first>=8||!count||count>8-first||!buffers||!offsets){invalid_command(cb);return;}
     for(unsigned n=0;n<count;n++) {
@@ -91,6 +95,7 @@ static VKAPI_ATTR void VKAPI_CALL bind_vertex_buffers(VkCommandBuffer cb,uint32_
     for(unsigned n=0;n<count;n++)command.graphics.vertices[first+n]=(struct graphics_vertex_ref){RID(buffers[n]),offsets[n]};
 }
 static VKAPI_ATTR void VKAPI_CALL draw_graphics(VkCommandBuffer cb,uint32_t count,uint32_t instances,uint32_t first,uint32_t first_instance) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(!command.graphics.in_pass||!command.graphics.pipeline||count<3||count>65536||count%3||first>65536||instances!=1||first_instance) {
         invalid_command(cb);return;
@@ -106,6 +111,7 @@ static VKAPI_ATTR void VKAPI_CALL draw_graphics(VkCommandBuffer cb,uint32_t coun
         memcpy(r->graphics.draw.sets,command.graphics.sets,sizeof(r->graphics.draw.sets));}
 }
 static int record_vertex_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {
+    SELECT_CB(cb);
     struct resource *b=resource_get(RID(bb->buffer),R_BUFFER);if(!b||!b->vertex)return 0;
     if(src!=VK_PIPELINE_STAGE_HOST_BIT||dst!=VK_PIPELINE_STAGE_VERTEX_INPUT_BIT||bb->srcAccessMask!=VK_ACCESS_HOST_WRITE_BIT||
        bb->dstAccessMask!=VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT||bb->sType!=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER||bb->pNext||
@@ -242,7 +248,7 @@ static VkResult graphics_upload_vertices(const unsigned used[MAX_RES]) {
     unsigned char data[65548];
     for(unsigned n=0;n<MAX_RES;n++)if(used[n]) {
         struct resource *b=&resources[n],*m=resource_get(b->memory,R_MEMORY);
-        uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes,b->size);
+        uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes+b->offset,b->size);
         if(host_empty(GPU_VERTEX_UPLOAD,data,(uint32_t)b->size+12)!=VK_SUCCESS)return VK_ERROR_DEVICE_LOST;
     }
     return VK_SUCCESS;
@@ -253,7 +259,7 @@ static VkResult graphics_upload_uniforms(const unsigned used[MAX_RES]) {
     static unsigned char data[65548];
     for(unsigned n=0;n<MAX_RES;n++)if(used[n]) {
         struct resource *b=&resources[n],*m=resource_get(b->memory,R_MEMORY);
-        uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes,b->size);
+        uint32_t header[3]={b->host,0,(uint32_t)b->size};memcpy(data,header,12);memcpy(data+12,m->bytes+b->offset,b->size);
         if(host_empty(GPU_UNIFORM_UPLOAD,data,(uint32_t)b->size+12)!=VK_SUCCESS)return VK_ERROR_DEVICE_LOST;
     }
     return VK_SUCCESS;

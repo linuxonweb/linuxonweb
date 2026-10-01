@@ -133,6 +133,8 @@ int main(void){
     VkPipeline rp2_pipe=VK_NULL_HANDLE,dyn_depth=VK_NULL_HANDLE,dyn_tint=VK_NULL_HANDLE;
     VkSemaphore tl=VK_NULL_HANDLE,tl2=VK_NULL_HANDLE;
     VkImage bgra_image=VK_NULL_HANDLE;VkDeviceMemory bgra_mem=VK_NULL_HANDLE;VkImageView bgra_view=VK_NULL_HANDLE;VkPipeline dyn_bgra=VK_NULL_HANDLE;
+    VkBuffer gb0=VK_NULL_HANDLE,gb1=VK_NULL_HANDLE,gb2=VK_NULL_HANDLE;VkDeviceMemory gmem=VK_NULL_HANDLE,gmem0=VK_NULL_HANDLE;unsigned char *gmap=NULL;
+    VkDescriptorPool zpool=VK_NULL_HANDLE;VkImage zimage=VK_NULL_HANDLE;
     struct sigaction action={0};action.sa_handler=deadline;sigemptyset(&action.sa_mask);if(sigaction(SIGALRM,&action,NULL))return 2;alarm(110);signal(SIGPIPE,SIG_IGN);
     puts("GUEST_VK_ZINKCAPS_SCOPE public static Khronos loader; Zink startup extensions (maintenance1/5, update templates, renderpass2, dynamic rendering, robustness2 nullDescriptor, timeline semaphores); bounded nonconformant ICD");
     VkApplicationInfo app={.sType=VK_STRUCTURE_TYPE_APPLICATION_INFO,.apiVersion=VK_API_VERSION_1_1,.pApplicationName="public-zinkcaps"};VkInstanceCreateInfo ii={.sType=VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,.pApplicationInfo=&app};
@@ -486,10 +488,68 @@ int main(void){
         fill(BGRA_BLUE);rect(6,6,14,14,BGRA_RED);const int ok=submit_frame(11);color_image=saved_image;cold=saved_layout;CHECK(ok);
         printf("GUEST_VK_ZINKCAPS_BGRA_PASS frames=1 refused=2 dim1d=%u independent_blend=1 srgb=0\n",lim->maxImageDimension1D);fflush(stdout);
     }
-    printf("GUEST_VK_ZINKCAPS_PASS frames=11\n");fflush(stdout);
+    /* ---- B2f: general buffer model, memory suballocation, mapping at offsets, Zink's
+     * descriptor pool shape and a sub-rectangle image copy into a generic buffer. ---- */
+    {
+        VkBufferCreateInfo gbi={.sType=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,.size=1000,.usage=0x1ff,.sharingMode=VK_SHARING_MODE_EXCLUSIVE};
+        CHECK(vkCreateBuffer(device,&gbi,NULL,&gb0)==VK_SUCCESS);VkMemoryRequirements gr;vkGetBufferMemoryRequirements(device,gb0,&gr);
+        CHECK(gr.size==1024&&gr.alignment==256&&gr.memoryTypeBits==3);
+        gbi.size=70000;gbi.usage=VK_BUFFER_USAGE_TRANSFER_SRC_BIT|VK_BUFFER_USAGE_TRANSFER_DST_BIT;CHECK(vkCreateBuffer(device,&gbi,NULL,&gb1)==VK_SUCCESS);
+        vkGetBufferMemoryRequirements(device,gb1,&gr);CHECK(gr.size==70144&&gr.alignment==256&&gr.memoryTypeBits==3);
+        gbi.size=512;gbi.usage=VK_BUFFER_USAGE_VERTEX_BUFFER_BIT|VK_BUFFER_USAGE_INDEX_BUFFER_BIT;CHECK(vkCreateBuffer(device,&gbi,NULL,&gb2)==VK_SUCCESS);
+        VkBuffer legacy=VK_NULL_HANDLE;gbi.size=64;gbi.usage=VK_BUFFER_USAGE_TRANSFER_DST_BIT;CHECK(vkCreateBuffer(device,&gbi,NULL,&legacy)==VK_SUCCESS);
+        vkGetBufferMemoryRequirements(device,legacy,&gr);vkDestroyBuffer(device,legacy,NULL);CHECK(gr.size==64&&gr.alignment==4&&gr.memoryTypeBits==2);
+        VkBuffer bad=VK_NULL_HANDLE;gbi.size=(VkDeviceSize)512*1024*1024;gbi.usage=0x1ff;CHECK(vkCreateBuffer(device,&gbi,NULL,&bad)!=VK_SUCCESS&&!bad);
+        VkMemoryAllocateInfo gai={.sType=VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,.allocationSize=135168,.memoryTypeIndex=1};
+        CHECK(vkAllocateMemory(device,&gai,NULL,&gmem)==VK_SUCCESS);                                   /* > 64 KiB */
+        CHECK(vkBindBufferMemory(device,gb0,gmem,100)!=VK_SUCCESS);                                    /* misaligned */
+        CHECK(vkBindBufferMemory(device,gb1,gmem,135168-256)!=VK_SUCCESS);                              /* past the end */
+        CHECK(vkBindBufferMemory(device,gb0,gmem,768)==VK_SUCCESS);CHECK(vkBindBufferMemory(device,gb1,gmem,2048)==VK_SUCCESS);
+        CHECK(vkBindBufferMemory(device,gb0,gmem,65536)!=VK_SUCCESS);                                  /* already bound */
+        gai.allocationSize=4096;gai.memoryTypeIndex=0;CHECK(vkAllocateMemory(device,&gai,NULL,&gmem0)==VK_SUCCESS);
+        CHECK(vkBindBufferMemory(device,gb2,gmem0,512)==VK_SUCCESS);
+        unsigned char *p0=NULL;CHECK(vkMapMemory(device,gmem0,512,512,0,(void**)&p0)==VK_SUCCESS&&p0);memset(p0,0x3c,512);vkUnmapMemory(device,gmem0);
+        CHECK(vkMapMemory(device,gmem0,0,VK_WHOLE_SIZE,0,(void**)&p0)==VK_SUCCESS&&p0);
+        for(unsigned n=0;n<4096;n++)CHECK(p0[n]==(n>=512&&n<1024?0x3c:0));vkUnmapMemory(device,gmem0);
+        unsigned char *g=NULL;CHECK(vkMapMemory(device,gmem,135168,VK_WHOLE_SIZE,0,(void**)&g)!=VK_SUCCESS);   /* offset at the end */
+        CHECK(vkMapMemory(device,gmem,2048,VK_WHOLE_SIZE,0,(void**)&g)==VK_SUCCESS&&g);memset(g,0x5a,70144);vkUnmapMemory(device,gmem);
+        CHECK(vkMapMemory(device,gmem,0,VK_WHOLE_SIZE,0,(void**)&gmap)==VK_SUCCESS&&gmap);
+        for(unsigned n=0;n<135168;n+=64)CHECK(gmap[n]==(n>=2048&&n<2048+70144?0x5a:0));
+        /* Zink pool shape: several types, several sets. */
+        VkDescriptorPoolSize zs[3]={{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,24},{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,8},{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,4}};
+        VkDescriptorPoolCreateInfo zpi={.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,.maxSets=8,.poolSizeCount=3,.pPoolSizes=zs};
+        CHECK(vkCreateDescriptorPool(device,&zpi,NULL,&zpool)==VK_SUCCESS);
+        VkDescriptorPool bad_pool=VK_NULL_HANDLE;zs[2].descriptorCount=0;CHECK(vkCreateDescriptorPool(device,&zpi,NULL,&bad_pool)!=VK_SUCCESS&&!bad_pool);
+        /* Colour image with Zink's usage (0x97) and a format list: accepted. */
+        VkFormat fl=VK_FORMAT_R8G8B8A8_UNORM;VkImageFormatListCreateInfo fli={.sType=VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,.viewFormatCount=1,.pViewFormats=&fl};
+        VkImageCreateInfo zi={.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,.pNext=&fli,.flags=VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,.imageType=VK_IMAGE_TYPE_2D,.format=VK_FORMAT_R8G8B8A8_UNORM,
+            .extent={W,H,1},.mipLevels=1,.arrayLayers=1,.samples=VK_SAMPLE_COUNT_1_BIT,.tiling=VK_IMAGE_TILING_OPTIMAL,.usage=0x97,.sharingMode=VK_SHARING_MODE_EXCLUSIVE};
+        VkImageFormatProperties zp;CHECK(vkGetPhysicalDeviceImageFormatProperties(physical,VK_FORMAT_R8G8B8A8_UNORM,VK_IMAGE_TYPE_2D,VK_IMAGE_TILING_OPTIMAL,0x97,
+            VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,&zp)==VK_SUCCESS);
+        CHECK(vkCreateImage(device,&zi,NULL,&zimage)==VK_SUCCESS);
+        /* Clear-only dynamic-rendering pass (Zink's glClear shape), then a sub-rectangle copy
+         * (8x4 at 4,2) into the generic buffer at offset 256, plus the full legacy readback. */
+        VkRenderingAttachmentInfo gc=color_attachment(color_view,VK_ATTACHMENT_LOAD_OP_CLEAR);gc.clearValue.color=(VkClearColorValue){{1,0,0,1}};
+        VkRenderingInfo ginfo={.sType=VK_STRUCTURE_TYPE_RENDERING_INFO,.renderArea={{0,0},{W,H}},.layerCount=1,.colorAttachmentCount=1,.pColorAttachments=&gc};
+        CHECK(vkResetCommandBuffer(cb,0)==VK_SUCCESS);CHECK(vkBeginCommandBuffer(cb,&begin_info)==VK_SUCCESS);
+        color_barrier(cold,VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);vkCmdBeginRendering(cb,&ginfo);vkCmdEndRendering(cb);
+        color_barrier(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        VkBufferImageCopy sub={.bufferOffset=256,.imageSubresource={VK_IMAGE_ASPECT_COLOR_BIT,0,0,1},.imageOffset={4,2,0},.imageExtent={8,4,1}};
+        vkCmdCopyImageToBuffer(cb,color_image,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,gb1,1,&sub);
+        VkBufferImageCopy copy={.imageSubresource={VK_IMAGE_ASPECT_COLOR_BIT,0,0,1},.imageExtent={W,H,1}};
+        vkCmdCopyImageToBuffer(cb,color_image,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,readback,1,&copy);buffer_barrier(readback,0);buffer_barrier(gb1,0);
+        CHECK(vkEndCommandBuffer(cb)==VK_SUCCESS);
+        fill(RED);CHECK(submit_frame(12));
+        for(unsigned n=0;n<70144;n++){const unsigned in=n>=256&&n<256+8*4*4;CHECK(gmap[2048+n]==(in?RED[n%4]:0x5a));}
+        for(unsigned n=0;n<2048;n++)CHECK(gmap[n]==0);
+        printf("GUEST_VK_ZINKCAPS_B2F_PASS generic_usage=0x1ff alignment=256 types=3 suballocated=3 mapped_offsets=2 large_alloc=135168 pool_types=3 region=8x4@4,2+256\n");fflush(stdout);
+    }
+    printf("GUEST_VK_ZINKCAPS_PASS frames=12\n");fflush(stdout);
     result=0;
 done:
     if(device){
+        if(gmap)vkUnmapMemory(device,gmem);if(gb0)vkDestroyBuffer(device,gb0,NULL);if(gb1)vkDestroyBuffer(device,gb1,NULL);if(gb2)vkDestroyBuffer(device,gb2,NULL);
+        if(gmem)vkFreeMemory(device,gmem,NULL);if(gmem0)vkFreeMemory(device,gmem0,NULL);if(zpool)vkDestroyDescriptorPool(device,zpool,NULL);if(zimage)vkDestroyImage(device,zimage,NULL);
         if(tl)vkDestroySemaphore(device,tl,NULL);if(tl2)vkDestroySemaphore(device,tl2,NULL);
         if(cb)vkFreeCommandBuffers(device,cpool,1,&cb);if(cpool)vkDestroyCommandPool(device,cpool,NULL);
         if(dyn_bgra)vkDestroyPipeline(device,dyn_bgra,NULL);if(bgra_view)vkDestroyImageView(device,bgra_view,NULL);

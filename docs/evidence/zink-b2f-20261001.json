@@ -1,0 +1,254 @@
+{
+ "packet": "zink-b2f",
+ "date": "2026-10-01",
+ "branch": "claude-opus-5-5-guest-gpu-jit",
+ "base": "994d906 (uncommitted working tree)",
+ "taskRoot": "/mnt/p6/build/zink-b2f-20261001",
+ "result": "partial: generic buffers + suballocation + mapping at offsets; gate B eglCreateContext ES2/GL-compat OK, GL strings, glClear+glReadPixels exact on NVIDIA WebGPU; draw stalls before shader compile completes; regression 20/20",
+ "gateB": {
+  "env": "GALLIUM_THREAD=0 LIBGL_ALWAYS_SOFTWARE=1 GUEST_VK_DEVICE_TYPE=cpu MESA_LOADER_DRIVER_OVERRIDE=zink GUEST_VK_TRACE=1 GUEST_VK_TRACE_CALLS=1",
+  "mesa": "26.2.3",
+  "link": "/mnt/p6/build/zink-b2f-20261001/zinkb/link/run17/eglprobe.wasm",
+  "linkBytes": 19524748,
+  "package": "/mnt/p6/build/zink-b2f-20261001/zinkb/package-run17/eglprobe.cpio",
+  "packageBytes": 19526656,
+  "icdSnapshot": "/mnt/p6/build/zink-b2f-20261001/zinkb/icd/src-run17",
+  "runs": [
+   {
+    "dir": "/mnt/p6/build/zink-b2f-20261001/zinkb/guest-webgpu-run16",
+    "backend": "webgpu nvidia maxwell",
+    "mode": "es2",
+    "lines": [
+     "EGL_INIT OK 1.4 vendor=Mesa Project",
+     "CTX gles2 OK version=\"OpenGL ES 2.0 Mesa 26.2.3\" glsl=\"OpenGL ES GLSL ES 1.0.16\" renderer=\"zink Vulkan 1.1(EXPERIMENTAL bounded SPIR-V graphics; NOT conformant (Driver Unknown))\" extensions=67 max_texture=128",
+     "GUEST_VK_TRACE begin_rendering load=1 32x32 clear=0,0,1,1 depth=0",
+     "CLEAR gles2 PASS fbo=0x8cd5 px4=0,0,255,255 px28=0,0,255,255 glerr=0x0"
+    ]
+   },
+   {
+    "dir": "/mnt/p6/build/zink-b2f-20261001/zinkb/guest-webgpu-run17",
+    "backend": "webgpu nvidia maxwell",
+    "mode": "compat",
+    "elapsedMs": 202028,
+    "lines": [
+     "CTX gl-compat OK version=\"2.0 Mesa 26.2.3\" glsl=\"1.20\" renderer=\"zink Vulkan 1.1(EXPERIMENTAL bounded SPIR-V graphics; NOT conformant (Driver Unknown))\" extensions=197 max_texture=128",
+     "GUEST_VK_TRACE begin_rendering load=1 32x32 clear=0,0,1,1 depth=0",
+     "CLEAR gl-compat PASS fbo=0x8cd5 px4=0,0,255,255 px28=0,0,255,255 glerr=0x0"
+    ]
+   }
+  ],
+  "glStrings": true,
+  "glClearPixels": true,
+  "draw": "not reached: no 'STEP <mode> compiled' after CLEAR; stall in glCreateShader/glCompileShader (CPU side or untraced 1.2/1.3 proc); push constants (B2c) still required",
+  "warning": "doesn't support base Zink requirements: feats.features.logicOp scalarBlockLayout OR EXT_scalar_block_layout have_EXT_custom_border_color have_EXT_line_rasterization",
+  "failedRuns": {
+   "run1": "0x3003",
+   "run2": "set_layout REJECT binding=5 type=6 stages=0x20 -> 0x3003",
+   "run3": "vkCreateCommandPool failed",
+   "run5-7,9,10": "hang in context creation (NULL/mismatched procs)",
+   "run8": "0x3003",
+   "run11": "vkCreateDescriptorPool failed -> incomplete FBO 0x506",
+   "run13": "create_image REJECT usage=0x97 flags=0x8 format-list pNext",
+   "run14": "end_command REJECT state=4 (strict barrier)",
+   "run15": "first CLEAR PASS"
+  }
+ },
+ "zinkcaps": {
+  "round": 12,
+  "lines": [
+   "GUEST_VK_ZINKCAPS_B2F_PASS generic_usage=0x1ff alignment=256 types=3 suballocated=3 mapped_offsets=2 large_alloc=135168 pool_types=3 region=8x4@4,2+256",
+   "GUEST_VK_ZINKCAPS_PASS frames=12"
+  ],
+  "hostCounters": {
+   "passes": 12,
+   "draws": 14,
+   "uploads": 11,
+   "uniformUploads": 6,
+   "textureUploads": 0,
+   "readbacks": 13
+  },
+  "backends": {
+   "webgpu": "/mnt/p6/build/zink-b2f-20261001/all-run1/zinkcaps-webgpu.json",
+   "webgl2": "/mnt/p6/build/zink-b2f-20261001/all-run1/zinkcaps-webgl2.json"
+  }
+ },
+ "regression": [
+  {
+   "suite": "direct-live",
+   "checks": 140,
+   "b2eChecks": 140,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "direct-unavailable",
+   "checks": 17,
+   "b2eChecks": 17,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "direct-clear",
+   "checks": 1087,
+   "b2eChecks": 1087,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "direct-loss-transport",
+   "checks": 640,
+   "b2eChecks": 640,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "direct-loss-device",
+   "checks": 640,
+   "b2eChecks": 640,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "direct-exhaustion",
+   "checks": 1213,
+   "b2eChecks": 1213,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "loader",
+   "checks": 901,
+   "b2eChecks": 901,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "compute",
+   "checks": 501,
+   "b2eChecks": 501,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "graphics-webgl2",
+   "checks": 232753,
+   "b2eChecks": 232753,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "graphics-webgpu",
+   "checks": 232745,
+   "b2eChecks": 232745,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "uniform-webgl2",
+   "checks": 201269,
+   "b2eChecks": 201269,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "uniform-webgpu",
+   "checks": 201269,
+   "b2eChecks": 201269,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "texture-webgl2",
+   "checks": 18182,
+   "b2eChecks": 18182,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "texture-webgpu",
+   "checks": 18182,
+   "b2eChecks": 18182,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "depth-webgl2",
+   "checks": 42620,
+   "b2eChecks": 42620,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "depth-webgpu",
+   "checks": 42620,
+   "b2eChecks": 42620,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "wsi-webgl2",
+   "checks": 276963,
+   "b2eChecks": 276963,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "wsi-webgpu",
+   "checks": 276963,
+   "b2eChecks": 276963,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "zinkcaps-webgl2",
+   "checks": 91309,
+   "b2eChecks": 11824,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  },
+  {
+   "suite": "zinkcaps-webgpu",
+   "checks": 91309,
+   "b2eChecks": 11824,
+   "pass": true,
+   "dir": "/mnt/p6/build/zink-b2f-20261001/all-run1"
+  }
+ ],
+ "regressionEnv": {
+  "webgpu": "NVIDIA maxwell (Dawn Vulkan), REQUIRE_WEBGPU_VENDOR=nvidia",
+  "webgl2": "ANGLE Intel UHD 620",
+  "ports": [
+   4209,
+   9419
+  ],
+  "pkgRun": 2
+ },
+ "failedRegressionBuilds": [
+  "rebuild-all run1: zinkcaps compile missing zink-stubs.inc (fixed in guest-vulkan-graphics/build.py)"
+ ],
+ "filesChanged": [
+  "web/linux/tests/guest-vulkan/transfer.inc",
+  "web/linux/tests/guest-vulkan/zink.inc",
+  "web/linux/tests/guest-vulkan/icd.c",
+  "web/linux/tests/guest-vulkan/compute.inc",
+  "web/linux/tests/guest-vulkan/uniform.inc",
+  "web/linux/tests/guest-vulkan/texture.inc",
+  "web/linux/tests/guest-vulkan/graphics-commands.inc",
+  "web/linux/tests/guest-vulkan/wsi.inc",
+  "web/linux/tests/guest-vulkan/zink-stubs.inc (new)",
+  "web/linux/tests/guest-vulkan/gen-zink-stubs.py (new)",
+  "web/linux/tests/guest-vulkan-graphics/build.py",
+  "web/linux/tests/guest-vulkan{,-graphics,-compute,-loader}/storage.py",
+  "web/linux/tests/guest-vulkan-zinkcaps/client.c",
+  "web/linux/tests/guest-vulkan-zinkcaps/guest.html"
+ ],
+ "remaining": [
+  "draw stall before shader compile completes; then B2c push constants",
+  "vkCmdSetViewport/Scissor, CopyBuffer/FillBuffer/UpdateBuffer, query pools are stubs",
+  "generic buffers not yet bound as vertex/index/uniform sources for host draws",
+  "maxMemoryAllocationSize still reports 1 MiB (256 MiB accepted)",
+  "ICD not thread-safe (GALLIUM_THREAD=0)",
+  "base Zink features: logicOp, scalarBlockLayout, custom_border_color, line_rasterization",
+  "host 128 px texture/RT limit caps GL_MAX_TEXTURE_SIZE"
+ ]
+}

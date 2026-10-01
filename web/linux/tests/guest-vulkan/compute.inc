@@ -47,7 +47,9 @@ static VKAPI_ATTR void VKAPI_CALL destroy_shader(VkDevice d,VkShaderModule h,con
 static VKAPI_ATTR VkResult VKAPI_CALL create_set_layout(VkDevice d,const VkDescriptorSetLayoutCreateInfo *i,const VkAllocationCallbacks *a,VkDescriptorSetLayout *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO||i->pNext||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO||i->pNext||i->flags){
+        if(i)ZINK_TRACE("set_layout REJECT flags=0x%x pNext=%d bindings=%u\n",(unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,i->bindingCount);
+        return VK_ERROR_INITIALIZATION_FAILED;}
     if(live->uniform_supported&&(i->bindingCount!=1||(i->pBindings&&i->pBindings[0].descriptorType!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)))
         return create_uniform_set_layout(i,out);
     if(i->bindingCount!=1||!i->pBindings)return VK_ERROR_INITIALIZATION_FAILED;
@@ -134,6 +136,23 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_descriptor_pool(VkDevice d,const Vk
         }
         if(ok&&sampler_count)uniform=1;else uniform_count=sampler_count=0;
     }
+#ifdef GUEST_VK_ZINK
+    /* B2f: Zink's push/lazy pools size UNIFORM_BUFFER by ZINK_GFX_SHADER_COUNT*
+     * MAX_LAZY_DESCRIPTORS and add INPUT_ATTACHMENT etc.; record them as
+     * capacity only (sets still only hold layouts the ICD accepted). */
+    if(!uniform&&live->uniform_supported&&i->maxSets>=1&&i->poolSizeCount>=1&&i->poolSizeCount<=16&&i->pPoolSizes){
+        unsigned ub=0,cis=0;int ok=1;
+        for(uint32_t n=0;n<i->poolSizeCount&&ok;n++){
+            const VkDescriptorPoolSize z=i->pPoolSizes[n];
+            if(!z.descriptorCount)ok=0;
+            else if(z.type==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)ub+=z.descriptorCount;
+            else if(z.type==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)cis+=z.descriptorCount;
+            else if(z.type>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)ok=0; /* other core types: capacity ignored */
+        }
+        if(ok){uniform=1;uniform_count=ub;sampler_count=cis;}
+        else ZINK_TRACE("create_descriptor_pool REJECT maxSets=%u sizes=%u\n",i->maxSets,i->poolSizeCount);
+    }
+#endif
     if(!uniform&&(i->maxSets!=1||i->poolSizeCount!=1||
        !i->pPoolSizes||i->pPoolSizes[0].type!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER||i->pPoolSizes[0].descriptorCount!=1))return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *r=resource_new(R_DESC_POOL);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -178,11 +197,13 @@ static VKAPI_ATTR void VKAPI_CALL update_descriptor_sets(VkDevice d,uint32_t cou
     if(copies)for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET){resources[n].valid=0;resources[n].graphics.set.written=0;}
 }
 static VKAPI_ATTR void VKAPI_CALL bind_compute_pipeline(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipeline pipeline) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     if(command.graphics.in_pass||!live->compute_supported||point!=VK_PIPELINE_BIND_POINT_COMPUTE||!resource_get(RID(pipeline),R_COMPUTE_PIPELINE)){invalid_command(cb);return;}
     command.pipeline=RID(pipeline);
 }
 static VKAPI_ATTR void VKAPI_CALL bind_descriptor_sets(VkCommandBuffer cb,VkPipelineBindPoint point,VkPipelineLayout layout,uint32_t first,uint32_t count,const VkDescriptorSet *sets,uint32_t dynamic_count,const uint32_t *offsets) {
+    SELECT_CB(cb);
     (void)offsets;if(cb!=&command||command.state!=2)return;
     if(point==VK_PIPELINE_BIND_POINT_GRAPHICS){bind_uniform_sets(cb,layout,first,count,sets,dynamic_count);return;}
     if(command.graphics.in_pass||point!=VK_PIPELINE_BIND_POINT_COMPUTE||!compute_layout_valid(RID(layout))||first||count!=1||!sets||dynamic_count||
@@ -190,12 +211,14 @@ static VKAPI_ATTR void VKAPI_CALL bind_descriptor_sets(VkCommandBuffer cb,VkPipe
     command.set=RID(sets[0]);command.pipeline_layout=RID(layout);
 }
 static VKAPI_ATTR void VKAPI_CALL dispatch_compute(VkCommandBuffer cb,uint32_t x,uint32_t y,uint32_t z) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     struct resource *pipeline=resource_get(command.pipeline,R_COMPUTE_PIPELINE);
     if(command.graphics.in_pass||x!=1||y!=1||z!=1||!pipeline||!command.set||pipeline->link!=command.pipeline_layout){invalid_command(cb);return;}
     struct recorded *r=record_command(cb,8);if(r){r->pipeline=command.pipeline;r->set=command.set;}
 }
 static int record_compute_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {
+    SELECT_CB(cb);
     struct resource *b=resource_get(RID(bb->buffer),R_BUFFER);if(!b||!b->storage)return 0;
     unsigned op=0;
     if(src==VK_PIPELINE_STAGE_HOST_BIT&&dst==VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT&&bb->srcAccessMask==VK_ACCESS_HOST_WRITE_BIT&&
@@ -210,12 +233,12 @@ static int record_compute_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,Vk
 static VkResult execute_compute(const struct recorded *c) {
     struct resource *b=resource_get(c->buffer,R_BUFFER);
     if(c->op==5){unsigned char data[65548];uint32_t h[3]={b->host,0,(uint32_t)b->size};struct resource *m=resource_get(b->memory,R_MEMORY);
-        memcpy(data,h,12);memcpy(data+12,m->bytes,b->size);return compute_empty(GPU_STORAGE_UPLOAD,data,(uint32_t)b->size+12);}
+        memcpy(data,h,12);memcpy(data+12,m->bytes+b->offset,b->size);return compute_empty(GPU_STORAGE_UPLOAD,data,(uint32_t)b->size+12);}
     if(c->op==6)return VK_SUCCESS;
     if(c->op==7){unsigned char data[65536];uint32_t h[3]={b->host,0,(uint32_t)b->size},size=0;
         VkResult result=compute_call(GPU_STORAGE_READBACK,h,12,data,sizeof(data),&size);if(result!=VK_SUCCESS)return result;
         if(size!=b->size){live->failed=1;return VK_ERROR_DEVICE_LOST;}
-        struct resource *m=resource_get(b->memory,R_MEMORY);memcpy(m->bytes,data,size);return VK_SUCCESS;}
+        struct resource *m=resource_get(b->memory,R_MEMORY);memcpy(m->bytes+b->offset,data,size);return VK_SUCCESS;}
     if(c->op==8){struct resource *pipeline=resource_get(c->pipeline,R_COMPUTE_PIPELINE),*set=resource_get(c->set,R_DESC_SET);b=resource_get(set->link,R_BUFFER);
         uint32_t h[7]={pipeline->host,b->host,0,(uint32_t)set->range,1,1,1};return compute_empty(GPU_COMPUTE_DISPATCH,h,sizeof(h));}
     return VK_ERROR_INITIALIZATION_FAILED;

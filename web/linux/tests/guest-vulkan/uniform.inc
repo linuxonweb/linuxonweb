@@ -10,14 +10,24 @@ static int uniform_layout_equal(const struct uniform_set_layout *a,const struct 
     return 1;
 }
 static VkResult create_uniform_set_layout(const VkDescriptorSetLayoutCreateInfo *i,VkDescriptorSetLayout *out) {
-    if(i->bindingCount>4||(i->bindingCount&&!i->pBindings))return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+    /* B2f: Zink set layouts (5-binding gfx push set, per-type program sets)
+     * may use every graphics stage and compute (the compute push set); draws
+     * still validate the bounded shape. */
+    const VkShaderStageFlags stage_mask=VK_SHADER_STAGE_ALL_GRAPHICS|VK_SHADER_STAGE_COMPUTE_BIT;
+#else
+    const VkShaderStageFlags stage_mask=VK_SHADER_STAGE_VERTEX_BIT|VK_SHADER_STAGE_FRAGMENT_BIT;
+#endif
+    if(i->bindingCount>UNIFORM_SET_BINDINGS||(i->bindingCount&&!i->pBindings)){
+        ZINK_TRACE("set_layout REJECT bindings=%u\n",i->bindingCount);return VK_ERROR_INITIALIZATION_FAILED;}
     struct uniform_set_layout l={0};
     for(unsigned n=0;n<i->bindingCount;n++) {
         const VkDescriptorSetLayoutBinding b=i->pBindings[n];
         int sampler=live->texture_supported&&b.descriptorType==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         if(b.binding>=16||(b.descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&!sampler)||b.descriptorCount!=1||!b.stageFlags||
-           (b.stageFlags&~(VkShaderStageFlags)(VK_SHADER_STAGE_VERTEX_BIT|VK_SHADER_STAGE_FRAGMENT_BIT))||b.pImmutableSamplers)
-            return VK_ERROR_INITIALIZATION_FAILED;
+           (b.stageFlags&~stage_mask)||b.pImmutableSamplers){
+            ZINK_TRACE("set_layout REJECT binding=%u type=%d count=%u stages=0x%x immutable=%d\n",b.binding,(int)b.descriptorType,b.descriptorCount,(unsigned)b.stageFlags,b.pImmutableSamplers!=NULL);
+            return VK_ERROR_INITIALIZATION_FAILED;}
         unsigned slot=l.count;
         while(slot&&l.bindings[slot-1]>b.binding){l.bindings[slot]=l.bindings[slot-1];l.stages[slot]=l.stages[slot-1];l.types[slot]=l.types[slot-1];slot--;}
         if(slot&&l.bindings[slot-1]==b.binding)return VK_ERROR_INITIALIZATION_FAILED;
@@ -104,6 +114,7 @@ static void update_uniform_set(struct resource *set,const VkWriteDescriptorSet *
     set->valid=s->written==(1u<<s->layout.count)-1;
 }
 static void bind_uniform_sets(VkCommandBuffer cb,VkPipelineLayout layout,uint32_t first,uint32_t count,const VkDescriptorSet *sets,uint32_t dynamic_count) {
+    SELECT_CB(cb);
     struct resource *l=resource_get(RID(layout),R_PIPELINE_LAYOUT);
     if(!live->uniform_supported||!l||!l->graphics_layout||!count||!sets||dynamic_count||
        first>=l->graphics.layout.set_count||count>l->graphics.layout.set_count-first){invalid_command(cb);return;}
@@ -114,6 +125,7 @@ static void bind_uniform_sets(VkCommandBuffer cb,VkPipelineLayout layout,uint32_
     for(unsigned n=0;n<count;n++)command.graphics.sets[first+n]=RID(sets[n]);
 }
 static int record_uniform_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkBufferMemoryBarrier *bb) {
+    SELECT_CB(cb);
     struct resource *b=resource_get(RID(bb->buffer),R_BUFFER);if(!b||!b->uniform)return 0;
     const VkPipelineStageFlags shaders=VK_PIPELINE_STAGE_VERTEX_SHADER_BIT|VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     if(src!=VK_PIPELINE_STAGE_HOST_BIT||!dst||(dst&~shaders)||bb->srcAccessMask!=VK_ACCESS_HOST_WRITE_BIT||

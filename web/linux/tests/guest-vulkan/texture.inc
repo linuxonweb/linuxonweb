@@ -17,6 +17,7 @@ static int texture_image_barrier(VkPipelineStageFlags src,VkPipelineStageFlags d
         dst&&!(dst&~shaders)&&b->dstAccessMask==VK_ACCESS_SHADER_READ_BIT;
 }
 static VKAPI_ATTR void VKAPI_CALL copy_buffer_to_image(VkCommandBuffer cb,VkBuffer buffer,VkImage image,VkImageLayout layout,uint32_t count,const VkBufferImageCopy *region) {
+    SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     struct resource *i=resource_get(RID(image),R_IMAGE),*b=resource_get(RID(buffer),R_BUFFER);
     if(command.graphics.in_pass||!i||!i->sampled||!b||!b->staging||layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL||count!=1||!region||
@@ -36,7 +37,7 @@ static int texture_prepare_copy(const struct recorded *c,VkImageLayout layouts[M
 static VkResult texture_execute_copy(const struct recorded *c) {
     static unsigned char data[65536+12];
     struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER),*m=resource_get(b->memory,R_MEMORY);
-    uint32_t header[3]={i->host,i->width,i->height};memcpy(data,header,12);memcpy(data+12,m->bytes+(size_t)c->offset,i->size);
+    uint32_t header[3]={i->host,i->width,i->height};memcpy(data,header,12);memcpy(data+12,m->bytes+b->offset+(size_t)c->offset,i->size);
     if(i->bgra)swap_rb(data+12,i->size); /* B2e: guest BGRA bytes -> host RGBA texture. */
     if(host_empty(GPU_TEXTURE_UPLOAD,data,(uint32_t)i->size+12)!=VK_SUCCESS){i->graphics_initialized=0;return VK_ERROR_DEVICE_LOST;}
     i->graphics_initialized=1;return VK_SUCCESS;
