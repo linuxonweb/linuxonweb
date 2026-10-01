@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef GUEST_VK_ZINK
+#include "zink-ext.h"
+#endif
 
 struct VkPhysicalDevice_T { VK_LOADER_DATA loader; };
 struct VkQueue_T { VK_LOADER_DATA loader; };
@@ -18,6 +21,8 @@ struct VkInstance_T {
     int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, depth_supported, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
     uint32_t instance_extensions_enabled; /* Bit per instance_extension_table index. */
+    /* B2a (GUEST_VK_ZINK builds): features enabled at vkCreateDevice. */
+    int null_descriptor, timeline, dynamic_rendering, maintenance5;
 };
 _Static_assert(offsetof(struct VkInstance_T, loader) == 0, "instance loader prefix");
 _Static_assert(offsetof(struct VkPhysicalDevice_T, loader) == 0, "physical loader prefix");
@@ -72,14 +77,39 @@ struct extension_entry { const char *name; uint32_t version; };
 enum { WSI_EXT_SURFACE, WSI_EXT_XLIB, WSI_EXT_XCB };
 static const struct extension_entry instance_extension_table[] = {
     {VK_KHR_SURFACE_EXTENSION_NAME, 25}, {VK_KHR_XLIB_SURFACE_EXTENSION_NAME, 6}, {VK_KHR_XCB_SURFACE_EXTENSION_NAME, 6}, {NULL, 0} };
-static const struct extension_entry device_extension_table[] = { {VK_KHR_SWAPCHAIN_EXTENSION_NAME, 70}, {NULL, 0} };
+#define DEVICE_EXT_SWAPCHAIN {VK_KHR_SWAPCHAIN_EXTENSION_NAME, 70},
 #else
 static const struct extension_entry instance_extension_table[] = { {NULL, 0} };
-static const struct extension_entry device_extension_table[] = { {NULL, 0} };
+#define DEVICE_EXT_SWAPCHAIN
 #endif
+#ifdef GUEST_VK_ZINK
+/* B2a: the seven device extensions Zink requires for screen creation. Spec
+ * versions are those of the pinned v231 headers (maintenance5 is local). Each
+ * is backed by the bounded semantics documented in docs/zink-b2a-20260930.md. */
+#define DEVICE_EXT_ZINK {VK_KHR_MAINTENANCE_1_EXTENSION_NAME, VK_KHR_MAINTENANCE_1_SPEC_VERSION}, \
+    {VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME, VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_SPEC_VERSION}, \
+    {VK_KHR_MAINTENANCE_5_EXTENSION_NAME, VK_KHR_MAINTENANCE_5_SPEC_VERSION}, \
+    {VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, VK_KHR_CREATE_RENDERPASS_2_SPEC_VERSION}, \
+    {VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_SPEC_VERSION}, \
+    {VK_EXT_ROBUSTNESS_2_EXTENSION_NAME, VK_EXT_ROBUSTNESS_2_SPEC_VERSION}, \
+    {VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME, VK_KHR_TIMELINE_SEMAPHORE_SPEC_VERSION},
+#else
+#define DEVICE_EXT_ZINK
+#endif
+static const struct extension_entry device_extension_table[] = { DEVICE_EXT_SWAPCHAIN DEVICE_EXT_ZINK {NULL, 0} };
 static const struct extension_entry empty_extension_table[] = { {NULL, 0} };
 static const struct extension_entry *device_table(void) {
     return live && live->graphics_supported ? device_extension_table : empty_extension_table;
+}
+/* Nonzero when the named device extension is set in an enabled-extension mask. */
+__attribute__((unused)) static int device_ext_in(uint32_t mask, const char *name) {
+    for (uint32_t n = 0; device_extension_table[n].name && n < 32; n++)
+        if (!strcmp(device_extension_table[n].name, name)) return (mask >> n) & 1;
+    return 0;
+}
+/* Nonzero when the named device extension was enabled at vkCreateDevice. */
+__attribute__((unused)) static int device_ext_enabled(const char *name) { /* used by GUEST_VK_ZINK builds only */
+    return live && live->device && device_ext_in(live->device_extensions_enabled, name);
 }
 static VkResult enumerate_extensions(const struct extension_entry *table, uint32_t *count, VkExtensionProperties *out) {
     uint32_t total = 0;
@@ -216,6 +246,19 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
     if (!physical_valid(physical)) return;
     out->apiVersion = VK_API_VERSION_1_1;
     out->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+#ifdef GUEST_VK_ZINK
+    /* B2a opt-in: Zink's surfaceless EGL path selects only CPU devices
+     * (LIBGL_ALWAYS_SOFTWARE). Build flag, a non-"0" LIBGL_ALWAYS_SOFTWARE, or
+     * GUEST_VK_DEVICE_TYPE=cpu select CPU; GUEST_VK_DEVICE_TYPE=other overrides. */
+#ifdef GUEST_VK_DEVICE_TYPE_CPU
+    out->deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU;
+#endif
+    { const char *soft = getenv("LIBGL_ALWAYS_SOFTWARE");
+      if (soft && *soft && strcmp(soft, "0") && strcmp(soft, "false")) out->deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU; }
+    { const char *type = getenv("GUEST_VK_DEVICE_TYPE");
+      if (type && !strcmp(type, "cpu")) out->deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU;
+      if (type && !strcmp(type, "other")) out->deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER; }
+#endif
     snprintf(out->deviceName, sizeof(out->deviceName), live->clear_supported ? "EXPERIMENTAL partial clear/copy profile; NOT conformant" : "EXPERIMENTAL WebGPU lifecycle only; not conformant");
     if (live->compute_supported) {
         snprintf(out->deviceName, sizeof(out->deviceName), "EXPERIMENTAL bounded SPIR-V compute; NOT conformant");
@@ -265,6 +308,17 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
         /* A5: single-sample D32_SFLOAT/D16_UNORM attachments; no stencil. */
         out->limits.framebufferDepthSampleCounts=VK_SAMPLE_COUNT_1_BIT;
     }
+#ifdef GUEST_VK_ZINK
+    if (live->uniform_supported) {
+        /* B2a: Zink's minimums. Push constants are ADVERTISED ONLY (pipeline
+         * layouts still reject push-constant ranges); no storage descriptors
+         * exist in the graphics profile, so the storage range is a ceiling only. */
+        out->limits.maxPushConstantsSize=128;
+        out->limits.maxStorageBufferRange=1u<<27;
+        out->limits.maxUniformBufferRange=16384;
+        out->limits.maxBoundDescriptorSets=4;
+    }
+#endif
     /* No invented physical PCI IDs or physical acceleration claims. */
 }
 static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, VkPhysicalDeviceFeatures *out) {
@@ -274,7 +328,25 @@ static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, V
 /* Loader-required queries describe negotiated bounded usages only. Graphics
  * adds one attachment format and three vertex formats; no sampled/storage or
  * sparse image capabilities are implied. */
+#ifdef GUEST_VK_ZINK
+/* B2a diagnostics: GUEST_VK_TRACE=1 prints every format query and its answer
+ * to stderr so Zink/DRI capability decisions are visible in guest logs. */
+static int zink_trace_enabled(void) {
+    static int cached = -1;
+    if (cached < 0) { const char *t = getenv("GUEST_VK_TRACE"); cached = t && *t && strcmp(t, "0") != 0; }
+    return cached;
+}
+#define ZINK_TRACE(...) do { if (zink_trace_enabled()) fprintf(stderr, "GUEST_VK_TRACE " __VA_ARGS__); } while (0)
+#else
+#define ZINK_TRACE(...) do { } while (0)
+#endif
+static void format_properties_body(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out);
 static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out) {
+    format_properties_body(physical, format, out);
+    if (out) ZINK_TRACE("format %d optimal=0x%x linear=0x%x buffer=0x%x\n", (int)format,
+        (unsigned)out->optimalTilingFeatures, (unsigned)out->linearTilingFeatures, (unsigned)out->bufferFeatures);
+}
+static void format_properties_body(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
     if (physical_valid(physical) && live->clear_supported && format == VK_FORMAT_R8G8B8A8_UNORM)
@@ -292,7 +364,18 @@ static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, V
     if (physical_valid(physical) && live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM))
         out->optimalTilingFeatures = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 }
+static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat format,
+        VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
+        VkImageFormatProperties *out);
 static VKAPI_ATTR VkResult VKAPI_CALL image_format_properties(VkPhysicalDevice physical, VkFormat format,
+        VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
+        VkImageFormatProperties *out) {
+    VkResult r = image_format_properties_body(physical, format, type, tiling, usage, flags, out);
+    ZINK_TRACE("image_format %d type=%d tiling=%d usage=0x%x flags=0x%x -> %d\n", (int)format, (int)type,
+        (int)tiling, (unsigned)usage, (unsigned)flags, (int)r);
+    return r;
+}
+static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat format,
         VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
         VkImageFormatProperties *out) {
     if (!out) return VK_ERROR_FORMAT_NOT_SUPPORTED;
@@ -367,17 +450,22 @@ static int any_bool(const void *node, size_t size) {
     for (size_t i = 0; i < (size - sizeof(VkBaseInStructure)) / sizeof(VkBool32); i++) if (flag[i]) return 1;
     return 0;
 }
-static VkResult device_chain(VkPhysicalDevice physical, const VkDeviceCreateInfo *info) {
+static VkResult device_chain(VkPhysicalDevice physical, const VkDeviceCreateInfo *info, uint32_t mask, int *zink_features) {
     static const VkStructureType handled[] = { VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO,
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
         VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO };
+#ifdef GUEST_VK_ZINK
+    int null_descriptor = 0, timeline = 0, dynamic_rendering = 0, maintenance5 = 0;
+#else
+    (void)mask; (void)zink_features;
+#endif
     if (!chain_valid(info->pNext, handled, sizeof(handled) / sizeof(handled[0]))) return VK_ERROR_FEATURE_NOT_PRESENT;
     if (any_features(info->pEnabledFeatures)) return VK_ERROR_FEATURE_NOT_PRESENT;
     const VkBaseInStructure *node = info->pNext;
-    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch (node->sType) {
+    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch ((uint32_t)node->sType) { /* uint32_t: zink-ext.h sTypes are beyond the 1.3.231 enum */
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
         if (info->pEnabledFeatures) return VK_ERROR_INITIALIZATION_FAILED;
         if (any_features(&((const VkPhysicalDeviceFeatures2 *)node)->features)) return VK_ERROR_FEATURE_NOT_PRESENT;
@@ -397,8 +485,55 @@ static VkResult device_chain(VkPhysicalDevice physical, const VkDeviceCreateInfo
             (!group->pPhysicalDevices || group->pPhysicalDevices[0] != physical))) return VK_ERROR_INITIALIZATION_FAILED;
         break;
     }
-    default: break;
+#ifdef GUEST_VK_ZINK
+    /* B2a: the feature structures Zink chains at apiVersion 1.1 (copied from
+     * its Features2 query). A true bool needs its extension enabled; robust
+     * buffer/image access 2 and the never-advertised structures stay false. */
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT: {
+        const VkPhysicalDeviceRobustness2FeaturesEXT *f = (const void *)node;
+        if (f->robustBufferAccess2 || f->robustImageAccess2) return VK_ERROR_FEATURE_NOT_PRESENT;
+        if (f->nullDescriptor && (!live->uniform_supported || !device_ext_in(mask, VK_EXT_ROBUSTNESS_2_EXTENSION_NAME))) return VK_ERROR_FEATURE_NOT_PRESENT;
+        null_descriptor = f->nullDescriptor != VK_FALSE; break;
     }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES: {
+        const VkPhysicalDeviceTimelineSemaphoreFeatures *f = (const void *)node;
+        if (f->timelineSemaphore && !device_ext_in(mask, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) return VK_ERROR_FEATURE_NOT_PRESENT;
+        timeline = f->timelineSemaphore != VK_FALSE; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES: {
+        const VkPhysicalDeviceDynamicRenderingFeatures *f = (const void *)node;
+        if (f->dynamicRendering && !device_ext_in(mask, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)) return VK_ERROR_FEATURE_NOT_PRESENT;
+        dynamic_rendering = f->dynamicRendering != VK_FALSE; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR: {
+        const VkPhysicalDeviceMaintenance5FeaturesKHR *f = (const void *)node;
+        if (f->maintenance5 && !device_ext_in(mask, VK_KHR_MAINTENANCE_5_EXTENSION_NAME)) return VK_ERROR_FEATURE_NOT_PRESENT;
+        maintenance5 = f->maintenance5 != VK_FALSE; break;
+    }
+#define DENIED(stype, type) case stype: if (any_bool(node, sizeof(type))) return VK_ERROR_FEATURE_NOT_PRESENT; break;
+    DENIED(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT, VkPhysicalDeviceDepthClipEnableFeaturesEXT)
+    DENIED(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT)
+    DENIED(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT, VkPhysicalDeviceTransformFeedbackFeaturesEXT)
+    DENIED(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, VkPhysicalDeviceVulkan12Features)
+    DENIED(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, VkPhysicalDeviceVulkan13Features)
+#undef DENIED
+    case VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO: break;
+    /* Zink builds reject every other structure: Zink chains only structures of
+     * advertised extensions, so anything else is unsupported. */
+    default: {
+        unsigned i = 0;
+        while (i < sizeof(handled) / sizeof(handled[0]) && node->sType != handled[i]) i++;
+        if (i == sizeof(handled) / sizeof(handled[0])) return VK_ERROR_FEATURE_NOT_PRESENT;
+        break;
+    }
+#else
+    default: break;
+#endif
+    }
+#ifdef GUEST_VK_ZINK
+    zink_features[0] = null_descriptor; zink_features[1] = timeline;
+    zink_features[2] = dynamic_rendering; zink_features[3] = maintenance5;
+#endif
     return VK_SUCCESS;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, const VkDeviceCreateInfo *info,
@@ -411,7 +546,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, c
     uint32_t enabled_extensions = 0;
     if (!extensions_supported(device_table(), info->enabledExtensionCount, info->ppEnabledExtensionNames, &enabled_extensions))
         return VK_ERROR_EXTENSION_NOT_PRESENT;
-    VkResult chain = device_chain(physical, info);
+    int zink_features[4] = {0, 0, 0, 0};
+    VkResult chain = device_chain(physical, info, enabled_extensions, zink_features);
     if (chain != VK_SUCCESS) return chain;
     if (info->queueCreateInfoCount != 1 || !info->pQueueCreateInfos) return VK_ERROR_INITIALIZATION_FAILED;
     const VkDeviceQueueCreateInfo *q = info->pQueueCreateInfos;
@@ -424,6 +560,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_device(VkPhysicalDevice physical, c
     if (hello(live)) { free(device); return VK_ERROR_DEVICE_LOST; }
     set_loader_magic_value(device); set_loader_magic_value(&device->queue);
     live->device = device; live->device_extensions_enabled = enabled_extensions;
+    live->null_descriptor = zink_features[0]; live->timeline = zink_features[1];
+    live->dynamic_rendering = zink_features[2]; live->maintenance5 = zink_features[3];
     audit.devices_created++; audit.live_devices++;
     *out = device; return VK_SUCCESS;
 }
@@ -447,7 +585,7 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties2(VkPhysicalDevice physical
     uint32_t descriptors = live->uniform_supported ? 4 : live->compute_supported ? 1 : 0;
     VkDeviceSize allocation = profile_any() ? 1024 * 1024 : 0;
     VkBaseOutStructure *node = out->pNext;
-    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch (node->sType) {
+    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch ((uint32_t)node->sType) { /* uint32_t: zink-ext.h sTypes are beyond the 1.3.231 enum */
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES: {
         VkPhysicalDeviceIDProperties *p = (VkPhysicalDeviceIDProperties *)node; zero_body(p, sizeof(*p));
         memcpy(p->deviceUUID, device_uuid, VK_UUID_SIZE); memcpy(p->driverUUID, driver_uuid, VK_UUID_SIZE); break;
@@ -471,6 +609,20 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties2(VkPhysicalDevice physical
         memcpy(p->deviceUUID, device_uuid, VK_UUID_SIZE); memcpy(p->driverUUID, driver_uuid, VK_UUID_SIZE);
         p->subgroupSize = 1; p->maxPerSetDescriptors = descriptors; p->maxMemoryAllocationSize = allocation; break;
     }
+#ifdef GUEST_VK_ZINK
+    /* B2a: properties of the advertised Zink extensions (graphics profile only). */
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES: {
+        VkPhysicalDeviceTimelineSemaphoreProperties *p = (void *)node; zero_body(p, sizeof(*p));
+        if (live->graphics_supported) p->maxTimelineSemaphoreValueDifference = UINT64_MAX; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT: {
+        VkPhysicalDeviceRobustness2PropertiesEXT *p = (void *)node; zero_body(p, sizeof(*p));
+        if (live->graphics_supported) { p->robustStorageBufferAccessSizeAlignment = 4; p->robustUniformBufferAccessSizeAlignment = 16; }
+        break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR:
+        zero_body(node, sizeof(VkPhysicalDeviceMaintenance5PropertiesKHR)); break;
+#endif
     default: break;
     }
 }
@@ -478,7 +630,7 @@ static VKAPI_ATTR void VKAPI_CALL physical_features2(VkPhysicalDevice physical, 
     if (!out) return;
     physical_features(physical, &out->features);
     VkBaseOutStructure *node = out->pNext;
-    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch (node->sType) {
+    for (unsigned depth = 0; node && depth < CHAIN_LIMIT; depth++, node = node->pNext) switch ((uint32_t)node->sType) { /* uint32_t: zink-ext.h sTypes are beyond the 1.3.231 enum */
 #define FEATURES(stype, type) case stype: zero_body(node, sizeof(type)); break;
     FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES, VkPhysicalDeviceVulkan11Features)
     FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES, VkPhysicalDevice16BitStorageFeatures)
@@ -487,6 +639,30 @@ static VKAPI_ATTR void VKAPI_CALL physical_features2(VkPhysicalDevice physical, 
     FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES, VkPhysicalDeviceProtectedMemoryFeatures)
     FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES, VkPhysicalDeviceSamplerYcbcrConversionFeatures)
     FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES, VkPhysicalDeviceShaderDrawParametersFeatures)
+#ifdef GUEST_VK_ZINK
+    FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT, VkPhysicalDeviceDepthClipEnableFeaturesEXT)
+    FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT, VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT)
+    FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT, VkPhysicalDeviceTransformFeedbackFeaturesEXT)
+    FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, VkPhysicalDeviceVulkan12Features)
+    FEATURES(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, VkPhysicalDeviceVulkan13Features)
+    /* B2a: features of the advertised Zink extensions (graphics profile only). */
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT: {
+        VkPhysicalDeviceRobustness2FeaturesEXT *f = (void *)node; zero_body(f, sizeof(*f));
+        f->nullDescriptor = physical_valid(physical) && live->graphics_supported && live->uniform_supported; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES: {
+        VkPhysicalDeviceTimelineSemaphoreFeatures *f = (void *)node; zero_body(f, sizeof(*f));
+        f->timelineSemaphore = physical_valid(physical) && live->graphics_supported; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES: {
+        VkPhysicalDeviceDynamicRenderingFeatures *f = (void *)node; zero_body(f, sizeof(*f));
+        f->dynamicRendering = physical_valid(physical) && live->graphics_supported; break;
+    }
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR: {
+        VkPhysicalDeviceMaintenance5FeaturesKHR *f = (void *)node; zero_body(f, sizeof(*f));
+        f->maintenance5 = physical_valid(physical) && live->graphics_supported; break;
+    }
+#endif
 #undef FEATURES
     default: break;
     }
@@ -563,6 +739,10 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
     PFN_vkVoidFunction wsi = wsi_device_proc(name);
     if (wsi) return wsi;
 #endif
+#ifdef GUEST_VK_ZINK
+    PFN_vkVoidFunction zink = live->graphics_supported ? zink_proc(name) : NULL;
+    if (zink) return zink;
+#endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
     if (graphics) return graphics;
     PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
@@ -621,6 +801,10 @@ VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance in
 #ifdef GUEST_VK_WSI
     PFN_vkVoidFunction wsi = wsi_instance_proc(name);
     if (wsi) return wsi;
+#endif
+#ifdef GUEST_VK_ZINK
+    PFN_vkVoidFunction zink = live->graphics_supported ? zink_proc(name) : NULL;
+    if (zink) return zink;
 #endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
     if (graphics) return graphics;

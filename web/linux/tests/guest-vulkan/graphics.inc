@@ -145,13 +145,29 @@ static int graphics_viewport(const VkPipelineViewportStateCreateInfo *i,struct g
 static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPipelineCache cache,uint32_t count,const VkGraphicsPipelineCreateInfo *i,const VkAllocationCallbacks *a,VkPipeline *out) {
     if(!out||count!=1)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
-    if(!device_valid(d)||!live->graphics_supported||cache||!i||a||i->sType!=VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO||i->pNext||i->flags||
+#ifdef GUEST_VK_ZINK
+    /* B2a dynamic rendering: renderPass==NULL with exactly one
+     * VkPipelineRenderingCreateInfo (1 RGBA8 color, optional D32/D16 depth). */
+    const VkPipelineRenderingCreateInfo *rendering=i&&i->pNext&&live->dynamic_rendering&&!i->renderPass?i->pNext:NULL;
+    if(rendering&&(rendering->sType!=VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO||rendering->pNext||rendering->viewMask||
+       rendering->colorAttachmentCount!=1||!rendering->pColorAttachmentFormats||rendering->pColorAttachmentFormats[0]!=VK_FORMAT_R8G8B8A8_UNORM||
+       (rendering->depthAttachmentFormat&&(!live->depth_supported||!depth_code(rendering->depthAttachmentFormat)))||
+       rendering->stencilAttachmentFormat))return VK_ERROR_FEATURE_NOT_PRESENT;
+#else
+    const void *rendering=NULL;
+#endif
+    if(!device_valid(d)||!live->graphics_supported||cache||!i||a||i->sType!=VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO||(i->pNext&&!rendering)||i->flags||
        i->stageCount!=2||!i->pStages||i->subpass||i->basePipelineHandle||i->basePipelineIndex!=-1||i->pTessellationState||i->pDynamicState||
        (!live->depth_supported&&i->pDepthStencilState))
         return VK_ERROR_INITIALIZATION_FAILED;
     struct resource *layout=resource_get(RID(i->layout),R_PIPELINE_LAYOUT),*pass=resource_get(RID(i->renderPass),R_RENDER_PASS);
-    if(!layout||!layout->graphics_layout||!pass)return VK_ERROR_INITIALIZATION_FAILED;
-    struct graphics_pipeline p={0};p.pass=pass->graphics.pass;p.uniforms=layout->graphics.layout;
+    if(!layout||!layout->graphics_layout||(!pass&&!rendering))return VK_ERROR_INITIALIZATION_FAILED;
+    struct graphics_pipeline p={0};p.uniforms=layout->graphics.layout;
+#ifdef GUEST_VK_ZINK
+    if(rendering)p.pass=(struct graphics_pass){.format=VK_FORMAT_R8G8B8A8_UNORM,.samples=VK_SAMPLE_COUNT_1_BIT,.depth_format=rendering->depthAttachmentFormat};
+    else
+#endif
+    p.pass=pass->graphics.pass;
     if(!graphics_vertex_layout(i->pVertexInputState,&p)||!graphics_viewport(i->pViewportState,&p))return VK_ERROR_FEATURE_NOT_PRESENT;
     /* A5: depth-stencil state is required exactly when the render pass has a
      * depth attachment. Stencil, depth bounds and depth bias are unsupported. */

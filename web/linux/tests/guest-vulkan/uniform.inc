@@ -81,6 +81,17 @@ static void update_uniform_set(struct resource *set,const VkWriteDescriptorSet *
         s->views[slot]=view->id;s->samplers[slot]=sampler->id;s->written|=1u<<slot;
         set->valid=s->written==(1u<<s->layout.count)-1;return;
     }
+#ifdef GUEST_VK_ZINK
+    /* B2a robustness2 nullDescriptor: a VK_NULL_HANDLE uniform buffer (offset 0,
+     * range WHOLE_SIZE) binds a shared host buffer of 16384 zero bytes. */
+    if(live->null_descriptor&&!copies&&slot<s->layout.count&&w->sType==VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET&&!w->pNext&&
+       !w->dstArrayElement&&w->descriptorCount==1&&w->descriptorType==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&
+       s->layout.types[slot]==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&w->pBufferInfo&&w->pBufferInfo->buffer==VK_NULL_HANDLE) {
+        if(w->pBufferInfo->offset||w->pBufferInfo->range!=VK_WHOLE_SIZE||zink_null_ubo()!=VK_SUCCESS){s->written=0;set->valid=0;return;}
+        s->buffers[slot]=0;s->offsets[slot]=0;s->ranges[slot]=16384;s->written|=1u<<slot;
+        set->valid=s->written==(1u<<s->layout.count)-1;return;
+    }
+#endif
     const VkDescriptorBufferInfo *b=w->pBufferInfo;
     struct resource *buffer=b?resource_get(RID(b->buffer),R_BUFFER):NULL;
     VkDeviceSize range=b&&buffer&&b->range==VK_WHOLE_SIZE&&b->offset<buffer->size?buffer->size-b->offset:b?b->range:0;

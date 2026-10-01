@@ -26,6 +26,23 @@ static struct resource *graphics_framebuffer_image(uint64_t id,const struct grap
        !resource_get(i->memory,R_MEMORY)||i->width!=fb->width||i->height!=fb->height)return NULL;
     return i;
 }
+/* Begin-record resolvers: render-pass begins go through the framebuffer;
+ * B2a dynamic-rendering begins (framebuffer==0) name views directly and get
+ * the same image/host/memory checks, with depth matching the color extent. */
+static struct resource *graphics_begin_image(const struct graphics_begin_record *b) {
+    if(b->framebuffer)return graphics_framebuffer_image(b->framebuffer,&b->pass);
+    struct resource *v=resource_get(b->view,R_IMAGE_VIEW),*i=v?resource_get(v->graphics.view.image,R_IMAGE):NULL;
+    if(!i||!i->graphics_target||!i->host||!resource_get(i->memory,R_MEMORY)||b->pass.format!=VK_FORMAT_R8G8B8A8_UNORM)return NULL;
+    return i;
+}
+static struct resource *graphics_begin_depth(const struct graphics_begin_record *b) {
+    if(b->framebuffer)return graphics_framebuffer_depth(b->framebuffer,&b->pass);
+    struct resource *c=graphics_begin_image(b);
+    struct resource *v=resource_get(b->depth_view,R_IMAGE_VIEW),*i=v?resource_get(v->graphics.view.image,R_IMAGE):NULL;
+    if(!c||!b->pass.depth_format||!i||!i->depth||depth_code(b->pass.depth_format)!=i->depth||!i->host||
+       !resource_get(i->memory,R_MEMORY)||i->width!=c->width||i->height!=c->height)return NULL;
+    return i;
+}
 static VKAPI_ATTR void VKAPI_CALL begin_graphics_pass(VkCommandBuffer cb,const VkRenderPassBeginInfo *info,VkSubpassContents contents) {
     if(cb!=&command||command.state!=2)return;
     if(!live->graphics_supported||command.graphics.in_pass||!info||info->sType!=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO||
@@ -49,7 +66,7 @@ static VKAPI_ATTR void VKAPI_CALL begin_graphics_pass(VkCommandBuffer cb,const V
         if(!(depth_clear>=0&&depth_clear<=1)){invalid_command(cb);return;}
     }
     struct recorded *r=record_command(cb,C_GRAPHICS_BEGIN);
-    if(r){r->graphics.begin=(struct graphics_begin_record){RID(info->framebuffer),p->graphics.pass,clear,depth_clear};command.graphics.in_pass=1;}
+    if(r){r->graphics.begin=(struct graphics_begin_record){RID(info->framebuffer),p->graphics.pass,clear,depth_clear,0,0};command.graphics.in_pass=1;}
 }
 static VKAPI_ATTR void VKAPI_CALL end_graphics_pass(VkCommandBuffer cb) {
     if(cb!=&command||command.state!=2)return;
@@ -174,6 +191,15 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
         for(unsigned n=0;n<l->count;n++) {
             const struct uniform_set *d=&set->graphics.set;
             if(l->types[n]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)continue;
+#ifdef GUEST_VK_ZINK
+            /* B2a nullDescriptor: a null UBO reads the shared all-zero dummy. */
+            if(!d->buffers[n]&&(d->written>>n&1u)&&zink_null_ubo_host) {
+                if(emitted>=p->uniform_count||16384<p->min_sizes[emitted])return 0;
+                graphics_json_append(j,"%s{\"group\":%u,\"binding\":%u,\"buffer\":%u,\"offset\":0,\"size\":16384}",
+                    emitted++?",":",\"uniforms\":[",s,l->bindings[n],zink_null_ubo_host);
+                continue;
+            }
+#endif
             struct resource *b=resource_get(d->buffers[n],R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
             if(!b||!b->uniform||!b->host||!m||!m->bytes||d->offsets[n]%256||d->ranges[n]<16||d->ranges[n]>16384||
                d->offsets[n]>=b->size||d->ranges[n]>b->size-d->offsets[n]||

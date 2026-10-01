@@ -1,0 +1,65 @@
+{
+  "packet": "zink-b2a",
+  "date": "2026-09-30",
+  "branch": "claude-opus-5-5-guest-gpu-jit",
+  "committed": false,
+  "taskRoot": "/mnt/p6/build/zink-b2a-20260930",
+  "icd": {
+    "zinkDefine": "GUEST_VK_ZINK=1",
+    "apiVersion": "1.1",
+    "deviceExtensions": ["VK_KHR_maintenance1", "VK_KHR_descriptor_update_template", "VK_KHR_maintenance5", "VK_KHR_create_renderpass2", "VK_KHR_dynamic_rendering", "VK_EXT_robustness2", "VK_KHR_timeline_semaphore"],
+    "features2": ["nullDescriptor", "timelineSemaphore", "dynamicRendering", "maintenance5"],
+    "deviceType": "OTHER by default; CPU with LIBGL_ALWAYS_SOFTWARE (not empty/0/false); GUEST_VK_DEVICE_TYPE=cpu|other overrides",
+    "limits": {"maxPushConstantsSize": 128, "maxStorageBufferRange": 134217728, "maxUniformBufferRange": 16384, "maxBoundDescriptorSets": 4, "maxPerSetDescriptors": 4, "maxMemoryAllocationSize": 1048576, "maxImageDimension2D": 128, "maxImageDimension1D": 0, "maxColorAttachments": 1},
+    "real": ["renderpass2 (1 subpass, 1-2 attachments, <=2 dependencies)", "dynamic rendering (1 RGBA8 color + optional D32/D16, full area)", "descriptor update templates (DESCRIPTOR_SET, <=4 entries, UBO/combined image sampler, count 1)", "timeline semaphores (counter, host signal, submit values, WAIT_ANY)", "nullDescriptor for UBO via 16 KiB zero host UBO", "vkGetRenderingAreaGranularityKHR 1x1"],
+    "boundedOrStubbed": ["push-constant ranges recorded in layouts only; vkCmdPushConstants and shader push blocks not implemented (B2c)", "vkWaitSemaphores non-blocking: unreached value -> VK_TIMEOUT (B2b)", "null sampler/image descriptors not handled", "formats limited to R8G8B8A8_UNORM, D32_SFLOAT, D16_UNORM, R32G32[B32[A32]]_SFLOAT vertex", "no logicOp, scalarBlockLayout, EXT_custom_border_color, EXT_line_rasterization"],
+    "trace": "GUEST_VK_TRACE=1 logs format/image-format queries (Zink builds)"
+  },
+  "gateA": {
+    "suite": "zinkcaps",
+    "webgl2": {"checks": 10749, "pass": true, "adapter": "Intel ANGLE"},
+    "webgpu": {"checks": 10749, "pass": true, "adapter": "nvidia maxwell"},
+    "evidence": ["/mnt/p6/build/zink-b2a-20260930/zinkcaps-run1", "/mnt/p6/build/zink-b2a-20260930/all-run2"]
+  },
+  "gateB": {
+    "mesa": "26.2.3 (B3 build h2, read-only)",
+    "linkScript": "/mnt/p6/build/zink-b2a-20260930/zinkb/link-wasm32-b2a.sh",
+    "finalLink": {"dir": "/mnt/p6/build/zink-b2a-20260930/zinkb/link/run7", "eglprobeWasmBytes": 19400786, "eglprobeWasmSha256": "d570248642f63626cbd3561647133ba9a2c735af561972705d055b6c58035aeb", "icdArchiveBytes": 317536, "icdArchiveSha256": "9d803e4988a616cbac82173e71814a84de1cd005fca366f3270cdef1ef026333", "validate": "pass", "imports": ["env.memory", "linux.copy_siginfo", "linux.get_thread_area", "linux.syscall"]},
+    "finalPackage": {"path": "/mnt/p6/build/zink-b2a-20260930/zinkb/package-run4/eglprobe.cpio", "bytes": 19402240, "sha256": "f4cd53e31efcebf3e0a2d071701f110950041aeab4a81716a565978b69720fd8"},
+    "env": "LIBGL_ALWAYS_SOFTWARE=1 GUEST_VK_DEVICE_TYPE=cpu MESA_LOADER_DRIVER_OVERRIDE=zink GUEST_VK_TRACE=1",
+    "runs": [
+      {"run": "guest-webgpu-run1", "backend": "webgpu", "firstFailure": "MESA: error: vkCreatePipelineLayout failed (VK_ERROR_INITIALIZATION_FAILED); ZINK: failed to initialize layouts", "cause": "ICD rejected Zink's 52-byte ALL_GRAPHICS push range on a 0-set layout", "fixed": true},
+      {"run": "guest-webgpu-run2", "backend": "webgpu", "firstFailure": "egl: failed to create dri2 screen; EGL_NOT_INITIALIZED in eglInitialize: DRI2: failed to load driver"},
+      {"run": "guest-webgpu-run3", "backend": "webgpu", "firstFailure": "same as run2 (format trace added)"},
+      {"run": "guest-webgpu-run4", "backend": "webgpu", "zinkCreateScreen": "ok", "firstFailure": "same as run2"},
+      {"run": "guest-webgl2-run1", "backend": "webgl2", "zinkCreateScreen": "ok", "firstFailure": "same as run2"}
+    ],
+    "zinkdiag": {
+      "renderable": {"RGBA8888": true, "RGBX8888": true, "BGRA8888": false, "BGRX8888": false, "BGRA8888_SRGB": false, "RGBA8888_SRGB": false, "B5G6R5": false, "B10G10R10A2": false, "RGBA16F": false},
+      "depthStencil": {"Z16": true, "Z24X8": true, "X8Z24": false, "Z24S8": false, "Z32": false, "Z32F": true},
+      "caps": {"npot": 1, "glsl": 460, "max_texture_2d_size": 0, "max_render_targets": 1, "mixed_color_depth_bits": 0, "device_reset_status_query": 1}
+    },
+    "glRenderer": null,
+    "glVersion": null,
+    "rootCause": "dri_fill_in_modes drops RGBA-ordered formats because the surfaceless kopper loader extensions have no image loader, so DRI_LOADER_CAP_RGBA_ORDERING reads 0; no BGRA format is renderable -> zero configs -> driCreateNewScreen3 NULL",
+    "nextCapability": "VK_FORMAT_B8G8R8A8_UNORM color/sampled/transfer in the ICD (R/B swap at guest memory boundaries); then maxImageDimension1D>0 (max_texture_2d_size is 0)"
+  },
+  "regression": {
+    "dir": "/mnt/p6/build/zink-b2a-20260930/all-run2",
+    "builds": "run6", "packages": "run4", "pass": true,
+    "suites": {
+      "direct-live": 140, "direct-unavailable": 17, "direct-clear": 1087, "direct-loss-transport": 640, "direct-loss-device": 640, "direct-exhaustion": 1213,
+      "loader": 901, "compute": 501,
+      "graphics-webgl2": 232753, "graphics-webgpu": 232745,
+      "uniform-webgl2": 201269, "uniform-webgpu": 201269,
+      "texture-webgl2": 18182, "texture-webgpu": 18182,
+      "depth-webgl2": 42620, "depth-webgpu": 42620,
+      "wsi-webgl2": 276963, "wsi-webgpu": 276963,
+      "zinkcaps-webgl2": 10749, "zinkcaps-webgpu": 10749
+    },
+    "webgpuVendorRequired": "nvidia",
+    "earlierPass": "/mnt/p6/build/zink-b2a-20260930/all-run1 (before push-range/trace changes, identical counts)"
+  },
+  "preservedFailures": ["rebuild-all-b4-k2.log", "zinkcaps-build-run1", "zinkcaps-build-run2", "zinkb/link/run5-failed-cc", "zinkb/link/run6-failed-cc"],
+  "processes": "all browsers/servers started by this packet exited with code 0; ports 4205/9415 free"
+}

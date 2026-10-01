@@ -60,14 +60,40 @@ static VKAPI_ATTR void VKAPI_CALL destroy_set_layout(VkDevice d,VkDescriptorSetL
 static VKAPI_ATTR VkResult VKAPI_CALL create_pipeline_layout(VkDevice d,const VkPipelineLayoutCreateInfo *i,const VkAllocationCallbacks *a,VkPipelineLayout *out) {
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
+#ifdef GUEST_VK_ZINK
+    /* B2a: graphics layouts may declare push-constant ranges within the
+     * advertised 128 bytes (Zink's gfx_push_constant layout, 52 bytes). The
+     * range is recorded only; vkCmdPushConstants and shader push-constant
+     * blocks are not implemented yet (B2c), so pipelines that read them fail. */
+    unsigned push_size=0;
+    if(i&&i->pushConstantRangeCount){
+        if(!i->pPushConstantRanges||i->pushConstantRangeCount>2)return VK_ERROR_INITIALIZATION_FAILED;
+        for(unsigned n=0;n<i->pushConstantRangeCount;n++){
+            const VkPushConstantRange *pr=&i->pPushConstantRanges[n];
+            if(!pr->stageFlags||(pr->stageFlags&~(VkShaderStageFlags)VK_SHADER_STAGE_ALL_GRAPHICS)||
+               !pr->size||(pr->offset&3)||(pr->size&3)||pr->offset>128||pr->size>128-pr->offset)return VK_ERROR_INITIALIZATION_FAILED;
+            if(pr->offset+pr->size>push_size)push_size=pr->offset+pr->size;
+        }
+    }
+    if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO||i->pNext||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
+    int graphics=live->graphics_supported&&!i->setLayoutCount;
+    if(push_size&&!live->graphics_supported)return VK_ERROR_INITIALIZATION_FAILED;
+#else
     if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO||i->pNext||i->flags||i->pushConstantRangeCount)return VK_ERROR_INITIALIZATION_FAILED;
     int graphics=live->graphics_supported&&!i->setLayoutCount;
+#endif
     struct uniform_pipeline_layout uniforms={0};
     if(!graphics&&live->uniform_supported&&i->setLayoutCount&&i->pSetLayouts&&uniform_pipeline_layout(i,&uniforms))graphics=1;
     else if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
        !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform))return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+    if(push_size&&!graphics)return VK_ERROR_INITIALIZATION_FAILED;
+#endif
     struct resource *r=resource_new(R_PIPELINE_LAYOUT);if(!r)return VK_ERROR_OUT_OF_HOST_MEMORY;
     r->graphics_layout=graphics;r->graphics.layout=uniforms;
+#ifdef GUEST_VK_ZINK
+    r->push_size=push_size;
+#endif
     /* All supported layouts have exactly the same immutable binding shape. */
     *out=HANDLE(VkPipelineLayout,r->id);return VK_SUCCESS;
 }

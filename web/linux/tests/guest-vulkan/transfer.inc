@@ -11,7 +11,7 @@
 #define HANDLE(type, id) ((type)(id))
 #endif
 enum resource_kind { R_IMAGE=1, R_BUFFER, R_MEMORY, R_SHADER, R_SET_LAYOUT, R_PIPELINE_LAYOUT, R_DESC_POOL, R_DESC_SET, R_COMPUTE_PIPELINE,
-    R_IMAGE_VIEW, R_RENDER_PASS, R_FRAMEBUFFER, R_GRAPHICS_PIPELINE, R_SAMPLER };
+    R_IMAGE_VIEW, R_RENDER_PASS, R_FRAMEBUFFER, R_GRAPHICS_PIPELINE, R_SAMPLER, R_UPDATE_TEMPLATE };
 /* Inline owned graphics snapshots contain no caller pointers. Binding array
  * order is the normalized host slot order; binding numbers remain Vulkan IDs. */
 struct graphics_view { uint64_t image; };
@@ -29,7 +29,7 @@ struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare; };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
-    unsigned vertex, uniform, graphics_target, graphics_layout, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
+    unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
     uint64_t swapchain; /* A6a: nonzero for images/memory owned by a VkSwapchainKHR (not app-destroyable). */
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
     union { struct graphics_view view; struct graphics_pass pass; struct graphics_framebuffer framebuffer; struct graphics_pipeline pipeline;
@@ -39,7 +39,8 @@ static struct resource resources[MAX_RES];
 static uint64_t next_resource = 1;
 enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER, C_UNIFORM_BARRIER, C_TEXTURE_COPY };
 struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
-struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; };
+/* framebuffer==0 marks a B2a dynamic-rendering begin that names image views directly. */
+struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; uint64_t view, depth_view; };
 struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4]; };
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSize offset; VkImageLayout old_layout, new_layout; VkClearColorValue color;
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
@@ -101,8 +102,16 @@ static void resource_drop(struct resource *r) {
     free(r->bytes); memset(r,0,sizeof(*r)); resource_count--;
 }
 static void sync_cleanup(void);
+#ifdef GUEST_VK_ZINK
+static void zink_cleanup(void);
+static VkResult zink_null_ubo(void);
+static uint32_t zink_null_ubo_host; /* B2a robustness2 nullDescriptor dummy UBO (host id; not in resources[]). */
+#endif
 static void transfer_cleanup(void) {
     sync_cleanup();
+#ifdef GUEST_VK_ZINK
+    zink_cleanup();
+#endif
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id && resources[i].kind!=R_MEMORY) resource_drop(&resources[i]);
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id) resource_drop(&resources[i]);
     memset(&command,0,sizeof(command)); pool=0;
@@ -348,12 +357,12 @@ static VkResult execute_submit(void) {
         case C_GRAPHICS_BEGIN:
             if(!live->graphics_supported||pass_image)goto submit_done;
             pass=&c->graphics.begin.pass;
-            pass_image=graphics_framebuffer_image(c->graphics.begin.framebuffer,pass);
+            pass_image=graphics_begin_image(&c->graphics.begin);
             if(!pass_image||layouts[pass_image-resources]!=pass->initial||
                (pass->load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_image-resources]))goto submit_done;
             pass_depth=NULL;
             if(pass->depth_format) {
-                pass_depth=graphics_framebuffer_depth(c->graphics.begin.framebuffer,pass);
+                pass_depth=graphics_begin_depth(&c->graphics.begin);
                 if(!pass_depth||layouts[pass_depth-resources]!=pass->depth_initial||
                    (pass->depth_load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_depth-resources]))goto submit_done;
             }
@@ -394,8 +403,8 @@ static VkResult execute_submit(void) {
         if(c->op>=5 && c->op<=8){if(execute_compute(c)!=VK_SUCCESS)goto submit_lost;}
         if(c->op==C_GRAPHICS_BEGIN) {
             const struct graphics_pass *bp=&c->graphics.begin.pass;
-            i=graphics_framebuffer_image(c->graphics.begin.framebuffer,bp);
-            struct resource *depth=bp->depth_format?graphics_framebuffer_depth(c->graphics.begin.framebuffer,bp):NULL;
+            i=graphics_begin_image(&c->graphics.begin);
+            struct resource *depth=bp->depth_format?graphics_begin_depth(&c->graphics.begin):NULL;
             /* Once native submission starts, even allocation errors cannot
              * promise unchanged application resources. Poison on all failures. */
             if(host_empty(GPU_GRAPHICS_PASS,prepared[n].bytes,(uint32_t)prepared[n].used)!=VK_SUCCESS) {
@@ -420,7 +429,8 @@ submit_done:
  * They use a separate table so resource/exhaustion accounting is unchanged. */
 #define MAX_SYNC 32
 enum sync_kind { S_FENCE=1, S_SEMAPHORE };
-struct sync_object { uint64_t id; unsigned kind, signaled; };
+/* B2a: timeline semaphores (GUEST_VK_ZINK builds) keep a 64-bit counter. */
+struct sync_object { uint64_t id; unsigned kind, signaled; uint64_t value; unsigned timeline; };
 static struct sync_object syncs[MAX_SYNC];
 static uint64_t next_sync = 2000000;
 static unsigned sync_count;
@@ -476,8 +486,16 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_semaphore(VkDevice d,const VkSemaph
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO||!chain_valid(i->pNext,NULL,0)||i->flags)return VK_ERROR_INITIALIZATION_FAILED;
     const VkSemaphoreTypeCreateInfo *type=chain_find(i->pNext,VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO);
+#ifdef GUEST_VK_ZINK
+    /* B2a: TIMELINE only with the timelineSemaphore feature enabled. */
+    int timeline=type&&type->semaphoreType==VK_SEMAPHORE_TYPE_TIMELINE&&live->timeline;
+    if(type&&!timeline&&(type->semaphoreType!=VK_SEMAPHORE_TYPE_BINARY||type->initialValue))return VK_ERROR_INITIALIZATION_FAILED;
+    struct sync_object *s=sync_new(S_SEMAPHORE,0);if(!s)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    if(timeline){s->timeline=1;s->value=type->initialValue;}
+#else
     if(type&&type->semaphoreType!=VK_SEMAPHORE_TYPE_BINARY)return VK_ERROR_INITIALIZATION_FAILED; /* timeline is not a 1.1 feature */
     struct sync_object *s=sync_new(S_SEMAPHORE,0);if(!s)return VK_ERROR_OUT_OF_HOST_MEMORY;
+#endif
     *out=HANDLE(VkSemaphore,s->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_semaphore(VkDevice d,VkSemaphore h,const VkAllocationCallbacks *a) {
@@ -495,19 +513,44 @@ static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,cons
     if(count&&!info)return VK_ERROR_INITIALIZATION_FAILED;
     unsigned state[MAX_SYNC],commands=0;
     for(unsigned i=0;i<MAX_SYNC;i++)state[i]=syncs[i].signaled;
+#ifdef GUEST_VK_ZINK
+    /* B2a timeline: pending counter values per sync slot. Submission completes
+     * synchronously, so a wait must already be satisfied (by the current value
+     * or an earlier signal in this call); wait-before-signal is rejected. */
+    uint64_t tv[MAX_SYNC];
+    for(unsigned i=0;i<MAX_SYNC;i++)tv[i]=syncs[i].value;
+#endif
     for(uint32_t b=0;b<count;b++) {
         const VkSubmitInfo *s=&info[b];
         if(s->sType!=VK_STRUCTURE_TYPE_SUBMIT_INFO||!chain_valid(s->pNext,NULL,0)||
            (s->waitSemaphoreCount&&(!s->pWaitSemaphores||!s->pWaitDstStageMask))||
            (s->signalSemaphoreCount&&!s->pSignalSemaphores)||(s->commandBufferCount&&!s->pCommandBuffers))return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+        const VkTimelineSemaphoreSubmitInfo *t=chain_find(s->pNext,VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO);
+        if(t&&((t->waitSemaphoreValueCount&&(t->waitSemaphoreValueCount!=s->waitSemaphoreCount||!t->pWaitSemaphoreValues))||
+               (t->signalSemaphoreValueCount&&(t->signalSemaphoreValueCount!=s->signalSemaphoreCount||!t->pSignalSemaphoreValues))))
+            return VK_ERROR_INITIALIZATION_FAILED;
+#endif
         for(uint32_t w=0;w<s->waitSemaphoreCount;w++){struct sync_object *x=sync_get(RID(s->pWaitSemaphores[w]),S_SEMAPHORE);
-            if(!x||!state[x-syncs]||!s->pWaitDstStageMask[w])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=0;}
+            if(!x||!s->pWaitDstStageMask[w])return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+            if(x->timeline){if(!t||!t->waitSemaphoreValueCount||tv[x-syncs]<t->pWaitSemaphoreValues[w])return VK_ERROR_INITIALIZATION_FAILED;continue;}
+#endif
+            if(!state[x-syncs])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=0;}
         for(uint32_t c=0;c<s->commandBufferCount;c++)if(s->pCommandBuffers[c]!=&command||++commands>1)return VK_ERROR_INITIALIZATION_FAILED;
         for(uint32_t g=0;g<s->signalSemaphoreCount;g++){struct sync_object *x=sync_get(RID(s->pSignalSemaphores[g]),S_SEMAPHORE);
-            if(!x||state[x-syncs])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=1;}
+            if(!x)return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+            if(x->timeline){if(!t||!t->signalSemaphoreValueCount||t->pSignalSemaphoreValues[g]<=tv[x-syncs])return VK_ERROR_INITIALIZATION_FAILED;
+                tv[x-syncs]=t->pSignalSemaphoreValues[g];continue;}
+#endif
+            if(state[x-syncs])return VK_ERROR_INITIALIZATION_FAILED;state[x-syncs]=1;}
     }
     if(commands){VkResult result=execute_submit();if(result!=VK_SUCCESS)return result;}
     for(unsigned i=0;i<MAX_SYNC;i++)if(syncs[i].kind==S_SEMAPHORE)syncs[i].signaled=state[i];
+#ifdef GUEST_VK_ZINK
+    for(unsigned i=0;i<MAX_SYNC;i++)if(syncs[i].kind==S_SEMAPHORE&&syncs[i].timeline)syncs[i].value=tv[i];
+#endif
     if(f)f->signaled=1;
     return VK_SUCCESS;
 }
@@ -529,3 +572,6 @@ static PFN_vkVoidFunction transfer_proc(const char *name) {
 #undef P
     return NULL;
 }
+#ifdef GUEST_VK_ZINK
+#include "zink.inc"
+#endif

@@ -38,7 +38,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--mode', choices=['graphics', 'uniform', 'texture', 'depth', 'wsi'], default='graphics')
+    parser.add_argument('--mode', choices=['graphics', 'uniform', 'texture', 'depth', 'wsi', 'zinkcaps'], default='graphics')
     args = parser.parse_args()
     out, storage = checked_storage(args.output)
     if out.exists():
