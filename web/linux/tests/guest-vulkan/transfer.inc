@@ -3,8 +3,10 @@
  * Handles are monotonically allocated IDs, never guest addresses. */
 #ifdef GUEST_VK_ZINK
 /* B2e: Zink and the zinkcaps suite hold more than 32 live objects (the BGRA
- * frame is the 33rd); the direct exhaustion suite keeps the 32-entry table. */
-#define MAX_RES 128
+ * frame is the 33rd); the direct exhaustion suite keeps the 32-entry table.
+ * B2d: Zink allocates descriptor sets 10, then 90 at a time per pool and
+ * batch state (each set is one resource), so the table holds 1024. */
+#define MAX_RES 1024
 #else
 #define MAX_RES 32
 #endif
@@ -43,7 +45,8 @@ struct uniform_pipeline_layout { unsigned set_count; struct uniform_set_layout s
 struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_t buffers[UNIFORM_SET_BINDINGS]; uint32_t offsets[UNIFORM_SET_BINDINGS], ranges[UNIFORM_SET_BINDINGS];
     uint64_t views[UNIFORM_SET_BINDINGS], samplers[UNIFORM_SET_BINDINGS]; };
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
-    struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare; };
+    struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare;
+    unsigned dynamic_viewport; /* B2d: viewport+scissor come from vkCmdSetViewport/Scissor at draw time */ };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
     unsigned bgra; /* B2e: image created as B8G8R8A8_UNORM (host stores RGBA; guest bytes swap R/B). */
     unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
@@ -70,14 +73,16 @@ enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END
 struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
 /* framebuffer==0 marks a B2a dynamic-rendering begin that names image views directly. */
 struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; uint64_t view, depth_view; };
-struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4]; };
+struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4];
+    unsigned dynamic; VkViewport viewport; VkRect2D scissor; };
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSize offset; VkImageLayout old_layout, new_layout; VkClearColorValue color;
 #ifdef GUEST_VK_ZINK
     VkBufferImageCopy region; unsigned has_region; /* B2f: sub-rectangle image->buffer copy */
 #endif
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
 };
-struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4]; };
+struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4];
+    unsigned dynamic_set; VkViewport viewport; VkRect2D scissor; /* B2d: bit0 viewport, bit1 scissor recorded */ };
 struct VkCommandBuffer_T { VK_LOADER_DATA loader; unsigned state, count; uint64_t pipeline, set, pipeline_layout;
     struct graphics_command_state graphics; struct recorded commands[MAX_CMDS]; };
 #ifdef GUEST_VK_ZINK
@@ -160,6 +165,15 @@ static void sync_cleanup(void);
 static void zink_cleanup(void);
 static VkResult zink_null_ubo(void);
 static uint32_t zink_null_ubo_host; /* B2a robustness2 nullDescriptor dummy UBO (host id; not in resources[]). */
+#define ZINK_RING_CHUNK 65536u
+#define ZINK_RING_CHUNKS 8u
+static void zink_ring_reset(void);
+static int zink_ring_stage(unsigned kind,const unsigned char *src,uint32_t avail,uint32_t size,uint32_t *host,uint32_t *offset);
+static VkResult zink_ring_upload(void);
+#endif
+#ifndef GUEST_VK_ZINK
+static inline void zink_ring_reset(void){}
+static inline VkResult zink_ring_upload(void){return VK_SUCCESS;}
 #endif
 static void transfer_cleanup(void) {
     sync_cleanup();
@@ -457,7 +471,8 @@ static struct recorded *record_command(VkCommandBuffer cb,unsigned op) {
 }
 static int full_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_COLOR_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
 static int depth_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_DEPTH_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
-static void invalid_command(VkCommandBuffer cb) {SELECT_CB(cb);if(cb==&command&&command.state)command.state=4;}
+static void invalid_command_at(VkCommandBuffer cb,const char *fn,int line) {SELECT_CB(cb);if(cb==&command&&command.state){if(command.state!=4)ZINK_TRACE("invalid_command %s:%d\n",fn,line);command.state=4;}(void)fn;(void)line;}
+#define invalid_command(cb) invalid_command_at((cb),__func__,__LINE__)
 #include "compute.inc"
 #include "graphics.inc"
 #include "texture.inc"
@@ -504,7 +519,11 @@ static VKAPI_ATTR void VKAPI_CALL pipeline_barrier(VkCommandBuffer cb,VkPipeline
     if(ic) {
         struct resource *image=resource_get(RID(ib->image),R_IMAGE);
         if(ib->sType!=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER||ib->pNext||!(image&&image->depth?depth_range(&ib->subresourceRange):full_range(&ib->subresourceRange))||
-           ib->srcQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED||ib->dstQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED){invalid_command(cb);return;}
+           ib->srcQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED||ib->dstQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED){
+            ZINK_TRACE("barrier REJECT image=%p depth=%d state=%d stype=%d pnext=%p aspect=0x%x mip=%u+%u layer=%u+%u qf=%u,%u layout=%d->%d src=0x%x dst=0x%x acc=0x%x->0x%x\n",
+                (void*)image,image?image->depth:-1,command.state,ib->sType,ib->pNext,ib->subresourceRange.aspectMask,ib->subresourceRange.baseMipLevel,ib->subresourceRange.levelCount,
+                ib->subresourceRange.baseArrayLayer,ib->subresourceRange.layerCount,ib->srcQueueFamilyIndex,ib->dstQueueFamilyIndex,ib->oldLayout,ib->newLayout,src,dst,ib->srcAccessMask,ib->dstAccessMask);
+            invalid_command(cb);return;}
         int to_dst=ib->newLayout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->dstAccessMask==VK_ACCESS_TRANSFER_WRITE_BIT&&
           ((ib->oldLayout==VK_IMAGE_LAYOUT_UNDEFINED&&src==VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT&&!ib->srcAccessMask)||
            (ib->oldLayout==VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&src==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->srcAccessMask==VK_ACCESS_TRANSFER_READ_BIT));
@@ -585,6 +604,7 @@ static VkResult execute_submit(void) {
     struct resource *pass_image=NULL,*pass_depth=NULL;const struct graphics_pass *pass=NULL;
     unsigned pass_start=0,pass_draws=0;
     for(unsigned i=0;i<MAX_RES;i++){layouts[i]=resources[i].layout;initialized[i]=resources[i].graphics_initialized;}
+    zink_ring_reset();
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
         if(pass_image&&c->op!=C_GRAPHICS_DRAW&&c->op!=C_GRAPHICS_END)goto submit_done;
@@ -677,7 +697,8 @@ static VkResult execute_submit(void) {
     if(pass_image)goto submit_done;
     for(unsigned i=0;i<MAX_RES;i++)if(written[i]||dirty[i])goto submit_done;
     command.state=5; /* Pending, even though this transport completes synchronously. */
-    if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS||graphics_upload_uniforms(used_uniforms)!=VK_SUCCESS)goto submit_lost;
+    if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS||graphics_upload_uniforms(used_uniforms)!=VK_SUCCESS||
+       zink_ring_upload()!=VK_SUCCESS)goto submit_lost;
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
         if(c->op==1){i->layout=c->new_layout;if((i->graphics_target||i->sampled||i->depth)&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=0;}

@@ -24,7 +24,13 @@ static VKAPI_ATTR void VKAPI_CALL copy_buffer_to_image(VkCommandBuffer cb,VkBuff
        region->bufferOffset%4||region->bufferOffset>b->size||i->size>b->size-region->bufferOffset||region->bufferRowLength||region->bufferImageHeight||
        region->imageSubresource.aspectMask!=VK_IMAGE_ASPECT_COLOR_BIT||region->imageSubresource.mipLevel||region->imageSubresource.baseArrayLayer||
        region->imageSubresource.layerCount!=1||region->imageOffset.x||region->imageOffset.y||region->imageOffset.z||
-       region->imageExtent.width!=i->width||region->imageExtent.height!=i->height||region->imageExtent.depth!=1){invalid_command(cb);return;}
+       region->imageExtent.width!=i->width||region->imageExtent.height!=i->height||region->imageExtent.depth!=1){
+        ZINK_TRACE("copy_buffer_to_image REJECT img=%p sampled=%d %ux%u size=%u buf=%p staging=%d bsize=%llu layout=%d count=%u off=%llu row=%u h=%u aspect=0x%x mip=%u layer=%u+%u at=%d,%d,%d ext=%ux%ux%u\n",
+            (void*)i,i?i->sampled:-1,i?i->width:0,i?i->height:0,i?(unsigned)i->size:0,(void*)b,b?b->staging:-1,b?(unsigned long long)b->size:0ULL,layout,count,
+            region?(unsigned long long)region->bufferOffset:0ULL,region?region->bufferRowLength:0,region?region->bufferImageHeight:0,region?region->imageSubresource.aspectMask:0,
+            region?region->imageSubresource.mipLevel:0,region?region->imageSubresource.baseArrayLayer:0,region?region->imageSubresource.layerCount:0,
+            region?region->imageOffset.x:0,region?region->imageOffset.y:0,region?region->imageOffset.z:0,region?region->imageExtent.width:0,region?region->imageExtent.height:0,region?region->imageExtent.depth:0);
+        invalid_command(cb);return;}
     struct recorded *r=record_command(cb,C_TEXTURE_COPY);if(r){r->image=i->id;r->buffer=b->id;r->offset=region->bufferOffset;}
 }
 /* Submit-time prevalidation against the simulated layout/content state. */

@@ -87,7 +87,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_pipeline_layout(VkDevice d,const Vk
     struct uniform_pipeline_layout uniforms={0};
     if(!graphics&&live->uniform_supported&&i->setLayoutCount&&i->pSetLayouts&&uniform_pipeline_layout(i,&uniforms))graphics=1;
     else if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
-       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform))return VK_ERROR_INITIALIZATION_FAILED;
+       !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform)){
+        ZINK_TRACE("pipeline_layout REJECT sets=%u push=%u\n",i->setLayoutCount,push_size);return VK_ERROR_INITIALIZATION_FAILED;}
 #ifdef GUEST_VK_ZINK
     if(push_size&&!graphics)return VK_ERROR_INITIALIZATION_FAILED;
 #endif

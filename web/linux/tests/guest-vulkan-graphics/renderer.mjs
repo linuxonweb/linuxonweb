@@ -217,8 +217,10 @@ export function validatePipelineDescriptor(input, validateShader = validateTrans
     return { stride, stepMode, attributes };
   });
   const attributes = vertex.inputs.filter(i => own(i, 'location'));
+  // A format may supply fewer components than the shader reads (Vulkan, WebGPU
+  // and WebGL2 all fill the rest from (0, 0, 0, 1)); GL attributes reach Zink as vec4.
   if (supplied.size > GRAPHICS_LIMITS.maxAttributes || supplied.size !== attributes.length ||
-      attributes.some(i => supplied.get(i.location) !== i.type.components)) fail('vertex attributes do not match shader inputs');
+      attributes.some(i => !(supplied.get(i.location) <= i.type.components))) fail('vertex attributes do not match shader inputs');
   // Declared Vulkan pipeline-layout bindings (sorted); stages bit0 vertex, bit1 fragment.
   // minSize is the largest statically used shader block, or 0 if no stage uses it.
   let previous = -1;

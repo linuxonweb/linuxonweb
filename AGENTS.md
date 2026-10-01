@@ -212,6 +212,15 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   binding 128 / >=3 sets, depth_clip_enable, dynamic viewport/scissor, generic
   vertex/index/UBO backing, push constants -> UBO, Copy/Fill/UpdateBuffer,
   `zink_context_destroy` spin (B2b).
+- Done: Zink B2d (`docs/zink-b2d-20261001.md`, `/mnt/p6/build/zink-b2d-20261001`):
+  first GL draws through Zink on the guest ICD. eglprobe ES2 + GL compat
+  clear/draw pass on NVIDIA WebGPU (`zinkb/guest-webgpu-run15`) and Intel WebGL2
+  (`guest-webgl-run16`). ICD-only adapters: SPIR-V binding remap, unused push
+  block and extra gl_FragData outputs dropped, Zink uint[] UBO rewritten to
+  vec4[] + bitcast, dynamic viewport/scissor, generic vertex/UBO staging ring,
+  MAX_RES 1024. Host accepts vec4 inputs fed by fewer components. 20/20 suites
+  (`all-run2`). Open: sampling Zink images (probe draws untextured unless
+  `EGLPROBE_TEXTURE=1`), push constants, index/strip draws, Z24S8, B2b waits.
 
 User direction (2026-10-01, latest): WebGPU backend first and as the default
 for guest Vulkan ("virtual GPU in linux wasm or a better way"); three.js was

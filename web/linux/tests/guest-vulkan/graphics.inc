@@ -223,8 +223,10 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     for(unsigned s=0;s<p.uniforms.set_count;s++)for(unsigned n=0;n<p.uniforms.sets[s].count;n++) {
         VkShaderStageFlags st=p.uniforms.sets[s].stages[n];
         if(p.uniforms.sets[s].types[n]!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)continue;
-        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",emitted++?",":",\"uniforms\":[",s,p.uniforms.sets[s].bindings[n],
-            ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
+#ifdef GUEST_VK_ZINK
+        if(!uniform_host_stages(st))continue;
+#endif
+        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",emitted++?",":",\"uniforms\":[",s,HOST_BINDING(p.uniforms.sets[s].bindings[n]),uniform_host_stages(st));
     }
     if(emitted)graphics_json_append(&j,"]");
     /* A4: declared combined image samplers, same stage encoding. */
@@ -232,8 +234,10 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     for(unsigned s=0;s<p.uniforms.set_count;s++)for(unsigned n=0;n<p.uniforms.sets[s].count;n++) {
         VkShaderStageFlags st=p.uniforms.sets[s].stages[n];
         if(p.uniforms.sets[s].types[n]!=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)continue;
-        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",textures++?",":",\"textures\":[",s,p.uniforms.sets[s].bindings[n],
-            ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u));
+#ifdef GUEST_VK_ZINK
+        if(!uniform_host_stages(st))continue;
+#endif
+        graphics_json_append(&j,"%s{\"group\":%u,\"binding\":%u,\"stages\":%u}",textures++?",":",\"textures\":[",s,HOST_BINDING(p.uniforms.sets[s].bindings[n]),uniform_host_stages(st));
     }
     if(textures)graphics_json_append(&j,"]");
     /* A5: WebGPU-style depth state; a disabled test is always/no-write. */

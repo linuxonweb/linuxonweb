@@ -92,7 +92,19 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
              c0[0], c0[1], c0[2], c0[3], c1[0], c1[1], c1[2], c1[3], ce); }
     int core = api == EGL_OPENGL_API && strstr(label, "core");
     const char *vs, *fs;
-    if (es == 3) { vs = "#version 300 es\nin vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+    /* B2d: sampling a Zink image needs host textures that are also render
+     * targets (not yet); EGLPROBE_TEXTURE=1 adds the 2x2 white texture term. */
+    const char *te = getenv("EGLPROBE_TEXTURE"); int textured = te && *te == '1';
+    if (!textured) {
+        if (es == 3) { vs = "#version 300 es\nin vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+                       fs = "#version 300 es\nprecision mediump float; uniform vec4 u; out vec4 o; void main(){o=u;}"; }
+        else if (es == 2) { vs = "attribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+                       fs = "precision mediump float; uniform vec4 u; void main(){gl_FragColor=u;}"; }
+        else if (core) { vs = "#version 150\nin vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+                       fs = "#version 150\nuniform vec4 u; out vec4 o; void main(){o=u;}"; }
+        else { vs = "#version 110\nattribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+               fs = "#version 110\nuniform vec4 u; void main(){gl_FragColor=u;}"; }
+    } else if (es == 3) { vs = "#version 300 es\nin vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
                    fs = "#version 300 es\nprecision mediump float; uniform vec4 u; uniform sampler2D t; out vec4 o; void main(){o=u*texture(t,vec2(0.5));}"; }
     else if (es == 2) { vs = "attribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
                    fs = "precision mediump float; uniform vec4 u; uniform sampler2D t; void main(){gl_FragColor=u*texture2D(t,vec2(0.5));}"; }
@@ -113,10 +125,13 @@ static int run(EGLDisplay d, EGLenum api, const EGLint *cattr, const char *label
     P(PFNGLTEXPARAMETERIPROC, glTexParameteri); P(PFNGLTEXIMAGE2DPROC, glTexImage2D); P(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
     P(PFNGLUNIFORM4FPROC, glUniform4f); P(PFNGLUNIFORM1IPROC, glUniform1i);
     static const unsigned char white[16] = {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255};
-    GLuint tex; glGenTextures(1, &tex); glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
-    glUniform4f(glGetUniformLocation(pr, "u"), 1.0f, 0.0f, 0.0f, 1.0f); glUniform1i(glGetUniformLocation(pr, "t"), 0);
+    if (textured) {
+        GLuint tex; glGenTextures(1, &tex); glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+        glUniform1i(glGetUniformLocation(pr, "t"), 0);
+    }
+    glUniform4f(glGetUniformLocation(pr, "u"), 1.0f, 0.0f, 0.0f, 1.0f);
     GLuint va = 0; if (core || es == 3) { glGenVertexArrays(1, &va); glBindVertexArray(va); }
     static const float tri[] = { -1, -1, 0, -1, -1, 0 }; /* lower-left quadrant triangle */
     GLuint b; glGenBuffers(1, &b); glBindBuffer(GL_ARRAY_BUFFER, b); glBufferData(GL_ARRAY_BUFFER, sizeof tri, tri, GL_STATIC_DRAW);

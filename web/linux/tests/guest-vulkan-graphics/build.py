@@ -159,7 +159,9 @@ def main():
         raise ValueError('unsafe unknown trampoline present')
     artifact=out/'guest-vulkan-public-client.wasm'
     run('link',[cc,'-pthread','-matomics','-mbulk-memory','-static',str(obj/'client.o'),str(archive),str(obj/'icd.o'),str(obj/'transport.o'),*x11_libraries,'-lm',
-        '-Wl,--gc-sections,--import-memory,--export-table,--shared-memory','-Wl,--initial-memory=2097152,--max-memory=4294967296,-z,stack-size=262144',
+        # B2d: the Zink profile's 1024-entry resource table needs more static memory.
+        '-Wl,--gc-sections,--import-memory,--export-table,--shared-memory',
+        '-Wl,--initial-memory='+('8388608' if args.app=='zinkcaps' else '2097152')+',--max-memory=4294967296,-z,stack-size=262144',
         '-Wl,-Map='+str(out/'link.map'),'-o',str(artifact)])
     run('validate',['wasm-validate','--enable-all',str(artifact)])
     run('abi',['wasm-objdump','-x',str(artifact)])

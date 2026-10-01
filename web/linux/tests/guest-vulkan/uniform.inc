@@ -4,6 +4,25 @@
  * stages only. No dynamic offsets, arrays, immutable samplers, copies,
  * update templates, free/reset of individual sets or push descriptors.
  * Every snapshot is copied; no caller pointer survives a call. */
+#ifdef GUEST_VK_ZINK
+/* B2d: Zink (Mesa 26.2.3) binds per-stage push UBOs at the stage index (0..4),
+ * other UBOs at 2*n(+1) and samplers at stage*32+n (fragment: 128+n). The host
+ * accepts bindings 0..15, so the guest keeps Vulkan binding numbers and maps
+ * them monotonically (order preserved) when talking to the host: 0..11 stay,
+ * 128..131 become 12..15; anything else is unsupported. */
+static inline int zink_host_binding(uint32_t b) {return b<12?(int)b:b>=128&&b<132?(int)(b-116):-1;}
+#define HOST_BINDING(b) ((unsigned)zink_host_binding(b))
+#define BINDING_SUPPORTED(b) (zink_host_binding(b)>=0)
+#else
+#define HOST_BINDING(b) (b)
+#define BINDING_SUPPORTED(b) ((b)<16)
+#endif
+/* Host stage bits (bit0 vertex, bit1 fragment). Zink's push set also declares
+ * geometry/tessellation/compute stage bindings: those have no host stage and
+ * are omitted from host pipelines and draws (the profile has no such stages). */
+static inline unsigned uniform_host_stages(VkShaderStageFlags st) {
+    return ((st&VK_SHADER_STAGE_VERTEX_BIT)?1u:0u)|((st&VK_SHADER_STAGE_FRAGMENT_BIT)?2u:0u);
+}
 static int uniform_layout_equal(const struct uniform_set_layout *a,const struct uniform_set_layout *b) {
     if(a->count!=b->count)return 0;
     for(unsigned n=0;n<a->count;n++)if(a->bindings[n]!=b->bindings[n]||a->stages[n]!=b->stages[n]||a->types[n]!=b->types[n])return 0;
@@ -24,7 +43,7 @@ static VkResult create_uniform_set_layout(const VkDescriptorSetLayoutCreateInfo 
     for(unsigned n=0;n<i->bindingCount;n++) {
         const VkDescriptorSetLayoutBinding b=i->pBindings[n];
         int sampler=live->texture_supported&&b.descriptorType==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        if(b.binding>=16||(b.descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&!sampler)||b.descriptorCount!=1||!b.stageFlags||
+        if(!BINDING_SUPPORTED(b.binding)||(b.descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&!sampler)||b.descriptorCount!=1||!b.stageFlags||
            (b.stageFlags&~stage_mask)||b.pImmutableSamplers){
             ZINK_TRACE("set_layout REJECT binding=%u type=%d count=%u stages=0x%x immutable=%d\n",b.binding,(int)b.descriptorType,b.descriptorCount,(unsigned)b.stageFlags,b.pImmutableSamplers!=NULL);
             return VK_ERROR_INITIALIZATION_FAILED;}
@@ -50,7 +69,13 @@ static int uniform_pipeline_layout(const VkPipelineLayoutCreateInfo *i,struct un
 }
 static VkResult allocate_uniform_sets(const VkDescriptorSetAllocateInfo *i,VkDescriptorSet *out) {
     struct resource *p=resource_get(RID(i->descriptorPool),R_DESC_POOL);
-    if(!p||!p->uniform||!i->descriptorSetCount||i->descriptorSetCount>4||!i->pSetLayouts)return VK_ERROR_INITIALIZATION_FAILED;
+#ifdef GUEST_VK_ZINK
+    const unsigned max_sets=100; /* Zink's per-call batch (zink_descriptors.c sets_to_alloc) */
+#else
+    const unsigned max_sets=4;
+#endif
+    if(!p||!p->uniform||!i->descriptorSetCount||i->descriptorSetCount>max_sets||!i->pSetLayouts){
+        ZINK_TRACE("allocate_sets REJECT count=%u pool=%d\n",i->descriptorSetCount,p!=NULL);return VK_ERROR_INITIALIZATION_FAILED;}
     for(unsigned n=0;n<i->descriptorSetCount;n++)out[n]=VK_NULL_HANDLE;
     unsigned sets=0,descriptors=0,samplers=0;
     for(unsigned n=0;n<MAX_RES;n++)if(resources[n].kind==R_DESC_SET&&resources[n].parent==p->id){
@@ -63,7 +88,8 @@ static VkResult allocate_uniform_sets(const VkDescriptorSetAllocateInfo *i,VkDes
         sets++;
         for(unsigned k=0;k<l->graphics.set_layout.count;k++){if(l->graphics.set_layout.types[k]==VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)samplers++;else descriptors++;}
     }
-    if(sets>p->width||descriptors>p->height||samplers>p->sampler_capacity)return VK_ERROR_OUT_OF_POOL_MEMORY;
+    if(sets>p->width||descriptors>p->height||samplers>p->sampler_capacity){
+        ZINK_TRACE("allocate_sets OUT_OF_POOL sets=%u/%u ubo=%u/%u samplers=%u/%u\n",sets,p->width,descriptors,p->height,samplers,p->sampler_capacity);return VK_ERROR_OUT_OF_POOL_MEMORY;}
     for(unsigned n=0;n<i->descriptorSetCount;n++) {
         struct resource *r=resource_new(R_DESC_SET);
         if(!r) {
@@ -105,6 +131,16 @@ static void update_uniform_set(struct resource *set,const VkWriteDescriptorSet *
     const VkDescriptorBufferInfo *b=w->pBufferInfo;
     struct resource *buffer=b?resource_get(RID(b->buffer),R_BUFFER):NULL;
     VkDeviceSize range=b&&buffer&&b->range==VK_WHOLE_SIZE&&b->offset<buffer->size?buffer->size-b->offset:b?b->range:0;
+#ifdef GUEST_VK_ZINK
+    /* B2d: generic uniform buffers; the bound window is staged through the ring
+     * at submit, so source offset alignment and range granularity are free. */
+    if(!copies&&buffer&&buffer->generic&&(buffer->usage&VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)&&w->sType==VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET&&
+       !w->pNext&&slot<s->layout.count&&!w->dstArrayElement&&w->descriptorCount==1&&w->descriptorType==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&
+       s->layout.types[slot]==VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER&&b->offset<buffer->size&&range) {
+        s->buffers[slot]=buffer->id;s->offsets[slot]=(uint32_t)b->offset;s->ranges[slot]=(uint32_t)(range>16384?16384:range);
+        s->written|=1u<<slot;set->valid=s->written==(1u<<s->layout.count)-1;return;
+    }
+#endif
     if(copies||w->sType!=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET||w->pNext||slot==s->layout.count||w->dstArrayElement||
        w->descriptorCount!=1||w->descriptorType!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||s->layout.types[slot]!=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER||!b||!buffer||!buffer->uniform||
        b->offset%256||b->offset>=buffer->size||range<16||range>16384||range%16||range>buffer->size-b->offset) {
