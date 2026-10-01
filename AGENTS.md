@@ -180,8 +180,12 @@ W4b/W4c, JIT 3b and G3 wait until after that milestone.
   on the guest ICD, render 128x128 (ICD cap) upscaled to 300x300, page
   `?gputestapp=vkgears[&vkmode=][&vksize=]`. NVIDIA WebGPU 59 FPS present / 189
   nopresent; Intel WebGL2 43 / 120 (WebGL nopresent = issue only). Reproducible
-  CPIO `338e88c1`. Open: re-uploads all buffers per frame; glgears needs `-size`
-  passthrough for a matched 128x128 softpipe run (S2).
+  CPIO `338e88c1`. Open: re-uploads all buffers per frame.
+- Done: glgears `&glsize=WxH` (`8af39db`): softpipe at 128x128 gives 202 FPS
+  presented / 452 nopresent, which beats vkgears on the ICD (189 nopresent). ICD
+  per-frame overhead dominates.
+- Running (10-01): V2 vkgears frame-cost profile + ICD optimisation plan
+  (`/mnt/p6/build/vkgears-v2-20261001`, ports 4211/9421, measurement only).
 
 User request (2026-09-30), `?gputest=1` / `?firefox=1` / forced GPU prefs:
 - `?firefox=1` already auto-boots Firefox (`web/linux/main.js`); keep it
