@@ -395,16 +395,33 @@ Root independently rehashed all22,982 inputs with zero differences and checked
 all ten repository paths and seven empty process groups. The scoped local
 checkpoint adds only AGENTS.md and the runtime route to those ten paths; no
 push/deploy.
+The exact12-path local checkpoint is
+`4668062c29e0450008de51ba5c5f7a989142f16a`, tree
+`c4edc3b09d07dcb0829666278acc4f7b2121e7e0`, parent
+`a842340e7083ddfb7bf2f4baa8b745e74d91827d`. Root verified the ten frozen
+committed blobs, exact scope, clean index and unchanged Sites HEAD.
 
-Active integration packet: `/mnt/p6/build/glibc-syscalls-next26-20261002`, owned
-`tools/glibc/syscalls-next26/**`. Fresh signed GNU replay and verified161-object
-runtime reuse pass. All26 exact original GNU streams, public signatures and
-strong bodies/aliases compile, and actual GNU make builds their26 targets.
-Combined public fixtures and isolated setsid/chroot/execve modes are in progress.
-Four selected facilities have actual ENOSYS bodies. Compilation is not runtime
-acceptance; preserve the original selector/header/link failures and snapshots.
-The combined link exposed missing public sigemptyset/sigaddset providers; the
-agent is adding unchanged GNU units rather than fixture replacements.
+Completed integration packet: `/mnt/p6/build/glibc-syscalls-next26-20261002`,
+owned `tools/glibc/syscalls-next26/**`. Native48,554/0 and FPCAST48,567/0
+actual Linux guest gates pass, with all earlier regressions and isolated
+setsid/chroot/public-exec modes. Its191 objects include genuine GNU
+sigemptyset/sigaddset providers. All26 original GNU streams, public types,
+bindings and actual GNU make targets pass. Four selected facilities return
+actual ENOSYS; no unsupported success is claimed. Warning-bearing original
+mount runs remain failed: the kernel frees static default source="none"
+because its is_kernel_rodata returns false. Configured-source real ramfs
+mounts pass warning-free; NULL/default-source compatibility is still blocked.
+The immutable manifest has27,631 entries and2,736 actual includes
+(2,324 inherited), SHA256
+`8a7fd6467b2e0f4811d855472845bd55ffad61e15aaebf02475c871c30be5766`.
+Acceptance SHA256 is
+`a12316a740cf22f5f60b5941cf65a4c4e2894c16f94a5a254c15d6d060b6922a`;
+28-path repository freeze SHA256
+`8601858d3ab57c39b349a5bc4ddc48a1f08793ea15f50913460d0620668d29c3`.
+Root independently verified all27,631 frozen inputs, all28 repository paths,
+456 current/snapshot runtime hashes, both CPIO modules and34 served inputs
+per gate. Freezer exited0 in60.374s; its process group is empty. The local
+checkpoint adds only this file and the route to the28 frozen paths; no deploy.
 Root's next source-only plan covers 26 further genuine public fixed wrappers,
 with exact header/stream hashes and actual kernel body evidence at
 `/mnt/p6/build/glibc-next26-plan-20261002/plan.json`. See
@@ -420,10 +437,18 @@ No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
 accepted yet.
 The fresh same-model kernel planner has only the 36-wrapper plan and narrow
 source/configuration audit context. Another fresh type-review spawn hit the
-tool's thread limit. No GPU build was resumed. The integration agent handles
-the next26 isolated packet; root owns the libnames checkpoint and reviews evidence
-independently. Next: real native and FPCAST gates for those26 wrappers, with genuine public prototypes,
-GNU aliases, actual kernel argument counts and truthful capability results.
+tool's thread limit. No GPU build was resumed. Root's separate stat packet at
+`/mnt/p6/build/glibc-stat-20261002` now compiles nine unchanged GNU stat-family
+objects and eight public type/address checks, with290 actual inputs audited.
+Owned architecture selection routes actual implementation calls through
+statx291 with GNU conversion; no public runtime acceptance yet. See
+docs/glibc-stat-plan-20261002.md. A fresh stat-runtime spawn again hit the
+thread limit; the existing integration agent received only the new task's
+necessary briefing and owns new tools/glibc/stat-runtime/** plus
+`/mnt/p6/build/glibc-stat-runtime-20261002`. Next are real stat canary, fields,
+aliases, symlink/dirfd/error and beyond2038 time64 native/FPCAST guest gates,
+retaining all191-object runtime regressions. Frozen next26 and root stat
+compile sources remain separate and preserved.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

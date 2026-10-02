@@ -248,15 +248,36 @@ acceptance SHA256
 Ten frozen repository paths precede the scoped local checkpoint, with this route
 and AGENTS.md added separately. These selected object/link controls establish
 neither cancellation providers nor public pthread lifecycle.
+The exact12-path checkpoint is
+`4668062c29e0450008de51ba5c5f7a989142f16a`; root independently verified all
+frozen blobs and unchanged Sites HEAD.
 The [next 26 public wrappers](glibc-syscalls-next26-plan-20261002.md) have a
 separate source/binary plan; pivot_root needs historical-export provenance and
 four selected facilities have actual bound ENOSYS bodies. Neither these plans
 nor the selected compilation establish a complete GNU sysroot. The isolated
-next26 replay now compiles all26 exact GNU streams/public signatures, verifies
-bindings and builds all26 actual GNU make targets. Public guest fixtures and
-isolated setsid/chroot/execve gates remain in progress. Its combined link adds
-unchanged GNU sigemptyset/sigaddset providers; retain the missing-provider
-failure rather than substituting private public-signal implementations.
+next26 replay passes real native48,554/0 and FPCAST48,567/0 guest gates,
+retaining all earlier regressions and isolated setsid/chroot/publicexec. Its
+191-object link adds genuine GNU sigemptyset/sigaddset. Actual GNU streams,
+public types, strong providers/aliases and all26 make targets pass. Retain
+the original selector/header/link failures and warning-bearing mount runs.
+The pinned kernel mishandles freeing its static default mount source="none";
+explicit-source real ramfs mounts pass warning-free, without a kernel patch
+or output suppression. Default-source compatibility remains a blocker.
+The frozen manifest has27,631 entries and2,736 includes(2,324 inherited),
+SHA256 `8a7fd6467b2e0f4811d855472845bd55ffad61e15aaebf02475c871c30be5766`;
+acceptance `a12316a740cf22f5f60b5941cf65a4c4e2894c16f94a5a254c15d6d060b6922a`.
+Root independently rehashed all entries and28 frozen repository paths after
+reviewing both actual payloads,456 current/snapshot input hashes and served
+inputs. The freezer ended0 with an empty group. The local checkpoint adds
+only AGENTS.md and this route to those28 paths; Sites remains unchanged.
+
+The [stat plan](glibc-stat-plan-20261002.md) now has nine genuine GNU-family
+objects and eight public header/address checks compiled, with290 inputs
+audited. Its architecture selection uses genuine statx291 and GNU conversion
+instead of incompatible legacy kernel stat64 layouts. Real native and FPCAST
+tests must still verify field/canary/errno, symlink and dirfd behavior,64-bit
+sizes and beyond2038 timestamps against independent raw statx, retaining the
+191-object runtime regressions. No full GNU sysroot or Nightly is accepted.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
