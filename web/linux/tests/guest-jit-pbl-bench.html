@@ -1,0 +1,52 @@
+<!doctype html><meta charset="utf-8"><title>PBL bench</title>
+<style>body{font:16px sans-serif;margin:2em}pre{white-space:pre-wrap}</style>
+<h1>Guest JIT 3b: baseline vs PBL</h1>
+<p>Auto-runs on load. Results go to the console (guest stdout) as PBLBENCH lines.</p>
+<pre id="result">Settling</pre>
+<script>
+// Packet 3b fixture (docs/guest-jit-pbl-diagnosis-20260930.md). One case per
+// hypothesis; batches of 100 reps timed with performance.now(), every rep
+// checked against its expected value. Label from ?label= or the file name.
+// Yields after every batch: a long synchronous run raises Firefox's modal
+// slow-script dialog in this single-process build, which stalls the page.
+const params=new URLSearchParams(location.search);
+const label=params.get('label')||location.pathname.split('/').pop().replace(/\.html$/,'').replace(/^pblbench-/,'');
+const REPS=100,WARMUPS=8,SAMPLES=11,ROUNDS=3,SETTLE_MS=15000;
+function fib(n){return n<2?n:fib(n-1)+fib(n-2);}
+function deep(n){if(n===0)throw 1;return deep(n-1);}
+function f(n){if(n===0)throw 17;return f(n-1);}
+const cases=[
+ ['int-loop',()=>{let sum=0;for(let i=0;i<10000;i++)sum=(sum+i)|0;return sum;},49995000],
+ ['call-recursion',()=>fib(14),377],
+ ['throw-flat',()=>{let sum=0;for(let i=0;i<500;i++){try{throw 1;}catch(v){sum+=v;}}return sum;},500],
+ ['throw-deep',()=>{let sum=0;for(let i=0;i<100;i++){try{deep(5);}catch(v){sum+=v;}}return sum;},100],
+ ['throw-error',()=>{let sum=0;for(let i=0;i<100;i++){try{f(5);}catch(v){sum+=v;}}return sum;},1700],
+ ['prop-mono',()=>{const o={x:0,y:3};for(let i=0;i<4000;i++)o.x=o.x+1;return o.x+o.y;},4003],
+ ['native-call',()=>{let a=0;for(let i=0;i<4000;i++)a=Math.max(a,i);return a;},3999],
+ ['json',()=>{let sum=0;for(let i=0;i<200;i++){const text=JSON.stringify({name:'sample',value:i});sum+=JSON.parse(text).value;}return sum;},19900],
+];
+const out=document.getElementById('result');
+function emit(obj){const line='PBLBENCH '+JSON.stringify(obj);console.log(line);out.textContent+='\n'+line;}
+emit({event:'start',label,hc:navigator.hardwareConcurrency,ua:navigator.userAgent});
+const tick=()=>new Promise(r=>setTimeout(r,0));
+setTimeout(async()=>{
+ const started=performance.now();let ok=true;
+ try{
+  for(let round=0;round<ROUNDS;round++){
+   for(const [name,fn,expected] of cases){
+    const caseStart=performance.now();
+    for(let i=0;i<WARMUPS;i++){for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' warmup '+v);}await tick();}
+    const samples=[];let checksum=0;
+    for(let s=0;s<SAMPLES;s++){
+     const begin=performance.now();
+     for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' value '+v);checksum=(checksum+v)|0;}
+     samples.push(performance.now()-begin);await tick();
+    }
+    const sorted=samples.slice().sort((a,b)=>a-b);
+    emit({event:'case',label,round,name,caseMs:+(performance.now()-caseStart).toFixed(1),checksum,reps:REPS,batchMs:samples.map(x=>+x.toFixed(3)),medianBatchMs:+sorted[SAMPLES>>1].toFixed(3)});
+   }
+  }
+ }catch(e){ok=false;emit({event:'error',label,error:String(e)});}
+ emit({event:'done',label,ok,elapsedMs:+(performance.now()-started).toFixed(1)});
+},SETTLE_MS);
+</script>

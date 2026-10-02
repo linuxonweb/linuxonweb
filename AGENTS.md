@@ -106,6 +106,13 @@ is free.
   checks compiled in for non-`__wasi__` come next. fpcast does not explain it.
   Next is JIT 3b: an ABBAAB 6-cold-boot measurement of baseline `6c7fad94` vs PBL
   `6febc628`, run on an idle host (no concurrent browser gates).
+- Done: JIT 3b A/B (`docs/guest-jit-pbl-bench-20261001.md`, `/mnt/p6/build/guest-jit-pbl-bench-20261001/run1`):
+  ABBAAB 6 cold boots, harness pass (checksums identical, inputs unchanged).
+  PBL vs baseline: int-loop 0.99 (equal), fib calls 0.78 (PBL faster), throws
+  1.12-1.30 slower (H2), Math.max native calls 1.18 slower (Call IC path, not
+  fpcast), prop-mono 1.075 (below threshold), json noise-bound. GO for JIT
+  packet 4 on PBL; the specializer should emit direct JSNative calls and inline
+  monomorphic property ICs.
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
 - Done: gputest G2 cube demo (`docs/gputest-demo-20260930.md`, `/mnt/p6/build/gputest-g2-20260930`):
