@@ -175,10 +175,37 @@ Completed bounded GNU port packets (not a completed libc):
   commands are in docs/glibc-generated-syscalls-20261002.md and
   tools/glibc/syscalls/README.md. This task is frozen and must remain unchanged.
 
-Next packet: preserve GNU warning text and .gnu.glibc-stub.* metadata, including
-installed __stub_* semantics, using owned Wasm architecture adapters; add the
-typed sigaltstack wrapper and test actual kernel ENOSYS, then advance GNU make.
-Do not claim alternate-stack support or erase unsupported-function metadata.
+- `/mnt/p6/build/glibc-fullmake-warnings-20261002/acceptance.json`: genuine
+  GNU warning text and empty stub markers now survive as Wasm custom sections.
+  The unchanged GNU Makerules stubs recipe emits __stub_revoke and
+  __stub_sigreturn and excludes Linux sigstack and dlmopen. The dlmopen
+  inspection object is metadata-only; its runtime compilation still fails.
+  Unknown module assembly, missing warning text and runtime marker references
+  reject exit3; unrelated llvm.used survives and repeated compilation preserves
+  proof attempts with identical object hashes. Typed GNU sigaltstack uses the
+  actual selected Linux stack_t, size12/alignment4 and offsets0/4/8. Native
+  48,366/0 and FPCAST23i64 48,373/0 pass six new ENOSYS suites each, plus prior
+  allocator/syscall/jump/abort gates. Both guest/browser exits0 and servers close.
+  Actual kernel ENOSYS leaves output unchanged; alternate stacks are unsupported.
+  Warning metadata does not enforce native linker warnings. Full GNU make
+  passes the earlier units then exits2 on dlmopen's __builtin_return_address.
+  All 116 actual link-object hashes and the 23,234-entry manifest, including
+  1,118 actual includes, were independently reread with zero differences.
+  Manifest SHA256
+  `93042d98f3330664ec32a7ee22d9bda6ea84ffb977de779a0f363ccb67cdd3cb`;
+  acceptance SHA256
+  `62ef64a555c8efb3516505748f3732f6768a2f711ffc965b8cb3cc33e567bdd3`.
+  Exact 15 packet repository paths are frozen, with zero hash differences.
+  Failed attempts remain retained and limitations explicit. The packet is
+  frozen; do not mutate it. See docs/glibc-fullmake-warnings-20261002.md and
+  tools/glibc/fullmake/README.md. This is not complete libc/sysroot acceptance.
+
+Next packet: design native static-module registration and caller provenance,
+preserve public dlfcn APIs and honest errors for unsupported ELF/namespaces,
+and advance genuine GNU make to further architecture blockers. Do not replace
+return-address builtins with null indiscriminately or erase unsupported APIs.
+Default GNU thread stacks additionally need MAP_STACK and real overflow/guard
+adaptation; the current memory provider cannot satisfy their defaults unchanged.
 No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
 accepted yet.
 Fresh planning/command spawns and a completed-agent follow-up hit the tool's

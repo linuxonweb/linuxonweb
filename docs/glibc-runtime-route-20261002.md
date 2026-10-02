@@ -10,7 +10,7 @@ large assertion counts do not establish a complete libc/sysroot or general
 pthread runtime. Read the corresponding acceptance reports before reuse.
 
 Continue actual GNU make, using fresh signed-source replay and owned architecture
-overlays. Current generated-syscall run3 exits2 on unaudited sigaltstack and GNU
+overlays. Frozen generated-syscall run3 exits2 on unaudited sigaltstack and GNU
 ELF warning directives. GNU include/libc-symbols.h distinguishes link_warning,
 static_link_warning and stub_warning. Makerules' stubs target extracts
 .gnu.glibc-stub.* section names to generate __stub_* macros. An architecture
@@ -18,6 +18,34 @@ adaptation must preserve those names and warning text; it must not silently
 erase unsupported-function metadata. dlmopen's static-link warning does not
 mean dlmopen is an ENOSYS stub. Test sigaltstack's genuine kernel ENOSYS with
 its exact GNU stack_t signature; the kernel does not support alternate stacks.
+
+The next isolated fullmake-warnings task preserves genuine revoke and Linux
+sigstack warning bytes in Wasm custom sections. Its actual GNU Makerules stubs
+target, using llvm-objdump, emits __stub_revoke and __stub_sigreturn and correctly
+omits sigstack. That recipe is unchanged; the source tree retains the previously
+reviewed wasm32 abi-versions.h generation hook elsewhere in Makerules. Warning
+metadata preservation alone does not provide native linker warning enforcement.
+Full GNU make now passes those units and generated sigaltstack, then exits2 on
+dlfcn/dlmopen.c's unsupported __builtin_return_address. The isolated packet's
+real guest gates pass native 48,366/0 and FPCAST23i64 48,373/0, each including
+six warning/ENOSYS suites and the earlier syscall, jump and abort regressions.
+These checks verify unsupported alternate stacks return ENOSYS and leave output
+unchanged, not alternate-stack support. The final manifest contains 23,234
+entries including 1,118 actual includes; an independent reread finds zero
+differences, as does the separate check of all 116 actual link objects. Its
+SHA256 is 93042d98f3330664ec32a7ee22d9bda6ea84ffb977de779a0f363ccb67cdd3cb.
+The task is frozen; continue in a new owned task.
+
+Resolve caller provenance and native loader semantics explicitly. GNU
+elf/dl-open.c uses the caller's map for namespaces and RPATH/RUNPATH;
+elf/dl-sym.c requires it for RTLD_NEXT. Returning null for every return-address
+builtin cannot establish those semantics. Nightly NSPR prlink.c has registered
+static-library tables through PR_LoadStaticLibrary, but its initialization and
+ordinary lookup still call dlopen/dlsym. A native architecture route must cover
+the required process/static handles and symbol tables, preserve public APIs,
+and report unsupported ELF loading or namespaces honestly. Compilation alone
+does not prove loader behavior, and silently dropping selected dlfcn APIs is
+not completion of the runtime.
 
 Then complete syscall/structure adaptation and a genuine static archive/header
 installation. Audit every selected generated wrapper against GNU C signatures
@@ -42,6 +70,16 @@ Require repeated join/detach lifecycles, TLS/errno isolation, mutex/condition
 contention and timed waits, keys/destructors, once and supported robust-mutex
 behavior. These tests must call genuine public GNU APIs; manual descriptor and
 cleanup-chain fixtures are earlier prerequisites.
+
+GNU nptl/allocatestack.c adds MAP_STACK to anonymous mappings and uses
+MADV_GUARD_INSTALL or mprotect(PROT_NONE) for guard regions.
+sysdeps/nptl/pthread_early_init.h defaults guardsize to the page size. The current
+owned wasm-memory.c accepts only anonymous RW mappings without MAP_STACK and
+rejects mprotect; it cannot satisfy default thread allocation unchanged. A
+native architecture adaptation must define and verify stack allocation and
+overflow behavior honestly. Caller-supplied stacks or guardsize0 are useful
+initial lifecycle cases, but do not establish default pthread_create support.
+Do not return success for protection requests that are not enforced.
 
 A source-confirmed additional gap must be resolved for cancellation and C++
 cleanup. GNU nptl/unwind.c calls _Unwind_ForcedUnwind, _Unwind_GetCFA and
