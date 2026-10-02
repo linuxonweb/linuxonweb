@@ -616,6 +616,19 @@ entries and32 paths across these packets; both external freezers exit0/empty.
 Exact memory objects still need concurrent real guest integration. General
 madvise liveness/ownership and unknown mremap flag error behavior need review
 before claiming the full public APIs; guard/protection/default NPTL are absent.
+The five syscall arity providers are now independently reviewed and frozen:
+native48,753/0 and FPCAST48,769/0,238 objects with231 predecessor objects
+unchanged, actual GNU make selection and bounded variadic prctl behavior.
+Root reread144,470 manifest entries and34 exact repository paths; actual CPIO
+payloads match the executed v3 modules and all owned groups are terminal/empty.
+Manifest `e9002b3d9ef9d00a8df62566e2eabe05cb8f4c391b90343c90f3d75081167095`;
+see docs/glibc-syscalls-arity-20261002.md. Immutable report review-pending wording
+is superseded by this completed review. Full prctl/NPTL/Nightly remain absent.
+Root source evidence also identifies the cancellation restart boundary:
+GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
+before returning to the worker. A queued unwind alone cannot close that gap.
+See docs/glibc-cancel-boundary-plan-20261002.md and its eleven pinned inputs;
+no new cancellation behavior is implemented or accepted by that diagnosis.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.
 GNU nptl/unwind.c requires _Unwind_ForcedUnwind/_Unwind_GetCFA, absent from
 LLVM22.1.8's Wasm implementation; ordinary UnwindLevel1.c excludes __wasm__.

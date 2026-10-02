@@ -470,3 +470,24 @@ host behavior, not default NPTL or exact-object real Linux guest acceptance.
 General advice liveness/ownership and invalid remap flags still need review;
 physical protection, default stack guards, files/shared mappings remain absent.
 No later fresh fullmake pass or Nightly acceptance has been established.
+
+Root completed the five-provider syscall arity review: native48,753/0 and
+FPCAST48,769/0,238 linked objects with231 predecessor objects unchanged.
+Actual GNU make selects the owned zero-argument sync/vhangup, historical
+three/two-argument module APIs and true variadic prctl with explicit option
+dispatch. Full option behavior remains outside this bounded acceptance.
+Independent readback covers144,470 manifest entries and34 repository paths,
+with executed v3 CPIO module identity and fresh empty process groups:
+`/mnt/p6/build/glibc-syscalls-arity-root-review-20261002/frozen-proof.json`.
+Frozen manifest is
+`e9002b3d9ef9d00a8df62566e2eabe05cb8f4c391b90343c90f3d75081167095`.
+This supersedes pending-review wording in the immutable packet report.
+
+The [cancellation boundary diagnosis](glibc-cancel-boundary-plan-20261002.md)
+adds a source-confirmed restart constraint. GNU SIGCANCEL has SA_RESTART;
+the selected kernel restores its interrupted registers/mask after the callback
+and can restart before the worker syscall import returns. Deferring an unwind
+to that return alone is insufficient for blocked cancellation. Eleven original
+and snapshot inputs, ten findings and the actual register structure are in
+`/mnt/p6/build/glibc-cancel-boundary-plan-20261002/evidence.json`.
+The required native restart decision and genuine forced unwind remain unbuilt.

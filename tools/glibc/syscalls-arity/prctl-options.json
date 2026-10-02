@@ -1,0 +1,482 @@
+{
+  "architecture": "wasm32 four-byte aligned variadic pack; pointer/int/long word representation",
+  "options": [
+    {
+      "option": "PR_SET_PDEATHSIG",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_PDEATHSIG",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_DUMPABLE",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_DUMPABLE",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_UNALIGN",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_UNALIGN",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_FPEMU",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_FPEMU",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_FPEXC",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_FPEXC",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_TIMING",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_TIMING",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_NAME",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_NAME",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_ENDIAN",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_ENDIAN",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_SECCOMP",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_SECCOMP",
+      "argumentWords": 2,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_TSC",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_TSC",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_TASK_PERF_EVENTS_DISABLE",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_TASK_PERF_EVENTS_ENABLE",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_TIMERSLACK",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_TIMERSLACK",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_MCE_KILL",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_MCE_KILL_GET",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_MM",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_TID_ADDRESS",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_CHILD_SUBREAPER",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_CHILD_SUBREAPER",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_NO_NEW_PRIVS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_NO_NEW_PRIVS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_THP_DISABLE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_THP_DISABLE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_MPX_ENABLE_MANAGEMENT",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_MPX_DISABLE_MANAGEMENT",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_FP_MODE",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_FP_MODE",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SVE_SET_VL",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SVE_GET_VL",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SME_SET_VL",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SME_GET_VL",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_SPECULATION_CTRL",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_SPECULATION_CTRL",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_PAC_RESET_KEYS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_PAC_SET_ENABLED_KEYS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_PAC_GET_ENABLED_KEYS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_TAGGED_ADDR_CTRL",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_TAGGED_ADDR_CTRL",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_IO_FLUSHER",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_IO_FLUSHER",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_SYSCALL_USER_DISPATCH",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SCHED_CORE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_MDWE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_MDWE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_PPC_GET_DEXCR",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_PPC_SET_DEXCR",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_VMA",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_AUXV",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_MEMORY_MERGE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_MEMORY_MERGE",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_RISCV_V_SET_CONTROL",
+      "argumentWords": 1,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_RISCV_V_GET_CONTROL",
+      "argumentWords": 0,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_RISCV_SET_ICACHE_FLUSH_CTX",
+      "argumentWords": 2,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_SHADOW_STACK_STATUS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_SHADOW_STACK_STATUS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_LOCK_SHADOW_STACK_STATUS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_TIMER_CREATE_RESTORE_IDS",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_FUTEX_HASH",
+      "argumentWords": 3,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_RSEQ_SLICE_EXTENSION",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_GET_CFI",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_SET_CFI",
+      "argumentWords": 4,
+      "policy": "consume kernel-used operands; retain explicit reserved arguments for options validating those slots",
+      "acceptance": "pending runtime option matrix except bounded fixture branches"
+    },
+    {
+      "option": "PR_CAPBSET_READ",
+      "argumentWords": 1,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_CAPBSET_DROP",
+      "argumentWords": 1,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_SET_SECUREBITS",
+      "argumentWords": 1,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_GET_SECUREBITS",
+      "argumentWords": 0,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_GET_KEEPCAPS",
+      "argumentWords": 0,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_SET_KEEPCAPS",
+      "argumentWords": 1,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    },
+    {
+      "option": "PR_CAP_AMBIENT",
+      "argumentWords": 4,
+      "policy": "actual commoncap task-prctl dispatch before generic switch; ambient validates reserved arguments",
+      "acceptance": "bounded nonmutating runtime probes"
+    }
+  ],
+  "unknownOption": "read no argument words; invoke real kernel with zero slots; active unknown option returns EINVAL",
+  "scope": "option dispatch architecture implementation; full option behavioral acceptance pending",
+  "securityConfiguration": "CONFIG_SECURITY=n; include/linux/security.h delegates security_task_prctl to cap_task_prctl; commoncap option matrix included"
+}
