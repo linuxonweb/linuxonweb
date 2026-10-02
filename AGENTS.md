@@ -486,10 +486,44 @@ six-path repository freeze
 Root independently rehashed all entries, verified both modules and actual
 23-i64 FPCAST type, and checked three empty terminal groups. Freezer
 exit0/57.030s. The local checkpoint adds only this file and the route.
-Guest stat attempt2 passed native48,637/0 and FPCAST48,632/0. Root review
-found alignment padding before the fixture's four-byte leading canary, so
-acceptance is held pending contiguous16-byte guards and uniqueattempt3 gates.
-Original caller-errno-leak failure and passingattempt2 payloads are retained.
+The synthetic stat checkpoint is `444df08f5c2fd4540171649a664f2dcc8250b6df`,
+tree `a9970a8109af4ba1a4ea623b9ee0c2c6463e938d`, parent
+`ecfd442fe473764dbff4a6ec2974835364575b6a`; root checked all six frozen blobs,
+exact eight-path scope, clean index and unchanged Sites HEAD.
+
+Final real stat attempt3 passes native48,633/0 and FPCAST48,640/0, including
+all prior191-object runtime regressions. Eight genuine GNU public stat APIs
+preserve actual beyond2038 timestamps, file/link/symlink/dirfd fields and errno.
+Contiguous16-byte leading/trailing guards cover every output boundary byte.
+The original caller-errno-leak failure and passingattempt2 payloads with
+incomplete padding coverage remain retained. Root independently checked203
+actual objects (182 Wasm/21 bitcode),221 current/snapshot records,543 dependency
+records,13 compiler attempts, both actual packaged modules and served inputs.
+All26 historical/current owned groups and the external freezer are empty;
+freezer exit0/77.308s. See docs/glibc-stat-runtime-20261002.md.
+The immutable task `/mnt/p6/build/glibc-stat-runtime-20261002` has27,892 entries,
+3,071 absolute includes (2,736 inherited), manifest SHA256
+`4cdac038bc83c699a429e3f649f175d9c7511c62520b5bd6dd2936bda6f76042`,
+acceptance `41071efa5034d429d7af866116092bf7e74d33d01f94fb9de55d6a47b61250f9`,
+exact22-path repository freeze
+`0aab221e0a60f34525b128a80fb4e95d0e7e54dd228fd245e155cb09ef1ab80c`.
+Root rehashed all entries and22 repository paths. No full libc/sysroot/Nightly
+acceptance or Sites deployment follows from these bounded stat results.
+
+The source-only remaining plan reconciles168 original failed targets to125
+dedicated later compile closures and43 outstanding original targets. The79
+cumulative wrappers include17 predating that inventory; only36+26 close62
+of its93 original generated failures. See
+docs/glibc-remaining-closure-plan-20261002.md. Root independently verified79
+source inputs,43 original source/snapshot/command sets and39 actual kernel
+body boundaries/names/active table mappings. This is not a new fullmake result.
+The scheduler/semaphore packet owns new tools/glibc/sched-sem/**; its four
+original compile targets pass and its real native guest passes48,573/0.
+FPCAST and provenance review are pending; do not infer full NPTL or sem_wait.
+The integration agent now owns new tools/glibc/cumulative-make/** and
+`/mnt/p6/build/glibc-cumulative-make-20261002` for fresh genuine cumulative
+make -k -j2 lib discovery, combining accepted frozen overlays without copying
+the accepted fixture object set or touching mutable scheduler inputs.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

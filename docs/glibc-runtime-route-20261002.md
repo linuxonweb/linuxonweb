@@ -303,10 +303,32 @@ six-path repository freeze
 `17939d07d8f343265eb7bea06ae46f2208e9709f53bd3142dbf014434404f058`.
 Root independently rehashed all entries, validated both modules and23-i64
 FPCAST type and verified three empty terminal groups. No push/deploy.
-The second guest attempts pass native48,637/0 and FPCAST48,632/0, but root's
-leading-canary padding finding requires contiguous guards and uniqueattempt3
-gates before runtime acceptance. Preserve the failed caller-errno fixture and
-passing prior payloads; do not infer full libc/Nightly support from these gates.
+The stat host controls are committed as
+`444df08f5c2fd4540171649a664f2dcc8250b6df`. Final real stat attempt3 now passes
+native48,633/0 and FPCAST48,640/0 with contiguous16-byte guards, actual time64
+values beyond2038 and eight genuine GNU public APIs. All prior runtime
+regressions remain. Root independently verified203 objects,221 source/object/
+module records,543 dependency records, both packaged modules, served inputs
+and26 empty owned groups. Preserve the failed caller-errno fixture and passing
+prior payloads with incomplete padding coverage; they do not replace the final
+gates. The frozen stat runtime manifest contains27,892 entries, SHA256
+`4cdac038bc83c699a429e3f649f175d9c7511c62520b5bd6dd2936bda6f76042`;
+its exact22-path repository freeze is
+`0aab221e0a60f34525b128a80fb4e95d0e7e54dd228fd245e155cb09ef1ab80c`.
+See [the stat runtime report](glibc-stat-runtime-20261002.md).
+
+The [remaining closure plan](glibc-remaining-closure-plan-20261002.md) identifies
+43 original failures with no dedicated later target rebuild. The36+26 wrapper
+packets cover62 original generated failures; the other17 of79 cumulative
+wrappers predate the inventory. This count is source/target reconciliation,
+not a fresh fullmake result. Four scheduler/semaphore targets have now compiled
+and their native guest passes48,573/0; FPCAST and final provenance are pending.
+In parallel, a fresh cumulative genuine make -k -j2 lib discovery build combines
+accepted frozen compiler/header/typed-wrapper/libnames/stat overlays, without
+copying fixture libc objects or depending on mutable scheduler inputs. Its
+actual full-build failures and archive/header results must drive the next
+implementation. These are steps toward the complete GNU sysroot; they do not
+establish a complete libc, public NPTL lifecycle or Firefox Nightly baseline.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
