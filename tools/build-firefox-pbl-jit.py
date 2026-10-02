@@ -8,7 +8,9 @@ PBL candidate (pbl-candidate-v3), this tool:
      to a copy; the original tree is untouched),
   2. compiles the copy and tools/pbl-jit/PblJit.cpp with the PBL object's own
      compile command,
-  3. rebuilds the js archive and relinks Firefox with the candidate's command,
+  3. rebuilds the js archive and relinks Firefox with the candidate's command
+     or, with --link-command, with another recorded link argv (for example the
+     promoted TLS build), replacing only its libjs_static.a and output,
   4. applies fpcast emulation (23 x i64) and makes the function table growable
      (the jit_install runtime appends installed functions to it),
   5. validates the result and writes report.json.
@@ -28,6 +30,8 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--candidate', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--link-command', type=Path,
+                    help='JSON argv of a recorded Firefox link to reuse instead of the candidate link')
 parser.add_argument('--timeout', type=int, default=1800)
 args = parser.parse_args()
 candidate, out = args.candidate.resolve(), args.output.resolve()
@@ -191,11 +195,20 @@ try:
     archive_list.write_text('\n'.join(shlex.quote(p) for p in members) + '\n')
     archive = out / 'libjs_static.a'
     run(['llvm-ar', 'crs', str(archive), '@' + str(archive_list)], 'archive', out)
-    command = shlex.split((candidate / 'logs/link.command.txt').read_text())
-    old_archive = str(candidate / 'libjs_static.a')
-    if command.count(old_archive) != 1:
-        raise RuntimeError('unexpected coherent archive link')
-    command[command.index(old_archive)] = str(archive)
+    if args.link_command:
+        command = json.loads(args.link_command.read_text())
+        result['linkCommand'] = str(args.link_command.resolve())
+        result['linkCommandSHA256'] = digest(args.link_command)
+        js = [i for i, a in enumerate(command) if a.endswith('/libjs_static.a')]
+        if len(js) != 1:
+            raise RuntimeError('link command must reference exactly one libjs_static.a')
+        command[js[0]] = str(archive)
+    else:
+        command = shlex.split((candidate / 'logs/link.command.txt').read_text())
+        old_archive = str(candidate / 'libjs_static.a')
+        if command.count(old_archive) != 1:
+            raise RuntimeError('unexpected coherent archive link')
+        command[command.index(old_archive)] = str(archive)
     raw = out / 'firefox-pbl-jit-raw.wasm'
     command[command.index('-o') + 1] = str(raw)
     run(command, 'link', Path(plan['objects']) / 'browser/app')

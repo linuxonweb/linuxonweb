@@ -124,6 +124,13 @@ is free.
   run (non-JIT control fails identically). Next JIT 5: rebase PBL+JIT onto the
   promoted Firefox, run startup/update gates, then GetArg/doubles, prop ICs,
   native calls.
+- Done: JIT 5 rebase (`docs/guest-jit-rebase-20261001.md`, `/mnt/p6/build/guest-jit-rebase-20261001`):
+  `build-firefox-pbl-jit.py --link-command` relinks PBL+JIT onto the promoted
+  TLS Firefox link (`b21b2cac65a3`). Candidate `test-pbl-d1284e694e28b982`
+  (`web/linux/tests/runtime-candidates/pbl-jit-rebase-run1`, not committed/promoted)
+  passes `jit5-startup-run1` and `jit5-update-run1` (firefox-homepage task). ABBAAB vs
+  promoted: int-loop 0.004, fib 0.76, throw-flat 1.27, prop-mono 1.11,
+  native-call 1.18, json 1.00. Next JIT 6: let/TDZ, args, if/else, &&/||/??.
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
 - Done: gputest G2 cube demo (`docs/gputest-demo-20260930.md`, `/mnt/p6/build/gputest-g2-20260930`):
