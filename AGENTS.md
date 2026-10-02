@@ -1,4 +1,51 @@
-# Nightly upgrade — 2026-10-02 (latest user direction; read this first)
+# libc change — 2026-10-02 (latest user direction; read this first)
+
+The user now says: "do not use musl , use libc for best compability".
+Interpret the requested replacement as glibc pending any user correction.
+Stop further musl-based Nightly builds and investigate a genuine native
+Wasm/Linux glibc toolchain, syscall/thread/TLS ABI and dependency rebuild.
+Renaming a musl target or linking musl archives under a GNU triple does not
+satisfy this requirement. Preserve the existing working releases and build
+trees. Nightly → JIT → GPU → verified Sites release remains the objective;
+glibc is now a prerequisite. The prior Nightly configure/export/component
+checks used musl and are historical evidence, not acceptance of this target.
+Fresh same-model/same-effort subagents receive only necessary task context.
+
+GNU glibc 2.44 is pinned from the signed GNU release archive, SHA-256
+`37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667`,
+under `/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44`.
+Its pristine configure fails explicitly because wasm32 has no upstream sysdeps
+port. Unmodified GNU memchr/strnlen compile into native shared-memory Wasm and
+pass 16,450 host assertions with no imports, musl or WASI linkage. This proves
+only the compiler/header/string bootstrap, not a GNU sysroot or guest runtime.
+The selected next packet is an owned GNU wasm32 static architecture/sysdeps
+port, actual GNU allocator with nonrecursive native memory-growth providers,
+then GNU startup/TLS/NPTL and coherent dependency rebuilds. Reports and exact
+scripts are in the bootstrap task directory. Candidate brintOS source links
+returned 404; Lind's available port includes incompatible WASI/musl startup,
+clone stubs and a different runtime ABI, so neither is an accepted drop-in.
+
+Independent ABI evidence belongs under
+`/mnt/p6/build/glibc-guest-abi-review-20261002`. The actual retained kernel
+architecture is in the Nix source `s6qc0any0wby0f4nnivpaanvqb9hl130-source/arch/wasm`.
+It uses asm-generic syscall numbers, raw-pointer set_thread_area (244), and
+custom clone (220) arguments fn/fnarg/flags/parent_tid/child_tid/tls. Its memory
+syscalls brk/munmap/mremap/mmap are omitted. GNU malloc needs direct Wasm memory
+providers; the existing malloc-backed Firefox mmap shim cannot bootstrap it.
+GNU public stat and signal layouts differ from the kernel UAPI and require
+verified conversions. Compiler TLS uses __tls_base, separately from the GNU
+TCB/thread pointer. Never relabel i386 layouts or existing musl archives.
+
+The completed source-only Nightly JIT API audit is at
+`/mnt/p6/build/firefox-nightly-jit-api-20261002/acceptance-and-migration-plan.md`:
+107 source checks pass, but compilation and runtime acceptance remain pending.
+New PBL source lives under js/src/vm; IC cursor/context access, opcode IDs,
+Watchtower guards and browser PBL initialization need the reviewed migration.
+The prior Nightly musl packet is closed and its build entrypoint disabled;
+its configure/export/component/33 ABI checks do not satisfy the glibc target.
+No full Nightly/glibc browser, new JIT or new Firefox GPU release exists yet.
+
+# Nightly upgrade — 2026-10-02 (superseded libc choice; read next)
 
 The user now explicitly requires **latest Firefox Nightly first, then working
 native Wasm JIT, then GPU**. This supersedes implementation against Firefox
