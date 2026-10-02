@@ -422,6 +422,10 @@ Root independently verified all27,631 frozen inputs, all28 repository paths,
 456 current/snapshot runtime hashes, both CPIO modules and34 served inputs
 per gate. Freezer exited0 in60.374s; its process group is empty. The local
 checkpoint adds only this file and the route to the28 frozen paths; no deploy.
+The exact30-path checkpoint is `a249f2e3a27efbedd2ff0d55c581faccd4ee075e`,
+tree `74238f4610059b825f047657ecfd55c1b3051993`, parent
+`4668062c29e0450008de51ba5c5f7a989142f16a`; root verified all28 frozen
+committed blobs, exact scope, clean index and unchanged Sites HEAD.
 Root's next source-only plan covers 26 further genuine public fixed wrappers,
 with exact header/stream hashes and actual kernel body evidence at
 `/mnt/p6/build/glibc-next26-plan-20261002/plan.json`. See
@@ -449,6 +453,18 @@ necessary briefing and owns new tools/glibc/stat-runtime/** plus
 aliases, symlink/dirfd/error and beyond2038 time64 native/FPCAST guest gates,
 retaining all191-object runtime regressions. Frozen next26 and root stat
 compile sources remain separate and preserved.
+The stat compile packet is now immutable:23,063 entries,290 actual compile
+inputs,144 verified borrowed tools; manifest SHA256
+`e6efcd1c146eb5d559ab782aa5013908cb83f8d487c8005860c727fc19119a1a`.
+Compile acceptance SHA256
+`275c840812213e186feec0a3ad24183baca207b9b9a13323b4748b8474d03a41`;
+12-path repository freeze SHA256
+`a8370c760161a7cc15e6644714ae91fefce818a8cd10b565d2ac396852db317d`.
+Root independently rehashed all inputs/repository paths, validated all nine
+objects and checked five actual statx raw-IR units. All three build groups
+and the external freezer are terminal and empty; freezer exit0/50.660s.
+The local checkpoint adds only this file and the route to those12 paths.
+No full public stat runtime/sysroot/Nightly acceptance or push/deploy.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

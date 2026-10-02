@@ -270,6 +270,9 @@ Root independently rehashed all entries and28 frozen repository paths after
 reviewing both actual payloads,456 current/snapshot input hashes and served
 inputs. The freezer ended0 with an empty group. The local checkpoint adds
 only AGENTS.md and this route to those28 paths; Sites remains unchanged.
+The exact30-path checkpoint is
+`a249f2e3a27efbedd2ff0d55c581faccd4ee075e`; root verified all28 frozen
+committed blobs and unchanged public Sites HEAD.
 
 The [stat plan](glibc-stat-plan-20261002.md) now has nine genuine GNU-family
 objects and eight public header/address checks compiled, with290 inputs
@@ -278,6 +281,14 @@ instead of incompatible legacy kernel stat64 layouts. Real native and FPCAST
 tests must still verify field/canary/errno, symlink and dirfd behavior,64-bit
 sizes and beyond2038 timestamps against independent raw statx, retaining the
 191-object runtime regressions. No full GNU sysroot or Nightly is accepted.
+The [stat compile packet](glibc-stat-20261002.md) is frozen with23,063 inputs,
+including290 actual compile inputs and144 verified borrowed tools. Manifest
+SHA256 `e6efcd1c146eb5d559ab782aa5013908cb83f8d487c8005860c727fc19119a1a`;
+compile acceptance `275c840812213e186feec0a3ad24183baca207b9b9a13323b4748b8474d03a41`;
+12-path repository freeze `a8370c760161a7cc15e6644714ae91fefce818a8cd10b565d2ac396852db317d`.
+Root independently rehashed all entries and validated nine actual objects,
+five raw statx units and four empty terminal groups. The scoped checkpoint
+adds only this route and AGENTS.md; real public runtime tests remain separate.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
