@@ -506,13 +506,31 @@ pivot_root execute through real GNU wrappers. pidfd nonNULL signal conversion
 accepts only SI_USER/SI_QUEUE/SI_TKILL, with exact callback fields and input
 canaries; other classes remain explicitly unsupported.
 
-The fresh memory integration plan corrects invalid mremap flag errors and
-MADV_DONTNEED ownership. It covers the union of live anonymous mappings and
-wholly owned break pages, accepts adjacent mappings and leaves holes untouched
-while reporting their partial-range error. GNU malloc_trim must execute its
-real interior free-page discard and preserve neighboring live allocations.
-Root approved build/runtime gates after source review; no new memory guest
-acceptance is claimed yet. A separate native static-loader design preserves
-unchanged GNU public/error bodies and derives caller provenance from actual
-linked callsite descriptors. Its40 original/snapshot pins pass source review;
-loader implementation, public runtime and cancellation closure remain pending.
+Root completed the [memory runtime review](glibc-memory-runtime-20261002.md):
+native49,874/0 and FPCAST49,846/0,246 linked inputs with236 predecessor inputs
+unchanged. Eight actual GNU make providers retain six pristine GNU bodies,
+including sbrk, and explicit mremap/memory-authority derivatives. Real GNU
+malloc_trim discards interior free pages, preserves metadata and neighboring
+live allocations, and reuses the resulting bins. Mapping ownership includes
+adjacent mappings and wholly owned break pages; partial holes remain untouched
+and return ENOMEM. Rounded remap copies preserve the entire old page, including
+its last byte, and clear the expanded tail. Three GNU descriptor threads execute
+the public mapping APIs concurrently with genuine allocator checks.
+Independent readback covers191,846 manifest entries and25 repository paths;
+both actual CPIO payloads match the executed modules and21 owned groups are empty.
+Manifest `2604aa26fae2ae073c2326b5741752ac013cdf4a83878c81950fc943adcff2c4`;
+proof `/mnt/p6/build/glibc-memory-runtime-root-review-20261002/frozen-proof.json`.
+The immutable report's prepared wording is superseded by this completed review.
+The first fixture failure and first freezer failure remain retained; their
+corrections did not change the tested GNU allocator/provider objects. This proves
+logical anonymous private writable memory, not physical protection/decommit,
+file/shared mappings or default NPTL stack guards.
+
+Root approved the pinned14-path coherent source plan and final overlay/configure/
+metadata/fresh GNU make, consuming the immutable memory runtime packet. Fresh
+fullmake results remain pending; earlier failed inventories are retained and
+must not be treated as current success by subtracting resolved failure classes.
+A separate native static-loader design preserves unchanged GNU public/error
+bodies and derives caller provenance from actual linked callsite descriptors.
+Its40 original/snapshot pins pass source review; public loader runtime and
+cancellation closure remain pending.

@@ -636,13 +636,27 @@ this completed freeze. Capability tests preserve capabilities; mount tests
 restore owned mount flags; the isolated root-pivot test reverses A-to-B-to-A,
 restores its saved root and unmounts owned mounts. NonNULL pidfd siginfo support
 is limited to three measured classes; complete syscall/NPTL acceptance is absent.
-The fresh memory integration plan now covers adjacent live mappings, partial
-hole discard and wholly owned break pages needed by genuine GNU malloc_trim.
-Root approved the revised plan/code for build and real guest gates, not runtime
-acceptance; frozen memory-make evidence remains unchanged. A native prelinked
-loader/caller-provenance design is separately source-reviewed with40 pinned
-inputs. Actual GNU public loading, cancellation and C++ lifecycle still need
-implementation and execution before a complete Nightly/glibc build.
+The memory runtime is now frozen and independently accepted: native49,874/0
+and FPCAST49,846/0,246 linked inputs with236 predecessor inputs unchanged.
+Eight actual GNU make providers retain six unchanged GNU bodies, including
+sbrk, with explicit mremap and memory-authority derivatives. Real GNU malloc_trim
+discards interior free pages while preserving metadata and live neighbors;
+adjacent mappings, partial holes, rounded remap copies and concurrent mapping
+users pass. Root reread191,846 manifest entries and25 repository paths, verified
+both executed CPIO payloads and freshly confirmed21 owned process groups empty.
+Manifest `2604aa26fae2ae073c2326b5741752ac013cdf4a83878c81950fc943adcff2c4`;
+see docs/glibc-memory-runtime-20261002.md and
+`/mnt/p6/build/glibc-memory-runtime-root-review-20261002/frozen-proof.json`.
+This completed review supersedes prepared wording in the immutable report.
+The retained first runtime fixture failure and first freezer failure remain
+FAIL; neither correction changed the tested GNU allocator/provider objects.
+Acceptance covers logical anonymous private writable memory, not physical
+protection/decommit, file/shared mappings or default NPTL stack guards.
+Root approved the pinned14-path coherent build plan and final overlay/configure/
+metadata/fresh GNU make using this immutable memory packet; execution results
+remain pending. A native prelinked loader/caller-provenance design is separately
+source-reviewed with40 pinned inputs. Actual GNU public loading, cancellation
+and C++ lifecycle still need execution before a complete Nightly/glibc build.
 Root source evidence also identifies the cancellation restart boundary:
 GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
 before returning to the worker. A queued unwind alone cannot close that gap.
