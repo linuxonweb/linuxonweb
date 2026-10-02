@@ -544,7 +544,17 @@ provenance still fails four dlfcn objects and gmon/mcount; cancellation assembly
 fails nptl/syscall_cancel. Reviewed plan7 registers omitted init_module and
 delete_module unchanged C providers. Actual incremental run2 exits2/113.14s,
 produces1729 Wasm objects and preserves all1727 earlier object hashes. Its final
-dependency audit of both GNU .d and .dt files remains pending.
+dependency audit of both GNU .d and .dt files now independently verifies2802
+includes from2339 files,1736 source records,2631 driver records and12033 stages.
+All original2800 include paths/hashes remain unchanged; six targets fail and
+no archive/sysroot exists. The discovery packet is frozen:65589 manifest entries
+and16 repository paths reread with zero differences,14 owned groups freshly
+empty. Manifest `220d2e5f0e8f51bb5cab05eaff1c53782dc50d298594853d278eb9ab1dc27b97`.
+Proof: `/mnt/p6/build/glibc-coherent-make-root-review-20261002/frozen-root-proof.json`.
+The first freezer schema assertion failure is retained; its strict list-length
+correction changes no compilation or providers. This is failedmake discovery,
+not a libc archive, installed headers or new runtime acceptance. Preserve the
+immutable task and continue builds separately.
 
 The [native static-loader packet](glibc-native-static-loader-20261002.md) now
 has an independently reviewed prepared implementation:6748 source/tool,947

@@ -668,7 +668,17 @@ source snapshots (four generated conftests retained-only),2800 includes and
 provenance objects, gmon/mcount and nptl/syscall_cancel. Reviewed plan7 registers
 two omitted unchanged architecture C providers, init_module/delete_module;
 incremental run2 exits2/113.14s with1729 Wasm objects and all1727 prior object
-hashes unchanged. Its final .d/.dt dependency audit remains pending.
+hashes unchanged. Root's final .d/.dt union audit verifies2802 includes from
+2339 dependency files,1736 source records,2631 driver records and12033 stages.
+All original2800 include paths/hashes are retained. Six failures and no archive
+remain. The discovery packet is frozen; root reread65589 manifest entries and
+16 source paths with zero differences and freshly confirmed14 owned groups
+empty. Manifest `220d2e5f0e8f51bb5cab05eaff1c53782dc50d298594853d278eb9ab1dc27b97`;
+see docs/glibc-coherent-make-20261002.md and
+`/mnt/p6/build/glibc-coherent-make-root-review-20261002/frozen-root-proof.json`.
+The first freezer schema failure is retained; its list-length correction
+changed no compiled providers or build results. No libc/sysroot/runtime pass
+is implied. Continue compilation in a fresh task, keeping this packet immutable.
 See `/mnt/p6/build/glibc-coherent-make-root-review-20261002/source-plan6-proof.json`.
 The native static-loader prepared packet is independently source/artifact
 reviewed:6748 source/tool,947 object/artifact and348 evidence entries;320 owned
