@@ -169,6 +169,39 @@ Keep public and internal-inline behavior distinct: include/fenv.h has trivial
 internal setters when FE_HAVE_ROUNDING_MODES is zero. This source review is a
 plan, not runtime or full libm acceptance.
 
+The fresh `/mnt/p6/build/glibc-fenv-20261002` replay now passes GNU configure and
+metadata generation. All eight selected GNU units compile on the first attempt;
+their object and genuine source hashes were independently checked. The private
+compiler and 120 runtime objects are reused through exact manifest/snapshot
+verification. Public GNU API gates now pass native 48,373/0 and FPCAST 48,384/0,
+each with six rounding suites and one concurrent errno suite. All 34 actual
+inputs per run independently match; guest/browser exits and service closure
+pass. See [the fenv packet](glibc-fenv-20261002.md). Preinclude the
+genuine math/fenv.h after libc-symbols.h only for the two public implementation
+units and the public fixture: this avoids internal inline substitutes while
+preserving aliases/warning metadata. Do not use global _ISOMAC, which removes
+libc-symbols machinery.
+
+The final runtime closure contains 123 objects (102 Wasm-v1 and 21 ThinLTO)
+plus seven source/module records. Independent rereading verifies all 260
+current/snapshot hashes. Both CPIOs contain the exact tested modules, change
+only the original init record and add one probe. All ten task supervisor,
+runner and browser groups are terminal. The immutable packet freeze is terminal;
+root independently reread all 24,032 entries with zero differences, including
+1,903 absolute include dependencies (1,570 inherited). Manifest SHA256 is
+`c575dc6867d292bb6ca120831ffa7c13e48a7732671d6a190009937f86c17cd1`,
+acceptance SHA256
+`83f3aed73e22592a1f15bcc1de5682ab4ddc81059db52efe4e349cff5284556e`,
+and the exact 17-path repository freeze SHA256 is
+`0fca580def5a450211d623223fcda9e58dd381a32d58547e300ec41e01e06619`.
+The scoped local Git checkpoint adds this route and AGENTS.md to those 17 paths.
+
+After fenv acceptance, the source-only
+[36-wrapper plan](glibc-syscalls-fixed-plan-20261002.md) covers a larger fixed
+scalar/pointer group with real public signature and transport audits. Its full
+93-entry partition keeps variadic/void anomalies, layouts and memory authority
+separate; compile closure must not be mistaken for unavailable kernel facilities.
+
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
 The raw GNU thread pointer and LLVM __tls_base are separate. Replace fixture-only

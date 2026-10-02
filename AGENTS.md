@@ -282,8 +282,45 @@ The original frozen packet is unchanged. Corrected repository freeze SHA256
 `f96e01cecaf20ed505bb622e6af3ac25ff787585ae2a148726d941e65374d307` and
 historical-manifest-mapping.json identify the retained original source; an
 independent check proves executable text identical and all 29 corrected paths
-match staged bytes. The scoped Git checkpoint is next; no push/deploy is
-authorized. No full libc, Nightly, new JIT or Firefox GPU release is implied.
+match staged bytes. No push/deploy is authorized. No full libc, Nightly,
+new JIT or Firefox GPU release is implied.
+The cleanup checkpoint is committed as `ead537aa789ae84e6bf56721af20aa575b9485ee`.
+
+Active packet: `/mnt/p6/build/glibc-fenv-20261002`, repository scope
+`tools/glibc/fenv/**`. Fresh signed GNU replay/configure/metadata passes;
+the accepted private compiler and 120 runtime objects are reused with manifest
+and snapshot verification, without changing the frozen predecessor. All eight
+actual floating-point header failure units compile on the first attempt; their
+Wasm objects and genuine source hashes independently match. The owned header
+copies genuine GNU bits/fenv.h and adds only FE_TONEAREST=0, retaining
+FE_ALL_EXCEPT=0 and no unsupported modes/flags. Fresh public GNU rounding APIs
+now pass native 48,373/0 and FPCAST 48,384/0, including six public suites and one
+concurrent errno suite each. Both guests retain earlier runtime regressions,
+exit naturally, and close their browsers and servers. All 34 actual input
+hashes per run match independently. The two GNU math implementations are
+unchanged, with strong internal bodies/public weak aliases and warning/stub
+metadata. Public-header preinclude avoids GNU's internal trivial setters;
+raw/optimized IR and native instructions retain volatile indirect calls and
+f32/f64 arithmetic. A symbol-display parser fix is retained separately; no
+payload changed. Root independently verified all 123 actual link objects
+(102 Wasm-v1, 21 ThinLTO), seven source/module records and all 260 current and
+snapshot hashes. Both actual CPIO payloads match their modules; only /init
+changes among original records, with one added probe. All ten supervisor,
+runner and browser process groups are empty. Freeze is terminal and root
+independently reread all 24,032 entries with zero differences (1,903 include
+dependencies, 1,570 inherited). Manifest SHA256
+`c575dc6867d292bb6ca120831ffa7c13e48a7732671d6a190009937f86c17cd1`,
+acceptance `83f3aed73e22592a1f15bcc1de5682ab4ddc81059db52efe4e349cff5284556e`,
+17-path repository freeze
+`0fca580def5a450211d623223fcda9e58dd381a32d58547e300ec41e01e06619`.
+The exact 19-path local checkpoint additionally includes this file and the
+runtime route; no push/deploy. See
+docs/glibc-fenv-20261002.md. The usual 2 GiB task cap applies, with task-local
+disk TMP/cache/profile; no full libm/sysroot or Nightly claim.
+The planner also partitioned all 93 unaudited generated wrappers and identified
+a next 36-wrapper fixed scalar/pointer group. See
+docs/glibc-syscalls-fixed-plan-20261002.md; it is source-only planning, not
+wrapper build or kernel capability acceptance.
 Native static-module registration and caller provenance follow the reviewed
 loader plan; preserve public dlfcn APIs and honest unsupported ELF/namespace
 errors. Do not replace return-address builtins with null or erase APIs.
@@ -291,14 +328,12 @@ Default GNU thread stacks additionally need MAP_STACK and real overflow/guard
 adaptation; the current memory provider cannot satisfy their defaults unchanged.
 No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
 accepted yet.
-Fresh planning/command spawns still hit the tool's thread limit. The existing
-GPU planner now has a narrow read-only GNU fenv assignment; no GPU build was
-resumed. The integration agent handles the scoped Git checkpoint and next
-isolated packet; root reviews its evidence independently. Next: replay the eight
-actual floating-point environment failures with an owned nearest-only header,
-then genuine public GNU fegetround/fesetround and nearest-tie arithmetic in
-native/FPCAST guests. Preserve the public setter's invalid-mode rejection;
-GNU internal trivial inlines do not prove that public behavior.
+The fresh same-model kernel planner has only the 36-wrapper plan and narrow
+source/configuration audit context. Another fresh type-review spawn hit the
+tool's thread limit. No GPU build was resumed. The integration agent handles
+the scoped checkpoint and next isolated packet; root reviews its evidence
+independently. Next: the 36 typed fixed wrappers, with genuine public prototypes,
+GNU aliases, actual kernel argument counts and truthful capability results.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.
