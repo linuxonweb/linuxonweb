@@ -323,11 +323,12 @@ The planner also partitioned all 93 unaudited generated wrappers and identified
 a next 36-wrapper fixed scalar/pointer group. See
 docs/glibc-syscalls-fixed-plan-20261002.md; it is source-only planning, not
 wrapper build or kernel capability acceptance.
-Active next packet: `/mnt/p6/build/glibc-syscalls-fixed-20261002`, owned
+Completed packet: `/mnt/p6/build/glibc-syscalls-fixed-20261002`, owned
 `tools/glibc/syscalls-fixed/**`. Fresh signed GNU replay, verified reuse of the
 accepted fenv 123-object runtime/compiler and new typed wrappers/public fixtures
 are authorized, followed by actual native and FPCAST gates. Shared adapters and
-all frozen tasks remain unchanged. No checkpoint/deploy is authorized yet.
+all frozen tasks remain unchanged. Its scoped local checkpoint is now complete;
+no push/deploy was performed.
 Fresh kernel planning finds real ENOSYS bodies in the current kernel for
 inotify_init1/add_watch/rm_watch, timerfd_create and memfd_create; ramfs user
 xattrs lack storage. Record unsupported capabilities honestly while preserving
@@ -367,7 +368,43 @@ entries, 2,324 actual includes (1,903 inherited) and27 repository paths. Manifes
 SHA256 is `b17e5f7744e2f4eae6714db5f4544b7e953a18b89a0bf419f89ead66ad2e784f`;
 repository freeze is `30779ffbe42d50af61895e201846304b7d857ad3b0a822a05f379d4649ee21fd`.
 Freezer exits0 naturally, with its owned process group empty. Root independently
-rehashes all frozen inputs before the scoped local checkpoint; no push/deploy.
+rehashed all frozen inputs before the scoped local checkpoint; no push/deploy.
+The exact29-path checkpoint is `a842340e7083ddfb7bf2f4baa8b745e74d91827d`,
+tree `713399715c5ebb4a90fdb2b24534e71b14159716`, parent
+`032e8eddddfccc3d88f157224ccd86156d74bc58`. Root independently verified all27
+frozen committed blobs, exact scope, clean index and unchanged Sites HEAD.
+
+The separate root-owned `/mnt/p6/build/glibc-libnames-20261002` packet now builds
+all three originally blocked GNU pthread_cancel/exit/create objects through
+actual GNU make. Owned architecture metadata exposes the existing GNU static
+library-name recipe, with22 real macros independently matching the GNU script.
+Owned pthreadP.h includes the genuine header and replaces ELF static-require
+assembly with typed retained Wasm pointer relocations. Ten references remain
+strong; genuine GNU trylock remains weak. Real missing-provider/section-GC
+archive/table controls pass natively and through FPCAST23i64. This is selected
+compile/link-control acceptance, not pthread lifecycle or cancellation support.
+See docs/glibc-libnames-20261002.md. The immutable manifest contains22,982
+entries and445 actual compile inputs; SHA256
+`b6b7e40986d9eabb7c9abc15b6dea6428883750dd4575da9add9d7efe6288ccd`.
+Acceptance SHA256 is
+`c968e416b88ea395e2e4747b480d9d16b1f49c08c019468b6fe90f6b26a3d046`;
+ten-path repository freeze SHA256
+`410637c6cb91727eb570c6cbb43866517450c22ac4dfcf52798c9945b896bb8b`.
+The six build/control groups and freezer are terminal (freezer exit0,31.902 s).
+Root independently rehashed all22,982 inputs with zero differences and checked
+all ten repository paths and seven empty process groups. The scoped local
+checkpoint adds only AGENTS.md and the runtime route to those ten paths; no
+push/deploy.
+
+Active integration packet: `/mnt/p6/build/glibc-syscalls-next26-20261002`, owned
+`tools/glibc/syscalls-next26/**`. Fresh signed GNU replay and verified161-object
+runtime reuse pass. All26 exact original GNU streams, public signatures and
+strong bodies/aliases compile, and actual GNU make builds their26 targets.
+Combined public fixtures and isolated setsid/chroot/execve modes are in progress.
+Four selected facilities have actual ENOSYS bodies. Compilation is not runtime
+acceptance; preserve the original selector/header/link failures and snapshots.
+The combined link exposed missing public sigemptyset/sigaddset providers; the
+agent is adding unchanged GNU units rather than fixture replacements.
 Root's next source-only plan covers 26 further genuine public fixed wrappers,
 with exact header/stream hashes and actual kernel body evidence at
 `/mnt/p6/build/glibc-next26-plan-20261002/plan.json`. See
@@ -384,8 +421,8 @@ accepted yet.
 The fresh same-model kernel planner has only the 36-wrapper plan and narrow
 source/configuration audit context. Another fresh type-review spawn hit the
 tool's thread limit. No GPU build was resumed. The integration agent handles
-the scoped checkpoint and next isolated packet; root reviews its evidence
-independently. Next: the 26 further typed fixed wrappers, with genuine public prototypes,
+the next26 isolated packet; root owns the libnames checkpoint and reviews evidence
+independently. Next: real native and FPCAST gates for those26 wrappers, with genuine public prototypes,
 GNU aliases, actual kernel argument counts and truthful capability results.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.

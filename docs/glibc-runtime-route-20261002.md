@@ -231,11 +231,32 @@ includes (1,903 inherited); its SHA256 is
 `b17e5f7744e2f4eae6714db5f4544b7e953a18b89a0bf419f89ead66ad2e784f`.
 The27-path repository freeze SHA256 is
 `30779ffbe42d50af61895e201846304b7d857ad3b0a822a05f379d4649ee21fd`.
-Root independently rehashes these before the local scoped checkpoint; no deploy.
+Root independently rehashed these before the exact29-path local checkpoint
+`a842340e7083ddfb7bf2f4baa8b745e74d91827d`, with all27 frozen committed blobs
+matching and public Sites unchanged. No push/deploy.
+
+The [static metadata packet](glibc-libnames-20261002.md) now passes actual GNU
+make for the three blocked pthread_cancel/exit/create objects. An architecture
+overlay uses GNU's own name-generation recipe and preserves actual typed static
+requirements as retained native Wasm relocations, with ten strong references
+and GNU's original weak trylock reference. Missing-provider, archive extraction
+under GC and native/FPCAST table controls pass. Its frozen manifest has22,982
+entries and445 actual compile inputs, SHA256
+`b6b7e40986d9eabb7c9abc15b6dea6428883750dd4575da9add9d7efe6288ccd`;
+acceptance SHA256
+`c968e416b88ea395e2e4747b480d9d16b1f49c08c019468b6fe90f6b26a3d046`.
+Ten frozen repository paths precede the scoped local checkpoint, with this route
+and AGENTS.md added separately. These selected object/link controls establish
+neither cancellation providers nor public pthread lifecycle.
 The [next 26 public wrappers](glibc-syscalls-next26-plan-20261002.md) have a
 separate source/binary plan; pivot_root needs historical-export provenance and
 four selected facilities have actual bound ENOSYS bodies. Neither these plans
-nor the selected compilation establish a complete GNU sysroot.
+nor the selected compilation establish a complete GNU sysroot. The isolated
+next26 replay now compiles all26 exact GNU streams/public signatures, verifies
+bindings and builds all26 actual GNU make targets. Public guest fixtures and
+isolated setsid/chroot/execve gates remain in progress. Its combined link adds
+unchanged GNU sigemptyset/sigaddset providers; retain the missing-provider
+failure rather than substituting private public-signal implementations.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
