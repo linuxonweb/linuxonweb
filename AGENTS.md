@@ -113,6 +113,17 @@ is free.
   fpcast), prop-mono 1.075 (below threshold), json noise-bound. GO for JIT
   packet 4 on PBL; the specializer should emit direct JSNative calls and inline
   monomorphic property ICs.
+- Done: JIT packet 4 runtime loop specializer (`docs/guest-jit-pbl-spec-20261001.md`,
+  `/mnt/p6/build/guest-jit-spec-20261001`): `tools/pbl-jit/PblJit.cpp` turns hot
+  innermost int32 loops into wasm via jit_install (one LoopHead hook in a PBL
+  copy, `tools/build-firefox-pbl-jit.py`). Host emitter test 47/47. ABBAAB vs PBL
+  (`run1`): int-loop 254.6 -> 1.33 ms/100 reps (~190x), all checksums identical,
+  other 7 cases no regression. Candidate `test-pbl-0ba71ef269c7910a`
+  (`web/linux/tests/runtime-candidates/pbl-jit-run1`, not committed/promoted) is
+  on the old fa0217 lineage (forced Bing), so the session-startup gate cannot
+  run (non-JIT control fails identically). Next JIT 5: rebase PBL+JIT onto the
+  promoted Firefox, run startup/update gates, then GetArg/doubles, prop ICs,
+  native calls.
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
 - Done: gputest G2 cube demo (`docs/gputest-demo-20260930.md`, `/mnt/p6/build/gputest-g2-20260930`):

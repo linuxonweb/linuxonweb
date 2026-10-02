@@ -9,6 +9,9 @@
 // the init's forced Bing URL fails fast.
 //
 // Usage: node test-firefox-pbl-bench.mjs OUT     Ports: HTTP 4201, CDP 9411.
+// JIT packet 4 reuse: PBLBENCH_TASK overrides the task root and PBLBENCH_ARMS
+// names a JSON file {A:{name,dir,version,archiveSha256},B:{...}} replacing the
+// two arms (verdict labels then read "B slower/faster than A").
 import fs from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
@@ -16,7 +19,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const task = '/mnt/p6/build/guest-jit-pbl-bench-20261001';
+const task = process.env.PBLBENCH_TASK || '/mnt/p6/build/guest-jit-pbl-bench-20261001';
 const HTTP_PORT = 4201, CDP_PORT = 9411;
 if (process.argv.length !== 3) throw Error('usage: OUT');
 const out = path.resolve(process.argv[2]);
@@ -27,7 +30,7 @@ for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 4 * 1024 ** 3) throw Error('disk-backed task scratch required');
 }
 if (!out.startsWith(task + '/')) throw Error('output outside task'); await fs.mkdir(out);
-const arms = {
+const arms = process.env.PBLBENCH_ARMS ? JSON.parse(await fs.readFile(process.env.PBLBENCH_ARMS, 'utf8')) : {
   A: { name: 'baseline', dir: '/mnt/p6/build/firefox-ready-20260926/baseline-images', version: 'fa0217b54d99', archiveSha256: '6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65' },
   B: { name: 'pbl', dir: path.join(repo, 'web/linux/tests/runtime-candidates/pbl-v3'), version: 'test-pbl-6febc628d9f6f796', archiveSha256: '6febc628d9f6f7968bdb228d1590adcff83daabd8c6c4b63c8bb6a71c9afb486' },
 };
@@ -128,6 +131,7 @@ async function boot(index, armId) {
     const state = await ev(`(async()=>({system:(await(await import('./boot-assets.mjs')).systemUsage()).version,isolated:crossOriginIsolated,visibility:document.visibilityState}))()`);
     rec.state = state;
     rec.checks = { version: state.system === arm.version, isolated: state.isolated === true, config: logs.includes('cpus=2, ram=4 GB'), benchOk: done.ok === true, cases: rec.cases.length === 24, outerErrors: errors.length === 0 };
+    rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
     rec.fatalLines = logs.split('\n').filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-20);
     rec.pass = Object.values(rec.checks).every(Boolean);
   } catch (error) { rec.error = String(error.stack || error); try { await fs.writeFile(dir + '/failure-guest-logs.txt', await guestLogs()); await shot('failure'); } catch {} }
