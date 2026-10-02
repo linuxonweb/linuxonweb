@@ -539,6 +539,19 @@ failures were attempted;125 now compile,43 remain, and newly reached
 io/xstatconv.o adds one distinct legacy ABI failure. The scheduler overlay
 was not part of this build. Agent audit/provenance supplement is complete;
 root independent review/freeze are pending. Do not claim a libc archive/sysroot.
+Root's native libio offset-alias adapter is frozen in
+`/mnt/p6/build/glibc-data-alias-final-20261002`,58 manifest entries, SHA256
+`484c458177125e84683da87938340f0c779e9b0106b1e7338e17008ac05b7e4a`;
+five-path repository freeze
+`cbadd6cd0d2f6cf851071a05f7005c35c49cfc66225680df579cbfce19da14a7`.
+Eight independent linked address/dispatch checks pass, seven malformed IR and
+eleven malformed metadata controls reject. Two LLVM aliases preserve GNU's
+168/420 offsets; post-backend linking metadata restores exact84-byte extents,
+with code/data/relocations unchanged. Original incorrect LLVM alias extents
+and earlier experiment remain retained. See docs/glibc-data-alias-20261002.md
+and tools/glibc/data-alias/README.md. This is retained genuine frontend and
+linked fixture acceptance; a fresh actual GNU target rebuild is assigned to
+new tools/glibc/vtables-make/**, not yet accepted. Never treat it as full stdio.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

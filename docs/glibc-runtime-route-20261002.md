@@ -342,6 +342,15 @@ These actual failures and archive/header results drive the next implementation.
 These are steps toward the complete GNU sysroot; they do not
 establish a complete libc, public NPTL lifecycle or Firefox Nightly baseline.
 
+The [owned libio alias adapter](glibc-data-alias-20261002.md) compiles retained
+genuine GNU vtable IR and passes eight independent linked pointer/dispatch
+controls, seven malformed frontend and eleven malformed object rejections.
+It preserves table offsets168/420 and corrects only LLVM's alias extent fields
+to GNU's84bytes; code/data/relocation sections remain byte-identical. The final
+58-entry evidence and five repository files are frozen. Fresh genuine
+libio/vtables.o rebuilding/integration is separate and pending, followed by
+the newly exposed distinct legacy104-byte kernel-stat provider/converter.
+
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
 The raw GNU thread pointer and LLVM __tls_base are separate. Replace fixture-only
