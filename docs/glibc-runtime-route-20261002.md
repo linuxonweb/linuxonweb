@@ -534,3 +534,26 @@ A separate native static-loader design preserves unchanged GNU public/error
 bodies and derives caller provenance from actual linked callsite descriptors.
 Its40 original/snapshot pins pass source review; public loader runtime and
 cancellation closure remain pending.
+
+Final coherent configure/metadata retry completes in24.804s, exit0 and empty
+PGID4176587. The retained first failure applied the vtable-only extent fixer
+to an ordinary configure object. The reviewed owned driver now copies backend
+bytes only for the exact empty alias summary and invokes the frozen fixer only
+for the two exact GNU offset aliases; any other summary fails. Root independently
+verified14 plan6 source pins and31 completed architecture files. Fresh actual
+GNU make -k -j2 lib runs under PGID4182308 with600s/2GiB supervision. Its result
+is pending; a live build is not acceptance of libc or a sysroot.
+
+Root accepted the [native cancellation plan](glibc-cancel-native-plan-20261002.md)
+after independently rereading42 original/snapshot pairs, two compile outputs,
+six repository paths and six loader route inputs, and confirming both compile
+groups empty. Proof:
+`/mnt/p6/build/glibc-cancel-native-plan-root-review-20261002/final-plan-proof.json`.
+This is source/ABI evidence. The owned sparse compiler implementation is next:
+early cleanup-aware safepoints, actual caller-SP capture and general frame routing
+must precede genuine GNU forced unwind and post-restoration kernel cancellation.
+The loader control passes16 tag0 cleanup cases, but all16 tag1 SjLj cases run
+retained cleanup prematurely and again on return ([1,9,9]); correct jump value
+and SP restoration do not establish correct cleanup. Preserve this failure for
+the compiler packet. No cancellation runtime, full GNU lifecycle, Nightly,
+new JIT, GPU or deployment acceptance follows from these prerequisites.

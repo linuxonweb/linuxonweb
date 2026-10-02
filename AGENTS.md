@@ -657,6 +657,25 @@ metadata/fresh GNU make using this immutable memory packet; execution results
 remain pending. A native prelinked loader/caller-provenance design is separately
 source-reviewed with40 pinned inputs. Actual GNU public loading, cancellation
 and C++ lifecycle still need execution before a complete Nightly/glibc build.
+The final configure/metadata retry passes24.804s/exit0 with empty PGID4176587.
+The original configure failure remains retained: a vtable-only extent fixer
+was incorrectly applied to ordinary objects. Reviewed plan6 now accepts only
+an exact empty alias summary for a byte-identical copy, or the two exact GNU
+aliases for the frozen fixer. Fresh GNU make -k -j2 lib is launched under owned
+PGID4182308 with600s/2GiB supervision; no result or full libc is accepted yet.
+See `/mnt/p6/build/glibc-coherent-make-root-review-20261002/source-plan6-proof.json`.
+The native cancellation plan is independently source-reviewed:42 original/
+snapshot pairs, two compile-only outputs, six repository paths and six loader
+route inputs; two compile groups are terminal/empty. See
+docs/glibc-cancel-native-plan-20261002.md and root final-plan-proof.json under
+`/mnt/p6/build/glibc-cancel-native-plan-root-review-20261002`.
+It requires early cleanup-aware safepoints, real caller-SP/CFA frame coverage,
+genuine forced unwind and kernel restart policy applied after restoration.
+The loader routing controls pass16 tag0 cleanup cases; all16 tag1 SjLj cases
+fail retained-cleanup semantics ([1,9,9]) despite correct jump/SP restoration.
+Keep those failures; no forced-unwind or general SjLj acceptance is implied.
+A fresh sparse compiler packet is authorized under tools/glibc/cancel-compiler
+with no frozen compiler/source/kernel changes. Cancellation remains unimplemented.
 Root source evidence also identifies the cancellation restart boundary:
 GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
 before returning to the worker. A queued unwind alone cannot close that gap.
