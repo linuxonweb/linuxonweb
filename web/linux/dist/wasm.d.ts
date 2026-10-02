@@ -85,6 +85,9 @@ export interface Imports {
     };
 }
 export declare const HALT_KERNEL: unique symbol;
+/** Exact engine-trap identities for noncatchable worker halt and user exec. */
+export declare const HALT_KERNEL_ESCAPE: WebAssembly.RuntimeError;
+export declare const HALT_USER_ESCAPE: WebAssembly.RuntimeError;
 export declare function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, }: {
     is_worker: boolean;
     memory: WebAssembly.Memory;

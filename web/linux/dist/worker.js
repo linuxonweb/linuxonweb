@@ -3,7 +3,7 @@ import { createAudioWrite } from "./audio.js";
 import { platform } from "./platform.js";
 import { assert } from "./util.js";
 import { read_wasm_memories } from "./wasm_binary.js";
-import { allocate_shared_memory, HALT_KERNEL, kernel_imports, memory_bytes, user_module_imports_supported, } from "./wasm.js";
+import { allocate_shared_memory, HALT_KERNEL, HALT_KERNEL_ESCAPE, HALT_USER_ESCAPE, kernel_imports, memory_bytes, user_module_imports_supported, } from "./wasm.js";
 import { ensureUserDestination, growForSyscallResult } from "./user-memory-growth-adapter.js";
 import { installFirefoxCallbackAdapter } from "./firefox-callback-adapter.mjs";
 import { cloneJitControl, createJitControl, JitThread, jitSyscall, JIT_SYSCALL_MAX, JIT_SYSCALL_MIN, } from "./guest-jit.js";
@@ -437,7 +437,7 @@ function create_instance(context) {
                     }
                     if (instance !== original_instance) {
                         call_entry = call_start;
-                        throw HALT_USER;
+                        throw HALT_USER_ESCAPE;
                     }
                     if (local_jit !== null && local_jit.pending())
                         local_jit.replay();
@@ -599,9 +599,9 @@ function create_instance(context) {
                         call_entry();
                     }
                     catch (error) {
-                        if (error === HALT_USER)
+                        if (error === HALT_USER || error === HALT_USER_ESCAPE)
                             continue;
-                        if (error === HALT_KERNEL)
+                        if (error === HALT_KERNEL || error === HALT_KERNEL_ESCAPE)
                             throw error;
                         // A trap from the guest Wasm module is expected to arrive
                         // here through call_start/call_entry.  Keep the existing
@@ -888,7 +888,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
         instance.exports.__indirect_function_table.get(fn >>> 0)(arg);
     }
     catch (error) {
-        if (error === HALT_KERNEL)
+        if (error === HALT_KERNEL || error === HALT_KERNEL_ESCAPE)
             return;
         throw error;
     }

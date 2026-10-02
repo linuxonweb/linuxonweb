@@ -58,6 +58,69 @@ throw/reset/retry and cleanup-throw abort behavior in native/fpcast modules.
 Do not suppress cleanup, turn off exceptions or relabel GNU C as C++. The
 separate forced-unwind/cancellation runtime gap remains after this fix.
 
+The owned private compiler has now built successfully. Independent archive
+inspection verifies all 101 ordered members, including repeated basenames,
+with only CGException.cpp.o changed. Ordinary C, disabled-exception C and host
+C EH raw IR match the original compiler byte for byte. Native C cleanup emits
+scoped pads, cleanupret and an actual abort call when cleanup itself throws.
+The first fresh replay compiles 48 of the 50 affected GNU units; pthread_once
+and qsort fail on missing generated sem_t-align.h before EH compilation.
+The requested make target had no rule; its failure is retained. Genuine GNU
+gen-as-const.py with csu/sem_t-align.sym and selected compile flags generates
+the header. Retries of only those two units now give 50/50, with all actual
+object/source hashes and selected scoped cleanup IR independently checked.
+The first combined native runtime links successfully. Its cleanup-throw case
+exits through genuine GNU abort with status134, then traps before the existing
+suites. Same-payload diagnostic replay confirms that the host HALT_KERNEL
+Symbol crosses guest C catch_all: the outer cleanup executes and attempts a
+second abort against an already exited kernel task. Exact syscall and stack
+evidence is retained in logs/prototypes/real-control-interception.json. The
+guest acceptance gate fails; all 120 link inputs and the first payload are
+retained. A successful individual negative case does not override that failure.
+
+Isolated Node and Chromium probes distinguish ordinary JavaScript exceptions
+from actual Wasm traps. Symbols and constructed RuntimeError objects are
+catchable, while direct traps and rethrows of exact captured trap identities
+escape guest catch_all. This agrees with the
+[Wasm exception-handling trap semantics](https://github.com/WebAssembly/exception-handling/blob/main/proposals/exception-handling/legacy/Exceptions.md#traps).
+The next task-local adapter must carry distinct halt and exec controls across
+guest frames, classify only their exact identities at the outer JavaScript
+boundary, and retain failure reporting for unrelated traps. Acceptance needs
+native and FPCAST cleanup/once regression gates, genuine abort134 and actual
+exec replacement inside active cleanup: old cleanup must not run and the new
+GNU startup/TLS process must exit42. Also restore the linear stack pointer in
+the owned native-tag catch helper and verify it after throw and normal return.
+The first corrected native Linux gate, guest-native-control-run5, passes
+48,374/0 with all earlier suites, nested and indirect cleanup, linear stack
+restoration, genuine pthread_once throw/reset/retry, cleanup-throw abort134 and
+real raw exec221 replacing an active cleanup frame. The old TLS marker is157;
+the target observes fresh zero TLS, sentinel argv, empty GNU cleanup chain and
+constructors after valid descriptor/DTV setup, then exits42. The supervisor
+exits0 naturally and the browser exits0 with the server closed. The FPCAST
+gate also passes 48,373/0. Genuine private-Clang C-pad controls pass in Node and
+Chromium: ordinary JS and native-tag exceptions execute cleanup with original
+identity; actual traps bypass cleanup; the two exact host-control identities
+remain distinct from unrelated errors/traps. The host probe's unexpected-abort
+import is never called and is not GNU abort acceptance. Minimal production
+integration is authorized, with fresh gates using integrated wasm.js and the
+retained task-only raw-TP/futex instrumentation in worker.js. Production gates
+now pass native 48,373/0 and FPCAST 48,374/0; all 34 actual input hashes match
+per run, guest/browser exits0 and servers close with owned groups empty.
+The frozen manifest has 24,626 entries including 1,570 actual includes; all
+entries and 29 repository paths were independently reread without differences.
+Manifest SHA256 is
+`15bcb2d693cb08ced4f962c197a934232c7ff6d29b8c4806459f0a51f5db8e17`;
+acceptance is `78d57fed14afdb153ebc3526732ef4fe88924c9e2e1ba593a0d1ae62eb7141e9`.
+The commit whitespace check removed one space from an empty line in the
+host-control test script, preserving its exact tested bytes separately. The
+original packet is unchanged; the corrected 29-path repository freeze SHA256 is
+`f96e01cecaf20ed505bb622e6af3ac25ff787585ae2a148726d941e65374d307` under
+`/mnt/p6/build/glibc-c-cleanup-checkpoint-20261002`, with the original source
+mapping. Executable text is identical. Continue in a fresh task; frozen packet
+files must remain unchanged. Details are in
+[the C cleanup packet](glibc-c-cleanup-20261002.md). These results are
+not full libc or browser acceptance.
+
 Resolve caller provenance and native loader semantics explicitly. GNU
 elf/dl-open.c uses the caller's map for namespaces and RPATH/RUNPATH;
 elf/dl-sym.c requires it for RTLD_NEXT. Returning null for every return-address
@@ -77,6 +140,34 @@ conversion, time64 errors/overflow, public aliases and thread-local errno tests.
 Compile/link closure and installed headers must identify genuine GNU sources
 and owned providers, with no musl/WASI objects or unresolved-symbol suppression.
 Archive production is one gate; it does not prove startup or threading works.
+
+The 93 failed generated wrappers need a per-entry type and transport audit.
+GNU make-syscalls.sh explicitly describes its scalar signature letter as any
+signedness or size; it cannot determine a native Wasm C function signature.
+The retained generator emits five fixed arguments for prctl, while genuine
+sys/prctl.h declares a variadic function. Its native Wasm variadic calling
+convention needs a real architecture adapter. The vhangup stream has one
+argument although genuine unistd.h declares vhangup(void), and legacy
+init_module/delete_module entries encode opaque argument counts. Preserve
+GNU aliases and source streams, but verify actual public types and kernel
+arguments rather than creating all-long wrappers. Generated mprotect/madvise
+also overlap owned memory-provider symbols: select the actual architecture
+providers and test their protection/advice behavior against the actual
+logical Wasm mappings. A syscall number alone does not implement their semantics.
+
+The eight floating-point header failures have a separate small architecture
+fix. GNU include/fenv.h requires FE_TONEAREST even when no other rounding mode
+is selectable; its selected generic bits/fenv.h does not define it. A Wasm
+bits/fenv.h overlay can preserve the genuine generic types and FE_ALL_EXCEPT=0
+while defining only the actual fixed nearest mode. Do not advertise exception
+flags or selectable rounding modes that Wasm does not supply. GNU
+math/fegetround.c and math/fesetround.c already implement nearest-only behavior;
+the public setter rejects other values. Replay all eight actual failed units
+and test those public GNU functions, invalid-mode rejection, unchanged errno
+and arithmetic at rounding boundaries in native and FPCAST Linux guests.
+Keep public and internal-inline behavior distinct: include/fenv.h has trivial
+internal setters when FE_HAVE_ROUNDING_MODES is zero. This source review is a
+plan, not runtime or full libm acceptance.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.

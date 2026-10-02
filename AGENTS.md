@@ -223,7 +223,7 @@ Completed bounded GNU port packets (not a completed libc):
   The task is frozen. See docs/glibc-fullmake-inventory-20261002.md and
   tools/glibc/inventory/README.md; static loader design is source-only.
 
-Next packet: an owned minimal LLVM 22.1.8 C frontend Wasm exception hook,
+Completed cleanup packet: an owned minimal LLVM 22.1.8 C frontend Wasm exception hook,
 using an exact-source CGException.cpp rebuild and private archive/driver
 relink. Clang's C personality selection lacks the Wasm branch used by C++,
 causing DWARF cleanup landingpads to reach a scoped-EH Wasm backend. Preserve
@@ -235,6 +235,55 @@ provide GNU forced unwind or cancellation. Use fresh owned storage and leave
 frozen source clones/toolchains unchanged; a 3 GiB cap is authorized only for
 the new compiler packet, retaining 8 GiB launch reserve/5 GiB hard stop and no
 edits to the frozen env.sh.
+The private compiler now builds successfully under
+`/mnt/p6/build/glibc-c-cleanup-20261002`. Independent binary archive inspection
+checks all 101 ordered members, including duplicate basenames: only
+CGException.cpp.o changed. Ordinary C, disabled-EH C and host C EH raw IR are
+byte-identical to the original compiler. Native C EH emits actual scoped
+cleanup pads and a nested cleanup-throw abort path. The first fresh GNU replay
+rebuilds 48/50 affected units; pthread_once and qsort initially stop on missing
+generated sem_t-align.h. Genuine gen-as-const.py/csu sem_t-align.sym generation
+with selected GNU flags and retries of just those two units now yield 50/50.
+The initial failures and unsuccessful make target remain retained. Independent
+rereads match all 50 Wasm object/source hashes and scoped cleanup IR proofs.
+This is compiler/build evidence only. The first fresh native runtime payload
+links and its cleanup-throw case exits through GNU abort with status134, but
+then traps before the regression suites. Diagnostic replay of the same payload
+confirms the cause: the host HALT_KERNEL Symbol passes through guest C
+catch_all, invoking the outer cleanup and a second GNU abort after the kernel
+task has exited. The actual guest gate is FAIL, retained with all 120 linked
+input snapshots. Isolated Node and Chromium probes prove that actual Wasm
+traps, including an exact captured trap rethrow, bypass catch_all; constructed
+RuntimeError objects do not. A task-local host-control adapter is being tested
+for both process termination and exec replacement, preserving ordinary guest
+exception cleanup. The task-local adapter now passes its first fresh native
+Linux gate, 48,374/0: nested/indirect cleanup, linear stack restoration, genuine
+pthread_once throw/reset/retry, all earlier suites, cleanup-throw abort134 and
+real exec221 replacement with dirty old TLS and fresh target startup exiting42.
+The FPCAST gate also passes 48,373/0. Genuine C-pad controls pass in Node and
+Chromium: ordinary JS/native-tag exceptions retain cleanup and exact identity;
+actual traps skip cleanup, and distinct halt/exec identities do not classify
+unrelated errors. These host controls use an unexpected-abort import that is
+never called; real abort134 comes from the Linux gates. Minimal production
+runtime integration is now authorized for wasm.js, worker.js and wasm.d.ts,
+followed by gates serving the actual integrated code. Those production gates
+now pass native 48,373/0 and FPCAST 48,374/0, with all 34 actual input hashes
+matching per run, browser/guest exits0, servers closed and owned groups empty.
+Task-worker differences are only the retained raw-TP/futex test patch. The
+task is now frozen: 24,626 entries, including 1,570 actual include dependencies,
+and 29 repository paths independently reread with zero differences. Manifest
+SHA256 `15bcb2d693cb08ced4f962c197a934232c7ff6d29b8c4806459f0a51f5db8e17`,
+acceptance `78d57fed14afdb153ebc3526732ef4fe88924c9e2e1ba593a0d1ae62eb7141e9`,
+repository freeze `c3d252ffc3bf60d49612896093206852e6cdde80f731e8b5037c6841bfe93875`.
+The staged whitespace check found one space on an empty line in the host-control
+test script. Its exact tested bytes and all original staged blobs are retained
+in `/mnt/p6/build/glibc-c-cleanup-checkpoint-20261002`; only that space was removed.
+The original frozen packet is unchanged. Corrected repository freeze SHA256
+`f96e01cecaf20ed505bb622e6af3ac25ff787585ae2a148726d941e65374d307` and
+historical-manifest-mapping.json identify the retained original source; an
+independent check proves executable text identical and all 29 corrected paths
+match staged bytes. The scoped Git checkpoint is next; no push/deploy is
+authorized. No full libc, Nightly, new JIT or Firefox GPU release is implied.
 Native static-module registration and caller provenance follow the reviewed
 loader plan; preserve public dlfcn APIs and honest unsupported ELF/namespace
 errors. Do not replace return-address builtins with null or erase APIs.
@@ -242,10 +291,14 @@ Default GNU thread stacks additionally need MAP_STACK and real overflow/guard
 adaptation; the current memory provider cannot satisfy their defaults unchanged.
 No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
 accepted yet.
-Fresh planning/command spawns and a completed-agent follow-up hit the tool's
-thread limit. Stale pending GPU planning was interrupted; no old GPU build was
-resumed. The existing integration agent remains available for the scoped Git
-checkpoint and next isolated packet; root reviews its evidence independently.
+Fresh planning/command spawns still hit the tool's thread limit. The existing
+GPU planner now has a narrow read-only GNU fenv assignment; no GPU build was
+resumed. The integration agent handles the scoped Git checkpoint and next
+isolated packet; root reviews its evidence independently. Next: replay the eight
+actual floating-point environment failures with an owned nearest-only header,
+then genuine public GNU fegetround/fesetround and nearest-tie arithmetic in
+native/FPCAST guests. Preserve the public setter's invalid-mode rejection;
+GNU internal trivial inlines do not prove that public behavior.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

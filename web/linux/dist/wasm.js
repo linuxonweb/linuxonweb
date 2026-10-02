@@ -72,6 +72,26 @@ export const MachineTerminationReason = {
     Panic: 1,
 };
 export const HALT_KERNEL = Symbol("halt kernel");
+// Real engine traps bypass application Wasm catch_all; thrown JS Symbols do not.
+// See the exception-handling proposal's legacy Exceptions.md "Traps" section.
+// This import-free module exports () -> () { unreachable }. Capture two errors
+// before entering any guest frames and recognize only their exact identities.
+const controlTrapFunction = new WebAssembly.Instance(new WebAssembly.Module(Uint8Array.from([
+    0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,
+    7,8,1,4,116,114,97,112,0,0,10,5,1,3,0,0,11,
+]))).exports.trap;
+function captureControlTrap() {
+    try { controlTrapFunction(); }
+    catch (error) {
+        if (!(error instanceof WebAssembly.RuntimeError)) throw error;
+        return error;
+    }
+    throw new Error("native unreachable did not trap");
+}
+export const HALT_KERNEL_ESCAPE = captureControlTrap();
+export const HALT_USER_ESCAPE = captureControlTrap();
+if (HALT_KERNEL_ESCAPE === HALT_USER_ESCAPE) throw new Error("control traps must be distinct");
+
 export function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, }) {
     return {
         breakpoint: () => {
@@ -83,14 +103,14 @@ export function kernel_imports({ is_worker, memory, spawn_worker, boot_console_w
             // Messages posted after platform.quit() are not guaranteed to arrive.
             worker_exit();
             platform.quit();
-            throw HALT_KERNEL;
+            throw HALT_KERNEL_ESCAPE;
         },
         terminate_machine: (reason) => {
             if (!is_worker) {
                 throw new Error("Machine termination called in main thread");
             }
             terminate_machine(reason);
-            throw HALT_KERNEL;
+            throw HALT_KERNEL_ESCAPE;
         },
         boot_console_write: (msg, len) => {
             const address = msg >>> 0;
