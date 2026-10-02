@@ -139,11 +139,24 @@ Completed bounded GNU port packets (not a completed libc):
   real architecture jump behavior. Earlier source-audit/parser and temporary
   manifest-summary failures remain retained. Ports 4202/9412 are closed.
 
-Next packet: compiler-aware native GNU __sigsetjmp/hidden-name lowering,
-genuine signal-mask saving/restoration, longjmp/unwind and fortify boundaries.
-Work root is `/mnt/p6/build/glibc-native-jumps-20261002`; repository scope is
-tools/glibc/jumps and docs/glibc-native-jumps-20261002.md. No production GNU
-sysroot, general CRT/NPTL, cancellation or Nightly build is accepted yet.
+- `/mnt/p6/build/glibc-native-jumps-20261002/acceptance.json`: direct-call native
+  GNU signal jumps pass actual native 48,320/0 and FPCAST23i64 48,319/0.
+  Genuine GNU signal-mask saving/restoration, nested jumps and manual NPTL
+  cleanup chains pass; three invalid owner/stack-bound/direction cases abort134
+  with GNU fortify diagnostics. Early caller-side LLVM IR lowering avoids dead
+  returning setjmp wrappers. Escaping/indirect setjmp is explicitly rejected.
+  Backend/jmp_buf sizes are now 24/156 bytes, so all clients must rebuild.
+  Full GNU make advances past setjmp and fails at generated signal/kill.o's
+  non-Wasm syscall-template.S assembly; a corrected scoped setjmp rebuild passes.
+  Details and limits are in docs/glibc-native-jumps-20261002.md and
+  tools/glibc/jumps/README.md. This does not prove general CRT, pthread lifecycle,
+  cancellation, C++ destructors, signal-callback jumps or production compiler flags.
+
+Next packet: native generated-syscall architecture backend preserving GNU
+aliases and normal/NOERRNO/ERRVAL conventions, exact public signatures and
+real-guest errors/signals/file operations, then GNU make to the next blocker.
+No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
+accepted yet.
 Fresh planning/command spawns and a completed-agent follow-up hit the tool's
 thread limit. Stale pending GPU planning was interrupted; no old GPU build was
 resumed. The existing integration agent remains available for the scoped Git
