@@ -491,3 +491,28 @@ to that return alone is insufficient for blocked cancellation. Eleven original
 and snapshot inputs, ten findings and the actual register structure are in
 `/mnt/p6/build/glibc-cancel-boundary-plan-20261002/evidence.json`.
 The required native restart decision and genuine forced unwind remain unbuilt.
+
+Root completed the [five-wrapper packet](glibc-syscalls-last5-20261002.md)
+review and terminal freeze: native48,761/0 and FPCAST48,756/0,239 linked inputs,
+24,278 manifest entries and31 exact repository paths. Root independently reread
+all frozen bytes, checked both executed CPIO payloads and rechecked19 empty
+owned process groups. Manifest
+`19c1ae05f93df716db260dbf6d16dd1092e3e6d0c9ff757594d1d44117550671`;
+proof `/mnt/p6/build/glibc-syscalls-last5-root-review-20261002/frozen-proof.json`.
+The frozen report retains its earlier prepared wording; this completed review
+supersedes that status without changing tested source or runtime evidence.
+Capability no-op/readback, reversible owned mounts and isolated reversible
+pivot_root execute through real GNU wrappers. pidfd nonNULL signal conversion
+accepts only SI_USER/SI_QUEUE/SI_TKILL, with exact callback fields and input
+canaries; other classes remain explicitly unsupported.
+
+The fresh memory integration plan corrects invalid mremap flag errors and
+MADV_DONTNEED ownership. It covers the union of live anonymous mappings and
+wholly owned break pages, accepts adjacent mappings and leaves holes untouched
+while reporting their partial-range error. GNU malloc_trim must execute its
+real interior free-page discard and preserve neighboring live allocations.
+Root approved build/runtime gates after source review; no new memory guest
+acceptance is claimed yet. A separate native static-loader design preserves
+unchanged GNU public/error bodies and derives caller provenance from actual
+linked callsite descriptors. Its40 original/snapshot pins pass source review;
+loader implementation, public runtime and cancellation closure remain pending.

@@ -624,6 +624,25 @@ payloads match the executed v3 modules and all owned groups are terminal/empty.
 Manifest `e9002b3d9ef9d00a8df62566e2eabe05cb8f4c391b90343c90f3d75081167095`;
 see docs/glibc-syscalls-arity-20261002.md. Immutable report review-pending wording
 is superseded by this completed review. Full prctl/NPTL/Nightly remain absent.
+The five additional GNU wrappers are also frozen and independently reviewed:
+capget, capset, mount_setattr, pidfd_send_signal and pivot_root. Native48,761/0
+and FPCAST48,756/0 retain the checked-jump runtime and actual GNU allocator
+regressions. Root reread24,278 manifest entries and31 exact repository paths;
+239 linked inputs and both CPIO payloads match the executed modules. Nineteen
+owned groups are freshly empty, including the external freezer and readback.
+Manifest `19c1ae05f93df716db260dbf6d16dd1092e3e6d0c9ff757594d1d44117550671`;
+see docs/glibc-syscalls-last5-20261002.md. Its prepared-review wording predates
+this completed freeze. Capability tests preserve capabilities; mount tests
+restore owned mount flags; the isolated root-pivot test reverses A-to-B-to-A,
+restores its saved root and unmounts owned mounts. NonNULL pidfd siginfo support
+is limited to three measured classes; complete syscall/NPTL acceptance is absent.
+The fresh memory integration plan now covers adjacent live mappings, partial
+hole discard and wholly owned break pages needed by genuine GNU malloc_trim.
+Root approved the revised plan/code for build and real guest gates, not runtime
+acceptance; frozen memory-make evidence remains unchanged. A native prelinked
+loader/caller-provenance design is separately source-reviewed with40 pinned
+inputs. Actual GNU public loading, cancellation and C++ lifecycle still need
+implementation and execution before a complete Nightly/glibc build.
 Root source evidence also identifies the cancellation restart boundary:
 GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
 before returning to the worker. A queued unwind alone cannot close that gap.
