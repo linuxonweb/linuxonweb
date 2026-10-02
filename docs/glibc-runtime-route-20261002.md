@@ -571,3 +571,22 @@ retained cleanup prematurely and again on return ([1,9,9]); correct jump value
 and SP restoration do not establish correct cleanup. Preserve this failure for
 the compiler packet. No cancellation runtime, full GNU lifecycle, Nightly,
 new JIT, GPU or deployment acceptance follows from these prerequisites.
+
+The [bounded cancellation compiler prerequisite](glibc-cancel-compiler-20261002.md)
+now builds and passes native O0 624/0, O2/O3 640/0. Root independently reread
+1168 actual compile/link inputs and13 source paths, verified101 frontend and45
+backend ordered archive members, and confirmed310 recorded process groups empty.
+Only CGStmt.cpp.o, CodeGenFunction.cpp.o and WebAssemblyFrameLowering.cpp.o
+change; duplicate archive member names remain ordered and intact. Opt-in
+cleanup-aware polls retain source cleanups, and actual caller-entry SP capture
+covers zero/static/dynamic/nested/indirect/recursive controls. Patch
+`67473abb362e308fef395f80baffdabb8e5baa8572222b457fefb879911cec40`;
+compiler `1147a637f9144f77c35398fc0cfd77a06fb4fec21f91706361c34395d1b8848b`.
+Proof: `/mnt/p6/build/glibc-cancel-compiler-root-review-20261002/final-root-proof.json`.
+
+General unwind is still incomplete:80 escaping-SP leaks per mode are retained,
+and diagnostic tests reset SP between cases. The original LTO backend cannot
+lower the marker. General descriptors/CFA, tag1 routing, forced unwind, genuine
+GNU cancellation, kernel restart policy and public NPTL lifecycle remain pending.
+The next separate native EH backend packet tests escaping-frame SP restoration
+and tag1 bypass of language cleanup without JavaScript or assembly SP resets.

@@ -690,8 +690,23 @@ genuine forced unwind and kernel restart policy applied after restoration.
 The loader routing controls pass16 tag0 cleanup cases; all16 tag1 SjLj cases
 fail retained-cleanup semantics ([1,9,9]) despite correct jump/SP restoration.
 Keep those failures; no forced-unwind or general SjLj acceptance is implied.
-A fresh sparse compiler packet is authorized under tools/glibc/cancel-compiler
-with no frozen compiler/source/kernel changes. Cancellation remains unimplemented.
+The bounded sparse compiler prerequisite is built and independently reviewed:
+tools/glibc/cancel-compiler, native O0 624/0 and O2/O3 640/0. Opt-in early
+cleanup-aware source polls and actual caller-entry SP capture preserve tested
+zero/static/dynamic/nested/indirect/recursive cases and source cleanup exactly
+once. Root reread1168 actual inputs,13 repository paths and101/45 ordered
+archive occurrences, confirming only two frontend and one backend members
+changed;310 recorded groups are freshly empty. Patch
+`67473abb362e308fef395f80baffdabb8e5baa8572222b457fefb879911cec40`,
+compiler `1147a637f9144f77c35398fc0cfd77a06fb4fec21f91706361c34395d1b8848b`.
+Escaping exceptions still leak SP in80 cases per mode; diagnostic tests reset
+SP explicitly. Original LTO fails on the reserved marker; general descriptors,
+CFA, forced unwind and cancellation remain unimplemented. This is a source
+checkpoint of a measured prerequisite subset, not full compiler acceptance.
+See docs/glibc-cancel-compiler-20261002.md and
+`/mnt/p6/build/glibc-cancel-compiler-root-review-20261002/final-root-proof.json`.
+The separate native EH routing packet is authorized for a sparse backend build
+and actual tests, with no predecessor/kernel/runtime/source-tree mutation.
 Root source evidence also identifies the cancellation restart boundary:
 GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
 before returning to the worker. A queued unwind alone cannot close that gap.
