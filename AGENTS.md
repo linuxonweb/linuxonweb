@@ -560,8 +560,11 @@ a5,242-byte Wasm object, SHA256
 `4d740463ea8b1ba997dde317bc5c8251fc3e35ddf1834826b1e3b5f57e34e09a`.
 Root independently checked364 actual dependencies, seven compile stages,
 strong84-byte aliases at168/420, all11 unchanged non-linking sections and
-three empty owned process groups. Terminal freeze is underway. Undefined
-GNU providers remain; never treat this compilation as full stdio acceptance.
+three empty owned process groups. Terminal freeze and root full readback pass:
+22,974 manifest entries, manifest
+`4560bc3586da072fa8e64d8966c8918831142677636b16d8883ae4633d767589`,
+exact10 frozen repository paths. Undefined GNU providers remain; never treat
+this compilation as full stdio acceptance.
 
 The final16 generated-wrapper packet is terminal-frozen and independently
 reviewed: native48,728/0, FPCAST48,719/0,231 link objects,16 actual GNU make
@@ -578,8 +581,16 @@ checked providers, preserving the previously tested owned native helper
 bodies. Root froze/reviewed22,551 entries and five repository paths, manifest
 `51c9ccab91c1fa6747c70228ad60e48e9344329571674a49dee61c074c9588e3`.
 See docs/glibc-checked-jump-make-20261002.md. Substitution of those exact
-GNUmake-built objects into real guest regressions is running separately;
-runtime acceptance has not yet been established for that substitution.
+GNUmake-built objects into real guest regressions now passes native48,709/0
+and FPCAST48,730/0 with all prior gates and three invalid checked-jump
+abort134 cases. Root independently rehashed119,627 frozen entries and13
+repository paths and parsed both actual CPIO archives against their unchanged
+base. Manifest
+`12fbdae877de5e2f639df6152106c00c08536a0b2046dbc8d29edf50ab331c0d`;
+see docs/glibc-checked-jump-runtime-20261002.md. Only two selected GNUmake
+objects replace the prior helper;230 other runtime objects remain byte-identical.
+The frozen report retains its earlier review-pending wording; this completed
+review supersedes it without changing tested code or evidence.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

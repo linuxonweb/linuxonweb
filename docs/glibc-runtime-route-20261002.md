@@ -443,3 +443,15 @@ properties/Math with correctness and performance evidence. Firefox GPU follows
 on the same accepted build; old Firefox 128 wgpu IDs/goldens are incompatible with the
 new source. Preserve the existing Sites release until the candidate's browser,
 JIT, GPU and update gates justify promotion and verified public deployment.
+
+Root completed the frozen readback of the actual GNU libio/vtables.o compilation
+and checked-jump object substitution: 142,601 manifest entries and 23 exact
+repository paths, with native48,709/0 and FPCAST48,730/0 guest results. Both
+actual archives contain the verified modules, retaining every base record except
+the test init launcher and adding only the probe. The vtables object proves
+compilation and alias metadata; it does not prove complete stdio execution.
+The checked-jump runtime proves two selected GNUmake-owned architecture objects
+retain the established native ABI and checked failure behavior, with230 other
+runtime objects unchanged. These completed reviews supersede older pending-review
+wording in the immutable reports. Root evidence:
+`/mnt/p6/build/glibc-root-checkpoint2-review-20261002/proof.json`.
