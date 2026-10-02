@@ -195,12 +195,47 @@ acceptance SHA256
 and the exact 17-path repository freeze SHA256 is
 `0fca580def5a450211d623223fcda9e58dd381a32d58547e300ec41e01e06619`.
 The scoped local Git checkpoint adds this route and AGENTS.md to those 17 paths.
+It is committed as `032e8eddddfccc3d88f157224ccd86156d74bc58`; an independent
+check confirms the exact 19 paths and frozen blobs, clean index/selected scope,
+and unchanged public Sites/release references.
 
 After fenv acceptance, the source-only
 [36-wrapper plan](glibc-syscalls-fixed-plan-20261002.md) covers a larger fixed
 scalar/pointer group with real public signature and transport audits. Its full
 93-entry partition keeps variadic/void anomalies, layouts and memory authority
 separate; compile closure must not be mistaken for unavailable kernel facilities.
+The fresh `/mnt/p6/build/glibc-syscalls-fixed-20261002` packet is now authorized
+under owned `tools/glibc/syscalls-fixed/**`, retaining shared/frozen predecessors.
+It must preserve genuine public types, aliases and all previous runtime gates.
+Kernel source/binary planning identifies five current ENOSYS APIs (the inotify
+trio, timerfd_create and memfd_create) and unsupported ramfs user-xattr storage;
+those limitations require explicit capability results and later kernel work.
+The first configure invocation failed on a mode0600 C-only adapter and remains
+retained. A corrected query-capable Python invocation passes in a fresh object
+tree. All 36 selected GNU streams match the original failure snapshots exactly,
+and their actual Wasm wrapper objects plus the independent genuine-header
+signature/reference object compile successfully. Root independently reread those
+streams and object formats. Strengthened binding/header audits pass, and all
+36 actual GNU make targets also build through the owned architecture driver;
+root independently checked their actual objects, aliases and generated streams.
+The first two native failures remain retained: the named fixture tried to
+restore bootstrap group0, which setpgid correctly treats as the caller's own
+PID. A setsid launcher with an ordinary child supplies a nonzero inherited
+session/group. Corrected native 48,465/0 and FPCAST 48,478/0 pass all six public
+suites, concurrent errno checks and strict create/restore status0. Root checked
+actual modules/CPIOs, all206 final current/snapshot inputs (161 objects plus45
+sources/modules), both34 served input sets and terminal supervisor groups.
+The [packet report](glibc-syscalls-fixed-20261002.md) records exact identities
+and limitations. The immutable freeze has27,077 entries and2,324 actual
+includes (1,903 inherited); its SHA256 is
+`b17e5f7744e2f4eae6714db5f4544b7e953a18b89a0bf419f89ead66ad2e784f`.
+The27-path repository freeze SHA256 is
+`30779ffbe42d50af61895e201846304b7d857ad3b0a822a05f379d4649ee21fd`.
+Root independently rehashes these before the local scoped checkpoint; no deploy.
+The [next 26 public wrappers](glibc-syscalls-next26-plan-20261002.md) have a
+separate source/binary plan; pivot_root needs historical-export provenance and
+four selected facilities have actual bound ENOSYS bodies. Neither these plans
+nor the selected compilation establish a complete GNU sysroot.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.

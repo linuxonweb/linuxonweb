@@ -314,13 +314,66 @@ acceptance `83f3aed73e22592a1f15bcc1de5682ab4ddc81059db52efe4e349cff5284556e`,
 17-path repository freeze
 `0fca580def5a450211d623223fcda9e58dd381a32d58547e300ec41e01e06619`.
 The exact 19-path local checkpoint additionally includes this file and the
-runtime route; no push/deploy. See
+runtime route and is committed as `032e8eddddfccc3d88f157224ccd86156d74bc58`.
+Root independently verified exact scope, all 17 frozen committed blobs, clean
+index/selected worktree and unchanged Sites/release references. No push/deploy. See
 docs/glibc-fenv-20261002.md. The usual 2 GiB task cap applies, with task-local
 disk TMP/cache/profile; no full libm/sysroot or Nightly claim.
 The planner also partitioned all 93 unaudited generated wrappers and identified
 a next 36-wrapper fixed scalar/pointer group. See
 docs/glibc-syscalls-fixed-plan-20261002.md; it is source-only planning, not
 wrapper build or kernel capability acceptance.
+Active next packet: `/mnt/p6/build/glibc-syscalls-fixed-20261002`, owned
+`tools/glibc/syscalls-fixed/**`. Fresh signed GNU replay, verified reuse of the
+accepted fenv 123-object runtime/compiler and new typed wrappers/public fixtures
+are authorized, followed by actual native and FPCAST gates. Shared adapters and
+all frozen tasks remain unchanged. No checkpoint/deploy is authorized yet.
+Fresh kernel planning finds real ENOSYS bodies in the current kernel for
+inotify_init1/add_watch/rm_watch, timerfd_create and memfd_create; ramfs user
+xattrs lack storage. Record unsupported capabilities honestly while preserving
+the later kernel-support work; wrapper compilation does not enable facilities.
+Exact independently checked body offsets/configuration hashes and fixture
+limitations are in docs/glibc-syscalls-fixed-kernel-20261002.md. Fresh preparation
+PID/PGID 3388792 is terminal exit1: configure invoked a mode0600 C-only driver
+directly and received permission denied. Preserve that failed configure tree
+and initial adapter sources. Correct the owned invocation/query handling and
+use a fresh configure attempt; do not rewrite the failure as a passing replay.
+Correction completed: only configure/metadata/runtime-copy retried in a fresh
+object tree, PID/PGID 3401054 terminal exit0 after 71.255 s. Original failed
+tree/logs/script bytes remain retained. The owned query adapter records actual
+command/cwd/sources/output/status and uses verified private clang. All 36 wrapper
+objects and the independent GNU public-prototype/reference object compile;
+PID/PGID 3409265 terminal exit0 after 40.006 s. Root independently reread all
+36 streams against frozen original snapshots and verified actual Wasm-v1
+objects. Public runtime fixtures/gates and final packet acceptance remain pending.
+The strengthened audit verifies 36 strong bodies/public aliases with matching
+function identities, 36 exact GNU public-address initializers and 263 actual
+include hashes, including public headers equal to the signed pristine release.
+The actual GNU make route also builds all 36 original targets through the new
+architecture Makefile/driver; root checked the resulting Wasm objects, symbols
+and exact generator streams. Its independent proof is
+`/mnt/p6/build/glibc-syscalls-fixed-review-20261002/actual-make-proof.json`.
+The first two native guests remain FAIL: the fixture attempted to restore
+bootstrap process group0, which setpgid interprets as the caller's own PID.
+Corrected named launcher uses an existing setsid shell with an ordinary child
+and a nonzero inherited group; actual create/restore succeeds with errno intact.
+Final guests pass native 48,465/0 and FPCAST 48,478/0, all six public suites,
+concurrent errno checks and strict setpgid status0. Root independently checked
+both actual CPIO/module bytes, all 206 final current/snapshot inputs (161 objects
+=140Wasm/21BC plus45 sources/modules), both sets of34 served input hashes and
+17 terminal supervisor groups. Scope/limits are in
+docs/glibc-syscalls-fixed-20261002.md. The immutable freeze contains27,077
+entries, 2,324 actual includes (1,903 inherited) and27 repository paths. Manifest
+SHA256 is `b17e5f7744e2f4eae6714db5f4544b7e953a18b89a0bf419f89ead66ad2e784f`;
+repository freeze is `30779ffbe42d50af61895e201846304b7d857ad3b0a822a05f379d4649ee21fd`.
+Freezer exits0 naturally, with its owned process group empty. Root independently
+rehashes all frozen inputs before the scoped local checkpoint; no push/deploy.
+Root's next source-only plan covers 26 further genuine public fixed wrappers,
+with exact header/stream hashes and actual kernel body evidence at
+`/mnt/p6/build/glibc-next26-plan-20261002/plan.json`. See
+docs/glibc-syscalls-next26-plan-20261002.md. pivot_root remains a separately
+deferred historical export; swapoff/swapon/acct/fanotify_init have actual bound
+ENOSYS bodies. This planning does not authorize an unsupported-success claim.
 Native static-module registration and caller provenance follow the reviewed
 loader plan; preserve public dlfcn APIs and honest unsupported ELF/namespace
 errors. Do not replace return-address builtins with null or erase APIs.
@@ -332,7 +385,7 @@ The fresh same-model kernel planner has only the 36-wrapper plan and narrow
 source/configuration audit context. Another fresh type-review spawn hit the
 tool's thread limit. No GPU build was resumed. The integration agent handles
 the scoped checkpoint and next isolated packet; root reviews its evidence
-independently. Next: the 36 typed fixed wrappers, with genuine public prototypes,
+independently. Next: the 26 further typed fixed wrappers, with genuine public prototypes,
 GNU aliases, actual kernel argument counts and truthful capability results.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
