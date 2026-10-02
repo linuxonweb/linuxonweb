@@ -1,4 +1,95 @@
-# HANDOFF — 2026-10-01 late (paused by user; read this first)
+# Resumed — 2026-10-02 (current user direction; read this first)
+
+The user has explicitly resumed implementation: make Firefox's native Wasm
+JIT work and verify it in the Linux/Wasm web guest, then complete GPU support
+and evaluate the best route, including wgpu. Fresh subagents using the same
+model are explicitly authorized, with only necessary task context (no full
+conversation fork). This supersedes the pause and no-subagents clauses in the
+historical handoff below. JIT comes before GPU implementation. Storage policy,
+native Wasm only, adapter preference, preserving unrelated files/services and
+the existing public Sites audience still apply. The user explicitly authorized
+redeployment to ChatGPT Sites after JIT finishes on 2026-10-02; proceed with that
+release after JIT acceptance, then continue GPU work. This supersedes historical
+clauses asking for another Sites confirmation.
+
+**Current release state:** native Wasm JIT candidate `ce0d881dec8cea07` is
+accepted and promoted locally as runtime `ce0d881dec8c`. The final apply passes,
+including immediately rechecking 117 pinned evidence files. Independent checks
+verify the 88,910,833-byte Firefox archive SHA-256
+`ce0d881dec8cea0728c5f513461f66de736c631c837e0e4c847cdf315c996745`;
+kernel and plain rootfs remain unchanged. The original eight release cases all
+have median ratios <=1; the separately audited array case is about 72.36×
+faster than the actual previous release. Both failed unpublished-JIT7c array
+comparisons remain FAIL under the explicitly documented engineering tradeoff.
+This is a numeric loop specializer with safe interpreter fallback, not universal
+Ion coverage. Apply evidence and the verified baseline rollback pair are at
+`/mnt/p6/build/guest-jit-promotion-20261002/apply-tradeoff-final-run1/`.
+The release commit and authorized ChatGPT Sites redeployment follow. Sites v9
+is still public; do not claim the new runtime deployed until public acceptance.
+
+JIT 7c compound array updates and JIT 8 numeric property/Math compilation are
+implemented. JIT8 + handler fallback candidate `962b207fbc746434` passes real
+startup/update and six-boot safety checks (all 18 helpers compile before
+mutation), but is not accepted or promoted. Safety exposed repeated compilation
+from a cache keyed only by shared bytecode. The script-aware cache candidate
+`37aeed1b7dcb8469` passes safety smoke (exactly one compilation per helper) and
+the complete original benchmark's semantics. Integer/property/Math ratios are
+0.007/0.014/0.010, but deep/error throws regress 1.103/1.077, blocking promotion.
+Explicit-throw fallback candidate `256bb70bc59e7d97` passes a smoke but does not
+yet resolve those regressions. Cached eligibility rejection plus a copied
+JIT-entry fast return in candidate `ce0d881dec8cea07` passes its original smoke:
+deep/error medians 39/39 ms match the earlier control. Its full original ABBAAB
+benchmark passes all six boots, 144 rows, checksums and unchanged inputs; all
+eight median ratios are <=1, with deep/error 1.000. Later host variance is large;
+do not claim exception/JSON speedups. Candidate boot 6 demonstrates major-GC
+epoch 4→5 eviction/recompilation. Cold/warm startup and profile-preserving update
+pass on this same candidate, including zero image requests for warm/update
+boots. Full safety also passes all six boots and 450 result rows: every candidate
+boot compiles the 18 required helpers exactly once before mutation checks,
+with 8,408 assertions per boot. Spec6 passes all six functional boots, but its
+`and-or` timing is held at 5/4 ms versus JIT7c. A predeclared six-boot precision
+confirmation uses 2,500 reps instead of 100, unchanged function bodies and no
+excluded samples. Its coverage-only acceptance bound is candidate/control
+<=1.05 with both aggregate median batches >=75 ms; the original eight-case
+promoted comparison still requires every median ratio <=1. The precision check
+passes at 108/105 = 1.028571 with aggregate arm medians 107/113 ms. Spec7
+passes all six functional boots, but compound array updates measure 13/12 ms
+versus JIT7c (1.083333). The predeclared 1,000-repetition confirmation fails
+the same 1.05 coverage bound: median boot batches are 124/142 ms, a candidate
+slowdown of 14.516%, with aggregate medians 128/146 ms. All six boots and 198
+batches pass correctness, input and cleanup checks; none is excluded. Promotion
+remains held. Source inspection identifies a caller-policy difference: the
+protected benchmark caller runs in the C++ interpreter in the final candidate,
+while JIT7c permits PBL. The default-argument callee still uses PBL/compiled
+Wasm. A fixed two-boot four-mode caller/argument diagnostic passes all 264
+samples, with A/B median batches 118/116, 118/116, 118/119 and 124/119 ms.
+It does not establish the caller policy as the cause or overturn the failed
+confirmation. An adaptive future-entry proposal remains unapplied. A fixed
+six-boot comparison of the protected array workload against the actual live
+promoted runtime passes its frozen strict <=1 declaration: median boot batches
+are 1,013/14 ms (control/candidate), about 72.36× faster. All six boots and 198
+raw batches pass correctness, input, navigation and cleanup checks.
+Before launch, root froze conditional decision `c8e5fe57a2727850c375f6bfd50121ffb9ea0a10629e34c0da9ca5a67273ec98`
+at `/mnt/p6/build/guest-jit-promotion-20261002/root-conditional-tradeoff-decision-run1.json`.
+This allows a narrowly audited release tradeoff against unpublished JIT7c
+only if the live-baseline array comparison passes. Both failed 7c comparisons
+retain FAIL status and unresolved cause. The original eight
+promoted-case bounds and safety/startup/update checks stay mandatory. All
+original and failed confirmation evidence remains retained. The final promotion
+helper passes 186 checks, including evidence freshness immediately before
+replacement. Its independent final review and concrete dry-run precede apply.
+The actual public v9 baseline passes Firefox readiness, typed input/download,
+119 NSS trust records and persistence; its cleanly closed profile is retained
+for the real public update after deployment.
+Plan, build, test and deployment are delegated with minimal context, as the
+user explicitly requested again on 2026-10-02.
+Keep all candidate archives isolated and preserve the saved baseline.
+Work started at HEAD `ada94961dcec1f1e9d253e96969487260213262e` on branch
+`claude-opus-5-5-guest-gpu-jit`. GPU work is read-only route/ABI preparation until
+JIT release/public acceptance. The selected JIT is promoted locally; Sites v9
+remains public until the authorized release finishes.
+
+# HANDOFF — 2026-10-01 late (historical pause, superseded above)
 
 The user paused the goal and asked for this summary. Do not resume work until
 the user says so. Branch `claude-opus-5-5-guest-gpu-jit` (JIT 7 committed as `33db1bd`).

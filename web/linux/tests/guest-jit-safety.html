@@ -1,0 +1,122 @@
+<!doctype html><meta charset="utf-8"><title>Guest JIT safety</title>
+<style>body{font:16px sans-serif;margin:2em}pre{white-space:pre-wrap}</style>
+<h1>Guest JIT safety</h1>
+<p>Semantic checks run once per case per round. PBLBENCH timing rows are transport metadata.</p>
+<pre id="result">Settling</pre>
+<script>
+'use strict';
+const params=new URLSearchParams(location.search);
+const label=params.get('label')||location.pathname.split('/').pop().replace(/\.html$/,'').replace(/^pblbench-/,'');
+const REPS=100,WARMUPS=1,SAMPLES=11,ROUNDS=3,SETTLE_MS=15000,N=4096;
+const out=document.getElementById('result');
+let assertions=0,currentRound=-1;
+function emit(obj){const line='PBLBENCH '+JSON.stringify(obj);console.log(line);out.textContent+='\n'+line;}
+function eq(got,want,what){assertions++;if(!Object.is(got,want))throw Error(what+': '+String(got)+' wanted '+String(want));}
+function throws(fn,ctor,what){let error;try{fn();}catch(e){error=e;}eq(error instanceof ctor,true,what);}
+const tick=()=>new Promise(r=>setTimeout(r,0));
+const filled=(v=1)=>Array.from({length:N},()=>v);
+// Each function below has its own script. Keep hot loops free of handlers,
+// calls to test helpers, and global loop bounds, so compilation is observable.
+function integerSum(n){let s=0;for(let i=0;i<n;i++)s=(s+i)|0;return s;}
+function denseSum(a){let s=0;for(let i=0;i<a.length;i++)s+=a[i];return s;}
+function denseAdd(a){for(let i=0;i<a.length;i++)a[i]+=1;return a;}
+function denseIndex(a,index){let s=0;for(let i=0;i<4096;i++)s+=a[index];return s;}
+function numericLast(v){let x=0;for(let i=0;i<4096;i++)x=v*1;return x;}
+function numericBits(v){let x=0;for(let i=0;i<4096;i++)x=(x+(v|0))|0;return x;}
+function propertyRead(o){let s=0;for(let i=0;i<4096;i++)s+=o.x;return s;}
+function propertyWrite(o){for(let i=0;i<4096;i++)o.x=o.x+1;return o.x;}
+function dynamicRead(o){let s=0;for(let i=0;i<4096;i++)s+=o.tail;return s;}
+function maxPair(a,b){let x=0;for(let i=0;i<4096;i++)x=Math.max(a,b);return x;}
+function minPair(a,b){let x=0;for(let i=0;i<4096;i++)x=Math.min(a,b);return x;}
+function maxAcc(v){let x=0;for(let i=0;i<4096;i++)x=Math.max(x,v);return x;}
+function mathAbs(v){let x=0;for(let i=0;i<4096;i++)x=Math.abs(v);return x;}
+function mathFloor(v){let x=0;for(let i=0;i<4096;i++)x=Math.floor(v);return x;}
+function mathCeil(v){let x=0;for(let i=0;i<4096;i++)x=Math.ceil(v);return x;}
+function mathRound(v){let x=0;for(let i=0;i<4096;i++)x=Math.round(v);return x;}
+function mathTrunc(v){let x=0;for(let i=0;i<4096;i++)x=Math.trunc(v);return x;}
+function mathSqrt(v){let x=0;for(let i=0;i<4096;i++)x=Math.sqrt(v);return x;}
+function handlerCallsNumeric(){try{return integerSum(4096);}finally{handlerCallsNumeric.cleanups++;}}
+handlerCallsNumeric.cleanups=0;
+function throwingNumeric(n){integerSum(n);throw 19;}
+function lexicalCatch(){let x=7;try{throw 11;}catch(x){let y=x+2;eq(y,13,'catch lexical');}return x;}
+function finallyWins(){try{return 1;}finally{return 23;}}
+function throwWithIteratorCleanup(){let closed=0,caught=0;const it={
+ [Symbol.iterator](){return this;},next(){return {value:3,done:false};},return(){closed++;return {done:true};}};
+ try{for(const x of it){throw x;}}catch(x){caught=x;}eq(caught,3,'iterator throw value');eq(closed,1,'iterator return exactly once');}
+function catchFinallyRethrow(){let cleanups=0,result=0;try{
+ try{throw 17;}catch(x){throw x+1;}finally{cleanups++;}
+ }catch(x){result=x;}eq(result,18,'rethrow');eq(cleanups,1,'finally on rethrow');}
+function manySlots(){const o={};for(let i=0;i<24;i++)o['field'+i]=i;o.tail=3;return o;}
+// Record HTML line numbers dynamically; source must be unchanged throughout a
+// guest run. PBLJIT compile logs identify filename:script.lineno().
+const required7=[integerSum,denseSum,denseAdd,denseIndex,numericLast,numericBits];
+const required8=[propertyRead,propertyWrite,dynamicRead,maxPair,minPair,maxAcc,
+ mathAbs,mathFloor,mathCeil,mathRound,mathTrunc,mathSqrt];
+function compilationMetadata(){const source=document.scripts[0].textContent.split('\n');
+ return [...required7,...required8].map(fn=>({name:fn.name,
+ sourceLine:6+source.findIndex(line=>line.startsWith('function '+fn.name+'(')),
+ packet:required7.includes(fn)?7:8,required:true}));}
+async function warm(){
+ for(let warmRound=0;warmRound<32;warmRound++){
+ eq(integerSum(4096),8386560,'warm integer');await tick();
+ eq(denseSum(filled()),4096,'warm dense read');await tick();
+ eq(denseIndex(filled(),2),4096,'warm dense index');await tick();
+ const a=filled(0);denseAdd(a);eq(a[4095],1,'warm dense compound');await tick();
+ eq(numericLast(1.25),1.25,'warm double');eq(numericBits(2.25),8192,'warm bits');await tick();
+ eq(propertyRead({x:2}),8192,'warm property read');
+ eq(propertyWrite({x:0}),4096,'warm property write');eq(dynamicRead(manySlots()),12288,'warm dynamic slots');await tick();
+ eq(maxPair(2.25,3.5),3.5,'warm max');eq(minPair(2.25,3.5),2.25,'warm min');eq(maxAcc(2),2,'warm max acc');await tick();
+ for(const [fn,value,want] of [[mathAbs,-1.25,1.25],[mathFloor,1.25,1],[mathCeil,1.25,2],
+ [mathRound,1.25,1],[mathTrunc,1.25,1],[mathSqrt,4,2]]){eq(fn(value),want,'warm '+fn.name);await tick();}
+ }
+ emit({event:'safety-phase',label,phase:'warm-done',repetitions:32});
+}
+function once(test){let round=-1;return ()=>{if(round!==currentRound){test();round=currentRound;}return 1;};}
+const cases=[
+ ['array-shift',once(()=>{const a=filled();a.shift();eq(denseSum(a),4095,'shifted dense base');denseAdd(a);eq(a[0],2,'shift write first');eq(a[4094],2,'shift write last');}),1],
+ ['array-sealed',once(()=>{const a=Object.seal(filled(0));denseAdd(a);eq(denseSum(a),4096,'sealed writable elements');}),1],
+ ['array-frozen',once(()=>{const a=Object.freeze(filled(0));throws(()=>denseAdd(a),TypeError,'frozen strict write');eq(a[0],0,'frozen first untouched');eq(a[4095],0,'frozen last untouched');}),1],
+ ['array-hole',once(()=>{const a=filled();delete a[2048];eq(denseSum(a),NaN,'hole gives undefined');denseAdd(a);eq(a[2047],2,'hole prefix once');eq(a[2048],NaN,'hole arithmetic');eq(a[2049],2,'hole suffix once');}),1],
+ ['array-accessor',once(()=>{const a=filled();let reads=0,writes=0,value=7;Object.defineProperty(a,'2048',{configurable:true,get(){reads++;return value;},set(v){writes++;value=v;}});
+ eq(denseSum(a),4102,'accessor read sum');eq(reads,1,'accessor read once');denseAdd(a);eq(reads,2,'compound accessor read once');eq(writes,1,'compound accessor write once');eq(value,8,'accessor value');eq(a[2047],2,'accessor prefix once');eq(a[2049],2,'accessor suffix once');}),1],
+ ['array-prototype-hole',once(()=>{const a=filled();let reads=0;delete a[2048];const proto=Object.create(Array.prototype);Object.defineProperty(proto,'2048',{get(){reads++;return 9;}});Object.setPrototypeOf(a,proto);
+ eq(denseSum(a),4104,'prototype getter');eq(reads,1,'prototype getter once');}),1],
+ ['array-overflow-partial',once(()=>{const a=filled(0);a[2048]=2147483647;denseAdd(a);eq(a[2047],1,'overflow prefix once');eq(a[2048],2147483648,'int overflow double');eq(a[2049],1,'overflow suffix once');eq(denseSum(a),2147487743,'overflow sum');}),1],
+ ['array-short-empty',once(()=>{eq(denseSum([]),0,'empty');eq(denseSum([4,5]),9,'short');const a=[4,5];denseAdd(a);eq(a[0],5,'short first');eq(a[1],6,'short last');}),1],
+ ['array-out-of-bounds',once(()=>{const a=filled();eq(denseIndex(a,4096),NaN,'out of bounds');eq(denseIndex(a,-1),NaN,'negative property');a[-1]=3;eq(denseIndex(a,-1),12288,'negative property fallback');a[4096]=5;eq(denseIndex(a,4096),20480,'appended property fallback');}),1],
+ ['array-double-nonnumber',once(()=>{const a=filled();a[2048]=0.5;eq(denseSum(a),4095.5,'double after sampled prefix');a[2048]=true;eq(denseSum(a),4096,'boolean fallback');a[2048]=undefined;eq(denseSum(a),NaN,'undefined fallback');}),1],
+ ['numeric-edges',once(()=>{eq(numericLast(-0),-0,'mul negative zero');eq(numericLast(+0),+0,'mul positive zero');eq(numericLast(NaN),NaN,'NaN boxed');eq(numericLast(Infinity),Infinity,'infinity boxed');
+ eq(numericBits(NaN),0,'ToInt32 NaN');eq(numericBits(Infinity),0,'ToInt32 infinity');eq(numericBits(4294967297.5),4096,'ToInt32 modulo');eq(numericBits(-4294967297.5),-4096,'ToInt32 negative modulo');}),1],
+ ['property-shape',once(()=>{eq(propertyRead({padding:8,x:3}),12288,'different fixed slot');eq(propertyRead({x:0.25,y:4}),1024,'different shape double');const o={x:2};delete o.x;o.x=4;eq(propertyRead(o),16384,'deleted and restored slot');}),1],
+ ['property-dynamic',once(()=>{const o=manySlots();eq(dynamicRead(o),12288,'dynamic slot');o.tail=0.5;eq(dynamicRead(o),2048,'dynamic slot type change');}),1],
+ ['property-accessor',once(()=>{const o={x:2};let reads=0,value=4,writes=0;Object.defineProperty(o,'x',{configurable:true,get(){reads++;return value;},set(v){writes++;value=v;}});
+ eq(propertyRead(o),16384,'replaced accessor read');eq(reads,4096,'getter called each read');propertyWrite(o);eq(reads,8193,'write reads plus return read');eq(writes,4096,'setter each write');eq(value,4100,'accessor write value');}),1],
+ ['property-readonly',once(()=>{const o={x:2};Object.defineProperty(o,'x',{writable:false});throws(()=>propertyWrite(o),TypeError,'readonly strict property');eq(o.x,2,'readonly untouched');const p={x:2};Object.freeze(p);throws(()=>propertyWrite(p),TypeError,'frozen object strict');eq(p.x,2,'frozen object untouched');}),1],
+ ['property-type-change',once(()=>{const o={x:2};o.x=0.5;eq(propertyRead(o),2048,'same shape numeric type');o.x=NaN;eq(propertyRead(o),NaN,'same shape NaN');o.x=true;eq(propertyRead(o),4096,'same shape boolean');}),1],
+ ['math-minmax-edges',once(()=>{eq(maxPair(-0,+0),+0,'max signed zero forward');eq(maxPair(+0,-0),+0,'max signed zero reverse');eq(minPair(-0,+0),-0,'min signed zero forward');eq(minPair(+0,-0),-0,'min signed zero reverse');eq(maxPair(NaN,3),NaN,'max NaN first');eq(maxPair(3,NaN),NaN,'max NaN second');eq(minPair(NaN,3),NaN,'min NaN first');eq(minPair(3,NaN),NaN,'min NaN second');eq(maxPair(-Infinity,Infinity),Infinity,'max infinities');}),1],
+ ['math-unary-edges',once(()=>{eq(mathAbs(-0),+0,'abs zero');eq(mathAbs(-Infinity),Infinity,'abs infinity');eq(mathFloor(-0),-0,'floor zero');eq(mathFloor(-1.25),-2,'floor negative');eq(mathCeil(-0.25),-0,'ceil negative zero');eq(mathCeil(Infinity),Infinity,'ceil infinity');eq(mathTrunc(-0.25),-0,'trunc negative zero');eq(mathTrunc(-1.75),-1,'trunc negative');eq(mathRound(-0.5),-0,'round negative half');eq(mathRound(-1.5),-1,'round negative tie');eq(mathRound(1.5),2,'round positive tie');eq(mathRound(4503599627370495.5),4503599627370496,'round large half');eq(mathRound(-4503599627370495.5),-4503599627370495,'round large negative half');eq(mathSqrt(-0),-0,'sqrt negative zero');eq(mathSqrt(-1),NaN,'sqrt negative');eq(mathSqrt(Infinity),Infinity,'sqrt infinity');for(const fn of [mathAbs,mathFloor,mathCeil,mathRound,mathTrunc,mathSqrt])eq(fn(NaN),NaN,fn.name+' NaN');}),1],
+ ['math-replaced-callee',once(()=>{const saved=Math.max;try{Math.max=(a,b)=>a+b;eq(maxAcc(2),8192,'callee changed without shape change');}finally{Math.max=saved;}eq(maxAcc(2),2,'callee restored');}),1],
+ ['math-reassigned-global',once(()=>{const saved=globalThis.Math;try{globalThis.Math={max(){return 9;}};eq(maxAcc(2),9,'global Math object reassigned');}finally{globalThis.Math=saved;}eq(maxAcc(2),2,'Math object restored');}),1],
+ ['math-accessor-callee',once(()=>{if(currentRound<ROUNDS-1){eq(maxAcc(2),2,'stable Math until final round');return;}const desc=Object.getOwnPropertyDescriptor(Math,'max');let gets=0,calls=0;try{Object.defineProperty(Math,'max',{configurable:true,get(){gets++;return (a,b)=>{calls++;return b+1;};}});
+ eq(maxAcc(2),3,'Math accessor result');eq(gets,4096,'Math getter each call');eq(calls,4096,'Math replacement each call');}finally{Object.defineProperty(Math,'max',desc);}}),1],
+ ['handler-rethrow-finally',once(()=>{catchFinallyRethrow();eq(finallyWins(),23,'finally overrides return');eq(lexicalCatch(),7,'outer lexical preserved');}),1],
+ ['handler-iterator-cleanup',once(()=>{throwWithIteratorCleanup();}),1],
+ ['handler-mixed-calls',once(()=>{const before=handlerCallsNumeric.cleanups;eq(handlerCallsNumeric(),8386560,'handler calls hot helper');eq(handlerCallsNumeric.cleanups,before+1,'handler finally once');let caught;try{throwingNumeric(4096);}catch(x){caught=x;}eq(caught,19,'callee throws into handler');}),1],
+ ['gc-pressure',once(()=>{const o={x:2};eq(propertyRead(o),8192,'pre-pressure read');const garbage=Array.from({length:6000},(_,i)=>({i,data:[i,i+1,i+2]}));eq(garbage[5999].data[2],6001,'pressure retained');eq(propertyRead(o),8192,'post-pressure read');eq(denseSum(filled()),4096,'post-pressure array');}),1],
+];
+emit({event:'start',label,hc:navigator.hardwareConcurrency,ua:navigator.userAgent,kind:'safety'});
+setTimeout(async()=>{const started=performance.now();let ok=true;try{
+ emit({event:'safety-phase',label,phase:'warm',compilationRequirements:compilationMetadata(),compileLogBudget:300});
+ await warm();
+ for(let round=0;round<ROUNDS;round++){currentRound=round;for(const [name,fn,expected] of cases){
+  emit({event:'safety-phase',label,round,name,phase:'mutate-and-check'});
+  const caseStart=performance.now();const before=assertions;
+  for(let i=0;i<WARMUPS;i++){for(let r=0;r<REPS;r++)eq(fn(),expected,name+' warmup transport');await tick();}
+  const samples=[];let checksum=0;for(let s=0;s<SAMPLES;s++){const begin=performance.now();for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw Error(name+' transport');checksum=(checksum+v)|0;}samples.push(performance.now()-begin);await tick();}
+  const sorted=samples.slice().sort((a,b)=>a-b);
+  emit({event:'case',label,round,name,caseMs:+(performance.now()-caseStart).toFixed(1),checksum,reps:REPS,batchMs:samples.map(x=>+x.toFixed(3)),medianBatchMs:+sorted[SAMPLES>>1].toFixed(3),assertions:assertions-before,semanticRuns:1,timingKind:'memoized semantic transport; not performance evidence'});
+ }}
+ }catch(e){ok=false;emit({event:'error',label,error:String(e),stack:e.stack});}
+ emit({event:'done',label,ok,assertions,elapsedMs:+(performance.now()-started).toFixed(1),gc:'pressure only; collection not forced',interrupt:'event-loop yields; no forced interrupt'});
+},SETTLE_MS);
+</script>

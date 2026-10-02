@@ -14,7 +14,7 @@ typedef uint8_t jsbytecode;
   X(StrictEq, 27, 1) X(StrictNe, 28, 1) X(Lt, 29, 1) X(Gt, 30, 1) X(Le, 31, 1) \
   X(Ge, 32, 1) X(Lsh, 35, 1) X(Rsh, 36, 1) X(Ursh, 37, 1) X(Add, 38, 1)         \
   X(Sub, 39, 1) X(Inc, 40, 1) X(Dec, 41, 1) X(Mul, 42, 1) X(Div, 43, 1) X(Mod, 44, 1) X(NopIsAssignOp, 46, 1)  \
-  X(ToNumeric, 48, 1) X(GetProp, 74, 5) X(GetElem, 75, 1) X(SetElem, 78, 1) X(StrictSetElem, 79, 1) \
+  X(ToPropertyKey, 47, 1) X(ToNumeric, 48, 1) X(Call, 122, 3) X(CallIgnoresRv, 126, 3) X(GetGName, 193, 5) X(SetProp, 76, 5) X(StrictSetProp, 77, 5) X(GetProp, 74, 5) X(GetElem, 75, 1) X(SetElem, 78, 1) X(StrictSetElem, 79, 1) \
   X(JumpTarget, 158, 5) X(LoopHead, 159, 6) X(Goto, 160, 5)                     \
   X(JumpIfFalse, 161, 5) X(JumpIfTrue, 162, 5) X(And, 163, 5)                \
   X(Or, 164, 5) X(Coalesce, 165, 5) X(Return, 169, 1) X(Uninitialized, 183, 1)                \
@@ -57,6 +57,10 @@ inline uint32_t rd(const jsbytecode* p, int n) {
 #define GET_UINT24(pc) rd((pc) + 1, 3)
 #define GET_LOCALNO(pc) GET_UINT24(pc)
 #define GET_ARGNO(pc) GET_UINT16(pc)
+#define GET_ARGC(pc) GET_UINT16(pc)
+template<class T> bool MockInspectObject(uint32_t, T&);
+template<class T> bool MockLookupSlot(uint32_t, uint32_t, T&);
+uint8_t MockIdentifyMath(uint32_t);
 // Mock arrays (see emit.cpp): class pointer, element kind per object, and
 // GetProp's atom index 1 standing for "length".
 constexpr uint32_t kMockArrayClasp = 0x5000;
@@ -75,8 +79,12 @@ struct JSScript {
 };
 struct JSContext {
   uint32_t bits;
+  uint64_t majorGC = 0;
+  bool incrementalGC = false;
+  uint32_t global = 0xa000;
   void* addressOfInterruptBits() { return &bits; }
 };
+template<class T, class S> bool MockGlobalSlot(JSContext*, uint32_t, T&, T&, T&, S&);
 namespace js { namespace jit {
 struct BaselineFrame {  // only used by Compile/OnLoopHead, not by the test
   uint64_t* argv_;

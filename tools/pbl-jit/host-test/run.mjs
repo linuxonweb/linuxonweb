@@ -241,10 +241,40 @@ for (const [what, setup, at] of [
 
 r = run('arrinc', () => { setLocal(1, 0); setArray(a); });
 check('arrinc kind', r.kind, 1);
+check('arrinc i', local(1)[0], 100); check('arrinc pc', r.pcDelta, r.meta.len);
+check('arrinc ic', r.ic, 3); check('arrinc sp', r.sp, SP);
 check('arrinc elems', Array.from({ length: 100 }, (_, i) => elem(i)[0] === a[i] + i && elem(i)[1] === INT).every(Boolean), true);
 r = run('arrinc', () => { setLocal(1, 0); setArray([...a.slice(0, 50), 0x7ffffff0, ...a.slice(51)]); });
 check('arrinc ovf kind', r.kind, 2); check('arrinc ovf i', local(1)[0], 50); check('arrinc ovf elem', elem(50)[0], 0x7ffffff0);
 check('arrinc ovf sp', r.sp, SP - 32);
+check('arrinc ovf pc', r.pcDelta, r.meta.mark[1] + 5); check('arrinc ovf ic', r.ic, 5);
+check('arrinc ovf slot0', slot(0)[0], ARR); check('arrinc ovf slot0 tag', slot(0)[1], OBJECT);
+check('arrinc ovf slot1', slot(1)[0], 50); check('arrinc ovf slot1 tag', slot(1)[1], INT);
+check('arrinc ovf slot2', slot(2)[0], 0x7ffffff0); check('arrinc ovf slot3', slot(3)[0], 50);
+for (const [what, setup, at] of [
+  ['hole', () => setArray([...a.slice(0, 5), hole, ...a.slice(6)]), 5],
+  ['bounds', () => setArray(a, { initLen: 50 }), 50],
+  ['negative', () => { setArray(a); setLocal(1, -1); }, -1]]) {
+  r = run('arrinc', () => { setLocal(1, 0); setup(); });
+  check(`arrinc ${what} kind`, r.kind, 2); check(`arrinc ${what} pc`, r.pcDelta, r.meta.mark[1]);
+  check(`arrinc ${what} ic`, r.ic, 4); check(`arrinc ${what} i`, local(1)[0], at);
+  check(`arrinc ${what} sp`, r.sp, SP - 32);
+  check(`arrinc ${what} slot0`, slot(0)[0], ARR); check(`arrinc ${what} slot0 tag`, slot(0)[1], OBJECT);
+  check(`arrinc ${what} slot1`, slot(1)[0], at); check(`arrinc ${what} slot1 tag`, slot(1)[1], INT);
+  check(`arrinc ${what} slot2`, slot(2)[0], ARR); check(`arrinc ${what} slot2 tag`, slot(2)[1], OBJECT);
+  check(`arrinc ${what} slot3`, slot(3)[0], at); check(`arrinc ${what} slot3 tag`, slot(3)[1], INT);
+  check(`arrinc ${what} prefix`, Array.from({ length: Math.max(at, 0) }, (_, i) => elem(i)[0] === a[i] + i).every(Boolean), true);
+}
+r = run('arrinc', () => { setLocal(1, 1); setArray(a, { flags: FROZEN }); });
+check('arrinc frozen kind', r.kind, 2); check('arrinc frozen pc', r.pcDelta, r.meta.mark[1] + 7);
+check('arrinc frozen ic', r.ic, 6); check('arrinc frozen sp', r.sp, SP - 24);
+check('arrinc frozen value', slot(2)[0], a[1] + 1); check('arrinc frozen elem untouched', elem(1)[0], a[1]);
+r = run('arrinc', () => { setLocalF(1, 0.5); setArray(a); });
+check('arrinc double key noentry', r.kind, 0); check('arrinc double key untouched', localF(1), 0.5);
+for (const value of ['True', 'Undefined', 'Null', 'Double', 'underflow']) {
+  rej = JSON.parse(fs.readFileSync(`${dir}/reject-propertykey-${value}.json`));
+  check(`reject-propertykey-${value}`, rej.ok === false && rej.reason === (value === 'underflow' ? 'underflow' : 'operand type'), true);
+}
 
 const d = Array.from({ length: 100 }, (_, i) => (i % 3 ? i * 0.25 : i));
 r = run('arrdbl', () => { setLocalF(0, 0.5); setLocal(1, 0); setArray(d); });
@@ -269,5 +299,122 @@ check('arrwiden frozen sp', r.sp, SP - 24); check('arrwiden frozen slot2', slotF
 for (const [name, why] of [['reject-notarray', 'head type'], ['reject-elemtype', 'element type'],
   ['reject-arrwritten', 'array var written'], ['reject-getprop', 'GetProp']]) {
   rej = JSON.parse(fs.readFileSync(`${dir}/${name}.json`)); check(name, rej.ok === false && rej.reason === why, true); }
+// JIT8: fixed/dynamic numeric slots and builtin identities.
+const OBJ = 0x9000, DYNAMIC = 0x9100, GLOBAL = 0xa000, LEXICAL = 0xa100, MATH = 0xa200, FN = 0xa300;
+function boxed(addr, x, tag = INT) {
+  dv.setUint32(addr, x >>> 0, true); dv.setUint32(addr + 4, tag, true);
+}
+function setupObject(value = 2, dynamic = 4) {
+  setLocal(0, 0); setLocal(1, 0); setLocal(2, OBJ, OBJECT);
+  dv.setUint32(OBJ, 0x7000, true); dv.setUint32(OBJ + 4, DYNAMIC, true);
+  boxed(OBJ + 16, value); boxed(DYNAMIC, dynamic);
+}
+for (const [name, value, addr] of [['propfixed', 2, OBJ + 16], ['propdynamic', 4, DYNAMIC]]) {
+  r = run(name, setupObject);
+  check(`${name} kind`, r.kind, 1); check(`${name} sum`, localF(0), value * 10000);
+  check(`${name} i`, local(1)[0], 10000); check(`${name} ic`, r.ic, 2); check(`${name} pc`, r.pcDelta, r.meta.len);
+  r = run(name, () => { setupObject(); dv.setFloat64(addr, 0.25, true); });
+  check(`${name} dblkind`, r.kind, 1); check(`${name} dblsum`, localF(0), 2500);
+  for (const tag of [OBJECT, BOOL, UNDEF, 0xFFFFFF85]) {
+    r = run(name, () => { setupObject(); boxed(addr, 0x1234, tag); });
+    check(`${name} nonnum ${tag} kind`, r.kind, 2); check(`${name} nonnum pc`, r.pcDelta, r.meta.mark[0]);
+    check(`${name} nonnum ic`, r.ic, 2); check(`${name} nonnum sp`, r.sp, SP - 16);
+    check(`${name} nonnum objecttag`, slot(1)[1], OBJECT); check(`${name} nonnum pointer`, slot(1)[0], OBJ);
+    check(`${name} nonnum i`, local(1)[0], 0); check(`${name} nonnum valueuntouched`, dv.getUint32(addr + 4, true), tag);
+  }
+  r = run(name, () => { setupObject(); dv.setUint32(OBJ, 0x7080, true); });
+  check(`${name} shapemismatch`, r.kind, 0); check(`${name} shapeunmodified`, local(0)[0], 0);
+  r = run(name, () => { setupObject(); setLocal(2, OBJ, BOOL); });
+  check(`${name} objtag`, r.kind, 0);
+}
+for (const [name, addr, start] of [['propinc', OBJ + 16, 2], ['propincdynamic', DYNAMIC, 4]]) {
+  r = run(name, setupObject);
+  check(`${name} kind`, r.kind, 1); check(`${name} result`, dv.getFloat64(addr, true), start + 49995000);
+  check(`${name} i`, local(1)[0], 10000);
+  r = run(name, () => { setupObject(); dv.setUint32(INTR, 1, true); });
+  check(`${name} interruptkind`, r.kind, 3); check(`${name} interruptpc`, r.pcDelta, 0);
+  check(`${name} interrupti`, local(1)[0], 1); check(`${name} interruptvalue`, dv.getFloat64(addr, true), start);
+}
+r = run('propstore', setupObject);
+check('propstore kind', r.kind, 1); check('propstore value', dv.getInt32(OBJ + 16, true), 9999);
+check('propstore value tag', dv.getUint32(OBJ + 20, true), INT);
+for (const tag of [OBJECT, BOOL, UNDEF, 0xFFFFFF85]) {
+  r = run('propstore', () => { setupObject(); boxed(OBJ + 16, 0x5555, tag); });
+  check(`propstore barrier ${tag}`, r.kind, 2); check('propstore barrier pc', r.pcDelta, r.meta.mark[0]);
+  check('propstore barrier sp', r.sp, SP - 16); check('propstore barrier ic', r.ic, 2);
+  check('propstore barrier object', slot(0)[0], OBJ); check('propstore barrier objecttag', slot(0)[1], OBJECT);
+  check('propstore barrier val', slot(1)[0], 0); check('propstore barrier valtag', slot(1)[1], INT);
+  check('propstore barrier untouched', dv.getUint32(OBJ + 20, true), tag);
+}
+for (const [what, why] of [['readonly', 'writable own property'], ['unsafe', 'writable own property'],
+  ['missing', 'writable own property'], ['accessor', 'writable own property'], ['written', 'object var written']]) {
+  rej = JSON.parse(fs.readFileSync(`${dir}/reject-prop-${what}.json`));
+  check(`reject-prop-${what}`, rej.ok === false && rej.reason === why, true);
+}
+function setupGlobals() {
+  dv.setUint32(GLOBAL, 0x7200, true); dv.setUint32(LEXICAL, 0x7300, true); dv.setUint32(MATH, 0x7400, true);
+  boxed(GLOBAL + 16, MATH, OBJECT); boxed(GLOBAL + 24, 7);
+  for (let i = 0; i < 8; i++) {
+    boxed(MATH + 16 + 8 * i, FN + i * 0x40, OBJECT);
+    dv.setUint32(FN + i * 0x40, 0x7500 + i * 0x20, true);
+  }
+}
+r = run('globalnumber', () => { setLocal(0, 0); setLocal(1, 0); setupGlobals(); });
+check('globalnumber kind', r.kind, 1); check('globalnumber sum', local(0)[0], 70000);
+for (const mutate of [() => boxed(GLOBAL + 24, 8), () => dv.setUint32(GLOBAL, 0x7204, true), () => dv.setUint32(LEXICAL, 0x7304, true)]) {
+  r = run('globalnumber', () => { setLocal(0, 11); setLocal(1, 3); setupGlobals(); mutate(); });
+  check('globalnumber guard', r.kind, 0); check('globalnumber untouched', local(0)[0], 11); check('globalnumber iuntouched', local(1)[0], 3);
+}
+const nativeMath = [Math.max, Math.min, Math.abs, Math.floor, Math.ceil, Math.round, Math.sqrt, Math.trunc];
+const mathValues = [0, -0, 0.25, -0.25, 0.5, -0.5, 1.5, -1.5, 0.49999999999999994, -0.5000000000000001,
+  2 ** 52 - 0.5, -(2 ** 52 - 0.5), 2 ** 52, -(2 ** 52), 2 ** 53, -(2 ** 53), Number.MIN_VALUE,
+  -Number.MIN_VALUE, Infinity, -Infinity, NaN, 2147483648, -2147483649];
+for (let i = 0; i < 8; i++) {
+  for (const x of mathValues) {
+    const ys = i < 2 ? [0, -0, Infinity, -Infinity, NaN, 7] : [0];
+    for (const y of ys) {
+      r = run(`math${i}`, () => { setupGlobals(); setLocal(0, 11); setLocal(1, 9999); setLocalF(2, x); setLocalF(3, y); });
+      check(`math${i} ${x}/${y} kind`, r.kind, 1);
+      const want = i < 2 ? nativeMath[i](x, y) : nativeMath[i](x);
+      check(`math${i} ${x}/${y} result`, Object.is(localF(0), want), true);
+      check(`math${i} ${x}/${y} i`, local(1)[0], 10000);
+    }
+  }
+  for (const mutate of [() => boxed(GLOBAL + 16, MATH + 1, OBJECT), () => boxed(MATH + 16 + 8 * i, FN + 1, OBJECT),
+    () => dv.setUint32(MATH, 0x7401, true), () => dv.setUint32(LEXICAL, 0x7301, true),
+    () => dv.setUint32(FN + i * 0x40, 0x7511, true)]) {
+    r = run(`math${i}`, () => { setupGlobals(); setLocal(0, 123); setLocal(1, 9999); setLocalF(2, 0.5); setLocalF(3, 5); mutate(); });
+    check(`math${i} identityguard`, r.kind, 0); check(`math${i} untouched`, local(0)[0], 123); check(`math${i} iuntouched`, local(1)[0], 9999);
+  }
+  r = run(`math${i}`, () => { setupGlobals(); setLocal(0, 0); setLocal(1, 9999); setLocal(2, 3); setLocal(3, 5); });
+  check(`math${i} intargkind`, r.kind, 1); check(`math${i} intargresult`, localF(0), i < 2 ? nativeMath[i](3, 5) : nativeMath[i](3));
+}
+for (let i = 0; i < 3; i++) {
+  r = run(`mathzero${i}`, () => { setupGlobals(); setLocal(0, 0); setLocal(1, 9999); });
+  check(`mathzero${i} kind`, r.kind, 1); check(`mathzero${i} result`, Object.is(localF(0), nativeMath[i]()), true);
+}
+
+r = run('constantalias', () => { setupObject(); setupGlobals(); boxed(GLOBAL + 32, OBJ, OBJECT); });
+check('constant holder alias rejects', r.kind, 0);
+check('constant holder alias before writes', dv.getInt32(OBJ + 16, true), 2);
+check('constant holder alias iuntouched', local(1)[0], 0);
+r = run('constantalias', () => {
+  setupObject(); setupGlobals(); boxed(GLOBAL + 32, OBJ, OBJECT);
+  const clone = 0x9500; dv.setUint32(clone, 0x7000, true); boxed(clone + 16, 2);
+  setLocal(2, clone, OBJECT);
+});
+check('different object same shape allowed', r.kind, 1);
+check('different object store completed', dv.getInt32(0x9510, true), 1);
+check('constant holder unmodified', dv.getInt32(OBJ + 16, true), 2);
+r = run('nurseryhead', () => {
+  setupObject(); const nursery = 0x9400; dv.setUint32(nursery, 0x7000, true); boxed(nursery + 16, 3);
+  setLocal(2, nursery, OBJECT);
+});
+check('nursery head kind', r.kind, 1); check('nursery head sum', localF(0), 30000);
+rej = JSON.parse(fs.readFileSync(`${dir}/reject-nurseryconstant.json`));
+check('nursery embedded constant rejects', rej.ok === false && rej.reason === 'constant object', true);
+const cacheTests = JSON.parse(fs.readFileSync(`${dir}/cache-tests.json`));
+check("cache identity/GC suite", cacheTests.pass, true);
+checks += cacheTests.checks; failures += cacheTests.failures;
 console.log(JSON.stringify({ pass: failures === 0, checks, failures }));
 process.exitCode = failures ? 1 : 0;

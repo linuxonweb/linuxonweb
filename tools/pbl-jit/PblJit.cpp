@@ -1,5 +1,5 @@
 /* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// Guest JIT packets 4, 6, 7a and 7b: runtime PBL-to-wasm loop specializer
+// Guest JIT packets 4, 6, 7 and 8: runtime PBL-to-wasm loop specializer
 // (adapter source).
 //
 // Compiled with the same command as PortableBaselineInterpret.cpp and linked
@@ -20,7 +20,11 @@
 // agree on all types. A head-live var holding an Array (class-guarded at
 // entry, never written in the loop) supports dense in-bounds GetElem/SetElem
 // of numbers and `.length`; holes, out-of-bounds indices, frozen elements and
-// unexpected element types bail. Vars read before
+// unexpected element types bail. Never-replaced PlainObjects support own
+// numeric slots behind entry shape guards; tenured global/object constants
+// support hoisted identity guards and allocation-free Math operations.
+// Cache entries are invalidated on script/major-GC changes and skipped during
+// incremental GC. Vars read before
 // being written in an iteration are type-guarded at entry and must keep that
 // type around the loop; the others are reloaded from the frame each
 // iteration. The code leaves the loop at:
@@ -49,6 +53,16 @@
 #  include "host-test/mock.h"  // host emitter test (tools/pbl-jit/host-test)
 #else
 #  include "jit/BaselineFrame.h"
+#  include "jit/InlinableNatives.h"
+#  include "js/experimental/JitInfo.h"
+#  include "gc/GCRuntime.h"
+#  include "vm/GlobalObject.h"
+#  include "vm/EnvironmentObject.h"
+#  include "vm/JSFunction.h"
+#  include "vm/PlainObject.h"
+#  include "vm/Runtime.h"
+#  include "vm/Watchtower.h"
+#  include "vm/JSAtomUtils-inl.h"
 #  include "vm/ArrayObject.h"
 #  include "vm/BytecodeUtil.h"
 #  include "vm/JSContext.h"
@@ -84,6 +98,9 @@ enum Kind : int64_t { NoEntry = 0, Normal = 1, Bail = 2, Interrupt = 3 };
 
 struct Entry {
   const jsbytecode* pc;
+  JSScript* script;
+  uint64_t majorGC;
+  uint32_t global;
   uint8_t* bytes;
   uint32_t hits;
   uint32_t fn;
@@ -94,6 +111,20 @@ struct Entry {
 };
 
 thread_local Entry* tCache;
+
+uint32_t CacheIndex(JSScript* script, const jsbytecode* pc) {
+  // Firefox shares immutable bytecode between scripts with different atoms.
+  // Include the script so those scripts do not continually evict each other.
+  uint32_t h = uint32_t(uintptr_t(script)) * 2654435761u ^
+               uint32_t(uintptr_t(pc));
+  h ^= h >> 16;
+  h *= 0x7feb352du;
+  h ^= h >> 15;
+  h *= 0x846ca68bu;
+  h ^= h >> 16;
+  return h >> (32 - kCacheBits);
+}
+
 std::atomic<uint32_t> gInstalls{0};
 std::atomic<uint32_t> gCompiles{0};
 std::atomic<uint32_t> gRejects{0};
@@ -111,7 +142,7 @@ bool Enabled() {
     gLogBudget.store(l ? atoi(l) : 24, std::memory_order_relaxed);
     gEnabled.store(e, std::memory_order_relaxed);
     if (e) {
-      fprintf(stderr, "PBLJIT enabled (threshold=%u)\n", kCompileHits);
+      fprintf(stderr, "PBLJIT enabled (threshold=%u, logBudget=%d)\n", kCompileHits, l ? atoi(l) : 24);
     }
   }
   return e != 0;
@@ -186,6 +217,8 @@ enum : uint8_t {
   W_I32GTU = 0x4b, W_I32GEU = 0x4f, W_I32LOAD = 0x28, W_F64EQ = 0x61, W_F64NE = 0x62, W_F64LT = 0x63, W_F64GT = 0x64,
   W_F64LE = 0x65, W_F64GE = 0x66, W_F64ABS = 0x99, W_F64NEG = 0x9a,
   W_F64ADD = 0xa0, W_F64SUB = 0xa1, W_F64MUL = 0xa2, W_F64DIV = 0xa3,
+  W_F64CEIL = 0x9b, W_F64FLOOR = 0x9c, W_F64TRUNC = 0x9d,
+  W_F64SQRT = 0x9f, W_F64MIN = 0xa4, W_F64MAX = 0xa5, W_F64COPYSIGN = 0xa6,
   W_I32TRUNCF64S = 0xaa, W_F64CONVI32S = 0xb7, W_F64REINTI64 = 0xbf,
 };
 
@@ -198,10 +231,17 @@ enum : uint8_t {
 // holds the object pointer); its elements have type elemTy[v].
 enum class Ty : uint8_t { Head = 0, Int, Bool, Undef, Null, Magic, Unknown, Double };
 constexpr uint32_t kTagObject = 0xFFFFFF8Cu;
-constexpr bool IsArr(Ty t) { return uint8_t(t) >= 16; }
+constexpr bool IsArr(Ty t) { return uint8_t(t) >= 16 && uint8_t(t) < 48; }
+constexpr bool IsObj(Ty t) { return uint8_t(t) >= 48 && uint8_t(t) < 80; }
+constexpr bool IsConst(Ty t) { return uint8_t(t) >= 80 && uint8_t(t) < 96; }
+constexpr bool IsObject(Ty t) { return IsArr(t) || IsObj(t) || IsConst(t); }
+constexpr Ty ObjTy(uint32_t v) { return Ty(48 + v); }
+constexpr uint32_t ObjVar(Ty t) { return uint8_t(t) - 48u; }
+constexpr Ty ConstTy(uint32_t v) { return Ty(80 + v); }
+constexpr uint32_t ConstIndex(Ty t) { return uint8_t(t) - 80u; }
 constexpr Ty ArrTy(uint32_t v) { return Ty(16 + v); }
 constexpr uint32_t ArrVar(Ty t) { return uint8_t(t) - 16u; }
-constexpr uint32_t TagOf(Ty t) { return IsArr(t) ? kTagObject : 0xFFFFFF80u | uint32_t(t); }
+constexpr uint32_t TagOf(Ty t) { return IsObject(t) ? kTagObject : 0xFFFFFF80u | uint32_t(t); }
 #ifndef PBLJIT_HOST_TEST
 static_assert(TagOf(Ty::Int) == uint32_t(JSVAL_TAG_INT32));
 static_assert(TagOf(Ty::Bool) == uint32_t(JSVAL_TAG_BOOLEAN));
@@ -218,6 +258,110 @@ Ty TyOfTag(uint32_t tag) {
   return (t >= 1 && t <= 4) ? Ty(t) : Ty::Unknown;
 }
 bool IsNum(Ty t) { return t == Ty::Int || t == Ty::Double; }
+
+// Compile-time descriptors hold only raw pointers. Compilation and generated
+// loops never call JS or allocate GC things; entries are discarded before any
+// major GC changes. Embedded object constants must additionally be tenured.
+struct ObjectInfo {
+  uint32_t pointer = 0, shape = 0;
+  bool plain = false, canWrite = false, tenured = false;
+};
+struct SlotInfo {
+  uint32_t offset = 0;
+  bool dynamic = false, writable = false;
+  uint64_t bits = 0;
+};
+enum class MathOp : uint8_t { None, Max, Min, Abs, Floor, Ceil, Round, Sqrt, Trunc };
+struct Constant {
+  ObjectInfo object;
+  MathOp math = MathOp::None;
+};
+struct ConstantGuard {
+  ObjectInfo holder;
+  SlotInfo slot;
+  bool hasSlot = false;
+};
+#ifdef PBLJIT_HOST_TEST
+bool InspectObject(uint32_t pointer, ObjectInfo& info) { return MockInspectObject(pointer, info); }
+bool LookupSlot(uint32_t pointer, JSScript*, jsbytecode* pc, SlotInfo& slot) {
+  return MockLookupSlot(pointer, rd(pc + 1, 4), slot);
+}
+bool GlobalSlot(JSContext* cx, JSScript*, jsbytecode* pc, ObjectInfo& lex,
+                ObjectInfo& global, ObjectInfo& holder, SlotInfo& slot) {
+  return MockGlobalSlot(cx, rd(pc + 1, 4), lex, global, holder, slot);
+}
+MathOp IdentifyMath(uint32_t pointer) { return MathOp(MockIdentifyMath(pointer)); }
+int32_t OffSlots() { return 4; }
+uint64_t MajorGC(JSContext* cx) { return cx->majorGC; }
+bool IncrementalGC(JSContext* cx) { return cx->incrementalGC; }
+uint32_t CurrentGlobal(JSContext* cx) { return cx->global; }
+#else
+bool InspectObject(uint32_t pointer, ObjectInfo& info) {
+  JSObject* obj = reinterpret_cast<JSObject*>(uintptr_t(pointer));
+  if (!obj->is<NativeObject>()) return false;
+  NativeObject& n = obj->as<NativeObject>();
+  // Dictionary property maps can be edited in place; a shape pointer alone
+  // cannot prove their slot mapping and permissions remain unchanged.
+  if (n.inDictionaryMode()) return false;
+  info.pointer = pointer;
+  info.shape = uint32_t(uintptr_t(obj->shape()));
+  info.plain = obj->is<PlainObject>();
+  info.canWrite = info.plain && !Watchtower::watchesPropertyModification(&n);
+  info.tenured = obj->isTenured();
+  return true;
+}
+bool LookupSlot(uint32_t pointer, JSScript* script, jsbytecode* pc, SlotInfo& slot) {
+  NativeObject& obj = reinterpret_cast<JSObject*>(uintptr_t(pointer))->as<NativeObject>();
+  auto p = obj.lookupPure(AtomToId(script->getAtom(pc)));
+  if (!p || !p->isDataProperty() || !p->hasSlot()) return false;
+  uint32_t index = p->slot();
+  slot.dynamic = !obj.isFixedSlot(index);
+  slot.offset = uint32_t(slot.dynamic ? obj.dynamicSlotIndex(index) * sizeof(Value)
+                                    : NativeObject::getFixedSlotOffset(index));
+  slot.writable = p->writable();
+  slot.bits = obj.getSlot(index).asRawBits();
+  return true;
+}
+bool GlobalSlot(JSContext* cx, JSScript* script, jsbytecode* pc, ObjectInfo& lex,
+                ObjectInfo& global, ObjectInfo& holder, SlotInfo& slot) {
+  if (!cx || script->hasNonSyntacticScope()) return false;
+  GlobalObject* g = cx->global().get();
+  auto* l = &g->lexicalEnvironment();
+  if (!InspectObject(uint32_t(uintptr_t(g)), global) ||
+      !InspectObject(uint32_t(uintptr_t(l)), lex)) return false;
+  if (LookupSlot(lex.pointer, script, pc, slot)) {
+    holder = lex;
+    return true;
+  }
+  // A lexical accessor/custom property must not fall through to the global.
+  if (l->lookupPure(AtomToId(script->getAtom(pc)))) return false;
+  holder = global;
+  return LookupSlot(global.pointer, script, pc, slot);
+}
+MathOp IdentifyMath(uint32_t pointer) {
+  JSObject* obj = reinterpret_cast<JSObject*>(uintptr_t(pointer));
+  if (!obj->is<JSFunction>()) return MathOp::None;
+  JSFunction& f = obj->as<JSFunction>();
+  if (!f.isNativeFun() || !f.hasJitInfo()) return MathOp::None;
+  auto* info = f.jitInfo();
+  if (info->type() != JSJitInfo::InlinableNative) return MathOp::None;
+  switch (info->inlinableNative) {
+    case jit::InlinableNative::MathMax: return MathOp::Max;
+    case jit::InlinableNative::MathMin: return MathOp::Min;
+    case jit::InlinableNative::MathAbs: return MathOp::Abs;
+    case jit::InlinableNative::MathFloor: return MathOp::Floor;
+    case jit::InlinableNative::MathCeil: return MathOp::Ceil;
+    case jit::InlinableNative::MathRound: return MathOp::Round;
+    case jit::InlinableNative::MathSqrt: return MathOp::Sqrt;
+    case jit::InlinableNative::MathTrunc: return MathOp::Trunc;
+    default: return MathOp::None;
+  }
+}
+int32_t OffSlots() { return int32_t(NativeObject::offsetOfSlots()); }
+uint64_t MajorGC(JSContext* cx) { return cx->runtime()->gc.majorGCCount(); }
+bool IncrementalGC(JSContext* cx) { return cx->runtime()->gc.isIncrementalGCInProgress(); }
+uint32_t CurrentGlobal(JSContext* cx) { return uint32_t(uintptr_t(cx->global().get())); }
+#endif
 
 // Object layout used by the array ops: obj->shape->base->clasp identifies an
 // ArrayObject (class pointers are static; shapes may move), and the
@@ -292,6 +436,7 @@ struct State {
 
 struct Compiler {
   JSScript* script;
+  JSContext* cx = nullptr;
   jsbytecode* head;
   jsbytecode* end;  // one past the region's last op
   // Compile-time view of the frame. It only chooses the guarded type of each
@@ -307,6 +452,13 @@ struct Compiler {
   bool varWritten[kMaxVars];
   bool varLive[kMaxVars];  // read before written on some path from the head
   Ty headTy[kMaxVars];
+  ObjectInfo objects[kMaxVars];
+  bool objectWrites[kMaxVars] = {};
+  Constant constants[16];
+  uint32_t nconstants = 0;
+  ConstantGuard guards[48];
+  uint32_t nguards = 0;
+  size_t guardInsertion = 0;
   Ty elemTy[kMaxVars];  // for Array vars: Int, Double or Unknown
   uint32_t maxArg = 0;  // 1 + highest argument index used
   // Forward jump targets inside the region, ascending. Each one is the end
@@ -621,7 +773,13 @@ struct Compiler {
       if (uint32_t(bits >> 32) == kTagObject) {
         // An Array the loop never replaces: its local holds the pointer.
         int kind = ArrayKind(bits);
-        if (kind < 0) return reject("head type", head);
+        if (kind < 0) {
+          if (!InspectObject(uint32_t(bits), objects[v]) || !objects[v].plain)
+            return reject("head type", head);
+          if (varWritten[v]) return reject("object var written", head);
+          headTy[v] = ObjTy(v);
+          continue;
+        }
         if (varWritten[v]) return reject("array var written", head);
         headTy[v] = ArrTy(v);
         elemTy[v] = kind == 0 ? Ty::Unknown : kind == 2 ? Ty::Double : Ty::Int;
@@ -820,7 +978,7 @@ struct Compiler {
         lget(fl(slotLocal(slot))), code.put(W_F64ABS), f64c(0.0), code.put(W_F64GT);
         return true;
       default:
-        if (IsArr(t)) {
+        if (IsObject(t)) {
           i32c(1);
           return true;
         }
@@ -969,6 +1127,218 @@ struct Compiler {
     return true;
   }
 
+  bool addGuard(const ObjectInfo& holder, const SlotInfo* slot, jsbytecode* pc) {
+    // Holders are embedded in wasm constants, so nursery pointers are unsafe.
+    if (!holder.tenured) return reject("nursery constant", pc);
+    for (uint32_t i = 0; i < nguards; i++) {
+      auto& g = guards[i];
+      if (g.holder.pointer == holder.pointer && g.hasSlot == bool(slot) &&
+          (!slot || (g.slot.dynamic == slot->dynamic && g.slot.offset == slot->offset)))
+        return true;
+    }
+    if (nguards >= 48) return reject("constant guards", pc);
+    auto& g = guards[nguards++];
+    g.holder = holder;
+    g.hasSlot = bool(slot);
+    if (slot) g.slot = *slot;
+    return true;
+  }
+  int addConstant(uint32_t pointer, jsbytecode* pc) {
+    for (uint32_t i = 0; i < nconstants; i++)
+      if (constants[i].object.pointer == pointer) return int(i);
+    if (nconstants >= 16) { reject("constants", pc); return -1; }
+    ObjectInfo object;
+    if (!InspectObject(pointer, object) || !object.tenured) {
+      reject("constant object", pc); return -1;
+    }
+    if (!addGuard(object, nullptr, pc)) return -1;
+    uint32_t i = nconstants++;
+    constants[i].object = object;
+    constants[i].math = IdentifyMath(pointer);
+    return int(i);
+  }
+  void noEntryIf() {
+    code.put(W_IF), code.put(W_VOID);
+    i64c(NoEntry), code.put(W_RETURN);
+    code.put(W_END);
+  }
+  // An object's address is on the wasm stack. Produces the slot address.
+  void slotAddress(const SlotInfo& slot) {
+    if (slot.dynamic) load32(OffSlots());
+    i32c(int32_t(slot.offset)), code.put(W_I32ADD);
+  }
+  void constantEntryGuards() {
+    // Reject aliases of every constant holder before mutations. A head object
+    // with the expected shape can still be the global/Math holder itself.
+    for (uint32_t v = 0; v < nvars; v++) {
+      if (!objectWrites[v]) continue;
+      for (uint32_t i = 0; i < nguards; i++) {
+        lget(varLocal(v)), i32c(int32_t(guards[i].holder.pointer));
+        code.put(W_I32EQ), noEntryIf();
+      }
+    }
+    for (uint32_t i = 0; i < nguards; i++) {
+      auto& g = guards[i];
+      i32c(int32_t(g.holder.pointer)), load32(OffShape());
+      i32c(int32_t(g.holder.shape)), code.put(W_I32NE);
+      noEntryIf();
+      if (!g.hasSlot) continue;
+      i32c(int32_t(g.holder.pointer)), slotAddress(g.slot);
+      code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
+      i64c(int64_t(g.slot.bits)), code.put(W_I64NE);
+      noEntryIf();
+    }
+  }
+  bool getGlobal(jsbytecode* pc) {
+    ObjectInfo lexical, global, holder;
+    SlotInfo slot;
+    if (!GlobalSlot(cx, script, pc, lexical, global, holder, slot))
+      return reject("global binding", pc);
+    // Guard lexical absence as well as the global mapping/value: adding a
+    // lexical binding can shadow a global while preserving the global shape.
+    if (!addGuard(lexical, nullptr, pc) || !addGuard(global, nullptr, pc) ||
+        !addGuard(holder, &slot, pc)) return false;
+    Ty t = TyOfTag(uint32_t(slot.bits >> 32));
+    if (uint32_t(slot.bits >> 32) == kTagObject) {
+      int index = addConstant(uint32_t(slot.bits), pc);
+      if (index < 0 || !push(ConstTy(uint32_t(index)), pc)) return false;
+      i32c(int32_t(uint32_t(slot.bits))), lset(slotLocal(st.depth - 1));
+      return true;
+    }
+    if (!IsNum(t)) return reject("global type", pc);
+    if (!push(t, pc)) return false;
+    if (t == Ty::Int) i32c(int32_t(slot.bits)), lset(slotLocal(st.depth - 1));
+    else {
+      double value; memcpy(&value, &slot.bits, 8);
+      f64c(value), lset(fl(slotLocal(st.depth - 1)));
+    }
+    return true;
+  }
+  bool objectFor(Ty t, ObjectInfo& object) {
+    if (IsObj(t)) { object = objects[ObjVar(t)]; return true; }
+    if (IsConst(t)) { object = constants[ConstIndex(t)].object; return true; }
+    return false;
+  }
+  // The boxed value is in tmp64. Check it and place the number in f64 local
+  // `dest`. The interpreter stack stays untouched until the guard succeeds.
+  void unboxNumber(uint32_t dest, jsbytecode* pc) {
+    lget(tmp64()), i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
+    code.put(W_LTEE), code.uleb(tmp32());
+    i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32EQ);
+    code.put(W_IF), code.put(W_VOID);
+    lget(tmp64()), code.put(W_I32WRAP), code.put(W_F64CONVI32S), lset(dest);
+    code.put(W_ELSE);
+    lget(tmp32()), i32c(int32_t(kTagClear)), code.put(W_I32GTU);
+    bailIf(pc);
+    lget(tmp64()), code.put(W_F64REINTI64), lset(dest);
+    code.put(W_END);
+  }
+  bool getProperty(jsbytecode* pc) {
+    if (st.depth < 1) return reject("underflow", pc);
+    uint32_t s = st.depth - 1;
+    Ty receiver = st.stack[s];
+    ObjectInfo object;
+    SlotInfo slot;
+    if (!objectFor(receiver, object) || !LookupSlot(object.pointer, script, pc, slot))
+      return reject("own data property", pc);
+    if (IsConst(receiver) && uint32_t(slot.bits >> 32) == kTagObject) {
+      if (!addGuard(object, &slot, pc)) return false;
+      int index = addConstant(uint32_t(slot.bits), pc);
+      if (index < 0) return false;
+      i32c(int32_t(uint32_t(slot.bits))), lset(slotLocal(s));
+      st.stack[s] = ConstTy(uint32_t(index));
+      return true;
+    }
+    if (!IsNum(TyOfTag(uint32_t(slot.bits >> 32))))
+      return reject("property type", pc);
+    lget(slotLocal(s)), slotAddress(slot);
+    code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
+    lset(tmp64());
+    unboxNumber(fl(slotLocal(s)), pc);
+    st.stack[s] = Ty::Double;
+    return true;
+  }
+  bool setProperty(jsbytecode* pc) {
+    if (st.depth < 2) return reject("underflow", pc);
+    uint32_t s = st.depth - 2;
+    Ty receiver = st.stack[s], value = st.stack[s + 1];
+    ObjectInfo object;
+    SlotInfo slot;
+    if (!IsObj(receiver) || !IsNum(value) || !objectFor(receiver, object) ||
+        !object.canWrite || !LookupSlot(object.pointer, script, pc, slot) ||
+        !slot.writable) return reject("writable own property", pc);
+    if (!IsNum(TyOfTag(uint32_t(slot.bits >> 32))))
+      return reject("property type", pc);
+    objectWrites[ObjVar(receiver)] = true;
+    // Only overwrite a number, so no pre-barrier or post-barrier is needed.
+    // This test executes before the store and bails with the original operands.
+    lget(slotLocal(s)), slotAddress(slot);
+    code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
+    lset(tmp64());
+    lget(tmp64()), i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
+    code.put(W_LTEE), code.uleb(tmp32());
+    i32c(int32_t(kTagClear)), code.put(W_I32GTU);
+    lget(tmp32()), i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32NE);
+    code.put(W_I32AND), bailIf(pc);
+    lget(slotLocal(s)), slotAddress(slot);
+    boxStore(slotLocal(s + 1), value);
+    move(slotLocal(s + 1), slotLocal(s), value);
+    st.depth--;
+    st.stack[s] = value;
+    return true;
+  }
+  bool mathCall(jsbytecode* pc) {
+    uint32_t argc = GET_ARGC(pc);
+    if (argc + 2 > st.depth) return reject("underflow", pc);
+    uint32_t s = st.depth - argc - 2;
+    if (!IsConst(st.stack[s])) return reject("constant callee", pc);
+    MathOp math = constants[ConstIndex(st.stack[s])].math;
+    if (math == MathOp::None) return reject("Math native", pc);
+    // Every argument must already be a number; no ToNumber can invoke JS.
+    for (uint32_t i = s + 2; i < st.depth; i++)
+      if (!IsNum(st.stack[i])) return reject("Math argument", pc);
+    uint32_t result = fl(slotLocal(s));
+    if (math == MathOp::Max || math == MathOp::Min) {
+      f64c(math == MathOp::Max ? -__builtin_inf() : __builtin_inf());
+      for (uint32_t i = s + 2; i < st.depth; i++) {
+        getNum(slotLocal(i), st.stack[i]);
+        code.put(math == MathOp::Max ? W_F64MAX : W_F64MIN);
+      }
+      lset(result);
+    } else {
+      if (argc) getNum(slotLocal(s + 2), st.stack[s + 2]);
+      else f64c(__builtin_nan(""));
+      switch (math) {
+        case MathOp::Abs: code.put(W_F64ABS); break;
+        case MathOp::Floor: code.put(W_F64FLOOR); break;
+        case MathOp::Ceil: code.put(W_F64CEIL); break;
+        case MathOp::Sqrt: code.put(W_F64SQRT); break;
+        case MathOp::Trunc: code.put(W_F64TRUNC); break;
+        case MathOp::Round: {
+          // floor(x+0.5) loses precision just below a tie and for large x.
+          // Use the fraction of floor(x), preserve -0 with copysign, and keep
+          // all |x|>=2^52 (including Infinity) unchanged.
+          lset(result);
+          lget(result), code.put(W_F64ABS), f64c(4503599627370496.0), code.put(W_F64LT);
+          code.put(W_IF), code.put(W_VOID);
+          lget(result), code.put(W_F64FLOOR), lset(fl(tmp32()));
+          lget(result), lget(fl(tmp32())), code.put(W_F64SUB), f64c(0.5), code.put(W_F64GE);
+          code.put(W_IF), code.put(W_VOID);
+          lget(fl(tmp32())), f64c(1.0), code.put(W_F64ADD), lset(fl(tmp32()));
+          code.put(W_END);
+          lget(fl(tmp32())), lget(result), code.put(W_F64COPYSIGN), lset(result);
+          code.put(W_END);
+          break;
+        }
+        default: MOZ_CRASH("pbljit math");
+      }
+      if (math != MathOp::Round) lset(result);
+    }
+    st.depth = s + 1;
+    st.stack[s] = Ty::Double;
+    return true;
+  }
+
   // Pass 3: translate. Emits the entry guards, then the `loop` with one
   // `block` per forward target.
   bool translate() {
@@ -984,15 +1354,21 @@ struct Compiler {
       code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
       code.put(W_LTEE), code.uleb(tmp64());
       i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
-      if (IsArr(headTy[v])) {
-        // An object whose class is Array.
+      if (IsObject(headTy[v])) {
+        // Objects are guarded before the loop makes any mutations.
         i32c(int32_t(kTagObject)), code.put(W_I32NE);
         code.put(W_IF), code.put(W_VOID);
         i64c(NoEntry), code.put(W_RETURN);
         code.put(W_END);
         lget(tmp64()), code.put(W_I32WRAP), code.put(W_LTEE), code.uleb(varLocal(v));
-        load32(OffShape()), load32(OffBase()), load32(OffClasp());
-        i32c(int32_t(ArrayClasp())), code.put(W_I32NE);
+        load32(OffShape());
+        if (IsArr(headTy[v])) {
+          load32(OffBase()), load32(OffClasp());
+          i32c(int32_t(ArrayClasp()));
+        } else {
+          i32c(int32_t(objects[v].shape));
+        }
+        code.put(W_I32NE);
         code.put(W_IF), code.put(W_VOID);
         i64c(NoEntry), code.put(W_RETURN);
         code.put(W_END);
@@ -1020,6 +1396,7 @@ struct Compiler {
       code.put(W_END);
       lget(tmp64()), code.put(W_I32WRAP), lset(varLocal(v));
     }
+    guardInsertion = code.n;
     code.put(W_LOOP), code.put(W_VOID);
     for (uint32_t j = 0; j < ntargets; j++) code.put(W_BLOCK), code.put(W_VOID);
 
@@ -1044,6 +1421,13 @@ struct Compiler {
       switch (op) {
         case JSOp::Nop:
         case JSOp::NopIsAssignOp:  // decompiler hint after the op of `x op= y`
+          break;
+        case JSOp::ToPropertyKey:
+          if (st.depth < 1) return reject("underflow", pc);
+          // SpiderMonkey keeps Int32 property keys as numbers. Dense element
+          // access checks the index separately; other conversions may call JS.
+          if (st.stack[top] != Ty::Int) return reject("operand type", pc);
+          icIndex++;  // JOF_IC, even though the Int32 fast path is a no-op
           break;
         case JSOp::DebugLeaveLexicalEnv:  // no-op: OnLoopHead excludes debuggee frames
           break;
@@ -1250,7 +1634,7 @@ struct Compiler {
           // Jumps unless the value is null or undefined; static here.
           if (st.depth < 1) return reject("underflow", pc);
           Ty t = st.stack[top];
-          if (t == Ty::Int || t == Ty::Double || t == Ty::Bool || IsArr(t)) {
+          if (t == Ty::Int || t == Ty::Double || t == Ty::Bool || IsObject(t)) {
             if (!branch(pc, pc + GET_JUMP_OFFSET(pc), next, false)) return false;
           } else if (t != Ty::Undef && t != Ty::Null) {
             return reject("operand type", pc);
@@ -1269,9 +1653,25 @@ struct Compiler {
           if (!setElem(pc)) return false;
           icIndex++;
           break;
+        case JSOp::GetGName:
+          if (!getGlobal(pc)) return false;
+          icIndex++;
+          break;
         case JSOp::GetProp:
-          if (!AtomIsLength(script, pc)) return reject("GetProp", pc);
-          if (!getLength(pc)) return false;
+          if (st.depth && IsArr(st.stack[top])) {
+            if (!AtomIsLength(script, pc)) return reject("GetProp", pc);
+            if (!getLength(pc)) return false;
+          } else if (!getProperty(pc)) return false;
+          icIndex++;
+          break;
+        case JSOp::SetProp:
+        case JSOp::StrictSetProp:
+          if (!setProperty(pc)) return false;
+          icIndex++;
+          break;
+        case JSOp::Call:
+        case JSOp::CallIgnoresRv:
+          if (!mathCall(pc)) return false;
           icIndex++;
           break;
         default:
@@ -1294,7 +1694,16 @@ struct Compiler {
     body.uleb(kParams + nvars + kMaxDepth + 1), body.put(0x7f);
     body.uleb(1), body.put(0x7e);
     body.uleb(nvars + kMaxDepth + 1), body.put(0x7c);
+    // All constant identity/shape guards are emitted at entry, including ones
+    // discovered late in translation. None can run after a property store.
+    Buf saved;
+    saved.p = code.p; saved.n = code.n; saved.cap = code.cap;
+    code.p = nullptr; code.n = code.cap = 0;
+    constantEntryGuards();
+    if (code.oom) return reject("oom", head);
+    body.putn(saved.p, guardInsertion);
     body.putn(code.p, code.n);
+    body.putn(saved.p + guardInsertion, saved.n - guardInsertion);
     body.put(W_END);
     if (body.oom) return reject("oom", head);
 
@@ -1406,10 +1815,10 @@ bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
   if (TakeLog()) {
     fprintf(stderr,
             "PBLJIT compile #%u %s:%u off=%u len=%zu ops=%u vars=%u depth=%u "
-            "wasm=%zu idx=%u attempts=%u\n",
+            "wasm=%zu idx=%u attempts=%u gcEpoch=%llu\n",
             n, script->filename() ? script->filename() : "?", script->lineno(),
             unsigned(pc - script->code()), len, c.nops, c.nvars, c.maxDepth,
-            m.n, idx[0], c.attempts);
+            m.n, idx[0], c.attempts, static_cast<unsigned long long>(e->majorGC));
   }
   if ((n & (n - 1)) == 0) {
     fprintf(stderr,
@@ -1422,12 +1831,13 @@ bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
 }
 
 bool Compile(JSScript* script, jit::BaselineFrame* frame, jsbytecode* pc,
-             Entry* e) {
+             Entry* e, JSContext* cx) {
   if (gInstalls.load(std::memory_order_relaxed) >= kMaxInstalls) return false;
   Buf m;
   Compiler* cp = TranslateLoop(
       [&](Compiler& k) {
         k.script = script;
+        k.cx = cx;
         k.head = pc;
         k.end = nullptr;
         k.frame = reinterpret_cast<const uint8_t*>(frame);
@@ -1451,6 +1861,10 @@ typedef int64_t (*JitFn)(void* frame, void* sp, void* intr, void* out,
 
 bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
                 jsbytecode* pc, JSContext* cx, Exit* exit) {
+  // The generated module contains untraced shape/object constants. Never
+  // dereference them while incremental GC is active or after any major GC.
+  if (IncrementalGC(cx)) return false;
+  uint64_t gc = MajorGC(cx);
   Entry* cache = tCache;
   if (MOZ_UNLIKELY(!cache)) {
     if (!Enabled()) return false;
@@ -1458,15 +1872,24 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
     if (!cache) return false;
     tCache = cache;
   }
-  uint32_t h = (uint32_t(uintptr_t(pc)) * 2654435761u) >> (32 - kCacheBits);
+  uint32_t h = CacheIndex(script, pc);
   Entry* e = &cache[h];
-  if (MOZ_UNLIKELY(e->pc != pc)) {
+  if (MOZ_UNLIKELY(e->pc != pc || e->script != script || e->majorGC != gc)) {
+    if (e->state == 1 && e->majorGC != gc && TakeLog()) {
+      fprintf(stderr, "PBLJIT GC evict oldEpoch=%llu newEpoch=%llu\n",
+              static_cast<unsigned long long>(e->majorGC),
+              static_cast<unsigned long long>(gc));
+    }
     Evict(e);
     e->pc = pc;
+    e->script = script;
+    e->majorGC = gc;
+    e->global = CurrentGlobal(cx);
   }
+  if (e->global != CurrentGlobal(cx)) return false;
   if (e->state != 1) {
     if (e->state == 2 || ++e->hits < kCompileHits) return false;
-    e->state = Compile(script, frame, pc, e) ? 1 : 2;
+    e->state = Compile(script, frame, pc, e, cx) ? 1 : 2;
     if (e->state != 1) return false;
   }
   // Same pc pointer, possibly a different (re-allocated) script: compare.

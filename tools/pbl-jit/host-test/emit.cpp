@@ -29,6 +29,56 @@ constexpr uint32_t ARR_INT = 0x8000, ARR_NUM = 0x8100, ARR_OTHER = 0x8200, NOT_A
 int MockArrayKind(uint32_t payload) {
   return payload == ARR_INT ? 1 : payload == ARR_NUM ? 2 : payload == ARR_OTHER ? 0 : -1;
 }
+// JIT8 object layouts: shape/slots pointers at 0/4, fixed slot at 16.
+constexpr uint32_t OBJ = 0x9000, OBJ_RO = 0x9200, OBJ_UNSAFE = 0x9300, OBJ_NURSERY = 0x9400;
+constexpr uint32_t GLOBAL = 0xa000, LEXICAL = 0xa100, MATH = 0xa200, FN = 0xa300;
+static JSContext gContext{0};
+template<class T> bool MockInspectObject(uint32_t p, T& info) {
+  info.pointer = p; info.tenured = true;
+  if (p == OBJ || p == OBJ_RO || p == OBJ_UNSAFE || p == OBJ_NURSERY) {
+    info.tenured = p != OBJ_NURSERY;
+    info.shape = (p == OBJ || p == OBJ_NURSERY) ? 0x7000 : p == OBJ_RO ? 0x7040 : 0x7080;
+    info.plain = true; info.canWrite = p != OBJ_UNSAFE; return true;
+  }
+  if (p == GLOBAL || p == LEXICAL || p == MATH) {
+    info.shape = p == GLOBAL ? 0x7200 : p == LEXICAL ? 0x7300 : 0x7400;
+    info.plain = false; info.canWrite = false; return true;
+  }
+  if (p >= FN && p < FN + 8 * 0x40 && ((p - FN) % 0x40) == 0) {
+    info.shape = 0x7500 + ((p - FN) / 0x40) * 0x20;
+    info.plain = false; info.canWrite = false; return true;
+  }
+  return false;
+}
+template<class T> bool MockLookupSlot(uint32_t p, uint32_t atom, T& slot) {
+  slot.writable = p != OBJ_RO;
+  if ((p == OBJ || p == OBJ_RO || p == OBJ_UNSAFE || p == OBJ_NURSERY) && atom >= 2 && atom <= 4) {
+    slot.offset = atom == 3 ? 0 : 16 + (atom == 4 ? 8 : 0);
+    slot.dynamic = atom == 3;
+    slot.bits = uint64_t(INT) << 32 | (atom == 3 ? 4 : 2);
+    if (atom == 4) slot.writable = false;
+    return true;
+  }
+  if (p == MATH && atom >= 10 && atom <= 17) {
+    slot.offset = 16 + 8 * (atom - 10);
+    slot.bits = uint64_t(OBJECT) << 32 | (FN + (atom - 10) * 0x40);
+    return true;
+  }
+  if (p == GLOBAL && (atom >= 20 && atom <= 23)) {
+    slot.offset = 16 + (atom - 20) * 8;
+    slot.bits = atom == 20 ? uint64_t(OBJECT) << 32 | MATH : atom == 21 ? uint64_t(INT) << 32 | 7 : uint64_t(OBJECT) << 32 | (atom == 22 ? OBJ : OBJ_NURSERY);
+    return true;
+  }
+  return false;
+}
+uint8_t MockIdentifyMath(uint32_t p) {
+  return p >= FN && p < FN + 8 * 0x40 ? 1 + (p - FN) / 0x40 : 0;
+}
+template<class T, class S> bool MockGlobalSlot(JSContext* cx, uint32_t atom,
+                                            T& lex, T& global, T& holder, S& slot) {
+  if (!cx || !MockInspectObject(LEXICAL, lex) || !MockInspectObject(GLOBAL, global)) return false;
+  holder = global; return MockLookupSlot(GLOBAL, atom, slot);
+}
 // pc offsets (from the loop head) of marked ops, written to the JSON.
 static int gMark[2] = {-1, -1};
 static uint32_t gFormals;
@@ -49,6 +99,7 @@ static int emit(const char* dir, const char* name, Code& c, size_t headAt) {
   Compiler* kp = TranslateLoop(
       [&](Compiler& k) {
         k.script = &s;
+        k.cx = &gContext;
         k.head = c.b.data() + headAt;
         k.end = nullptr;
         k.frame = reinterpret_cast<const uint8_t*>(gFrame + 64);
@@ -403,14 +454,31 @@ int main(int argc, char** argv) {
     forTail(c, h, jf, 4);
     emit(dir, "arrfill", c, h);
   }
-  {  // a[i] += i   (Dup2, GetElem, Add, NopIsAssignOp, StrictSetElem)
+  {  // a[i] += i   (ToPropertyKey, Dup2, GetElem, Add, NopIsAssignOp, StrictSetElem)
     Code c;
     size_t h, jf = arrHead(c, h);
-    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.op(JSOp::Dup2);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.op(JSOp::ToPropertyKey); c.op(JSOp::Dup2);
     gMark[1] = int(c.op(JSOp::GetElem));
     c.loc(JSOp::GetLocal, 1); c.op(JSOp::Add); c.op(JSOp::NopIsAssignOp); c.op(JSOp::StrictSetElem); c.op(JSOp::Pop);
-    forTail(c, h, jf, 6);
+    forTail(c, h, jf, 7);
     emit(dir, "arrinc", c, h);
+  }
+  {  // ToPropertyKey must reject conversions beyond its Int32 fast path.
+    for (JSOp value : {JSOp::True, JSOp::Undefined, JSOp::Null, JSOp::Double}) {
+      Code c;
+      size_t h, jf = forHead(c, h);
+      if (value == JSOp::Double) c.dbl(1.5); else c.op(value);
+      c.op(JSOp::ToPropertyKey); c.op(JSOp::Pop);
+      forTail(c, h, jf, 4);
+      char name[80];
+      snprintf(name, sizeof name, "reject-propertykey-%s", CodeName(value));
+      emit(dir, name, c, h);
+    }
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.op(JSOp::ToPropertyKey);
+    forTail(c, h, jf, 4);
+    emit(dir, "reject-propertykey-underflow", c, h);
   }
   {  // s = s + a[i]   s double, a holds numbers
     setLocal(0, DOUBLE_HI);
@@ -455,6 +523,151 @@ int main(int argc, char** argv) {
     forTail(g, h, jf, 4);
     emit(dir, "reject-getprop", g, h);
     reset();
+  }
+  // JIT8 own fixed/dynamic slot reads, writes and exact bail stacks.
+  for (uint32_t atom : {2u, 3u}) {
+    reset(); setLocal(2, OBJECT, OBJ);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 2);
+    gMark[0] = c.op(JSOp::GetProp); c.u(atom, 4);
+    c.op(JSOp::Add); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4);
+    emit(dir, atom == 2 ? "propfixed" : "propdynamic", c, h);
+  }
+  for (uint32_t atom : {2u, 3u}) {
+    reset(); setLocal(2, OBJECT, OBJ);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2); c.op(JSOp::Dup); c.op(JSOp::GetProp); c.u(atom, 4);
+    c.loc(JSOp::GetLocal, 1); c.op(JSOp::Add); c.op(JSOp::NopIsAssignOp);
+    gMark[0] = c.op(JSOp::StrictSetProp); c.u(atom, 4); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5);
+    emit(dir, atom == 2 ? "propinc" : "propincdynamic", c, h);
+  }
+  { // Store alone: reject a runtime old GC thing before writing it.
+    reset(); setLocal(2, OBJECT, OBJ);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2); c.loc(JSOp::GetLocal, 1);
+    gMark[0] = c.op(JSOp::SetProp); c.u(2, 4); c.op(JSOp::Pop);
+    forTail(c, h, jf, 3); emit(dir, "propstore", c, h);
+  }
+  for (const char* reason : {"readonly", "unsafe", "missing", "accessor", "written"}) {
+    reset(); setLocal(2, OBJECT, strcmp(reason,"readonly") == 0 ? OBJ_RO :
+                              strcmp(reason,"unsafe") == 0 ? OBJ_UNSAFE : OBJ);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2); c.op(JSOp::One);
+    c.op(JSOp::SetProp); c.u(strcmp(reason,"missing") == 0 ? 7 :
+                           strcmp(reason,"accessor") == 0 ? 5 : 2, 4);
+    c.op(JSOp::Pop);
+    if (strcmp(reason,"written") == 0) {
+      c.loc(JSOp::GetLocal, 2); c.loc(JSOp::SetLocal, 2); c.op(JSOp::Pop);
+    }
+    forTail(c, h, jf, 3);
+    char name[80]; snprintf(name, sizeof name, "reject-prop-%s", reason);
+    emit(dir, name, c, h);
+  }
+  { // Guarded global numeric constant.
+    reset(); Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.op(JSOp::GetGName); c.u(21, 4);
+    c.op(JSOp::Add); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4); emit(dir, "globalnumber", c, h);
+  }
+  for (uint32_t native = 0; native < 8; native++) {
+    reset(); setLocal(2, DOUBLE_HI); setLocal(3, DOUBLE_HI);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.op(JSOp::GetGName); c.u(20, 4); c.op(JSOp::Dup);
+    c.op(JSOp::GetProp); c.u(10 + native, 4); c.op(JSOp::Swap);
+    c.loc(JSOp::GetLocal, 2);
+    uint32_t argc = native < 2 ? 2 : 1;
+    if (argc == 2) c.loc(JSOp::GetLocal, 3);
+    gMark[0] = c.op(native == 3 ? JSOp::CallIgnoresRv : JSOp::Call); c.u(argc, 2);
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5);
+    char name[80]; snprintf(name, sizeof name, "math%u", native); emit(dir, name, c, h);
+  }
+  for (uint32_t native = 0; native < 3; native++) {
+    reset(); Code c; size_t h; size_t jf = forHead(c, h);
+    c.op(JSOp::GetGName); c.u(20, 4); c.op(JSOp::Dup);
+    c.op(JSOp::GetProp); c.u(10 + native, 4); c.op(JSOp::Swap);
+    c.op(JSOp::Call); c.u(0, 2); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5);
+    char name[80]; snprintf(name, sizeof name, "mathzero%u", native); emit(dir, name, c, h);
+  }
+
+  { // A writable head object must not alias an embedded constant holder.
+    reset(); setLocal(2, OBJECT, OBJ);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.op(JSOp::GetGName); c.u(22, 4); c.op(JSOp::GetProp); c.u(2, 4); c.op(JSOp::Pop);
+    c.loc(JSOp::GetLocal, 2); c.op(JSOp::One); c.op(JSOp::SetProp); c.u(2, 4); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5); emit(dir, "constantalias", c, h);
+  }
+  { // Nursery head objects are reloaded; nursery embedded constants reject.
+    reset(); setLocal(2, OBJECT, OBJ_NURSERY);
+    Code c; size_t h; size_t jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 2); c.op(JSOp::GetProp); c.u(2, 4);
+    c.op(JSOp::Add); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4); emit(dir, "nurseryhead", c, h);
+    Code n; jf = forHead(n, h); n.op(JSOp::GetGName); n.u(23, 4); n.op(JSOp::Pop);
+    forTail(n, h, jf, 3); emit(dir, "reject-nurseryconstant", n, h);
+  }
+  { // Exercise the real OnLoopHead identity gate without a wasm install.
+    // Rejected entries have the same invalidation path as compiled entries.
+    uint32_t checks = 0, failures = 0;
+    auto test = [&](bool ok, const char* name) {
+      checks++; if (!ok) { failures++; fprintf(stderr, "CACHE FAIL %s\n", name); }
+    };
+    Code c; c.head(0); c.op(JSOp::Return);
+    JSScript first{c.b.data(), c.b.size()}, peers[64]{};
+    JSScript* second = nullptr;
+    uint32_t hash = CacheIndex(&first, c.b.data());
+    for (auto& peer : peers) {
+      peer.code_ = c.b.data(); peer.length_ = c.b.size();
+      if (!second && CacheIndex(&peer, c.b.data()) != hash) second = &peer;
+    }
+    test(second != nullptr, "shared bytecode scripts can occupy separate buckets");
+    if (!second) return 1;
+    js::jit::BaselineFrame frame{};
+    JSContext cx{0}; Exit exit{}; uint64_t stack[2] = {};
+    gEnabled.store(1); gLogBudget.store(0);
+    test(!OnLoopHead(&first, &frame, stack, c.b.data(), &cx, &exit), "counting entry");
+    Entry* e = &tCache[hash];
+    test(e->script == &first && e->majorGC == 0 && e->hits == 1, "initial stamp");
+    e->state = 2; e->bytes = static_cast<uint8_t*>(malloc(3)); e->len = 3;
+    test(!OnLoopHead(&first, &frame, stack, c.b.data(), &cx, &exit), "same identity rejected");
+    test(e->state == 2 && e->hits == 1 && e->bytes != nullptr, "same identity retained");
+    e->state = 1; // A compiled entry: epoch mismatch must prevent invocation.
+    cx.incrementalGC = true; cx.majorGC = 1;
+    test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "incremental skips");
+    test(e->state == 1 && e->script == &first && e->majorGC == 0, "incremental no cache access");
+    cx.incrementalGC = false;
+    test(!OnLoopHead(&first, &frame, stack, c.b.data(), &cx, &exit), "major evicts");
+    test(e->state == 0 && e->bytes == nullptr && e->majorGC == 1 && e->hits == 1, "major reset stamp");
+    e->state = 2; e->bytes = static_cast<uint8_t*>(malloc(3)); e->len = 3;
+    test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "second shared code script counts");
+    Entry* other = &tCache[CacheIndex(second, c.b.data())];
+    test(other->script == second && other->hits == 1, "second shared code stamp");
+    test(e->script == &first && e->state == 2 && e->bytes != nullptr,
+         "second shared code script retains first specialization");
+    test(!OnLoopHead(&first, &frame, stack, c.b.data(), &cx, &exit), "first shared code revisited");
+    test(e->state == 2 && e->bytes != nullptr && e->hits == 1,
+         "alternating shared bytecode does not reset first entry");
+    // Ordinary hash collisions still require exact script identity checks.
+    other->script = &first; other->state = 2;
+    other->bytes = static_cast<uint8_t*>(malloc(3)); other->len = 3;
+    test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "script changes same code");
+    test(other->script == second && other->state == 0 && other->bytes == nullptr && other->hits == 1,
+         "script identity resets identical bytecode");
+    uint32_t oldGlobal = cx.global; cx.global += 0x100;
+    test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "global mismatch");
+    test(other->hits == 1 && other->global == oldGlobal, "global mismatch skips counting");
+    cx.global = oldGlobal;
+    test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "restore global");
+    test(other->hits == 2, "restored global counts");
+    Evict(e); Evict(other); free(tCache); tCache = nullptr;
+    char path[512]; snprintf(path, sizeof path, "%s/cache-tests.json", dir);
+    FILE* f = fopen(path, "w");
+    fprintf(f, "{\"pass\":%s,\"checks\":%u,\"failures\":%u}\n", failures ? "false" : "true", checks, failures);
+    fclose(f);
+    if (failures) return 1;
   }
   return 0;
 }

@@ -39,6 +39,9 @@ const arms = process.env.PBLBENCH_ARMS ? JSON.parse(await fs.readFile(process.en
 // PBLBENCH_ORDER (e.g. A) is for smoke runs only; it can never pass.
 const order = (process.env.PBLBENCH_ORDER || 'ABBAAB').split('');
 const fixturePath = process.env.PBLBENCH_FIXTURE ? path.resolve(process.env.PBLBENCH_FIXTURE) : path.join(repo, 'web/linux/tests/guest-jit-pbl-bench.html');
+const jitLogBudget = process.env.PBLBENCH_LOG_BUDGET === undefined ? null : Number(process.env.PBLBENCH_LOG_BUDGET);
+const guestReadyMode = process.env.PBLBENCH_GUEST_READY === '1';
+if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < 25 || jitLogBudget > 10000)) throw Error('invalid PBLBENCH_LOG_BUDGET');
 const inputs = {};
 for (const source of [fileURLToPath(import.meta.url), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) inputs[source] = sha(await fs.readFile(source));
 // Served manifests: the arm's own manifest with the Firefox URL pointed at
@@ -52,15 +55,26 @@ for (const [id, arm] of Object.entries(arms)) {
   arm.served = out + '/manifest-' + id + '.json';
   await fs.writeFile(arm.served, JSON.stringify(manifest, null, 2) + '\n');
 }
-await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
 await fs.copyFile(fixturePath, out + '/fixture.html');
+let mainAdapter = null;
+if (jitLogBudget !== null) {
+  const mainSource = await fs.readFile(path.join(repo, 'web/linux/main.js'), 'utf8');
+  const anchor = 'cmdline: `${rootCommand} ${modeFlags}`,';
+  if (mainSource.split(anchor).length !== 2) throw Error('main.js cmdline adapter anchor changed');
+  const adapted = mainSource.replace(anchor, 'cmdline: `${rootCommand} ${modeFlags} PBLJIT_LOG=' + jitLogBudget + '`,');
+  const adapterPath = out + '/main-log-budget.js';
+  await fs.writeFile(adapterPath, adapted);
+  mainAdapter = { path: adapterPath, sha256: sha(adapted), jitLogBudget };
+  inputs[adapterPath] = mainAdapter.sha256;
+}
+await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
 let serverSource = await fs.readFile(path.join(repo, 'web/desktop/dev-server.mjs'), 'utf8');
 serverSource = serverSource.slice(0, serverSource.indexOf("server.listen(port,"));
 serverSource = serverSource.replace("const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));", 'const root = ' + JSON.stringify(repo) + ';');
 serverSource = serverSource.replace('const server = createServer', `export const requests=[],sockets=new Set();export const armState={manifest:null,archive:null};let refusedDns=0,refusedTcp=0;export const refused=()=>({dns:refusedDns,tcp:refusedTcp});\nconst server = createServer`);
 serverSource = serverSource.replace("const requestPath = request.url?.split('?')[0];", `const requestPath = request.url?.split('?')[0];requests.push({at:Date.now(),path:requestPath});`);
-serverSource = serverSource.replace("const target = safePath(request.url || '/');", `let target = safePath(request.url || '/');if(requestPath==='/linux/boot-manifest.json')target=armState.manifest;if(requestPath==='/linux/initramfs-firefox.cpio.gz')target=armState.archive;`);
+serverSource = serverSource.replace("const target = safePath(request.url || '/');", `let target = safePath(request.url || '/');if(requestPath==='/linux/boot-manifest.json')target=armState.manifest;if(requestPath==='/linux/initramfs-firefox.cpio.gz')target=armState.archive;${mainAdapter ? "if(requestPath==='/linux/main.js')target=" + JSON.stringify(mainAdapter.path) + ';' : ''}`);
 // Refuse the guest network in both arms.
 serverSource = serverSource.replace("const addresses = await dns.resolve4(name);", "refusedDns++;throw Error('bench: network refused');");
 serverSource = serverSource.replace("if (requestPath === '/tcp') { handleTcpWebSocket(request, socket, head); return; }", "if (requestPath === '/tcp') { refusedTcp++; socket.destroy(); return; }");
@@ -74,14 +88,18 @@ const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:fa
 const fixture = await fs.readFile(fixturePath, 'utf8');
 const expectedCases = 3 * (fixture.match(/^ \['[^']+',/gm) || []).length;
 const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
-const report = { pass: false, origin, order, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256 }])), boots: [], serverPid: process.pid };
+const report = { pass: false, origin, order, mainAdapter, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256 }])), boots: [], serverPid: process.pid };
 
 // One boot = one owned headless Chromium with a fresh profile.
+report.guestReadinessMode = guestReadyMode;
 async function boot(index, armId) {
   const arm = arms[armId], label = armId.toLowerCase() + '-' + (index + 1), dir = out + '/boot' + (index + 1) + '-' + armId;
   await fs.mkdir(dir);
   service.armState.manifest = arm.served; service.armState.archive = arm.dir + '/initramfs-firefox.cpio.gz';
   const fileName = 'pblbench-' + label + '.html', url = 'file:///home/admin/pblbench/' + fileName;
+  const readyName = 'pblready-' + label + '.html', readyURL = 'file:///home/admin/pblbench/' + readyName;
+  const readyFixture = '<!doctype html><title>Firefox benchmark readiness</title><h1>Firefox ready</h1><script>requestAnimationFrame(()=>requestAnimationFrame(()=>console.log("PBLREADY "+JSON.stringify({event:"ready",label:' + JSON.stringify(label) + ',url:location.href,ua:navigator.userAgent,createdAt:Date.now()}))));</script>';
+  const bootPrefs = prefs + (guestReadyMode ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(readyURL) + ');\n' : '');
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--remote-debugging-port=' + CDP_PORT, '--user-data-dir=' + dir + '/profile', '--disk-cache-dir=' + dir + '/cache', 'about:blank'];
   const fd = openSync(dir + '/browser.log', 'wx');
   const child = spawn(executable, args, { detached: true, env: { ...process.env, XDG_CACHE_HOME: dir + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
@@ -97,19 +115,32 @@ async function boot(index, armId) {
   const clickGuest = async (x, y) => { const r = await ev("(()=>{const c=document.querySelector('canvas'),r=c.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,width:c.width,height:c.height}})()"); const p = { x: r.x + x * r.w / r.width, y: r.y + y * r.h / r.height }; await call('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p, buttons: 0 }); await call('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', buttons: 1, clickCount: 1 }); await call('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', buttons: 0, clickCount: 1 }); };
   const typeText = async text => { for (const ch of text) { const code = /[a-z]/i.test(ch) ? 'Key' + ch.toUpperCase() : /[0-9]/.test(ch) ? 'Digit' + ch : ({ '.': 'Period', '/': 'Slash', '-': 'Minus', ':': 'Semicolon' })[ch]; if (!code) throw Error('unsupported URL character ' + ch); const v = ({ '.': 190, '/': 191, '-': 189, ':': 186 })[ch] || ch.toUpperCase().charCodeAt(0), shifted = ch === ':'; if (shifted) await key('Shift', 'ShiftLeft', 16, 1, 'down'); await call('Input.dispatchKeyEvent', { type: 'keyDown', key: ch, code, windowsVirtualKeyCode: v, nativeVirtualKeyCode: v, text: ch, modifiers: shifted ? 1 : 0 }); await key(ch, code, v, shifted ? 1 : 0, 'up'); if (shifted) await key('Shift', 'ShiftLeft', 16, 0, 'up'); await sleep(180); } };
   const benchLines = logs => logs.split('\n').filter(l => l.includes('console.log: "PBLBENCH ')).flatMap(l => { try { return [JSON.parse(JSON.parse(l.slice(l.indexOf('"'))).slice(9))]; } catch { return []; } });
+  const readyLines = logs => logs.split('\n').filter(l => l.includes('console.log: "PBLREADY ')).flatMap(l => { try { return [JSON.parse(JSON.parse(l.slice(l.indexOf('"'))).slice(9))]; } catch { return []; } });
   try {
     await until(async () => { if (exitInfo || spawnError) throw Error('browser startup failed'); try { return (await fetch('http://127.0.0.1:' + CDP_PORT + '/json/version')).ok; } catch { return false; } }, 20000, 'browser');
     const target = (await (await fetch('http://127.0.0.1:' + CDP_PORT + '/json/list')).json()).find(t => t.type === 'page'); ws = new WebSocket(target.webSocketDebuggerUrl);
     ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
     await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
-    await ev(`(async()=>{localStorage.removeItem('linuxonweb.system.active.v1');localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await put('admin/pblbench/${fileName}',${JSON.stringify(fixture)});await h.destroy();return true;})()`);
+    await ev(`(async()=>{localStorage.removeItem('linuxonweb.system.active.v1');localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(bootPrefs)});await put('admin/pblbench/${fileName}',${JSON.stringify(fixture)});${guestReadyMode ? `await put('admin/pblbench/${readyName}',${JSON.stringify(readyFixture)});` : ''}await h.destroy();return true;})()`);
     const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
     if (manifest.version !== arm.version) throw Error('served manifest mismatch');
+    if (mainAdapter) {
+      rec.mainAdapterSHA256 = sha(Buffer.from(await (await fetch(origin + '/linux/main.js')).arrayBuffer()));
+      if (rec.mainAdapterSHA256 !== mainAdapter.sha256) throw Error('served main.js diagnostic adapter differs');
+    }
     const start = Date.now();
     await call('Page.navigate', { url: origin + '/linux/index.html?firefox=1&renderer=canvas2d&gpu=0' });
     await until(async () => { try { if ((await guestLogs()).includes('starting /bin/firefox as admin')) { rec.launchMs = Date.now() - start; return true; } } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; } return false; }, 180000, 'Firefox launch');
-    await sleep(20000);
+    if (guestReadyMode) {
+      await until(async () => {
+        const ready = readyLines(await guestLogs()).find(r => r.event === 'ready' && r.label === label && r.url === readyURL && /Firefox\//.test(r.ua) && r.createdAt >= start);
+        if (!ready) return false;
+        rec.guestReady = ready; rec.guestReadyMs = Date.now() - start; return true;
+      }, 120000, 'guest Firefox page readiness');
+      rec.readyFixtureSHA256 = sha(readyFixture);
+      await shot('guest-ready');
+    } else await sleep(20000);
     // Real input: address bar, select all, type, Enter; retry if the fixture
     // has not logged its start line (Firefox window not ready yet).
     for (;;) {
