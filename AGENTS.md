@@ -1,7 +1,7 @@
 # HANDOFF — 2026-10-01 late (paused by user; read this first)
 
 The user paused the goal and asked for this summary. Do not resume work until
-the user says so. Branch `claude-opus-5-5-guest-gpu-jit` (JIT 7 committed on top of `bcb9c19`).
+the user says so. Branch `claude-opus-5-5-guest-gpu-jit` (JIT 7 committed as `33db1bd`).
 Overall goal estimate: about 80/100, not complete. **No subagents** (user
 rule 2026-10-01; this supersedes "Subagents use Opus 5.5" below). The storage
 policy (`/mnt/p6/build/<task>`, TMPDIR/TMP/TEMP there, never /tmp) and
@@ -36,7 +36,7 @@ policy (`/mnt/p6/build/<task>`, TMPDIR/TMP/TEMP there, never /tmp) and
   - JIT 4-6: int loops ~190x; let/args/if/&&/||/?? loops 73-335x.
   - The candidates are not promoted.
 
-## Done: JIT 7a + 7b (committed in the "JIT 7" commit after `bcb9c19`)
+## Done: JIT 7a + 7b (committed `33db1bd`)
 
 - **JIT 7a (doubles) + 7b (dense number arrays, `.length`, `NopIsAssignOp`,
   `Dup2`):** see `docs/guest-jit-spec7-20261001.md`, task root
