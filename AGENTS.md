@@ -152,9 +152,33 @@ Completed bounded GNU port packets (not a completed libc):
   tools/glibc/jumps/README.md. This does not prove general CRT, pthread lifecycle,
   cancellation, C++ destructors, signal-callback jumps or production compiler flags.
 
-Next packet: native generated-syscall architecture backend preserving GNU
-aliases and normal/NOERRNO/ERRVAL conventions, exact public signatures and
-real-guest errors/signals/file operations, then GNU make to the next blocker.
+- `/mnt/p6/build/glibc-generated-syscalls-20261002/acceptance.json`: 17 exact
+  GNU-generated wrapper streams now link into the native payload, with GNU
+  aliases, audited public signatures and normal/NOERRNO/ERRVAL conventions.
+  Native 48,363/0 and FPCAST23i64 48,358/0 pass six syscall-specific suites each,
+  retaining allocator/startup/abort and native-jump gates; exit0 and owned
+  browsers/services closed. Three private close probes are not public GNU
+  close/cancellation acceptance; dup3 is compile/type-only, renameat unselected,
+  and fixture reading is a direct kernel syscall. All 112 actual link-object
+  hashes were independently reread. The final manifest pins 23,079 entries including
+  1,052 actual include dependencies, independently reread with zero differences;
+  Final SHA-256
+  `dde2aab2c80f2e1ebcc2e7b08fbe6c9e43ff4bf2603c51e42858e5bf474aa991`.
+  Original proof files are retained under *-first-freeze-retained.json. A
+  reporting-only correction identifies the selected Linux sigstack source's
+  link_warning rather than the unselected generic stub_warning implementation;
+  runtime modules and link objects remain unchanged.
+  Exact later architecture-template snapshots are retained; the first failed
+  template's missing historical snapshot is explicitly documented. Genuine GNU
+  make still exits2 on unaudited sigaltstack, sigstack's link_warning ELF
+  directives and dlmopen's static_link_warning ELF directives. Details/replay
+  commands are in docs/glibc-generated-syscalls-20261002.md and
+  tools/glibc/syscalls/README.md. This task is frozen and must remain unchanged.
+
+Next packet: preserve GNU warning text and .gnu.glibc-stub.* metadata, including
+installed __stub_* semantics, using owned Wasm architecture adapters; add the
+typed sigaltstack wrapper and test actual kernel ENOSYS, then advance GNU make.
+Do not claim alternate-stack support or erase unsupported-function metadata.
 No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
 accepted yet.
 Fresh planning/command spawns and a completed-agent follow-up hit the tool's
@@ -163,6 +187,11 @@ resumed. The existing integration agent remains available for the scoped Git
 checkpoint and next isolated packet; root reviews its evidence independently.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
+The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.
+GNU nptl/unwind.c requires _Unwind_ForcedUnwind/_Unwind_GetCFA, absent from
+LLVM22.1.8's Wasm implementation; ordinary UnwindLevel1.c excludes __wasm__.
+Native cancellation/C++ cleanup needs architecture/compiler integration and
+real public API acceptance, beyond the manual cleanup-chain jump fixtures.
 
 The completed source-only Nightly JIT API audit is at
 `/mnt/p6/build/firefox-nightly-jit-api-20261002/acceptance-and-migration-plan.md`:
