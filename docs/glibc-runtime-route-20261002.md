@@ -455,3 +455,18 @@ retain the established native ABI and checked failure behavior, with230 other
 runtime objects unchanged. These completed reviews supersede older pending-review
 wording in the immutable reports. Root evidence:
 `/mnt/p6/build/glibc-root-checkpoint2-review-20261002/proof.json`.
+
+The actual GNU legacy converter and memory providers are now separately frozen
+and independently reviewed:47,053 entries and32 exact repository paths, root
+proof `/mnt/p6/build/glibc-root-checkpoint3-review-20261002/proof.json`.
+Legacy104-byte kernel input converts through GNU bodies into public128-byte
+version0 data with24,612/0 synthetic checks in each mode. The six GNU units and
+three precise guarded duplicate-case labels retain public-version semantics.
+Memory13 actual make units retain unchanged GNU sbrk and separate logical break
+from mapping placement; native/FPCAST host291/0 includes genuine public-header
+indirect calls. Regenerating stale owned sysd-syscalls selects mprotect/madvise
+providers without modifying the GNU generator. This is compilation and bounded
+host behavior, not default NPTL or exact-object real Linux guest acceptance.
+General advice liveness/ownership and invalid remap flags still need review;
+physical protection, default stack guards, files/shared mappings remain absent.
+No later fresh fullmake pass or Nightly acceptance has been established.

@@ -1,0 +1,52 @@
+// Actual GNU-selected public providers; single-thread host memory contract.
+const fs=require('fs'),assert=require('assert');
+const [file,output]=process.argv.slice(2),m=new WebAssembly.Module(fs.readFileSync(file));
+assert.deepStrictEqual(WebAssembly.Module.imports(m),[]);
+const x=new WebAssembly.Instance(m,{}).exports;let checks=0;
+function check(v,msg){checks++;assert(v,msg);}
+const align=(p,a)=>Math.ceil(p/a)*a;
+const tls=align(x.__heap_base.value,x.__tls_align.value||1),floor=align(tls+x.__tls_size.value,32);
+x.__wasm_init_tls(tls);check(x.fixture_init(floor)===0,'initialized authority after linker TLS');
+check(floor>=tls+x.__tls_size.value,'TLS excluded from heap');
+const view=()=>new Uint8Array(x.memory.buffer),query=()=>x.sbrk(0)>>>0;
+check(query()===floor,'GNU sbrk queries genuine separate break');
+x.fixture_set_errno(91);check(x.sbrk(8192)===floor && query()===floor+8192,'GNU positive sbrk');check(x.fixture_errno()===91,'successful break retains errno');
+view().fill(0x69,floor,floor+8192);
+check(x.sbrk(-4096)===floor+8192 && query()===floor+4096,'GNU negative sbrk logical shrink');
+check(x.brk(floor+12288)===0 && query()===floor+12288,'absolute brk expansion');
+check(view().subarray(floor,floor+4096).every(v=>v===0x69),'break bytes preserved');
+const before=query();check(x.brk(floor-1)===-1 && x.fixture_errno()===12 && query()===before,'below heap rejected without break mutation');
+let map=x.mmap(0,65536,3,34,-1,0n);check(map!==-1 && (map>>>0)%65536===0,'public GNU anonymous mapping');map>>>=0;
+check(map>=before,'mapping never overlaps break');check(query()===before,'mmap leaves process break unchanged');
+view().fill(0x7c,map,map+65536);x.fixture_set_errno(91);
+check(x.sbrk(map-before+131072)===-1 && x.fixture_errno()===12 && query()===before,'break growth crossing mapping rejected');
+check(view().subarray(map,map+65536).every(v=>v===0x7c),'failed break preserves mapped payload');
+const placement=x.__wasm_memory_cursor()>>>0;
+check(x.mmap64(0,0x7fff0000,3,34,-1,0n)===-1 && x.fixture_errno()===12 && (x.__wasm_memory_cursor()>>>0)===placement,'OOM mapping leaves placement unchanged');
+check(x.mremap(map,65536,131072,0)===-1 && x.fixture_errno()===12,'nonmoving expansion fails honestly');
+let moved=x.mremap(map,65536,131072,1);check(moved!==-1,'moving expansion');moved>>>=0;
+check(view().subarray(moved,moved+65536).every(v=>v===0x7c),'remap preserves payload');
+check(view().subarray(moved+65536,moved+131072).every(v=>v===0),'anonymous remap tail zero');
+check(x.mremap(moved,131072,65536,0)===moved,'logical remap shrink');
+check(x.mprotect(moved,65536,0)===-1 && x.fixture_errno()===95,'protection never synthesized');
+check(x.mmap(0,65536,3,34|0x20000,-1,0n)===-1 && x.fixture_errno()===95,'default MAP_STACK not yet claimed');
+check(x.mmap64(0,65536,3,34,-1,0x100000000n)===-1 && x.fixture_errno()===95,'64-bit offset not truncated');
+check(x.madvise(moved,65536,4)===0 && view().subarray(moved,moved+65536).every(v=>v===0),'DONTNEED zeroing');
+check(x.munmap(moved,65536)===0,'logical unmap');
+for(let i=0;i<64;i++){
+ const p=x.mmap64(0,65536,3,34,-1,0n);check(p!==-1,'reused map');check(view().subarray(p,p+65536).every(v=>v===0),'reused range zero');view().fill(i+1,p,p+65536);check(x.munmap(p,65536)===0,'reused unmap');check((x.__wasm_memory_cursor()>>>0)===placement+131072,'placement stable across reuse');
+}
+const call=(op,p=0,n=0,newn=0,arg=0,off=0n)=>x.fixture_typed(op,p,n,newn,arg,off);
+check((call(1)>>>0)===query(),'public-header indirect sbrk query');
+check(call(0,query())===0,'public-header indirect brk');
+let typed=call(2,0,65536);check(typed!==-1,'public-header indirect mmap');typed>>>=0;
+view().fill(0x4a,typed,typed+65536);
+check(call(5,typed,65536,65536,0)===typed,'public-header indirect variadic mremap');
+check(call(6,typed,65536,0,0)===-1 && x.fixture_errno()===95,'public-header indirect protection');
+check(call(7,typed,65536,0,4)===0 && view().subarray(typed,typed+65536).every(v=>v===0),'public-header indirect advice');
+check(call(4,typed,65536)===0,'public-header indirect unmap');
+check(call(3,0,65536,0,0,0x100000000n)===-1 && x.fixture_errno()===95,'public-header indirect off64_t is not truncated');
+typed=call(3,0,65536);check(typed!==-1 && call(4,typed,65536)===0,'public-header indirect mmap64');
+check(x.fixture_init(floor)===-1 && x.fixture_errno()===22,'duplicate initialization rejected');
+const result={pass:true,checks,failures:0,imports:[],tls:{base:tls,size:x.__tls_size.value,alignment:x.__tls_align.value},heapFloor:floor,scope:'actual GNU-selected memory units and unchanged GNU sbrk; single-thread host gate only',limitations:['anonymous RW mappings only','logical unmapping and break shrink do not decommit/protect Wasm pages','brk growth after intervening mapping fails ENOMEM','no MAP_STACK/default NPTL, files, MAP_SHARED or protection acceptance']};
+fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

@@ -593,6 +593,29 @@ The frozen report retains its earlier review-pending wording; this completed
 review supersedes it without changing tested code or evidence.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
+Two further independently reviewed GNU make packets are frozen. Legacy stat
+conversion preserves version0/public128-byte time64 ABI, uses distinct104-byte
+kernel input and exactly three conditional duplicate-case guards around
+unchanged GNU conversion bodies. Six actual GNU units compile; synthetic
+native/FPCAST each pass24,612/0 with exact reserved/padding behavior and contiguous
+canaries. Manifest23,052 entries
+`f4fb6bb8806e20285b25ba3dfae6d29252e939b64ee43c4255de5dd239dd5807`,
+exact15 paths; see docs/glibc-legacy-stat-20261002.md. This is not a new kernel
+stat runtime or a change to the accepted statx path.
+The memory packet selects13 actual GNU make units, retaining pristine GNU
+sbrk and six pristine GNU units total, plus seven owned native architecture
+providers. Independent logical break/mapping placement prevents overlap;
+positive/negative break, errno/OOM preservation, remap, reuse, off64 and volatile
+public-header indirect calls pass291/0 in each native/FPCAST closed host module.
+The initial stale generated mprotect/madvise rules and frontend failures remain
+retained; regenerating owned metadata selects providers without generator or
+kernel patches. Manifest24,001 entries
+`cb26cde7b2306b44409d43e4568fe380be897e02c35de252755bc12edb70dd86`,
+exact17 paths; see docs/glibc-memory-make-20261002.md. Root rehashed all47,053
+entries and32 paths across these packets; both external freezers exit0/empty.
+Exact memory objects still need concurrent real guest integration. General
+madvise liveness/ownership and unknown mremap flag error behavior need review
+before claiming the full public APIs; guard/protection/default NPTL are absent.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.
 GNU nptl/unwind.c requires _Unwind_ForcedUnwind/_Unwind_GetCFA, absent from
 LLVM22.1.8's Wasm implementation; ordinary UnwindLevel1.c excludes __wasm__.
