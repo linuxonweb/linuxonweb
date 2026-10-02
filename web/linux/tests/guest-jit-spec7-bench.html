@@ -1,0 +1,52 @@
+<!doctype html><meta charset="utf-8"><title>JIT 7 bench</title>
+<style>body{font:16px sans-serif;margin:2em}pre{white-space:pre-wrap}</style>
+<h1>Guest JIT 7: doubles</h1>
+<p>Auto-runs on load. Results go to the console (guest stdout) as PBLBENCH lines.</p>
+<pre id="result">Settling</pre>
+<script>
+// JIT 7a fixture (docs/guest-jit-spec7-20261001.md), derived from the JIT 6
+// fixture. One innermost-loop case per double feature (Div, Int/Double compare,
+// ToInt32 of a double, Inc, f64 arithmetic, truthiness) plus the int-loop and
+// native-call (rejected) controls; batches of 100 reps timed with performance.now(), every rep
+// checked against its expected value. Label from ?label= or the file name.
+// Yields after every batch: a long synchronous run raises Firefox's modal
+// slow-script dialog in this single-process build, which stalls the page.
+const params=new URLSearchParams(location.search);
+const label=params.get('label')||location.pathname.split('/').pop().replace(/\.html$/,'').replace(/^pblbench-/,'');
+const REPS=100,WARMUPS=8,SAMPLES=11,ROUNDS=3,SETTLE_MS=15000;
+const cases=[
+ ['int-loop',()=>{let sum=0;for(let i=0;i<10000;i++)sum=(sum+i)|0;return sum;},49995000],
+ ['div-sum',()=>{let s=0;for(let i=0;i<10000;i++)s=s+i/7;return s;},7142142.857142856],
+ ['mixed-cmp',()=>{const lim=9999.5;let n=0;for(let i=0;i<lim;i++)n=(n+1)|0;return n;},10000],
+ ['mul-trunc',()=>{let s=0;for(let i=0;i<10000;i++)s=(s+((i*1.5)|0))|0;return s;},74990000],
+ ['dbl-inc',()=>{let d=0.5;for(let i=0;i<10000;i++)d++;return d;},10000.5],
+ ['float-acc',()=>{let s=0;for(let i=0;i<10000;i++)s+=i*0.25-1;return s;},12488750],
+ ['dbl-compare',()=>{let c=0,x=0;for(let i=0;i<10000;i++){x+=0.001;if(x>5)c++;}return c;},5001],
+ ['dbl-truthy',()=>{let d=0.5,n=0;for(let i=0;i<10000;i++){if(d)n++;}return n;},10000],
+ ['native-call',()=>{let a=0;for(let i=0;i<4000;i++)a=Math.max(a,i);return a;},3999],
+];
+const out=document.getElementById('result');
+function emit(obj){const line='PBLBENCH '+JSON.stringify(obj);console.log(line);out.textContent+='\n'+line;}
+emit({event:'start',label,hc:navigator.hardwareConcurrency,ua:navigator.userAgent});
+const tick=()=>new Promise(r=>setTimeout(r,0));
+setTimeout(async()=>{
+ const started=performance.now();let ok=true;
+ try{
+  for(let round=0;round<ROUNDS;round++){
+   for(const [name,fn,expected] of cases){
+    const caseStart=performance.now();
+    for(let i=0;i<WARMUPS;i++){for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' warmup '+v);}await tick();}
+    const samples=[];let checksum=0;
+    for(let s=0;s<SAMPLES;s++){
+     const begin=performance.now();
+     for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' value '+v);checksum=(checksum+v)|0;}
+     samples.push(performance.now()-begin);await tick();
+    }
+    const sorted=samples.slice().sort((a,b)=>a-b);
+    emit({event:'case',label,round,name,caseMs:+(performance.now()-caseStart).toFixed(1),checksum,reps:REPS,batchMs:samples.map(x=>+x.toFixed(3)),medianBatchMs:+sorted[SAMPLES>>1].toFixed(3)});
+   }
+  }
+ }catch(e){ok=false;emit({event:'error',label,error:String(e)});}
+ emit({event:'done',label,ok,elapsedMs:+(performance.now()-started).toFixed(1)});
+},SETTLE_MS);
+</script>

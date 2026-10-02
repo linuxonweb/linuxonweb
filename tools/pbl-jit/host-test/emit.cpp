@@ -17,12 +17,20 @@ struct Code {
   void patch(size_t at, size_t target) { int32_t d = int32_t(target - at); for (int i = 0; i < 4; i++) b[at + 1 + i] = uint8_t(uint32_t(d) >> (8 * i)); }
   void here(size_t at) { patch(at, b.size()); }
   void target(uint32_t ic) { op(JSOp::JumpTarget); u(ic, 4); }
+  void dbl(double x) { uint64_t v; memcpy(&v, &x, 8); op(JSOp::Double); u(uint32_t(v), 4); u(uint32_t(v >> 32), 4); }
 };
 // Compile-time frame image: locals below `frame`, arguments in gArgs. Only the
 // tags matter (they choose the guarded head types).
 constexpr uint32_t INT = 0xFFFFFF81u, BOOL = 0xFFFFFF82u, UNDEF = 0xFFFFFF83u,
-                   DOUBLE_HI = 0x40000000u;
+                   DOUBLE_HI = 0x40000000u, OBJECT = 0xFFFFFF8Cu;
 static uint64_t gFrame[64], gArgs[8];
+// Compile-time array payloads and their element kinds (see MockArrayKind).
+constexpr uint32_t ARR_INT = 0x8000, ARR_NUM = 0x8100, ARR_OTHER = 0x8200, NOT_ARR = 0x8300;
+int MockArrayKind(uint32_t payload) {
+  return payload == ARR_INT ? 1 : payload == ARR_NUM ? 2 : payload == ARR_OTHER ? 0 : -1;
+}
+// pc offsets (from the loop head) of marked ops, written to the JSON.
+static int gMark[2] = {-1, -1};
 static uint32_t gFormals;
 static bool gAliased, gFunction;
 static void reset() {
@@ -37,18 +45,22 @@ static void setArg(uint32_t no, uint32_t tag, uint32_t v = 0) { gArgs[no] = (uin
 static int emit(const char* dir, const char* name, Code& c, size_t headAt) {
   JSScript s{c.b.data(), c.b.size()};
   s.argsAliased_ = gAliased;
-  Compiler k;
-  k.script = &s;
-  k.head = c.b.data() + headAt;
-  k.end = nullptr;
-  k.frame = reinterpret_cast<const uint8_t*>(gFrame + 64);
-  if (gFunction) {
-    k.argv = gArgs;
-    k.nformals = gFormals;
-    k.argsAliased = gAliased;
-  }
   Buf m;
-  bool ok = k.scan() && k.liveness() && k.translate() && k.assemble(m);
+  Compiler* kp = TranslateLoop(
+      [&](Compiler& k) {
+        k.script = &s;
+        k.head = c.b.data() + headAt;
+        k.end = nullptr;
+        k.frame = reinterpret_cast<const uint8_t*>(gFrame + 64);
+        if (gFunction) {
+          k.argv = gArgs;
+          k.nformals = gFormals;
+          k.argsAliased = gAliased;
+        }
+      },
+      m);
+  Compiler& k = *kp;
+  bool ok = !k.reason;
   char path[512];
   snprintf(path, sizeof path, "%s/%s.json", dir, name);
   FILE* j = fopen(path, "w");
@@ -60,8 +72,10 @@ static int emit(const char* dir, const char* name, Code& c, size_t headAt) {
             key & kArgKey ? "arg" : "local", key & ~kArgKey, k.varLive[i] ? "true" : "false",
             k.varWritten[i] ? "true" : "false", unsigned(k.headTy[i]));
   }
-  fprintf(j, "],\"targets\":%u,\"maxArg\":%u,\"maxDepth\":%u,\"ops\":%u}\n", k.ntargets, k.maxArg,
-          k.maxDepth, k.nops);
+  fprintf(j, "],\"targets\":%u,\"maxArg\":%u,\"maxDepth\":%u,\"ops\":%u,\"attempts\":%u,\"mark\":[%d,%d]}\n",
+          k.ntargets, k.maxArg, k.maxDepth, k.nops, k.attempts, gMark[0] < 0 ? -1 : gMark[0] - int(headAt),
+          gMark[1] < 0 ? -1 : gMark[1] - int(headAt));
+  gMark[0] = gMark[1] = -1;
   fclose(j);
   if (ok) {
     snprintf(path, sizeof path, "%s/%s.wasm", dir, name);
@@ -69,7 +83,8 @@ static int emit(const char* dir, const char* name, Code& c, size_t headAt) {
     fwrite(m.p, 1, m.n, f);
     fclose(f);
   }
-  printf("%s ok=%d reason=%s bytes=%zu\n", name, ok, k.reason ? k.reason : "-", m.n);
+  printf("%s ok=%d reason=%s bytes=%zu attempts=%u\n", name, ok, k.reason ? k.reason : "-", m.n, k.attempts);
+  FreeCompiler(kp);
   return ok;
 }
 // for (; i < 10000; i++) BODY;   i = local 1. Returns the exit jump to patch.
@@ -264,7 +279,7 @@ int main(int argc, char** argv) {
     c.op(JSOp::Undefined); c.op(JSOp::Pop); c.op(JSOp::Null); c.op(JSOp::Not); c.op(JSOp::Pop);
     forTail(c, h, jf, 8);
     emit(dir, "coalesce", c, h);
-    setLocal(0, DOUBLE_HI);
+    setLocal(0, OBJECT);
     emit(dir, "reject-headtype", c, h);
     reset();
   }
@@ -274,6 +289,172 @@ int main(int argc, char** argv) {
     c.head(1);
     size_t g = c.jump(JSOp::Goto); c.patch(g, h);
     emit(dir, "reject-nested", c, h);
+  }
+  // JIT 7a: doubles.
+  {  // s = s + i / 3   (s widens Int -> Double on the backedge: attempts=2)
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 1); c.op(JSOp::Int8); c.u(3, 1); c.op(JSOp::Div); c.op(JSOp::Add);
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4);
+    emit(dir, "divsum", c, h);
+  }
+  {  // for (; i < lim; i++) n = (n + 1) | 0;   n=0 i=1 lim=2 (double): Int < Double
+    setLocal(2, DOUBLE_HI);
+    Code c;
+    size_t h = c.head(0);
+    c.loc(JSOp::GetLocal, 1); c.loc(JSOp::GetLocal, 2); c.op(JSOp::Lt);
+    size_t jf = c.jump(JSOp::JumpIfFalse);
+    c.target(2);
+    c.loc(JSOp::GetLocal, 0); c.op(JSOp::One); c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr);
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "mixcmp", c, h);
+    reset();
+  }
+  {  // s = (s + ((i * 1.5) | 0)) | 0
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 1); c.dbl(1.5); c.op(JSOp::Mul); c.op(JSOp::Zero); c.op(JSOp::BitOr);
+    c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "bitdbl", c, h);
+  }
+  {  // x = (x * 3.5) | 0   x=local0; bails once x * 3.5 leaves the int32 range
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.dbl(3.5); c.op(JSOp::Mul); c.op(JSOp::Zero); c.op(JSOp::BitOr);
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4);
+    emit(dir, "bitovf", c, h);
+  }
+  {  // d++; e = -e; f = ~f   d=2 e=3 (doubles) f=4 (double, ToInt32 then int)
+    setLocal(2, DOUBLE_HI);
+    setLocal(3, DOUBLE_HI);
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2); c.op(JSOp::Inc); c.loc(JSOp::SetLocal, 2); c.op(JSOp::Pop);
+    c.loc(JSOp::GetLocal, 3); c.op(JSOp::Neg); c.loc(JSOp::SetLocal, 3); c.op(JSOp::Pop);
+    c.loc(JSOp::GetLocal, 2); c.op(JSOp::BitNot); c.loc(JSOp::SetLocal, 4); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "incneg", c, h);
+    reset();
+  }
+  {  // if (d) n++;   n=0 i=1 d=2 (double)
+    setLocal(2, DOUBLE_HI);
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2);
+    size_t js = c.jump(JSOp::JumpIfFalse);
+    c.target(3);
+    c.loc(JSOp::GetLocal, 0); c.op(JSOp::Inc); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    c.here(js); c.target(4);
+    forTail(c, h, jf, 5);
+    emit(dir, "truthy", c, h);
+    reset();
+  }
+  {  // x = d - d   d=2 (double, Infinity at run time) x=3: NaN boxed canonically
+    setLocal(2, DOUBLE_HI);
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 2); c.loc(JSOp::GetLocal, 2); c.op(JSOp::Sub); c.loc(JSOp::SetLocal, 3); c.op(JSOp::Pop);
+    forTail(c, h, jf, 3);
+    emit(dir, "nanbox", c, h);
+    reset();
+  }
+  {  // s = s + ((i & 1) ? 1 : 0.5)   join of an Int and a Double stack slot
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 1); c.op(JSOp::One); c.op(JSOp::BitAnd);
+    size_t je = c.jump(JSOp::JumpIfFalse);
+    c.target(4); c.op(JSOp::One); size_t gj = c.jump(JSOp::Goto);
+    c.here(je); c.target(4); c.dbl(0.5);
+    c.here(gj); c.target(4);
+    c.op(JSOp::Add); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "slotjoin", c, h);
+  }
+  // JIT 7b: dense arrays (a = local 3) and .length.
+  // for (; i < a.length; i++) BODY   i = local 1. Marks GetProp as mark[0].
+  auto arrHead = [](Code& c, size_t& h, uint32_t atom = 1) {
+    h = c.head(0);
+    c.loc(JSOp::GetLocal, 1); c.loc(JSOp::GetLocal, 3);
+    gMark[0] = int(c.op(JSOp::GetProp)); c.u(atom, 4);
+    c.op(JSOp::Lt);
+    size_t jf = c.jump(JSOp::JumpIfFalse);
+    c.target(3);  // GetProp, Lt, JumpIfFalse
+    return jf;
+  };
+  {  // s = (s + a[i]) | 0
+    setLocal(3, OBJECT, ARR_INT);
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+    gMark[1] = int(c.op(JSOp::GetElem));
+    c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "arrsum", c, h);
+  }
+  {  // a[i] = i
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.loc(JSOp::GetLocal, 1);
+    gMark[1] = int(c.op(JSOp::SetElem)); c.op(JSOp::Pop);
+    forTail(c, h, jf, 4);
+    emit(dir, "arrfill", c, h);
+  }
+  {  // a[i] += i   (Dup2, GetElem, Add, NopIsAssignOp, StrictSetElem)
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.op(JSOp::Dup2);
+    gMark[1] = int(c.op(JSOp::GetElem));
+    c.loc(JSOp::GetLocal, 1); c.op(JSOp::Add); c.op(JSOp::NopIsAssignOp); c.op(JSOp::StrictSetElem); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "arrinc", c, h);
+  }
+  {  // s = s + a[i]   s double, a holds numbers
+    setLocal(0, DOUBLE_HI);
+    setLocal(3, OBJECT, ARR_NUM);
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+    gMark[1] = int(c.op(JSOp::GetElem));
+    c.op(JSOp::Add); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5);
+    emit(dir, "arrdbl", c, h);
+    reset();
+  }
+  {  // a[i] = a[i] / 3   Int32 array widened to Double elements (attempts=2)
+    setLocal(3, OBJECT, ARR_INT);
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+    c.op(JSOp::GetElem); c.op(JSOp::Int8); c.u(3, 1); c.op(JSOp::Div);
+    gMark[1] = int(c.op(JSOp::SetElem)); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    emit(dir, "arrwiden", c, h);
+  }
+  {  // rejects: not an Array, array var written, element type, other atom
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.op(JSOp::GetElem);
+    c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 6);
+    setLocal(3, OBJECT, NOT_ARR);
+    emit(dir, "reject-notarray", c, h);
+    setLocal(3, OBJECT, ARR_OTHER);
+    emit(dir, "reject-elemtype", c, h);
+    setLocal(3, OBJECT, ARR_INT);
+    Code w;
+    jf = arrHead(w, h);
+    w.loc(JSOp::GetLocal, 3); w.loc(JSOp::SetLocal, 3); w.op(JSOp::Pop);
+    forTail(w, h, jf, 4);
+    emit(dir, "reject-arrwritten", w, h);
+    Code g;
+    jf = arrHead(g, h, 2);
+    forTail(g, h, jf, 4);
+    emit(dir, "reject-getprop", g, h);
+    reset();
   }
   return 0;
 }

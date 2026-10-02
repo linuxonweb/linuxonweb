@@ -1,0 +1,55 @@
+<!doctype html><meta charset="utf-8"><title>JIT 7b bench</title>
+<style>body{font:16px sans-serif;margin:2em}pre{white-space:pre-wrap}</style>
+<h1>Guest JIT 7b: dense arrays</h1>
+<p>Auto-runs on load. Results go to the console (guest stdout) as PBLBENCH lines.</p>
+<pre id="result">Settling</pre>
+<script>
+// JIT 7b fixture (docs/guest-jit-spec7-20261001.md), derived from the JIT 7a
+// fixture. One innermost-loop case per array feature (GetElem, SetElem, a[i]+=,
+// .length, double elements, element widening), float-acc (`+=`, the JIT 7a
+// NopIsAssignOp miss) plus the int-loop and
+// native-call (rejected) controls. Arrays come in as default parameters, so the
+// loops read them with GetArg; batches of 100 reps timed with performance.now(), every rep
+// checked against its expected value. Label from ?label= or the file name.
+// Yields after every batch: a long synchronous run raises Firefox's modal
+// slow-script dialog in this single-process build, which stalls the page.
+const params=new URLSearchParams(location.search);
+const label=params.get('label')||location.pathname.split('/').pop().replace(/\.html$/,'').replace(/^pblbench-/,'');
+const REPS=100,WARMUPS=8,SAMPLES=11,ROUNDS=3,SETTLE_MS=15000;
+const N=10000;
+const ints=Array.from({length:N},(_,i)=>i),dbls=Array.from({length:N},(_,i)=>i*0.5+0.25),work=Array.from({length:N},()=>0);
+const cases=[
+ ['int-loop',()=>{let sum=0;for(let i=0;i<10000;i++)sum=(sum+i)|0;return sum;},49995000],
+ ['arr-sum',(a=ints)=>{let s=0;for(let i=0;i<a.length;i++)s=(s+a[i])|0;return s;},49995000],
+ ['arr-fill',(a=work)=>{for(let i=0;i<a.length;i++)a[i]=i*2;return a[N-1];},19998],
+ ['arr-inc',(a=work)=>{for(let i=0;i<a.length;i++)a[i]=0;for(let i=0;i<a.length;i++)a[i]+=i;let s=0;for(let i=0;i<a.length;i++)s=(s+a[i])|0;return s;},49995000],
+ ['dbl-arr',(a=dbls)=>{let s=0;for(let i=0;i<a.length;i++)s+=a[i];return s;},25000000],
+ ['arr-widen',(a=work)=>{for(let i=0;i<a.length;i++)a[i]=i;for(let i=0;i<a.length;i++)a[i]=a[i]/4;let s=0;for(let i=0;i<a.length;i++)s+=a[i];return s;},12498750],
+ ['float-acc',()=>{let s=0;for(let i=0;i<10000;i++)s+=i*0.25-1;return s;},12488750],
+ ['native-call',()=>{let a=0;for(let i=0;i<4000;i++)a=Math.max(a,i);return a;},3999],
+];
+const out=document.getElementById('result');
+function emit(obj){const line='PBLBENCH '+JSON.stringify(obj);console.log(line);out.textContent+='\n'+line;}
+emit({event:'start',label,hc:navigator.hardwareConcurrency,ua:navigator.userAgent});
+const tick=()=>new Promise(r=>setTimeout(r,0));
+setTimeout(async()=>{
+ const started=performance.now();let ok=true;
+ try{
+  for(let round=0;round<ROUNDS;round++){
+   for(const [name,fn,expected] of cases){
+    const caseStart=performance.now();
+    for(let i=0;i<WARMUPS;i++){for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' warmup '+v);}await tick();}
+    const samples=[];let checksum=0;
+    for(let s=0;s<SAMPLES;s++){
+     const begin=performance.now();
+     for(let r=0;r<REPS;r++){const v=fn();if(v!==expected)throw new Error(name+' value '+v);checksum=(checksum+v)|0;}
+     samples.push(performance.now()-begin);await tick();
+    }
+    const sorted=samples.slice().sort((a,b)=>a-b);
+    emit({event:'case',label,round,name,caseMs:+(performance.now()-caseStart).toFixed(1),checksum,reps:REPS,batchMs:samples.map(x=>+x.toFixed(3)),medianBatchMs:+sorted[SAMPLES>>1].toFixed(3)});
+   }
+  }
+ }catch(e){ok=false;emit({event:'error',label,error:String(e)});}
+ emit({event:'done',label,ok,elapsedMs:+(performance.now()-started).toFixed(1)});
+},SETTLE_MS);
+</script>

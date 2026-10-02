@@ -1,3 +1,115 @@
+# HANDOFF — 2026-10-01 late (paused by user; read this first)
+
+The user paused the goal and asked for this summary. Do not resume work until
+the user says so. Branch `claude-opus-5-5-guest-gpu-jit` (JIT 7 committed on top of `bcb9c19`).
+Overall goal estimate: about 80/100, not complete. **No subagents** (user
+rule 2026-10-01; this supersedes "Subagents use Opus 5.5" below). The storage
+policy (`/mnt/p6/build/<task>`, TMPDIR/TMP/TEMP there, never /tmp) and
+"adapters over upstream patches, native wasm only" still apply.
+
+## Done (committed, details in the packet list below)
+
+- **Guest Vulkan ICD:**
+  - WebGPU by default, WebGL2 fallback, over the `gpu_hostcall` transport (H1);
+    vsock is the fallback transport.
+  - Core 1.1, sync objects, uniforms, textures, depth, WSI objects.
+  - The extensions, features and limits Zink needs; a 256 MiB heap with
+    suballocation.
+- **OpenGL via Vulkan:** static Mesa 26.2.3 Zink+EGL works for ES2 and GL 2.x
+  compatibility contexts (B2a-B2g). glgears on Zink matches softpipe pixel for
+  pixel.
+- **Gears table** (`docs/zink-b2g-glgears-20261001.md`), 128x128, FPS shown /
+  rendered without display, NVIDIA WebGPU:
+  - softpipe 166.9/443.2
+  - GL-on-Zink 85.5/233.1
+  - vkgears 118.3/437.1
+- **Main page:** `?gputest=1` with `gputestapp=vkgears|glgears`,
+  `gldriver=softpipe|zink`. GPU sessions are on by default in Firefox mode
+  (`?gpu=0` opts out).
+- **Firefox GPU groundwork:**
+  - W0 mmap MAP_SHARED, W1 WebGPU gates, W2 `gpu_hostcall`, W3 decoder, W4a host
+    executor.
+  - F1a: Mesa EGL+Zink linked into Firefox (candidate `2c3830fbec61`, not
+    promoted).
+- **JIT (portable baseline interpreter + runtime loop specializer to wasm,
+  `tools/pbl-jit/PblJit.cpp`):**
+  - JIT 4-6: int loops ~190x; let/args/if/&&/||/?? loops 73-335x.
+  - The candidates are not promoted.
+
+## Done: JIT 7a + 7b (committed in the "JIT 7" commit after `bcb9c19`)
+
+- **JIT 7a (doubles) + 7b (dense number arrays, `.length`, `NopIsAssignOp`,
+  `Dup2`):** see `docs/guest-jit-spec7-20261001.md`, task root
+  `/mnt/p6/build/guest-jit-spec7-20261001`.
+- **Results:**
+  - Host test 335/0.
+  - Startup/update gates pass for 7a and 7b.
+  - ABBAAB 7a vs 7b (`bench-7b-run1`): array loops ~90-180x faster, whole
+    fixture 280 s -> 57 s, launch unchanged, 0 bails.
+- **Candidates (not committed, not promoted):**
+  - `web/linux/tests/runtime-candidates/pbl-jit-spec7-run1` (7a,
+    `test-pbl-a405cc684e1fb352`)
+  - `web/linux/tests/runtime-candidates/pbl-jit-spec7b-run1` (7b,
+    `test-pbl-cc4937fc7c48c88d`)
+- Still uncommitted and NOT to be staged: `web/sites`,
+  `web/linux/tests/firefox-webgpu-wrapper/` (W4b draft), runtime-candidate
+  archives, backups and other unrelated untracked files.
+
+## Not done — next steps in order
+
+1. **JIT 7c:** arr-inc only reached 0.43x, because `a[i] += v` emits
+   `ToPropertyKey` (JOF_IC) before `Dup2`. Make it a no-op on Int32 keys that
+   still advances the IC index. Add it to the host arrinc case, then rebuild
+   (`tools/build-firefox-pbl-jit.py`), package
+   (`tools/guest-rootfs/package-pbl-candidate.py`), gate and bench. The
+   commands are in the spec7 doc.
+2. **JIT 8 (designed, not started):** monomorphic GetProp/SetProp, GetGName
+   constants, inlined `Math.*`.
+   - **Guards:** all shape and constant guards are hoisted to loop entry
+     (NoEntry on mismatch).
+   - **New Ty kinds:** ObjTy for PlainObjects held in vars that the loop never
+     writes; ConstTy for a table of up to 16 constants (pointer + shape).
+   - **Property access:** compile-time `NativeObject::lookupPure` gives the slot
+     (fixed slot through `getFixedSlotOffset`, dynamic slot through
+     `offsetOfSlots`). Bail if the value is not a number.
+   - **Math natives:** identify them through
+     `fun->jitInfo()->inlinableNative` (`InlinableNative::MathMax/Min/Abs/Floor/Ceil/Round/Sqrt/Trunc`).
+     The `js::math_*` symbols are not all exported.
+   - **GC safety:** compile only when no incremental GC is in progress. Store
+     `gc.majorGCCount()` and the script in the Entry; at entry, if either
+     changed, evict and recompile.
+   - **Bytecode:** `Math.max(a,i)` =
+     `GetGName; Dup; GetProp; Swap; args; Call(122)`. Also handle
+     `CallIgnoresRv(126)`, `SetProp(76)` and `StrictSetProp(77)`.
+   - **Test fixtures:** prop-mono and native-call from
+     `web/linux/tests/guest-jit-pbl-bench.html`.
+3. **Non-PBL regressions remain** (throw 1.27x, Math native 1.18x, prop 1.11x
+   vs promoted); JIT 8 should remove the last two. Promote JIT only after it
+   beats the promoted build on all cases. The promotion needs startup/update
+   gates and user confirmation before any Sites deploy (Sites v9 stays public).
+4. **GPU (paused at gears milestone `1d75be3`, waiting for user confirmation):**
+   - resolutions above 128 px;
+   - B2b blocking fence/semaphore waits (and the `zink_context_destroy` spin);
+   - push constants;
+   - Z24/S8, sampling Zink images, GL >2.x;
+   - vkgears re-uploads all buffers every frame;
+   - WebGL2 fence poll cost;
+   - the G3 main-page gate.
+5. **Firefox GPU (paused):**
+   - F1b: Firefox WebGL on Zink, relinked onto the current Firefox and
+     run in the guest.
+   - W4b: wgpu wrapper draft, uncommitted in
+     `web/linux/tests/firefox-webgpu-wrapper/`.
+   - W4c: ship the decoder wasm under `web/linux`, then W5-W9 per
+     `docs/firefox-webgpu-design-20260929.md`.
+   - Audit Firefox for the odd-index member-function-pointer `call_indirect`
+     trap (see B2c).
+6. **Hardware video decoding:** not started.
+
+Processes to leave alone: user server PID 1591443, PID 1441390, Xorg, the
+user's Chromium/Chrome Canary, dev servers 443487/2647744. Nothing from this
+session is running.
+
 # Resumed work — 2026-09-28 (Claude Opus 5.5 session)
 
 The user explicitly resumed the goal: guest GPU in Linux-wasm, Vulkan usable by
