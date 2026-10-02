@@ -131,6 +131,14 @@ is free.
   passes `jit5-startup-run1` and `jit5-update-run1` (firefox-homepage task). ABBAAB vs
   promoted: int-loop 0.004, fib 0.76, throw-flat 1.27, prop-mono 1.11,
   native-call 1.18, json 1.00. Next JIT 6: let/TDZ, args, if/else, &&/||/??.
+- Done: JIT 6 specializer coverage (`docs/guest-jit-spec6-20261001.md`, `/mnt/p6/build/guest-jit-spec6-20261001`):
+  let/TDZ, GetArg/SetArg, if/else/continue/&&/||/?? as nested wasm blocks with
+  typed joins, liveness-based head guards, Mod/Neg/BitNot, Bool/Undef/Null.
+  Host test 114/0. Candidate run2 `test-pbl-25c06bc9ce505703`
+  (`runtime-candidates/pbl-jit-spec6-run2`, not committed/promoted) passes
+  `jit6-startup-run2`/`jit6-update-run2`. ABBAAB vs JIT 5 on the new
+  `guest-jit-spec6-bench.html`: 7 new cases 73-335x faster, controls equal, 0 bails.
+  Next JIT 7 (doubles, dense GetElem/length), JIT 8 (prop ICs, JSNative calls).
 - Done: Web UI stop button (`1eafeb7`): single stop icon (SVG has no `hidden`
   property), light blue, and a Stop/Cancel confirm popover below the button.
 - Done: gputest G2 cube demo (`docs/gputest-demo-20260930.md`, `/mnt/p6/build/gputest-g2-20260930`):

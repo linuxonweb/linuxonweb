@@ -12,6 +12,8 @@
 // JIT packet 4 reuse: PBLBENCH_TASK overrides the task root and PBLBENCH_ARMS
 // names a JSON file {A:{name,dir,version,archiveSha256},B:{...}} replacing the
 // two arms (verdict labels then read "B slower/faster than A").
+// JIT 6: PBLBENCH_FIXTURE replaces the fixture; the expected case-line count
+// is 3 rounds x its case rows.
 import fs from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
@@ -36,7 +38,7 @@ const arms = process.env.PBLBENCH_ARMS ? JSON.parse(await fs.readFile(process.en
 };
 // PBLBENCH_ORDER (e.g. A) is for smoke runs only; it can never pass.
 const order = (process.env.PBLBENCH_ORDER || 'ABBAAB').split('');
-const fixturePath = path.join(repo, 'web/linux/tests/guest-jit-pbl-bench.html');
+const fixturePath = process.env.PBLBENCH_FIXTURE ? path.resolve(process.env.PBLBENCH_FIXTURE) : path.join(repo, 'web/linux/tests/guest-jit-pbl-bench.html');
 const inputs = {};
 for (const source of [fileURLToPath(import.meta.url), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) inputs[source] = sha(await fs.readFile(source));
 // Served manifests: the arm's own manifest with the Firefox URL pointed at
@@ -70,6 +72,7 @@ await new Promise((resolve, reject) => { server.once('error', reject); server.li
 const origin = 'http://127.0.0.1:' + server.address().port;
 const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'browser.aboutwelcome.enabled:false', 'dom.max_script_run_time:0'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("datareporting.policy.firstRunURL", "");\n';
 const fixture = await fs.readFile(fixturePath, 'utf8');
+const expectedCases = 3 * (fixture.match(/^ \['[^']+',/gm) || []).length;
 const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
 const report = { pass: false, origin, order, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256 }])), boots: [], serverPid: process.pid };
 
@@ -130,7 +133,7 @@ async function boot(index, armId) {
     rec.errorLines = lines.filter(l => l.event === 'error');
     const state = await ev(`(async()=>({system:(await(await import('./boot-assets.mjs')).systemUsage()).version,isolated:crossOriginIsolated,visibility:document.visibilityState}))()`);
     rec.state = state;
-    rec.checks = { version: state.system === arm.version, isolated: state.isolated === true, config: logs.includes('cpus=2, ram=4 GB'), benchOk: done.ok === true, cases: rec.cases.length === 24, outerErrors: errors.length === 0 };
+    rec.checks = { version: state.system === arm.version, isolated: state.isolated === true, config: logs.includes('cpus=2, ram=4 GB'), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0 };
     rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
     rec.fatalLines = logs.split('\n').filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-20);
     rec.pass = Object.values(rec.checks).every(Boolean);
