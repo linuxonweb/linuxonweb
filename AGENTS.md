@@ -1,4 +1,45 @@
-# Resumed — 2026-10-02 (current user direction; read this first)
+# Nightly upgrade — 2026-10-02 (latest user direction; read this first)
+
+The user now explicitly requires **latest Firefox Nightly first, then working
+native Wasm JIT, then GPU**. This supersedes implementation against Firefox
+128.14 ESR. Fresh same-model subagents with only necessary context remain
+authorized. Native Wasm only, adapter preference, disk-backed task storage and
+preservation of known-good source/build trees and unrelated services still
+apply. Do not start the old 128-only GPU wrapper/build packets.
+
+Official Nightly metadata was pinned on 2026-10-02: version `159.0a1`, build ID
+`20261002095017`, source revision
+`6ce79a0416258aa1bc3a29e9ccebccdacebf916a`, dated archive
+`2026-10-02-09-50-17-mozilla-central`. Metadata and the isolated source/full-port
+plan belong under `/mnt/p6/build/firefox-nightly-plan-20261002`. The existing
+incremental PBL builder and payload verifier do not constitute a full Nightly
+build. Locate/reconstruct the full configure/build recipe and migrate the guest
+adapters against that pinned source; do not substitute a native x86 binary.
+Reaudit Nightly's SpiderMonkey and wgpu APIs before reusing old ABI hooks,
+decoder goldens or wrappers. Nightly has not been built, promoted or deployed.
+
+The prior JIT release is now public **Sites v10**, still Firefox 128.14.0 ESR:
+https://linuxonweb.exact-coot-7512.chatgpt.site . Parent runtime commit
+`772bb8cb78fadbfaf850e1e34691d710bfcad146`; Sites source commit
+`b9656d4705aa4f6a073fa1b7122acf53a728a7c1`; runtime `ce0d881dec8c`.
+Saved version
+`appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_d95d358ac7f081918db3fa181f4387ba`;
+successful deployment `appgdep_6abf9e40b8248191ad11721dd367e7a2`.
+All 90 public routes pass full read-only verification, including the entire
+88,910,833-byte Firefox image. Cloudflare injects an exact reviewed 938-byte
+challenge script into the two HTML routes and removes their ETags; all other
+HTML bytes match, and all 88 non-HTML routes retain strict byte/hash/header
+checks. The root is the built static meta-refresh without COOP; the Linux
+landing page has the required isolation. Run1 FAIL remains retained; narrow
+verified run2 PASS is in
+`/mnt/p6/build/guest-jit-sites-20261002/public-runtime-verification-run2.json`.
+Public v9→v10 browser QA was held and then superseded by the Nightly request;
+do not claim those browser update/cold-warm/TLS tests passed. Preserve v9/v10
+release artifacts and the safely closed public-v9 baseline profile for future
+Nightly update testing. The authorized Sites redeployment after JIT was carried
+out; carry the existing release authorization into the validated Nightly work.
+
+# Resumed — 2026-10-02 (prior JIT implementation direction)
 
 The user has explicitly resumed implementation: make Firefox's native Wasm
 JIT work and verify it in the Linux/Wasm web guest, then complete GPU support
