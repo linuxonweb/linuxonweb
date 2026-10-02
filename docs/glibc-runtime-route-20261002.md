@@ -322,12 +322,24 @@ The [remaining closure plan](glibc-remaining-closure-plan-20261002.md) identifie
 packets cover62 original generated failures; the other17 of79 cumulative
 wrappers predate the inventory. This count is source/target reconciliation,
 not a fresh fullmake result. Four scheduler/semaphore targets have now compiled
-and their native guest passes48,573/0; FPCAST and final provenance are pending.
+and both real guest gates pass: native48,573/0 and FPCAST48,584/0. Root
+independently rehashed47,123 manifest entries,30 repository files and201
+objects, checked exact payload bytes in both CPIO archives and eleven empty
+owned groups. Actual GNU public scheduler policy restoration and five
+nonblocking semaphore APIs are accepted; blocking sem_wait and public NPTL
+lifecycle/cancellation remain unaccepted. See
+[the scheduler/semaphore report](glibc-sched-sem-20261002.md).
+
 In parallel, a fresh cumulative genuine make -k -j2 lib discovery build combines
 accepted frozen compiler/header/typed-wrapper/libnames/stat overlays, without
 copying fixture libc objects or depending on mutable scheduler inputs. Its
-actual full-build failures and archive/header results must drive the next
-implementation. These are steps toward the complete GNU sysroot; they do not
+second make returned exit2 naturally after359.14s, producing1,690 complete
+Wasm objects,36 GNU text stamps andzero archives/partial outputs. Of the168
+original failed targets,125 now compile and43 still fail; newly exposed
+io/xstatconv.o is a distinct44th failure. The scheduler overlay was not part
+of this build. Agent audit is complete, root independent review/freeze pending.
+These actual failures and archive/header results drive the next implementation.
+These are steps toward the complete GNU sysroot; they do not
 establish a complete libc, public NPTL lifecycle or Firefox Nightly baseline.
 
 General startup must integrate the actual kernel args245 data, static linker

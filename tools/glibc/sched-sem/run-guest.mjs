@@ -1,0 +1,15 @@
+import {spawn} from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),[,out]=process.argv.slice(2);
+const child=spawn(process.execPath,[path.join(here,'../syscalls-next26/run-guest.mjs'),...process.argv.slice(2)],{stdio:'inherit',env:process.env});
+const status=await new Promise(resolve=>child.once('exit',resolve));
+const base=JSON.parse(await fs.readFile(path.join(out,'next26-result.json')));
+const lines=(await fs.readFile(path.join(out,'guest-console.txt'),'utf8')).split(/\r?\n/);
+const count=text=>lines.filter(x=>x===text).length;
+const runs=count('GNU_SCHED_SEM public=scheduler3,semaphore5 result=PASS');
+const threads=count('GNU_SEM_THREADS transfers=512 payload=integrity ownership=exclusive nonoverlap=PASS result=PASS');
+const policy=count('GNU_SCHED_POLICY isolated=OTHER,BATCH,OTHER restored=identity,policy,priority result=PASS')===1&&count('GNU_ABORT_EXIT mode=sched-sem-policy status=0')===1;
+const report={pass:status===0&&base.pass&&runs===6&&threads===1&&policy,runs,threadRuns:threads,policyRestored:policy,publicSchedulerFunctions:3,publicSemaphoreFunctions:5,scope:'nonblocking GNU semaphores and isolated scheduler policy; blocking sem_wait/cancellation/default NPTL unaccepted'};
+await fs.writeFile(path.join(out,'sched-sem-result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));if(!report.pass)process.exitCode=1;

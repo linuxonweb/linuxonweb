@@ -517,13 +517,28 @@ of its93 original generated failures. See
 docs/glibc-remaining-closure-plan-20261002.md. Root independently verified79
 source inputs,43 original source/snapshot/command sets and39 actual kernel
 body boundaries/names/active table mappings. This is not a new fullmake result.
-The scheduler/semaphore packet owns new tools/glibc/sched-sem/**; its four
-original compile targets pass and its real native guest passes48,573/0.
-FPCAST and provenance review are pending; do not infer full NPTL or sem_wait.
+The scheduler/semaphore packet is frozen and independently reviewed. Its four
+original GNU compile targets pass; native48,573/0 and FPCAST48,584/0 retain
+the prior191-object runtime regressions. Three public scheduler and five
+public nonblocking semaphore APIs exercise actual policy readback/restoration,
+atomic handoff, overflow/EAGAIN and contiguous guards. Root rehashed47,123
+manifest entries,30 repository paths and201 link objects, verified exact
+packaged payloads and all11 empty owned groups. Manifest
+`7add20192700d9c544a3fadd192255f3491277d64896ddb1e1b6a3e29432af9a`;
+repository freeze
+`759f894b95615f489a20880e07975456c46fe3317ab84beae39f47b1f8dad86a`.
+See docs/glibc-sched-sem-20261002.md. Do not infer blocking sem_wait,
+cancellation or default public NPTL lifecycle acceptance.
 The integration agent now owns new tools/glibc/cumulative-make/** and
 `/mnt/p6/build/glibc-cumulative-make-20261002` for fresh genuine cumulative
 make -k -j2 lib discovery, combining accepted frozen overlays without copying
-the accepted fixture object set or touching mutable scheduler inputs.
+the accepted fixture object set or touching mutable scheduler inputs. Its
+second genuine make is now terminal exit2 after359.14s:1,690 complete Wasm
+objects,36 GNU text stamps,zero partials andzero archives. All168 original
+failures were attempted;125 now compile,43 remain, and newly reached
+io/xstatconv.o adds one distinct legacy ABI failure. The scheduler overlay
+was not part of this build. Agent audit/provenance supplement is complete;
+root independent review/freeze are pending. Do not claim a libc archive/sysroot.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.
