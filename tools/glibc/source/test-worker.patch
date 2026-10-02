@@ -1,0 +1,31 @@
+--- a/worker.js
++++ b/worker.js
+@@ -339,8 +339,11 @@
+   firefox_memory_pregrow_allowed = firefox_strict_module_allowed;
+   const kernel_instance = get_kernel_instance();
+   const traceSyscalls = firefox_syscall_trace_enabled() && isFirefoxSyscallTraceModule(context.module);
+-  const tlsAdapter = firefox_tls_adapter_enabled() &&
++  const nativeRawTp = WebAssembly.Module.exports(context.module).some(({ name }) => name === "__gnu_wasm_raw_tp");
++  const tlsAdapter = firefox_tls_adapter_enabled() && !nativeRawTp &&
+     (isFirefoxSyscallTraceModule(context.module) || isFirefoxTlsModule(context.module));
++  if (nativeRawTp) console.warn("[user-module] RAW_TP marker=true adapter=" + tlsAdapter + " cached=false delegates=kernel");
++  const allocatorFutex = {waits:0,woken:0,wakes:0,errors:0};
+   let tracedSyscalls = 0;
+   let threadAreaPointer = null;
+   let threadAreaLogged = false;
+@@ -404,7 +407,15 @@
+           return gpuHostcallSyscall(gpu_client, context.memory, nr, arg0, arg1, arg2, arg3, arg4, arg5);
+         const original_instance = instance;
+         traceAbortWrite(nr, arg0, arg1, arg2);
++        if (nativeRawTp && (Number(nr) === 93 || Number(nr) === 94))
++          console.warn("[user-module] GNU_ALLOCATOR_FUTEX", JSON.stringify(allocatorFutex));
+         const ret = kernel_instance.exports.syscall(nr, arg0, arg1, arg2, arg3, arg4, arg5);
++        if (nativeRawTp && (Number(nr) === 98 || Number(nr) === 422) && Number(arg3) === 0 && user_instance.exports.allocator_futex_class?.(Number(arg0))) {
++          if (((Number(arg1) & 127) === 0 || (Number(arg1) & 127) === 9)) { allocatorFutex.waits++; if (Number(ret) === 0) allocatorFutex.woken++; else if (Number(ret) !== -11) allocatorFutex.errors++; }
++          else if (((Number(arg1) & 127) === 1 || (Number(arg1) & 127) === 10)) allocatorFutex.wakes++;
++          else allocatorFutex.errors++;
++        }
++
+         if (tlsAdapter && (nr === 244 || nr === 244n)) {
+           let descriptorValue = null;
+           try {

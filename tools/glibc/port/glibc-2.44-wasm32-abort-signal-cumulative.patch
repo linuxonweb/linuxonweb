@@ -1,0 +1,722 @@
+--- a/Makeconfig
++++ b/Makeconfig
+@@ -1238,7 +1238,8 @@
+ 	sed '/^[ 	]*#/d;/^[ 	]*$$/d' $< > $@T
+ 	mv -f $@T $@
+ 
+-ifeq (yes, $(build-shared))
++# Static Wasm still needs GNU module and tunable metadata.
++ifneq (,$(filter yes,$(build-shared))$(filter wasm32,$(base-machine)))
+ 
+ # To generate a header to support more than one ABI for different
+ # architecture variants, the CPU/Makefile defines abi-variants to be a
+@@ -1329,7 +1330,7 @@
+ 
+ # Generate version maps, but wait until sysdep-subdirs is known
+ ifeq ($(sysd-sorted-done),t)
+-ifeq ($(build-shared),yes)
++ifneq (,$(filter yes,$(build-shared))$(filter wasm32,$(base-machine)))
+ -include $(common-objpfx)sysd-versions
+ -include $(common-objpfx)Versions.mk
+ $(addprefix $(common-objpfx),$(version-maps)): $(common-objpfx)sysd-versions
+--- a/Makerules
++++ b/Makerules
+@@ -95,7 +95,7 @@
+ 			       $(before-compile))
+ 
+ # Even before that, we need abi-versions.h which is generated right here.
+-ifeq ($(build-shared),yes)
++ifneq (,$(filter yes,$(build-shared))$(filter wasm32,$(base-machine)))
+ ifndef avoid-generated
+ before-compile := $(common-objpfx)abi-versions.h $(before-compile)
+ $(common-objpfx)abi-versions.h: $(..)scripts/abi-versions.awk \
+--- a/configure
++++ b/configure
+@@ -9042,6 +9042,15 @@
+ config_vars="$config_vars
+ cc-pie-default = $libc_cv_cc_pie_default"
+ 
++# Static Wasm has linear-memory data addresses, no ELF PT_LOAD/PDE address.
++# Keep the ELF PIE-address probes for architectures with that object format.
++if test "$base_machine" = wasm32; then
++  libc_cv_pde_load_address=
++  libc_cv_load_address_ldflag=
++  config_vars="$config_vars
++pde-load-address =
++load-address-ldflag ="
++else
+ # Get Position Dependent Executable (PDE) load address to be used to
+ # load static Position Independent Executable (PIE) at a known working
+ # non-zero load address.  This is only used by glibc tests to verify
+@@ -9116,6 +9125,8 @@
+ printf "%s\n" "$libc_linker_feature" >&6; }
+ config_vars="$config_vars
+ load-address-ldflag = $libc_cv_load_address_ldflag"
++
++fi
+ 
+ # Check if compiler supports -fno-fp-int-builtin-inexact
+ 
+--- a/configure.ac
++++ b/configure.ac
+@@ -1997,6 +1997,15 @@
+ rm -f conftest.*])
+ LIBC_CONFIG_VAR([cc-pie-default], [$libc_cv_cc_pie_default])
+ 
++# Static Wasm has linear-memory data addresses, no ELF PT_LOAD/PDE address.
++# Keep the ELF PIE-address probes for architectures with that object format.
++if test "$base_machine" = wasm32; then
++  libc_cv_pde_load_address=
++  libc_cv_load_address_ldflag=
++  config_vars="$config_vars
++pde-load-address =
++load-address-ldflag ="
++else
+ # Get Position Dependent Executable (PDE) load address to be used to
+ # load static Position Independent Executable (PIE) at a known working
+ # non-zero load address.  This is only used by glibc tests to verify
+@@ -2033,6 +2042,8 @@
+ 		    [libc_cv_load_address_ldflag=-Wl,-Ttext-segment],
+ 		    [libc_cv_load_address_ldflag=])
+ LIBC_CONFIG_VAR([load-address-ldflag], [$libc_cv_load_address_ldflag])
++
++fi
+ 
+ # Check if compiler supports -fno-fp-int-builtin-inexact
+ LIBC_TRY_CC_AND_TEST_CC_OPTION([if compiler supports -fno-fp-int-builtin-inexact],
+--- a/include/string.h
++++ b/include/string.h
+@@ -188,7 +188,8 @@
+   && !defined NO_MEMPCPY_STPCPY_REDIRECT
+ /* Redirect calls to __builtin_mempcpy and __builtin_stpcpy to call
+    __mempcpy and __stpcpy if not inlined.  */
+-# ifdef ATTR_AFTER_FUNC_DECL
++# if defined ATTR_AFTER_FUNC_DECL || defined __wasm__
++/* Wasm requires typed C symbol redirection, not undefined asm assignments. */
+ extern __typeof (mempcpy) mempcpy __asm__ ("__mempcpy");
+ extern __typeof (stpcpy) stpcpy __asm__ ("__stpcpy");
+ # else
+--- a/locale/localeinfo.h
++++ b/locale/localeinfo.h
+@@ -285,11 +285,20 @@
+    _nl_current_CATEGORY_used is set to a value unequal to zero to mark this
+    category as used.  On S390 the used relocation to load the symbol address
+    can only handle even addresses.  */
++#ifdef __wasm__
++/* Static Wasm has no absolute ELF symbols. Only marker presence/address is
++   tested, so a real one-byte object preserves GNU category selection. */
++#define _NL_CURRENT_DEFINE(category) \
++  __thread struct __locale_data *const *_nl_current_##category \
++    attribute_hidden = &_nl_global_locale.__locales[category]; \
++  const char _nl_current_##category##_used attribute_hidden = 2;
++#else
+ #define _NL_CURRENT_DEFINE(category) \
+   __thread struct __locale_data *const *_nl_current_##category \
+     attribute_hidden = &_nl_global_locale.__locales[category]; \
+   asm (".globl " __SYMBOL_PREFIX "_nl_current_" #category "_used\n" \
+        _NL_CURRENT_DEFINE_ABS (_nl_current_##category##_used, 2));
++#endif
+ #ifdef HAVE_ASM_SET_DIRECTIVE
+ # define _NL_CURRENT_DEFINE_ABS(sym, val) ".set " #sym ", " #val
+ #else
+--- a/sysdeps/unix/sysv/linux/syscall-names.list
++++ b/sysdeps/unix/sysv/linux/syscall-names.list
+@@ -683,5 +683,13 @@
+ wait4
+ waitid
+ waitpid
++wasm_get_args
++wasm_sem_getvalue
++wasm_sem_open
++wasm_sem_post
++wasm_sem_timedwait
++wasm_sem_trywait
++wasm_sem_unlink
++wasm_sem_wait
+ write
+ writev
+--- a/sysdeps/unix/sysv/linux/wasm32/arch-syscall.h
++++ b/sysdeps/unix/sysv/linux/wasm32/arch-syscall.h
+@@ -0,0 +1,351 @@
++/* AUTOGENERATED by update-syscall-lists.py.  */
++#define __NR_accept 202
++#define __NR_accept4 242
++#define __NR_acct 89
++#define __NR_add_key 217
++#define __NR_adjtimex 171
++#define __NR_bind 200
++#define __NR_bpf 280
++#define __NR_cachestat 451
++#define __NR_capget 90
++#define __NR_capset 91
++#define __NR_chdir 49
++#define __NR_chroot 51
++#define __NR_clock_adjtime 266
++#define __NR_clock_adjtime64 405
++#define __NR_clock_getres 114
++#define __NR_clock_getres_time64 406
++#define __NR_clock_gettime 113
++#define __NR_clock_gettime64 403
++#define __NR_clock_nanosleep 115
++#define __NR_clock_nanosleep_time64 407
++#define __NR_clock_settime 112
++#define __NR_clock_settime64 404
++#define __NR_clone 220
++#define __NR_clone3 435
++#define __NR_close 57
++#define __NR_close_range 436
++#define __NR_connect 203
++#define __NR_copy_file_range 285
++#define __NR_delete_module 106
++#define __NR_dup 23
++#define __NR_dup3 24
++#define __NR_epoll_create1 20
++#define __NR_epoll_ctl 21
++#define __NR_epoll_pwait 22
++#define __NR_epoll_pwait2 441
++#define __NR_eventfd2 19
++#define __NR_execve 221
++#define __NR_execveat 281
++#define __NR_exit 93
++#define __NR_exit_group 94
++#define __NR_faccessat 48
++#define __NR_faccessat2 439
++#define __NR_fadvise64_64 223
++#define __NR_fallocate 47
++#define __NR_fanotify_init 262
++#define __NR_fanotify_mark 263
++#define __NR_fchdir 50
++#define __NR_fchmod 52
++#define __NR_fchmodat 53
++#define __NR_fchmodat2 452
++#define __NR_fchown 55
++#define __NR_fchownat 54
++#define __NR_fcntl64 25
++#define __NR_fdatasync 83
++#define __NR_fgetxattr 10
++#define __NR_file_getattr 468
++#define __NR_file_setattr 469
++#define __NR_finit_module 273
++#define __NR_flistxattr 13
++#define __NR_flock 32
++#define __NR_fremovexattr 16
++#define __NR_fsconfig 431
++#define __NR_fsetxattr 7
++#define __NR_fsmount 432
++#define __NR_fsopen 430
++#define __NR_fspick 433
++#define __NR_fstat64 80
++#define __NR_fstatat64 79
++#define __NR_fstatfs64 44
++#define __NR_fsync 82
++#define __NR_ftruncate64 46
++#define __NR_futex 98
++#define __NR_futex_requeue 456
++#define __NR_futex_time64 422
++#define __NR_futex_wait 455
++#define __NR_futex_waitv 449
++#define __NR_futex_wake 454
++#define __NR_get_mempolicy 236
++#define __NR_get_robust_list 100
++#define __NR_getcpu 168
++#define __NR_getcwd 17
++#define __NR_getdents64 61
++#define __NR_getegid 177
++#define __NR_geteuid 175
++#define __NR_getgid 176
++#define __NR_getgroups 158
++#define __NR_getitimer 102
++#define __NR_getpeername 205
++#define __NR_getpgid 155
++#define __NR_getpid 172
++#define __NR_getppid 173
++#define __NR_getpriority 141
++#define __NR_getrandom 278
++#define __NR_getresgid 150
++#define __NR_getresuid 148
++#define __NR_getrlimit 163
++#define __NR_getrusage 165
++#define __NR_getsid 156
++#define __NR_getsockname 204
++#define __NR_getsockopt 209
++#define __NR_gettid 178
++#define __NR_gettimeofday 169
++#define __NR_getuid 174
++#define __NR_getxattr 8
++#define __NR_getxattrat 464
++#define __NR_init_module 105
++#define __NR_inotify_add_watch 27
++#define __NR_inotify_init1 26
++#define __NR_inotify_rm_watch 28
++#define __NR_io_cancel 3
++#define __NR_io_destroy 1
++#define __NR_io_getevents 4
++#define __NR_io_pgetevents 292
++#define __NR_io_pgetevents_time64 416
++#define __NR_io_setup 0
++#define __NR_io_submit 2
++#define __NR_io_uring_enter 426
++#define __NR_io_uring_register 427
++#define __NR_io_uring_setup 425
++#define __NR_ioctl 29
++#define __NR_ioprio_get 31
++#define __NR_ioprio_set 30
++#define __NR_kcmp 272
++#define __NR_kexec_file_load 294
++#define __NR_kexec_load 104
++#define __NR_keyctl 219
++#define __NR_kill 129
++#define __NR_landlock_add_rule 445
++#define __NR_landlock_create_ruleset 444
++#define __NR_landlock_restrict_self 446
++#define __NR_lgetxattr 9
++#define __NR_linkat 37
++#define __NR_listen 201
++#define __NR_listmount 458
++#define __NR_listns 470
++#define __NR_listxattr 11
++#define __NR_listxattrat 465
++#define __NR_llistxattr 12
++#define __NR_llseek 62
++#define __NR_lookup_dcookie 18
++#define __NR_lremovexattr 15
++#define __NR_lsetxattr 6
++#define __NR_lsm_get_self_attr 459
++#define __NR_lsm_list_modules 461
++#define __NR_lsm_set_self_attr 460
++#define __NR_madvise 233
++#define __NR_map_shadow_stack 453
++#define __NR_mbind 235
++#define __NR_membarrier 283
++#define __NR_memfd_create 279
++#define __NR_migrate_pages 238
++#define __NR_mincore 232
++#define __NR_mkdirat 34
++#define __NR_mknodat 33
++#define __NR_mlock 228
++#define __NR_mlock2 284
++#define __NR_mlockall 230
++#define __NR_mount 40
++#define __NR_mount_setattr 442
++#define __NR_move_mount 429
++#define __NR_move_pages 239
++#define __NR_mprotect 226
++#define __NR_mq_getsetattr 185
++#define __NR_mq_notify 184
++#define __NR_mq_open 180
++#define __NR_mq_timedreceive 183
++#define __NR_mq_timedreceive_time64 419
++#define __NR_mq_timedsend 182
++#define __NR_mq_timedsend_time64 418
++#define __NR_mq_unlink 181
++#define __NR_mseal 462
++#define __NR_msgctl 187
++#define __NR_msgget 186
++#define __NR_msgrcv 188
++#define __NR_msgsnd 189
++#define __NR_msync 227
++#define __NR_munlock 229
++#define __NR_munlockall 231
++#define __NR_name_to_handle_at 264
++#define __NR_nanosleep 101
++#define __NR_nfsservctl 42
++#define __NR_open_by_handle_at 265
++#define __NR_open_tree 428
++#define __NR_open_tree_attr 467
++#define __NR_openat 56
++#define __NR_openat2 437
++#define __NR_perf_event_open 241
++#define __NR_personality 92
++#define __NR_pidfd_getfd 438
++#define __NR_pidfd_open 434
++#define __NR_pidfd_send_signal 424
++#define __NR_pipe2 59
++#define __NR_pivot_root 41
++#define __NR_pkey_alloc 289
++#define __NR_pkey_free 290
++#define __NR_pkey_mprotect 288
++#define __NR_ppoll 73
++#define __NR_ppoll_time64 414
++#define __NR_prctl 167
++#define __NR_pread64 67
++#define __NR_preadv 69
++#define __NR_preadv2 286
++#define __NR_prlimit64 261
++#define __NR_process_madvise 440
++#define __NR_process_mrelease 448
++#define __NR_process_vm_readv 270
++#define __NR_process_vm_writev 271
++#define __NR_pselect6 72
++#define __NR_pselect6_time64 413
++#define __NR_ptrace 117
++#define __NR_pwrite64 68
++#define __NR_pwritev 70
++#define __NR_pwritev2 287
++#define __NR_quotactl 60
++#define __NR_quotactl_fd 443
++#define __NR_read 63
++#define __NR_readahead 213
++#define __NR_readlinkat 78
++#define __NR_readv 65
++#define __NR_reboot 142
++#define __NR_recvfrom 207
++#define __NR_recvmmsg 243
++#define __NR_recvmmsg_time64 417
++#define __NR_recvmsg 212
++#define __NR_remap_file_pages 234
++#define __NR_removexattr 14
++#define __NR_removexattrat 466
++#define __NR_renameat 38
++#define __NR_renameat2 276
++#define __NR_request_key 218
++#define __NR_restart_syscall 128
++#define __NR_rseq 293
++#define __NR_rseq_slice_yield 471
++#define __NR_rt_sigaction 134
++#define __NR_rt_sigpending 136
++#define __NR_rt_sigprocmask 135
++#define __NR_rt_sigqueueinfo 138
++#define __NR_rt_sigsuspend 133
++#define __NR_rt_sigtimedwait 137
++#define __NR_rt_sigtimedwait_time64 421
++#define __NR_rt_tgsigqueueinfo 240
++#define __NR_sched_get_priority_max 125
++#define __NR_sched_get_priority_min 126
++#define __NR_sched_getaffinity 123
++#define __NR_sched_getattr 275
++#define __NR_sched_getparam 121
++#define __NR_sched_getscheduler 120
++#define __NR_sched_rr_get_interval 127
++#define __NR_sched_rr_get_interval_time64 423
++#define __NR_sched_setaffinity 122
++#define __NR_sched_setattr 274
++#define __NR_sched_setparam 118
++#define __NR_sched_setscheduler 119
++#define __NR_sched_yield 124
++#define __NR_seccomp 277
++#define __NR_semctl 191
++#define __NR_semget 190
++#define __NR_semop 193
++#define __NR_semtimedop 192
++#define __NR_semtimedop_time64 420
++#define __NR_sendfile64 71
++#define __NR_sendmmsg 269
++#define __NR_sendmsg 211
++#define __NR_sendto 206
++#define __NR_set_mempolicy 237
++#define __NR_set_mempolicy_home_node 450
++#define __NR_set_robust_list 99
++#define __NR_set_thread_area 244
++#define __NR_set_tid_address 96
++#define __NR_setdomainname 162
++#define __NR_setfsgid 152
++#define __NR_setfsuid 151
++#define __NR_setgid 144
++#define __NR_setgroups 159
++#define __NR_sethostname 161
++#define __NR_setitimer 103
++#define __NR_setns 268
++#define __NR_setpgid 154
++#define __NR_setpriority 140
++#define __NR_setregid 143
++#define __NR_setresgid 149
++#define __NR_setresuid 147
++#define __NR_setreuid 145
++#define __NR_setrlimit 164
++#define __NR_setsid 157
++#define __NR_setsockopt 208
++#define __NR_settimeofday 170
++#define __NR_setuid 146
++#define __NR_setxattr 5
++#define __NR_setxattrat 463
++#define __NR_shmat 196
++#define __NR_shmctl 195
++#define __NR_shmdt 197
++#define __NR_shmget 194
++#define __NR_shutdown 210
++#define __NR_sigaltstack 132
++#define __NR_signalfd4 74
++#define __NR_socket 198
++#define __NR_socketpair 199
++#define __NR_splice 76
++#define __NR_statfs64 43
++#define __NR_statmount 457
++#define __NR_statx 291
++#define __NR_swapoff 225
++#define __NR_swapon 224
++#define __NR_symlinkat 36
++#define __NR_sync 81
++#define __NR_sync_file_range2 84
++#define __NR_syncfs 267
++#define __NR_sysinfo 179
++#define __NR_syslog 116
++#define __NR_tee 77
++#define __NR_tgkill 131
++#define __NR_timer_create 107
++#define __NR_timer_delete 111
++#define __NR_timer_getoverrun 109
++#define __NR_timer_gettime 108
++#define __NR_timer_gettime64 408
++#define __NR_timer_settime 110
++#define __NR_timer_settime64 409
++#define __NR_timerfd_create 85
++#define __NR_timerfd_gettime 87
++#define __NR_timerfd_gettime64 410
++#define __NR_timerfd_settime 86
++#define __NR_timerfd_settime64 411
++#define __NR_times 153
++#define __NR_tkill 130
++#define __NR_truncate64 45
++#define __NR_umask 166
++#define __NR_umount2 39
++#define __NR_uname 160
++#define __NR_unlinkat 35
++#define __NR_unshare 97
++#define __NR_userfaultfd 282
++#define __NR_utimensat 88
++#define __NR_utimensat_time64 412
++#define __NR_vhangup 58
++#define __NR_vmsplice 75
++#define __NR_wait4 260
++#define __NR_waitid 95
++#define __NR_wasm_get_args 245
++#define __NR_wasm_sem_getvalue 252
++#define __NR_wasm_sem_open 246
++#define __NR_wasm_sem_post 251
++#define __NR_wasm_sem_timedwait 250
++#define __NR_wasm_sem_trywait 249
++#define __NR_wasm_sem_unlink 247
++#define __NR_wasm_sem_wait 248
++#define __NR_write 64
++#define __NR_writev 66
+--- a/sysdeps/unix/sysv/linux/wasm32/bits/procfs.h
++++ b/sysdeps/unix/sysv/linux/wasm32/bits/procfs.h
+@@ -0,0 +1,7 @@
++/* Match the retained Linux/Wasm arch/wasm/include/asm/elf.h exactly:
++   GNU C empty structs, no ELF register bank. Ptrace is unsupported. */
++#ifndef _SYS_PROCFS_H
++# error "Never include <bits/procfs.h> directly; use <sys/procfs.h> instead."
++#endif
++typedef struct {} elf_gregset_t;
++typedef struct {} elf_fpregset_t;
+--- a/sysdeps/unix/sysv/linux/wasm32/kernel-features.h
++++ b/sysdeps/unix/sysv/linux/wasm32/kernel-features.h
+@@ -0,0 +1,8 @@
++/* Owned retained Linux/Wasm capability: actual asm-generic kernel provides
++   clock_gettime64 403 and futex_time64 422. GNU timespec is 16 bytes on
++   wasm32, so selecting the legacy 8-byte time32 ABI is invalid.
++   This override asserts no other feature or newer minimum kernel version. */
++#include_next <kernel-features.h>
++#ifndef __ASSUME_TIME64_SYSCALLS
++# define __ASSUME_TIME64_SYSCALLS 1
++#endif
+--- a/sysdeps/unix/sysv/linux/wasm32/libc_sigaction.c
++++ b/sysdeps/unix/sysv/linux/wasm32/libc_sigaction.c
+@@ -0,0 +1,36 @@
++/* Owned Linux/Wasm GNU-public to retained kernel signal boundary.
++   The kernel callback supplies siginfo only, no PC/ucontext or signal frame.
++   Passing NULL context states that limitation; no synthetic registers. */
++#include <signal.h>
++#include <string.h>
++#include <sysdep.h>
++#define WASM_SA_RESTORER 0x04000000U
++struct wasm_kernel_sigaction { __sighandler_t handler; unsigned long flags;
++ void (*restorer)(void); unsigned long mask[2]; };
++_Static_assert(sizeof(struct wasm_kernel_sigaction)==20,"kernel action");
++_Static_assert(__builtin_offsetof(struct wasm_kernel_sigaction,mask)==12,"kernel mask");
++_Static_assert(sizeof(struct sigaction)==140,"GNU action");
++_Static_assert(sizeof(siginfo_t)==128,"GNU siginfo");
++_Static_assert(__builtin_offsetof(siginfo_t,si_pid)==12,"kernel/GNU pid offset");
++_Static_assert(__builtin_offsetof(siginfo_t,si_uid)==16,"kernel/GNU uid offset");
++__attribute__((import_module("linux"),import_name("copy_siginfo"))) extern int copy_siginfo(siginfo_t *);
++static void siginfo_trampoline(void (*handler)(int,siginfo_t*,void*),int sig){
++ siginfo_t info;memset(&info,0,sizeof(info));
++ if(copy_siginfo(&info)==0)handler(sig,&info,NULL);
++}
++int __libc_sigaction(int sig,const struct sigaction *act,struct sigaction *old){
++ struct wasm_kernel_sigaction input={0},output={0};
++ if(act){input.handler=act->sa_handler;input.flags=(unsigned)act->sa_flags;
++  /* There is no native rt_sigreturn/restorer ABI. A user-supplied restorer
++     cannot be honored; reject instead of silently installing it. */
++  if(input.flags&(WASM_SA_RESTORER|SA_ONSTACK)){__set_errno(EOPNOTSUPP);return -1;}
++  if(input.flags&SA_SIGINFO){input.flags|=WASM_SA_RESTORER;input.restorer=(void(*)(void))siginfo_trampoline;}
++  memcpy(input.mask,&act->sa_mask,8);}
++ int r=INLINE_SYSCALL_CALL(rt_sigaction,sig,act?&input:0,old?&output:0,8);
++ if(old&&r>=0){memset(old,0,sizeof(*old));old->sa_handler=output.handler;
++  old->sa_flags=output.flags;old->sa_restorer=output.restorer;
++  if(output.restorer==(void(*)(void))siginfo_trampoline){old->sa_flags&=~WASM_SA_RESTORER;old->sa_restorer=0;}
++  memcpy(&old->sa_mask,output.mask,8);}
++ return r;
++}
++libc_hidden_def(__libc_sigaction)
+--- a/sysdeps/unix/sysv/linux/wasm32/sys/user.h
++++ b/sysdeps/unix/sysv/linux/wasm32/sys/user.h
+@@ -0,0 +1,7 @@
++/* The retained Linux/Wasm kernel exports no user register structure.
++   arch/wasm/include/asm/elf.h has ELFCLASSNONE and empty register sets.
++   ptrace and ELF register/coredump debugging are unsupported. */
++#ifndef _SYS_USER_H
++#define _SYS_USER_H 1
++/* No struct user or hardware register fields are defined for this ABI. */
++#endif
+--- a/sysdeps/unix/sysv/linux/wasm32/sysdep.h
++++ b/sysdeps/unix/sysv/linux/wasm32/sysdep.h
+@@ -0,0 +1,37 @@
++/* Raw Linux/Wasm syscall ABI: six native i32 arguments, signed i32 result.
++   The guest import returns negative errno unchanged; GNU generic wrappers
++   perform errno conversion. No missing syscall is synthesized. */
++#ifndef _LINUX_WASM32_SYSDEP_H
++#define _LINUX_WASM32_SYSDEP_H 1
++#include <sysdeps/unix/sysv/linux/sysdep.h>
++#include <sysdeps/unix/sysdep.h>
++#undef SYS_ify
++#define SYS_ify(name) __NR_##name
++#ifndef __ASSEMBLER__
++#include <time.h>
++#include <atomic.h>
++extern long int __wasm_linux_syscall(long int, unsigned long int,
++ unsigned long int,unsigned long int,unsigned long int,
++ unsigned long int,unsigned long int)
++ __attribute__((import_module("linux"),import_name("syscall")));
++#define INTERNAL_SYSCALL_NCS(number,nargs,args...) \
++ __SYSCALL_CONCAT(__wasm_syscall_,nargs)(number, ##args)
++#define INTERNAL_SYSCALL(name,nargs,args...) \
++ INTERNAL_SYSCALL_NCS(SYS_ify(name),nargs,##args)
++#define __wasm_syscall_0(number, ...) \
++ __wasm_linux_syscall((long int)(number),0,0,0,0,0,0)
++#define __wasm_syscall_1(number,a0) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),0,0,0,0,0)
++#define __wasm_syscall_2(number,a0,a1) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),(unsigned long int)(a1),0,0,0,0)
++#define __wasm_syscall_3(number,a0,a1,a2) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),(unsigned long int)(a1),(unsigned long int)(a2),0,0,0)
++#define __wasm_syscall_4(number,a0,a1,a2,a3) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),(unsigned long int)(a1),(unsigned long int)(a2),(unsigned long int)(a3),0,0)
++#define __wasm_syscall_5(number,a0,a1,a2,a3,a4) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),(unsigned long int)(a1),(unsigned long int)(a2),(unsigned long int)(a3),(unsigned long int)(a4),0)
++#define __wasm_syscall_6(number,a0,a1,a2,a3,a4,a5) \
++ __wasm_linux_syscall((long int)(number),(unsigned long int)(a0),(unsigned long int)(a1),(unsigned long int)(a2),(unsigned long int)(a3),(unsigned long int)(a4),(unsigned long int)(a5))
++
++#endif
++#endif
+--- a/sysdeps/wasm32/Implies
++++ b/sysdeps/wasm32/Implies
+@@ -0,0 +1,4 @@
++wordsize-32
++ieee754/ldbl-128
++ieee754/dbl-64
++ieee754/flt-32
+--- a/sysdeps/wasm32/bits/endianness.h
++++ b/sysdeps/wasm32/bits/endianness.h
+@@ -0,0 +1,9 @@
++/* First wasm32 glibc architecture header, probe scope only.
++   WebAssembly linear memory uses little-endian byte ordering. */
++#ifndef _BITS_ENDIANNESS_H
++#define _BITS_ENDIANNESS_H 1
++#ifndef _BITS_ENDIAN_H
++# error "Never use <bits/endianness.h> directly; include <endian.h> instead."
++#endif
++#define __BYTE_ORDER __LITTLE_ENDIAN
++#endif
+--- a/sysdeps/wasm32/bits/link.h
++++ b/sysdeps/wasm32/bits/link.h
+@@ -0,0 +1,8 @@
++/* Static Wasm has no ELF register-based PLT auditing interface.
++   No La_* register types or audit callbacks are defined for this target. */
++#ifndef _LINK_H
++# error "Never include <bits/link.h> directly."
++#endif
++#ifdef SHARED
++# error "Wasm dynamic linking and ELF PLT auditing are not implemented."
++#endif
+--- a/sysdeps/wasm32/bits/setjmp.h
++++ b/sysdeps/wasm32/bits/setjmp.h
+@@ -0,0 +1,17 @@
++/* Native WebAssembly EH/SjLj save area, LLVM 22 lowering contract.
++   Signal mask storage remains in GNU struct __jmp_buf_tag.  */
++#ifndef _BITS_SETJMP_H
++#define _BITS_SETJMP_H 1
++#if !defined _SETJMP_H && !defined _PTHREAD_H
++# error "Never include <bits/setjmp.h> directly."
++#endif
++/* Invocation identity and label are written by __wasm_setjmp; env and
++   value are the native EH tag payload written by __wasm_longjmp. */
++typedef struct
++{
++  void *__invocation;
++  int __label;
++  void *__env;
++  int __value;
++} __jmp_buf[1];
++#endif
+--- a/sysdeps/wasm32/preconfigure
++++ b/sysdeps/wasm32/preconfigure
+@@ -0,0 +1,6 @@
++# Static WebAssembly architecture selection. No inherited x86 ABI.
++case "$machine" in
++wasm32)
++  base_machine=wasm32
++  ;;
++esac
+--- a/sysdeps/wasm32/pthreaddef.h
++++ b/sysdeps/wasm32/pthreaddef.h
+@@ -0,0 +1,7 @@
++/* Native Wasm linear stack parameters. No inaccessible guard pages exist
++   in linear memory; stack reservation/bounds checking remain startup work. */
++#define ARCH_STACK_DEFAULT_SIZE (2 * 1024 * 1024)
++#define ARCH_MIN_GUARD_SIZE 0
++#define STACK_ALIGN 16
++#define MINIMAL_REST_STACK 2048
++#define CURRENT_STACK_FRAME __builtin_frame_address(0)
+--- a/sysdeps/wasm32/tls.h
++++ b/sysdeps/wasm32/tls.h
+@@ -0,0 +1,49 @@
++/* Wasm GNU architecture contract, static core compilation stage.
++   Kernel raw TP denotes struct pthread; LLVM __tls_base independently
++   denotes the linker TLS segment. Startup must install both before C.
++   No builtin_thread_pointer is used to obtain the GNU thread descriptor. */
++#ifndef _WASM32_TLS_H
++#define _WASM32_TLS_H 1
++#ifndef __ASSEMBLER__
++# include <stdbool.h>
++# include <stddef.h>
++# include <stdint.h>
++# include <dl-dtv.h>
++# include <time.h>
++# define TLS_TCB_AT_TP 1
++# define TLS_DTV_AT_TP 0
++# define TCB_ALIGNMENT 32
++/* GNU descriptor prefix; fields are consumed by real GNU NPTL headers. */
++typedef struct {
++  void *tcb;
++  dtv_t *dtv;
++  void *self;
++  int multiple_threads;
++  int gscope_flag;
++  uintptr_t stack_guard;
++  uintptr_t pointer_guard;
++} tcbhead_t;
++extern void *__wasm_linux_get_thread_area(void)
++  __attribute__((import_module("linux"),import_name("get_thread_area")));
++# define THREAD_SELF ((struct pthread *)__wasm_linux_get_thread_area())
++# define THREAD_GETMEM(descr,member) ((descr)->member)
++# define THREAD_SETMEM(descr,member,value) ((descr)->member=(value))
++# define THREAD_GETMEM_NC(descr,member,idx) ((descr)->member[idx])
++# define THREAD_SETMEM_NC(descr,member,idx,value) ((descr)->member[idx]=(value))
++# include <nptl/descr.h>
++# define TLS_INIT_TCB_SIZE sizeof(tcbhead_t)
++# define TLS_INIT_TCB_ALIGN TCB_ALIGNMENT
++# define TLS_TCB_SIZE sizeof(struct pthread)
++# define TLS_TCB_ALIGN TCB_ALIGNMENT
++# define TLS_PRE_TCB_SIZE 0
++# define INSTALL_DTV(tcbp,dtvp) (((tcbhead_t *)(tcbp))->dtv=(dtvp)+1)
++# define GET_DTV(tcbp) (((tcbhead_t *)(tcbp))->dtv)
++# define THREAD_DTV() (THREAD_SELF->header.dtv)
++# define INSTALL_NEW_DTV(dtvp) (THREAD_DTV()=(dtvp))
++/* Initialization and TLS relocation/startup are deliberately unresolved. */
++extern bool __wasm_gnu_init_tp(void *);
++# define TLS_INIT_TP(tcbp) __wasm_gnu_init_tp(tcbp)
++# define TLS_DEFINE_INIT_TP(tp,pd) void *tp=(pd)
++# define TLS_TPADJ(pd) (pd)
++#endif
++#endif

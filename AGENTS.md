@@ -36,6 +36,121 @@ GNU public stat and signal layouts differ from the kernel UAPI and require
 verified conversions. Compiler TLS uses __tls_base, separately from the GNU
 TCB/thread pointer. Never relabel i386 layouts or existing musl archives.
 
+Completed bounded GNU port packets (not a completed libc):
+- `/mnt/p6/build/glibc-core-build-20261002/packet-report.txt`: genuine GNU
+  configure generates Wasm build metadata. Five unchanged GNU implementations
+  (errno, errno-location, memcpy, memset, wordcopy) form a closed native Wasm
+  module and pass 267,297 host assertions. The separate memory-growth provider
+  passes 59 assertions; syscall transport with GNU errno passes 12 synthetic
+  host assertions. GNU malloc failed compilation in this first packet. The relative patch,
+  manifest and replay script are frozen; replay also recreates the intentionally
+  empty Linux/wasm32 Implies file. No GNU allocator or full make pass is claimed.
+- `/mnt/p6/build/glibc-clone-tls-gate-20261002/report.md`: actual browser Linux
+  guest native and FPCAST23i64 probes pass 43/0 and 42/0 with private stacks/TLS,
+  raw kernel TP, parent/global preservation and measured clear-TID futex wakes.
+  Invalid clone flags return EINVAL without TID writes. A separate controlled
+  child abort occurs after valid TLS setup, before publication. The stricter
+  earlier wake-coverage failure remains FAIL. No GNU libraries or NPTL are
+  linked in this freestanding prerequisite. The task-local raw-TP marker
+  exclusion preserves old adapter selection; it is not a production ABI yet.
+
+- `/mnt/p6/build/glibc-wasm-arch-headers-20261002/packet-report.txt`: unchanged
+  GNU malloc.c now compiles using real GNU tunables, lock and NPTL headers.
+  Genuine metadata generation and architecture headers replace the bootstrap
+  blockers. The cumulative relative patch SHA-256 is
+  `d283e3700def73f91e04f948a29f11e32f9793e15a209bb9ff3ef1b5d0e4c82b`.
+  Actual GNU-header measurements are pthread descriptor 1184/alignment32,
+  time_t/off_t 8, stat 128, jmp_buf 148. Native Wasm EH/SjLj with unchanged
+  GNU public jump headers passes 1,601 host assertions; signal-mask saving,
+  siglongjmp, cancellation and a full GNU nonlocal-jump implementation remain
+  incomplete. Initialized allocator linkage still fails on 25 dependencies;
+  compiling malloc.c is not allocator runtime acceptance.
+- `/mnt/p6/build/glibc-core-guest-validation-20261002/report.md`: independent
+  rebuilt unchanged GNU core objects plus owned syscall/heap adapters pass
+  41,686/0 in each real native and FPCAST23i64 Linux guest run. Three concurrent
+  users perform 288 allocations and 41,328 nonoverlap checks; payloads survive
+  memory growth and failed growth leaves pages/cursor unchanged. Linker TLS
+  metadata drives storage and actual GNU errno is separate across threads.
+  The earlier link and readiness-wake coverage failures remain retained. GNU
+  malloc, production GNU descriptor/DTV, CRT and NPTL are absent from this gate.
+
+- `/mnt/p6/build/glibc-startup-tls-20261002/report.md`: actual native and
+  FPCAST23i64 guests each pass 34/0 using genuine GNU descriptor/DTV/guard
+  headers and unchanged errno/core objects. Kernel args245 EFAULT/E2BIG retries
+  preserve the pending blob, successful retrieval consumes it once, relocated
+  arrays/strings/auxiliary data are bounded, and identities match kernel calls.
+  Module1 TLS and separate raw GNU TP precede constructors; real CLEAR_TID wakes
+  clear GNU 2.44's joinstate field. Final heap floor 659200 includes every
+  static startup/TLS/descriptor/DTV/stack reservation. This is an owned static
+  startup prerequisite, not unchanged GNU ELF CRT, full NPTL or loader support.
+
+- `/mnt/p6/build/glibc-allocator-closure-20261002/packet-report.txt`: clean
+  scripted rebuild of 75 unchanged GNU units and owned architecture providers
+  passes 370/0 host checks. Allocator initialization/tunables/real locks,
+  reallocation preservation, dirty calloc zeroing, overflow/OOM errno and
+  stable large-range reuse are exercised. Cumulative patch SHA-256
+  `24040a2fce8165dbf7be9f92f837ed3d42843d5b76581d5b3d6f52ee8b5f2c06`.
+  This scoped probe explicitly wraps abort. True production link remains FAIL
+  on __internal_syscall_cancel through GNU abort/rwlocks/futex helper; owned
+  signal layout conversion is compile-only, without callback acceptance.
+
+- `/mnt/p6/build/glibc-allocator-guest-gate-20261002/report.md`: independent
+  native and FPCAST23i64 real guests pass 48,249/0 and 48,252/0. Three users
+  perform 19,008 allocations and 6,624 live-range nonoverlap checks per run.
+  Actual kernel environment supplies GNU arena_max=1, tcache_count=0 and
+  perturb=93; genuine allocator locks block children until unlocked, with
+  measured futex waits/wakes. Default unsupported secondary-arena creation can
+  fall through to direct mappings; earlier held-main-arena failures remain FAIL.
+  This frozen packet still wraps abort and is not full NPTL lifecycle acceptance.
+  Input manifest SHA-256
+  `1eec6d77fa2d86918d6434365f029aaf4a07f659ae9569059d73f5269708f813`.
+- `/mnt/p6/build/glibc-abort-signal-final-20261002/report.md`: genuine GNU
+  allocator/abort closes without an abort wrapper, replacement abort,
+  cancellation stub or unresolved-symbol suppression. Thin LTO on unchanged
+  futex-internal.c removes its dead cancellable branch; explicitly retaining
+  the cancellable API still fails honestly. Host 370/0, native and FPCAST
+  30/0 each, plus five separate abort/fatal cases exiting 134. Owned signal
+  conversion supplies actual siginfo and NULL context; unsupported altstack
+  and explicitly requested restorer behavior fail. Unflagged sa_restorer is
+  ignored as required by ordinary GNU callers. A narrow architecture time64
+  feature override fixes real GNU timed futex routing; the old route's failure
+  is retained. This is not full cancellation, NPTL, CRT or libc acceptance.
+  Cumulative relative patch SHA-256
+  `c0238052c8c42006cb724a9363c73f7e5d34bf86d79faa015a922971528ef14f`;
+  manifest `046d4954a351d9d499e4896dc4f4562976acd7dcaf1b5bb05c3fa31b286c312d`.
+  The initially announced `/mnt/p6/build/glibc-abort-signal-build-20261002`
+  snapshot remains immutable and its hashes were rechecked after the corrected
+  snapshot. Neither acceptance retroactively changes the other packet's scope.
+
+- `/mnt/p6/build/glibc-port-integration-20261002/acceptance.json`: fresh archive
+  replay, real configure/metadata and an 80-unit GNU rebuild pass using the
+  parameterized repository scripts in tools/glibc. Combined unwrapped GNU
+  abort/signals/time64 and concurrent startup/allocator guests pass native
+  48,263/0 and FPCAST 48,275/0; host 370/0. Both guest runs prove real allocator
+  blocking/wakes and five abort/fatal processes exiting 134. The task manifest
+  pins 22,274 entries including all 20,963 replay GNU files and 571 actual
+  include dependencies, independently reread without differences. SHA-256
+  `e1a9c2b3c0270afca0091d772aed63c4be993fd62ec9b219a1a84765c9f294fd`.
+  All 646 predecessor entries were rechecked. Details and replay commands are
+  in docs/glibc-port-integration-20261002.md and tools/glibc/README.md. Curated
+  outputs are allocator.wasm, never a relabeled full libc.a/sysroot.
+  Genuine `make -j2 lib` fails at generic __sigsetjmp's ELF stub directives;
+  its ENOSYS/0 implementation is also unacceptable and must be replaced with
+  real architecture jump behavior. Earlier source-audit/parser and temporary
+  manifest-summary failures remain retained. Ports 4202/9412 are closed.
+
+Next packet: compiler-aware native GNU __sigsetjmp/hidden-name lowering,
+genuine signal-mask saving/restoration, longjmp/unwind and fortify boundaries.
+Work root is `/mnt/p6/build/glibc-native-jumps-20261002`; repository scope is
+tools/glibc/jumps and docs/glibc-native-jumps-20261002.md. No production GNU
+sysroot, general CRT/NPTL, cancellation or Nightly build is accepted yet.
+Fresh planning/command spawns and a completed-agent follow-up hit the tool's
+thread limit. Stale pending GPU planning was interrupted; no old GPU build was
+resumed. The existing integration agent remains available for the scoped Git
+checkpoint and next isolated packet; root reviews its evidence independently.
+Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
+never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
+
 The completed source-only Nightly JIT API audit is at
 `/mnt/p6/build/firefox-nightly-jit-api-20261002/acceptance-and-migration-plan.md`:
 107 source checks pass, but compilation and runtime acceptance remain pending.
