@@ -36,6 +36,28 @@ differences, as does the separate check of all 116 actual link objects. Its
 SHA256 is 93042d98f3330664ec32a7ee22d9bda6ea84ffb977de779a0f363ccb67cdd3cb.
 The task is frozen; continue in a new owned task.
 
+The subsequent full-make inventory ran genuine `make -k -j2 lib` and exited 2
+after 314.15s, producing 1,565 structurally complete Wasm objects and 168 failed
+GNU targets. All objects, failed GNU source snapshots and 26,312 manifest
+entries were independently reread with zero differences. This is build
+discovery, not a link/runtime pass. The full classification and source-only
+loader plan are in [the inventory report](glibc-fullmake-inventory-20261002.md).
+Four configure probes lack ephemeral source snapshots and are separate from
+the 168 GNU failures. The inventory task is frozen.
+
+Address the 50 C cleanup compiler failures next. In pinned Clang 22.1.8,
+[C personality selection](https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-22.1.8/clang/lib/CodeGen/CGException.cpp)
+does not select the scoped Wasm format used by C++, while
+[Wasm EH preparation](https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-22.1.8/llvm/lib/CodeGen/WasmEHPrepare.cpp)
+handles scoped cleanup/catch pads. Actual GNU C cleanup units reach llc with
+DWARF landingpads and crash. An owned minimal frontend hook with an exact
+CodeGen archive member/driver relink can preserve GNU C source and emit native
+Wasm cleanup pads. Validate unchanged ordinary C and non-EH behavior, all 50
+failed units, real nested/indirect cleanup execution, GNU pthread_once
+throw/reset/retry and cleanup-throw abort behavior in native/fpcast modules.
+Do not suppress cleanup, turn off exceptions or relabel GNU C as C++. The
+separate forced-unwind/cancellation runtime gap remains after this fix.
+
 Resolve caller provenance and native loader semantics explicitly. GNU
 elf/dl-open.c uses the caller's map for namespaces and RPATH/RUNPATH;
 elf/dl-sym.c requires it for RTLD_NEXT. Returning null for every return-address

@@ -200,10 +200,44 @@ Completed bounded GNU port packets (not a completed libc):
   frozen; do not mutate it. See docs/glibc-fullmake-warnings-20261002.md and
   tools/glibc/fullmake/README.md. This is not complete libc/sysroot acceptance.
 
-Next packet: design native static-module registration and caller provenance,
-preserve public dlfcn APIs and honest errors for unsupported ELF/namespaces,
-and advance genuine GNU make to further architecture blockers. Do not replace
-return-address builtins with null indiscriminately or erase unsupported APIs.
+- `/mnt/p6/build/glibc-fullmake-inventory-20261002/acceptance.json`: fresh
+  signed-source replay ran genuine `make -k -j2 lib`, returning exit2 naturally
+  after 314.15s. There are 1,733 attempted targets, 1,565 structurally complete
+  Wasm objects, 168 failed GNU lib targets, 30 separate GNU text stamp files
+  and zero partial object outputs. This is failure discovery, not a libc
+  archive or runtime acceptance. The owned make group has zero live members.
+  Exact per-target sources/retained IR and commands identify 50 C cleanup
+  exception-format failures, 93 unaudited syscall signatures, five caller
+  return-address failures, eight fenv failures, three library-name headers,
+  three memory-syscall selections, two stat ABI selections and one each for
+  scheduler headers, checked-jump selection, cancellation instruction-range
+  markers and libio alias assembly. The syscall_cancel marker failure is
+  separate from C cleanup. Four configure probes lack their ephemeral source
+  snapshots; they are explicitly separate from the 168 GNU failures, whose
+  source snapshots all match. The original in-flight supervisor is retained;
+  improved replay supervision was not used to repeat the build. Independent
+  rereads of all 1,565 objects, 168 source snapshots, nine packet repository
+  paths and 26,312 manifest entries find zero differences. Manifest SHA256
+  `8b53d66f81cbdc96a3b6b38491be44ec84c2fa9df4d09c3627b23de41bbae929`,
+  acceptance `9a1a6aa1f9e5130537f3990ad84546bb02d37b94bd42dae7d152415658694dfe`.
+  The task is frozen. See docs/glibc-fullmake-inventory-20261002.md and
+  tools/glibc/inventory/README.md; static loader design is source-only.
+
+Next packet: an owned minimal LLVM 22.1.8 C frontend Wasm exception hook,
+using an exact-source CGException.cpp rebuild and private archive/driver
+relink. Clang's C personality selection lacks the Wasm branch used by C++,
+causing DWARF cleanup landingpads to reach a scoped-EH Wasm backend. Preserve
+GNU source as C and real cleanup/abort semantics; do not disable exceptions,
+rename the personality alone or reinterpret GNU C as C++. Validate all 50
+failed units, ordinary C/no-EH controls and meaningful native/fpcast cleanup
+execution including genuine pthread_once throw/reset/retry. This does not
+provide GNU forced unwind or cancellation. Use fresh owned storage and leave
+frozen source clones/toolchains unchanged; a 3 GiB cap is authorized only for
+the new compiler packet, retaining 8 GiB launch reserve/5 GiB hard stop and no
+edits to the frozen env.sh.
+Native static-module registration and caller provenance follow the reviewed
+loader plan; preserve public dlfcn APIs and honest unsupported ELF/namespace
+errors. Do not replace return-address builtins with null or erase APIs.
 Default GNU thread stacks additionally need MAP_STACK and real overflow/guard
 adaptation; the current memory provider cannot satisfy their defaults unchanged.
 No production GNU sysroot, general CRT/NPTL, cancellation or Nightly build is
