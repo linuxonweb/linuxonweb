@@ -537,8 +537,12 @@ second genuine make is now terminal exit2 after359.14s:1,690 complete Wasm
 objects,36 GNU text stamps,zero partials andzero archives. All168 original
 failures were attempted;125 now compile,43 remain, and newly reached
 io/xstatconv.o adds one distinct legacy ABI failure. The scheduler overlay
-was not part of this build. Agent audit/provenance supplement is complete;
-root independent review/freeze are pending. Do not claim a libc archive/sysroot.
+was not part of this build. Root independent review and terminal freeze pass:
+47,442 manifest entries, manifest
+`dcef13c05cbcab8f8ea0dddae7013bbd198d4e2878f0485df597e5286bb9ee09`,
+exact15 repository paths. Do not claim a libc archive/sysroot. The frozen
+discovery report retains its pre-freeze wording; this later review supersedes
+that documentary status without changing tested source or frozen evidence.
 Root's native libio offset-alias adapter is frozen in
 `/mnt/p6/build/glibc-data-alias-final-20261002`,58 manifest entries, SHA256
 `484c458177125e84683da87938340f0c779e9b0106b1e7338e17008ac05b7e4a`;
@@ -550,8 +554,32 @@ eleven malformed metadata controls reject. Two LLVM aliases preserve GNU's
 with code/data/relocations unchanged. Original incorrect LLVM alias extents
 and earlier experiment remain retained. See docs/glibc-data-alias-20261002.md
 and tools/glibc/data-alias/README.md. This is retained genuine frontend and
-linked fixture acceptance; a fresh actual GNU target rebuild is assigned to
-new tools/glibc/vtables-make/**, not yet accepted. Never treat it as full stdio.
+linked fixture acceptance. A fresh actual GNU target rebuild in
+tools/glibc/vtables-make/** now passes: unchanged GNU libio/vtables.c yields
+a5,242-byte Wasm object, SHA256
+`4d740463ea8b1ba997dde317bc5c8251fc3e35ddf1834826b1e3b5f57e34e09a`.
+Root independently checked364 actual dependencies, seven compile stages,
+strong84-byte aliases at168/420, all11 unchanged non-linking sections and
+three empty owned process groups. Terminal freeze is underway. Undefined
+GNU providers remain; never treat this compilation as full stdio acceptance.
+
+The final16 generated-wrapper packet is terminal-frozen and independently
+reviewed: native48,728/0, FPCAST48,719/0,231 link objects,16 actual GNU make
+targets,36 repository paths,96,238 manifest entries. Manifest
+`888d4947e801e9c3ecc5c58c194751964be069c8ed993284c846da4c4c105266`.
+Root verified exact native/FPCAST archive payload bytes and unchanged base
+records except the test launcher/new probe. The13 unsupported APIs retain
+actual kernel ENOSYS; no capability is synthesized. See
+docs/glibc-syscalls-final16-20261002.md. Its frozen report's review-pending
+wording predates this completed review. Full NPTL/sysroot remain incomplete.
+
+Actual GNU checked-jump source selection now compiles both ordinary and
+checked providers, preserving the previously tested owned native helper
+bodies. Root froze/reviewed22,551 entries and five repository paths, manifest
+`51c9ccab91c1fa6747c70228ad60e48e9344329571674a49dee61c074c9588e3`.
+See docs/glibc-checked-jump-make-20261002.md. Substitution of those exact
+GNUmake-built objects into real guest regressions is running separately;
+runtime acceptance has not yet been established for that substitution.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

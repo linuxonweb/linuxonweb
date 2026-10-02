@@ -337,7 +337,10 @@ second make returned exit2 naturally after359.14s, producing1,690 complete
 Wasm objects,36 GNU text stamps andzero archives/partial outputs. Of the168
 original failed targets,125 now compile and43 still fail; newly exposed
 io/xstatconv.o is a distinct44th failure. The scheduler overlay was not part
-of this build. Agent audit is complete, root independent review/freeze pending.
+of this build. Root independent review and terminal freeze now pass:47,442
+manifest entries, exact15 repository paths, manifest
+`dcef13c05cbcab8f8ea0dddae7013bbd198d4e2878f0485df597e5286bb9ee09`.
+The frozen discovery report's earlier pending wording predates this review.
 These actual failures and archive/header results drive the next implementation.
 These are steps toward the complete GNU sysroot; they do not
 establish a complete libc, public NPTL lifecycle or Firefox Nightly baseline.
@@ -348,8 +351,27 @@ controls, seven malformed frontend and eleven malformed object rejections.
 It preserves table offsets168/420 and corrects only LLVM's alias extent fields
 to GNU's84bytes; code/data/relocation sections remain byte-identical. The final
 58-entry evidence and five repository files are frozen. Fresh genuine
-libio/vtables.o rebuilding/integration is separate and pending, followed by
-the newly exposed distinct legacy104-byte kernel-stat provider/converter.
+libio/vtables.o now compiles unchanged GNU source into a5,242-byte native
+object. Root independently checked364 actual dependencies, seven stages,
+strong84-byte aliases at168/420 and eleven unchanged non-linking sections.
+Its terminal freeze is underway; undefined GNU providers remain. The newly
+exposed distinct legacy104-byte kernel-stat provider/converter is assigned
+separately, preserving public stat version0 and the128-byte time64 ABI.
+
+The [final16 wrapper packet](glibc-syscalls-final16-20261002.md) is now frozen
+and independently reviewed: native48,728/0 and FPCAST48,719/0,231 link objects,
+16 actual GNU make targets,36 repository paths and96,238 manifest entries.
+Manifest `888d4947e801e9c3ecc5c58c194751964be069c8ed993284c846da4c4c105266`.
+Root verified the actual packaged modules and unchanged base records except
+the launcher and new probe. Thirteen unsupported APIs expose genuine ENOSYS.
+The frozen report's pending review status predates this completed review.
+
+The [checked-jump compile packet](glibc-checked-jump-make-20261002.md) closes
+the actual GNU source-selection failure using separately selected native
+ordinary/checked providers with byte-preserved accepted helper bodies.
+Root froze/reviewed22,551 entries and five repository paths. Exact GNU-built
+object substitution is now running through real native/FPCAST guest gates,
+including all three invalid checked-jump fortify exits; it is not yet accepted.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
