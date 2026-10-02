@@ -465,6 +465,31 @@ objects and checked five actual statx raw-IR units. All three build groups
 and the external freezer are terminal and empty; freezer exit0/50.660s.
 The local checkpoint adds only this file and the route to those12 paths.
 No full public stat runtime/sysroot/Nightly acceptance or push/deploy.
+The exact14-path compile checkpoint is
+`ecfd442fe473764dbff4a6ec2974835364575b6a`, tree
+`a6ef45aa5245e8be2723f06461147995073d231a`, parent
+`a249f2e3a27efbedd2ff0d55c581faccd4ee075e`; all12 frozen blobs and exact
+scope independently match, index clean and Sites unchanged.
+
+Independent root synthetic stat controls now pass10,308 assertions across
+native and FPCAST23i64 actual GNU public table calls. Fifteen genuine objects,
+real GNU errno and independently encoded statx fields exercise64-bit inode,
+size/blockcounts, times beyond2038/before1900, device boundaries, contiguous
+16-byte canaries, output-preserving errors and negative-fd short circuit.
+This is synthetic transport, not guest acceptance. See
+docs/glibc-stat-host-20261002.md; immutable task
+`/mnt/p6/build/glibc-stat-host-20261002` has23,160 entries, manifest
+`9c7c8b559980b666eca66dceae7bfd92135c665958b4434c8bbf2e4c186a3285`;
+acceptance `069443641269e1ee124741760afbf11d985b578d0ccccdadb641ee4b2dcf448b`;
+six-path repository freeze
+`17939d07d8f343265eb7bea06ae46f2208e9709f53bd3142dbf014434404f058`.
+Root independently rehashed all entries, verified both modules and actual
+23-i64 FPCAST type, and checked three empty terminal groups. Freezer
+exit0/57.030s. The local checkpoint adds only this file and the route.
+Guest stat attempt2 passed native48,637/0 and FPCAST48,632/0. Root review
+found alignment padding before the fixture's four-byte leading canary, so
+acceptance is held pending contiguous16-byte guards and uniqueattempt3 gates.
+Original caller-errno-leak failure and passingattempt2 payloads are retained.
 Continue with real static GNU build/CRT/NPTL and coherent dependency rebuild,
 never cancellation stubs or a regular setjmp wrapper targeting a dead frame.
 The source-reviewed continuation route is docs/glibc-runtime-route-20261002.md.

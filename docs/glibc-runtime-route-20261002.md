@@ -289,6 +289,24 @@ compile acceptance `275c840812213e186feec0a3ad24183baca207b9b9a13323b4748b8474d0
 Root independently rehashed all entries and validated nine actual objects,
 five raw statx units and four empty terminal groups. The scoped checkpoint
 adds only this route and AGENTS.md; real public runtime tests remain separate.
+The exact14-path stat compile checkpoint is
+`ecfd442fe473764dbff4a6ec2974835364575b6a`; root verified all12 frozen blobs.
+The [independent host controls](glibc-stat-host-20261002.md) pass10,308
+assertions through eight genuine public GNU APIs in native and FPCAST23i64,
+with synthetic statx transport. They exercise larger-than32-bit inode/size/
+blocks, positive/negative time64, device boundaries, contiguous16-byte guards
+and unchanged output/real errno on errors. These are conversion controls,
+separate from actual guest filesystem acceptance. Frozen23,160-entry manifest
+`9c7c8b559980b666eca66dceae7bfd92135c665958b4434c8bbf2e4c186a3285`;
+acceptance `069443641269e1ee124741760afbf11d985b578d0ccccdadb641ee4b2dcf448b`;
+six-path repository freeze
+`17939d07d8f343265eb7bea06ae46f2208e9709f53bd3142dbf014434404f058`.
+Root independently rehashed all entries, validated both modules and23-i64
+FPCAST type and verified three empty terminal groups. No push/deploy.
+The second guest attempts pass native48,637/0 and FPCAST48,632/0, but root's
+leading-canary padding finding requires contiguous guards and uniqueattempt3
+gates before runtime acceptance. Preserve the failed caller-errno fixture and
+passing prior payloads; do not infer full libc/Nightly support from these gates.
 
 General startup must integrate the actual kernel args245 data, static linker
 TLS template, GNU descriptor/DTV, constructors and native memory providers.
