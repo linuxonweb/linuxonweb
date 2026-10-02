@@ -527,13 +527,8 @@ logical anonymous private writable memory, not physical protection/decommit,
 file/shared mappings or default NPTL stack guards.
 
 Root approved the pinned14-path coherent source plan and final overlay/configure/
-metadata/fresh GNU make, consuming the immutable memory runtime packet. Fresh
-fullmake results remain pending; earlier failed inventories are retained and
-must not be treated as current success by subtracting resolved failure classes.
-A separate native static-loader design preserves unchanged GNU public/error
-bodies and derives caller provenance from actual linked callsite descriptors.
-Its40 original/snapshot pins pass source review; public loader runtime and
-cancellation closure remain pending.
+metadata/fresh GNU make, consuming the immutable memory runtime packet. Earlier
+failed inventories remain retained; current results come from actual builds.
 
 Final coherent configure/metadata retry completes in24.804s, exit0 and empty
 PGID4176587. The retained first failure applied the vtable-only extent fixer
@@ -541,8 +536,27 @@ to an ordinary configure object. The reviewed owned driver now copies backend
 bytes only for the exact empty alias summary and invokes the frozen fixer only
 for the two exact GNU offset aliases; any other summary fails. Root independently
 verified14 plan6 source pins and31 completed architecture files. Fresh actual
-GNU make -k -j2 lib runs under PGID4182308 with600s/2GiB supervision. Its result
-is pending; a live build is not acceptance of libc or a sysroot.
+GNU make -k -j2 lib exits2 after316.34s, PGID4182308 empty:1727 Wasm objects,
+40 GNU text stamps, six failed targets and no archive/sysroot. Root independently
+reread1727 outputs,1733 source snapshots (four absent generated conftests
+retained-only),2800 actual includes and2026 executed driver records. Caller
+provenance still fails four dlfcn objects and gmon/mcount; cancellation assembly
+fails nptl/syscall_cancel. Reviewed plan7 registers omitted init_module and
+delete_module unchanged C providers. Actual incremental run2 exits2/113.14s,
+produces1729 Wasm objects and preserves all1727 earlier object hashes. Its final
+dependency audit of both GNU .d and .dt files remains pending.
+
+The [native static-loader packet](glibc-native-static-loader-20261002.md) now
+has an independently reviewed prepared implementation:6748 source/tool,947
+object/artifact and348 evidence entries, with320 owned groups freshly empty.
+Caller99 checks, four compile rejection controls and metadata35 checks pass;
+twelve unchanged GNU loader/API units and the owned native backend compile.
+Both strict explicit-Wasm-EH default/Release50-argument links still fail solely
+on genuine GNU __syscall_cancel_arch, PID/PGID24335/24365 exit1. All16 tag1
+retained-cleanup cases fail, while16 tag0 cases pass. The finite primitive gates
+do not prove public dlfcn/C++ execution, general SjLj or forced unwind. Earlier
+snapshot and seven concurrent-ledger gaps remain explicitly unproven. Root
+proof: `/mnt/p6/build/glibc-native-static-loader-root-review-20261002/prepared-root-proof.json`.
 
 Root accepted the [native cancellation plan](glibc-cancel-native-plan-20261002.md)
 after independently rereading42 original/snapshot pairs, two compile outputs,
