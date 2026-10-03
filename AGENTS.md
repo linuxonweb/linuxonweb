@@ -155,8 +155,18 @@ consumer requests overloaded stackrestore without the actual pointer type.
 Reviewed one-line attempt11 fixes that declaration. Consumer21 builds; its
 next SjLj control reaches an actual verifier failure: an invoke within a
 catchpad unwinds to its own parent catchswitch instead of the parent's legal
-unwind destination. The responsible mutation is being localized; runtime is
-still unaccepted. C++ controls separately reveal overbroad llvm.wasm.* rejection
+unwind destination. Root and producer independently localize the mutation to
+LowerSjLj's longjmpable-call conversion; FinalAdmission only verifies invalid
+IR. Reviewed proposal23 matches the exact generated CatchSwitch under
+records4, preserves its real may-throw funclet call to caller and asserts the
+expected parent unwind. Its bounded one-unit build passes; root verifies four
+source pairs, unchanged GNUFrames18/TargetMachine16 objects and four freshly
+empty groups. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal23-build-independent1/root-proof.json`.
+Consumer23 passes that IR failure, then MachineVerifier finds that the original
+capture register definition in OrigEntry does not dominate a return reached
+from the SjLj resume path. A correction to actual entry capture placement is
+pending; runtime is still unaccepted. C++ controls separately reveal overbroad llvm.wasm.* rejection
 of genuine frontend get.exception/get.ehselector calls with actual CatchPad
 tokens. Narrow provenance checks are needed. Preserve all failed controls.
 
@@ -196,6 +206,16 @@ The compile recipe subsequently added support for genuine jump units; root
 records the current-versus-executed script delta and verifies its preserved
 executed snapshots instead of treating the current script as the executed one.
 These are flags-off compilation controls, not admitted owner/runtime acceptance.
+
+Five unchanged GNU jump/cleanup units also independently pass backend64
+compile review: sigjmp_save, ordinary/checked longjmp, NPTL jmp-unwind and
+cleanup_upto. Root verifies 132/132/133/339/343 pins, all 30 compile stage groups
+empty, genuine mask-saving/restoration and cleanup calls retained, with the
+actual cleanup callback still indirect. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/gnu-jump64-independent1/root-proof.json`.
+The executed recipe is preserved separately from its subsequent NPTL-unit
+mapping extension. Backend __longjmp/____longjmp_chk resolution and actual
+recorded runtime remain pending; no old24 jump implementation is accepted.
 
 Root's native GNU-target member-pointer ABI diagnostic independently verifies
 the existing WebAssembly C++ ABI flag: 512/0 calls at O0/O2, including virtual

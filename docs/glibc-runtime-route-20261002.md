@@ -832,3 +832,32 @@ The root review initially rejected that path drift and an overbroad no-indirect
 assumption for the recorded GNU helper; both original review scripts are kept.
 This evidence proves compile inputs and machine-body constraints only, not
 owner admission, cancellation runtime, complete NPTL, Nightly or JIT acceptance.
+
+
+The catch self-routing mutator is now identified precisely: LowerSjLj's
+longjmpable-call conversion uses the pass-created handler as fallback even
+for a call inside that same handler. FinalAdmission merely verifies the
+already-invalid IR. Reviewed proposal23 requires the actual generated
+CatchSwitch identity under records4, asserts unwind-to-caller and preserves
+the genuine may-throw funclet call. Its one-unit build passes; root independently
+checks four source pairs, unchanged GNUFrames18/TargetMachine16 objects,
+compiler bytes and four fresh empty groups. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal23-build-independent1/root-proof.json`.
+Consumer23 passes the former IR failure, then reaches a MachineVerifier failure:
+the captured caller-SP register is defined in original-entry bb2, but the
+catchret/resume route reaches return bb10 without executing that block. Actual
+entry capture placement needs correction; verification remains enabled.
+Reviewed C++ proposal2 recognizes only actual frontend intrinsic IDs with
+CatchPad and personality/funclet provenance. Its call-only immediate-unreachable
+rethrow scope remains explicit; diagnostic and negative controls are pending.
+
+Five unchanged genuine GNU jump/cleanup units independently pass compile
+review: sigjmp_save, ordinary/checked longjmp, NPTL jmp-unwind and cleanup_upto.
+Root rereads 132/132/133/339/343 pins and confirms 30 stage groups empty.
+Original GNU mask and cleanup paths remain; cleanup_upto retains its actual
+indirect callback, and no old24 prepare provider is substituted. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/gnu-jump64-independent1/root-proof.json`.
+The executed recipe's preserved snapshots are distinguished from the subsequent
+extension to NPTL mappings. Backend __longjmp/____longjmp_chk still require
+reviewed recorded definitions and final linking. These compile controls do not
+establish thread cancellation or complete GNU sysroot/Nightly/JIT acceptance.
