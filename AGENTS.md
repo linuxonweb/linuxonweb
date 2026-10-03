@@ -1,3 +1,22 @@
+# Musl continuation — 2026-10-02 (latest user direction; read this first)
+
+The user explicitly stopped glibc work and requested committing this branch,
+returning to musl libc, and continuing latest Firefox Nightly, native Wasm JIT,
+Vulkan, OpenGL and Firefox WebGL GPU support. This supersedes the historical
+no-musl requirement and glibc prerequisites below. Preserve all GNU source,
+build evidence and failures; do not resume GNU implementation. All three GNU
+agents report their owned process groups empty. Fresh subagents with only
+necessary task context, the same model and thinking effort, remain authorized.
+
+This branch is the preserved GNU checkpoint. Continue musl work on a separate
+branch based on pre-glibc commit `1b4be96`; do not reset/delete this history.
+The Nightly source/build packet and API audit remain under
+`/mnt/p6/build/firefox-nightly-plan-20261002` and
+`/mnt/p6/build/firefox-nightly-jit-api-20261002`. Recover the musl recipe in a
+new owned task rather than altering frozen packets. Native Wasm only, adapter
+preference, disk-backed storage and preservation of unrelated services apply.
+See `docs/glibc-checkpoint-musl-return-20261002.md` for the scoped handoff.
+
 # libc change — 2026-10-02 (latest user direction; read this first)
 
 Latest continuation: producer31 and consumer13 compose successfully. Root
