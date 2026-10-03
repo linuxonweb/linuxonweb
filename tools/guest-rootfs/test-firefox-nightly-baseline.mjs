@@ -88,7 +88,9 @@ const probeHTML = `<!doctype html><meta charset="utf-8"><title>Nightly baseline 
 const field=document.querySelector('input');function evidence(tag,extra={}){const r={schema:1,tag,createdAt:Date.now(),url:location.href,userAgent:navigator.userAgent,buildID:typeof navigator.buildID==='string'?navigator.buildID:null,...extra};console.log('NIGHTLYBASELINE '+JSON.stringify(r));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(r)],{type:'application/json'}));a.download='nightly-baseline-'+tag+'-'+r.createdAt+'.json';a.click();}
 field.addEventListener('input',()=>{document.querySelector('pre').textContent=field.value;if(field.value==='wasmperf'){let sum=0;for(let i=0;i<4000;i++)sum=(sum+i)|0;evidence('result',{input:field.value,checksum:sum});}});requestAnimationFrame(()=>{field.focus();evidence('ready');});</script>`;
 
-async function run(argv) {
+// Hooks extend phase work; admission, ownership, CPUs, deadlines and cleanup remain shared.
+export async function runIsolatedNightlyGuest(argv, hooks = {}) {
+  const TASK = hooks.task || '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
   const opt = options(argv), out = path.resolve(opt.out), candidate = path.resolve(opt.candidate), fullDir = path.resolve(opt['nightly-package']), baseline = opt.baseline && path.resolve(opt.baseline);
   assert(out.startsWith(TASK + '/'), 'output outside dedicated task');
   for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
@@ -127,6 +129,7 @@ async function run(argv) {
   for (const name of ['firefox-host-cpus.mjs', 'firefox-browser-affinity.mjs', 'check-firefox-nightly-benchmark.mjs']) await read(REPO + '/tools/guest-rootfs/' + name);
   const serverPath = REPO + '/web/desktop/dev-server.mjs';
   let serverSource = (await read(serverPath)).toString();
+  await hooks.admit?.({ opt, out, full, overlay, inputs, read, baselineManifest });
   assert(serverSource.includes('server.listen(port,') && serverSource.includes("const target = safePath(request.url || '/');") && serverSource.includes("const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));"), 'QA server anchors changed');
   serverSource = serverSource.slice(0, serverSource.indexOf('server.listen(port,'));
   serverSource = serverSource.replace("const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));", 'const root = ' + JSON.stringify(REPO) + ';');
@@ -134,6 +137,7 @@ async function run(argv) {
   serverSource = serverSource.replace("const requestPath = request.url?.split('?')[0];", "const requestPath = request.url?.split('?')[0];requests.push({at:Date.now(),path:requestPath,variant,method:request.method});");
   serverSource = serverSource.replace("const target = safePath(request.url || '/');", `let target = safePath(request.url || '/');if(['/linux/boot-manifest.json','/linux/initramfs-firefox.cpio.gz'].includes(requestPath))target=(variant==='baseline'?${JSON.stringify(baseline)}:${JSON.stringify(candidate)})+'/'+requestPath.split('/').at(-1);`);
   serverSource = serverSource.replace('const remote = net.connect({ host, port: targetPort });', 'const remote = net.connect({ host, port: targetPort });sockets.add(remote);remote.on("close",()=>sockets.delete(remote));');
+  if (hooks.serverOverlay) serverSource = hooks.serverOverlay(serverSource);
   serverSource += '\nserver.on("connection",s=>{sockets.add(s);s.on("close",()=>sockets.delete(s));});export {server};\n';
   const realParent = await fs.realpath(path.dirname(out)); assert(realParent === TASK || realParent.startsWith(TASK + '/'), 'output parent escapes task');
   assert(Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]) < 2 * 1024 ** 3, 'task allowance already exhausted');
@@ -146,7 +150,7 @@ async function run(argv) {
   const service = await import(pathToFileURL(out + '/server.mjs').href), server = service.server;
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   const origin = 'http://127.0.0.1:' + server.address().port;
-  const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'devtools.console.stdout.chrome:true', 'browser.download.alwaysOpenPanel:false', 'browser.download.panel.shown:true', 'browser.download.folderList:2'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("browser.download.dir","/home/admin/Downloads");\nuser_pref("browser.helperApps.neverAsk.saveToDisk","application/json");\nuser_pref("datareporting.policy.firstRunURL", "");\n' + (baseline ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(PROBE) + ');\n' : '');
+  const prefs = (hooks.preferences || '') + ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'devtools.console.stdout.chrome:true', 'browser.download.alwaysOpenPanel:false', 'browser.download.panel.shown:true', 'browser.download.folderList:2'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("browser.download.dir","/home/admin/Downloads");\nuser_pref("browser.helperApps.neverAsk.saveToDisk","application/json");\nuser_pref("datareporting.policy.firstRunURL", "");\n' + (baseline ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(PROBE) + ');\n' : '');
   const executable = opt.chromium || '/home/a/.local/archpkg/pacman/usr/bin/chromium';
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', '--user-data-dir=' + out + '/profile', '--disk-cache-dir=' + out + '/cache', 'about:blank'];
   const launchCommand = browserLaunchCommand(executable, args, affinityPlan);
@@ -157,7 +161,7 @@ async function run(argv) {
   let exitInfo, spawnError, ws, next = 0;
   const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const pending = new Map(), errors = [];
-  const report = { schema: 1, pass: false, scope: baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm', identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
+  const report = { schema: 1, pass: false, scope: hooks.scope || (baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm'), identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
   const childState = () => {
     let alive = false, ownedProfileArgument = false;
     if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) {
@@ -208,9 +212,20 @@ async function run(argv) {
     await saveHostCpuPhaseEvidence(report.cpu, await ev(guestCpuPrebootStateExpression), out, label + '-preboot');
     const epoch = await ev('performance.timeOrigin'), start = Date.now(); await action(); let startupLogs;
     await until(async () => { try { if (await ev('performance.timeOrigin') === epoch) return false; startupLogs = await logs(); return startupLogs.includes('starting /bin/firefox as admin'); } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; return false; } }, 180000, label + ' Firefox launch');
-    const cpu = await saveGuestCpuEvidence(report.cpu, startupLogs, await state(), out, label);
+    const cpu = await (hooks.saveBootEvidence || saveGuestCpuEvidence)(report.cpu, startupLogs, await state(), out, label);
     assert(fatal(startupLogs).length === 0, label + ' fatal startup log');
     const phaseReport = { label, pass: false, cpu, launchObservedMs: Date.now() - start }; report.phases.push(phaseReport);
+    if (hooks.phase) {
+      await hooks.phase({ label, start, cpu, phaseReport, report, full, baselineManifest, out, ev, call, until, logs, state, shot, key, chord, homeRead });
+      const finalLogs = await logs(), finalState = await state();
+      phaseReport.finalCpu = await saveHostCpuPhaseEvidence(cpu, finalState, out, label + '-final');
+      phaseReport.checks = { ...guestCpuChecks(cpu, finalState, phaseReport.finalCpu.hostNprocObserved), kernelHostCpuAgreement: Object.values(cpu.checks).every(Boolean), expectedRuntime: finalState.system.version === (label === 'baseline' ? baselineManifest.version : overlay.version), isolated: finalState.isolated === true, noFatalLines: fatal(finalLogs).length === 0 };
+      if (label === 'warm' || label === 'update') phaseReport.checks.zeroBootSystemImages = finalState.images.length === 0;
+      assert(Object.values(phaseReport.checks).every(Boolean), label + ' guest phase checks failed');
+      await fs.writeFile(out + '/' + label + '-guest-logs.txt', finalLogs);
+      phaseReport.pass = true; await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n');
+      return;
+    }
     let pageLogs = startupLogs;
     if (!baseline) {
       let browser, settled;
@@ -275,14 +290,16 @@ async function run(argv) {
     await new Promise((resolve, reject) => { const timer=setTimeout(()=>reject(Error('owned socket startup deadline')),5000); ws.onopen=()=>{clearTimeout(timer);resolve();}; ws.onerror=()=>{clearTimeout(timer);reject(Error('owned socket startup error'));}; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed document');
     report.browserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, await ev('navigator.hardwareConcurrency'), out);
-    report.cpu = selectHostCpus(report.browserAffinity.hostNproc, report.browserAffinity.browserHardwareConcurrency);
+    report.cpu = hooks.selectCpus ? hooks.selectCpus(report.browserAffinity.browserHardwareConcurrency, report.browserAffinity.hostNproc) : selectHostCpus(report.browserAffinity.hostNproc, report.browserAffinity.browserHardwareConcurrency);
     await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await dir('admin/Downloads');await put('admin/nightly-baseline-marker.txt',${JSON.stringify('nightly-baseline-preserved-v1\n')});await put('admin/nightly-baseline-probe.html',${JSON.stringify(probeHTML)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
+    await hooks.seed?.({ ev, report, out, full });
     const url = origin + '/linux/index.html?firefox=1&renderer=canvas2d';
     if (baseline) { service.setVariant('baseline'); await phase('baseline', () => call('Page.navigate', { url })); service.setVariant('candidate'); await phase('update', () => ev("(()=>{document.querySelector('[data-storage=update]').click();return true;})()")); }
     else await phase('cold', () => call('Page.navigate', { url }));
     await phase('warm', () => call('Page.reload', { ignoreCache: true }));
-    for (const p of report.phases) assert(await homeRead(p.download.path) === p.download.text, 'prior download changed ' + p.label);
-    report.priorDownloadsPreserved = true;
+    if (!hooks.phase) for (const p of report.phases) assert(await homeRead(p.download.path) === p.download.text, 'prior download changed ' + p.label);
+    await hooks.finish?.({ report, out, ev, homeRead, inputs });
+    if (!hooks.phase) report.priorDownloadsPreserved = true;
     for (const [p, expected] of Object.entries(inputs)) assert(sha(await fs.readFile(p)) === expected, 'input changed ' + p);
     report.finalCpu = await saveHostCpuPhaseEvidence(report.phases.at(-1).cpu, await state(), out, 'end');
     report.finalBrowserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, (await state()).browserHardwareConcurrency, out, 'browser-final');
@@ -312,6 +329,7 @@ async function run(argv) {
     await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n');
   }
   console.log(JSON.stringify({ pass: report.pass, phases: report.phases.map(p => [p.label, p.pass]), error: report.error, out })); if (!report.pass) process.exitCode = 1;
+  return report;
 }
 
 async function selfTest(out) {
@@ -379,6 +397,8 @@ async function selfTest(out) {
   await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify({ pass: true, checks: checks.length, out }));
 }
 
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 if (process.argv[2] === '--help') console.log('Run: node test-firefox-nightly-baseline.mjs --out TASK/NEW --candidate GPU_OVERLAY_DIR --overlay-report-sha256 SHA --nightly-package FULL_PACKAGE_DIR --nightly-report-sha256 SHA [--baseline DIR --baseline-archive-sha256 SHA --baseline-manifest-sha256 SHA] [--chromium PATH]\nContract tests only: node test-firefox-nightly-baseline.mjs --self-test TASK/NEW\nTMPDIR/TMP/TEMP must be disk-backed in ' + TASK + '.');
 else if (process.argv[2] === '--self-test') { assert(process.argv.length === 4, '--self-test OUT required'); await selfTest(path.resolve(process.argv[3])); }
-else await run(process.argv.slice(2));
+else await runIsolatedNightlyGuest(process.argv.slice(2));
+}

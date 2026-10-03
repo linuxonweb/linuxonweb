@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "preparationOnly": true,
+  "guestAcceptance": false,
+  "tlsAcceptance": false,
+  "releaseAcceptance": false,
+  "browserStarted": false,
+  "reviewReport": "/mnt/p6/project/build/nightly-nss-runner-review-20261003/review.json",
+  "reviewReportSHA256": "dca8e56822044c477a6117ff2d1458c614e5b31d5a5711e27a3afc0e15fc331e",
+  "sourceFiles": {
+    "tools/guest-rootfs/test-firefox-nightly-baseline.mjs": "501ea7704cc3b8e098e0a9cd8349175287d5dcb9265f90e72dd8c5502d2e7e9c",
+    "tools/nightly-nss-gate/browser-probe.sys.mjs": "4d4c58116dd4eec812697fdabfa10f5743135b7351950ee31a1570aacbc6b402",
+    "tools/nightly-nss-gate/run-guest.mjs": "6d669ded2f829dbd5881b29c53c79d6a5e46c7c4cf9875305170c1f30d6f4013",
+    "tools/nightly-nss-gate/sqlite-audit.py": "bb71f3a2f2ecc8beb280e5365bc2683c0e64bf89a9ea9d2ca1c55da15cbb2a5e",
+    "docs/firefox-nightly-nss-outer-runner-20261003.md": "c89b60ff35604d7d7c84b8e78c4d60fa38d017049e42da9d9250e68752fb211a"
+  },
+  "checks": {
+    "baselineSynthetic": 43,
+    "runnerImportConsoleControls": 38,
+    "sqliteSyntheticControls": 12,
+    "total": 93
+  },
+  "tests": [
+    {
+      "command": "node /mnt/p6/project/build/nightly-nss-runner-review-20261003/baseline-selftest-relocated.mjs --self-test /mnt/p6/project/build/nightly-nss-runner-review-20261003/baseline-selftest-run1",
+      "exitCode": 0,
+      "report": "/mnt/p6/project/build/nightly-nss-runner-review-20261003/baseline-selftest-run1/result.json",
+      "sha256": "c7a4bc61566c7ac0289662725c32b59304d3cbc4a8a7fbe5a57a8824d657013e",
+      "checks": 43
+    },
+    {
+      "command": "node --experimental-vm-modules /mnt/p6/project/build/nightly-nss-runner-review-20261003/controls.mjs",
+      "exitCode": 0,
+      "report": "/mnt/p6/project/build/nightly-nss-runner-review-20261003/controls.json",
+      "sha256": "2a01ec062aa63c3dc6b982f8131b4068a9c69e7dbc56d746af5d54871a6480cf",
+      "checks": 38
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 TMPDIR=/mnt/p6/project/build/nightly-nss-runner-review-20261003/tmp python3 /mnt/p6/project/build/nightly-nss-runner-review-20261003/sqlite-controls.py",
+      "exitCode": 0,
+      "report": "/mnt/p6/project/build/nightly-nss-runner-review-20261003/sqlite-controls.json",
+      "sha256": "aefb7f560b73a458203745f5c2e722b6c53ec4bea2d458bb9da71cc027e80c0e",
+      "checks": 12
+    }
+  ],
+  "fixedFindings": [
+    "System-module timers explicitly imported from Timer.sys.mjs.",
+    "Unsupported top-level await replaced with delayed async function; completion/error JSON precedes eAttemptQuit.",
+    "Direct file system-module import replaced with private process-local resource substitution, before import.",
+    "Framebuffer admission now requires exact requested URI for both secure page and interstitial.",
+    "Baseline lifecycle no longer overwrites NSS download-preservation null with unverified true.",
+    "Fresh preboot proof covers all10 DB/module/exception/sidecar names; incomplete proof rejected.",
+    "Missing-cert comparison retains exact pkcs11.txt; removal rejects remaining cert9 sidecars.",
+    "Read-only SQLite audit previously created SHM evidence; audit now uses private copies with WAL and verifies original exported bytes unchanged.",
+    "Contradictory missing-file modes rejected; dangling sidecar symlinks rejected.",
+    "Two-fresh comparison requires distinct owned profiles, complete cold/warm phases, no-seed/noDB proof, successful prior browser/server/fixture cleanup and different key/cipher state.",
+    "Saved target SDR ciphertext/trust metadata must match across restart.",
+    "Fixture startup retains logs immediately, rejects stale endpoint files and returns final cleanup evidence."
+  ],
+  "sourceOnlyApiAudit": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/modules/Timer.sys.mjs",
+      "sha256": "ba45f03c49c3f27aa2d661a9a122e72f781a76f1b4ab9186d2cb70e4fa4a9b07",
+      "predicate": "export function setTimeout",
+      "sourceOnlyFinding": "Timer exports include setTimeout and clearTimeout; do not assume system-global timers."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/xpconnect/loader/mozJSModuleLoader.cpp",
+      "sha256": "82952532ee0ce014a495de08100e80d5fab5a932000708c5e06281a96ddc3eb1",
+      "predicate": "JS::ThrowModuleErrorsSync",
+      "sourceOnlyFinding": "Synchronous system module evaluation; trusted-scheme admission at1191."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/src/vm/Modules.cpp",
+      "sha256": "bac03e706299d9694104bce87b8e9a5382b0169b23f817a1f0149dfca291e2f9",
+      "predicate": "doesn't support top-level await",
+      "sourceOnlyFinding": "Sync evaluation requires a settled promise; driver async task returns before delay."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/dom/security/nsContentSecurityUtils.cpp",
+      "sha256": "834f167ce34aa72967b72859b9ae0df5240b224d3699f6161236c1aee8c23d7b",
+      "predicate": "aURI->SchemeIs(\"resource\")",
+      "sourceOnlyFinding": "Only resource/chrome/moz-src trusted; direct file import rejected."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/netwerk/protocol/res/nsIResProtocolHandler.idl",
+      "sha256": "97077bc334bab027241c879641f28e27936cb4b705322a831a5d18259637e5a1",
+      "predicate": "nsIResProtocolHandler : nsISubstitutingProtocolHandler",
+      "sourceOnlyFinding": "setSubstitution inherited and scriptable."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/netwerk/protocol/res/nsISubstitutingProtocolHandler.idl",
+      "sha256": "e742bf30292f1cec01ebd80a35e9d810055bea1b4dbef1f625df5155fbacc2ea",
+      "predicate": "void setSubstitution",
+      "sourceOnlyFinding": "Exact XPConnect substitution API."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/netwerk/protocol/res/SubstitutingProtocolHandler.cpp",
+      "sha256": "70c936ca1b544d918d335b0f771720bf9b56e8331eb2c85f95a9a9b764d13883",
+      "predicate": "scheme.EqualsLiteral(\"file\")",
+      "sourceOnlyFinding": "File-backed resource substitutions supported and resolved file-relative."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/xpconnect/loader/SyncModuleLoader.cpp",
+      "sha256": "7752a2ecab662ac0de939d50bc8be5a4a24634350d493acc04f02b8d275e762b",
+      "predicate": "aRequest->SetBaseURL(aRequest->URI())",
+      "sourceOnlyFinding": "Original resource URI retained as module base URL."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/loader/ImportMap.cpp",
+      "sha256": "c8b90b55a6c1ff6fe1794ce93ccfb37c246a28300a680ab00b2aaad8447b7c0e",
+      "predicate": "nullptr, aBaseURL",
+      "sourceOnlyFinding": "Relative ./browser-probe.sys.mjs resolves against resource base URL."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/manager/ssl/nsIX509CertDB.idl",
+      "sha256": "4a115432db81aed5329c9f4d0ec21eaeec31e6508a4e242b86f5453cb8fdd657",
+      "predicate": "Promise getCerts()",
+      "sourceOnlyFinding": "getCerts/asyncVerifyCertAtTime/local-only/addCertFromBase64/trust APIs inspected."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/manager/ssl/nsIPKCS11ModuleDB.idl",
+      "sha256": "3ca46805bb29dee9984caa74d8e360616d1db0e41bad1ae84cf309ef64c280af",
+      "predicate": "Promise listModules()",
+      "sourceOnlyFinding": "Module enumeration promise inspected."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/manager/ssl/nsIPKCS11Module.idl",
+      "sha256": "bfcd2bacaa7cee5febc5f604479c1e6e7823b646d0af628902d8945ae069d1ea",
+      "predicate": "Array<nsIPKCS11Slot> slots",
+      "sourceOnlyFinding": "Slots array current API inspected."
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/manager/ssl/nsIPKCS11Token.idl",
+      "sha256": "bf6c5370e50651b54f40060c4619cb102be2ac525ce8b2329a8f17f9c6902862",
+      "predicate": "isInternalKeyToken",
+      "sourceOnlyFinding": "Internal-token and password/serial metadata exposed; not raw trust-purpose proof."
+    }
+  ],
+  "remainingBlockers": [
+    "Live Run54 object build must finish and owner must reap; ordinary full no-debug build, artifact coherence and package gates still pending.",
+    "No real Nightly Browser Console/API/keyboard/profile/quit/database lifecycle execution has occurred.",
+    "Actual guest raw PKCS11 probe must link selected final trust-anchor objects and bind records to loaded browser token.",
+    "Default-root/public HTTPS behavior and distrust-after fixtures remain unaccepted.",
+    "Actual stopped NSS SQLite key/auth/trust preservation and all cold/warm/update/missing-file modes plus two fresh profiles must be exercised and independently reviewed.",
+    "Retained actual Firefox framebuffer screenshots require independent pixel review.",
+    "No Firefox GPU, JIT, deployment or release acceptance is inferred."
+  ]
+}

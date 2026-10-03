@@ -1,6 +1,7 @@
 // Run from the actual guest Firefox Browser Console, never the host console.
 // Current Nightly159 APIs; preparation only until run in the completed guest.
 const { NetUtil } = ChromeUtils.importESModule('resource://gre/modules/NetUtil.sys.mjs');
+const { setTimeout, clearTimeout } = ChromeUtils.importESModule('resource://gre/modules/Timer.sys.mjs');
 const db = Cc['@mozilla.org/security/x509certdb;1'].getService(Ci.nsIX509CertDB);
 const modules = Cc['@mozilla.org/security/pkcs11moduledb;1'].getService(Ci.nsIPKCS11ModuleDB);
 const ensure = (ok, message) => { if (!ok) throw Error(message); };
@@ -77,13 +78,29 @@ async function visiblePage(url, expectedNonce, positive) {
     if (positive && result.url === url && result.title === expectedNonce) break;
     if (!positive && result.url === url && /^about:(certerror|neterror)/.test(result.documentURI)) break;
   } while (Date.now() < deadline);
-  ensure(positive ? result.title === expectedNonce && Boolean(result.securityState & Ci.nsIWebProgressListener.STATE_IS_SECURE) :
-    /^about:(certerror|neterror)/.test(result.documentURI) && !result.title.includes(expectedNonce), 'rendered TLS page/interstitial mismatch: ' + JSON.stringify(result));
+  ensure(result.url === url && (positive ? result.title === expectedNonce && Boolean(result.securityState & Ci.nsIWebProgressListener.STATE_IS_SECURE) :
+    /^about:(certerror|neterror)/.test(result.documentURI) && !result.title.includes(expectedNonce)), 'rendered TLS page/interstitial mismatch: ' + JSON.stringify(result));
   return result;
 }
 
-async function runImpl({ expectedPath, fixturePath, endpointsPath, outputPath, installFixtures = false }) {
-  ensure(Services.appinfo.version === '159.0a1', 'actual Nightly159 required');
+async function captureVisible(evidence, screenshotAckPath) {
+  if (!screenshotAckPath) return;
+  ensure(screenshotAckPath.startsWith('/home/admin/nightly-nss/'), 'private screenshot acknowledgement required');
+  ensure(!(await IOUtils.exists(screenshotAckPath)), 'stale screenshot acknowledgement');
+  console.log('NIGHTLYNSSVISIBLE ' + JSON.stringify({ ...evidence, screenshotAckPath }));
+  const deadline = Date.now() + 30000;
+  while (!(await IOUtils.exists(screenshotAckPath))) {
+    ensure(Date.now() < deadline, 'outer framebuffer screenshot timeout');
+    await delay(200);
+  }
+  const ack = await IOUtils.readJSON(screenshotAckPath);
+  ensure(ack.name === evidence.name && ack.nonce === evidence.nonce && /^[a-f0-9]{64}$/.test(ack.screenshotSHA256), 'screenshot acknowledgement mismatch');
+  await IOUtils.remove(screenshotAckPath);
+}
+
+async function runImpl({ expectedPath, fixturePath, endpointsPath, outputPath, installFixtures = false,
+  expectedVersion = '159.0a1', requireInventory = true, screenshotAckPath }) {
+  ensure(Services.appinfo.version === expectedVersion, 'actual pinned Firefox version required');
   const expected = await IOUtils.readJSON(expectedPath);
   const result = { schema: 1, guestAcceptance: false, version: Services.appinfo.version, appBuildID: Services.appinfo.appBuildID,
     profile: PathUtils.profileDir, before: await snapshot(), cases: [], limitations: [
@@ -93,8 +110,8 @@ async function runImpl({ expectedPath, fixturePath, endpointsPath, outputPath, i
     ] };
   const actualCerts = await db.getCerts();
   const found = new Set(actualCerts.map(normalized));
-  for (const r of expected.records) ensure(found.has(r.sha256), 'missing current DER: ' + r.label);
-  result.sourceDERPresent = true;
+  if (requireInventory) for (const r of expected.records) ensure(found.has(r.sha256), 'missing current DER: ' + r.label);
+  result.sourceDERPresent = requireInventory ? true : null;
   // Token association and modules are retained for independent review, not
   // inferred from a localized token name or from total certificate counts.
   if (installFixtures) {
@@ -120,6 +137,7 @@ async function runImpl({ expectedPath, fixturePath, endpointsPath, outputPath, i
         if (row.expectedPRError === 0) ensure(evidence.transport.body.includes(row.nonce) && evidence.transport.serverSHA256 === row.sha256, 'valid TLS response mismatch');
         else ensure(!evidence.transport.body.includes(row.nonce), 'negative TLS nonce delivered');
         evidence.visible = await visiblePage(url, row.nonce, row.expectedPRError === 0);
+        await captureVisible({ name: row.name, nonce: row.nonce, visible: evidence.visible }, screenshotAckPath);
       }
       result.cases.push(evidence);
     }
@@ -151,4 +169,70 @@ export async function run(options) {
       preparationDriverFailed: true, error: String(error), stack: error.stack });
     throw error;
   }
+}
+
+// Saves deliberate user trust choices and target-created SDR state, then checks
+// them before changing trust on a later boot. Raw SQLite comparison is external.
+export async function runPersistence(options) {
+  try {
+    const { fixturePath, endpointsPath, statePath, outputPath, customRootBase64,
+      createState = false, expectedVersion = '159.0a1', screenshotAckPath } = options;
+    ensure(Services.appinfo.version === expectedVersion, 'actual pinned persistence version required');
+    const fixture = await IOUtils.readJSON(fixturePath), endpoints = await IOUtils.readJSON(endpointsPath);
+    ensure(await IOUtils.readUTF8(PathUtils.join(PathUtils.profileDir, 'nightly-nss-owned-profile')) === fixture.rootSHA256 + '\n', 'owned persistence profile required');
+    const override = PathUtils.join(PathUtils.profileDir, 'cert_override.txt');
+    ensure(!(await IOUtils.exists(override)) || (await IOUtils.stat(override)).size === 0, 'certificate exceptions forbidden');
+    const sdr = Cc['@mozilla.org/security/sdr;1'].getService(Ci.nsISecretDecoderRing);
+    const secret = 'nightly-owned-sdr-' + fixture.rootSHA256;
+    let saved;
+    if (createState) {
+      ensure(!(await IOUtils.exists(statePath)), 'refuse replacing existing persistence state');
+      const root = db.addCertFromBase64(fixture.rootBase64, 'p,,');
+      const custom = db.addCertFromBase64(customRootBase64, 'CT,,');
+      const zero = db.addCertFromBase64(fixture.cases.find(c => c.name === 'untrusted').derBase64, ',,');
+      saved = { schema: 1, cipher: sdr.encryptString(secret), rootSHA256: normalized(root), customSHA256: normalized(custom), zeroSHA256: normalized(zero) };
+      await IOUtils.writeJSON(statePath, saved);
+    } else saved = await IOUtils.readJSON(statePath);
+    ensure(sdr.decryptString(saved.cipher) === secret, 'target-created SDR key/authentication state not preserved');
+    const current = await snapshot();
+    for (const [sha, ssl] of [[saved.rootSHA256, false], [saved.customSHA256, true], [saved.zeroSHA256, false]])
+      ensure(current.certificates.some(c => c.sha256 === sha && c.ssl === ssl), 'saved custom/zero/distrust effective trust changed');
+    const cases = [];
+    for (const [name, expectedError] of [['valid', -8172], ['untrusted', 0]]) {
+      const row = fixture.cases.find(c => c.name === name);
+      const verification = await verify(db.constructX509FromBase64(row.derBase64), fixture.hostname, fixture.verifyTime);
+      ensure(verification.error === expectedError, 'persistent trust behavior mismatch: ' + name);
+      const actual = await transport(endpoints.urls[name]);
+      ensure(actual.error === expectedError && (expectedError ? !actual.body.includes(row.nonce) : actual.body.includes(row.nonce) && actual.serverSHA256 === row.sha256), 'persistent TLS behavior mismatch: ' + name);
+      const visible = await visiblePage(endpoints.urls[name], row.nonce, expectedError === 0);
+      const evidence = { name: 'persistent-' + name, nonce: row.nonce, verification, transport: actual, visible };
+      await captureVisible(evidence, screenshotAckPath); cases.push(evidence);
+    }
+    const result = { schema: 1, guestAcceptance: false, version: Services.appinfo.version, appBuildID: Services.appinfo.appBuildID,
+      profile: PathUtils.profileDir, targetSDRRoundTrip: true, saved, snapshot: current, cases,
+      limitations: ['Effective trust booleans do not distinguish distrust and zero; stopped SQLite logical rows and behavioral failures must also be reviewed.'] };
+    await IOUtils.writeJSON(outputPath, result);
+    console.log('NIGHTLYNSSPERSIST ' + JSON.stringify({ outputPath, version: result.version }));
+    return result;
+  } catch (error) {
+    await IOUtils.writeJSON(options.outputPath, { schema: 1, guestAcceptance: false, persistenceFailed: true, error: String(error), stack: error.stack });
+    throw error;
+  }
+}
+
+export async function checkSDR(options) {
+  const saved = await IOUtils.readJSON(options.statePath);
+  const fixture = await IOUtils.readJSON(options.fixturePath);
+  ensure(Services.appinfo.version === options.expectedVersion, 'actual pinned missing-cert version required');
+  const sdr = Cc['@mozilla.org/security/sdr;1'].getService(Ci.nsISecretDecoderRing);
+  ensure(sdr.decryptString(saved.cipher) === 'nightly-owned-sdr-' + fixture.rootSHA256, 'remaining key/auth state failed after missing cert9');
+  const current = await snapshot();
+  for (const sha of [saved.rootSHA256, saved.customSHA256, saved.zeroSHA256])
+    ensure(!current.certificates.some(c => c.sha256 === sha), 'missing cert9 unexpectedly restored private trust records');
+  const result = { schema: 1, guestAcceptance: false, version: Services.appinfo.version,
+    appBuildID: Services.appinfo.appBuildID, profile: PathUtils.profileDir, targetSDRRoundTrip: true,
+    saved, snapshot: current, privateCertRecordsAbsent: true,
+    limitations: ['This phase checks deliberately absent cert9 with retained target SDR keys; it does not preserve intentionally removed trust.'] };
+  await IOUtils.writeJSON(options.outputPath, result);
+  return result;
 }
