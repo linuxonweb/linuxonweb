@@ -92,9 +92,19 @@ Its first normal-control run then catches a flags-off provider compile SIGTRAP.
 GDB localizes the flags-off crash to legacy pass-manager scheduling of
 AAResults before instruction selection. Proposal11 changes the final mutator
 to a FunctionPass but still crashes. Proposal14's explicit AA rebuild fails
-compilation on a nonexistent factory; proposal15 uses LLVM22's actual public
-constructor and composes the reviewed setjmp/caller-SP corrections. Its
-compile/control gate is pending. Preserve all failing controls.
+compilation on a nonexistent factory. Proposal15's explicit AA rebuild still
+crashes because final mutation also invalidates StackProtector. Proposal16
+places final admission before base addISelPrepare and rebuilds AA afterward,
+retaining fail-closed machine audits for any later generated calls. It builds
+and passes 5,361 normal-record assertions at O0/O2/O3; flags-off object bytes
+match the baseline in all modes. Root independently reruns frozen modules,
+rereads 108 pins and confirms 47 owned groups empty. Compiler SHA256
+`f6819fa25d39fc6423bf5ed3b601d9dbe1eda6621c894e75d42a4edcc02ce90e`.
+Proof: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records16-native-independent1/root-proof.json`.
+This remains synthetic-owner normal records only; it does not establish
+forced unwind or full stack-protector/safestack compiler coverage. Malformed
+setjmp-admission parser controls reject nonadjacent, missing-metadata and
+wrong-target inputs. Preserve all failing controls.
 The separately composed consumer8 compiler builds all six stages successfully
 (`403b4eaffb9889e6d7e2a9dd170e3be15c9b13acd6845a1f5f608a6112f56fc5`).
 Its controls expose source-setjmp admission adjacency and a consumed caller-SP
@@ -102,8 +112,15 @@ capture admission; neither has runtime acceptance yet. The actual GNU owner
 bridge compiles with 359 dependency pins, 21 stages and no calls/imports/linear
 SP writes in its primitive assembly. It still needs real frame/unwind and
 post-restoration cancellation composition. Root identifies raw checkpoint
-pointer reuse after complete() as an ABA issue; a fresh bridge2 will use
-nonreused opaque serial handles resolved against bounded live slots.
+pointer reuse after complete() as an ABA issue. Bridge2 now uses nonreused
+opaque serial handles resolved against bounded live slots, and compiles.
+Root rereads 381 pins, checks actual primitive assembly and confirms 21
+groups empty. Proof: `/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/bridge2-compile-root-proof.json`.
+Root also rereads 94 forced-provider own-body pins and verifies four exact
+bodies have no linear-SP writes/indirect calls/native throws/imports. Their
+canonical accessor and delivery transitive closure remains unaccepted.
+The exact consumer8 object relink against peer16 is now reviewed with 192
+pins and 180 snapshots; compile/control/runtime composition remains pending.
 This candidate has no runtime acceptance. Frozen records7 remains accepted
 within its original normal-frame scope; a complete GNU sysroot is still pending.
 

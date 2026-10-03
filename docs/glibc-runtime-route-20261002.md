@@ -709,8 +709,16 @@ construction, before function compilation. The final-admission ModulePass
 split the function pipeline; converting it to a FunctionPass still leaves
 AAResults invalidated immediately before selection. Proposal14's explicit
 rebuild fails compilation on a nonexistent factory; proposal15 uses LLVM22's
-public constructor and composes the reviewed producer corrections. Its gate
-remains pending. Source-setjmp admission
+public constructor but final mutation also invalidates StackProtector. The
+placement repair in proposal16 passes the normal-record gate: 5,361 assertions,
+all three flags-off object byte comparisons and correct actual stack
+restoration. Root independently reruns frozen modules, rereads 108 pins and
+confirms 47 groups empty. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records16-native-independent1/root-proof.json`.
+Final admission runs before base addISelPrepare, after EH/SjLj/TLS/atomics;
+AA is rebuilt afterward. Later generated calls remain fail-closed in machine
+audits, so this is not full stack-protector/safestack compiler acceptance.
+Source-setjmp admission
 adjacency and an orphaned admission around the consumed caller-SP marker are
 independent control failures; their corrections remain separate and unaccepted.
 The combined consumer8 compiler compiles/links successfully, but neither its
@@ -718,8 +726,16 @@ runtime nor forced unwind is accepted. The GNU owner bridge compiles with
 359 dependency pins and no calls/imports/linear-SP writes in primitive
 assembly; real ownership/admission and cancellation composition remain pending.
 Root review catches an ABA issue in raw checkpoint pointers reused after
-completion. A fresh bridge2 will resolve nonreused opaque serial handles
-against bounded live slots before any dereference; bridge1 stays frozen.
+completion. Bridge2 resolves nonreused opaque serial handles against bounded
+live slots before dereference. It compiles; root rereads 381 pins, checks actual
+primitive assembly and confirms 21 groups empty. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/bridge2-compile-root-proof.json`.
+Root also verifies 94 forced-provider own-body pins and four exact assembly
+bodies, with no linear-SP writes/indirect calls/native throws/imports. Proof:
+`/mnt/p6/build/glibc-native-forced-unwind-root-review-20261002/provider-own-bodies-root1.json`.
+Their transitive canonical-accessor/delivery closure remains unaccepted.
+The consumer8-object relink onto peer16 is reviewed with 192 pins and 180
+snapshots; the combined compile/control/runtime gate remains pending.
 
 The fresh root ABI diagnostic executes native GNU-target Wasm at O0 and O2
 with no module imports. `-fc++-abi=webassembly` passes all 512 calls, covering
