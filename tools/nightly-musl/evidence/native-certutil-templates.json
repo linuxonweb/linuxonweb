@@ -1,0 +1,138 @@
+{
+  "claim": "Native certutil template symbol collision corrected; actual mapping-shim link prerequisite remains; no certutil/browser/guest acceptance",
+  "terminal": {
+    "phase": "nss-certutil",
+    "run": "run2",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "security/nss/cmd/certutil/certutil_certutil",
+      "-j4",
+      "--verbose"
+    ],
+    "pid": 1650969,
+    "pgid": 1650969,
+    "started": 1791030283.4425046,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run2.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18987962368,
+    "free_bytes": 75990044672,
+    "checked": 1791030283.4431906,
+    "exit_code": 2,
+    "finished": 1791030287.064533,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 57853,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "objects": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/certext.o",
+      "bytes": 128920,
+      "sha256": "e6eaa77e26e33985068cd1486815fd56aab817ef66af16dfe4b9c082dd918d74",
+      "mtime_ns": 1791030284595487862
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/keystuff.o",
+      "bytes": 67210,
+      "sha256": "25f0a1e5850b7b31a412730dcad9ce0e3596704ae1412e6bd3d393f28e2c2e94",
+      "mtime_ns": 1791030284242484653
+    }
+  ],
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-certutil-templates-review-run1.json",
+    "bytes": 1978,
+    "sha256": "3e386e02340cf37002325f31dddcbbe81c26096d4ce6d9aa7fd6501342cc93ad",
+    "passed_predicates": 22
+  },
+  "compiler_errors": [
+    " 0:01.13 E wasm-ld: error: ../../../../../third_party/sqlite3/src/sqlite3.o: undefined symbol: mmap",
+    " 0:01.13 E wasm-ld: error: ../../../../../third_party/sqlite3/src/sqlite3.o: undefined symbol: munmap",
+    " 0:01.13 E wasm-ld: error: ../../../../../third_party/sqlite3/src/sqlite3.o: undefined symbol: mremap",
+    " 0:01.13 E clang: error: linker command failed with exit code 1 (use -v to see invocation)"
+  ],
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/nss/cmd/certutil/certext.c",
+      "bytes": 74003,
+      "sha256": "1a9f643e9ea6f5ece8bc476ed1358160705000b61ba4e8335e3f2b45e087247b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/certutil-templates-preflight/original-certext.c",
+      "bytes": 73874,
+      "sha256": "ecc1dc212061703005fd66454c4c764fc8acc319fca5455dd3afd9546c1bab5e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/certutil-templates-preflight/original-certext.o",
+      "bytes": 128896,
+      "sha256": "05fd4e82b34361736ae7d5ea24a29bc11a79008b811ed915232840d8285d7b2b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/.deps/certext.o.pp",
+      "bytes": 24211,
+      "sha256": "b3c75dbb1409b1d6dd52349a77870ca990cad5d3265d3d4a66950454c7fc7c0d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/nss/cmd/certutil/keystuff.c",
+      "bytes": 23280,
+      "sha256": "35d0023d17758b7d0a618a53b44e0c438165e0ef73242df96b42961e9ae4799a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/certutil-templates-preflight/original-keystuff.c",
+      "bytes": 23143,
+      "sha256": "01c59698719077b992108bf0d32bdf67248d5244ee1669ca60d79f7d7797d270"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/certutil-templates-preflight/original-keystuff.o",
+      "bytes": 67192,
+      "sha256": "2854cfa604c81e1ce0b0b5dbb18fac9fca825cfd4680304c9592c268b2ac1117"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/.deps/keystuff.o.pp",
+      "bytes": 28591,
+      "sha256": "ed2e57864fa4ba32482d92a84288e9d0c1b860c144c6c5b39608028ef728a62a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-certutil-templates-port.json",
+      "bytes": 1598,
+      "sha256": "6dae879909cfa5ffa24f1aba8e2db6f7b999d9dd0610794be094a1de3e0d84c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run2.json",
+      "bytes": 909,
+      "sha256": "fd6037646e65c5232bb46b3aba2f561c8e952a1a755d947cff30433215e2b30f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run2-group-cleanup.json",
+      "bytes": 1073,
+      "sha256": "2a6bd8b86895b97e8594a6cb474188650d68f924c6bb30ac45a8e78b9c3c2840"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run2.log",
+      "bytes": 9493,
+      "sha256": "96dc18b823726289429eee8735ecae1b56e68c8b9c020a25cf5b1ac9c5ad5cf6"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-certutil-templates-port.py",
+      "bytes": 2278,
+      "sha256": "9b9d58b563ca879bddcd29600bd2e831f7a93c93c8ec088c405401b0d3106b48"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-certutil-templates.patch",
+      "bytes": 910,
+      "sha256": "696c053f22690820878c72b655d4cad826be70dbaec27f7f67f38726aa2110a1"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

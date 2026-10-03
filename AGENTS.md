@@ -332,6 +332,20 @@ coherence-run32.json. Next scope the command's two duplicate template names;
 do not allow all duplicate definitions. Full browser linking/packaging,
 Nightly guest JIT/GPU and both authorized Sites releases remain pending.
 
+
+The certutil command's two ASN.1 template collisions are corrected by native
+Linux/Wasm-only aliases immediately before their original definitions.
+Template data, command uses, library identities and other target names are
+unchanged. Original source and target objects are preserved. Actual
+nss-certutil-run2 recompiles both command objects and advances to undefined
+mmap/munmap/mremap from SQLite; this is the previously recorded missing
+mapping-adapter final linkage, not a successful certutil link. Unified57853
+is reaped2, PGID1650969 empty. Root checks24 exact-source/native-symbol/fresh-
+object/dependency/library-unchanged/terminal predicates in
+tools/nightly-musl/evidence/native-certutil-templates.json. Next integrate the
+preserved native mapping adapter as a static link input and verify actual
+target links. Nightly browser, JIT, GPU and Sites acceptance remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

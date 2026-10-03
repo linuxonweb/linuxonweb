@@ -1,0 +1,24 @@
+--- a/security/nss/cmd/certutil/certext.c
++++ b/security/nss/cmd/certutil/certext.c
+@@ -476,6 +476,9 @@
+ 
+ SEC_ASN1_MKSUB(SEC_ObjectIDTemplate)
+ 
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++#define CERT_OidSeqTemplate certutil_WasmOidSeqTemplate
++#endif
+ const SEC_ASN1Template CERT_OidSeqTemplate[] = {
+     { SEC_ASN1_SEQUENCE_OF | SEC_ASN1_XTRN, offsetof(CERTOidSequence, oids),
+       SEC_ASN1_SUB(SEC_ObjectIDTemplate) }
+--- a/security/nss/cmd/certutil/keystuff.c
++++ b/security/nss/cmd/certutil/keystuff.c
+@@ -31,6 +31,9 @@
+     rv = SECFailure; \
+     break;
+ 
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++#define SECKEY_PQGParamsTemplate certutil_WasmPQGParamsTemplate
++#endif
+ const SEC_ASN1Template SECKEY_PQGParamsTemplate[] = {
+     { SEC_ASN1_SEQUENCE, 0, NULL, sizeof(SECKEYPQGParams) },
+     { SEC_ASN1_INTEGER, offsetof(SECKEYPQGParams, prime) },
