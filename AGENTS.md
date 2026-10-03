@@ -46,6 +46,20 @@ archive hardlink shares Cargo's mutable inode and has no immutable claim.
 Run19 resumes with unchanged j4/time/storage bounds. Browser linking, Nightly
 startup and JIT acceptance remain pending.
 
+The native guest JIT primitive and fpcast harnesses now use dynamic owned
+HTTP/CDP endpoints and actual browser CPU affinity matching fresh nproc. The
+runner's own affinity is unchanged. Controlled observations reproduce cgroup
+migration with nproc8->6 while affinity stays8; both original failed admissions
+are retained. Actual native tests pass62/0 and24/0 with host/browser/requested/
+kernel CPU counts all6 at every saved phase. Root checks24 retained live-result,
+source, CPU and ownership predicates; see docs/guest-jit-host-cpus-20261003.md
+and tools/nightly-musl/evidence/guest-jit-runtime-host-cpus.json. All endpoints
+close normally and owned groups are empty. This is runtime-primitive acceptance
+only; the historical23-i64 fixture does not determine Nightly's ABI. Other
+full-browser runners still need equivalent actual-affinity setup before use.
+Nightly full-build/JIT/TLS/performance gates and both authorized Sites releases
+remain pending; public v10 is unchanged.
+
 Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and

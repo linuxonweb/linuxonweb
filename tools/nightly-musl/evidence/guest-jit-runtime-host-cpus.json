@@ -1,0 +1,248 @@
+{
+  "scope": "historical-native-guest-JIT-runtime-diagnostics",
+  "checked": 1791014523.5407863,
+  "checks": [
+    {
+      "name": "guest-jit exact pass count",
+      "pass": true
+    },
+    {
+      "name": "guest-jit actual raw result",
+      "pass": true
+    },
+    {
+      "name": "guest-jit exact dynamic CPU agreement",
+      "pass": true
+    },
+    {
+      "name": "guest-jit all fresh phases",
+      "pass": true
+    },
+    {
+      "name": "guest-jit actual affinity",
+      "pass": true
+    },
+    {
+      "name": "guest-jit clean owned shutdown",
+      "pass": true
+    },
+    {
+      "name": "guest-jit dynamic verified endpoints",
+      "pass": true
+    },
+    {
+      "name": "guest-jit scope limited",
+      "pass": true
+    },
+    {
+      "name": "guest-jit runner identical except indentation",
+      "pass": true
+    },
+    {
+      "name": "guest-jit build pinned source/runtime",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast exact pass count",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast actual raw result",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast exact dynamic CPU agreement",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast all fresh phases",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast actual affinity",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast clean owned shutdown",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast dynamic verified endpoints",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast scope limited",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast runner identical except indentation",
+      "pass": true
+    },
+    {
+      "name": "guest-jit-fpcast build pinned source/runtime",
+      "pass": true
+    },
+    {
+      "name": "cpu-yield-samples-run1.json observed quota migration",
+      "pass": true
+    },
+    {
+      "name": "cpu-blocking-samples-run2.json observed quota migration",
+      "pass": true
+    },
+    {
+      "name": "retained failed admission /mnt/p6/build/guest-jit-20260928/guest-hostcpu-run1/result.json",
+      "pass": true
+    },
+    {
+      "name": "retained failed admission /mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-run1/result.json",
+      "pass": true
+    }
+  ],
+  "pins": [
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/result.json",
+      "bytes": 12368,
+      "sha256": "a05ae0fb4eecc159bd2278272096a7c9659a1916f543fd1bd33163e35b4ea42f"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/guest-console.txt",
+      "bytes": 1351,
+      "sha256": "0056f9a18dcc02a1fa650bd18f9ee4d81d18c4bae2b0dd00e9d93a5ae43bcdb3"
+    },
+    {
+      "path": "web/linux/tests/guest-jit/run-guest.mjs",
+      "bytes": 21753,
+      "sha256": "73a3ef49a2b16786deb26f975d48779d24e688805edfcd3d7898908ee4052e38"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/run-guest.mjs",
+      "bytes": 21753,
+      "sha256": "73a3ef49a2b16786deb26f975d48779d24e688805edfcd3d7898908ee4052e38"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/command.json",
+      "bytes": 468,
+      "sha256": "6e19e1d9aa48fbd7d33edb3a1d1e6c01187e23da9bfc14ebc033495df8392ada"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/cpu-selection-attempt.json",
+      "bytes": 294,
+      "sha256": "cc71426c99925df6b96732aba639428ba26ee451a2f810f3f8c320a65dc07b9d"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/primitive-preboot-cpu-phase.json",
+      "bytes": 304,
+      "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/primitive-startup-cpu.json",
+      "bytes": 420,
+      "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/primitive-startup-startup-guest-logs.txt",
+      "bytes": 31,
+      "sha256": "0a62bbd765bc19f140e4b36bae55740bf1b99f46a3be87277735659be8b5ff00"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/primitive-final-cpu-phase.json",
+      "bytes": 304,
+      "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/build.json",
+      "bytes": 1384,
+      "sha256": "c6ff582cf84ac284e378696e774eaf7871a26fb3dcb4c29f31f4f4198075db0f"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-affinity-run2/endpoint-ownership.json",
+      "bytes": 991,
+      "sha256": "04f7a95925418dfd2851b739142fed72bd7cdb9a5e0d1e5af1ad1605f66f47a7"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/result.json",
+      "bytes": 11192,
+      "sha256": "1f5552c387c49fc6f83ec9d06ecdadb5d24694d021b76c59f1ea9881bbd93f6a"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/guest-console.txt",
+      "bytes": 1035,
+      "sha256": "03480328f280faa2b50b78d301e966146b4d558960fb8d6657797d42405ef06d"
+    },
+    {
+      "path": "web/linux/tests/guest-jit-fpcast/run-guest.mjs",
+      "bytes": 21795,
+      "sha256": "f52d539b9c654a9adfa635d1cdf44b7d948e02a7a3dfda9e90375d3700cd2bb7"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/run-guest.mjs",
+      "bytes": 21777,
+      "sha256": "a290f0a8db1575878ccf6adf905349b2687cc9e3b11f0b10b1f4686870664422"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/command.json",
+      "bytes": 496,
+      "sha256": "2a5d21ba6c8937c3c2df1017a9d034f198a5e7ed897ee945eaebfce121087202"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/cpu-selection-attempt.json",
+      "bytes": 294,
+      "sha256": "cc71426c99925df6b96732aba639428ba26ee451a2f810f3f8c320a65dc07b9d"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/primitive-preboot-cpu-phase.json",
+      "bytes": 304,
+      "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/primitive-startup-cpu.json",
+      "bytes": 420,
+      "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/primitive-startup-startup-guest-logs.txt",
+      "bytes": 31,
+      "sha256": "0a62bbd765bc19f140e4b36bae55740bf1b99f46a3be87277735659be8b5ff00"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/primitive-final-cpu-phase.json",
+      "bytes": 304,
+      "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/build.json",
+      "bytes": 1740,
+      "sha256": "bfee1c16afbc3e089d0128c3c1c66e6f9ba0963e10cbf4d19d8b07c52ddfac70"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-affinity-run1/endpoint-ownership.json",
+      "bytes": 991,
+      "sha256": "d76497b47eaf7c9b9ee3312ab222ee3433a77ef8d686cd3995093f3e729a0fab"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/runtime-runner-review-run1/cpu-yield-samples-run1.json",
+      "bytes": 1843,
+      "sha256": "7f8c7cb4e10e11f52e2a95c58e33ff7e216af5819bcd8bd03c778a308efaf321"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/runtime-runner-review-run1/cpu-blocking-samples-run2.json",
+      "bytes": 1843,
+      "sha256": "a7bc93decf7d804725b93daf11b5cb1d3564254839107056a830468671cfb9fc"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-20260928/guest-hostcpu-run1/result.json",
+      "bytes": 7532,
+      "sha256": "bdff7497f55d5ffdf58ad384b524b696b732838deefb709ab6c85aa07148de18"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-ffprep-20260928/fpcast-guest-hostcpu-run1/result.json",
+      "bytes": 7840,
+      "sha256": "701e8984a73a1a61888178326726bd000883e49076cc59032c03f2ebbb46d0cc"
+    }
+  ],
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false,
+  "fullBrowserBuild": false,
+  "reviewCorrection": "Both actual C fixtures emit GUEST_JIT_RESULT; initial review incorrectly assumed a separate FPCAST prefix. Guest results are unchanged."
+}
