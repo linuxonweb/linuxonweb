@@ -47,6 +47,16 @@ passes at /mnt/p6/build/firefox-nightly-musl-root-review-20261002/recipe-review-
 No Nightly browser binary, guest JIT, GPU acceptance or deployment is yet
 established. Inspect the actual process/status before continuing a build.
 
+Nightly JIT preparation is ready in tools/nightly-jit-prep and
+docs/firefox-nightly-jit-prep-20261002.md. Selected overlay-run4 regenerates all
+239 opcode IDs and initially admits 42 integer operations. Host-run2 passes
+972 assertions; actual musl Wasm diagnostics compile the adapter, PBL/Jit hooks
+and browser PBL setter against current headers with an isolated config header.
+Root deterministic replay/input/object review passes 33 checks at
+/mnt/p6/build/firefox-nightly-musl-root-review-20261002/jit-review-run1.json.
+This is preparatory evidence only: fully configure/link PBL and run real guest
+JIT/browser/performance gates before broader JIT coverage, promotion or release.
+
 The user also requires a default local version/WebGL/WebGPU test homepage and
 force-enabled GPU defaults. Implementation is in
 `tools/guest-rootfs/firefox-gpu-check/gpu-check.html` and
