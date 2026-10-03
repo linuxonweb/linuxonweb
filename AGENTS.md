@@ -64,6 +64,17 @@ driver checks (jit-safety-preparation-review-run2.json). Selected fixture-run2
 and observer-run5 remain preparation only: no observer compilation, real GC,
 full Nightly JIT acceptance or release is established by these results.
 
+The privileged follow-on checker and bounded driver now require actual raw
+observer byte windows, run/window/source/thread/TLS/epoch binding, whole/slice
+and incremental GC, debugger/coverage skips and cleanup. Interrupt acceptance
+requires generated-Wasm kind3 followed by actual InterruptCheck abort and a
+same-window recovery. Root independently reruns203 synthetic checker and22
+mocked driver checks and verifies eight source/API/output predicates in
+privileged-preparation-review-run1.json. The unapplied observer-run6 adds the
+actual callback result diagnostic without changing the error branch; its nine
+source/output checks pass. Direct guest APIs, ordered stderr capture, observer
+compilation and full JIT acceptance remain pending. Preserve public v10.
+
 The PBL benchmark runner now applies the same host-count setup to each arm and
 saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.
 It now uses the shared fresh reader at preboot/startup/final, retains CPU/helper

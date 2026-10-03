@@ -191,3 +191,17 @@ result-run1/run2 and manifest-run1/run2 remain historical and unchanged.
 The preparation allowance is2GiB, with20GiB free-space reserve. All outputs and
 temp storage remain disk-backed in the task directory. Existing baseline trees,
 public Sites v10 and user services are preserved.
+
+## Actual interrupt callback observation preparation
+
+Root's subsequent `observer-run6` adds a diagnostic at the existing portable
+interpreter LoopHead pending-interrupt path. It retains PUSH_EXIT_FRAME, calls
+the actual InterruptCheck exactly once, observes its continue/abort Boolean
+with the existing bounded source-specific observer, and preserves the error
+branch. This distinguishes the specializer's Interrupt return from the browser
+slow-script callback's actual abort. The generated PblJit.cpp is unchanged from
+observer-run5. `interrupt-observer-review-run1.json` verifies nine source/output
+and syntax predicates. Neither overlay is applied or compiled in the baseline.
+Actual callback abort, native interrupt return, same-window recovery and
+normal cleanup remain mandatory guest checks. The privileged-driver follow-on
+contract is documented separately in firefox-nightly-jit-privileged-gate-20261002.md.

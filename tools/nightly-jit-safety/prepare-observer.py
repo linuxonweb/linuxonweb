@@ -114,7 +114,29 @@ new='''            DISPATCH();
         }
         END_OP(LoopHead);'''
 s=replace(s,anchor,new)
+# Observe the actual portable-interpreter slow-script callback result. Keep the
+# existing exit frame and error branch; this is not a substitute callback.
+interrupt_anchor='''        if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
+          PUSH_EXIT_FRAME();
+          if (!InterruptCheck(cx)) {
+            GOTO_ERROR();
+          }
+        }
+#endif
+        COUNT_COVERAGE_PC(pc);'''
+interrupt_observed='''        if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
+          PUSH_EXIT_FRAME();
+          bool interruptAllowed = InterruptCheck(cx);
+          js::pbljit::ObserveSkip(frame->script(), pc, cx,
+              interruptAllowed ? "interrupt-callback-continue" : "interrupt-callback-abort");
+          if (!interruptAllowed) {
+            GOTO_ERROR();
+          }
+        }
+#endif
+        COUNT_COVERAGE_PC(pc);'''
+s=replace(s,interrupt_anchor,interrupt_observed)
 s=replace(s,'  if (reject) {\n    MOZ_RELEASE_ASSERT(!state.script()->hasJitScript());\n    state.script()->disableBaselineCompile();','  if (reject) {\n    MOZ_RELEASE_ASSERT(!state.script()->hasJitScript());\n    js::pbljit::ObservePolicy(state.script(), cx);\n    state.script()->disableBaselineCompile();')
 save(rel,old,s)
-(a.out/'manifest.json').write_text(json.dumps({'kind':'unapplied-observer-preparation','records':records,'budget':4096,'sourcePrefix':'file:///home/admin/nightly-jit-safety/','policyEvents':['policy-catch','policy-finally','policy-throw','policy-throw-stack'],'limitations':['Not compiled or run in current full browser.','Current inherited main loop handles pending interrupt before observer; interrupt means generated Wasm returned Interrupt, not cancellation completion.','NoEntry out storage is not read; bailout/run fields report actual output.','Policy events describe the actual existing rejection before disableBaselineCompile; source scan is diagnostic only and deduplicated.','Incremental event only proves skip at actual active state; verified incremental GC driver still required.','Diagnostics add syscall/stdio overhead; performance arms must use identical observer setting (prefer off).']},indent=2)+'\n')
+(a.out/'manifest.json').write_text(json.dumps({'kind':'unapplied-observer-preparation','records':records,'budget':4096,'sourcePrefix':'file:///home/admin/nightly-jit-safety/','interruptEvents':['interrupt-callback-continue','interrupt-callback-abort'],'policyEvents':['policy-catch','policy-finally','policy-throw','policy-throw-stack'],'limitations':['Not compiled or run in current full browser.','Native specializer Interrupt and portable-interpreter callback result are distinct observations; actual callback-abort and recovery evidence are required for cancellation acceptance.','NoEntry out storage is not read; bailout/run fields report actual output.','Policy events describe the actual existing rejection before disableBaselineCompile; source scan is diagnostic only and deduplicated.','Incremental event only proves skip at actual active state; verified incremental GC driver still required.','Diagnostics add syscall/stdio overhead; performance arms must use identical observer setting (prefer off).']},indent=2)+'\n')
 print(json.dumps({'kind':'preparation','records':records}))
