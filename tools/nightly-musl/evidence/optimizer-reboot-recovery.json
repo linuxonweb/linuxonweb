@@ -61,6 +61,21 @@
       "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
       "bytes": 9546,
       "sha256": "73db215eeb18751196c492bab9fa8565c510e2a429350bf784c026a4a83518cf"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run52/capture.json",
+      "bytes": 26409,
+      "sha256": "348e8a4fabc4410c8201abd4e0b6c9f2b71f4683b01e97d1105e031d2b6d7689"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run52/compiler-response.txt",
+      "bytes": 22419,
+      "sha256": "de53c96bb048ecdbf0206654e5fabe4560eb26e5ea2344f06bd53b6a80a12973"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run52/link-inputs.txt",
+      "bytes": 121370,
+      "sha256": "882d273ea90eed3ad5e4be0c2a41bedfd65c719dc5bb931a8e17be141b46800d"
     }
   ],
   "run51": {
@@ -87,7 +102,9 @@
     "timeoutSeconds": 7200,
     "addressSpaceGiB": 64,
     "groupResidentGiB": 48,
-    "availableRamFloorGiB": 2
+    "availableRamFloorGiB": 2,
+    "actualCompilerPid": 27489,
+    "expandedArgumentsEqualRun49": true
   },
   "fullBuildAcceptance": false,
   "browserAcceptance": false,

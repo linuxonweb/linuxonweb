@@ -199,3 +199,10 @@ command, inherited64GiB address-space limit, zero core limit and OOM priority100
 The live observation is retained in `build-run52-live-supervisor-run1.json`.
 Reboot and new-run evidence pins are in
 `tools/nightly-musl/evidence/optimizer-reboot-recovery.json`.
+
+The actual Run52 compiler driver27489 response and Firefox object list were
+captured while it waited for optimizer27880. All12 required native link flags
+are present; the expanded argument list equals the captured Run49 list exactly.
+This confirms the retry retained the link configuration; completed module
+validation and real browser behavior still require the finished artifact.
+The capture and two unchanged input snapshots are bound in the recovery packet.
