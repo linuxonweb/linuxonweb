@@ -11,6 +11,35 @@ glibc is now a prerequisite. The prior Nightly configure/export/component
 checks used musl and are historical evidence, not acceptance of this target.
 Fresh same-model/same-effort subagents receive only necessary task context.
 
+Latest native frame prerequisite (2026-10-02): the private records7 compiler
+`8316763b3bfe16f00bee38fd3aee1150de5dfb59c456b442a82010dfc85d7482`
+passes normal-frame controls at O0/O2/O3: 5,361 assertions, with actual stack
+restoration and no host reset. Root independently reran the frozen modules,
+reread 108 runtime and 160 link pins, checked all 45 ordered archive members
+(only indices 15 and 41 changed), and confirmed 52 prior stage groups empty.
+Evidence: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records-patch-7-native-root-proof.json`.
+This uses a synthetic owner and proves normal records only; genuine GNU
+cancellation, EH/SjLj composition and NPTL lifecycle remain incomplete.
+Preserve frozen records7/controls4 and all earlier failed compiler/control runs.
+
+The v3 cancellation kernel boundary and genuine GNU helper objects compile
+separately. A fresh whole-kernel source copy now passes under
+`/mnt/p6/build/glibc-cancel-kernel-whole-run2-20261002`, but olddefconfig exits2
+linking the host fixdep helper. The corrected host-only GNU ld/libgcc flags
+pass; run3 configuration then stops on a detected Rust availability change.
+Source review proves Rust and HAVE_RUST disabled in both configurations, so
+run4 permits exactly that availability change alongside compiler metadata.
+Run4 source verification, olddefconfig and prepare pass; actual whole-kernel
+compilation is now running in
+`/mnt/p6/build/glibc-cancel-kernel-whole-run4-20261002`, kernel-build PID/PGID
+305770, supervisor exec session40700. Recheck the actual handle/stages before
+waiting or retrying; a stored PID is not proof of continued execution. Preserve
+all three earlier failed attempts. The approved whole-kernel packet cap is
+6 GiB including reused source (8 GiB launch reserve, 5 GiB hard stop); all other
+packets retain their own limits. No kernel runtime acceptance is established.
+Nightly159, full GNU sysroot/JIT, Firefox GPU and a new deployment are still
+unverified.
+
 GNU glibc 2.44 is pinned from the signed GNU release archive, SHA-256
 `37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667`,
 under `/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44`.

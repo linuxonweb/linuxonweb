@@ -615,3 +615,44 @@ General descriptors/CFA, genuine forced unwind/cancellation, post-restoration
 kernel restart policy and public NPTL lifecycle remain pending. This compiler
 candidate does not establish a complete GNU sysroot, Nightly build, JIT, GPU
 or deployment acceptance.
+
+The separate normal-frame records7 compiler now passes 5,361 assertions across
+O0/O2/O3. Each mode checks zero/static/dynamic frames, stackrestore, recursive
+depth 13, indirect calls, actual active-SP values, empty final chains and seven
+compiler-generated descriptors. The root rerun executes the frozen native
+modules without a host stack reset and exits 0. Root independently rereads 108
+runtime pins and 160 link pins, verifies both 45-member archives in order with
+only members 15 and 41 changed, and confirms 52 prior stage groups empty.
+Compiler SHA256:
+`8316763b3bfe16f00bee38fd3aee1150de5dfb59c456b442a82010dfc85d7482`.
+Proof: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records-patch-7-native-root-proof.json`.
+This is a synthetic-owner normal-record prerequisite, not genuine GNU
+cancellation or EH/SjLj composition. All earlier failed attempts remain intact.
+
+The kernel-boundary candidate uses an 80-byte version 3 context and separates
+restoration from restart policy. Its signal/process units and genuine GNU
+helper/accessor objects compile independently; the helpers retain unchanged
+GNU sigcancel_handler. Root helper2 review checks 1,492 hashes and 12 terminal
+groups; no final helper link or cancellation runtime is accepted.
+The fresh whole-kernel source copy passes in
+`/mnt/p6/build/glibc-cancel-kernel-whole-run2-20261002`. The following
+olddefconfig stage exits 2 linking the host fixdep helper, before target
+compilation. The earlier source-copy failure is preserved separately; its fix
+allows exactly eight pinned baseline source files with generated directory
+names and still rejects old objects/configured target headers. The next action
+is to compile a coherent kernel before any real post-restoration cancellation
+gate. Host control builds and executes the actual fixdep helper using the same
+pinned Clang with explicit host-only GNU ld/libgcc settings. Run3 olddefconfig
+passes, then its strict config gate stops on a newly detected
+CONFIG_RUST_IS_AVAILABLE. Pinned Kconfig evidence shows RUST also requires
+HAVE_RUST; both are disabled in old and new configurations. Run4 permits only
+that exact availability change, retaining the strict gate for all other
+nonmetadata choices. Root independently checks 100 recipe/source/host pins;
+the complete source recheck covers 93,703 files and 99 symlinks.
+Run4 source verification, olddefconfig and prepare pass, and actual kernel
+compilation is live at the time of this checkpoint (PID/PGID 305770, supervisor
+exec session40700). Artifacts are under
+`/mnt/p6/build/glibc-cancel-kernel-whole-run4-20261002`; always refresh actual
+process/stage state before continuing. The six-GiB budget includes the reused
+source tree. No target build success or kernel runtime acceptance is claimed.
+The full Nightly159/JIT/GPU release goal remains active and incomplete.
