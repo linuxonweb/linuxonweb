@@ -95,6 +95,16 @@ unsupported CallerPC return-address builtin. Check current process/status
 before editing or restarting. Compiler-only fatal-path evidence shows abort
 followed by unreachable; actual guest fatal-path acceptance is separate.
 
+Run12 regenerates the corrected wgpu-core host build script and compiles the
+48,173,072-byte native target archive with16 genuine Wasm objects. Root's twelve
+retained source/checksum/cfg/object/header/ABI checks pass in
+backend-caller-review-run1.json. CallerPC uses the documented null diagnostic
+frame fallback on native Linux/Wasm and its exact filesystem consumer compiles.
+The full browser remains incomplete: run12 exits2 after~207s at authenticator's
+missing native HID ioctl selection. Derive constants from the genuine native
+sysroot and preserve completed artifacts. This wgpu compile repair keeps the
+baseline's unavailable GPU adapter honest; it does not implement a GPU backend.
+
 Full-runtime Nightly packaging preparation is in
 tools/guest-rootfs/package-firefox-nightly.py and
 docs/firefox-nightly-package-20261002.md. Twenty synthetic fixture checks and

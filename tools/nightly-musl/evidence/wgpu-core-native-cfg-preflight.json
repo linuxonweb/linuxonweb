@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "scope": "Copied latest core build.rs cfg selection only; no HAL/GPU runtime claim",
+  "source_sha256": "dab20bdee7d534426a1a0aa656470482899c7c3c4a1dafd6766738e5d2410dd8",
+  "cases": [
+    {
+      "arch": "wasm32",
+      "os": "linux",
+      "env": "musl",
+      "family": "wasm,unix",
+      "vulkan": false,
+      "expected_vulkan": false
+    },
+    {
+      "arch": "x86_64",
+      "os": "linux",
+      "env": "gnu",
+      "family": "unix",
+      "vulkan": true,
+      "expected_vulkan": true
+    },
+    {
+      "arch": "aarch64",
+      "os": "linux",
+      "env": "musl",
+      "family": "unix",
+      "vulkan": true,
+      "expected_vulkan": true
+    }
+  ],
+  "first_probe_failure": "Missing Firefox MOZ_CARGO_WRAP_HOST_LD environment; retained compile.log; later runs use configured host linker"
+}

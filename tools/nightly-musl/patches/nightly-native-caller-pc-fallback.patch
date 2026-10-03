@@ -1,0 +1,16 @@
+--- a/mozglue/misc/StackWalk.h
++++ b/mozglue/misc/StackWalk.h
+@@ -29,7 +29,12 @@
+  * to skip to MozStackWalk or MozWalkTheStack, which fell short in more cases
+  * (inlining of intermediaries, tail call optimization).
+  */
+-#define CallerPC() __builtin_extract_return_addr(__builtin_return_address(0))
++#if defined(__wasm__) && defined(__linux__)
++// Native Wasm has no return-address builtin; use the documented fallback.
++#  define CallerPC() nullptr
++#else
++#  define CallerPC() __builtin_extract_return_addr(__builtin_return_address(0))
++#endif
+ 
+ /**
+  * The callback for MozStackWalk and MozStackWalkThread.
