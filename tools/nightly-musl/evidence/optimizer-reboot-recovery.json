@@ -1,0 +1,97 @@
+{
+  "checked": 1791055041.1705832,
+  "claim": "Reboot-interrupted Run51 with unknown exit; native artifacts verified; original optimizer Run52 live",
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51-pre-reboot-status.json",
+      "bytes": 1260,
+      "sha256": "d61f09e891700e2156bc4e2ac0221a37f6cbc5ab94ba1c6371237cab7e074561"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51-reboot-recovery.json",
+      "bytes": 1269,
+      "sha256": "852a1ec7a0e98d09fe6e9a9df546dcd50f0d5b30ab9b664d472b38d12deb4e29"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51.json",
+      "bytes": 1729,
+      "sha256": "20e13629801ee10d566a3ca73bef26245e3853605d7c017455ffcf5b141c3ab6"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51-boundary.json",
+      "bytes": 723018,
+      "sha256": "a043e6a4df3fc3fb8e008ff8c4af9835414de43b665092b9aedd5be3d8944f39"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51-group-cleanup.json",
+      "bytes": 1929,
+      "sha256": "c0ef990778187ea6bb1359185f662964e045524827a381a91db918eae8cd7164"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run51.log",
+      "bytes": 935,
+      "sha256": "6618f6a4f3332da98968629bc0542a9316f6866e818e413f6a94ec36d21a944e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run51-incomplete-firefox",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run51-review-run1.json",
+      "bytes": 441767,
+      "sha256": "33cc101f2cc665ac29ee3c6fecf5ca46015046facd2e50e99607a5cc253bbe97"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run51-review-run1.json",
+      "bytes": 172189,
+      "sha256": "1834434442e6cc29150f5eae7a05bc9eba0fcd8d4a339198b87e9b3e3fa4cf99"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52-launch-context.json",
+      "bytes": 614,
+      "sha256": "9a2f041a555722e29b124e345471986e2bf2aa0cdf1d26f52cb473c5bc9c0588"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/build-run52-live-supervisor-run1.json",
+      "bytes": 3372,
+      "sha256": "d1bec66feb0263cb0cd79dde704d31d27ddb757d44723d6334013cdc321f26eb"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 9546,
+      "sha256": "73db215eeb18751196c492bab9fa8565c510e2a429350bf784c026a4a83518cf"
+    }
+  ],
+  "run51": {
+    "terminationOrigin": "externalHostReboot",
+    "exitCode": null,
+    "reaped": false,
+    "terminationTimeKnown": false,
+    "ownedGroupEmpty": true,
+    "nativeChecks": 4152,
+    "pixmanChecks": 1533,
+    "nativeObjects": 3012,
+    "inttypesConsumers": 552,
+    "pixmanConsumers": 763,
+    "incompleteFirefoxBytes": 0
+  },
+  "run52": {
+    "pid": 26369,
+    "pgid": 26369,
+    "firstOptimizerPid": 27880,
+    "unifiedSession": 43377,
+    "bootId": "80b2f373-8b98-45ed-9288-55ea9465c1c2",
+    "stateAtObservation": "running",
+    "jobs": 1,
+    "timeoutSeconds": 7200,
+    "addressSpaceGiB": 64,
+    "groupResidentGiB": 48,
+    "availableRamFloorGiB": 2
+  },
+  "fullBuildAcceptance": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false
+}

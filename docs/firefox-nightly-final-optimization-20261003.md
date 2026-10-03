@@ -161,3 +161,41 @@ No final optimized size, complete Nightly runtime, baseline guest, JIT, GPU or
 Sites acceptance is established. Public v10 remains unchanged. The next stages
 remain full current-source baseline/package/guest acceptance, then the separate
 fresh whole broad-PBL/JIT build and acceptance, then GPU.
+
+
+## Run51 interrupted by reboot; retained artifacts and Run52
+
+The host boot changed from `1778b83986e6483a9183fcc2a02f4958` to
+`80b2f373-8b98-45ed-9288-55ea9465c1c2`. Journal boot history ends the old
+boot at11:47:50 PDT and starts the new boot at12:00:47 PDT. Exact old group
+2368654 and optimizer2370793 are absent. The unified handle1600 no longer
+exists. This is authoritative external interruption, not an observation timeout
+or evidence of an optimizer allocation failure. Its exit code and precise
+termination time cannot be recovered; no successful build is claimed.
+
+The original stale running status is preserved byte for byte in
+`status/build-run51-pre-reboot-status.json`. A separate reboot recovery record
+captures boot history, group absence and the zero-byte incomplete executable.
+The reconciled terminal status explicitly uses a null exit code, `reaped=false`
+and an observation timestamp rather than an invented termination time.
+Retained native artifacts pass4152 independent boundary checks and1533 Pixman
+checks. All3012 graph objects,552 inttypes and763 Pixman consumers remain
+coherent, with the unchanged7101-member Rust archive. The incomplete zero-byte
+`dist/bin/firefox` was moved into owned status storage only after these checks;
+otherwise a build might incorrectly reuse its fresh timestamp.
+
+Run52 starts with the original automatic BinaryenO2 operation, j1 and7200s,
+64GiB inherited address space,48GiB process-group resident threshold and2GiB
+available-RAM floor. Current swap is60GiB, all free at launch; available RAM
+was about36.7GiB. Storage32GiB/20GiB reserve and supervisor bytes remain
+unchanged. Owned PID/PGID26369, unified session43377. Boot and launch metadata
+are retained in `status/build-run52-launch-context.json`. The4GiB tmpfs limit
+on `/tmp` survived the actual reboot. Current build scratch remains disk-backed.
+No complete Nightly binary, optimized size, guest baseline, JIT, GPU or Sites
+acceptance is established. Public v10 remains unchanged.
+
+Actual optimizer27880 is live in group26369 with the unchanged original `-O2`
+command, inherited64GiB address-space limit, zero core limit and OOM priority1000.
+The live observation is retained in `build-run52-live-supervisor-run1.json`.
+Reboot and new-run evidence pins are in
+`tools/nightly-musl/evidence/optimizer-reboot-recovery.json`.

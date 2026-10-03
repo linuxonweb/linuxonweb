@@ -1,3 +1,27 @@
+# Latest continuation — host reboot recovery, 2026-10-03
+
+Run51 was interrupted by an external host reboot. Previous boot
+1778b83986e6483a9183fcc2a02f4958, current boot
+80b2f373-8b98-45ed-9288-55ea9465c1c2. Old exact PGID2368654 and
+optimizer2370793 are absent; unified1600 is unavailable. Original stale
+running status is preserved as status/build-run51-pre-reboot-status.json.
+Recovered terminal status has null exit code, reaped=false, unknown actual
+termination time; finished is explicitly the terminal observation time.
+No optimizer crash cause is inferred from the reboot. Final Firefox was0bytes,
+now quarantined as status/build-run51-incomplete-firefox after empty-group
+proof. Retained artifacts pass4152 native checks and1533 Pixman checks;
+3012 native objects/552 inttypes/763 Pixman remain coherent, Rust pinned.
+
+Run52 started: owned PID/PGID26369, unified session43377, j1/7200seconds,
+64GiB AS/48GiB polled RSS/2GiB available-RAM floor, unchanged originalO2.
+Actual original-O2 optimizer27880 and inherited limits verified. Check the exact
+group/handle and current logs before changes. Launch boot and
+recovery context are recorded in status/build-run52-launch-context.json.
+Host now has60GiB swap, approximately39GiB physical RAM. /tmp is confirmed
+4GiB tmpfs after the actual reboot. No final browser/baseline/JIT/GPU or
+Sites acceptance; public v10 unchanged. Goal active inline, no subagents.
+Older LIVE entries below are historical observations.
+
 # Latest continuation — optimizer RAM/swap bounds, 2026-10-03
 
 Run49 terminal/reaped2 after about20minutes; exact PGID2297842 empty. Original
