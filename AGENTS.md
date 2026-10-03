@@ -1,5 +1,10 @@
 # Current continuation — 2026-10-02
 
+The user explicitly authorizes two ChatGPT Sites releases: deploy after latest
+Nightly JIT works and passes guest acceptance, then deploy again after GPU
+support works and passes guest acceptance. Do not ask for the same approval
+again; preserve public v10 until a concrete validated successor is ready.
+
 Following tests must set Linux/Wasm CPUs to the host count (currently `nproc=8`)
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and
