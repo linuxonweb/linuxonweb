@@ -752,3 +752,52 @@ The C++ closure recipe now selects the ABI for every C++ unit and removes
 the C++ option when deriving the C provider argv. Historical objects remain
 unchanged and cannot be mixed into a fresh coherent closure. These checks
 do not establish full GNU libc, real guest C++ behavior or Nightly acceptance.
+
+Producer18 addresses two concrete combined-compiler failures found in the
+consumer16 controls. Actual frame operations were becoming invokes during
+SjLj lowering, so the later context pass could not discover the real Enter
+call. Exact compiler metadata now binds the preserved operations to the unique
+64-byte aligned record; user calls and cancellation polls remain longjmpable.
+New forced-unwind guards on previously personality-free leaves also require
+a real scoped personality. It is assigned before descriptor construction,
+which retains the actual runtime __gxx_personality_wasm0 relocation.
+The two-unit producer build passes; compiler SHA256
+`68d232e450ff9e6ff03f2de51fbb77cd3b73ede64095673a59ed37a5983e6cce`.
+Root independently verifies four source pairs, unchanged TargetMachine object
+reuse, compiler bytes and five freshly empty stage groups. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal18-build-independent1/root-proof.json`.
+Producer18's normal-record gate passes 5,361 assertions; root independently
+reruns all three frozen modules, rereads 108 pins, verifies flags-off byte
+identity and confirms 47 groups empty. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records18-native-independent1/root-proof.json`.
+Consumer9 adds only an early assertion of that producer-owned personality.
+The combined consumer18 compiler builds and its O0/O2/O3 normal compile controls
+pass. Its first SjLj control fails the capture ownership validator because the
+actual captured SP feeds the genuine tagged poll as well as Enter. Actual IR
+confirms no aliases/phis. Proposal20's reviewed correction validates those
+exact poll users without making polls nonlongjmpable. Its bounded rebuild and
+the combined runtime gate remain pending, with all prior failures retained.
+
+Original GNU nptl/unwind.c and cancellation.c compile with the measured
+backend64/public-jmp196/cancel-unwind84 closure. Independent root checks cover
+374 unwind pins (355 dependencies) and 336 unique cancellation pins (310
+dependencies), and freshly confirm all four/six stage groups empty. Actual
+GNU cleanup callbacks, longjmp/fatal calls, EINTR handling and cancellation
+atomics remain. Proofs:
+`/mnt/p6/build/glibc-native-forced-unwind-root-review-20261002/gnu-unwind64-independent1/root-proof.json`
+and `gnu-cancellation64-independent1/root-proof.json` in the same parent.
+Final linking still must prove that the extern_weak __pthread_unwind reference
+resolves to the genuine GNU definition. These checks do not admit native
+records or establish runtime cancellation/full NPTL.
+
+Mixed-provider proposal1 is source-only. Root review finds a concrete hook
+ABI mismatch: compiler polls are void(i32 callerSP,i32 reason), not zero-arg,
+and capture liveness must be checked after identifying the actual poll users
+to remove. Reviewed source-only proposal2 authenticates compiler metadata and
+exact capture/reason operands, rejects manual poll calls, removes polls first
+and retains external module/body hashes and final machine-call closure checks.
+Consumer primitive skipping also needs actual producer membership; a source
+attribute is insufficient if the record pass is disabled. The allocating abort
+failure paths in Enter/Leave/Admit still require a nonrecursive solution that
+preserves genuine GNU fatal behavior. No full sysroot/Nightly/JIT/GPU release
+acceptance follows from these compile-only packets.
