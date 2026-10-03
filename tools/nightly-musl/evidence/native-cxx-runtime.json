@@ -1,0 +1,45 @@
+{
+  "claim": "Native Wasm C++ runtime, real guest typed exceptions and cleanup, linked helper validation; full Nightly browser/JIT acceptance remains pending",
+  "compileUnits": 168,
+  "helpers": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pingsender",
+      "bytes": 3033401,
+      "sha256": "24c001a269d0f14fd10345350184bb0d7f6ccf456809326fddc449785bb3c7b3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/gfxtest",
+      "bytes": 1202101,
+      "sha256": "23d250421668b80a4e8c703b88e1b149088f852dadf215c7a21badb60172f784"
+    }
+  ],
+  "guestChecks": 100,
+  "hostAndGuestCpus": 6,
+  "nightlyBrowserAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false,
+  "review_path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/cxx-runtime-review-run1.json",
+  "review_sha256": "1e57a663c426da6f514f82be950937bdca5b616f2590ff77515de60290edb77f",
+  "check_count": 597,
+  "archives": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++.a",
+      "bytes": 1533772,
+      "sha256": "5265c4a1fec02eeb62648d21479c9b06a1d5e5e3599fea4aea89534963f7463c",
+      "nativeMembers": 63
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++abi.a",
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5",
+      "nativeMembers": 27
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libunwind.a",
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b",
+      "nativeMembers": 9
+    }
+  ],
+  "configureReplayExecuted": false
+}

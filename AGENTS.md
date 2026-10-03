@@ -1,5 +1,20 @@
 # Current continuation — 2026-10-02
 
+The Nightly C++ runtime is rebuilt from unchanged installed LLVM22.1.8 source
+with Wasm exceptions and the same WebAssembly C++ ABI as Firefox. The previous
+sysroot C++ libraries used the generic ABI: real guest integer throws worked,
+but runtime_error construction trapped with a constructor signature mismatch.
+The full rebuilt libc++/libc++abi/libunwind fixes it; configuration remains
+byte-identical to the installed libc++ ABI1 config. Two actual guest runs pass
+100/0 typed catches, rethrow and destructor cleanup; the final run binds all
+three archive hashes and has host/browser/requested/kernel CPUs6 throughout.
+The actual pingsender/gfxtest link and validate as native Wasm. Root independently
+checks597 predicates across168 compile units and99 native archive members.
+See docs/firefox-nightly-cxx-runtime-20261003.md and native-cxx-runtime.json.
+The replay configure recipe is preparation, not an executed clean rebuild.
+Full browser linking, startup, fatal behavior, JIT and deployment remain pending.
+
+
 
 Run33 is terminal/reaped (exit2, exact group empty), with all3,012 native
 object paths present. The actual certutil links and validates as native Wasm
