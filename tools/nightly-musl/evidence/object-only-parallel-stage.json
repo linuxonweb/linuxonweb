@@ -1,0 +1,79 @@
+{
+  "claim": "Proven explicit generated object-only j4 stage admission under unchanged full-build guards, then serial j1 final links; no full build acceptance",
+  "checked": 1791059423.2180362,
+  "opt_in": "NIGHTLY_OBJECTS_ONLY=1 (build phase only)",
+  "defaultFullBuildUnchanged": true,
+  "objectGoalCount": 577,
+  "closureCount": 589,
+  "browserAndHelperLinkGoalsInClosure": 0,
+  "admissionTestsPassed": 24,
+  "actualInheritedGuards": {
+    "ASGiB": 64,
+    "coreBytes": 0,
+    "oomScoreAdj": 1000,
+    "oversizeMappingRejected": true
+  },
+  "run53": {
+    "actualChildExit": -15,
+    "ownerReapedExit": 143,
+    "ownedGroupEmpty": true,
+    "freshNativeObjects": 109,
+    "fullBuildSuccess": false
+  },
+  "completedRust": {
+    "bytes": 204433482,
+    "nativeMembers": 7098,
+    "membersWithDebugSections": 0,
+    "sha256": "773e119a73dd8777f57a143f1620973257a53683b572e2a1f9d8217fac019efd"
+  },
+  "evidence": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run53-object-stage-stop.json",
+      "bytes": 30705,
+      "sha256": "743dd9d7c40df880ad748064a744acd46dbdb1d12c943cbe41c69ab50dbceffa"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run53.json",
+      "bytes": 1333,
+      "sha256": "839fd702263f38ba57ead5504032f300db7cdc887acb9118b04a24c408d43d33"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/build-run53-rust-archive.json",
+      "bytes": 1639489,
+      "sha256": "b17292937cd3e4ce350e12f75461aba3ace36709a36860fb38591fd4d52e9ce3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/compile-object-goals-proof.json",
+      "bytes": 111645,
+      "sha256": "b360bad5168f5f5cd4936ffc72257923a32cbec479ba355baf0a098bad3fe008"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/object-only-admission-probe-run1/result.json",
+      "bytes": 89056,
+      "sha256": "402bb8235ac2e4f960359965078ac82c8454cdebbc5334570fa54bd38e3e9bda"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run53-run-phase.py",
+      "bytes": 9546,
+      "sha256": "73db215eeb18751196c492bab9fa8565c510e2a429350bf784c026a4a83518cf"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 10690,
+      "sha256": "746f0c1a1dd01c69597db59d9be009cd583d6c39858221714fa7f6eceb77a59d"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/object_goals.py",
+      "bytes": 2916,
+      "sha256": "068ca3c07c443a973d5ff8d421e1ec0c1deb01a960de78bf1b47cc32a81eb087"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/object-only/probe.py",
+      "bytes": 6750,
+      "sha256": "6e2896c9fdc87989d89f453d68afddece369085179fc63e46e035250d046723d"
+    }
+  ],
+  "fullBuildAcceptance": false,
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 import subprocess,os,sys,time,json,signal,shutil,resource
 from pathlib import Path
+from object_goals import objects_only_mode,admit_object_goals
 root=Path(__file__).resolve().parents[1]
 phase=sys.argv[1]
 jobs=os.environ.get('NIGHTLY_JOBS','2')
 assert jobs in ('1','2','4')
 commands={'xptcall':['build','--allow-subdirectory-build','xpcom/reflect/xptcall','-j'+jobs,'--verbose'],'expat':['build','--allow-subdirectory-build','parser/expat/target-objects','-j'+jobs,'--verbose'],'pixman':['build','--allow-subdirectory-build','gfx/pixman/pixman/pixman/target-objects','-j'+jobs,'--verbose'],'cairo':['build','--allow-subdirectory-build','gfx/cairo/cairo/src/target-objects','-j'+jobs,'--verbose'],'mozgtk':['build','--allow-subdirectory-build','widget/gtk/mozgtk/target-objects','-j'+jobs,'--verbose'],'configure':['configure'],'pre-export':['build','pre-export','-j2'],'export':['build','export','-j2'],'mfbt':['build','--allow-subdirectory-build','mfbt','-j2'],'build':['build','-j'+jobs],'ipc':['build','--allow-subdirectory-build','ipc/chromium','-j'+jobs],'js-builtin':['build','--allow-subdirectory-build','js/src/builtin','-j'+jobs],'js-vm':['build','--allow-subdirectory-build','js/src/vm','-j'+jobs],'abseil':['build','--allow-subdirectory-build','third_party/abseil-cpp/absl/base/malloc_internal_gn','-j'+jobs],'abseil-stack':['build','--allow-subdirectory-build','third_party/abseil-cpp/absl/debugging/examine_stack_gn','-j'+jobs],'rfp':['build','--allow-subdirectory-build','toolkit/components/resistfingerprinting/target-objects','-j'+jobs],'llama-c':['build','--allow-subdirectory-build','third_party/llama.cpp/ggml-c.o','-j'+jobs],'llama-mapping':['build','--allow-subdirectory-build','third_party/llama.cpp/llama-mmap.o','-j'+jobs],'inference':['build','--allow-subdirectory-build','config/external/mozinference','-j'+jobs,'--verbose'],'llama-linker':['build','--allow-subdirectory-build','toolkit/components/ml/backends/llama/target-objects','-j'+jobs,'--verbose'],'pingsender':['build','--allow-subdirectory-build','toolkit/components/telemetry/pingsender','-j'+jobs,'--verbose'],'gfxtest':['build','--allow-subdirectory-build','toolkit/xre/gfxtest','-j'+jobs,'--verbose'],'nss-certutil':['build','--allow-subdirectory-build','security/nss/cmd/certutil/certutil_certutil','-j'+jobs,'--verbose']}
 if phase not in commands: raise SystemExit('Unknown phase')
+try: object_mode=objects_only_mode(phase,os.environ)
+except ValueError as error: raise SystemExit(str(error))
 run=sys.argv[2] if len(sys.argv)>2 else 'run1'
 log=root/'logs'/f'{phase}-{run}.log'; status=root/'status'/f'{phase}-{run}.json'
 if log.exists() or status.exists(): raise SystemExit('Refusing to overwrite evidence')
 args=['bash','-c','set -eu; source "$1"; cd "$2"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach "${@:3}"','nightly-musl',str(root/'recipe/environment.sh'),str(root/'source/firefox-159.0a1'),*commands[phase]]
+object_admission=None
+if object_mode:
+ try: object_admission=admit_object_goals(root/'obj-nightly',root/'source/firefox-159.0a1')
+ except ValueError as error: raise SystemExit(str(error))
+ args=['bash','-c','set -eu; source "$1"; cd "$2"; exec /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make "${@:3}"','nightly-musl-objects',str(root/'recipe/environment.sh'),str(root/'obj-nightly'),'-j'+jobs,*object_admission['goals']]
 policy=json.loads((root/'status/storage-policy.json').read_text())
 limit=(20 if phase=="build" else 12)*60
 if 'NIGHTLY_BUILD_TIMEOUT_SECONDS' in os.environ:
@@ -102,9 +110,15 @@ if memory_limit is not None:
  if preflight_available<4*1024**3 or preflight_available+preflight_swap<address_space_limit+2*1024**3:
   raise SystemExit('Full build needs 4 GiB available RAM and address-space limit plus 2 GiB in available RAM/free swap')
 start=time.time(); reason=None
+if object_admission is not None:
+ admission_path=root/'status'/f'{phase}-{run}-object-goals.json'
+ if admission_path.exists(): raise SystemExit('Refusing to overwrite object-goal evidence')
+ admission_path.write_text(json.dumps(object_admission,indent=2)+'\n')
 with log.open('w') as out:
  p=subprocess.Popen(args,stdout=out,stderr=subprocess.STDOUT,start_new_session=True,preexec_fn=prepare_child)
  meta={'phase':phase,'run':run,'argv':args,'pid':p.pid,'pgid':p.pid,'started':start,'log':str(log),'timeout_seconds':limit,'state':'running'}
+ if phase=='build': meta['build_mode']='objects-only' if object_mode else 'full'
+ if object_admission is not None: meta.update(object_goal_evidence=str(admission_path),object_goal_count=object_admission['goal_count'],object_goals_sha256=object_admission['goals_sha256'])
  if memory_limit is not None: meta.update(process_address_space_limit_bytes=address_space_limit,group_rss_limit_bytes=memory_limit,host_available_memory_floor_bytes=2*1024**3,child_oom_score_adj=1000,child_core_limit_bytes=0,preflight_available_memory_bytes=preflight_available,preflight_free_swap_bytes=preflight_swap)
  status.write_text(json.dumps(meta,indent=2)); print(json.dumps(meta),flush=True)
  next_check=start
