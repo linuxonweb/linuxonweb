@@ -5,6 +5,15 @@ and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and
 use the same CPU count for new comparative benchmarks.
 
+The updated GPU/homepage and session-startup runners select the browser host
+count, require agreement with nproc, and assert the actual kernel SMP count.
+Fresh isolated eight-CPU Firefox128 homepage diagnostic passes all eight checks:
+`/mnt/p6/build/guest-host-cpus-test-20261002/cold-run1/result.json`.
+Host nproc, hardwareConcurrency, selected/requested guest CPUs and kernel CPUs
+are all eight; the browser/server clean up normally. This proves the new CPU
+setup and default-page launch, not Nightly or guest GPU acceptance. See
+`docs/guest-host-cpus-test-20261002.md` for retained results and limits.
+
 Latest acquired Nightly is 159.0a1, official build `20261002211853`, Hg
 `dfc77f7a6d716f1a20a2576597638d4fc21cd916`, Git mirror
 `bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23`. The 198-file overlay passes all

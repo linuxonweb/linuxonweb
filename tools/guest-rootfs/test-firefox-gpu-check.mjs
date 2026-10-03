@@ -24,6 +24,8 @@ const out = path.resolve(process.argv[2]), candidate = path.resolve(process.argv
 const pageURL = 'file:///opt/firefox/gpu-check/gpu-check.html';
 const node = process.execPath, sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const hostNproc = Number(execFileSync('nproc', [], { encoding: 'utf8' }).trim());
+if (!Number.isInteger(hostNproc) || hostNproc < 1) throw Error('invalid host nproc');
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 2 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -61,6 +63,23 @@ let ws, next = 0; const pending = new Map(), errors = [];
 function call(method, params = {}, deadline = 60000) { return new Promise((resolve, reject) => { const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, deadline); pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params })); }); }
 async function ev(expression, deadline) { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, deadline); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; }
 async function until(fn, ms, label) { const end = Date.now() + ms; for (;;) { if (await fn()) return; if (Date.now() > end) throw Error(label + ' deadline'); await sleep(500); } }
+// Match the UI hostCores clamp, but reject a missing/invalid browser count.
+// nproc reflects the CPU allocation available to the browser on this host.
+async function resolveHostCpus() {
+  const browserHardwareConcurrency = await ev('navigator.hardwareConcurrency');
+  if (!Number.isInteger(browserHardwareConcurrency) || browserHardwareConcurrency < 1) throw Error('invalid browser hardwareConcurrency');
+  const hostCores = Math.min(64, Math.max(1, browserHardwareConcurrency));
+  const expectedHostCores = Math.min(64, hostNproc);
+  const cpu = { hostNproc, browserHardwareConcurrency, hostCores, expectedHostCores, requestedGuestCpus: hostCores };
+  report.cpu = cpu;
+  if (hostCores !== expectedHostCores) throw Error('browser/host CPU count mismatch: ' + JSON.stringify(cpu));
+  return cpu;
+}
+function guestCpuEvidence(logs, state) {
+  const counts = [...logs.matchAll(/smp: Brought up \d+ nodes?, (\d+) CPUs?\b/g)].map(m => Number(m[1]));
+  const guestBootCpus = counts.at(-1) ?? null;
+  return { ...report.cpu, browserHardwareConcurrencyAtBoot: state.browserHardwareConcurrency, selectedGuestCpus: state.selectedGuestCpus, guestBootCpus };
+}
 async function shot(name) { const r = await call('Page.captureScreenshot', { format: 'png' }); await fs.writeFile(out + '/' + name + '.png', Buffer.from(r.data, 'base64')); }
 const guestLogs = () => ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)))()`);
 // Copy profile files out of the persistent home (base64 over CDP).
@@ -110,11 +129,14 @@ async function phase(label, action) {
   const rows = await bookmarks(label);
   const logs = await guestLogs(), logLines = logs.split('\n');
   await fs.writeFile(out + '/' + label + '-guest-logs.txt', logs);
-  const state = await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),visibility:document.visibilityState,isolated:crossOriginIsolated,images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
+  const state = await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),visibility:document.visibilityState,isolated:crossOriginIsolated,images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
   const fatalLines = logLines.filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-40);
+  const cpu = guestCpuEvidence(logs, state);
   const checks = {
     version: state.system.version === pkg.version, isolated: state.isolated === true,
-    config: logs.includes('display=1280x720, cpus=2, ram=4 GB (maximum)'),
+    config: logs.includes(`display=1280x720, cpus=${cpu.requestedGuestCpus}, ram=4 GB (maximum)`),
+    hostCpuSelection: cpu.browserHardwareConcurrencyAtBoot === cpu.browserHardwareConcurrency && cpu.selectedGuestCpus === cpu.hostCores,
+    guestCpuCountMatchesHost: cpu.guestBootCpus === cpu.hostCores,
     pageOpenedByDefault: result.info.webgl.length + result.info.webgpu.length > 0,
     toolbarBookmark: rows.some(r => r[1] === pageURL && r[2] === 3),
     menuBookmark: rows.some(r => r[1] === pageURL && r[2] === 2),
@@ -123,7 +145,7 @@ async function phase(label, action) {
   };
   if (label === 'warm') checks.warmZeroImages = state.images.length === 0;
   const pass = Object.values(checks).every(Boolean);
-  report.phases.push({ label, pass, checks, launch, observedMs, result, bookmarks: rows, fatalLines, state });
+  report.phases.push({ label, pass, checks, launch, observedMs, cpu, result, bookmarks: rows, fatalLines, state });
   await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify({ phase: label, pass, checks }));
   if (!pass) throw Error(label + ' checks failed: ' + Object.entries(checks).filter(([, v]) => !v).map(([k]) => k).join(','));
@@ -134,7 +156,8 @@ try {
   ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
-  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
+  await resolveHostCpus();
+  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
   const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
   if (manifest.version !== pkg.version) throw Error('served manifest mismatch');
   await phase('cold', () => call('Page.navigate', { url: origin + '/linux/index.html?firefox=1&renderer=canvas2d' }));

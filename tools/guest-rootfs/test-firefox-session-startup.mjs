@@ -6,7 +6,7 @@ import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const publicFixture="<!doctype html><meta charset=\"utf-8\"><title>Public Sites Firefox verification</title><style>body{font:24px sans-serif;background:#f4f9ff;margin:40px}input{font:inherit;padding:12px}</style><h1>Firefox on Sites</h1><p>Type wasmperf to check guest JavaScript and input.</p><input autofocus><pre id=\"state\">Ready</pre><script>\nconst field=document.querySelector('input');field.addEventListener('input',()=>{document.querySelector('#state').textContent=field.value;if(field.value==='wasmperf'){let sum=0;for(let i=0;i<4000;i++)sum=(sum+i)|0;const r={schema:1,tag:'sites-v7-guest',input:field.value,checksum:sum,userAgent:navigator.userAgent,createdAt:Date.now(),url:location.href};const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([JSON.stringify(r)],{type:'application/json'}));link.download='sites-qa-result-'+r.createdAt+'.json';link.click();}});requestAnimationFrame(()=>{field.focus();const r={tag:'sites-qa-ready-v1',createdAt:Date.now(),url:location.href,userAgent:navigator.userAgent};const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([JSON.stringify(r)],{type:'application/json'}));link.download='sites-qa-ready-'+r.createdAt+'.json';link.click();});</script>";
 const task = process.env.SESSIONSTARTUP_TASK || '/mnt/p6/build/firefox-homepage-20260926', out = path.resolve(process.argv[2]);
@@ -17,6 +17,8 @@ const update = process.argv[4] === 'update';
 if(process.argv[4] && !update)throw Error('unknown test mode');
 const node = process.execPath, sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const hostNproc = Number(execFileSync('nproc', [], { encoding: 'utf8' }).trim());
+if (!Number.isInteger(hostNproc) || hostNproc < 1) throw Error('invalid host nproc');
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 2 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -65,6 +67,23 @@ let ws, next=0;const pending=new Map(), errors=[];
 function call(method,params={}){return new Promise((resolve,reject)=>{const id=++next,timer=setTimeout(()=>{pending.delete(id);reject(Error('CDP deadline '+method));},30000);pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({id,method,params}));});}
 async function ev(expression){const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;}
 async function until(fn,ms,label){const end=Date.now()+ms;for(;;){if(await fn())return;if(Date.now()>end)throw Error(label+' deadline');await sleep(200);}}
+// Match the UI hostCores clamp, but reject a missing/invalid browser count.
+// nproc reflects the CPU allocation available to the browser on this host.
+async function resolveHostCpus() {
+  const browserHardwareConcurrency = await ev('navigator.hardwareConcurrency');
+  if (!Number.isInteger(browserHardwareConcurrency) || browserHardwareConcurrency < 1) throw Error('invalid browser hardwareConcurrency');
+  const hostCores = Math.min(64, Math.max(1, browserHardwareConcurrency));
+  const expectedHostCores = Math.min(64, hostNproc);
+  const cpu = { hostNproc, browserHardwareConcurrency, hostCores, expectedHostCores, requestedGuestCpus: hostCores };
+  report.cpu = cpu;
+  if (hostCores !== expectedHostCores) throw Error('browser/host CPU count mismatch: ' + JSON.stringify(cpu));
+  return cpu;
+}
+function guestCpuEvidence(logs, state) {
+  const counts = [...logs.matchAll(/smp: Brought up \d+ nodes?, (\d+) CPUs?\b/g)].map(m => Number(m[1]));
+  const guestBootCpus = counts.at(-1) ?? null;
+  return { ...report.cpu, browserHardwareConcurrencyAtBoot: state.browserHardwareConcurrency, selectedGuestCpus: state.selectedGuestCpus, guestBootCpus };
+}
 async function shot(name){const r=await call('Page.captureScreenshot',{format:'png'});await fs.writeFile(out+'/'+name+'.png',Buffer.from(r.data,'base64'));}
 async function key(code,key,down,modifiers=0){await call('Input.dispatchKeyEvent',{type:down?'keyDown':'keyUp',code,key,modifiers});}
 async function textInput(text){for(const c of text){let code,shift=false;if(/[a-z]/.test(c))code='Key'+c.toUpperCase();else if(/[0-9]/.test(c))code='Digit'+c;else code={':':'Semicolon','/':'Slash','.':'Period','-':'Minus','_':'Minus','?':'Slash','=':'Equal'}[c];shift=c===':'||c==='_'||c==='?';if(!code)throw Error('unsupported fixture key');if(shift)await key('ShiftLeft','Shift',true,8);await key(code,c,true,shift?8:0);await sleep(100);await key(code,c,false,shift?8:0);if(shift)await key('ShiftLeft','Shift',false);}}
@@ -84,10 +103,12 @@ async function phase(label,action){
   await waitForGuestReady(start,label);await shot(label+'-before-input');await ev("document.querySelector('#fb').focus()");await key('Escape','Escape',true);await key('Escape','Escape',false);await sleep(500);await key('ControlLeft','Control',true,2);await key('KeyA','a',true,2);await key('KeyA','a',false,2);await key('ControlLeft','Control',false);await textInput('wasmperf');let result;
   await until(async()=>{result=await ev(`(async()=>{const h=(await import('./main.js')).guestHome();let n=await h.lookup(h.root,'admin');n=await h.lookup(n,'Downloads');if(!n)return null;for await(const e of await h.readdir(n,{})){if(!/^sites-qa-result-\\d+\\.json$/.test(e.name))continue;try{const a=await h.getattr(e.node);const r=JSON.parse(new TextDecoder().decode(await h.read(e.node,{},0n,Number(a.size))));if(r.createdAt>=${start}&&r.input==='wasmperf'&&r.checksum===7998000&&/Firefox\\//.test(r.userAgent))return r;}catch{}}return null;})()`);return Boolean(result);},60000,'guest-generated result file');
   const home=await homeEvidence();if(home['admin/homepage-marker.txt'].text!=='homepage-preserved-v1\n'||home['admin/.mozilla/firefox/http1-profile/user.js'].text!==prefs)throw Error('public home/profile mismatch');
-  const state=await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),visibility:document.visibilityState,isolated:crossOriginIsolated,backend:document.querySelector('#graphics-status').textContent,logs:(await import('./main.js')).guestLogs.history.page(undefined,300).map(l=>l.text).join(String.fromCharCode(10)),images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
-  if(state.system.version!==(label==='baseline'?sourceVersion:pkg.version)||!state.isolated||state.visibility!=='visible'||!state.logs.includes('display=1280x720, cpus=2, ram=4 GB (maximum)'))throw Error('public version/config mismatch');
+  const state=await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),visibility:document.visibilityState,isolated:crossOriginIsolated,backend:document.querySelector('#graphics-status').textContent,logs:(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)),images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
+  const cpu=guestCpuEvidence(state.logs,state);
+  if(cpu.browserHardwareConcurrencyAtBoot!==cpu.browserHardwareConcurrency||cpu.selectedGuestCpus!==cpu.hostCores||cpu.guestBootCpus!==cpu.hostCores)throw Error('guest/host CPU count mismatch: '+JSON.stringify(cpu));
+  if(state.system.version!==(label==='baseline'?sourceVersion:pkg.version)||!state.isolated||state.visibility!=='visible'||!state.logs.includes(`display=1280x720, cpus=${cpu.requestedGuestCpus}, ram=4 GB (maximum)`))throw Error('public version/config mismatch');
   if(label==='warm'&&state.images.length)throw Error('public warm image request');await shot(label+'-functional');
-  report.phases.push({label,pass:true,launch,observedResultMs:Date.now()-start,result,home,state});await fs.writeFile(out+'/progress.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({phase:label,pass:true,launchMs:launch.elapsedMs,imageRequests:state.images.length}));
+  report.phases.push({label,pass:true,launch,observedResultMs:Date.now()-start,cpu,result,home,state});await fs.writeFile(out+'/progress.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({phase:label,pass:true,launchMs:launch.elapsedMs,imageRequests:state.images.length}));
 }
 try {
   let port;await until(async()=>{if(exitInfo||spawnError)throw Error('browser startup failed');try{[port]=(await fs.readFile(out+'/profile/DevToolsActivePort','utf8')).trim().split('\n');return true;}catch(e){if(e.code!=='ENOENT')throw e;return false;}},15000,'browser');
@@ -95,7 +116,8 @@ try {
   ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const p=pending.get(m.id);if(p){pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result);}}else if(m.method==='Runtime.exceptionThrown')errors.push(m.params);};
   await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});await call('Page.enable');await call('Runtime.enable');await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
   await call('Page.navigate',{url:origin+'/linux/boot-manifest.json'});await until(()=>ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"),10000,'seed page');
-  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/homepage-marker.txt',${JSON.stringify('homepage-preserved-v1\n')});await dir('admin/Downloads');await put('admin/sites-probe.html',${JSON.stringify(publicFixture)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
+  await resolveHostCpus();
+  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/homepage-marker.txt',${JSON.stringify('homepage-preserved-v1\n')});await dir('admin/Downloads');await put('admin/sites-probe.html',${JSON.stringify(publicFixture)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
   const url=origin+'/linux/index.html?firefox=1&renderer=canvas2d';
   report.publicAssets=await ev(`(async()=>{const response=await fetch('/linux/boot-manifest.json',{cache:'no-store'}),manifest=await response.json();const head=await fetch('/linux/initramfs-firefox.cpio.gz',{method:'HEAD',cache:'no-store'});return {manifest,status:response.status,headers:Object.fromEntries(response.headers),archiveStatus:head.status,archiveHeaders:Object.fromEntries(head.headers)};})()`);
   const a=report.publicAssets;if(a.manifest.version!==pkg.version||a.manifest.assets.firefox.sha256!==pkg.archiveSha256||a.archiveStatus!==200||Number(a.archiveHeaders['content-length'])!==pkg.bytes)throw Error('live assets mismatch');
