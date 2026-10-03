@@ -186,15 +186,8 @@ def guest_defaults(before):
     return (text.encode() + (b'\n' if text and not text.endswith('\n') else b'') + PREF_BODY)
 
 
-def verify_evidence(evidence, identity_sha, runtime_sha, raw_binary_sha, final_binary_sha):
-    expected = {'schema': 1, 'completeBuild': True, 'sourceIdentitySHA256': identity_sha,
-                'runtimeInventorySHA256': runtime_sha, 'rawBinarySHA256': raw_binary_sha,
-                'finalBinarySHA256': final_binary_sha}
-    for key, value in expected.items():
-        if evidence.get(key) != value:
-            raise ValueError('build evidence mismatch: ' + key)
-    commands = evidence.get('commands', {})
-    for name in ('fullBuild', 'fpcast', 'structuralValidation'):
+def verify_commands(commands, names):
+    for name in names:
         entry = commands.get(name, {})
         argv = entry.get('argv', [])
         if entry.get('exitCode') != 0 or not isinstance(argv, list) or not argv:
@@ -209,6 +202,49 @@ def verify_evidence(evidence, identity_sha, runtime_sha, raw_binary_sha, final_b
             raise ValueError('command log hash mismatch: ' + name)
 
 
+def verify_evidence(evidence, identity_sha, runtime_sha, raw_binary_sha, final_binary_sha):
+    expected = {'schema': 1, 'completeBuild': True, 'sourceIdentitySHA256': identity_sha,
+                'runtimeInventorySHA256': runtime_sha, 'rawBinarySHA256': raw_binary_sha,
+                'finalBinarySHA256': final_binary_sha}
+    for key, value in expected.items():
+        if evidence.get(key) != value:
+            raise ValueError('build evidence mismatch: ' + key)
+    verify_commands(evidence.get('commands', {}), ('fullBuild', 'fpcast', 'structuralValidation'))
+
+
+def native_overrides(arguments, rows, paths, evidence):
+    """Select transformed executables without modifying the frozen dist tree."""
+    by_name = {row['name']: row for row in rows}
+    selected = {}
+    proof = {}
+    for argument in arguments:
+        name, separator, filename = argument.partition('=')
+        if not separator or not filename or name == 'firefox' or name in selected:
+            raise ValueError('unique non-Firefox native-binary NAME=PATH required')
+        if name not in paths or paths[name] is None or not by_name[name]['mode'] & 0o111:
+            raise ValueError('native override must name a current executable: ' + name)
+        final = Path(filename).resolve(strict=True)
+        base.disk_filesystem(final)
+        for path in (paths[name], final):
+            with path.open('rb') as stream:
+                if stream.read(8) != b'\0asm\x01\0\0\0':
+                    raise ValueError('native override input must be Wasm: ' + name)
+        raw_sha, final_sha = sha(paths[name]), sha(final)
+        row = evidence.get('nativeBinaries', {}).get(name, {})
+        if row.get('rawBinarySHA256') != raw_sha or row.get('finalBinarySHA256') != final_sha:
+            raise ValueError('native override evidence mismatch: ' + name)
+        verify_commands(row.get('commands', {}), ('fpcast', 'structuralValidation'))
+        selected[name] = final
+        proof[name] = {'rawBinarySHA256': raw_sha, 'finalBinarySHA256': final_sha,
+                       'bytes': final.stat().st_size, 'path': str(final)}
+    required = {name for name in ('plugin-container', 'xpcshell') if name in paths}
+    if not required <= selected.keys():
+        raise ValueError('transformed browser helper required: ' + ', '.join(sorted(required - selected.keys())))
+    if set(evidence.get('nativeBinaries', {})) != set(selected):
+        raise ValueError('native override evidence names differ from selected executables')
+    return selected, proof
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('source', 'manifest', 'source-root', 'object-root', 'runtime', 'source-identity', 'output'):
@@ -217,9 +253,13 @@ def main():
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--inventory-only', action='store_true', help='write preflight inventory; never a runnable archive')
     parser.add_argument('--binary', type=Path, help='final structurally validated/fpcast Nightly Wasm binary')
+    parser.add_argument('--native-binary', action='append', default=[], metavar='NAME=PATH',
+                        help='additional current-runtime executable after validated 23-slot fpcast; repeat as needed')
     parser.add_argument('--build-evidence', type=Path)
     parser.add_argument('--build-evidence-sha256')
     args = parser.parse_args()
+    if args.inventory_only and args.native_binary:
+        parser.error('native overrides apply only to actual packaging')
     task, out = TASK.resolve(strict=True), args.output.resolve()
     if args.output.is_symlink() or out.exists() or out == task or not out.is_relative_to(task) or not out.parent.is_dir():
         parser.error('fresh output under the dedicated disk-backed task required')
@@ -282,8 +322,11 @@ def main():
     final_sha = sha(args.binary)
     with args.binary.open('rb') as stream:
         if stream.read(8) != b'\0asm\x01\0\0\0': raise ValueError('final binary is not Wasm')
-    verify_evidence(json.loads(args.build_evidence.read_text()), args.source_identity_sha256,
+    evidence = json.loads(args.build_evidence.read_text())
+    verify_evidence(evidence, args.source_identity_sha256,
                     inventory_sha, sha(paths['firefox']), final_sha)
+    additional, additional_proof = native_overrides(args.native_binary, rows, paths, evidence)
+    final_paths = {'firefox': args.binary, **additional}
     before, tail_before = inventory_archive(args.source)
     old = {r['name']: r for r in before}
     if not CRITICAL <= old.keys(): raise ValueError('required guest/NSS adapter records missing')
@@ -297,7 +340,8 @@ def main():
     for rel in ('defaults', 'defaults/pref'):
         if rel in paths and paths[rel] is not None: raise ValueError('preference parent must be a directory')
         installed.setdefault(rel, {'name': rel, 'mode': 0o40755, 'bytes': 0, 'sha256': base.digest(b'')})
-    installed['firefox'].update(mode=0o100755, bytes=args.binary.stat().st_size, sha256=final_sha)
+    for name, path in final_paths.items():
+        installed[name].update(mode=0o100755, bytes=path.stat().st_size, sha256=sha(path))
     pref_path = paths.get('defaults/pref/wasm.js')
     if 'defaults/pref/wasm.js' in paths and pref_path is None:
         raise ValueError('existing guest defaults must be a regular file')
@@ -322,7 +366,7 @@ def main():
                     for rel, row in sorted(installed.items()):
                         inode += 1
                         if inode > 0xffffffff: raise ValueError('CPIO inode exhausted')
-                        if rel == 'firefox': data = args.binary.read_bytes()
+                        if rel in final_paths: data = final_paths[rel].read_bytes()
                         elif rel == 'defaults/pref/wasm.js': data = pref_after
                         elif stat.S_ISDIR(row['mode']): data = b''
                         else: data = paths[rel].read_bytes()
@@ -348,6 +392,7 @@ def main():
     if (sha(args.source) != args.source_sha256 or sha(args.binary) != final_sha or
             sha(args.manifest) != args.manifest_sha256 or sha(args.source_identity) != args.source_identity_sha256 or
             sha(args.build_evidence) != args.build_evidence_sha256 or
+            any(sha(path) != additional_proof[name]['finalBinarySHA256'] for name, path in additional.items()) or
             runtime_inventory(args.runtime, args.source_root, args.object_root)[0] != rows or
             check_prefs(args.source_root) != prefs_proof):
         raise ValueError('input changed during packaging')
@@ -371,6 +416,7 @@ def main():
               'sourceArchiveSHA256': args.source_sha256, 'sourceManifestSHA256': args.manifest_sha256,
               'sourceIdentitySHA256': args.source_identity_sha256, 'buildEvidenceSHA256': args.build_evidence_sha256,
               'runtimeInventorySHA256': inventory_sha, 'rawBinarySHA256': sha(paths['firefox']), 'finalBinarySHA256': final_sha,
+              'nativeBinaries': additional_proof,
               'identity': identity, 'stamps': stamps, 'preservedRecords': len(preserved), 'removedRuntimeRecords': len(before)-len(preserved),
               'installedRuntimeRecords': len(installed), 'allOutsideRuntimeRecordsIdentical': True, 'tailPreserved': True,
               'criticalRecords': {k: old[k] for k in sorted(CRITICAL)}, 'prefsSourceReview': prefs_proof,

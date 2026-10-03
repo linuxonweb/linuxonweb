@@ -136,9 +136,38 @@ use a new output name such as `candidate-real-run1`, and add:
 
 ```bash
   --binary /mnt/p6/build/owned-build/final-fpcast-validated-firefox.wasm \
+  --native-binary plugin-container=/mnt/p6/build/owned-build/plugin-container.fpcast.wasm \
+  --native-binary xpcshell=/mnt/p6/build/owned-build/xpcshell.fpcast.wasm \
   --build-evidence /mnt/p6/build/owned-build/build-evidence.json \
   --build-evidence-sha256 REVIEWED_EVIDENCE_SHA256
 ```
+
+The three browser executables share the native XPTCall adapter and require
+the same 23-slot fpcast ABI. `--binary` selects Firefox; repeat
+`--native-binary NAME=PATH` for additional current-runtime executables. If
+`plugin-container` or `xpcshell` exists in the frozen runtime, its transformed
+override is mandatory. Other Wasm executables may use the same mechanism.
+Resource files, missing paths, duplicate overrides, ELF inputs and replacing
+Firefox through this additional option are rejected. The original `dist/bin`
+inventory remains unchanged; only the installed archive uses the selected
+finals, and the allowance counts their actual installed sizes.
+
+For every additional override, extend the schema1 evidence with
+`nativeBinaries[NAME]`, containing `rawBinarySHA256`, `finalBinarySHA256` and
+`commands.fpcast` / `commands.structuralValidation`. These command entries have
+the same argv, exitCode, log and logSHA256 fields as the main binary, including
+the required 23-parameter fpcast flags. The evidence names must exactly match
+the additional overrides. The packager pins every final input, rereads it while
+writing the archive and rechecks its hash afterward. It independently audits
+the complete archive and preserves every record outside `opt/firefox`.
+
+Synthetic `fixture-run4` exercises36 checks, including independent exact helper
+byte/mode checks, preservation of outside records, and negative controls for
+missing/raw/swapped helpers, stale raw/final hashes, absent command proof,
+changed validator logs and orphan evidence. New negative controls require their
+specific diagnostic, preventing unrelated failures from counting as success.
+This verifies the archive adapter; no actual Nightly packaging or guest
+acceptance is inferred from synthetic fixtures.
 
 The output includes the candidate archive, manifest, complete original and
 final archive inventories, original runtime inventory, and `package-report.json`.

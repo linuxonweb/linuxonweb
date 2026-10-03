@@ -83,7 +83,7 @@ def main():
     ef = root / 'evidence.json'; ef.write_text(json.dumps(evidence))
     results = []
 
-    def run(name, expect, *, inv=False, overrides=None):
+    def run(name, expect, *, inv=False, overrides=None, error=None):
         options = {'source': archive, 'manifest': mf, 'source-root': source, 'object-root': obj, 'runtime': runtime,
                    'source-identity': identity_file, 'source-sha256': p.sha(archive), 'manifest-sha256': p.sha(mf),
                    'source-identity-sha256': p.sha(identity_file), 'output': root / name}
@@ -92,12 +92,13 @@ def main():
         options.update(overrides or {})
         argv = [sys.executable, '-B', str(TOOL)]
         for key, value in options.items():
-            argv.append('--' + key)
-            if value is not None: argv.append(str(value))
+            for item in value if isinstance(value, list) else [value]:
+                argv.append('--' + key)
+                if item is not None: argv.append(str(item))
         result = subprocess.run(argv, env=env, text=True, capture_output=True)
         (root / (name + '.stdout')).write_text(result.stdout)
         (root / (name + '.stderr')).write_text(result.stderr)
-        passed = (result.returncode == 0) == expect
+        passed = (result.returncode == 0) == expect and (error is None or error in result.stderr)
         results.append({'name': name, 'pass': passed, 'expectedSuccess': expect, 'exitCode': result.returncode})
         if not passed: raise AssertionError(name + ': ' + result.stderr)
 
@@ -154,6 +155,78 @@ def main():
     prefs = source / 'modules/libpref/init/StaticPrefList.yaml'; prior = prefs.read_text()
     prefs.write_text(prior.replace('network.process.enabled', 'obsolete.network.process'))
     run('current-source-pref-missing', False, inv=True); prefs.write_text(prior)
+
+    # Distinct valid empty Wasm modules with a custom payload make it possible
+    # to detect accidentally shipping raw helpers or swapping their finals.
+    def module(payload):
+        return b'\0asm\x01\0\0\0' + b'\0' + bytes([len(payload) + 2]) + b'\x01n' + payload
+
+    helper_arguments = []
+    helper_finals = {}
+    helper_evidence = copy.deepcopy(evidence)
+    helper_evidence['nativeBinaries'] = {}
+    for name in ('plugin-container', 'xpcshell'):
+        raw = runtime / name; raw.write_bytes(module(('raw:' + name).encode())); raw.chmod(0o755)
+        transformed = root / (name + '.final.wasm')
+        transformed.write_bytes(module(('transformed:' + name).encode()))
+        helper_finals[name] = transformed
+        helper_arguments.append(name + '=' + str(transformed))
+        commands = {}
+        for kind in ('fpcast', 'structuralValidation'):
+            commands[kind] = copy.deepcopy(evidence['commands'][kind])
+            log = root / (name + '-' + kind + '.log')
+            log.write_text('SYNTHETIC ONLY: helper evidence parser test; command not run\n')
+            commands[kind].update(log=str(log), logSHA256=p.sha(log))
+        helper_evidence['nativeBinaries'][name] = {
+            'rawBinarySHA256': p.sha(raw), 'finalBinarySHA256': p.sha(transformed), 'commands': commands}
+    helper_rows, _ = p.runtime_inventory(runtime, source, obj)
+    helper_evidence['runtimeInventorySHA256'] = p.base.digest(p.canonical(helper_rows))
+    ef.write_text(json.dumps(helper_evidence))
+    overrides = {'native-binary': helper_arguments}
+    run('complete-helper-package', True, overrides=overrides)
+    with gzip.open(root / 'complete-helper-package/initramfs-firefox.cpio.gz', 'rb') as stream:
+        records = {k: (fields, body) for k, fields, body, _ in p.cpio(stream)}
+    for name, path in helper_finals.items():
+        fields, body = records['opt/firefox/' + name]
+        assert body == path.read_bytes() and body != (runtime / name).read_bytes()
+        assert fields[1] == 0o100755
+    helper_before, helper_before_tail = p.inventory_archive(archive)
+    helper_after, helper_after_tail = p.inventory_archive(root / 'complete-helper-package/initramfs-firefox.cpio.gz')
+    assert [r for r in helper_before if not r['name'].startswith('opt/firefox')] == [r for r in helper_after if not r['name'].startswith('opt/firefox')]
+    assert helper_before_tail == helper_after_tail
+    report = json.loads((root / 'complete-helper-package/package-report.json').read_text())
+    assert set(report['nativeBinaries']) == set(helper_finals)
+    assert all(report['nativeBinaries'][name]['finalBinarySHA256'] == p.sha(path) for name, path in helper_finals.items())
+    results.append({'name': 'all-helper-bytes-and-outside-records-independently-audited', 'pass': True})
+    run('raw-helpers-rejected', False, error='transformed browser helper required: plugin-container, xpcshell')
+    run('one-helper-missing', False, overrides={'native-binary': helper_arguments[:1]}, error='transformed browser helper required: xpcshell')
+    run('duplicate-helper', False, overrides={'native-binary': helper_arguments + helper_arguments[:1]}, error='unique non-Firefox native-binary NAME=PATH required')
+    run('unknown-helper', False, overrides={'native-binary': helper_arguments + ['unknown=' + str(final)]}, error='native override must name a current executable: unknown')
+    run('resource-override', False, overrides={'native-binary': helper_arguments + ['chrome/toolkit.js=' + str(final)]}, error='native override must name a current executable: chrome/toolkit.js')
+    run('main-duplicate-override', False, overrides={'native-binary': helper_arguments + ['firefox=' + str(final)]}, error='unique non-Firefox native-binary NAME=PATH required')
+    run('swapped-helper-finals', False, overrides={'native-binary': ['plugin-container=' + str(helper_finals['xpcshell']), helper_arguments[1]]}, error='native override evidence mismatch: plugin-container')
+    changed = helper_finals['xpcshell']; prior = changed.read_bytes(); changed.write_bytes(b'\x7fELFfixture')
+    run('native-x86-helper-rejected', False, overrides=overrides, error='native override input must be Wasm: xpcshell'); changed.write_bytes(prior)
+    changed.write_bytes(module(b'changed helper final'))
+    run('stale-helper-final-hash', False, overrides=overrides, error='native override evidence mismatch: xpcshell'); changed.write_bytes(prior)
+    raw = runtime / 'plugin-container'; prior = raw.read_bytes(); raw.write_bytes(module(b'changed raw helper'))
+    changed_rows, _ = p.runtime_inventory(runtime, source, obj)
+    changed_evidence = copy.deepcopy(helper_evidence)
+    changed_evidence['runtimeInventorySHA256'] = p.base.digest(p.canonical(changed_rows))
+    ef.write_text(json.dumps(changed_evidence))
+    run('stale-helper-raw-hash', False, overrides=overrides, error='native override evidence mismatch: plugin-container')
+    raw.write_bytes(prior); ef.write_text(json.dumps(helper_evidence))
+    changed = copy.deepcopy(helper_evidence)
+    changed['nativeBinaries']['plugin-container']['commands']['fpcast']['argv'] = ['wasm-opt', '--fpcast-emu']
+    ef.write_text(json.dumps(changed)); run('helper-fpcast-23-required', False, overrides=overrides, error='23-parameter fpcast command evidence required')
+    changed = copy.deepcopy(helper_evidence)
+    changed['nativeBinaries']['xpcshell']['commands'].pop('structuralValidation')
+    ef.write_text(json.dumps(changed)); run('helper-validation-required', False, overrides=overrides, error='successful command evidence required: structuralValidation')
+    changed = copy.deepcopy(helper_evidence); changed['nativeBinaries']['unknown'] = {}
+    ef.write_text(json.dumps(changed)); run('orphan-helper-evidence', False, overrides=overrides, error='native override evidence names differ from selected executables')
+    ef.write_text(json.dumps(helper_evidence))
+    log = root / 'xpcshell-structuralValidation.log'; prior = log.read_text(); log.write_text('changed helper log\n')
+    run('helper-validator-log-changed', False, overrides=overrides, error='command log hash mismatch: structuralValidation'); log.write_text(prior)
     output = {'pass': all(r['pass'] for r in results), 'checks': len(results), 'syntheticOnly': True,
               'actualNightlyPackaged': False, 'guestAcceptance': False, 'results': results}
     (root / 'result.json').write_text(json.dumps(output, indent=2) + '\n')

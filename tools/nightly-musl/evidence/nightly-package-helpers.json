@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "claim": "Synthetic complete-runtime packaging and helper selection checks only",
+  "actualNightlyPackaged": false,
+  "guestAcceptance": false,
+  "checks": 36,
+  "result": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run4/result.json",
+  "resultSHA256": "afd22564808ef1d72cede337f3c9080b9ba7907d369185d1807683b1ccd84c41",
+  "tools": {
+    "package-firefox-nightly.py": {
+      "source": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/package-firefox-nightly.py",
+      "sha256": "a0b42269a4713d38b7fee3d2b9ef9a6b15215c012eb00cb4f5baf68a672a49df",
+      "snapshot": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run4/snapshot-package-firefox-nightly.py"
+    },
+    "test-firefox-nightly-package.py": {
+      "source": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-package.py",
+      "sha256": "1752afa248541b5438d7d2c77b98800e4feaffec1605f75dbec8c1dcd0151c4d",
+      "snapshot": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run4/snapshot-test-firefox-nightly-package.py"
+    }
+  },
+  "command": {
+    "argv": [
+      "python3",
+      "-B",
+      "tools/guest-rootfs/test-firefox-nightly-package.py",
+      "--run-name",
+      "fixture-run4"
+    ],
+    "exitCode": 0
+  },
+  "archive": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run4/complete-helper-package/initramfs-firefox.cpio.gz",
+  "archiveSHA256": "22d339682b04b0eb15cc9fa676441e0974a471f1fa3cc51bf665aa6a87e56b6f"
+}
