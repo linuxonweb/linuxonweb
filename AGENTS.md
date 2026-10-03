@@ -207,6 +207,20 @@ sizes and Nightly table/memory/fpcast contracts remain unmeasured. Nine document
 consistency checks pass; no full PBL build or guest acceptance occurred. Initial
 integer coverage is only42ops and does not finish broader JIT acceptance.
 
+Guest JIT safety preparation in tools/nightly-jit-safety has19 separate
+main/Worker cases, strict source/install/run/bail/TID/TLS evidence checking,
+an unapplied bounded observer and unverified privileged GC/debugger/coverage/
+slow-script driver. Preparation passes304 semantics,40 synthetic contracts,
+seven syntax and five structural checks; root's12 pin/replay checks pass in
+jit-safety-preparation-review-run1.json. Selected fixture-run1/observer-run4
+are frozen by manifest-run2 SHA04696323d58e84e8fc36b8f955c813e6274c4d0fa0a87b595037ba2acefd0a2c.
+Positive handler rejection, active incremental GC, native TLS/stack callbacks
+and actual guest execution remain pending. The checker deliberately never
+claims full JIT acceptance, and initial integer scope still fails without
+positive handler/throw policy observation. Rebase observer hooks into the new
+coherent PBL source; never replace it with these old preparation copies. See
+docs/firefox-nightly-jit-guest-safety-prepare-20261002.md.
+
 The user also requires a default local version/WebGL/WebGPU test homepage and
 force-enabled GPU defaults. Implementation is in
 `tools/guest-rootfs/firefox-gpu-check/gpu-check.html` and
