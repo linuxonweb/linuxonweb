@@ -1,0 +1,355 @@
+{
+  "claim": "Optional external perf native unsupported path and corrected native musl pointer format adapter; actual component PASS, no guest/browser link acceptance",
+  "source_changes": {
+    "scope": "Only optional external Linux perf launcher; no Gecko profiler change",
+    "native_predicate": "outer __linux__, inner __wasm__ && !__wasi__",
+    "no_env_noop_preserved": true,
+    "requested_native_perf_returns_false_before_unlink": true,
+    "original_sha256": "feefba5f301c29460e6dcc8c91d822936a9e6c430f1954db749c723c5d97ec42",
+    "updated_sha256": "870c4fb2f238720cf0d8b69503d19c6a5a3e5a1cc568c8dca3692ead62c061a0",
+    "owned_phase_groups_empty_before_apply": true,
+    "applied": true
+  },
+  "host_branch_diagnostic": {
+    "claim": "Host source-derived native-branch behavior diagnostic only; actual native component compilation separately required",
+    "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/src/builtin/Profilers.cpp",
+    "source_sha256": "870c4fb2f238720cf0d8b69503d19c6a5a3e5a1cc568c8dca3692ead62c061a0",
+    "extracted_body_sha256": "8b8148bc9ff9a0660506c184595f3feee3f76a5d3a95a37da07897fb45c582a3",
+    "compile_argv": [
+      "/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/c++",
+      "-std=c++17",
+      "-D__wasm__",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-perf-preflight/source-derived.cpp",
+      "-o",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-perf-preflight/probe"
+    ],
+    "results": [
+      {
+        "environment": "unset",
+        "profile_name": "custom",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "unset",
+        "profile_name": "empty",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "unset",
+        "profile_name": "null",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "empty",
+        "profile_name": "custom",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "empty",
+        "profile_name": "empty",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "empty",
+        "profile_name": "null",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "requested",
+        "profile_name": "custom",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "requested",
+        "profile_name": "empty",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      },
+      {
+        "environment": "requested",
+        "profile_name": "null",
+        "exit": 0,
+        "profile_bytes_preserved": true
+      }
+    ]
+  },
+  "native_format_probe": {
+    "claim": "Actual native C/C++ pointer typedef and all six PRI/five SCN formats; original failures retained. No varargs ABI change",
+    "results": {
+      "c-original": {
+        "exit": 1,
+        "expected_success": false
+      },
+      "c-fixed": {
+        "exit": 0,
+        "expected_success": true
+      },
+      "cxx-original": {
+        "exit": 1,
+        "expected_success": false
+      },
+      "cxx-fixed": {
+        "exit": 0,
+        "expected_success": true
+      }
+    },
+    "commands": {
+      "c-original": [
+        "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+        "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim",
+        "-Werror=format",
+        "-c",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-original.c",
+        "-o",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-original.o",
+        "-std=c11"
+      ],
+      "c-fixed": [
+        "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+        "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim",
+        "-Werror=format",
+        "-c",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-fixed.c",
+        "-o",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-fixed.o",
+        "-std=c11"
+      ],
+      "cxx-original": [
+        "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+        "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim",
+        "-Werror=format",
+        "-c",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-original.cpp",
+        "-o",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-original.o",
+        "-std=c++20",
+        "-Xclang",
+        "-fc++-abi=webassembly"
+      ],
+      "cxx-fixed": [
+        "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+        "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim",
+        "-Werror=format",
+        "-c",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-fixed.cpp",
+        "-o",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-fixed.o",
+        "-std=c++20",
+        "-Xclang",
+        "-fc++-abi=webassembly"
+      ]
+    },
+    "compiler_pointer_macros": [
+      "#define __INTPTR_FMTd__ \"ld\"",
+      "#define __INTPTR_FMTi__ \"li\"",
+      "#define __INTPTR_TYPE__ long int",
+      "#define __UINTPTR_FMTX__ \"lX\"",
+      "#define __UINTPTR_FMTo__ \"lo\"",
+      "#define __UINTPTR_FMTu__ \"lu\"",
+      "#define __UINTPTR_FMTx__ \"lx\"",
+      "#define __UINTPTR_TYPE__ long unsigned int"
+    ],
+    "pins": [
+      {
+        "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/inttypes.h",
+        "bytes": 4638,
+        "sha256": "01a5b59471e351039310fc1cfb8bf8cf89e53ef957236118876ea20aea743bfb"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/inttypes.h",
+        "bytes": 305,
+        "sha256": "056c55532c5be17edd7f2ff7de0987be0e53f72b55d12be6b4a476849c1ac4de"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "bytes": 47365,
+        "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-fixed.c",
+        "bytes": 646,
+        "sha256": "2919c35a03ff6f264457e159d67885ab82fcf785d90ec9acfa1d558c1c8c1540"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-original.cpp",
+        "bytes": 706,
+        "sha256": "da9d944b5bf19895396f4da02ee171c64292bfa7db0f255ccd1e1c3854c311af"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-original.log",
+        "bytes": 4632,
+        "sha256": "9b36de3f580094e6267089cf7aea86f3529533e0c26938fd90fbeb98642155b2"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-original.c",
+        "bytes": 706,
+        "sha256": "da9d944b5bf19895396f4da02ee171c64292bfa7db0f255ccd1e1c3854c311af"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-fixed.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-fixed.o",
+        "bytes": 823,
+        "sha256": "bf305e3442391840ab5b80bb75f6d2241b43347598c47aa44b898208dd91d27b"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/c-fixed.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-fixed.cpp",
+        "bytes": 646,
+        "sha256": "2919c35a03ff6f264457e159d67885ab82fcf785d90ec9acfa1d558c1c8c1540"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-fixed.o",
+        "bytes": 831,
+        "sha256": "8b2a7d90ecaf3e119f5f605d289f0ab3e4e8917bbe626f7779cebf4e6c68d769"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/cxx-original.log",
+        "bytes": 4676,
+        "sha256": "982ddba37245cb46beddc7381e848611af8019125ef1a22322e50b6d6fd7c984"
+      }
+    ]
+  },
+  "actual_objects": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/builtin/Unified_cpp_js_src_builtin3.o",
+      "bytes": 4019857,
+      "sha256": "224fb6ef9d631b5b75927a1fe009e3f31297bbfd2711b041654dd519699b64cc",
+      "mtime_ns": 1791018672780254996,
+      "magic": "0061736d01000000"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/builtin/Unified_cpp_js_src_builtin4.o",
+      "bytes": 4245123,
+      "sha256": "68790486719521e48141fdf2b8b7a890248278eff8ad7aa4c26b499d80f291bc",
+      "mtime_ns": 1791018837390662610,
+      "magic": "0061736d01000000"
+    }
+  ],
+  "component_run1_failed_other_testing_helper": true,
+  "component_run2_pass": true,
+  "old_consumer_rebuild_pending": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/src/builtin/Profilers.cpp",
+      "bytes": 15651,
+      "sha256": "870c4fb2f238720cf0d8b69503d19c6a5a3e5a1cc568c8dca3692ead62c061a0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/native-perf-port.py",
+      "bytes": 2285,
+      "sha256": "d0776b4bc0a45c5e9e480165bb97b7b7bafac5ef6e715388eb3364090d3d57c9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/inttypes.h",
+      "bytes": 305,
+      "sha256": "056c55532c5be17edd7f2ff7de0987be0e53f72b55d12be6b4a476849c1ac4de"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/probe-native-perf.py",
+      "bytes": 2456,
+      "sha256": "9c800ab210ba06fdd6ade22ddb26c8513915d93edbdf1024df8defa639fda34e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/probe-native-inttypes.py",
+      "bytes": 2578,
+      "sha256": "a5b7b6006036be78b65b9215533dcb25fc0866793026ec17c341c897463ce655"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-perf.patch",
+      "bytes": 789,
+      "sha256": "88906bea4023196631bc935dc4ca2d30696b870936eb4cb7ccc11280bcd9dbd5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-perf-preflight/result.json",
+      "bytes": 1963,
+      "sha256": "80de86cde49c3103ca870bcb3a1ae9f45a8f164b841d3a727a16d53b17d23d91"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-perf-preflight/actual-native-symbols.txt",
+      "bytes": 60145,
+      "sha256": "f25c850aa92a4a28f9abb10047b0117188d09281ea661590620c303a401b0339"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/inttypes-preflight/result.json",
+      "bytes": 5760,
+      "sha256": "4eb6ceb9fc3ddc125d46244f316bc7ebf78fed759da91668157859616690540a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-consumer-inventory-run1.json",
+      "bytes": 267185,
+      "sha256": "a26bad222ed6d6e9a4d1c1fbf67d2eaf740c88cb90204f8632664afc08865831"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/js-builtin-run1.log",
+      "bytes": 3463,
+      "sha256": "d2d2ce4f0b70f75e0ee3068e854ce23b23c35b16a33fa783d87110ba8472f0b8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/js-builtin-run1.json",
+      "bytes": 858,
+      "sha256": "11e3ea6dca2d12a49cb796d36ffaacc3499f340bb9c6875b7846fa3ee4f09c56"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/js-builtin-run2.log",
+      "bytes": 1750,
+      "sha256": "be6ae182ccbba9284e0a9c8ca700ef7acc5d35b36a0a6981089f81ccd891eac1"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/js-builtin-run2.json",
+      "bytes": 860,
+      "sha256": "bb0bcaaa4f08087015f9afd5f1d5dad5fd79a29a8fb2d1ffff34f0bd8b42fb10"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/js-builtin-run1-group-cleanup.json",
+      "bytes": 1020,
+      "sha256": "51a9cf4b1b94c839914bfb5895f1643be898a7d85e347b848fdd53ef835e1d58"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/js-builtin-run2-group-cleanup.json",
+      "bytes": 1020,
+      "sha256": "bc2ee1dd076bd494bdefd2e69a4e7314754e4ca775583023faec5e93dd39bad9"
+    }
+  ],
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-perf-inttypes-review-run1.json",
+    "bytes": 8965,
+    "sha256": "e625c0fddee981edd4541ef833c1405ee3f5f05722e8d0986e4e284924817f68"
+  },
+  "root_independent_compilation": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/inttypes-abi-run3/manifest.json",
+    "bytes": 3112,
+    "sha256": "2eb60a2dad93a261176133393a5b8b722742bf28dde1ff11f30b0b26cf454b0c"
+  },
+  "prerequisite_refresh": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-prerequisite-refresh-run1.json",
+    "bytes": 520262,
+    "sha256": "307ca97d721c1c5964db27c220346cb0c1661f77d290ada9a14645c588bed3ae"
+  },
+  "root_prerequisite_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/inttypes-prerequisite-refresh-review-run1.json",
+    "bytes": 75326,
+    "sha256": "7da9ee6f184519aa707308dc6c11d54dc9d4afd3ab2889f86f66fbc5f106ab47"
+  },
+  "as_received_freeze": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/perf-inttypes-repo-freeze-run1.json",
+    "bytes": 2160,
+    "sha256": "270720615be0158b5a7b0744ac0b35ab75d8470cab7330c77555a5c528b02a10"
+  },
+  "coherentRebuildAcceptance": false,
+  "repository_phase_driver": "Fixed recovery root preserved; adds only bounded js-builtin command. Active owned driver unchanged."
+}

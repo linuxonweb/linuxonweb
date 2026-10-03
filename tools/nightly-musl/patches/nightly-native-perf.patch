@@ -1,0 +1,31 @@
+--- a/js/src/builtin/Profilers.cpp
++++ b/js/src/builtin/Profilers.cpp
+@@ -455,7 +455,9 @@
+ #  include <sys/wait.h>
+ #  include <unistd.h>
+ 
++#  if !defined(__wasm__) || defined(__wasi__)
+ static bool perfInitialized = false;
++#  endif
+ static pid_t perfPid = 0;
+ 
+ bool js_StartPerf(const char* profileName) {
+@@ -473,6 +475,10 @@
+     return true;
+   }
+ 
++#  if defined(__wasm__) && !defined(__wasi__)
++  UnsafeError("js_StartPerf: external perf is unavailable on native Linux/Wasm\n");
++  return false;
++#  else
+   /*
+    * Delete mozperf.data the first time through -- we're going to append to it
+    * later on, so we want it to be clean when we start out.
+@@ -540,6 +546,7 @@
+   }
+   UnsafeError("js_StartPerf: fork() failed\n");
+   return false;
++#  endif
+ }
+ 
+ bool js_StopPerf() {

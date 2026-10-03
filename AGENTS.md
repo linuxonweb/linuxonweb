@@ -115,6 +115,33 @@ Wasm should fail honestly before unlinking output. The existing sole build
 owner handles this next packet. Revalidate its actual current status before
 continuation. Nightly linking/JIT/GPU/TLS and both Sites releases remain pending.
 
+The optional perf adapter now preserves no-env/empty success and returns false
+with an explicit diagnostic for requested native-Wasm external perf before any
+output deletion. The ordinary Linux fork body and Gecko profiler are unchanged.
+Actual Profilers unified compilation passes; its first component run fails on a
+separate pointer-format mismatch in TestingFunctions. Native musl uses long for
+intptr_t but its inttypes header selects int formats for32-bit pointers. The new
+recipe/shim/inttypes.h imports the unchanged sysroot header and overrides only
+native Linux/Wasm __PRIPTR, correcting all six PRI and five SCN macros. Actual
+js-builtin-run2 exits0 in21.71s. Both component groups are empty/reaped; nine
+host branch diagnostics preserve output bytes, and paired native C/C++ format
+checks pass with original failures retained. Root's66-check actual review and
+independent native11-format compilation are pinned in tools/nightly-musl/
+evidence/native-perf-inttypes.json. Two earlier root diagnostics are retained
+and corrected: missing explicit format attributes, then an inherited shim
+include in the original arm. Selected independent evidence is inttypes-abi-run3.
+
+Read-only dependency inventory finds553 existing native consumers,552 without
+the new shim. After empty-group proof, the owner preserves all original .pp
+bytes (221,313,448 bytes) and appends only each exact object's shim prerequisite.
+No outputs are removed or timestamps falsified; host/Rust state is untouched.
+Root reviews all552 original-byte/target/append hashes and frozen pins in
+inttypes-prerequisite-refresh-review-run1.json. This is dependency refresh only:
+all552 actual regenerated outputs and naturally rewritten dependencies must be
+verified before declaring a coherent build. Run23 resumes with unchanged bounds:
+PID/PGID1309945, unified72244, status/build-run23.json and logs/build-run23.log.
+Current state must be revalidated; public v10 and both release gates are pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
