@@ -66,3 +66,45 @@ and task roots: W1 still diagnoses the old Release/Beta/Empty-HAL behavior, and
 F1a still records its historical WebGL result without requiring a working context.
 Their CPU setup is ready for later reuse; their historical acceptance predicates
 still need deliberate Nightly migration before they can gate the new browser.
+
+A subsequent bounded phase review found that the shared helper reused the
+initial `nproc` result. An unchanged browser/UI/kernel count could therefore
+pass after the available host count changed. The Nightly baseline and these
+four migrated diagnostics now reread `nproc` before every boot, when saving
+startup SMP evidence, at each phase's completion, and at the end of the run.
+They retain `<phase>-preboot-cpu-phase.json`, `<phase>-cpu.json`,
+`<phase>-final-cpu-phase.json`, and `end-cpu-phase.json`. Any observed allocation
+drift fails with the changed host count saved. A run retains its initial CPU
+request; it must restart under a stable allocation rather than silently changing
+the CPU count between comparative phases. Pure fixture checks inject observed
+counts explicitly and cannot inherit the live machine's count.
+
+Evidence is under
+`/mnt/p6/build/firefox-nightly-host-cpu-phase-review-20261002`: 66 CPU fixture
+checks, 43 Nightly baseline self-test checks, 11 independent fresh-reader
+regressions, five caller source audits, and seven syntax checks pass. The baseline
+self-test uses a retained source snapshot with only its task-output literal
+redirected into this new packet; both hashes and the substitution are saved.
+`before-regression.json` retains FAIL for the previous helper accepting an
+injected 8→6 host change. New failure files retain the observed host count and
+the independent kernel count instead of replacing or discarding either.
+Caller audit run1's FAIL is retained: its hash-path predicate recognized only
+the URL form and missed the baseline's equivalent direct repository read.
+Run2 includes both existing forms and passes without changing runner behavior.
+
+The CPU fixture's live `nproc` observation was six; subsequent observations were
+eight. Ten contemporaneous Node samples recorded `nproc=6`, `nproc --all=8`,
+affinity `0-7`, `os.availableParallelism()=5`, and eight online CPU entries.
+Ten Python samples recorded `nproc=8`, eight online/configured processors, and
+the same affinity. Visible service/parent `cpu.max` values were `max 100000`;
+root `cpu.max` was absent. A later Node sample also returned eight. GNU
+coreutils 9.11 resolves to `/usr/bin/nproc`; no OpenMP count overrides were
+present. These observations establish varying available-count reports, with
+cause unresolved; they do not establish a physical hardware change. No fixed
+six-CPU setup was introduced, and historical eight-CPU evidence remains intact.
+
+This review started no browser, guest, compiler, package, promotion or deployment.
+The existing 64-CPU UI clamp remains a separate limitation for hosts above that
+range. The PBL benchmark and older runners outside this shared-helper migration
+still need the same phase revalidation before future invocation. Nothing here
+establishes Nightly, JIT, GPU, TLS or release acceptance.

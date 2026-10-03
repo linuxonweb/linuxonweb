@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
-import { readHostNproc, selectHostCpus, saveGuestCpuEvidence, guestCpuChecks } from './firefox-host-cpus.mjs';
+import { saveHostCpuPhaseEvidence, guestCpuPrebootStateExpression, readHostNproc, selectHostCpus, saveGuestCpuEvidence, guestCpuChecks } from './firefox-host-cpus.mjs';
 
 const TASK = '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -168,6 +168,7 @@ async function run(argv) {
   async function homeRead(rel) { return ev(`(async()=>{const h=(await import('./main.js')).guestHome();let n=h.root;for(const s of ${JSON.stringify(rel)}.split('/')){n=n&&await h.lookup(n,s);}if(!n)return null;const a=await h.getattr(n);if(Number(a.size)>65536)throw Error('unexpected large probe');return new TextDecoder().decode(await h.read(n,{},0n,Number(a.size)));})()`); }
   async function guestMessage(tag, since) { let result; await until(async () => { for (const text of consolePayloads(await logs(), 'NIGHTLYBASELINE ')) { const r = JSON.parse(text); if (r.tag === tag && r.createdAt >= since && r.url === PROBE) result = r; } return Boolean(result); }, 180000, 'guest probe ' + tag); return result; }
   async function phase(label, action) {
+    await saveHostCpuPhaseEvidence(report.cpu, await ev(guestCpuPrebootStateExpression), out, label + '-preboot');
     const epoch = await ev('performance.timeOrigin'), start = Date.now(); await action(); let startupLogs;
     await until(async () => { try { if (await ev('performance.timeOrigin') === epoch) return false; startupLogs = await logs(); return startupLogs.includes('starting /bin/firefox as admin'); } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; return false; } }, 180000, label + ' Firefox launch');
     const cpu = await saveGuestCpuEvidence(report.cpu, startupLogs, await state(), out, label);
@@ -197,7 +198,8 @@ async function run(argv) {
     const finalLogs = await logs(), finalState = await state();
     phaseReport.result = result; phaseReport.download = { path: download, text: await homeRead(download) }; phaseReport.state = finalState;
     phaseReport.fatalLines = [...fatal(startupLogs), ...fatal(pageLogs), ...fatal(finalLogs)];
-    phaseReport.checks = { ...guestCpuChecks(cpu, finalState), kernelHostCpuAgreement: Object.values(cpu.checks).every(Boolean), expectedRuntime: finalState.system.version === (label === 'baseline' ? baselineManifest.version : overlay.version), isolated: finalState.isolated === true, noFatalLines: phaseReport.fatalLines.length === 0, keyboardAndDownload: true, homeProfilePreserved: true };
+    phaseReport.finalCpu = await saveHostCpuPhaseEvidence(cpu, finalState, out, label + '-final');
+    phaseReport.checks = { ...guestCpuChecks(cpu, finalState, phaseReport.finalCpu.hostNprocObserved), kernelHostCpuAgreement: Object.values(cpu.checks).every(Boolean), expectedRuntime: finalState.system.version === (label === 'baseline' ? baselineManifest.version : overlay.version), isolated: finalState.isolated === true, noFatalLines: phaseReport.fatalLines.length === 0, keyboardAndDownload: true, homeProfilePreserved: true };
     if (label === 'warm' || label === 'update') phaseReport.checks.zeroBootSystemImages = finalState.images.length === 0;
     assert(Object.values(phaseReport.checks).every(Boolean), label + ' baseline checks failed ' + JSON.stringify(phaseReport.checks));
     phaseReport.pass = true; phaseReport.observedResultMs = Date.now() - start;
@@ -220,6 +222,7 @@ async function run(argv) {
     for (const p of report.phases) assert(await homeRead(p.download.path) === p.download.text, 'prior download changed ' + p.label);
     report.priorDownloadsPreserved = true;
     for (const [p, expected] of Object.entries(inputs)) assert(sha(await fs.readFile(p)) === expected, 'input changed ' + p);
+    report.finalCpu = await saveHostCpuPhaseEvidence(report.phases.at(-1).cpu, await state(), out, 'end');
     assert(errors.length === 0, 'outer browser exceptions'); report.pass = true;
   } catch (error) { report.error = String(error.stack || error); try { await fs.writeFile(out + '/failure-guest-logs.txt', await logs()); await shot('failure'); } catch {} }
   finally {
@@ -268,17 +271,29 @@ async function selfTest(out) {
   check('actual host selection rejects mismatch', () => reject(() => selectHostCpus(8, 2)));
   check('native host selection requests all8', () => assert(selectHostCpus(8, 8).requestedGuestCpus === 8, 'cpu'));
   const cpu = selectHostCpus(8, 8), cpuState = { browserHardwareConcurrency: 8, selectedGuestCpus: 8 };
-  const actual = await saveGuestCpuEvidence(cpu, 'smp: Brought up 1 node, 8 CPUs\nstarting /bin/firefox as admin', cpuState, out, 'fixture-boot');
+  const actual = await saveGuestCpuEvidence(cpu, 'smp: Brought up 1 node, 8 CPUs\nstarting /bin/firefox as admin', cpuState, out, 'fixture-boot', 8);
   check('startup SMP fixture independently saved', () => assert(actual.guestBootCpus === 8 && actual.smpLines.length === 1, 'SMP evidence'));
-  check('final host allocation drift refused', () => assert(!guestCpuChecks(actual, { ...cpuState, browserHardwareConcurrency: 2 }).hostCpuSelection, 'final host CPU'));
-  check('final UI CPU drift refused', () => assert(!guestCpuChecks(actual, { ...cpuState, selectedGuestCpus: 2 }).hostCpuSelection, 'final UI CPU'));
-  check('final state preserves independent startup count', () => assert(Object.values(guestCpuChecks(actual, cpuState)).every(Boolean), 'final CPU agreement'));
+  check('final host allocation drift refused', () => assert(!guestCpuChecks(actual, { ...cpuState, browserHardwareConcurrency: 2 }, 8).hostCpuSelection, 'final host CPU'));
+  check('final UI CPU drift refused', () => assert(!guestCpuChecks(actual, { ...cpuState, selectedGuestCpus: 2 }, 8).hostCpuSelection, 'final UI CPU'));
+  check('final state preserves independent startup count', () => assert(Object.values(guestCpuChecks(actual, cpuState, 8)).every(Boolean), 'final CPU agreement'));
+  check('final nproc drift refused despite unchanged browser and UI', () => assert(!guestCpuChecks(actual, cpuState, 6).hostAllocationStable, 'final nproc drift'));
+  check('pure CPU checks require explicit observed nproc', () => assert(!guestCpuChecks(actual, cpuState).hostAllocationStable, 'missing observed nproc'));
+  for (const label of ['cold-preboot', 'update-preboot', 'warm-preboot', 'end']) {
+    let driftRejected = false;
+    try { await saveHostCpuPhaseEvidence(cpu, cpuState, out, 'fixture-' + label, 6); } catch { driftRejected = true; }
+    const evidence = JSON.parse(await fs.readFile(out + '/fixture-' + label + '-cpu-phase.json'));
+    check(label + ' nproc drift rejected with retained evidence', () => assert(driftRejected && evidence.hostNprocObserved === 6 && evidence.checks.hostAllocationStable === false, 'phase nproc drift'));
+  }
+  let startupDriftRejected = false;
+  try { await saveGuestCpuEvidence(cpu, 'smp: Brought up 1 node, 8 CPUs', cpuState, out, 'fixture-startup-host-drift', 6); } catch { startupDriftRejected = true; }
+  const startupDrift = JSON.parse(await fs.readFile(out + '/fixture-startup-host-drift-cpu.json'));
+  check('startup nproc drift rejected while actual kernel count retained', () => assert(startupDriftRejected && startupDrift.guestBootCpus === 8 && startupDrift.hostNprocObserved === 6 && startupDrift.checks.hostAllocationStable === false, 'startup host drift'));
   let missingRejected = false;
-  try { await saveGuestCpuEvidence(cpu, 'starting /bin/firefox as admin', cpuState, out, 'fixture-missing'); } catch { missingRejected = true; }
+  try { await saveGuestCpuEvidence(cpu, 'starting /bin/firefox as admin', cpuState, out, 'fixture-missing', 8); } catch { missingRejected = true; }
   const missing = JSON.parse(await fs.readFile(out + '/fixture-missing-cpu.json'));
   check('missing SMP fails and saves honest null evidence', () => assert(missingRejected && missing.guestBootCpus === null && missing.checks.guestCpuCountMatchesHost === false, 'missing SMP'));
   let twoRejected = false;
-  try { await saveGuestCpuEvidence(cpu, 'smp: Brought up 1 node, 2 CPUs', cpuState, out, 'fixture-two'); } catch { twoRejected = true; }
+  try { await saveGuestCpuEvidence(cpu, 'smp: Brought up 1 node, 2 CPUs', cpuState, out, 'fixture-two', 8); } catch { twoRejected = true; }
   check('historical two-CPU startup refused', () => assert(twoRejected, 'two CPU'));
   const syntheticBuild = await ownedBuildProcesses(process.pid + ' cargo --manifest-path /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/Cargo.toml');
   check('owned build command preflight detects active PID', () => assert(syntheticBuild.length === 1 && syntheticBuild[0].pid === process.pid, 'build preflight'));

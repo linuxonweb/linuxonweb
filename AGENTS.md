@@ -8,10 +8,23 @@ Read-only Sites inspection confirms the same public project at version10.
 The concrete two-release sequence and acceptance/rollback requirements are in
 docs/firefox-nightly-sites-release-plan-20261002.md; no new deployment occurred.
 
-Following tests must set Linux/Wasm CPUs to the host count (currently `nproc=8`)
+Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and
 use the same CPU count for new comparative benchmarks.
+
+The shared CPU helper and five diagnostic/baseline runners now reread nproc
+before every boot, when capturing startup SMP, after each phase and at run end.
+Allocation drift fails with retained evidence. Sixty-six CPU fixtures,43 baseline
+fixtures,11 independent fresh-reader regressions,seven syntax checks and five
+caller audits pass; root's15-check source/result and pure-regression review is
+in /mnt/p6/build/firefox-nightly-musl-root-review-20261002/cpu-phase-review-run1.json.
+These are harness checks, not new guest acceptance. Available-count observations
+varied between six and eight without an established cause; do not hardcode a
+count, assert a hardware change, or loosen checks without actual harness/browser
+evidence. PBL and older non-helper runners need equivalent phase checks before
+invocation. The existing UI clamp remains; exact host counts above64 require a
+deliberate UI limit change rather than claiming exact agreement after clamping.
 
 The PBL benchmark runner now applies the same host-count setup to each arm and
 saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.

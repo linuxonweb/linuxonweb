@@ -15,7 +15,7 @@
 // All profiles, scratch and logs stay on the verified disk-backed task path.
 // Ports: HTTP 4198, CDP 9408.
 import fs from 'node:fs/promises';
-import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, saveGuestCpuEvidence } from './firefox-host-cpus.mjs';
+import { saveHostCpuPhaseEvidence, guestCpuPrebootStateExpression, readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, saveGuestCpuEvidence } from './firefox-host-cpus.mjs';
 import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -51,7 +51,6 @@ async function run(){
 requestAnimationFrame(()=>requestAnimationFrame(()=>run().catch(e=>{document.title='WebGPU W1 fixture error';save('webgpu-w1-result-',{schema:1,tag:'webgpu-w1-probe-v1',createdAt:Date.now(),fixtureError:String(e&&e.stack||e)});})));</script>`;
 const node = process.execPath, sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const hostNproc = readHostNproc();
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 2 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -102,6 +101,7 @@ async function textInput(text) { for (const c of text) { if (!/[a-z]/.test(c)) t
 const findDownload = (pattern, start, check) => ev(`(async()=>{const h=(await import('./main.js')).guestHome();let n=await h.lookup(h.root,'admin');n=n&&await h.lookup(n,'Downloads');if(!n)return null;for(const e of await h.readdir(n,{})){if(!${pattern}.test(e.name))continue;try{const a=await h.getattr(e.node);if(Number(a.size)>65536)continue;const r=JSON.parse(new TextDecoder().decode(await h.read(e.node,{},0n,Number(a.size))));if(r.createdAt>=${start}&&(${check})(r))return {name:e.name,...r};}catch{}}return null;})()`);
 const guestLogs = () => ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,3000).map(l=>l.text).join(String.fromCharCode(10)))()`);
 async function phase(label, action) {
+  await saveHostCpuPhaseEvidence(report.cpu, await ev(guestCpuPrebootStateExpression), out, label + '-preboot');
   const oldEpoch = await ev('performance.timeOrigin'), start = Date.now(); await action(); let launch, startupLogs;
   await until(async () => { try { if (await ev('performance.timeOrigin') === oldEpoch) return false; const logs = await guestLogs(); if (logs.includes('starting /bin/firefox as admin')) { startupLogs = logs; launch = { elapsedMs: Date.now() - start }; return true; } } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; } return false; }, 120000, 'Firefox launch');
   const cpu = await saveGuestCpuEvidence(report.cpu, startupLogs, await ev(guestCpuStateExpression), out, label);
@@ -122,9 +122,10 @@ async function phase(label, action) {
   await fs.writeFile(out + '/' + label + '-guest-logs.txt', logs);
   await shot(label + '-functional');
   const expectVersion = control ? sourceVersion : pkg.version;
+  const finalCpu = await saveHostCpuPhaseEvidence(cpu, state, out, label + '-final');
   const checks = {
     version: state.system.version === expectVersion, isolated: state.isolated === true, visible: state.visibility === 'visible',
-    ...guestCpuChecks(cpu, state),
+    ...guestCpuChecks(cpu, state, finalCpu.hostNprocObserved),
     config: startupLogs.includes(`display=1280x720, cpus=${cpu.requestedGuestCpus}, ram=4 GB (maximum)`), secureContext: probe.isSecureContext === true,
     inputAfterProbe: Boolean(result), noFatalLines: evidence.fatalLines.length === 0,
   };
@@ -141,7 +142,7 @@ async function phase(label, action) {
   });
   if (label === 'warm') checks.warmZeroImages = state.images.length === 0;
   const pass = Object.values(checks).every(Boolean);
-  report.phases.push({ label, pass, checks, cpu, launch, probe, result, evidence, state });
+  report.phases.push({ label, pass, checks, cpu, finalCpu, launch, probe, result, evidence, state });
   await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify({ phase: label, pass, checks }));
   if (!pass) throw Error(label + ' checks failed: ' + Object.entries(checks).filter(([, v]) => !v).map(([k]) => k).join(','));
@@ -152,7 +153,7 @@ try {
   ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
-  report.cpu = selectHostCpus(hostNproc, await ev('navigator.hardwareConcurrency'));
+  report.cpu = selectHostCpus(readHostNproc(), await ev('navigator.hardwareConcurrency'));
   await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await dir('admin/Downloads');await put('admin/sites-probe.html',${JSON.stringify(probeFixture)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
   const url = origin + '/linux/index.html?firefox=1&renderer=canvas2d';
   const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
@@ -160,6 +161,7 @@ try {
   await phase('cold', () => call('Page.navigate', { url }));
   if (!control) await phase('warm', () => call('Page.reload', { ignoreCache: true }));
   for (const [p, h] of Object.entries(inputs)) if (sha(await fs.readFile(p)) !== h) throw Error('input changed ' + p);
+  report.finalCpu = await saveHostCpuPhaseEvidence(report.phases.at(-1).cpu, await ev(guestCpuStateExpression), out, 'end');
   if (errors.length) throw Error('outer browser exceptions');
   report.pass = true;
 } catch (error) { report.error = String(error.stack || error); try { await fs.writeFile(out + '/failure-guest-logs.txt', await guestLogs()); await shot('failure'); } catch {} }
