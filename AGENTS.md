@@ -4,6 +4,9 @@ The user explicitly authorizes two ChatGPT Sites releases: deploy after latest
 Nightly JIT works and passes guest acceptance, then deploy again after GPU
 support works and passes guest acceptance. Do not ask for the same approval
 again; preserve public v10 until a concrete validated successor is ready.
+Read-only Sites inspection confirms the same public project at version10.
+The concrete two-release sequence and acceptance/rollback requirements are in
+docs/firefox-nightly-sites-release-plan-20261002.md; no new deployment occurred.
 
 Following tests must set Linux/Wasm CPUs to the host count (currently `nproc=8`)
 and record/assert the actual host and guest counts. This supersedes historical
