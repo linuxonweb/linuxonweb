@@ -1,5 +1,43 @@
 # libc change — 2026-10-02 (latest user direction; read this first)
 
+Latest continuation: coherent producer27 builds after correcting producer26's
+missing direct IntrinsicsWebAssembly.h include. Root independently verifies
+all five source pairs, exact FrameLowering25 archive reuse and four empty
+successful stage groups. Compiler SHA256
+`d5034ed645fbba7646aa419824510d39b6f46703a0445bc268258adb8587b266`.
+Proof: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal27-build-independent1/root-proof.json`.
+Root also independently reruns producer25 normal records: 5,361 assertions,
+108 pins, 46 producer groups plus one root group, synthetic owner only.
+Proof: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records25-native-independent1/root-proof.json`.
+Producer27 primitive/root controls pass; root checks 37 pins, 15 groups and
+executes the actual primitive with two descriptor2 entries in its genuine
+compiler root. Module/body mismatch, wrong capture/reason, manual poll and
+forged seals reject. This does not establish real GNU owner/cancellation.
+Proof: `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/provider27-independent1/root-proof.json`.
+
+Consumer12 composition onto producer27 builds, compiler SHA256
+`4d8417ac505fc3e6712dd54764832f9d2a6697f7fcbedd121e770f6346836a40`.
+Root rereads all 3,513 plan pins/snapshots, verifies every actual ordered
+archive member (237/45; only indices 229/3 replaced) and six empty groups.
+Proof: `/mnt/p6/build/glibc-native-forced-unwind-root-review-20261002/coherent1-build-independent1/root-proof.json`.
+Its SjLj control still fails MachineVerifier: record-address register %93 is
+defined in bb2 but used by the catch restore in bb11, reachable through the
+resume path without bb2 dominating. True-entry caller-SP %17 is now correct.
+Authenticate and materialize the real record64 and context40 addresses after
+the genuine fixed-frame prologue; do not relax verification or invent an anchor.
+Preserve the failing coherent1 control. Other suites remain separately scoped.
+
+Startup signal-mask proposal2 compiles in fresh owned copies. Root verifies
+1,028 input pins, 622 dependencies and 15 empty stages. _start first calls
+the no-SP/no-TLS mask routine; raw rt_sigprocmask blocks maskable delivery
+before the kernel syscall signal-exit loop. The inherited eight-byte mask is
+restored only from the intended recorded owner gate. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/bootstrap-compile1-independent1/root-proof.json`.
+This is flags-off compile evidence, not startup admission or guest acceptance.
+Reject a final module start section and pre-admission constructors; pthread
+child startup needs its own inherited-mask/owner contract. Full GNU sysroot,
+Nightly159 runtime, JIT, Firefox GPU and deployment are still incomplete.
+
 The user now says: "do not use musl , use libc for best compability".
 Interpret the requested replacement as glibc pending any user correction.
 Stop further musl-based Nightly builds and investigate a genuine native

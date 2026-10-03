@@ -873,3 +873,36 @@ approved before consumer12 composition. Separate normal/SjLj/C++/forged-source
 control suites are prepared, not yet executed. Allocating GNU fatal handling
 remains unresolved; status-core source work is separate from accepted V1
 runtime and does not silently replace genuine GNU abort behavior.
+
+Coherent26's first build failed solely because the narrow C++ intrinsic checks
+lacked a direct IntrinsicsWebAssembly.h include. Reviewed include-only27 builds;
+root checks five source pairs, exact FrameLowering25 archive reuse, compiler
+bytes and four fresh empty groups. Its primitive/root/parser gate passes and
+root independently executes the genuine emitted root with two primitive
+descriptors. The normal25 control also passes independent execution with
+5,361 assertions. These remain primitive and synthetic-owner normal controls.
+
+The actual consumer12/producer27 composition now builds. Root checks all
+3,513 manifest pins/snapshots, all 237 CodeGen and 45 WebAssembly archive
+members and six fresh empty groups. The first SjLj control finds another
+concrete dominance issue: the real record-address register %93 is defined in
+bb2, while bb11's catch restore can be reached by a resume path bypassing bb2.
+The corrected caller-SP capture %17 dominates from true entry. Record64 and
+context40 addresses need authenticated materialization after the actual
+fixed-frame prologue. The original failing control remains preserved; no
+forced-unwind or genuine NPTL runtime acceptance follows from the build.
+
+The new signal-blocked startup copies compile separately. Root checks 1,028
+pins, 622 dependencies, the actual mask body and 15 fresh empty stage groups.
+The kernel applies rt_sigprocmask before its signal-exit loop; the first entry
+call blocks maskable delivery and preserves the inherited eight-byte mask.
+Restoration requires a live recorded caller. Final Wasm start-section rejection,
+constructor ordering, separately authenticated startup imports and child-thread
+owner initialization still need verification in the real guest.
+
+The status-returning transition core remains a separate proposal. Its own-body
+compile audit does not close genuine allocating abort or fatal admission.
+For full Nightly, the bounded 64-module/4096-descriptor prototype also needs
+real immutable root indexing and lifetime admission: scanning all descriptors
+on every call would scale poorly to the actual Firefox function corpus. None
+of these prerequisites changes the objective or establishes a new release.
