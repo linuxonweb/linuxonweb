@@ -340,11 +340,27 @@ unchanged. Original source and target objects are preserved. Actual
 nss-certutil-run2 recompiles both command objects and advances to undefined
 mmap/munmap/mremap from SQLite; this is the previously recorded missing
 mapping-adapter final linkage, not a successful certutil link. Unified57853
-is reaped2, PGID1650969 empty. Root checks24 exact-source/native-symbol/fresh-
+is reaped2, PGID1650969 empty. Root checks22 exact-source/native-symbol/fresh-
 object/dependency/library-unchanged/terminal predicates in
 tools/nightly-musl/evidence/native-certutil-templates.json. Next integrate the
 preserved native mapping adapter as a static link input and verify actual
 target links. Nightly browser, JIT, GPU and Sites acceptance remain pending.
+
+
+The preserved mapping adapter is now compiled with the actual native musl
+compiler, shared-thread atomics and SjLj lowering, archived as one object and
+added once to target OS_LIBS in the Linux_wasm32 root make adapter. Its source
+bytes are unchanged; compiler/generated-backend inputs are preserved.
+Actual nss-certutil-run3 links and passes in9.90s. The17,996,713-byte native
+certutil binary passes independent wasm-validate --enable-all; SHA
+431377b2103fda03b3e6e26337d574ccbfa0f958dff28b7af5f5c6c2582c50c3.
+Unified37106 is reaped0 and PGID1656351 empty. Root checks22 archive/native/
+actual-argv/fresh-binary/validator/storage predicates; evidence:
+tools/nightly-musl/evidence/native-mapping-link.json. The replay helper is
+tools/nightly-musl/recipe/build-native-mapping.py and must create the archive
+before installing adapters/defs.mk on a fresh tree. Full browser linking,
+actual guest mapping/current NSS/JIT/GPU and both Sites releases still require
+acceptance. Continue the full build unchanged.
 
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.

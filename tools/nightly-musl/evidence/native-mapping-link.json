@@ -1,0 +1,176 @@
+{
+  "claim": "Actual native certutil program links and validates with preserved mapping adapter; guest and full browser acceptance pending",
+  "terminal": {
+    "phase": "nss-certutil",
+    "run": "run3",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "security/nss/cmd/certutil/certutil_certutil",
+      "-j4",
+      "--verbose"
+    ],
+    "pid": 1656351,
+    "pgid": 1656351,
+    "started": 1791030479.6913333,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run3.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18988101632,
+    "free_bytes": 75968278528,
+    "checked": 1791030479.6921623,
+    "exit_code": 0,
+    "finished": 1791030489.5947695,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 37106,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_pgid_empty": true,
+  "actual_link_argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+    "-o",
+    "../../../../../dist/bin/certutil",
+    "-U_FORTIFY_SOURCE",
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-fstrict-flex-arrays=1",
+    "-fno-rtti",
+    "-pthread",
+    "-fno-sized-deallocation",
+    "-fno-aligned-new",
+    "-fno-math-errno",
+    "-fno-exceptions",
+    "-fdiagnostics-absolute-paths",
+    "-fPIC",
+    "-Wno-error=implicit-int-conversion",
+    "-Xclang",
+    "-fc++-abi=webassembly",
+    "-gdwarf-4",
+    "-gsimple-template-names",
+    "--start-no-unused-arguments",
+    "-mllvm=-dwarf-linkage-names=Abstract",
+    "--end-no-unused-arguments",
+    "-O2",
+    "-fno-omit-frame-pointer",
+    "-funwind-tables",
+    "-Wl,@/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/certutil.list",
+    "-Wl,--build-id=uuid",
+    "-Wl,-z,noexecstack",
+    "-Wl,-z,text",
+    "-Wl,-z,relro",
+    "-Wl,-z,now",
+    "-Wl,-z,nocopyreloc",
+    "-fuse-ld=lld",
+    "-Wl,-O0",
+    "-fstack-protector-strong",
+    "-pie",
+    "-ldl",
+    "-lm",
+    "-lpthread",
+    "-lc",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a"
+  ],
+  "binary": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/certutil",
+    "bytes": 17996713,
+    "sha256": "431377b2103fda03b3e6e26337d574ccbfa0f958dff28b7af5f5c6c2582c50c3",
+    "mtime_ns": 1791030487964336471
+  },
+  "validation": {
+    "argv": [
+      "/usr/bin/wasm-validate",
+      "--enable-all",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/certutil"
+    ],
+    "exit_code": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-mapping-link-review-run1.json",
+    "bytes": 1998,
+    "sha256": "0544012af08301e3c6efd19b164fbe16e160ce0c759f65000158d5d2cf2be180",
+    "passed_predicates": 22
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/result.json",
+      "bytes": 3460,
+      "sha256": "9b8dba881dfdf958eb2032ceffdac7985b2150cf041f92e3f8d42835fc94159d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/mmap-shim.c",
+      "bytes": 15049,
+      "sha256": "cf9f7592186c95dbe9589d8e86bd86fd724b8f06f9c539826ca3a3707c621e97"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/mmap-shim.o",
+      "bytes": 5835,
+      "sha256": "bae2a8cc8dd968036e4cecec8dfbdc218923e5a6a8594f89baceb0cdd874e755"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a",
+      "bytes": 6106,
+      "sha256": "ce9bde472373b4d7d09555954006b94b3c0a8137d341d51d689371fb8e2c7561"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/expanded-compiler.log",
+      "bytes": 13261,
+      "sha256": "0b72166aead510b13d88d0b9e58785505c4611315c6419b518a31d102a5ea0f5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/defined-symbols.txt",
+      "bytes": 366,
+      "sha256": "13defe1821e4435ef8e710713da933fde32d45cd57cd0f66504bbe704b55787d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/certutil-validator.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/certutil-validator-root.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run3.json",
+      "bytes": 910,
+      "sha256": "8600a99b542f7453669d42ba7fa4ccd7a895b86f7aaae7910a0404109c7b3314"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run3-group-cleanup.json",
+      "bytes": 1075,
+      "sha256": "22e4944a0e77361f719b30f435477e8d50789066af3719971ff74dca3cd67c66"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run3.log",
+      "bytes": 6185,
+      "sha256": "21f145c71ca1df9671a776b1be0071abf72aa17541090883fbbfa43875ba38e8"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 476,
+      "sha256": "10e42095ea74642fead3915be8b4594487dc5472fc5e0d05ba4b37703763deea"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/build-native-mapping.py",
+      "bytes": 1816,
+      "sha256": "60a2131060a0e80ac8c607e8d923e0bfb4be53f367470405379317a0e9a3b0ad"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-wasm-link-paths-port.py",
+      "bytes": 824,
+      "sha256": "c86c2bef81d379d511787183bf313f6ea44c740f59021733db68300ed65729f4"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}
