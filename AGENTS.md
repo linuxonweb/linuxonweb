@@ -92,6 +92,29 @@ and logs/build-run21.log under the recovery task. It reuses the completed DOM
 sweep and resumes graphics compilation. Recheck current handles before work;
 linking, Nightly guest/JIT acceptance and both Sites releases remain pending.
 
+Run21 stops with exit2 on libevent's ILP32 assumption: native musl time_t and
+off_t are64-bit, while its Linux config reports32-bit. The terminal graph has
+1,068/3,012 native objects. After exact group-empty proof, a shared mozbuild
+selector and new native-Wasm config adapter retain the original Linux config
+and require musl's actual time64 marker. Both Chromium IPC and bundled libevent
+recompile successfully: ipc-run1 exits0 in43.50s with eight fresh native objects
+and both sides depending on the adapter. Root independently compiles four C/C++
+ABI units, reproduces the original failure, and checks77 frozen/source/object/
+dependency/ownership predicates. Evidence is tools/nightly-musl/evidence/native-
+libevent-time64.json. The repository phase driver retains its documented fixed
+task root and adds only the bounded IPC command; its as-received freeze is
+historical. No full browser or guest acceptance is established.
+
+Run22 then stops with exit2 at js/src/builtin/Profilers.cpp:490 because the
+optional external Linux perf launcher uses unavailable fork. PID/PGID1281065
+is absent; unified handle4419 belongs to the existing build owner, who must
+retain its reaped result before source mutation. Status/build-run22.json and
+logs/build-run22.log are under the recovery task. Preserve the no-env successful
+noop and ordinary non-Wasm perf behavior; requested external perf on native
+Wasm should fail honestly before unlinking output. The existing sole build
+owner handles this next packet. Revalidate its actual current status before
+continuation. Nightly linking/JIT/GPU/TLS and both Sites releases remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

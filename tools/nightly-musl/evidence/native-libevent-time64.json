@@ -1,0 +1,71 @@
+{
+  "claim": "Actual native Linux/Wasm libevent and Chromium component recompilation; no linked full browser or guest acceptance",
+  "actual_evidence": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-libevent-time64-actual.json",
+    "bytes": 24174,
+    "sha256": "e80497fbde45e40cac9c651e2244846fff14f214bb15f11096aa541c0cae4d6f"
+  },
+  "terminal_status": {
+    "phase": "ipc",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "ipc/chromium",
+      "-j4"
+    ],
+    "pid": 1273544,
+    "pgid": 1273544,
+    "started": 1791017869.9198303,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/ipc-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 17486786560,
+    "free_bytes": 76341780480,
+    "checked": 1791017891.614571,
+    "exit_code": 0,
+    "finished": 1791017913.4188082,
+    "stop_reason": null
+  },
+  "component_native_objects": 8,
+  "both_sides_have_adapter_dependencies": true,
+  "native_assertions": 84,
+  "source_changes": {
+    "ipc/chromium/src/third_party/libeventcommon.mozbuild": {
+      "original_sha256": "d986dcbcb7ae0c187992a315816512f3111756eebd288e8aa810d15b33287f6d",
+      "updated_sha256": "d3546e99d2de6dcea242d48780d3da7ca3b777debf13d90d06c28ac02d1132f7"
+    },
+    "ipc/chromium/src/third_party/libevent/wasm/event2/event-config.h": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updated_sha256": "bee8b6be4e6265f3637aed03de5c88c36325d2427139e15d8f902e8bb6bcaf48"
+    }
+  },
+  "original_linux_config_sha256": "79151f46eb6e5963cd049b4d63898f6f69f3dff9b54ecb065627d17844102bb6",
+  "baseline_and_rejection_status": "Expected FAIL retained for original ABI mismatch and fault-injected WASI/missing-time64 predicates",
+  "run21_graph": {
+    "expected": 3012,
+    "existing": 1068,
+    "bytes": 1224171235
+  },
+  "limitations": "Component success only; full browser/JIT/GPU/TLS and Sites remain pending",
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-libevent-review-run2.json",
+    "bytes": 26036,
+    "sha256": "bcd162afb15fcadbec7b2959c8a48dc8c0773df9b01d001b0efec43bfd9840ab",
+    "checks": 77
+  },
+  "root_independent_compilation": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/libevent-abi-run1/manifest.json",
+    "sha256": "ae424337c38c3ba7ef72f070cb6c08b166f314c63a1133506984b404403285a9",
+    "native_units": 4,
+    "assertions_per_unit": 18,
+    "original_config_failure_reproduced": true
+  },
+  "repository_recipe_correction": "Preserved fixed recovery task root for documented direct invocation. Owned driver remains unchanged and selects the same recovery task from its own path. Added only bounded ipc command to repository driver. Original as-received packet freeze retained as historical."
+}
