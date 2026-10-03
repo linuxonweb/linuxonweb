@@ -14,6 +14,7 @@
 // All profiles, scratch and logs stay on the verified disk-backed task path.
 // Ports: HTTP 4206, CDP 9416.
 import fs from 'node:fs/promises';
+import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, saveGuestCpuEvidence } from './firefox-host-cpus.mjs';
 import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -27,6 +28,7 @@ const out = path.resolve(process.argv[2]), candidate = path.resolve(process.argv
 const pageURL = 'file:///opt/firefox/gpu-check/gpu-check.html';
 const node = process.execPath, sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const hostNproc = readHostNproc();
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 2 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -35,10 +37,11 @@ if (!out.startsWith(task + '/')) throw Error('output outside task'); await fs.mk
 const pkg = JSON.parse(await fs.readFile(candidate + '/package.json'));
 if (!pkg.passPackage || !pkg.candidateOnly || !pkg.distributionIni?.includes(pageURL) || !pkg.added?.['opt/firefox/glxtest']) throw Error('verified isolated F1a package required');
 const inputs = {};
-for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm'].map(s => path.join(repo, 'web/linux', s)), candidate + '/boot-manifest.json', candidate + '/initramfs-firefox.cpio.gz']) inputs[source] = sha(await fs.readFile(source));
+for (const source of [fileURLToPath(import.meta.url), fileURLToPath(new URL('./firefox-host-cpus.mjs', import.meta.url)), path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm'].map(s => path.join(repo, 'web/linux', s)), candidate + '/boot-manifest.json', candidate + '/initramfs-firefox.cpio.gz']) inputs[source] = sha(await fs.readFile(source));
 if (inputs[candidate + '/initramfs-firefox.cpio.gz'] !== pkg.archiveSha256) throw Error('archive identity differs');
 await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
+await fs.copyFile(fileURLToPath(new URL('./firefox-host-cpus.mjs', import.meta.url)), out + '/firefox-host-cpus.mjs');
 let serverSource = await fs.readFile(path.join(repo, 'web/desktop/dev-server.mjs'), 'utf8');
 serverSource = serverSource.slice(0, serverSource.indexOf("server.listen(port,"));
 serverSource = serverSource.replace("const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));", 'const root = ' + JSON.stringify(repo) + ';');
@@ -92,8 +95,9 @@ async function bookmarks(label) {
   return JSON.parse(rows);
 }
 async function phase(label, action) {
-  const oldEpoch = await ev('performance.timeOrigin'), start = Date.now(); await action(); let launch;
-  await until(async () => { try { if (await ev('performance.timeOrigin') === oldEpoch) return false; const logs = await guestLogs(); if (logs.includes('starting /bin/firefox as admin')) { launch = { elapsedMs: Date.now() - start }; return true; } } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; } return false; }, 120000, 'Firefox launch');
+  const oldEpoch = await ev('performance.timeOrigin'), start = Date.now(); await action(); let launch, startupLogs;
+  await until(async () => { try { if (await ev('performance.timeOrigin') === oldEpoch) return false; const logs = await guestLogs(); if (logs.includes('starting /bin/firefox as admin')) { startupLogs = logs; launch = { elapsedMs: Date.now() - start }; return true; } } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; } return false; }, 120000, 'Firefox launch');
+  const cpu = await saveGuestCpuEvidence(report.cpu, startupLogs, await ev(guestCpuStateExpression), out, label);
   let verdict, lastShot = start;
   await until(async () => {
     const logs = await guestLogs();
@@ -113,13 +117,14 @@ async function phase(label, action) {
   const rows = await bookmarks(label);
   const logs = await guestLogs(), logLines = logs.split('\n');
   await fs.writeFile(out + '/' + label + '-guest-logs.txt', logs);
-  const state = await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),visibility:document.visibilityState,isolated:crossOriginIsolated,images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
+  const state = await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores')?.value),visibility:document.visibilityState,isolated:crossOriginIsolated,images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
   const glLines = logLines.filter(l => /EGL|egl|Mesa|MESA|mesa|[Zz]ink|ZINK|glxtest|GLX|[Vv]ulkan|libGL|GLContext|WebGL|webgl|gfx|GFX|FEATURE_|Crash Annotation|guest-vk|icd|tryNativeGL|useEGL|^\* |gpu_hostcall|vsock/.test(l));
   await fs.writeFile(out + '/' + label + '-gl-lines.txt', glLines.join('\n') + '\n');
   const fatalLines = logLines.filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-40);
   const checks = {
     version: state.system.version === pkg.version, isolated: state.isolated === true,
-    config: logs.includes('display=1280x720, cpus=2, ram=4 GB (maximum)'),
+    ...guestCpuChecks(cpu, state),
+    config: startupLogs.includes(`display=1280x720, cpus=${cpu.requestedGuestCpus}, ram=4 GB (maximum)`),
     pageOpenedByDefault: result.info.webgl.length + result.info.webgpu.length > 0,
     toolbarBookmark: rows.some(r => r[1] === pageURL && r[2] === 3),
     menuBookmark: rows.some(r => r[1] === pageURL && r[2] === 2),
@@ -128,7 +133,7 @@ async function phase(label, action) {
   };
   if (label === 'warm') checks.warmZeroImages = state.images.length === 0;
   const pass = Object.values(checks).every(Boolean);
-  report.phases.push({ label, pass, checks, launch, observedMs, result, glLines: glLines.slice(-200), bookmarks: rows, fatalLines, state });
+  report.phases.push({ label, pass, checks, cpu, launch, observedMs, result, glLines: glLines.slice(-200), bookmarks: rows, fatalLines, state });
   await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify({ phase: label, pass, checks }));
   if (!pass) throw Error(label + ' checks failed: ' + Object.entries(checks).filter(([, v]) => !v).map(([k]) => k).join(','));
@@ -139,7 +144,8 @@ try {
   ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
-  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
+  report.cpu = selectHostCpus(hostNproc, await ev('navigator.hardwareConcurrency'));
+  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
   const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
   if (manifest.version !== pkg.version) throw Error('served manifest mismatch');
   await phase('cold', () => call('Page.navigate', { url: origin + '/linux/index.html?firefox=1&renderer=canvas2d' }));

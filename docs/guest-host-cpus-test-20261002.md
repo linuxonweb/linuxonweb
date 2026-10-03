@@ -41,3 +41,28 @@ smoke. Its owned browser exited normally, the HTTP server closed, and its
 process group and HTTP/CDP ports were independently checked closed. Evidence
 is retained in the task directory, including the adapted runner, guest logs,
 screenshot and cleanup report.
+
+The remaining homepage, DevTools, WebGPU W1 and WebGL F1a diagnostic runners
+now use `firefox-host-cpus.mjs` for the same count contract. Every boot they
+exercise (including update and warm boots) saves `<phase>-startup-guest-logs.txt`
+and `<phase>-cpu.json` immediately on Firefox launch, before fixture, GPU or
+DevTools output can evict the SMP line. Missing or mismatched SMP evidence fails
+the boot after retaining the diagnostic files. Browser and UI counts are checked
+at launch and again after readiness; DevTools also checks them after its requested
+steps. The helper is included in each runner's input hashes and copied evidence.
+
+Fixture-only checks pass 38 cases at
+`/mnt/p6/build/firefox-nightly-guest-cpu-gates-20261002/contract-run1/result.json`.
+They cover invalid/disagreeing host and browser counts, the 1–64 UI range,
+missing/malformed/mismatched SMP records, independent cold/warm captures,
+saved failure evidence, later ring eviction, and changed browser/UI counts.
+The actual host `nproc` is eight; all kernel logs in this fixture packet are
+synthetic. Six syntax checks pass for the four runners, helper and helper test.
+
+No browser or guest was started for this follow-up while the full Nightly build
+was running. Historical two-CPU evidence and frozen promotion verifiers remain
+unchanged. These runners retain their original candidate/version prerequisites
+and task roots: W1 still diagnoses the old Release/Beta/Empty-HAL behavior, and
+F1a still records its historical WebGL result without requiring a working context.
+Their CPU setup is ready for later reuse; their historical acceptance predicates
+still need deliberate Nightly migration before they can gate the new browser.

@@ -1,5 +1,6 @@
 // Finite owner of an isolated server and Chromium. No accepted asset mutation.
 import fs from 'node:fs/promises';
+import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, saveGuestCpuEvidence } from './firefox-host-cpus.mjs';
 import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -12,6 +13,7 @@ const freshDefault = process.argv[4] === 'fresh-default';
 if(process.argv[4] && !freshDefault)throw Error('unknown test mode');
 const node = process.execPath, sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const hostNproc = readHostNproc();
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 2 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -22,10 +24,11 @@ if (!pkg.passPackage || !pkg.candidateOnly) throw Error('verified isolated packa
 const packedInit=await fs.readFile(candidate+'/init.after.sh','utf8');
 const defaultPrefs=packedInit.match(/<<'LOWLAND_HTTP1_PREFS'\n([\s\S]*?)\nLOWLAND_HTTP1_PREFS/)[1]+'\n';
 const inputs = {};
-for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'storage-panel.mjs', 'boot-manifest.json', 'initramfs-firefox.cpio.gz', 'vmlinux.wasm'].map(s => path.join(repo, 'web/linux', s)), candidate + '/boot-manifest.json', candidate + '/initramfs-firefox.cpio.gz']) inputs[source] = sha(await fs.readFile(source));
+for (const source of [fileURLToPath(import.meta.url), fileURLToPath(new URL('./firefox-host-cpus.mjs', import.meta.url)), path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'storage-panel.mjs', 'boot-manifest.json', 'initramfs-firefox.cpio.gz', 'vmlinux.wasm'].map(s => path.join(repo, 'web/linux', s)), candidate + '/boot-manifest.json', candidate + '/initramfs-firefox.cpio.gz']) inputs[source] = sha(await fs.readFile(source));
 if (inputs[candidate + '/initramfs-firefox.cpio.gz'] !== pkg.archiveSha256 || inputs[path.join(repo, 'web/linux/initramfs-firefox.cpio.gz')] !== pkg.sourceSha256) throw Error('archive identity differs');
 await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
+await fs.copyFile(fileURLToPath(new URL('./firefox-host-cpus.mjs', import.meta.url)), out + '/firefox-host-cpus.mjs');
 const fixture = `<!doctype html><meta charset="utf-8"><title>Saved Firefox homepage probe</title><style>body{font:24px sans-serif;background:#f4f9ff;margin:40px}input{font:inherit;padding:12px}</style><h1>Saved homepage loaded</h1><p>Type in this field to verify guest keyboard input.</p><input id="input" autofocus><pre id="state">Guest JavaScript running</pre><script>
 function report(kind,value){new Image().src='/__probe?kind='+kind+'&value='+encodeURIComponent(value)+'&ua='+encodeURIComponent(navigator.userAgent)+'&t='+Date.now();}
 document.querySelector('input').addEventListener('input',e=>{document.querySelector('#state').textContent=e.target.value;report('input',e.target.value);});
@@ -63,17 +66,20 @@ async function phase(label,action,automatic){
   const previousEpoch=await ev('performance.timeOrigin');
   const start=Date.now(), beaconStart=service.beacons.length, requestStart=service.requests.length;await action();
   let launch;
-  await until(async()=>{try{if(await ev('performance.timeOrigin')===previousEpoch)return false;const s=await ev(`(async()=>{const m=await import('./main.js');return {status:document.querySelector('#status')?.textContent,logs:m.guestLogs.history.page(undefined,300).map(l=>l.text).join(String.fromCharCode(10))};})()`);if(s.status==='boot failed'||s.status?.startsWith('stopped:'))throw Error(JSON.stringify(s));if(s.logs.includes('starting /bin/firefox as admin')){launch={elapsedMs:Date.now()-start,logs:s.logs};return true;}}catch(e){if(!/context|Cannot read|Failed to fetch|Cannot find/i.test(String(e)))throw e;}return false;},90000,'Firefox launch');
+  await until(async()=>{try{if(await ev('performance.timeOrigin')===previousEpoch)return false;const s=await ev(`(async()=>{const m=await import('./main.js');return {status:document.querySelector('#status')?.textContent,logs:m.guestLogs.history.page(undefined,10000).map(l=>l.text).join(String.fromCharCode(10))};})()`);if(s.status==='boot failed'||s.status?.startsWith('stopped:'))throw Error(JSON.stringify(s));if(s.logs.includes('starting /bin/firefox as admin')){launch={elapsedMs:Date.now()-start,logs:s.logs};return true;}}catch(e){if(!/context|Cannot read|Failed to fetch|Cannot find/i.test(String(e)))throw e;}return false;},90000,'Firefox launch');
+  const startupLogs = launch.logs;
+  const cpu = await saveGuestCpuEvidence(report.cpu, startupLogs, await ev(guestCpuStateExpression), out, label);
   if(!automatic){await sleep(30000);await shot(label+'-before-navigation');await ev("document.querySelector('#fb').focus()");await key('ControlLeft','Control',true,2);await key('KeyL','l',true,2);await key('KeyL','l',false,2);await key('ControlLeft','Control',false);await sleep(300);await textInput(guestURL);await key('Enter','Enter',true);await key('Enter','Enter',false);}
   await until(()=>service.beacons.slice(beaconStart).some(b=>b.kind==='ready'&&b.value==='saved-homepage'&&/Firefox\//.test(b.ua)),90000,'actual guest homepage');
   const ready=service.beacons.slice(beaconStart).find(b=>b.kind==='ready');await sleep(500);await ev("document.querySelector('#fb').focus()");await textInput('wasmperf');
   await until(()=>service.beacons.slice(beaconStart).some(b=>b.kind==='input'&&b.value==='wasmperf'),20000,'guest keyboard input');
   const home=await homeEvidence();if(home['admin/homepage-marker.txt'].text!=='homepage-preserved-v1\n'||home['admin/.mozilla/firefox/http1-profile/user.js'].text!==(freshDefault?defaultPrefs:prefs))throw Error('home/profile changed');
-  const state=await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),visibility:document.visibilityState,isolated:crossOriginIsolated,status:document.querySelector('#status').textContent,logs:(await import('./main.js')).guestLogs.history.page(undefined,300).map(l=>l.text).join(String.fromCharCode(10))}))()`);
-  if(!state.isolated||state.visibility!=='visible'||state.system.version!==(label==='baseline'?'ff1ea9fc6f62':pkg.version)||!state.logs.includes('display=1280x720, cpus=2, ram=4 GB (maximum)'))throw Error('configuration/version mismatch');
+  const state=await ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores')?.value),visibility:document.visibilityState,isolated:crossOriginIsolated,status:document.querySelector('#status').textContent,logs:(await import('./main.js')).guestLogs.history.page(undefined,300).map(l=>l.text).join(String.fromCharCode(10))}))()`);
+  const checks = { ...guestCpuChecks(cpu, state), isolated: state.isolated === true, visible: state.visibility === 'visible', version: state.system.version === (label === 'baseline' ? 'ff1ea9fc6f62' : pkg.version), config: startupLogs.includes(`display=1280x720, cpus=${cpu.requestedGuestCpus}, ram=4 GB (maximum)`) };
+  if(!Object.values(checks).every(Boolean))throw Error('configuration/version/CPU mismatch: '+JSON.stringify(checks));
   const images=service.requests.slice(requestStart).filter(r=>/\/(vmlinux\.wasm|initramfs[^/]*\.(?:gz|cpio))$/.test(r.path));
   if(label==='warm'&&images.length)throw Error('warm boot downloaded images');
-  await shot(label+'-functional');report.phases.push({label,pass:true,launch,readyElapsedMs:ready.at-start,beacons:service.beacons.slice(beaconStart),images,home,state});await fs.writeFile(out+'/progress.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({phase:label,pass:true,launchMs:launch.elapsedMs,readyMs:ready.at-start,imageRequests:images.length}));
+  await shot(label+'-functional');report.phases.push({label,pass:true,checks,cpu,launch,readyElapsedMs:ready.at-start,beacons:service.beacons.slice(beaconStart),images,home,state});await fs.writeFile(out+'/progress.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({phase:label,pass:true,launchMs:launch.elapsedMs,readyMs:ready.at-start,imageRequests:images.length}));
 }
 try {
   let port;await until(async()=>{if(exitInfo||spawnError)throw Error('browser startup failed');try{[port]=(await fs.readFile(out+'/profile/DevToolsActivePort','utf8')).trim().split('\n');return true;}catch(e){if(e.code!=='ENOENT')throw e;return false;}},15000,'browser');
@@ -81,7 +87,8 @@ try {
   ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const p=pending.get(m.id);if(p){pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result);}}else if(m.method==='Runtime.exceptionThrown')errors.push(m.params);};
   await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});await call('Page.enable');await call('Runtime.enable');await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
   await call('Page.navigate',{url:origin+'/linux/boot-manifest.json'});await until(()=>ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"),10000,'seed page');
-  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:2,ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/homepage-marker.txt',${JSON.stringify('homepage-preserved-v1\n')});if(!${freshDefault})await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
+  report.cpu = selectHostCpus(hostNproc, await ev('navigator.hardwareConcurrency'));
+  await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/homepage-marker.txt',${JSON.stringify('homepage-preserved-v1\n')});if(!${freshDefault})await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
   const url=origin+'/linux/index.html?firefox=1&renderer=canvas2d';
   if(freshDefault){service.setVariant('candidate');await phase('fresh-default',()=>call('Page.navigate',{url}),false);}
   else{

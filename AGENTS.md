@@ -16,8 +16,13 @@ use the same CPU count for new comparative benchmarks.
 The PBL benchmark runner now applies the same host-count setup to each arm and
 saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.
 Its syntax check passes; new Nightly benchmarks are pending the full binary.
-Older diagnostic runners must be adapted before any new invocation; historical
-two-CPU results and their pinned promotion verifiers remain unchanged.
+Homepage, DevTools, WebGPU W1 and WebGL F1a diagnostic runners now share
+host-count selection and independently saved startup kernel evidence for every
+cold/update/warm boot. Thirty-eight fixture checks and six syntax checks pass;
+no new guest test was started during the full Nightly build. Their historical
+version/GPU predicates still require Nightly migration. Other older runners,
+including public/TLS promotion copies, must be adapted before invocation;
+historical two-CPU results and pinned promotion verifiers remain unchanged.
 
 The updated GPU/homepage and session-startup runners select the browser host
 count, require agreement with nproc, and assert the actual kernel SMP count.
