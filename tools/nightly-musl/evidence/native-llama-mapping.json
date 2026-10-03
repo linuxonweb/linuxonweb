@@ -1,0 +1,130 @@
+{
+  "claim": "Actual llama-mmap browser-unit compile; actual file mapping/prefetch retained and unsupported locking reported; guest acceptance pending",
+  "terminal": {
+    "phase": "llama-mapping",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "third_party/llama.cpp/llama-mmap.o",
+      "-j4"
+    ],
+    "pid": 1621202,
+    "pgid": 1621202,
+    "started": 1791029283.2865613,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/llama-mapping-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18853408768,
+    "free_bytes": 76125581312,
+    "checked": 1791029283.2872372,
+    "exit_code": 0,
+    "finished": 1791029286.903838,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 61295,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_pgid_empty": true,
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/llama.cpp/llama-mmap.o",
+    "bytes": 123427,
+    "sha256": "7f2584ef467b4a6e10ec0210c453fcc0039273ecae5a4287373447312604ad9f",
+    "mtime_ns": 1791029285014392530
+  },
+  "native_runtime": {
+    "mappingSupported": true,
+    "lockingSupported": false,
+    "imports": 0,
+    "nativeWasmRuntime": true
+  },
+  "host_compile_exit": 0,
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-llama-mapping-review-run1.json",
+    "bytes": 3067,
+    "sha256": "3d951e286aeb74de226bccacf65d6368cd800648625ca9eae494a6d69b160662",
+    "passed_predicates": 33
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/src/llama-mmap.cpp",
+      "bytes": 25379,
+      "sha256": "8c2aee49312873ac507768413c63fdb8ac5c9b98e3f74c440e952c0d9880700e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/llama-mapping-preflight/original-llama-mmap.cpp",
+      "bytes": 25208,
+      "sha256": "743e75fc6f0161b82d6d01bc8d266fb27cac5fdf967ffde07fe11c249ee1e372"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/llama.cpp/.deps/llama-mmap.o.pp",
+      "bytes": 134000,
+      "sha256": "162d8fd2761f14a1b659bef09f0fb5f255afa19f9c7c81b18c26f2f335abcaee"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/llama-mapping-preflight/result.json",
+      "bytes": 10283,
+      "sha256": "21b5eacc836b8ce345a5ec9d6d055bfdd9870744987d57f680c5ad7ab67ccdf2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/llama-mapping-preflight/host-symbol-review-failure-run1.json",
+      "bytes": 2022,
+      "sha256": "8c9d67602fc8d516864a3bad062fc6655f8a34e72f16a1c37285dc5a4d4c5aa2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-llama-mapping-port.json",
+      "bytes": 490,
+      "sha256": "c5f1e4732ca630c56d7b0f5b70e99f12a020513caa99c7cc809522bb1fe62db6"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/llama-mapping-run1.json",
+      "bytes": 885,
+      "sha256": "19605020daa23d98454da1386b1617a16f1883e7d875cb7ca4ef1729665e5ece"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/llama-mapping-run1-group-cleanup.json",
+      "bytes": 1048,
+      "sha256": "a3c3da623b9460a9562ca6cc98f5f61312a79fc418cf872d7a044b23c35a795d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/llama-mapping-run1.log",
+      "bytes": 883,
+      "sha256": "70343eed803761692374703fe6c3bed8588366b542fcb857b6421ab97f9015be"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 3158,
+      "sha256": "8f7c73fd6eaaf86b7ae1830e0fe81b2897d5cacddbca8a2475c64ccb9127acb3"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-llama-mapping-port.py",
+      "bytes": 2189,
+      "sha256": "f36ed579da7b38ba41ea38eef2921f025b80118c44885f0c9ac55ca7e07b7a7b"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-llama-mapping/probe.py",
+      "bytes": 4652,
+      "sha256": "521a4e31e40f93299e8e849f1768c1064b46dee5181eb314465e151e97ce3cc2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-llama-mapping-actual-undefined.txt",
+      "bytes": 753,
+      "sha256": "e73ded0d63b8c042534f32e6bbde58f80c8eed4bd7f887fbf43466deb15037b6"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

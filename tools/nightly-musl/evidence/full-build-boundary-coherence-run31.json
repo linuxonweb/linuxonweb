@@ -1,0 +1,128 @@
+{
+  "claim": "Run31 terminal native progress and actual llama.cpp optional mapping API errors; browser link/guest/JIT acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run31",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1603975,
+    "pgid": 1603975,
+    "started": 1791028770.7712784,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run31.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18843840512,
+    "free_bytes": 76129673216,
+    "checked": 1791029078.386173,
+    "exit_code": 2,
+    "finished": 1791029081.953738,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 10559,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 2786,
+    "missing_expected_object_count": 226,
+    "existing_expected_object_bytes": 2078688010,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 307,
+    "new_paths_written_before_phase_count": 1,
+    "rebuilt_existing_written_during_phase_count": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run31-review-run1.json",
+    "bytes": 419418,
+    "sha256": "5b0efe702214f68771238d4c21d35156ca33f3f2f73d2ff057d40eaf5f99c840",
+    "passed_predicates": 3923
+  },
+  "compiler_errors": [
+    " 1:50.02 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/src/llama-mmap.cpp:457:34: error: use of undeclared identifier 'MAP_POPULATE'",
+    " 1:50.05 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/src/llama-mmap.cpp:645:14: error: use of undeclared identifier 'mlock'; did you mean 'flock'?",
+    " 1:50.05 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/src/llama-mmap.cpp:680:13: error: use of undeclared identifier 'munlock'"
+  ],
+  "before_source_snapshot": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/llama-mapping-preflight/original-llama-mmap.cpp",
+    "bytes": 25208,
+    "sha256": "743e75fc6f0161b82d6d01bc8d266fb27cac5fdf967ffde07fe11c249ee1e372"
+  },
+  "source_mutated_by_followup": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run31.json",
+      "bytes": 795,
+      "sha256": "e7979c3c1b61d4104ded2f158986cf9d2fe9548253a29a80a3ac5b9274402c41"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run31-boundary.json",
+      "bytes": 701620,
+      "sha256": "8c2cda4614e24f855414a3677a9d1e6bf72b77f5e41a15bddc52619d60944594"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run31-group-cleanup.json",
+      "bytes": 953,
+      "sha256": "020a056e1320623c332c2fc52b4a5126d3de57a608e3d891b696aaa438569cd7"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run31.json",
+      "bytes": 651408,
+      "sha256": "e266f6e2c4d328658b9af34dd954bb58dc6566123553695d2f13cc13da445009"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run31.json",
+      "bytes": 302282,
+      "sha256": "9e86bf325127261612d496c9e65ceb65af0e5d5ee64ae27ced3d9d6e2ebbe21b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run31.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run31.log",
+      "bytes": 39392,
+      "sha256": "33f8d4fe8429887fbac0b6dd6053ea732d146521909ac70c2dc29a6ad69cb4d8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/llama-mapping-preflight/original-llama-mmap.cpp",
+      "bytes": 25208,
+      "sha256": "743e75fc6f0161b82d6d01bc8d266fb27cac5fdf967ffde07fe11c249ee1e372"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

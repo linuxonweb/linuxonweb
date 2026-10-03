@@ -289,6 +289,28 @@ mutation occurred before that failure, and each driver's existing root is now
 preserved. Continue full build unchanged. Browser linking, actual Nightly JIT,
 GPU and both authorized Sites release gates remain pending.
 
+
+Run31 reaches2,786/3,012 native objects, adding307 during the phase and one
+prephase ggml object. It exits2 after311.18s on missing MAP_POPULATE, mlock
+and munlock in llama-mmap.cpp; unified10559 is reaped2 and PGID1603975 empty.
+Root's3,923-check terminal review preserves coherent552 consumers and the
+unchanged Rust archive. Three local capability guards retain file mmap and
+posix prefetch, omit the undefined optional populate hint and use the existing
+unsupported locking fallback only for native Linux/Wasm. The genuine musl
+archive has no mlock/munlock definitions; declarations would not fix linking.
+Paired actual source compilation passes after retaining the original errors.
+The linked native capability exports report mapping=true and locking=false.
+Host Linux retains its mlock call and both original preprocessed locking
+bodies. A mistaken requirement for an emitted unused munlock helper is
+preserved in the failed host review and corrected; no source change followed
+that diagnostic. Actual llama-mapping-run1 builds the fresh123,427-byte browser
+unit in3.62s; unified61295 is reaped0 and PGID1621202 empty. Root checks33
+source/command/native/dependency/symbol/terminal predicates. Evidence:
+tools/nightly-musl/evidence/native-llama-mapping.json and full-build-boundary-
+coherence-run31.json. Continue unchanged full build; complete mapping-adapter
+linkage, Nightly startup/JIT, GPU and both authorized Sites releases remain
+pending. Public v10 is unchanged.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
