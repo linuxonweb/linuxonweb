@@ -1,0 +1,195 @@
+{
+  "claim": "Run26 retained object/rebuild boundary with one mmap declaration blocker; full coherence and linked browser/guest acceptance remain pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run26",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1433631,
+    "pgid": 1433631,
+    "started": 1791023306.8785172,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run26.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 17943633920,
+    "free_bytes": 75882586112,
+    "checked": 1791023947.7401445,
+    "exit_code": 2,
+    "finished": 1791023961.3415153,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 61023,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "freezer_session": {
+    "session_id": 7607,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "compiler_error_count": 1,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 1195,
+    "missing_expected_object_count": 1817,
+    "existing_expected_object_bytes": 1388665621,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 551,
+    "all_required_consumers_complete": false,
+    "new_paths_written_during_phase_count": 82,
+    "new_paths_written_before_phase_count": 0,
+    "rebuilt_existing_written_during_phase_count": 79
+  },
+  "phase_directory_first": [
+    "0:03.96 gfx/thebes",
+    "0:03.98 gfx/layers",
+    "0:04.11 image/decoders/icon",
+    "0:04.12 image/decoders/icon/gtk"
+  ],
+  "phase_directory_last": [
+    "8:55.83 js/src/vm",
+    "9:19.16 js/src/wasm",
+    "9:24.05 js/src/xsum",
+    "9:24.29 modules/fdlibm/src"
+  ],
+  "next_phase_held_for_parent_review": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run26.json",
+      "bytes": 797,
+      "sha256": "d7f371e1daa9b3235f35b13ee0ccecf3eb6b054402fa68576b35f48dec684024"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run26-group-cleanup.json",
+      "bytes": 956,
+      "sha256": "d16fbb29ccdd4e6802149f70ae041adfa8ee02f8a3d20cbe2bf1464631d66c4c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run26-boundary.json",
+      "bytes": 565320,
+      "sha256": "8bd45924e0c5c083d9d9014e79d86b36d6b1fd1e92c2fab40b86db16993e21ea"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run26.json",
+      "bytes": 521469,
+      "sha256": "b21cc9111664a057191cdd5b046dfa4a5dad2de94adb77585041c51909686787"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run26.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run26.json",
+      "bytes": 270967,
+      "sha256": "8bbf73a2351959050c5e652c34bb70bc08eb5c20119e345ada41cc0c5bee8f57"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-prerequisite-refresh-run1.json",
+      "bytes": 520262,
+      "sha256": "307ca97d721c1c5964db27c220346cb0c1661f77d290ada9a14645c588bed3ae"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-consumer-inventory-run1.json",
+      "bytes": 267185,
+      "sha256": "a26bad222ed6d6e9a4d1c1fbf67d2eaf740c88cb90204f8632664afc08865831"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-inttypes-progress.py",
+      "bytes": 3864,
+      "sha256": "2a1f8a5836367d4910245661bedaa94a35471d19deef49835be2515cddc62988"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-build-boundary.py",
+      "bytes": 4721,
+      "sha256": "43c7fcbaae7823e6cdbf3f76c22c561a68f7d85545bc0ff1d11b1b0ea36e1a16"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run26.log",
+      "bytes": 100892,
+      "sha256": "82e76cd140b2ea10ba1ed353f3d9459a064b8760bf742e0b664afd7db8f4db4b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/inttypes.h",
+      "bytes": 305,
+      "sha256": "056c55532c5be17edd7f2ff7de0987be0e53f72b55d12be6b4a476849c1ac4de"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/TaggedAnonymousMemory.h",
+      "bytes": 2972,
+      "sha256": "7196ad0a062e712c56617a6814f6c3d4fec7fe1fb80f2cbafa7a1b42bacb1a95"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/vm/Unified_cpp_js_src_vm0.cpp",
+      "bytes": 2852,
+      "sha256": "10a038022d0356a74f3d528b44477f56d3b7bbd7b71521e5b49f2e162d22585e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/js/src/vm/ArrayBufferObject.cpp",
+      "bytes": 139538,
+      "sha256": "ef5714d10432136cd8bbf55bdbf913fdbb83f56ced7c7acb1cf9edf41eb3cfcd"
+    }
+  ],
+  "coherence_freezer_session": {
+    "session_id": 84079,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "compiler_errors": [
+    " 9:28.83 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/TaggedAnonymousMemory.h:72:10: error: use of undeclared identifier 'mmap'"
+  ],
+  "blocker": {
+    "object": "js/src/vm/Unified_cpp_js_src_vm0.o",
+    "source": "js/src/vm/ArrayBufferObject.cpp:13",
+    "header": "mfbt/TaggedAnonymousMemory.h:72",
+    "cause": "Architecture-port include branch skips sys/mman.h for native Linux/Wasm while inline non-WASI fallback calls mmap",
+    "proposed_correction": "Limit stdlib-only Wasm include branch to WASI or non-Linux Wasm; preserve native sys/mman.h off_t/mmap and all runtime branches"
+  },
+  "independent_parent_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run26-review-run1.json",
+    "bytes": 252817,
+    "sha256": "76c3886f3d0a6966362bb0f1f3cda23bff4d365087bc5f8a50ef8ed78eebf64a",
+    "predicate_pass_count": 2333,
+    "scope": "Historical terminal boundary with551/552consumers and one compiler error; later corrective component evidence is separate"
+  },
+  "source_mutated_by_followup": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/TaggedAnonymousMemory.h",
+    "before_snapshot": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/original-TaggedAnonymousMemory.h",
+      "bytes": 2972,
+      "sha256": "7196ad0a062e712c56617a6814f6c3d4fec7fe1fb80f2cbafa7a1b42bacb1a95"
+    },
+    "after_sha256": "87d1ecd4bd602d36eff0e20adac514226bbf2574bdd6b1c782c310e595c44ced",
+    "historical_mutable_before_pin_still_current": false
+  }
+}

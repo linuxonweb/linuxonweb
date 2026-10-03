@@ -185,6 +185,31 @@ Compilation advances through graphics, hal and image sources. Continue the
 full build unchanged after actual status inspection; full coherence, linking,
 guest JIT/GPU acceptance and both authorized Sites releases remain pending.
 
+Run26 stops with exit2 after654.46s on one compiler error: the earlier Wasm
+include guard in mfbt/TaggedAnonymousMemory.h hides mmap from native Linux/musl.
+Exact PGID1433631 is empty; unified61023 is reaped2 and boundary/coherence
+handles7607/84079 are reaped0. The graph advances to1,195/3,012 native objects,
+with82 new paths and79 rebuilt outputs during the phase. Strict inttypes
+coherence reaches551/552; the remaining consumer is mfbt/Unified_cpp_mfbt0.o.
+The Rust archive and original dependency backups remain unchanged. Root's
+full-boundary-run26-review-run1.json independently passes2,333 actual predicates
+and records the single compiler error. Full linking, guest JIT/GPU acceptance
+and both Sites releases remain pending; public v10 is unchanged.
+
+The narrow TaggedAnonymousMemory include correction now retains sys/mman.h
+for native Linux/Wasm while preserving the prior WASI and non-Linux guards.
+Native C/C++ checks reproduce the original missing declaration and verify the
+fixed mmap signature,64-bit off_t and32-bit pointers. Actual js-vm-run1 passes
+in86.06s; its unified handle4409 is reaped0 and PGID1462133 is empty. A subsequent
+audit corrects the earlier inference about the remaining consumer: it is MFBT,
+not the failed VM unit. Existing mfbt-run7 passes in5.59s with handle45044
+reaped0 and PGID1471296 empty. All552 original consumers now have fresh native
+objects and natural shim dependencies, with original backups retained. Root's
+native-tagged-mmap-review-run3.json passes1,696 actual source/ABI/component/
+dependency predicates; two earlier review failures remain retained, including
+the exported-header alias correction. This closes prerequisite coherence only;
+the full3012-object graph, linking and Nightly guest/JIT acceptance remain open.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

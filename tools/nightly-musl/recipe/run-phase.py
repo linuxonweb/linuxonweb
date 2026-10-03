@@ -5,7 +5,7 @@ root=Path("/mnt/p6/build/firefox-nightly-musl-recovery-20261002")
 phase=sys.argv[1]
 jobs=os.environ.get('NIGHTLY_JOBS','2')
 assert jobs in ('2','4')
-commands={'configure':['configure'],'pre-export':['build','pre-export','-j2'],'export':['build','export','-j2'],'mfbt':['build','--allow-subdirectory-build','mfbt','-j2'],'build':['build','-j'+jobs],'ipc':['build','--allow-subdirectory-build','ipc/chromium','-j'+jobs],'js-builtin':['build','--allow-subdirectory-build','js/src/builtin','-j'+jobs]}
+commands={'configure':['configure'],'pre-export':['build','pre-export','-j2'],'export':['build','export','-j2'],'mfbt':['build','--allow-subdirectory-build','mfbt','-j2'],'build':['build','-j'+jobs],'ipc':['build','--allow-subdirectory-build','ipc/chromium','-j'+jobs],'js-builtin':['build','--allow-subdirectory-build','js/src/builtin','-j'+jobs],'js-vm':['build','--allow-subdirectory-build','js/src/vm','-j'+jobs]}
 if phase not in commands: raise SystemExit('Unknown phase')
 run=sys.argv[2] if len(sys.argv)>2 else 'run1'
 log=root/'logs'/f'{phase}-{run}.log'; status=root/'status'/f'{phase}-{run}.json'

@@ -1,0 +1,11 @@
+--- a/mfbt/TaggedAnonymousMemory.h
++++ b/mfbt/TaggedAnonymousMemory.h
+@@ -31,7 +31,7 @@
+ 
+ #ifndef XP_WIN
+ 
+-#  if defined(__wasi__) || defined(__wasm__)
++#  if defined(__wasi__) || (defined(__wasm__) && !defined(__linux__))
+ #    include <stdlib.h>
+ #  else
+ #    include <sys/mman.h>

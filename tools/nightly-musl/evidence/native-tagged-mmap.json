@@ -1,0 +1,230 @@
+{
+  "claim": "Native mmap declaration correction compiled in actual SpiderMonkey VM, final MFBT inttypes consumer rebuilt; original552 coherence complete only, no fullbrowser/link/guest acceptance",
+  "native_header_change": "One include predicate; runtime branches, native off_t/mmap and historical architecture patch unchanged",
+  "vm_terminal": {
+    "phase": "js-vm",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "js/src/vm",
+      "-j4"
+    ],
+    "pid": 1462133,
+    "pgid": 1462133,
+    "started": 1791024201.04172,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/js-vm-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 17994571776,
+    "free_bytes": 75826638848,
+    "checked": 1791024283.5257177,
+    "exit_code": 0,
+    "finished": 1791024287.1066837,
+    "stop_reason": null
+  },
+  "vm_unified_session": {
+    "session_id": 4409,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "mfbt_terminal": {
+    "phase": "mfbt",
+    "run": "run7",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "mfbt",
+      "-j2"
+    ],
+    "pid": 1471296,
+    "pgid": 1471296,
+    "started": 1791024512.3980758,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/mfbt-run7.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 17999134720,
+    "free_bytes": 75826810880,
+    "checked": 1791024512.3988252,
+    "exit_code": 0,
+    "finished": 1791024517.9906082,
+    "stop_reason": null
+  },
+  "mfbt_unified_session": {
+    "session_id": 45044,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_owned_groups_empty": true,
+  "coherence_checker_session": {
+    "session_id": 36493,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "original_dependency_backups_verified": 552
+  },
+  "actual_formerly_failing_vm_object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/vm/Unified_cpp_js_src_vm0.o",
+    "bytes": 2106721,
+    "sha256": "e9c7a489612638b35ca6e93ffde45bf919c98029d29568900462570d2d4e8c06",
+    "mtime_ns": 1791024214185270788,
+    "native_magic": "0061736d01000000",
+    "actual_compile_argv_capture_claim": false
+  },
+  "actual_mfbt_object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+    "bytes": 278048,
+    "sha256": "6477aec832763464782f543713d17b75521f3c890b52a919437a3fb5a8620d93",
+    "mtime_ns": 1791024515635819953,
+    "native_magic": "0061736d01000000"
+  },
+  "actual_compile_argv_capture_claim": false,
+  "compiler_argv_note": "Configured mach component command retained; attempted live VM compiler captures missed already completed units and are not claimed captured",
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/native-tagged-mmap-port.py",
+      "bytes": 1884,
+      "sha256": "895b00755aeec0716f45a953773c748c22c7e562ed72dcca92af4a949e3d31f9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/probe-native-tagged-mmap.py",
+      "bytes": 3235,
+      "sha256": "2eb7b11b53e87b2057c4d75089febb997aa718443ba1ae8bb8a6d83fadf0ffb4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-inttypes-component.py",
+      "bytes": 4757,
+      "sha256": "196c88b4fe3c1e7fb50e877db8691020a3ba1c1adbb067b2e37e3948f3346f9f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-tagged-mmap-include.patch",
+      "bytes": 286,
+      "sha256": "444d1641701dc507eb4c5fa86db180723337799eea20b1e02292ca0684f95187"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-tagged-mmap-port.json",
+      "bytes": 508,
+      "sha256": "bf08bb77191d7f30e31c084f4054ca43bcb1d7a740eade1b014fb349c482d26e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/result.json",
+      "bytes": 6453,
+      "sha256": "57ce149664a5627a3b9a234e617052ea8914bb3c1c280176965e5b45bfc9ceef"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/original-TaggedAnonymousMemory.h",
+      "bytes": 2972,
+      "sha256": "7196ad0a062e712c56617a6814f6c3d4fec7fe1fb80f2cbafa7a1b42bacb1a95"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/coherence-check-run1-source.py",
+      "bytes": 4213,
+      "sha256": "e68dbbda1d24d9ead5587bb2b2ec801bec5be14ede2ce112834be171f2dc1b53"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/coherence-check-run1-error.json",
+      "bytes": 260,
+      "sha256": "c66d6fdc37997cded327114c8599e5649da7f4c2b2b4218d3a61d9942141d200"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/coherence-check-run2-source.py",
+      "bytes": 4202,
+      "sha256": "cb55c2a3ed16291b08214d95853e0f38c76391059612d7fbfe73531f5c6121f8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tagged-mmap-preflight/coherence-check-run2-error.json",
+      "bytes": 274,
+      "sha256": "c201a50e092bf0e93dbf0239d72be1c89f8060809d111902159e675fa0eca525"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-js-vm-run1.json",
+      "bytes": 385970,
+      "sha256": "2b7eb55d76ff6498f65a0f35888e60f327c3bce0d7394757ccc241bc6f5d4d81"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/TaggedAnonymousMemory.h",
+      "bytes": 2997,
+      "sha256": "87d1ecd4bd602d36eff0e20adac514226bbf2574bdd6b1c782c310e595c44ced"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/sys/mman.h",
+      "bytes": 1943,
+      "sha256": "47983e6461ef20ebaf2fb5be0dc64864352dadb6943163eda402a8cc64d0cd1b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 2619,
+      "sha256": "549143e8a8affffbd7f419e8fbb7e1fbf7c47fa1003614cfbbea0dbfe4153fd8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-architecture-memory-ilp32.patch",
+      "bytes": 10232,
+      "sha256": "219f38c116c2ddcdd4c6083e6c92069cd0c86c6a54d1232a472b4a7448bd81d3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/vm/Unified_cpp_js_src_vm0.cpp",
+      "bytes": 2852,
+      "sha256": "10a038022d0356a74f3d528b44477f56d3b7bbd7b71521e5b49f2e162d22585e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src/vm/.deps/Unified_cpp_js_src_vm0.o.pp",
+      "bytes": 292001,
+      "sha256": "64106e45843dbe79ca59d3849898b7fa50bd64dc45ed6303c22fde7695c7f52d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+      "bytes": 278048,
+      "sha256": "6477aec832763464782f543713d17b75521f3c890b52a919437a3fb5a8620d93"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/.deps/Unified_cpp_mfbt0.o.pp",
+      "bytes": 173077,
+      "sha256": "08f2e2682815644f9f80f12fba7be43e3d369f80634cafe0822bda4e6e07deb4"
+    }
+  ],
+  "independent_parent_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-tagged-mmap-review-run3.json",
+    "bytes": 270228,
+    "sha256": "7821a467640f27a5a1f13f84c1b48468c97209214d980f425de0fd56c0110af2",
+    "predicate_pass_count": 1696,
+    "scope": "Original552inttypes coherence plus actual corrected VM and MFBT component compilation; fullbrowser/link/guest pending"
+  },
+  "retained_failed_parent_reviews": {
+    "pins": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-tagged-mmap-review-run1-failure.json",
+        "bytes": 1571,
+        "sha256": "d10c6fdd8e95995c714327c1c4c884d353c3f2da7bd18d5acccbfe0891ae53c1"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-tagged-mmap-review-run2-failure.json",
+        "bytes": 1279,
+        "sha256": "0456ea28c1f584da3cb9c1f7e746022915906dfa9e9b4e179fca6d8958749265"
+      }
+    ],
+    "run1": "Correct refusal while actual MFBT consumer remained stale",
+    "run2": "Reviewer literal source-path lookup omitted dist/include symlink; run3 verifies exact symlink resolution"
+  },
+  "strict_coherence_sysroot_predicate": "Every regenerated dependency contains /nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/inttypes.h, owned adapter and no manual appended suffix; all original552backup hashes and object fresh/native checks pass"
+}
