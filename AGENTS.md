@@ -1,5 +1,16 @@
 # Current continuation — 2026-10-02
 
+Run34 reaches all three final browser program links and exits2 because wasm-ld
+rejects ELF --as-needed/--no-as-needed flags. It is terminal/reaped, exact group
+empty. Root checks4,152 boundary predicates, all3,012 native objects and552
+natural inttypes consumers;215 existing outputs rebuilt during the segment.
+The graph matches the independently reviewed static-inference delta. The native
+root defs.mk adapter now filters only the two exact OS_LIBS tokens, retaining
+all libraries and mapping adapter. Actual Firefox make dry link confirms this,
+and every generated input/root.mk is unchanged. Actual link retry is pending.
+See native-wasm-as-needed.json and full-build-boundary-coherence-run34.json.
+
+
 The Nightly C++ runtime is rebuilt from unchanged installed LLVM22.1.8 source
 with Wasm exceptions and the same WebAssembly C++ ABI as Firefox. The previous
 sysroot C++ libraries used the generic ABI: real guest integer throws worked,

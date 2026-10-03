@@ -1,0 +1,19 @@
+{
+  "claim": "Independent terminal native boundary and exact dependency rebuild review",
+  "run": "run34",
+  "previous": "run33",
+  "compilerErrorCount": 9,
+  "graphExisting": 3012,
+  "graphExpected": 3012,
+  "naturalConsumers": 552,
+  "requiredConsumers": 552,
+  "newGraphPaths": 0,
+  "rebuiltExistingGraphPaths": 216,
+  "coherentRebuildComplete": true,
+  "guestAcceptance": false,
+  "releaseAcceptance": false,
+  "review_path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run34-review-run1.json",
+  "review_sha256": "9eae5b3c7922823c9b7d5028781e438bd4d1a8e494d6b2364b46354358b281bc",
+  "check_count": 4152,
+  "observedLinkFailure": "wasm-ld rejects ELF --as-needed/--no-as-needed in final Firefox/plugin-container/xpcshell link"
+}

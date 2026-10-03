@@ -1,0 +1,27 @@
+{
+  "claim": "Native Wasm ELF shared-library mode filter and actual Firefox dry link argv; final linking/guest acceptance remains pending",
+  "checked": 1791033877.8447342,
+  "generatedInputCount": 578,
+  "generatedInputsUnchanged": true,
+  "onlyTwoExactOsLibTokensRemoved": true,
+  "librariesRetained": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/defs-before-as-needed.mk",
+      "sha256": "10e42095ea74642fead3915be8b4594487dc5472fc5e0d05ba4b37703763deea",
+      "bytes": 476
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/defs.mk",
+      "sha256": "865089a862fe9ebc796f506c27b4d690a1563d37ea67aaae78bc23f280dc51cd",
+      "bytes": 597
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/firefox-link-dry-run-after-as-needed.log",
+      "sha256": "9434c3ef45a074a2728743b9335fcd73275e2f3aa12f452401e7b32fd0ff48c9",
+      "bytes": 4060
+    }
+  ],
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false
+}
