@@ -1,3 +1,35 @@
+# Latest continuation — optimizer RAM/swap bounds, 2026-10-03
+
+Run49 terminal/reaped2 after about20minutes; exact PGID2297842 empty. Original
+Binaryen-O2 optimizer aborted, with no final browser output. Last direct VM
+observation was about47.9GiB under48GiB RLIMIT_AS. Allocation failure near the
+limit is an inference, not a proven crash cause; no new kernel OOM kill or
+retained Run49 backtrace. Retained artifacts pass4152 native boundary checks
+and1533 Pixman checks (3012 native objects/552 inttypes/763 Pixman consumers).
+
+User authorized more optimizer RAM and is adding swap. Run50 (64GiB AS/32GiB
+RSS) was explicitly stopped early to apply the user's resident-memory change;
+terminal/reaped143, exact PGID2360265 empty, same4152/1533 retained checks pass.
+Run51 LIVE: owned PGID2368654, unified session1600, first optimizer2370793, j1/7200seconds,
+64GiB inherited RLIMIT_AS,48GiB polled process-group RSS bound,2GiB available-RAM
+floor. Host physical RAM is about39GiB, so the available-RAM floor constrains
+physical use before48GiB can be resident. Current host swap80GiB. Additional swap supports virtual
+allocation, not additional physical RAM. Original automatic-O2 retained;
+no stripping/optimizer bypass or active Firefox source change. Supervisor
+now records peak per-process virtual memory and disables giant core dumps
+for full-build children. Full-build AS override24..64GiB/RSS24..48GiB;
+defaults24GiB. Preflight4GiB available RAM and RAM+free swap>=AS+2GiB.
+Real supervisor checks39/0, including actual24/48/64GiB inherited limits,
+zero core limit, oversized mappings rejected, RAM/swap and virtual-usage
+readers, override validation/scoping, and orphan cleanup. Source/evidence:
+tools/nightly-musl/evidence/optimizer-virtual-memory-retry.json and
+docs/firefox-nightly-final-optimization-20261003.md. Disk policy32GiB task/
+20GiB reserve unchanged. Poll Run51 exact handle/group before further changes.
+No Nightly baseline/browser/JIT/GPU/deploy acceptance; public v10 unchanged.
+Goal active inline, no subagents. Next complete baseline/package/guest gates,
+then fresh whole broad-PBL/JIT build and full acceptance, followed by GPU.
+Older LIVE entries below are historical observations.
+
 # Latest continuation — original optimizer retry with more swap, 2026-10-03
 
 User explicitly requested retrying the original optimizer, then lowered the

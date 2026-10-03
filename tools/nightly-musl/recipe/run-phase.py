@@ -24,14 +24,14 @@ address_space_limit=memory_limit
 if 'NIGHTLY_RESIDENT_MEMORY_GIB' in os.environ:
  if phase!='build': raise SystemExit('Resident-memory override is only valid for the full build phase')
  requested=os.environ['NIGHTLY_RESIDENT_MEMORY_GIB']
- if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=32:
-  raise SystemExit('Resident-memory limit must be decimal GiB between 24 and 32')
+ if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=48:
+  raise SystemExit('Resident-memory limit must be decimal GiB between 24 and 48')
  memory_limit=int(requested)*1024**3
 if 'NIGHTLY_ADDRESS_SPACE_GIB' in os.environ:
  if phase!='build': raise SystemExit('Address-space override is only valid for the full build phase')
  requested=os.environ['NIGHTLY_ADDRESS_SPACE_GIB']
- if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=48:
-  raise SystemExit('Address-space limit must be decimal GiB between 24 and 48')
+ if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=64:
+  raise SystemExit('Address-space limit must be decimal GiB between 24 and 64')
  address_space_limit=int(requested)*1024**3
 def available_memory():
  for line in Path('/proc/meminfo').read_text().splitlines():
@@ -40,6 +40,7 @@ def available_memory():
 def prepare_child():
  if memory_limit is not None:
   resource.setrlimit(resource.RLIMIT_AS,(address_space_limit,address_space_limit))
+  resource.setrlimit(resource.RLIMIT_CORE,(0,0))
   # Prefer an owned build victim if the host still reaches its OOM boundary.
   Path('/proc/self/oom_score_adj').write_text('1000')
 def group_memory(pgid):
@@ -60,6 +61,17 @@ def live_group(pgid):
    if int(fields[2])==pgid and fields[0]!='Z': members.append(int(process.name))
   except (FileNotFoundError,ProcessLookupError,PermissionError): continue
  return members
+def group_address_space(pgid):
+ largest={'pid':None,'bytes':0}
+ for process in Path('/proc').iterdir():
+  if not process.name.isdecimal(): continue
+  try:
+   fields=(process/'stat').read_text().rsplit(')',1)[1].split()
+   size=int(fields[20])
+   if int(fields[2])==pgid and fields[0]!='Z' and size>largest['bytes']:
+    largest={'pid':int(process.name),'bytes':size}
+  except (FileNotFoundError,ProcessLookupError,PermissionError): continue
+ return largest
 def stop_group(p,grace_seconds=10):
  # The mach parent can exit before an optimizer which ignores SIGTERM.
  # Waiting only on the parent left Run48's 24 GiB optimizer alive.
@@ -93,13 +105,16 @@ start=time.time(); reason=None
 with log.open('w') as out:
  p=subprocess.Popen(args,stdout=out,stderr=subprocess.STDOUT,start_new_session=True,preexec_fn=prepare_child)
  meta={'phase':phase,'run':run,'argv':args,'pid':p.pid,'pgid':p.pid,'started':start,'log':str(log),'timeout_seconds':limit,'state':'running'}
- if memory_limit is not None: meta.update(process_address_space_limit_bytes=address_space_limit,group_rss_limit_bytes=memory_limit,host_available_memory_floor_bytes=2*1024**3,child_oom_score_adj=1000,preflight_available_memory_bytes=preflight_available,preflight_free_swap_bytes=preflight_swap)
+ if memory_limit is not None: meta.update(process_address_space_limit_bytes=address_space_limit,group_rss_limit_bytes=memory_limit,host_available_memory_floor_bytes=2*1024**3,child_oom_score_adj=1000,child_core_limit_bytes=0,preflight_available_memory_bytes=preflight_available,preflight_free_swap_bytes=preflight_swap)
  status.write_text(json.dumps(meta,indent=2)); print(json.dumps(meta),flush=True)
  next_check=start
  while p.poll() is None:
   now=time.time()
   if memory_limit is not None:
    rss=group_memory(p.pid); available=available_memory()
+   virtual=group_address_space(p.pid)
+   if virtual['bytes']>meta.get('peak_process_address_space',{}).get('bytes',0):
+    meta['peak_process_address_space']={**virtual,'observed_at':now}
    meta.update(group_rss_bytes=rss,host_available_memory_bytes=available,memory_checked=now)
    status.write_text(json.dumps(meta,indent=2))
    if rss>=memory_limit: reason='buildGroupMemoryLimit'

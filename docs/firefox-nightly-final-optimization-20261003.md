@@ -1,6 +1,6 @@
 # Nightly final optimization retry — 2026-10-03
 
-The Run47/Run48 configuration below is historical. The latest retry is Run49,
+The Run47/Run48 configuration below is historical. The latest retry is Run51,
 described at the end, with the user's requested2GiB available-RAM floor.
 
 The native-musl Firefox159 baseline is still incomplete. Run47's two concurrent
@@ -113,3 +113,51 @@ resident/2GiB RAM settings. Unified session34812; status/log are the same task's
 are bound in`tools/nightly-musl/evidence/original-optimizer-swap-retry.json`.
 Recheck exact live handles before further changes. Nightly full-build, guest,
 JIT, GPU and deployment acceptance remain pending; public v10 is unchanged.
+
+## Run49 terminal; Run51 with user-requested additional RAM
+
+Run49 exited2 after20minutes. Original Binaryen-O2 aborted; the supervisor did
+not stop it for RAM, disk or time. The exact group2297842 is empty and the
+unified handle34812 was reaped. No final Firefox/plugin-container/xpcshell
+remained. The last direct optimizer observation showed50,252,488KiB virtual
+usage (about47.9GiB), close to its48GiB inherited limit. Allocation failure is
+an inference; the log has only the driver's abort diagnostic and no definitive
+allocator report or retained backtrace. Kernel evidence shows no new OOM kill.
+The retained build boundary passes4152 checks and Pixman1533checks, including
+all3012 native objects,552 inttypes and763 Pixman consumers. The Rust archive
+remains pinned. The two driver errors are retained, not suppressed.
+
+The supervisor now accepts24..64GiB virtual address space and24..48GiB resident
+memory for full builds; defaults remain24GiB each. It records peak observed
+per-process virtual usage to distinguish future limit pressure. Full-build
+children inherit a zero core-file limit, avoiding huge system-managed dumps
+outside the disk-backed build task. Actual guard tests pass39checks, covering
+24/48/64GiB inherited address-space limits, zero core limits, oversized mappings
+rejected, untouched30GiB virtual mappings admitted under48/64GiB, RAM/swap and
+largest-live-process virtual usage readers, absent groups, override boundaries
+and phase scoping, preflight boundaries and real descendant cleanup. These
+checks cover supervisor behavior, not Firefox/JIT behavior.
+
+Run50 initially started at64GiB AS/32GiB RSS. The user then requested more RAM;
+the early retry was explicitly stopped to change the loaded supervisor.
+It terminated/reaped143, group2360265 is empty, with4152 native and1533 Pixman
+retained checks passing. This was a configuration change, not an optimizer
+failure. Its previous supervisor source is preserved under
+`status/build-run50-run-phase.py` before installing the current source.
+
+Run51 is live: owned PGID2368654, unified session1600, j1,7200seconds,
+64GiB inherited virtual allowance,48GiB polled group RSS threshold, and2GiB
+available-RAM floor. The host has approximately39GiB physical RAM;48GiB is a
+stop threshold, not a reservation or physical-memory allocation. The available
+RAM floor protects that physical reserve. Additional swap supports virtual
+allocation. Preflight still requires4GiB available RAM and available RAM plus
+free swap >=selected AS+2GiB. Storage policy remains32GiB task/20GiB reserve.
+The original-O2 operation, upstream Firefox source and link adapter remain
+unchanged. Do not restart or change the active recipe on an observation timeout.
+Reap Run51 and verify its exact group empty before freezing terminal evidence.
+
+Evidence is bound in`tools/nightly-musl/evidence/optimizer-virtual-memory-retry.json`.
+No final optimized size, complete Nightly runtime, baseline guest, JIT, GPU or
+Sites acceptance is established. Public v10 remains unchanged. The next stages
+remain full current-source baseline/package/guest acceptance, then the separate
+fresh whole broad-PBL/JIT build and acceptance, then GPU.

@@ -1,0 +1,184 @@
+{
+  "checked": 1791052043.9006999,
+  "claim": "Terminal Run49 abort and retained native artifacts; early Run50 stopped on user RAM steering; tested guards; original optimizer Run51 live",
+  "evidence": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run49.json",
+      "bytes": 1182,
+      "sha256": "08cee99d9a320339583ec48886402d4539088ce271d0df84f24dd60967ff4317"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run49.log",
+      "bytes": 1932,
+      "sha256": "2fce7389b1f59a6f2a013fe682c5b8a2d1eb92112b07da57eb0fdec96f99584c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run49-boundary.json",
+      "bytes": 722449,
+      "sha256": "e8f4c77c3c9a7721d0e2f89703358172fde6290c8945054b8f260e0786332493"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run49-group-cleanup.json",
+      "bytes": 1359,
+      "sha256": "2ec39b541f13422beb70bdd2136c2775f26d2e5ce411a4feaa2ef4e2267ea2cc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run49-run-phase.py",
+      "bytes": 8827,
+      "sha256": "0279a2a672a6fcd3a8b4b96a731f40d1567882b61d3f0f993b188696251ad245"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/virtual-memory-supervisor-port-run1.json",
+      "bytes": 1993,
+      "sha256": "364b1a7e1efe2b00941ae3bbae8396aa1cbb7c1896520596109e40454a6642ec"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run49-review-run1.json",
+      "bytes": 441767,
+      "sha256": "d8f98a7157c3bd65b96b34d9f018ef41add89f966b84486985ea2f100eab395f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run49-review-run1.json",
+      "bytes": 172190,
+      "sha256": "4fd152f001bc9b3154ccd7a8ab002ec2622654b771fa9b03e1852130be095fce"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run49/capture.json",
+      "bytes": 25811,
+      "sha256": "d8e3a119db09b5b1a3221925d3d3ed1f637cfbfd93c34af8d21acbd418e44c70"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run49/compiler-response.txt",
+      "bytes": 22419,
+      "sha256": "de53c96bb048ecdbf0206654e5fabe4560eb26e5ea2344f06bd53b6a80a12973"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run49/link-inputs.txt",
+      "bytes": 121370,
+      "sha256": "882d273ea90eed3ad5e4be0c2a41bedfd65c719dc5bb931a8e17be141b46800d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/check-swap-supervisor-run3.py",
+      "bytes": 5845,
+      "sha256": "9e014ec59842c07fae3c93a3733efc9c2c17d223a9d2dfc3674ad12ed4b285b2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/swap-supervisor-run3.json",
+      "bytes": 5484,
+      "sha256": "3b6be736f85c65118155d280bc274db5401374360563e98166c6dfce745205e2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/build-run50-live-supervisor-run1.json",
+      "bytes": 3273,
+      "sha256": "2762da278a70443ccf42627741c6ea8dd7d6c0541e2466c9d8c1a36392573359"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 2020,
+      "sha256": "64b4d62b5dd7ef384397e4dcbba33650cc7bc27cf0b85b96cbb917801ebc094c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run50.json",
+      "bytes": 1529,
+      "sha256": "d254aa36cbcfd82e2d8fb2bfa564750955ddf4dcc1e3db3c6efec8f4581d0e1d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run50-boundary.json",
+      "bytes": 722829,
+      "sha256": "146765e4585e6fa8d4de7d8bccc22837da0ecbf110cf7ee2330aa9ba6f4c4031"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run50-group-cleanup.json",
+      "bytes": 1740,
+      "sha256": "4628aa195af15caa78185a891a18b4d7341e9a6bff6205b1a963695c4fd76e16"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run50-run-phase.py",
+      "bytes": 9546,
+      "sha256": "4fc63f628e1887f61f2868d452498c7f7de3279fd76f179e219bc4281cb63ef2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run50-user-memory-stop.json",
+      "bytes": 1567,
+      "sha256": "87c44d067c4648ab9f82efb4e70812930acb6eab27e5dad43741ad84d5edf656"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/resident-memory-supervisor-port-run1.json",
+      "bytes": 2473,
+      "sha256": "46b6918102b223b1cf3aff2cbef4a1bb41a71c819a7666c533f6a7cc99844d15"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run50-review-run1.json",
+      "bytes": 441766,
+      "sha256": "6094a53e6e21fb5b97532da97f6d058fbb6165de5129fd9a8f9cf3ad44b200ac"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run50-review-run1.json",
+      "bytes": 172190,
+      "sha256": "719914f97d64b36288639cf1fb76d05e25851d198b80ba43a74cce0475436a1f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/check-swap-supervisor-run4.py",
+      "bytes": 5863,
+      "sha256": "0c4da21273fbb3ad55e1a7177140411c36196388d964ae89dabe2519e018371f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/swap-supervisor-run4.json",
+      "bytes": 5598,
+      "sha256": "dc2eff0934a4e0e31c55a0ee15ba5baeaba9556079e891c645661178592ceba9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/build-run51-live-supervisor-run1.json",
+      "bytes": 3318,
+      "sha256": "8664e0ae1044597d03910f8d9d62fce637862e1627c714f18f7af721ec7be41c"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 9546,
+      "sha256": "73db215eeb18751196c492bab9fa8565c510e2a429350bf784c026a4a83518cf"
+    }
+  ],
+  "run49": {
+    "exitCode": 2,
+    "stopReason": null,
+    "ownedGroupEmpty": true,
+    "observedVirtualUsageKiB": 50252488,
+    "addressSpaceGiB": 48,
+    "cause": "Allocation failure near the virtual limit is an inference; no retained crash backtrace or definitive allocator diagnostic"
+  },
+  "supervisorChecks": 39,
+  "run50": {
+    "pid": 2360265,
+    "pgid": 2360265,
+    "unifiedSession": 74285,
+    "firstOptimizerPid": 2362661,
+    "stateAtObservation": "completed",
+    "jobs": 1,
+    "timeoutSeconds": 7200,
+    "addressSpaceGiB": 64,
+    "groupResidentGiB": 32,
+    "availableRamFloorGiB": 2,
+    "coreLimitBytes": 0,
+    "exitCode": -15,
+    "ownedGroupEmpty": true,
+    "terminationReason": "User requested larger resident-memory allowance; loaded supervisor replaced after early owned retry stopped"
+  },
+  "fullBuildAcceptance": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false,
+  "run51": {
+    "pid": 2368654,
+    "pgid": 2368654,
+    "unifiedSession": 1600,
+    "firstOptimizerPid": 2370793,
+    "stateAtObservation": "running",
+    "jobs": 1,
+    "timeoutSeconds": 7200,
+    "addressSpaceGiB": 64,
+    "groupResidentGiB": 48,
+    "availableRamFloorGiB": 2,
+    "coreLimitBytes": 0
+  }
+}
