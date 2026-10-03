@@ -1,4 +1,4 @@
-# Latest continuation — Vulkan gate passed; serial no-debug full build, 2026-10-03
+# Latest continuation — no-debug full build and raw validation passed, 2026-10-03
 
 The user-required simple guest Vulkan hardware/software gate has passed through
 the genuine public Vulkan loader -> guest ICD/hostcall -> browser-host Rust wgpu
@@ -46,33 +46,45 @@ Saved proof: `status/build-run54-objects-terminal.json`,
 The object-only admission was 577 goals/589-node closure with no program links;
 focused admission/guard checks passed 24/0. This does not accept a full build.
 
-Run55 is the mandatory ordinary full j1 build, owned by
-`/root/restart_no_debug_nightly`: saved running status exact PGID 300325,
-unified session 72115, 7200 seconds, object mode unset, original automatic
-Binaryen-O2 unchanged and serial final links. Launch admission is
-`status/build-run55-launch-admission.json`; no full-build success is established.
-Guards remain inherited AS 64 GiB, polled group RSS 48 GiB, host available-RAM
-floor 2 GiB, core 0, oom_score_adj 1000, task disk cap 32 GiB and free-space
-reserve 20 GiB. Status/log/admission are under the recovery task as
-`status/build-run55.json` and `logs/build-run55.log`. Ask the owner to reap/change
-its phase; do not mutate active source/config/recipes or run another build.
-The owner must reap and prove the group empty before source/config changes or
-another build. Full-build and browser acceptance remain pending. Object packet:
-`tools/nightly-musl/evidence/object-only-parallel-stage.json`, commit 0ad0ac1.
+Run55 ordinary full j1 build succeeded in 1672.262 seconds, actual child exit 0,
+owner-reaped unified 72115 exit 0, exact PGID 300325 fully empty. Object mode was
+unset; the original automatic Binaryen-O2 and serial final links were retained.
+Guards were AS64 GiB/RSS48 GiB/RAM-floor2 GiB/core 0/oom 1000/7200 seconds,
+32 GiB task cap and 20 GiB reserve. The final raw Firefox is 175,262,059 bytes
+(167.142924 MiB), SHA256
+`973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64`, at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`.
+The no-debug preoptimizer main was 280,454,744 bytes. These are distinct from
+Run52's debug-bearing 2,335,263,664-byte main and separately stripped
+176,370,407-byte copy; no cross-build payload identity is claimed.
 
-After the actual full no-debug rebuild succeeds, repository diary.md must
-record the final Firefox binary size and absolute path, plus important lessons
-and mistakes. This mandatory followup remains pending. Check actual object
-freshness and no-DWARF sections before full-build acceptance, then complete
-baseline package/guest gates and the fresh whole broad JIT build/acceptance.
+All five final raw executables are native Wasm, fresh after configure and have
+zero `.debug_*` sections. Actual WABT `wasm-validate --enable-all` passes all
+five under inherited 16 GiB AS/core 0/oom 1000, with input hashes unchanged, each
+child reaped 0 and exact group empty. Validator wrapper unified 30035 reaped 0.
+Terminal native audit again passes 3012/3012 fresh no-DWARF objects, with the
+7098-member no-debug Rust archive unchanged. The main optimizer's observed
+peak AS was 7.70 GiB; the whole phase later reached 26.67 GiB during resource
+generation, exact process identity not retained. j1 does not constrain
+Binaryen internal threads (observed plugin 9 threads, 8 affinity CPUs,
+BINARYEN_CORES absent). Recovery-task proofs: `status/build-run55-final-binaries.json`,
+`status/build-run55-final-raw-validation.json`, `status/no-debug-object-review-run55.json`.
+Repository packet: `tools/nightly-musl/evidence/no-debug-full-build-run55.json`.
+
+Mandatory diary.md followup is complete: actual raw size/path/SHA and concrete
+debug-configuration, section-inspection, optimizer and freshness lessons.
+Packaging owner `/root/package_no_debug_nightly_runtime` has the frozen-input
+handoff for separate fpcast transformation/package. Raw binaries are not yet
+the transformed packaged runtime. Complete baseline package/guest gates and
+the fresh independent whole broad JIT build/acceptance before the JIT release.
 NSS outer-runner preparation is scoped six-file commit
 `42bd883edc23acc0609154fc6e1b62199ccaf22e`: 93 synthetic/source checks, no real
 guest execution, tlsAcceptance=false and releaseAcceptance=false. Fresh whole
 broad-JIT transition preparation is in
 `/mnt/p6/project/build/nightly-jit-transition-review-20261003/README.txt`:
 129 unchanged finite pins and 12 current broad-source matches, no full JIT build.
-No final binary size, optimizer memory improvement, full-build/baseline/NSS/JIT/
-Firefox-GPU acceptance or Sites release is established. Public Sites v10 stays
+No controlled optimizer-memory improvement, baseline/NSS/JIT/Firefox-GPU
+acceptance or Sites release is established. Public Sites v10 stays
 unchanged; retain the authorized JIT release first, GPU release later.
 Run most commands through fresh subagents with minimal task context and the
 same inherited model/reasoning effort; scoped commits remain authorized.

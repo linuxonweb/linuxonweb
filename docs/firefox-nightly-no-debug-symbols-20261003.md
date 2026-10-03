@@ -96,7 +96,7 @@ The explicit opt-in object-only mode admits 577 generated goals whose actual
 GNU make closure has 589 nodes and no program links. Its 24 focused admission
 and inherited-guard checks pass. Default full-build behavior remains unchanged.
 
-Run54-objects is running under owner `/root/restart_no_debug_nightly`, exact
+Run54-objects was launched under owner `/root/restart_no_debug_nightly`, exact
 PGID 160603/unified 4372: j4, 7200 seconds, AS 64 GiB, polled RSS 48 GiB,
 available-RAM floor 2 GiB, core 0, oom_score_adj 1000, disk cap 32 GiB and
 reserve 20 GiB. All four observed compiler children omit debug flags. Check
@@ -106,12 +106,10 @@ with unchanged original Binaryen-O2. No active source/config/recipe mutation
 is permitted while this owner is running. Selected launch and terminal pins
 are in `tools/nightly-musl/evidence/object-only-parallel-stage.json`.
 
-Object-stage completion is not full-build acceptance. Actual Mozilla object
-freshness/no-DWARF review, serial final build, baseline package/guest acceptance
-and later broad JIT acceptance remain required. After the full no-debug rebuild,
-write actual final Firefox size/path and lessons/mistakes to repository diary.md;
-this mandatory followup remains pending. No optimizer-memory benefit or new
-public Sites release is claimed.
+Object-stage completion is not full-build acceptance. The subsequent object
+review and ordinary full-build results follow below; baseline package/guest
+acceptance and later broad JIT acceptance remain required. No controlled
+optimizer-memory benefit or new public Sites release is claimed.
 
 ## Completed object stage and serial full build
 
@@ -126,10 +124,39 @@ size and mtime. This establishes object-stage evidence, not browser acceptance.
 Ordinary full-build Run55 was then launched with object-only mode unset and
 j1, preserving serial final links and unchanged original automatic Binaryen-O2.
 Owner `/root/restart_no_debug_nightly` holds exact PGID 300325/unified 72115.
-The 7200-second/AS64 GiB/RSS48 GiB/available-RAM-floor2 GiB/core0/oom1000,
+The 7200-second/AS64 GiB/RSS48 GiB/available-RAM-floor2 GiB/core 0/oom 1000,
 32 GiB task-cap/20 GiB reserve guards remain unchanged. Its recovery-task
 status/log are `status/build-run55.json` and `logs/build-run55.log`; immutable
-admission is `status/build-run55-launch-admission.json`. The owner must reap
-and prove the group empty before any source/config/recipe mutation or another
-build. Final optimized binaries, full-build success, package/guest gates and
-the mandatory diary.md final Firefox size/path/lessons entry remain pending.
+admission is `status/build-run55-launch-admission.json`.
+
+Run55 completed the ordinary full build in 1672.262 seconds: actual child exit 0,
+owner-reaped unified 72115 exit 0, exact PGID 300325 fully empty. All five final raw
+executables are native Wasm, fresh after configure and contain no `.debug_*`
+sections. The completed raw Firefox is **175,262,059 bytes (167.142924 MiB)** at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`,
+SHA256 `973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64`.
+Its actual no-debug preoptimizer input was 280,454,744 bytes. Run52's historical
+2,335,263,664-byte debug-bearing output and its separately stripped
+176,370,407-byte copy are distinct artifacts; their non-debug payload identity
+was proved only within Run52, not across this rebuild.
+
+Actual WABT validation passes all five raw final executables sequentially under
+inherited 16 GiB AS/core 0/oom 1000. Input hashes remain unchanged; every child
+was reaped exit 0 and its group empty before the next executable. Validator
+wrapper unified 30035 is reaped 0. A final native object audit again passes all
+3012 fresh no-DWARF objects; the inspected 7098-member Rust archive is unchanged.
+Selected static proofs are `status/build-run55-final-binaries.json`,
+`status/build-run55-final-raw-validation.json` and
+`status/no-debug-object-review-run55.json` under the recovery task.
+
+The main optimizer's polled peak virtual size was 7.70 GiB. The full phase later
+recorded 26.67 GiB during resource generation; that process's identity was not
+retained. The plugin optimizer had 9 threads, 8 affinity CPUs and no BINARYEN_CORES
+override, so make j1 must not be reported as one optimizer thread. These are
+observations, not a controlled measurement of memory improvement.
+
+Repository diary.md now records the required final raw size/path and important
+lessons/mistakes. Dedicated evidence is
+`tools/nightly-musl/evidence/no-debug-full-build-run55.json`. The packaging
+owner has the frozen raw handoff for separate ABI transformation/package;
+baseline guest, broad JIT, Firefox GPU and Sites acceptance remain pending.

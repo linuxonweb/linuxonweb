@@ -1,0 +1,204 @@
+{
+  "recordedAt": 1791066301.6114695,
+  "claim": "Actual complete no-debug Nightly159 native Linux/Wasm full build and raw static Wasm validation; no guest/JIT/GPU/release acceptance",
+  "run": "run55",
+  "owner": "/root/restart_no_debug_nightly",
+  "unifiedSession": 72115,
+  "ownerReapedExit": 0,
+  "actualChildExit": 0,
+  "ownedPGID": 300325,
+  "ownedGroupMembers": [],
+  "elapsedSeconds": 1672.262041568756,
+  "originalAutomaticBinaryenO2Retained": true,
+  "fullBuildSuccess": true,
+  "rawStaticValidationPassed": true,
+  "validatorUnifiedSession": 30035,
+  "validatorOwnerReapedExit": 0,
+  "all5NativeFreshNoDebug": true,
+  "nativeObjectAudit": {
+    "expected": 3012,
+    "passed": 3012,
+    "freshAfterAutoconf": true,
+    "debugObjects": 0,
+    "RustBytes": 204433482,
+    "RustNativeMembers": 7098,
+    "RustDebugMembers": 0
+  },
+  "finalBinaries": [
+    {
+      "name": "firefox",
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+      "bytes": 175262059,
+      "MiB": 167.14292430877686,
+      "sha256": "973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64",
+      "nativeWasm": true,
+      "stableDuringInspection": true,
+      "mtimeNs": 1791065023698340300,
+      "freshSinceNoDebugConfigure": true,
+      "debugSections": []
+    },
+    {
+      "name": "plugin-container",
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/plugin-container",
+      "bytes": 175258761,
+      "MiB": 167.13977909088135,
+      "sha256": "ea6a04776c734f1da79da69707794205d0a9b583784f4c7ab0368e76b53d80f7",
+      "nativeWasm": true,
+      "stableDuringInspection": true,
+      "mtimeNs": 1791065548749793939,
+      "freshSinceNoDebugConfigure": true,
+      "debugSections": []
+    },
+    {
+      "name": "xpcshell",
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/xpcshell",
+      "bytes": 175268572,
+      "MiB": 167.1491355895996,
+      "sha256": "52eb8a4d2e687408aafb7bf2c10fd1958604773c2f796361d20c7cb7d0153dc9",
+      "nativeWasm": true,
+      "stableDuringInspection": true,
+      "mtimeNs": 1791066068065886711,
+      "freshSinceNoDebugConfigure": true,
+      "debugSections": []
+    },
+    {
+      "name": "pingsender",
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pingsender",
+      "bytes": 361069,
+      "MiB": 0.3443422317504883,
+      "sha256": "3fac1db02b5bcdef56bcbbf0952bfbaf52d620d853404edb518c4582553b797e",
+      "nativeWasm": true,
+      "stableDuringInspection": true,
+      "mtimeNs": 1791066085363979677,
+      "freshSinceNoDebugConfigure": true,
+      "debugSections": []
+    },
+    {
+      "name": "gfxtest",
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/gfxtest",
+      "bytes": 973901,
+      "MiB": 0.9287843704223633,
+      "sha256": "5859187031bfdc7fe7893d055e2750d2a6d0292b6fd834ee47a46ca5c5171ceb",
+      "nativeWasm": true,
+      "stableDuringInspection": true,
+      "mtimeNs": 1791066087368990499,
+      "freshSinceNoDebugConfigure": true,
+      "debugSections": []
+    }
+  ],
+  "phasePeakPerProcessAS": {
+    "pid": 342953,
+    "bytes": 28639625216,
+    "observed_at": 1791066102.8911622
+  },
+  "mainOptimizerPeakASBytes": 8267599872,
+  "optimizerParallelism": {
+    "BINARYEN_CORES": null,
+    "observedPluginThreads": 9,
+    "observedAffinityCPUs": 8,
+    "note": "make j1 serializes final output jobs but does not restrict optimizer internal threads; full-phase26.67GiB peak was later observed during resource generation and exact process identity was not retained"
+  },
+  "proofs": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55.json",
+      "bytes": 1356,
+      "sha256": "44db452f78615e9615e5796e152414e176ae37d0502e5a19a55f8aec618b2a05"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run55.log",
+      "bytes": 9025,
+      "sha256": "8c857daec509b8bfb102bb06c069619edd6a1207d2c7fa06a2953ca82abd8742"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-launch-admission.json",
+      "bytes": 2324,
+      "sha256": "332c429604a4396ebe552c348e7f7c5be1267f430ab4c48856ce7f97a51e81af"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-binaries.json",
+      "bytes": 10953,
+      "sha256": "66f43c56500118bd6abad7627fd227676052057d3099cd8fb2d1a51610604573"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-raw-validation.json",
+      "bytes": 6724,
+      "sha256": "dcc91b17cb6152d516e1cf99b44b79f326feef313313659e9cc2725e8f9bbc78"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-object-review-run55.json",
+      "bytes": 984964,
+      "sha256": "ea6feefd63867c9a539e6fb0b2fc8376c82e6aa32edbe78139e8e58fc6253206"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run55-main-completed-first-pin.json",
+      "bytes": 2200,
+      "sha256": "3f8a42e0991233874da0c747cb63485acb540e7dedc200c8d70a4e2e1471bd7e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run55-optimizer-parallelism-run1.json",
+      "bytes": 691,
+      "sha256": "7cb98ee56b9bb80b97894d78dc351cb065e645f90559065d366564df2d38d4b0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/validate-final-binaries-run55.py",
+      "bytes": 5427,
+      "sha256": "8163b5dee9ff46f0f7460a90f1555b8d8f83e96de359bb30b570a29e8237f4c6"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inspect-final-binaries.py",
+      "bytes": 2696,
+      "sha256": "df773999779c96c49382f5f299e7c9801e429fbb61f0000811539152e5ab2261"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/generated-verification.json",
+      "bytes": 6140183,
+      "sha256": "5032d5dca559f146c747c8f9c00e4b46ea35ddc756c7ecb76b6f1a6be91f7a2b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/build-run53-rust-archive.json",
+      "bytes": 1639489,
+      "sha256": "b17292937cd3e4ce350e12f75461aba3ace36709a36860fb38591fd4d52e9ce3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/mozconfig",
+      "bytes": 1045,
+      "sha256": "dbfbcaec292d9eb97665f4874f9836c65d37c0cb48e9b35c46d527be15981807"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/.mozconfig",
+      "bytes": 1045,
+      "sha256": "dbfbcaec292d9eb97665f4874f9836c65d37c0cb48e9b35c46d527be15981807"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/defs.mk",
+      "bytes": 2236,
+      "sha256": "960e7fd7ce748b1b9165ab0f4fe67a133c169e60b4f9055b732d2eb2329471ca"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/diary.md",
+      "bytes": 3523,
+      "sha256": "733d7f2aaaf0f0b50717597a1af566159785cdad04747cb95912acca6bb42de5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run55-firefox-preoptimizer-observation.json",
+      "bytes": 1876,
+      "sha256": "6c78e3f696b462f592d63aa514c01f297cfb56e330434193f18980a6897b5f93"
+    }
+  ],
+  "mandatoryDiaryCompleted": true,
+  "diaryPath": "/mnt/p6/project/linux/linuxonweb/diary.md",
+  "packagingHandoffAdmitted": true,
+  "guestAcceptance": false,
+  "jitAcceptance": false,
+  "firefoxGPUAcceptance": false,
+  "releaseAcceptance": false,
+  "publicSitesV10Unchanged": true,
+  "next": "Separate stable-input fpcast transformation/package, real baseline guest acceptance, independent fresh whole broad-JIT build and acceptance, authorized JIT Sites release, then Firefox GPU acceptance/release; benchmark gate already passed separately",
+  "mainSizeProvenance": {
+    "completedRawOptimizedBytes": 175262059,
+    "noDebugPreoptimizerInputBytes": 280454744,
+    "previousRun52RawDebugBytes": 2335263664,
+    "previousRun52SeparateStrippedBytes": 176370407,
+    "crossBuildPayloadIdentityClaimed": false
+  }
+}

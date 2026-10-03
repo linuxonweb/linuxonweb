@@ -1,5 +1,5 @@
 {
-  "claim": "Proven explicit generated object-only j4 stage admission under unchanged full-build guards, then serial j1 final links; no full build acceptance",
+  "claim": "Proven explicit generated object-only j4 stage admission and actual successful object stage, followed by successful ordinary serial j1 full build and raw static validation; guest/release acceptance separate",
   "checked": 1791059423.2180362,
   "opt_in": "NIGHTLY_OBJECTS_ONLY=1 (build phase only)",
   "defaultFullBuildUnchanged": true,
@@ -91,9 +91,29 @@
       "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/verify-no-debug-objects.py",
       "bytes": 3256,
       "sha256": "d21bd99229de6b632de925c9b5ca7d99a26514c1409bb9ce53f2ba55478446ae"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55.json",
+      "bytes": 1356,
+      "sha256": "44db452f78615e9615e5796e152414e176ae37d0502e5a19a55f8aec618b2a05"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-binaries.json",
+      "bytes": 10953,
+      "sha256": "66f43c56500118bd6abad7627fd227676052057d3099cd8fb2d1a51610604573"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-raw-validation.json",
+      "bytes": 6724,
+      "sha256": "dcc91b17cb6152d516e1cf99b44b79f326feef313313659e9cc2725e8f9bbc78"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-object-review-run55.json",
+      "bytes": 984964,
+      "sha256": "ea6feefd63867c9a539e6fb0b2fc8376c82e6aa32edbe78139e8e58fc6253206"
     }
   ],
-  "fullBuildAcceptance": false,
+  "fullBuildAcceptance": true,
   "guestAcceptance": false,
   "releaseAcceptance": false,
   "run54Launch": {
@@ -119,15 +139,16 @@
     "observation": "launch/current running observation; not completion",
     "actualFourCompilerObservation": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run54-objects-active-compilers-run2.json"
   },
-  "requiredNextStage": "Run55 ordinary j1 full-build/final links remains live; owner must reap and prove exact group empty, inspect all final binaries, then actual baseline package/guest gates",
+  "requiredNextStage": "Run55 ordinary full build and all5 raw validators succeeded/reaped/groups empty; frozen-input separate fpcast transformation/package and actual baseline guest gates remain",
   "mandatoryDiaryFollowup": {
-    "done": false,
+    "done": true,
     "when": "after actual full no-debug rebuild",
     "requires": [
       "actual final Firefox bytes",
       "absolute binary path",
       "important lessons and mistakes"
-    ]
+    ],
+    "path": "/mnt/p6/project/linux/linuxonweb/diary.md"
   },
   "run54Terminal": {
     "observedAt": 1791064422.6661487,
@@ -188,5 +209,19 @@
     "objectModeUnset": true,
     "observation": "actual launch; not full-build completion",
     "admissionPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-launch-admission.json"
+  },
+  "run55Terminal": {
+    "actualChildExit": 0,
+    "ownerReapedExit": 0,
+    "unifiedSession": 72115,
+    "ownedPGID": 300325,
+    "ownedGroupMembers": [],
+    "elapsedSeconds": 1672.262041568756,
+    "originalAutomaticO2Retained": true,
+    "fullBuildSuccess": true,
+    "rawStaticValidationPassed": true,
+    "finalFirefoxBytes": 175262059,
+    "finalFirefoxPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+    "completionEvidence": "tools/nightly-musl/evidence/no-debug-full-build-run55.json"
   }
 }
