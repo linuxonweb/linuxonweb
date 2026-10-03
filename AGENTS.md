@@ -311,6 +311,27 @@ coherence-run31.json. Continue unchanged full build; complete mapping-adapter
 linkage, Nightly startup/JIT, GPU and both authorized Sites releases remain
 pending. Public v10 is unchanged.
 
+
+Run32 completes all3,012 expected native object paths (2,171,228,922 bytes),
+adding225 during the phase plus one prephase mapping object. This count is
+not full browser completion. The segment exits2 after245.23s on certutil's
+ELF-only -rpath-link flag; unified21619 is reaped2, PGID1626818 empty.
+Root's4,149-check terminal review preserves coherent552 consumers and all7,101
+native Rust members. A new root defs.mk adapter filters only that option from
+LDFLAGS on Linux_wasm32, preserving all compile and generated backend inputs.
+Its first selector used obsolete CPU_ARCH, failed the dry-run equality check
+and is retained; the corrected actual TARGET_CPU selector passes. Actual
+before/after certutil dry-run argv differs by exactly one removed token.
+nss-certutil-run1 then reaches real symbol resolution and fails on duplicate
+CERT_OidSeqTemplate and SECKEY_PQGParamsTemplate symbols; the failure is retained
+rather than claimed successful. Unified5282 is reaped2 and PGID1643361 empty.
+Root checks11 argv/input/terminal predicates, including all3,012 unchanged
+native objects and unchanged generated make hashes. Evidence:
+tools/nightly-musl/evidence/native-wasm-link-paths.json and full-build-boundary-
+coherence-run32.json. Next scope the command's two duplicate template names;
+do not allow all duplicate definitions. Full browser linking/packaging,
+Nightly guest JIT/GPU and both authorized Sites releases remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

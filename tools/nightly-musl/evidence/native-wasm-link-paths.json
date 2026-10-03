@@ -1,0 +1,156 @@
+{
+  "claim": "Native-only make adapter removes one unsupported ELF link option; actual certutil link advances to two duplicate template symbols; no successful binary/browser acceptance",
+  "terminal": {
+    "phase": "nss-certutil",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "security/nss/cmd/certutil/certutil_certutil",
+      "-j4",
+      "--verbose"
+    ],
+    "pid": 1643361,
+    "pgid": 1643361,
+    "started": 1791030003.2336345,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18987597824,
+    "free_bytes": 75990675456,
+    "checked": 1791030003.2343392,
+    "exit_code": 2,
+    "finished": 1791030006.8314245,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 5282,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "actual_link_argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+    "-o",
+    "../../../../../dist/bin/certutil",
+    "-U_FORTIFY_SOURCE",
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-fstrict-flex-arrays=1",
+    "-fno-rtti",
+    "-pthread",
+    "-fno-sized-deallocation",
+    "-fno-aligned-new",
+    "-fno-math-errno",
+    "-fno-exceptions",
+    "-fdiagnostics-absolute-paths",
+    "-fPIC",
+    "-Wno-error=implicit-int-conversion",
+    "-Xclang",
+    "-fc++-abi=webassembly",
+    "-gdwarf-4",
+    "-gsimple-template-names",
+    "--start-no-unused-arguments",
+    "-mllvm=-dwarf-linkage-names=Abstract",
+    "--end-no-unused-arguments",
+    "-O2",
+    "-fno-omit-frame-pointer",
+    "-funwind-tables",
+    "-Wl,@/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security/nss/cmd/certutil/certutil_certutil/certutil.list",
+    "-Wl,--build-id=uuid",
+    "-Wl,-z,noexecstack",
+    "-Wl,-z,text",
+    "-Wl,-z,relro",
+    "-Wl,-z,now",
+    "-Wl,-z,nocopyreloc",
+    "-fuse-ld=lld",
+    "-Wl,-O0",
+    "-fstack-protector-strong",
+    "-pie",
+    "-ldl",
+    "-lm",
+    "-lpthread",
+    "-lc"
+  ],
+  "removed": [
+    "-Wl,-rpath-link,/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin"
+  ],
+  "all_3012_objects_unchanged": true,
+  "generated_inputs_unchanged": true,
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-wasm-link-paths-review-run1.json",
+    "bytes": 1105,
+    "sha256": "bddf6b013171015e3ae70ac381d50a1ffefeb3580ff65213fd1fe3516ff0c2dc",
+    "passed_predicates": 11
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 364,
+      "sha256": "0028f09cee0026808f25507aa52a1c022f55a80d413315d848bd27eb1bb6a2a0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/defs.mk",
+      "bytes": 364,
+      "sha256": "0028f09cee0026808f25507aa52a1c022f55a80d413315d848bd27eb1bb6a2a0"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-wasm-link-paths-port.py",
+      "bytes": 714,
+      "sha256": "e75bd5629a75e41e494a908c9451c36968713bd4b38d1d597f45c0820534c57d"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 3305,
+      "sha256": "53f134f50c1e9e0ba41cf8ce34a7a268295636de50317a6ee5a8fac19b7c914d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wasm-link-paths-preflight/original-dry-run.log",
+      "bytes": 1511,
+      "sha256": "30485e345ab7f06653ba2c1048782afa6490a172c59da9ea637da2cedc37c706"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wasm-link-paths-preflight/fixed-dry-run.log",
+      "bytes": 1421,
+      "sha256": "29391eddb9d4e9524f8735b1bcbf0cadcb85b9cce1bc1cdce6402aace7825d86"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wasm-link-paths-preflight/failed-cpu-arch-defs.mk",
+      "bytes": 362,
+      "sha256": "ae7ebecfa14e1a3842243fdd673d01d61747d9c520080883f3bca6bd08ea2686"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wasm-link-paths-preflight/failed-cpu-arch-dry-run.log",
+      "bytes": 1511,
+      "sha256": "30485e345ab7f06653ba2c1048782afa6490a172c59da9ea637da2cedc37c706"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wasm-link-paths-preflight/result.json",
+      "bytes": 3253,
+      "sha256": "117aecf8bde09c6781dbac816ff3eb0734fe5b6451cdd02c1c5a79d6e9ea7494"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run1.json",
+      "bytes": 910,
+      "sha256": "81eda2feb5e8725e5c2a44082ed727e3da8b80ab367d64ebcc180b27d229e673"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/nss-certutil-run1-group-cleanup.json",
+      "bytes": 1075,
+      "sha256": "240ae5d3de6a827bdbec681dea8f66a56f704ee9760a727596b3ee5e895ff7b3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/nss-certutil-run1.log",
+      "bytes": 4051,
+      "sha256": "676c8de799042038b36a2b761e9a26751686815649e1eae1c263720ca4a9763b"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

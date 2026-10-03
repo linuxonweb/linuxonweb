@@ -1,0 +1,118 @@
+{
+  "claim": "Run32 complete expected native object graph; first NSS program link fails on ELF-only path option; browser link/guest/JIT acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run32",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1626818,
+    "pgid": 1626818,
+    "started": 1791029487.633049,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run32.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18972561408,
+    "free_bytes": 76005920768,
+    "checked": 1791029712.1945982,
+    "exit_code": 2,
+    "finished": 1791029732.8638763,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 21619,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 3012,
+    "missing_expected_object_count": 0,
+    "existing_expected_object_bytes": 2171228922,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 225,
+    "new_paths_written_before_phase_count": 1,
+    "rebuilt_existing_written_during_phase_count": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run32-review-run1.json",
+    "bytes": 441290,
+    "sha256": "4e20044bb684d4df4eff4fad17cf6d8cd7b3435cc2318478adfa326523e10c9f",
+    "passed_predicates": 4149
+  },
+  "compiler_errors": [
+    " 3:49.48 E wasm-ld: error: unknown argument: -rpath-link",
+    " 3:49.66 E wasm-ld: error: cannot open /mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin: Is a directory",
+    " 3:49.72 E clang: error: linker command failed with exit code 1 (use -v to see invocation)"
+  ],
+  "new_make_adapter_by_followup": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run32.json",
+      "bytes": 796,
+      "sha256": "252630e0eb9b00ddfc477cdc62b3fab659dc1a787f0d5b4ea137eecc532abfb2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run32-boundary.json",
+      "bytes": 721098,
+      "sha256": "f4dcadccaa238aed67d15e0cdd95ad13f6cf5156bedd85b7b690ee97e474d02e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run32-group-cleanup.json",
+      "bytes": 955,
+      "sha256": "8c5601936735716e3fca1e9a0cff91d6d445d442cfa8444cd8b0d940504c93c1"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run32.json",
+      "bytes": 669981,
+      "sha256": "9c30445b676b245d3ea6fc01537329a6b2057dff8073e1b4bb38c04ae20a4458"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run32.json",
+      "bytes": 284034,
+      "sha256": "0554425a30cb3dd1987676f8e1b4b69db5eed19051da2cba0c32c7a273d6a660"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run32.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run32.log",
+      "bytes": 33047,
+      "sha256": "dfc3d687bc121a6d5e4b3a6aeba5a96596dbe2e3562e4b4aa1a69ffa6bec9b5b"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}
