@@ -8,6 +8,15 @@ selected count and print the matching actual kernel SMP CPU count. Results
 record the host, browser, requested, selected and actual guest counts. Existing
 readiness, profile, input, image, version, isolation and bookmark checks remain.
 
+`test-firefox-pbl-bench.mjs` also selects and verifies the host count separately
+for every boot in both benchmark arms. It saves the kernel SMP evidence before
+benchmark output can evict startup logs, and verifies that the browser and UI
+counts still agree at the end. Its updated runner passes syntax validation;
+a fresh Nightly benchmark remains pending the browser build. Existing two-CPU
+benchmark results stay historical. Older diagnostic runners must receive the
+same host-count setup before any new invocation; do not reuse a frozen two-CPU
+runner for a new comparison.
+
 A fresh diagnostic cold smoke passed all eight checks at
 `/mnt/p6/build/guest-host-cpus-test-20261002/cold-run1/result.json`:
 host `nproc=8`, browser `hardwareConcurrency=8`, requested/selected guest CPUs

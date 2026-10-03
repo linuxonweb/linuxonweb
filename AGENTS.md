@@ -5,6 +5,12 @@ and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and
 use the same CPU count for new comparative benchmarks.
 
+The PBL benchmark runner now applies the same host-count setup to each arm and
+saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.
+Its syntax check passes; new Nightly benchmarks are pending the full binary.
+Older diagnostic runners must be adapted before any new invocation; historical
+two-CPU results and their pinned promotion verifiers remain unchanged.
+
 The updated GPU/homepage and session-startup runners select the browser host
 count, require agreement with nproc, and assert the actual kernel SMP count.
 Fresh isolated eight-CPU Firefox128 homepage diagnostic passes all eight checks:
