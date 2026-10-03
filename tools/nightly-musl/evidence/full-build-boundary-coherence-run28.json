@@ -1,0 +1,126 @@
+{
+  "claim": "Run28 terminal native build progress; compiler error corrected by followup packet; browser/link acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run28",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1537551,
+    "pgid": 1537551,
+    "started": 1791026601.5758717,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run28.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18390257664,
+    "free_bytes": 76588990464,
+    "checked": 1791026601.5766094,
+    "exit_code": 2,
+    "finished": 1791026613.2458284,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 53017,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 2222,
+    "missing_expected_object_count": 790,
+    "existing_expected_object_bytes": 1740295889,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 17,
+    "new_paths_written_before_phase_count": 1,
+    "rebuilt_existing_written_during_phase_count": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run28-review-run1.json",
+    "bytes": 357317,
+    "sha256": "bb0b07af42f84ea092c8c60b21e91dff8c81a7d18886976f487c6959cebd2731",
+    "passed_predicates": 3359
+  },
+  "compiler_errors": [
+    " 0:09.76 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/debugging/internal/examine_stack.cc:203:2: error: \"Undefined Architecture.\""
+  ],
+  "before_source_snapshot": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-stack-preflight/original-examine_stack.cc",
+    "bytes": 11500,
+    "sha256": "cab6f0f7190ef26884be4e7ef777bcb1913bf629587a9a8d0bda838d21868073"
+  },
+  "source_mutated_by_followup": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run28.json",
+      "bytes": 797,
+      "sha256": "d7547c4349f3905c8de9861c8d648f7ea5cf6a8db7752ebdd47e5d5833de67cc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run28-boundary.json",
+      "bytes": 653067,
+      "sha256": "a08e876b1cac4538d698188ffb864e67fdfea1d13614cd1e69adae27feeb2f64"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run28-group-cleanup.json",
+      "bytes": 955,
+      "sha256": "c3dd308ac0534d7bf5b2d5cd6489f2fbd227e860d61b2396bee62d56fa44a13a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run28.json",
+      "bytes": 605111,
+      "sha256": "514cd473e34b51f521cae09f7b1c9a1088a21ccdb2d09830ae89d4ee2f3efdd4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run28.json",
+      "bytes": 242003,
+      "sha256": "117a5c5993c2cd85b64e753e5c8a016599787cad98df931580eb662ab98b5ef8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run28.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run28.log",
+      "bytes": 3273,
+      "sha256": "a84a8b8d0f7d42a0cad8dd0344271f6c03d4be253ad590bd6de53f37fbfccafe"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-stack-preflight/original-examine_stack.cc",
+      "bytes": 11500,
+      "sha256": "cab6f0f7190ef26884be4e7ef777bcb1913bf629587a9a8d0bda838d21868073"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

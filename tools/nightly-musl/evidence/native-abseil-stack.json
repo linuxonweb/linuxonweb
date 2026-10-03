@@ -1,0 +1,130 @@
+{
+  "claim": "Actual Abseil examine_stack compilation accepted; unknown-PC diagnostic fallback only, no guest signals/browser/JIT acceptance",
+  "terminal": {
+    "phase": "abseil-stack",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "third_party/abseil-cpp/absl/debugging/examine_stack_gn",
+      "-j4"
+    ],
+    "pid": 1544064,
+    "pgid": 1544064,
+    "started": 1791026808.2947054,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/abseil-stack-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18397069312,
+    "free_bytes": 76581810176,
+    "checked": 1791026808.2953732,
+    "exit_code": 0,
+    "finished": 1791026811.8959403,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 21552,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_pgid_empty": true,
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/debugging/examine_stack_gn/Unified_cpp_examine_stack_gn0.o",
+    "bytes": 27768,
+    "sha256": "63f6384ce21dc87dfc90002c6dfb7b41ed3a9078b1a44b58042712e40fb9535c",
+    "mtime_ns": 1791026810066780621
+  },
+  "runtime": {
+    "inputs": [
+      0,
+      1,
+      16,
+      2147483647,
+      -1
+    ],
+    "result": 0,
+    "imports": 0,
+    "nativeWasmRuntime": true
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-abseil-stack-review-run2.json",
+    "bytes": 2275,
+    "sha256": "4d29c748ab903021d87015061f17f0e433395c914a5b3b10be2970ebc290a161",
+    "passed_predicates": 25
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/debugging/internal/examine_stack.cc",
+      "bytes": 11552,
+      "sha256": "a3b21947e031f3bf38725e314d1816f9c703e2d6cd83518b11b61ddc243fa179"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-stack-preflight/original-examine_stack.cc",
+      "bytes": 11500,
+      "sha256": "cab6f0f7190ef26884be4e7ef777bcb1913bf629587a9a8d0bda838d21868073"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/debugging/examine_stack_gn/.deps/Unified_cpp_examine_stack_gn0.o.pp",
+      "bytes": 160625,
+      "sha256": "2f54d4e33e26254419c4ca24fec299c27b975822aa6b3b7bfaeebaa881489c4b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-stack-preflight/result.json",
+      "bytes": 5217,
+      "sha256": "40beeae97738287970149a8928a66996831091008c2629fb17c242ba0d620e99"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-abseil-stack-port.json",
+      "bytes": 528,
+      "sha256": "79959393b1fb50fee98f850add4a70c617ee377ed4727ebaaab8a16ff9ab9173"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/abseil-stack-run1.json",
+      "bytes": 904,
+      "sha256": "1d6627f148626de3545c99647b51cf37fb168aa41ded1e55f2706c611a6c73ac"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/abseil-stack-run1-group-cleanup.json",
+      "bytes": 1067,
+      "sha256": "27575d16c7216c5fd6436085e79d11f07c782e6da68b42228d89531b410c8d7e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/abseil-stack-run1.log",
+      "bytes": 903,
+      "sha256": "32687c11bfdebe93ed271bdfc1c7a52bcd19752bdcb84f7e5ba319101a836285"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 2852,
+      "sha256": "14a7662609fb8628498552a3ba0af0ec1b223a0e9e64bff5acd5b92062dc662d"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-abseil-stack-port.py",
+      "bytes": 1892,
+      "sha256": "ffca4368dd375109c89a1d9907295b812f9b0cb6d2461070474f6b325fc0461a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-abseil-stack/probe.py",
+      "bytes": 3524,
+      "sha256": "4e68cd29e7ad73664e5daa486ed00b13f3b1e7f31811a26bdca9a20c4f1deb48"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-abseil-stack-review-run1-failure.json",
+      "bytes": 315,
+      "sha256": "9c5be8c2711326f4513377b915679ac3f46e86cdfae0f10b36c4214845b0d3f1"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

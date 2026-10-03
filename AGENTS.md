@@ -235,6 +235,21 @@ mmap/munmap remain honest final-link prerequisites; no mapping runtime, linked
 Nightly, guest JIT or release acceptance is claimed. Resume the full build under
 unchanged j4/twenty-minute/20GiB task and reserve bounds after this packet commits.
 
+Run28 reaches2,222/3,012 native objects before Abseil's signal-context PC
+selector rejects Wasm (one error,11.67s). Root's terminal review checks3,359
+predicates; all552 consumers and Rust remain coherent. Unified53017 is reaped2,
+PGID1537551 empty. The next one-line guard selects Abseil's documented nullptr
+fallback for unknown native Linux/Wasm PCs, preserving other architectures and
+all runtime bodies. Paired real source compilation retains the original error;
+five pointer cases execute the extracted native-Wasm fallback without imports.
+Actual abseil-stack-run1 passes in3.60s (unified21552 reaped0, PGID1544064 empty).
+The25-check review pins its fresh27,768-byte unity object and exact relative
+source dependency. The first review's absolute-path spelling mistake is retained
+and corrected by resolving against the actual component directory. Packet:
+tools/nightly-musl/evidence/native-abseil-stack.json and full-build-boundary-
+coherence-run28.json. This is diagnostic/component acceptance, not guest signal,
+linked browser or JIT acceptance. Continue full build unchanged after commit.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

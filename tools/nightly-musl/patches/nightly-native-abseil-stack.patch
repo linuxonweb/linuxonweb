@@ -1,0 +1,11 @@
+--- a/third_party/abseil-cpp/absl/debugging/internal/examine_stack.cc
++++ b/third_party/abseil-cpp/absl/debugging/internal/examine_stack.cc
+@@ -156,7 +156,7 @@
+ // unknown. vuc is a ucontext_t*. We use void* to avoid the use of
+ // ucontext_t on non-POSIX systems.
+ void* GetProgramCounter(void* const vuc) {
+-#ifdef __linux__
++#if defined(__linux__) && !(defined(__wasm__) && !defined(__wasi__))
+   if (vuc != nullptr) {
+     ucontext_t* context = reinterpret_cast<ucontext_t*>(vuc);
+ #if defined(__aarch64__)
