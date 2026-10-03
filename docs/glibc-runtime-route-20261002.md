@@ -801,3 +801,34 @@ attribute is insufficient if the record pass is disabled. The allocating abort
 failure paths in Enter/Leave/Admit still require a nonrecursive solution that
 preserves genuine GNU fatal behavior. No full sysroot/Nightly/JIT/GPU release
 acceptance follows from these compile-only packets.
+
+
+Continuation: producer20's bounded one-unit rebuild passes and consumer9's
+composition onto it builds. The actual SjLj control then crashes in overloaded
+stackrestore intrinsic creation; consumer attempt11 supplies the actual pointer
+type. Consumer21 builds but its first SjLj compile now fails LLVM verification:
+a catchpad invoke unwinds to its own parent catchswitch rather than the legal
+parent unwind destination. The exact responsible mutator is being localized;
+none of these compositions has forced-unwind runtime acceptance. C++ controls
+also reject actual Clang get.exception/get.ehselector calls; those require narrow
+CatchPad-token/personality provenance checks, not a llvm.wasm.* prefix exemption.
+Provider3 and consumer12 source reviews require actual producer-owned Module,
+Function and class-map membership before primitive skipping. Their runtime and
+forged-source negative gates remain pending. Genuine allocating GNU fatal
+closure is still unresolved.
+
+Root independently verifies all six backend64 integration inputs with 36 fresh
+empty compile-stage groups. Unique pin counts are 340/340/342/342/342/385 for
+owner-startup, owner-gate, bridge-lifetime, native-bridge, GNU helper and GNU
+handler. The actual native bridge has no calls/indirect calls/throws/SP writes;
+the bootstrap has no SP writes and uses its explicit actual TLS/TP imports.
+The GNU helper retains its real indirect signal callback and remains recorded.
+The handler's nptl/pthread_cancel.c bytes match pristine GNU. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/backend64-inputs-independent1/root-proof.json`.
+The only changed input path is compile-gnu-cancellation.py: its current version
+extends dispatch to five genuine GNU jump units. Preserved snapshots establish
+the exact recipe that executed; the proof records the current delta explicitly.
+The root review initially rejected that path drift and an overbroad no-indirect
+assumption for the recorded GNU helper; both original review scripts are kept.
+This evidence proves compile inputs and machine-body constraints only, not
+owner admission, cancellation runtime, complete NPTL, Nightly or JIT acceptance.

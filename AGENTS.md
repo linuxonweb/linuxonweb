@@ -148,8 +148,17 @@ capture ownership: actual captured caller-SP feeds both Enter and the real
 compiler-tagged cancellation poll, while proposal18 allows only Enter users.
 The actual failing IR confirms both users with no aliases/phis. Reviewed
 proposal20 validates exact poll metadata/ABI/capture/reason users, retaining
-unique Enter ownership and keeping polls longjmpable. Its bounded rebuild and
-the combined runtime gate remain pending. Preserve all consumer16/18 failures.
+unique Enter ownership and keeping polls longjmpable. Its bounded one-unit
+rebuild passes (compiler e8a6083006042ecab882718ee12975b2857d16e6b4c200ec310d815f839d5441).
+Consumer9 composition onto it builds, but SjLj compilation crashes because the
+consumer requests overloaded stackrestore without the actual pointer type.
+Reviewed one-line attempt11 fixes that declaration. Consumer21 builds; its
+next SjLj control reaches an actual verifier failure: an invoke within a
+catchpad unwinds to its own parent catchswitch instead of the parent's legal
+unwind destination. The responsible mutation is being localized; runtime is
+still unaccepted. C++ controls separately reveal overbroad llvm.wasm.* rejection
+of genuine frontend get.exception/get.ehselector calls with actual CatchPad
+tokens. Narrow provenance checks are needed. Preserve all failed controls.
 
 Unchanged GNU nptl/unwind.c and cancellation.c now compile with the actual
 backend64/public-jmp196/cancel-unwind84 header closure. Root independently
@@ -166,10 +175,27 @@ uncompiled: root review finds its zero-argument poll removal incompatible with
 the actual compiler void(i32 callerSP,i32 reason) hook and its capture liveness
 check runs before removing those poll users. Reviewed source-only proposal2
 corrects those checks and removes authenticated polls before capture; its
-diagnostic build is separate from runtime acceptance. The nonrecursive genuine
-fatal-path policy remains a prerequisite. Consumer primitive skipping must
+diagnostic build passes as provider19, separate from runtime acceptance.
+Reviewed provider3 adds a producer-owned actual Module/Function class-map
+membership query gated by record+forced mode; reviewed consumer12 requires
+that query before either primitive skip. Their composition and forged-source
+negative controls remain pending. The nonrecursive genuine fatal-path policy
+remains a prerequisite. Consumer primitive skipping must
 authenticate actual producer membership; source attributes alone cannot prove
 admission when the record pass is disabled.
+
+Root independently verifies six backend64 compile inputs: owner bootstrap,
+recorded owner gate, bridge lifetime, native bridge, GNU helper and actual GNU
+pthread_cancel handler. All 36 compile stage groups are freshly empty; proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/backend64-inputs-independent1/root-proof.json`.
+The native bridge has no actual machine calls, indirect calls, throws or linear
+SP writes; its generation getter loads the canonical admitted state. The GNU
+helper's actual signal callback is indirect and must remain recorded, never
+classed as a primitive. Original pthread_cancel.c matches pristine GNU bytes.
+The compile recipe subsequently added support for genuine jump units; root
+records the current-versus-executed script delta and verifies its preserved
+executed snapshots instead of treating the current script as the executed one.
+These are flags-off compilation controls, not admitted owner/runtime acceptance.
 
 Root's native GNU-target member-pointer ABI diagnostic independently verifies
 the existing WebAssembly C++ ABI flag: 512/0 calls at O0/O2, including virtual
