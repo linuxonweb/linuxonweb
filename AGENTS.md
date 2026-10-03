@@ -1,3 +1,39 @@
+# Musl recovery — 2026-10-02 (latest user direction; read this first)
+
+The user stopped glibc implementation and explicitly requested saving that
+branch, returning to musl libc, and completing latest Firefox Nightly, native
+Wasm JIT, Vulkan, OpenGL and Firefox WebGL GPU. This supersedes historical
+no-musl/glibc prerequisites and no-subagent rules. Fresh subagents receive only
+necessary context and inherit the main agent model and thinking effort.
+
+GNU work is preserved on `codex-nightly159-native-wasm` at `3027767`, including
+265 scoped source/document files; build evidence remains under `/mnt/p6/build`.
+All three GNU agents report empty owned process groups. No GNU runtime was
+accepted; no further GNU implementation is authorized by this continuation.
+One existing trailing whitespace in the preserved source checkpoint was
+retained to keep pinned source identities intact.
+
+Current branch `codex-nightly159-musl-jit-gpu` starts at the last pre-glibc
+checkpoint `1b4be96`. The existing musl Nightly packet is preserved read-only:
+`/mnt/p6/build/firefox-nightly-port-20261002`, with a 4.9 GiB patched source,
+five configure overlays and selective Rust libc0.2.186 target support. Its
+configure/export/MFBT/33 ABI checks passed; full Nightly never built. The old
+build entrypoint was disabled by the now-superseded glibc request. Recover in
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002`, with fresh objects,
+caches and rebased recipe paths. Initial task allowance is 8 GiB including
+source, with a 20 GiB free-space reserve; report before enlarging it. All task
+temp/cache/output paths must stay disk-backed, never `/tmp`.
+
+Source-only JIT audit remains at
+`/mnt/p6/build/firefox-nightly-jit-api-20261002/acceptance-and-migration-plan.md`.
+Its obsolete glibc requirement is superseded; new Nightly PBL/context/ICcursor,
+opcodes and Watchtower APIs still need migration and executable acceptance.
+Build Nightly first, then integrate/test native Wasm JIT, then Firefox GPU.
+Public Sites v10 remains the known-good Firefox128.14.0 ESR musl release;
+no Nightly deployment has happened. Preserve all source/build trees, unrelated
+untracked files, deployed assets and user services. Native Wasm only, adapter
+preference and existing verified-release authorization continue to apply.
+
 # Nightly upgrade — 2026-10-02 (latest user direction; read this first)
 
 The user now explicitly requires **latest Firefox Nightly first, then working
