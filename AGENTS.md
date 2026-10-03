@@ -8,6 +8,14 @@ Read-only Sites inspection confirms the same public project at version10.
 The concrete two-release sequence and acceptance/rollback requirements are in
 docs/firefox-nightly-sites-release-plan-20261002.md; no new deployment occurred.
 
+Run16's generated-make progress snapshot records707 existing native Wasm object
+paths of3,012 expected, with retained input/object pins. Root independently
+checks twelve snapshot/hash/count/object/status predicates in full-graph-review-
+run1.json under the root-review task. This is a filesystem progress estimate,
+not browser acceptance or an ETA. Run17 ends with exit2 on the upstream
+Wasm-only exclusion of DuplicateFileHandle; its exact group is empty before
+any native Linux/musl adapter is applied. The20GiB cap and four-job limit remain.
+
 Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and

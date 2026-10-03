@@ -1,0 +1,259 @@
+{
+  "checked": 1791011174.9718008,
+  "claim": "Object-file progress estimate; no full-build or guest acceptance",
+  "method": "Generated compile_targets and backend CSRCS/CPPSRCS/SSRCS/ASFILES; unified variables and generated binding include expanded; host-only targets excluded; output basenames follow config/rules.mk",
+  "root_mk_sha256": "bf4d12d85baf7b759dc086864ba073a4a5fe318087f7a4380187654396866ddc",
+  "compile_target_count": 592,
+  "target_directory_count": 578,
+  "expected_native_object_count": 3012,
+  "existing_expected_object_count": 707,
+  "missing_expected_object_count": 2305,
+  "existing_expected_object_bytes": 815877493,
+  "existing_non_wasm_magic": {},
+  "groups": {
+    "accessible": {
+      "expected": 31,
+      "existing": 31,
+      "bytes": 24492940
+    },
+    "browser": {
+      "expected": 5,
+      "existing": 5,
+      "bytes": 786288
+    },
+    "build": {
+      "expected": 1,
+      "existing": 1,
+      "bytes": 1589
+    },
+    "caps": {
+      "expected": 2,
+      "existing": 2,
+      "bytes": 2471038
+    },
+    "chrome": {
+      "expected": 1,
+      "existing": 1,
+      "bytes": 738517
+    },
+    "config": {
+      "expected": 390,
+      "existing": 390,
+      "bytes": 35547211
+    },
+    "devtools": {
+      "expected": 11,
+      "existing": 11,
+      "bytes": 4513746
+    },
+    "docshell": {
+      "expected": 4,
+      "existing": 4,
+      "bytes": 16133390
+    },
+    "dom": {
+      "expected": 348,
+      "existing": 260,
+      "bytes": 730791886
+    },
+    "editor": {
+      "expected": 7,
+      "existing": 0,
+      "bytes": 0
+    },
+    "extensions": {
+      "expected": 10,
+      "existing": 0,
+      "bytes": 0
+    },
+    "gfx": {
+      "expected": 239,
+      "existing": 0,
+      "bytes": 0
+    },
+    "hal": {
+      "expected": 2,
+      "existing": 0,
+      "bytes": 0
+    },
+    "image": {
+      "expected": 13,
+      "existing": 0,
+      "bytes": 0
+    },
+    "intl": {
+      "expected": 11,
+      "existing": 0,
+      "bytes": 0
+    },
+    "ipc": {
+      "expected": 21,
+      "existing": 0,
+      "bytes": 0
+    },
+    "js": {
+      "expected": 109,
+      "existing": 0,
+      "bytes": 0
+    },
+    "layout": {
+      "expected": 33,
+      "existing": 0,
+      "bytes": 0
+    },
+    "media": {
+      "expected": 709,
+      "existing": 0,
+      "bytes": 0
+    },
+    "memory": {
+      "expected": 2,
+      "existing": 0,
+      "bytes": 0
+    },
+    "mfbt": {
+      "expected": 2,
+      "existing": 2,
+      "bytes": 400888
+    },
+    "modules": {
+      "expected": 68,
+      "existing": 0,
+      "bytes": 0
+    },
+    "mozglue": {
+      "expected": 28,
+      "existing": 0,
+      "bytes": 0
+    },
+    "netwerk": {
+      "expected": 58,
+      "existing": 0,
+      "bytes": 0
+    },
+    "other-licenses": {
+      "expected": 1,
+      "existing": 0,
+      "bytes": 0
+    },
+    "parser": {
+      "expected": 8,
+      "existing": 0,
+      "bytes": 0
+    },
+    "security": {
+      "expected": 379,
+      "existing": 0,
+      "bytes": 0
+    },
+    "services": {
+      "expected": 1,
+      "existing": 0,
+      "bytes": 0
+    },
+    "startupcache": {
+      "expected": 1,
+      "existing": 0,
+      "bytes": 0
+    },
+    "storage": {
+      "expected": 4,
+      "existing": 0,
+      "bytes": 0
+    },
+    "third_party": {
+      "expected": 326,
+      "existing": 0,
+      "bytes": 0
+    },
+    "toolkit": {
+      "expected": 127,
+      "existing": 0,
+      "bytes": 0
+    },
+    "tools": {
+      "expected": 3,
+      "existing": 0,
+      "bytes": 0
+    },
+    "uriloader": {
+      "expected": 6,
+      "existing": 0,
+      "bytes": 0
+    },
+    "widget": {
+      "expected": 21,
+      "existing": 0,
+      "bytes": 0
+    },
+    "xpcom": {
+      "expected": 29,
+      "existing": 0,
+      "bytes": 0
+    },
+    "xpfe": {
+      "expected": 1,
+      "existing": 0,
+      "bytes": 0
+    }
+  },
+  "cleanup": "None; preserved source, objects, cache and diagnostic outputs",
+  "full_graph_manifest": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run16-final.json",
+    "sha256": "18ad690d239b56a47cfca8e1e7368519b8a3509e41687bfc1ba46cbd12d98c90"
+  },
+  "inspector_sha256": "41318dc4bd1f48799154829e3a9f9045e0bcf323920d8c5a5b6255e7a7a474a2",
+  "terminal_status": {
+    "phase": "build",
+    "run": "run16",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1034210,
+    "pgid": 1034210,
+    "started": 1791009857.0301907,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run16.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 16011284480,
+    "free_bytes": 77992353792,
+    "checked": 1791011052.974602,
+    "exit_code": -15,
+    "finished": 1791011057.9712646,
+    "stop_reason": "boundedphase"
+  },
+  "terminal_status_sha256": "11928faecb192cbdce88088618176fc8044815211c0529859aeb510bd28f8fa8",
+  "exact_group_cleanup": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run16-group-cleanup.json",
+    "sha256": "a7cc799d4b58f52d38712b0ac5242f7d3070193838fc30900f83afed851c4742",
+    "group_entries": []
+  },
+  "observed_run16_growth_bytes": 432443392,
+  "forecast": {
+    "basis": "Inference from current object mean; DOM-heavy sample is not representative of remaining many C sources",
+    "remaining_object_bytes_linear": 2659968347,
+    "additional_archive_link_optimizer_bytes_range_inferred": [
+      1073741824,
+      3221225472
+    ],
+    "timing": "Several further hours possible; smaller C objects may compile faster, and unknown compile/link blockers remain",
+    "cap_action": "No cap/job expansion; return concrete cache review before approaching20GiB"
+  },
+  "read_only_cache_inventory": {
+    "native_incremental_path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/incremental",
+    "native_incremental_bytes": 4273868800,
+    "host_incremental_path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/release/incremental",
+    "host_incremental_bytes": 201666560,
+    "historical_cache_bytes": 163102720,
+    "largest_copied_diagnostic_dir": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight",
+    "largest_copied_diagnostic_bytes": 25788416,
+    "cleanup": "None; current successful archives, objects, source and caches preserved. Exact paths, fingerprints and artifact independence need root review before any cache-only cleanup, after group empty."
+  }
+}
