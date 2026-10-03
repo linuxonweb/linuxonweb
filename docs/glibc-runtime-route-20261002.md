@@ -649,10 +649,90 @@ HAVE_RUST; both are disabled in old and new configurations. Run4 permits only
 that exact availability change, retaining the strict gate for all other
 nonmetadata choices. Root independently checks 100 recipe/source/host pins;
 the complete source recheck covers 93,703 files and 99 symlinks.
-Run4 source verification, olddefconfig and prepare pass, and actual kernel
-compilation is live at the time of this checkpoint (PID/PGID 305770, supervisor
-exec session40700). Artifacts are under
-`/mnt/p6/build/glibc-cancel-kernel-whole-run4-20261002`; always refresh actual
-process/stage state before continuing. The six-GiB budget includes the reused
-source tree. No target build success or kernel runtime acceptance is claimed.
+Run4 source verification, olddefconfig, prepare and actual vmlinux.o linking
+pass. Packaging exits 2 after 560.297 seconds: the architecture Makefile invokes
+the sections.pl source script relative to the O= output directory. PID/PGID
+305770 is terminal and independently confirmed empty. Preserve all 856 object
+files and the 6,280,529-byte linked object, SHA256
+`d251b84d505e1424d348d9398b24cc1f7e1fa286ba878254afd06da96feef1b2`.
+Root independently parses the exact import delta against baseline21c15250:
+user.call_signal_handler_v3 (4i32->i32) and user.signal_return_policy_v3
+(i32->i32) replace user.call_siginfo_handler (3i32->i32) and
+user.call_signal_handler (2i32->void), with no other differences.
+Proof: `/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/run4-linked-root-proof.json`.
+Separate packaging now passes with an owned Makefile source-path adapter.
+The final 6,281,781-byte image has SHA256
+`c999225be7be4a8be57afab7586be2897688d2ae0468c62a325236e48650d227`.
+Root checks unchanged executable section bodies, both embedded metadata
+sections, all 19 data ranges and successful Wasm validation. Audit5 readiness
+passes; independent root review rereads 7,468 pins, including 4,742 actual
+dependencies and 490 archives, with no mismatches or unresolved dependencies.
+Proof: `/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/audit5-root-proof.json`.
+The isolated guest candidate updates only kernel size/hash in the integrity
+manifest and adds two unavailable user imports in the main boot instance.
+Basic3 passes native 49,871/0 and FPCAST23i64 49,858/0, with all 12 result files
+per mode passing. Root independently checks 41 input/route pins, the exact
+manifest/bootstrap/runner deltas and empty terminal groups. Preparation retains
+two stale original-snapshot path labels after adapting worker/runner files;
+their unchanged original snapshots remain available and the root proof records
+the exact lineage corrections. Proof:
+`/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/basic3-root-proof.json`.
+This establishes ordinary legacy GNU guest behavior on the v3 kernel, including
+signals/abort, allocator/thread/memory and public-exec regressions. Genuine
+admitted frame bridge and post-restoration cancellation remain unaccepted.
+The initial manifest/import failures are retained; the six-GiB whole-build
+budget includes the reused source tree.
+
+Root also verifies the C++ frontend ABI diagnosis using the actual pinned
+compiler: unchanged wasm32 GNU/Linux produces no catchret for two catch exits,
+whereas `-fc++-abi=webassembly` produces both required catchret instructions.
+Proof: `/mnt/p6/build/glibc-wasm-cxxabi-root-diagnosis-20261002/proof.json`.
+This existing compiler option is preferable to an upstream catch-exit patch.
+All linked C++ runtime/fixture units are rebuilt coherently for personality7.
+Both baseline and patched variants pass 40 cases each: actual foreign cleanup
+and ownership plus native int catch/rethrow with pointer identity. Actual SP
+is unchanged and fatal callback counts stay zero. Root rereads 842 pins and
+independently reruns both frozen native Wasm modules. Proof:
+`/mnt/p6/build/glibc-native-forced-unwind-root-review-20261002/personality7-independent1/root-proof.json`.
+The old selector-zero catch-miss assumption is disproved; both variants catch
+foreign exceptions, while actual TLS observations show baseline selector0
+and patched selector1. This synthetic Linux host fixture does not establish
+real guest/default C++ fatal, forced unwind or NPTL acceptance.
+The new module4-proposal10 private driver compiles after the retained proposal9
+load-opcode error, but its first normal-control run fails compiling a flags-off
+provider with SIGTRAP. Its runtime behavior remains unaccepted; diagnose the
+actual compiler stage while preserving accepted frozen records7.
 The full Nightly159/JIT/GPU release goal remains active and incomplete.
+
+The flags-off SIGTRAP is now localized by GDB to legacy LLVM pass-manager
+construction, before function compilation. The final-admission ModulePass
+split the function pipeline; converting it to a FunctionPass still leaves
+AAResults invalidated immediately before selection. Proposal14's explicit
+rebuild fails compilation on a nonexistent factory; proposal15 uses LLVM22's
+public constructor and composes the reviewed producer corrections. Its gate
+remains pending. Source-setjmp admission
+adjacency and an orphaned admission around the consumed caller-SP marker are
+independent control failures; their corrections remain separate and unaccepted.
+The combined consumer8 compiler compiles/links successfully, but neither its
+runtime nor forced unwind is accepted. The GNU owner bridge compiles with
+359 dependency pins and no calls/imports/linear-SP writes in primitive
+assembly; real ownership/admission and cancellation composition remain pending.
+Root review catches an ABA issue in raw checkpoint pointers reused after
+completion. A fresh bridge2 will resolve nonreused opaque serial handles
+against bounded live slots before any dereference; bridge1 stays frozen.
+
+The fresh root ABI diagnostic executes native GNU-target Wasm at O0 and O2
+with no module imports. `-fc++-abi=webassembly` passes all 512 calls, covering
+nonvirtual member calls, virtual overrides and multiple-inheritance `this`
+adjustments. Generic Itanium produces 128 actual signature/null-function traps
+per mode; linked member-pointer words prove odd table indices are exercised.
+This directly confirms the flag also addresses the member-pointer defect
+previously encountered in Mesa, within this compiler diagnostic scope.
+All 19 input/output pins are reread and 16 actual owned groups are empty.
+Proof: `/mnt/p6/build/glibc-wasm-member-pointer-root1-20261002/proof.json`,
+SHA256 `177c6618f5142f668a9f871e56770ce799ec12aaf3b19384fd7fc3c2243df24c`.
+Replay and full rebuild requirements are in `tools/glibc/cxxabi-platform/README.md`.
+The C++ closure recipe now selects the ABI for every C++ unit and removes
+the C++ option when deriving the C provider argv. Historical objects remain
+unchanged and cannot be mixed into a fresh coherent closure. These checks
+do not establish full GNU libc, real guest C++ behavior or Nightly acceptance.
