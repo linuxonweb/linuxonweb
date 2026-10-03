@@ -1,0 +1,33 @@
+{
+  "claim": "Current native XPTCall compile and actual Wasm call semantics; full Nightly browser still unlinked",
+  "review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-xptcall-review-run1.json",
+    "bytes": 400285,
+    "sha256": "a246477e7de9092aa65440a0a6504633b283ee2981af7cc2057cbf6d8aee8888"
+  },
+  "checks": 3879,
+  "metadata": {
+    "methods": 7853,
+    "maxExplicit": 14,
+    "maxIncludingHidden": 14,
+    "source": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/xpcom/reflect/xptinfo/xptdata.cpp",
+      "bytes": 5736370,
+      "sha256": "1317203239ae01fd1782ed05910a0f449fa42c244c89df39302166e550c063a0"
+    }
+  },
+  "actualWasmCases": 14,
+  "rawMismatchTraps": true,
+  "allIndirectTargetsUse23I64": true,
+  "actualNativeBuildObjects": 3012,
+  "nextUndefinedSymbols": [
+    "_Unwind_Backtrace",
+    "_Unwind_FindEnclosingFunction",
+    "_Unwind_GetCFA",
+    "__cxa_thread_atexit_impl"
+  ],
+  "guestAcceptance": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "releaseAcceptance": false
+}

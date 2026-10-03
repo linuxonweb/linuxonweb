@@ -1,3 +1,22 @@
+# Latest continuation — native XPTCall, 2026-10-03
+
+Run44 terminal/reaped2, exact owned PGID2047580 empty. Real native scoped
+XPTCall build passes; full graph3012/3012 (one new current-source object),
+Rust archive unchanged,763/763 Pixman consumers coherent. New XPTCall adapter
+uses the mandatory23-i64 fpcast ABI plus current metadata, replacing the old
+signature whitelist. Only3 small upstream hook files changed; all logic is a
+new adapter. Actual compiled Nightly xptcall.o/backend execute14 real Wasm
+cases, raw negative traps, all511 transformed indirect targets uniform.
+Current7853 generated method records fit (maximum14 args including hidden).
+Root3879 checks pass; see docs/firefox-nightly-xptcall-20261003.md and
+native-xptcall.json. Unit execution uses an isolated metadata catalog; no
+actual guest browser acceptance. Run44 resolves XPTCall errors; exact next
+missing symbols: __cxa_thread_atexit_impl, _Unwind_GetCFA,
+_Unwind_FindEnclosingFunction, _Unwind_Backtrace. Complete real thread-local
+destructor lifecycle and honest native VM backtrace policy, retaining working
+Wasm exceptions. No live owned process, no Nightly JIT/GPU/deploy. Public v10
+unchanged. No subagents; goal remains active, JIT first then GPU.
+
 # Latest continuation — 2026-10-03
 
 Run42 and Run43 are terminal/reaped2; owned PGIDs2006321/2013510 empty.

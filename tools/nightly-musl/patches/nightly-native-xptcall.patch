@@ -1,0 +1,67 @@
+--- a/xpcom/reflect/xptcall/md/unix/moz.build
++++ b/xpcom/reflect/xptcall/md/unix/moz.build
+@@ -228,6 +228,9 @@
+         "xptcstubs_loongarch64.cpp",
+     ]
+ 
++if CONFIG["TARGET_CPU"] == "wasm32" and CONFIG["OS_ARCH"] == "Linux":
++    SOURCES += ["xptcall_wasm32.cpp"]
++
+ FINAL_LIBRARY = "xul"
+ 
+ LOCAL_INCLUDES += [
+--- a/xpcom/reflect/xptcall/xptcprivate.h
++++ b/xpcom/reflect/xptcall/xptcprivate.h
+@@ -51,11 +51,20 @@
+   nsIXPTCProxy* mOuter;
+   const nsXPTInterfaceInfo* mEntry;
+ 
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++  uintptr_t* mWasmVTable = nullptr;
++  ~nsXPTCStubBase() { delete[] mWasmVTable; }
++#else
+   ~nsXPTCStubBase() = default;
++#endif
+ };
+ 
+ #undef STUB_ENTRY
+ #undef SENTINEL_ENTRY
++
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++nsresult WasmInitXPTCStub(nsXPTCStubBase* aStub);
++#endif
+ 
+ #if defined(__clang__) || defined(__GNUC__)
+ #  define ATTRIBUTE_USED __attribute__((__used__))
+--- a/xpcom/reflect/xptcall/xptcall.cpp
++++ b/xpcom/reflect/xptcall/xptcall.cpp
+@@ -35,7 +35,18 @@
+     return NS_ERROR_FAILURE;
+   }
+ 
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++  *aResult = nullptr;
++  auto* stub = new nsXPTCStubBase(aOuter, iie);
++  nsresult rv = WasmInitXPTCStub(stub);
++  if (NS_FAILED(rv)) {
++    delete stub;
++    return rv;
++  }
++  *aResult = stub;
++#else
+   *aResult = new nsXPTCStubBase(aOuter, iie);
++#endif
+   return NS_OK;
+ }
+ 
+@@ -50,5 +61,10 @@
+                                   mozilla::MallocSizeOf aMallocSizeOf) {
+   // We could cast aStub to nsXPTCStubBase, but that class doesn't seem to own
+   // anything, so just measure the size of the object itself.
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++  return aMallocSizeOf(aStub) +
++         aMallocSizeOf(static_cast<const nsXPTCStubBase*>(aStub)->mWasmVTable);
++#else
+   return aMallocSizeOf(aStub);
++#endif
+ }
