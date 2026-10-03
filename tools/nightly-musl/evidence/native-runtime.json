@@ -1,0 +1,45 @@
+{
+  "claim": "Actual guest TLS lifecycle20/0 and native exceptions100/0; negative control catchesfour ordering failures; runtime archive scoped to three browser programs",
+  "checked": 1791045640.6668658,
+  "evidence": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-runtime-review-run1.json",
+      "bytes": 868023,
+      "sha256": "a5d0081c4db2845fe395995cb656507b2af72a8e672c9bc3dbcbee7b80185e5d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-link/guest-run1/result.json",
+      "bytes": 12670,
+      "sha256": "770b69007603d8e8c10f83d1cea15064838dee60e51e0575715283ff88f25541"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-link/guest-run2-negative/result.json",
+      "bytes": 13914,
+      "sha256": "41d534d504ce6e2e6b49fd2462ddc611e555ac5111e0c36d1c16ce30e1db4410"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-runtime-link-scope-run1/result.json",
+      "bytes": 336794,
+      "sha256": "81143cf149c3f79f93b936cc6d0792f2693d86412188cf436674005659c0a017"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/build.json",
+      "bytes": 2206,
+      "sha256": "f8456d07e9520f5fe9c446be25f5744abc411e037957dd941e472352d522e4f4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-runtime-port-run1.json",
+      "bytes": 538,
+      "sha256": "cc62b736ade6b8c6ad85d9108a424e655adbc9ae8417f264db914d33665bfcc1"
+    }
+  ],
+  "guestRuntimeAcceptance": true,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "releaseAcceptance": false
+}

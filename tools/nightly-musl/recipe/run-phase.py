@@ -23,7 +23,7 @@ with log.open('w') as out:
   if now>=next_check:
    usage=sum(int(subprocess.check_output(['du','-sx','--block-size=1',path]).split()[0]) for path in policy['owned_roots']); free=shutil.disk_usage(root).free
    meta.update(task_bytes=usage,free_bytes=free,checked=now); status.write_text(json.dumps(meta,indent=2)); next_check=now+20
-   if usage>=policy['limit_bytes']: reason='authorized20GiBtasklimit'
+   if usage>=policy['limit_bytes']: reason='authorizedTaskLimit'
    if free<=policy['reserve_bytes']: reason='20GiBdiskreserve'
   if now-start>limit: reason='boundedphase'
   if reason:

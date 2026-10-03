@@ -1,3 +1,26 @@
+# Latest continuation — native runtime lifecycle, 2026-10-03
+
+Actual real Linux/Wasm runtime regression passes20 TLS/lifecycle checks and
+100 native Wasm exception checks, exacthost/browser/guestCPUs6. Four concurrent
+workers exercise return/explicitpthread_exit, cleanup handlers before TLS,
+LIFO/nested destructor registration, TLS before ordinary pthread keys, and
+main TLS before process atexit. A real negative control removing only the
+thread cleanup wrapper fails exactlyfour ordering checks while EH100/0 remains.
+Both owned guest browsers/servers cleanly stopped, groups empty. New runtime
+adapter implements __cxa_thread_atexit_impl and explicit unavailable native
+backtrace/CFA/enclosing-function queries; real LLVM Wasm EH retained. Actual
+archive object equals guest-tested object. Root7815 checks pass; evidence
+native-runtime.json and docs/firefox-nightly-native-runtime-20261003.md.
+Only3 browser link rows select runtime/archive --wrap=exit and
+--wrap=__pthread_tsd_run_dtors; gfxtest unchanged. No upstream runtime edits.
+Run45 terminal/reaped143/group2099814empty: measured28.99GBtransient output,
+stopped at22GiBtaskcap (old stop string misleadingly said20GiB). Reported
+cap increases20->22->32GiB before applying;20GiBreserve retained. Runner now
+reports authorizedTaskLimit accurately. Run46 j4/20min live PGID2104526,
+unified53567, three binaries in compiler-wrapper Binaryen -O2 processing;
+poll/reap before edits to active source/recipe. No Nightly browser/JIT/GPU
+or deployment acceptance. Public v10 unchanged; goal remains active inline.
+
 # Latest continuation — native XPTCall, 2026-10-03
 
 Run44 terminal/reaped2, exact owned PGID2047580 empty. Real native scoped
