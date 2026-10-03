@@ -158,6 +158,20 @@ Nightly linking, guest JIT and both authorized releases remain pending. Recheck
 actual status before continuation; the next full segment keeps all existing
 job/time/storage bounds and preserves source, outputs and caches.
 
+Run24 also reaches its twenty-minute bound without compiler errors. Exact
+PGID1351481 is empty and unified88087 is reaped143. It rebuilds143 existing
+objects, with zero new graph paths; the retained graph remains1,113/3,012.
+Strict inttypes coherence advances to298/552, leaving254 exact prerequisites
+pending with their original dependency backups intact. The native Rust archive
+is unchanged. Root's saved read-only reviewer checks2,505 actual terminal/pin/
+native-object/dependency/graph/archive predicates in full-boundary-run24-review-
+run1.json, including its own script pin. The scoped packet is tools/nightly-musl/
+evidence/full-build-boundary-coherence-run24.json. This confirms required header
+recompilation, not full graph or guest acceptance. Continue under unchanged
+bounds after inspecting actual current status; no source/cache changes are
+required. Nightly linking, JIT/GPU acceptance and both Sites releases remain
+pending, with public v10 unchanged.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
