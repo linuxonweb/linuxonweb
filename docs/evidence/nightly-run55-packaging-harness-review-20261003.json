@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "passReview": true,
+  "reviewedAt": "2026-10-03T22:42:13.147126+00:00",
+  "head": "90b623ce379295340708ee0cb0650cc80751fc42",
+  "sourcePins": {
+    "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/package-firefox-nightly.py": "d51a65c1826d6205ef6712e066884cd8f912afcfccc6d442b8033ed6e1ed118f",
+    "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-package.py": "7aca3f51916ce252a383056a5c543150079918458213bfd68d89e499875b23e5",
+    "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs": "d35801c0a5894c6b463e8ec051d4d424acb214362b2a0e8e5fe6245aa22ee89c",
+    "/mnt/p6/project/linux/linuxonweb/tools/nightly-nss-gate/run-guest.mjs": "7cebb1d38c85cf74f202722f49699c809b9bc9a52995030926929c73a72c4cf5"
+  },
+  "evidencePins": {
+    "packageRegression": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run58/result.json",
+      "sha256": "9e07a5c62aebe38f77d5605bc5411d8daa7423ad578d9d8326ca9e280db2e304"
+    },
+    "baselineRegression": {
+      "path": "/mnt/p6/build/firefox-nightly-baseline-gate-20261002/contract-run55-html-pins-final/result.json",
+      "sha256": "f7e0078b1f4c70153eea16ae30c8f520402280992f4f4d36f3ffb427659bda3c"
+    },
+    "harnessPreparation": {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/harness-preparation-run55-final.json",
+      "sha256": "3f630a9dc4aceef2254f0dbe497a2ef755eecdf3f6b58560bacdff87d98316a8"
+    },
+    "actualRawRuntimePreflight": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/preflight-real-run55/preflight.json",
+      "sha256": "b5aa2dab8068535a402e7781c8d6029ca6c53cd43c8535c9a58ce9ece1856460"
+    },
+    "actualRawRuntimeInventory": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/preflight-real-run55/runtime-inventory.json",
+      "sha256": "8e9ec3ea3aacfa6794bbc7a8b4829415e8883acc53b8fd9d6fe994c3a4f12550"
+    },
+    "ownSanitation": {
+      "path": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/sanitation-review.json",
+      "sha256": "95f6579380671365568a85432d886c0577b15efdd6d6b84e0ecb223f508e3b26"
+    },
+    "ownHarness": {
+      "path": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/harness-review.json",
+      "sha256": "7f15e2db4fcf352676222ecbb5562f00991d7c4308688a8990576e3f4692211a"
+    },
+    "diff": {
+      "path": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/review.diff",
+      "sha256": "6460831ca6d20a2ee75d1d27e01576efdc032a471f0251cd3207960648592a34"
+    }
+  },
+  "checks": {
+    "independentSanitation": 30,
+    "independentHarness": 29,
+    "ownerPackageRegression": 52,
+    "ownerBaselineRegression": 49,
+    "ownerNssHostPreparation": 28
+  },
+  "resolvedFindings": [
+    {
+      "issue": "buildconfig allowed embedded executable markup and wrapped script/style template displays",
+      "fix": "reject script/style anywhere and inner configure markup; own embedded/wrapped/style negatives pass"
+    },
+    {
+      "issue": "configure replacement matched prefixed variable tokens",
+      "fix": "literal spaces required before/after exact audited tokens; own prefixed/longer-token negatives pass"
+    },
+    {
+      "issue": "exact RFP line2 could occur inside template literal opened on line1",
+      "fix": "require exact real generated header line1 and source comment line2; own template negative passes"
+    },
+    {
+      "issue": "runtime pins omitted loaded xterm JS/CSS from HTML",
+      "fix": "pin direct same-origin HTML script/link dependencies; actual52 runtime pins include compiled worker and all xterm dependencies; missing/external/escaping URL negatives pass"
+    }
+  ],
+  "assessment": {
+    "sanitizationOnlyTwoAllowedResources": true,
+    "unexpectedResourceAndRootLeaksRejected": true,
+    "actualSanitizedResourceProofsMatchRetainedPreflight": true,
+    "rawAndInstalledInventoryHashesSeparate": true,
+    "outsideRuntimeRecordMetadataAndTailRetained": true,
+    "exactCurrentTask4GiBLegacy2GiB": true,
+    "taskOverrideAndContainmentNegativesPass": true,
+    "nssFixturesUseSelectedRealpathTask": true,
+    "cpuLifecycleOwnershipDeadlineReserveGuardsPreservedByDiff": true,
+    "runtimePinCount": 52
+  },
+  "guardObservation": {
+    "task": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003",
+    "capBytes": 268435456,
+    "observedBytesBeforeReport": 67009,
+    "reserveBytes": 21474836480,
+    "freeBytesObserved": 53974671360,
+    "scratch": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/scratch"
+  },
+  "limitations": [
+    "No Firefox source/build/output mutation, browser/guest/GPU test, stage, or commit performed.",
+    "CPU/lifecycle preservation assessed by diff and finite source contracts; no real process cleanup or guest CPU gate executed.",
+    "Task/cap finite checks execute exact extracted source prefix; actual exported runner rejects outside scratch before launch.",
+    "Actual raw resource hashes verified read-only; full runtime canonical inventory verified from retained owner inventory, no duplicate800MiB source sweep.",
+    "Full packager regressions reused retained tiny synthetic fixture, actual full package and baseline/NSS/JIT/GPU/release acceptance remain separate."
+  ],
+  "browserStarted": false,
+  "baselineAcceptance": false,
+  "tlsAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false
+}

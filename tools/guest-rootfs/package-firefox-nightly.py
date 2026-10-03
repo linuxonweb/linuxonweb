@@ -98,6 +98,64 @@ def inventory_archive(path):
     return rows, tail
 
 
+def installed_text(body, relative, source_root, object_root):
+    """Remove two generated build-path displays; retain frozen source bytes."""
+    if b'/mnt/p6/' not in body:
+        return body, None
+    source_root, object_root = source_root.resolve(), object_root.resolve()
+    build_root = object_root.parent
+    if not source_root.is_relative_to(build_root):
+        raise ValueError('host task path in installed resource: ' + relative)
+    before = body
+    if relative == 'chrome/toolkit/content/global/buildconfig.html':
+        if re.search(rb'<\s*/?\s*(?:script|style)\b', body, re.I):
+            raise ValueError('unexpected generated buildconfig path display')
+        root = str(build_root).encode()
+        replacements = [
+            (b'<td>' + root + b'/recipe/rustc</td>', b'<td>[build-root]/recipe/rustc</td>'),
+            (b'MOZBUILD_STATE_PATH=' + root + b'/mozbuild', b'MOZBUILD_STATE_PATH=[build-root]/mozbuild'),
+            (b'RUSTC=' + root + b'/recipe/rustc', b'RUSTC=[build-root]/recipe/rustc'),
+            (b'CARGO=' + root + b'/recipe/cargo', b'CARGO=[build-root]/recipe/cargo'),
+        ]
+        lines = body.splitlines(keepends=True)
+        for old, new in replacements:
+            if body.count(old) != 1:
+                raise ValueError('unexpected generated buildconfig path display')
+            line = next(line for line in lines if old in line)
+            if old.startswith(b'<td>'):
+                valid = line.strip() == old
+            else:
+                valid = line.strip().startswith(b'<p>--enable-application=browser ') and line.strip().endswith(b'</p>')
+                content = line.strip()[3:-4]
+                valid = valid and b'<' not in content and b'>' not in content
+                # A longer path or adjacent expression is not the audited token.
+                valid = valid and b' ' + old + b' ' in line
+            if not valid:
+                raise ValueError('unexpected generated buildconfig path display')
+            body = body.replace(old, new)
+        reason = 'Generated about:buildconfig compiler display and configure tokens only'
+        count = len(replacements)
+    elif relative == 'modules/RFPTargetConstants.sys.mjs':
+        prefix = str(source_root).encode() + b'/toolkit/components/resistfingerprinting/'
+        names = [b'RFPTargets.inc', b'RFPTargetsDefaultBaseline.inc', b'RFPTargetsDefault.inc']
+        expected = b'// See extract_rfp_targets.py, ' + b', '.join(prefix + name for name in names) + b' files instead.'
+        lines = body.splitlines(keepends=True)
+        if (len(lines) < 2 or lines[0].rstrip(b'\r\n') != b'// This is a generated file. Please do not edit.'
+                or lines[1].rstrip(b'\r\n') != expected):
+            raise ValueError('unexpected generated RFP source comment')
+        lines[1] = lines[1].replace(str(source_root).encode() + b'/', b'')
+        body = b''.join(lines)
+        reason = 'Generated comment line 2 only; source paths become relative'
+        count = len(names)
+    else:
+        raise ValueError('host task path in installed resource: ' + relative)
+    if b'/mnt/p6/' in body:
+        raise ValueError('unexpected remaining host task path in installed resource: ' + relative)
+    return body, {'rawSHA256': base.digest(before), 'installedSHA256': base.digest(body),
+                  'rawBytes': len(before), 'installedBytes': len(body),
+                  'replacementCount': count, 'reason': reason}
+
+
 def runtime_inventory(runtime, source_root, object_root):
     """Materialize dist symlinks, allowing only this source/object tree.
 
@@ -128,8 +186,7 @@ def runtime_inventory(runtime, source_root, object_root):
                 walk(child, relative + '/' + child.name if relative else child.name, ancestry | {resolved})
         elif stat.S_ISREG(info.st_mode):
             if resolved.suffix in {'.js', '.mjs', '.json', '.ini', '.css', '.html', '.manifest'}:
-                if b'/mnt/p6/' in resolved.read_bytes():
-                    raise ValueError('host task path in installed resource: ' + relative)
+                installed_text(resolved.read_bytes(), relative, source_root, object_root)
             row = {'name': relative, 'mode': 0o100755 if info.st_mode & 0o111 else 0o100644,
                    'bytes': info.st_size, 'sha256': sha(resolved)}
             rows.append(row)
@@ -292,6 +349,12 @@ def main():
     if identity['version'] not in [line.strip() for line in milestone if not line.startswith('#')]:
         raise ValueError('source milestone mismatch')
     rows, paths = runtime_inventory(args.runtime, args.source_root, args.object_root)
+    sanitized, sanitation_proof = {}, {}
+    for relative in ('chrome/toolkit/content/global/buildconfig.html', 'modules/RFPTargetConstants.sys.mjs'):
+        if paths.get(relative) is not None:
+            body, proof = installed_text(paths[relative].read_bytes(), relative, args.source_root, args.object_root)
+            if proof:
+                sanitized[relative], sanitation_proof[relative] = body, proof
     if paths.get('firefox') is None:
         raise ValueError('complete build missing native Wasm Firefox binary')
     with paths['firefox'].open('rb') as stream:
@@ -310,6 +373,7 @@ def main():
         (out / 'runtime-inventory.json').write_text(json.dumps(rows, indent=2) + '\n')
         report = {'inventoryOnly': True, 'runtimeInventorySHA256': inventory_sha, 'sourceIdentitySHA256': args.source_identity_sha256,
                   'rawBinarySHA256': sha(paths['firefox']), 'stamps': stamps, 'prefsSourceReview': prefs_proof,
+                  'runtimeTextSanitizations': sanitation_proof,
                   'archiveCreated': False, 'guestAcceptance': False}
         (out / 'preflight.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps(report)); return
@@ -337,6 +401,8 @@ def main():
             if key == 'init' and b'home: persistent storage mounted' not in body:
                 raise ValueError('persistent-home init marker missing')
     installed = {r['name']: dict(r) for r in rows}
+    for relative, body in sanitized.items():
+        installed[relative].update(bytes=len(body), sha256=base.digest(body))
     for rel in ('defaults', 'defaults/pref'):
         if rel in paths and paths[rel] is not None: raise ValueError('preference parent must be a directory')
         installed.setdefault(rel, {'name': rel, 'mode': 0o40755, 'bytes': 0, 'sha256': base.digest(b'')})
@@ -368,6 +434,7 @@ def main():
                         if inode > 0xffffffff: raise ValueError('CPIO inode exhausted')
                         if rel in final_paths: data = final_paths[rel].read_bytes()
                         elif rel == 'defaults/pref/wasm.js': data = pref_after
+                        elif rel in sanitized: data = sanitized[rel]
                         elif stat.S_ISDIR(row['mode']): data = b''
                         else: data = paths[rel].read_bytes()
                         if len(data) != row['bytes'] or base.digest(data) != row['sha256']:
@@ -422,6 +489,7 @@ def main():
               'criticalRecords': {k: old[k] for k in sorted(CRITICAL)}, 'prefsSourceReview': prefs_proof,
               'guestDefaultsBeforeSHA256': base.digest(pref_before), 'guestDefaultsSHA256': base.digest(pref_after),
               'runtimeSymlinksMaterialized': True, 'filesystems': filesystems,
+              'runtimeTextSanitizations': sanitation_proof, 'packagerSHA256': sha(Path(__file__)),
               'pending': ['default-GPU-homepage-overlay', 'Nightly-resource/static-adapter-audit',
                           'Nightly-NSS-trust-seed-freshness', 'eight-CPU-guest-startup/update', 'native-Wasm-JIT', 'guest-GPU']}
     (out / 'package-report.json').write_text(json.dumps(report, indent=2) + '\n')

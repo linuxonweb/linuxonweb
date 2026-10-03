@@ -227,6 +227,72 @@ def main():
     ef.write_text(json.dumps(helper_evidence))
     log = root / 'xpcshell-structuralValidation.log'; prior = log.read_text(); log.write_text('changed helper log\n')
     run('helper-validator-log-changed', False, overrides=overrides, error='command log hash mismatch: structuralValidation'); log.write_text(prior)
+
+    # Real generated resources include a build display and a source comment.
+    # Their raw inventory must remain unchanged while installed copies are clean.
+    config = runtime / 'chrome/toolkit/content/global/buildconfig.html'
+    config.parent.mkdir(parents=True)
+    build_prefix = str(obj.parent)
+    config_body = (f'<td>{build_prefix}/recipe/rustc</td>\n'
+                   f'<p>--enable-application=browser MOZBUILD_STATE_PATH={build_prefix}/mozbuild '
+                   f'RUSTC={build_prefix}/recipe/rustc CARGO={build_prefix}/recipe/cargo --disable-updater</p>\n').encode()
+    rfp = runtime / 'modules/RFPTargetConstants.sys.mjs'
+    rfp_prefix = str(source) + '/toolkit/components/resistfingerprinting/'
+    rfp_body = ('// This is a generated file. Please do not edit.\n// See extract_rfp_targets.py, ' + ', '.join(rfp_prefix + name for name in
+                ['RFPTargets.inc', 'RFPTargetsDefaultBaseline.inc', 'RFPTargetsDefault.inc']) +
+                ' files instead.\nexport const target = 159;\n').encode()
+    config.write_bytes(config_body); rfp.write_bytes(rfp_body)
+    clean_config, config_proof = p.installed_text(config_body, config.relative_to(runtime).as_posix(), source, obj)
+    clean_rfp, rfp_proof = p.installed_text(rfp_body, rfp.relative_to(runtime).as_posix(), source, obj)
+    assert clean_config == config_body.replace(build_prefix.encode(), b'[build-root]')
+    assert clean_rfp == rfp_body.replace((str(source) + '/').encode(), b'')
+    assert config_proof['replacementCount'] == 4 and rfp_proof['replacementCount'] == 3
+    results.append({'name': 'two-exact-generated-resource-transforms', 'pass': True})
+    resource_rows, _ = p.runtime_inventory(runtime, source, obj)
+    resource_evidence = copy.deepcopy(helper_evidence)
+    resource_evidence['runtimeInventorySHA256'] = p.base.digest(p.canonical(resource_rows))
+    ef.write_text(json.dumps(resource_evidence))
+    run('sanitized-resource-package', True, overrides=overrides)
+    with gzip.open(root / 'sanitized-resource-package/initramfs-firefox.cpio.gz', 'rb') as stream:
+        installed_records = {k: b for k, _, b, _ in p.cpio(stream)}
+    assert installed_records['opt/firefox/' + config.relative_to(runtime).as_posix()] == clean_config
+    assert installed_records['opt/firefox/' + rfp.relative_to(runtime).as_posix()] == clean_rfp
+    assert config.read_bytes() == config_body and rfp.read_bytes() == rfp_body
+    assert p.runtime_inventory(runtime, source, obj)[0] == resource_rows
+    sanitized_report = json.loads((root / 'sanitized-resource-package/package-report.json').read_text())
+    assert sanitized_report['runtimeInventorySHA256'] == resource_evidence['runtimeInventorySHA256']
+    assert sanitized_report['runtimeTextSanitizations'] == {
+        config.relative_to(runtime).as_posix(): config_proof, rfp.relative_to(runtime).as_posix(): rfp_proof}
+    results.append({'name': 'installed-resource-audit-and-frozen-raw-inventory-preservation', 'pass': True})
+    config.write_bytes(config_body.replace(build_prefix.encode(), b'/mnt/p6/build/unexpected-root'))
+    run('unexpected-build-root-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(config_body.replace(b'/recipe/cargo ', b'/recipe/cargo-extra '))
+    run('longer-configure-token-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(config_body.replace(b'<p>--enable-application=browser ', b'<p>--enable-application=browser <script>const x="').replace(b'--disable-updater</p>', b'";</script></p>'))
+    run('script-in-configure-display-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(config_body.replace(b' RUSTC=', b' NOT_RUSTC='))
+    run('prefixed-configure-token-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(b'<script>const path = `\n' + config_body + b'`;\n</script>\n')
+    run('script-wrapper-configure-display-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(b'<style>\n' + config_body + b'\n</style>\n')
+    run('style-wrapper-configure-display-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(config_body + b'<script>const path="/mnt/p6/build/extra";</script>\n')
+    run('functional-buildconfig-leak-rejected', False, inv=True, error='unexpected generated buildconfig path display')
+    config.write_bytes(config_body)
+    rfp.write_bytes(rfp_body.replace(b'// See extract_rfp_targets.py, ', b'const paths = "'))
+    run('noncomment-rfp-leak-rejected', False, inv=True, error='unexpected generated RFP source comment')
+    rfp.write_bytes(b'// extra line\n' + rfp_body)
+    run('noncanonical-rfp-comment-position-rejected', False, inv=True, error='unexpected generated RFP source comment')
+    rfp.write_bytes(b'export const path = `\n' + rfp_body.split(b'\n', 1)[1] + b'`;\n')
+    run('template-literal-rfp-comment-rejected', False, inv=True, error='unexpected generated RFP source comment')
+    rfp.write_bytes(rfp_body + b'export const path="/mnt/p6/build/extra";\n')
+    run('functional-rfp-leak-rejected', False, inv=True, error='unexpected remaining host task path')
+    rfp.write_bytes(rfp_body.replace(str(source).encode(), b'/mnt/p6/build/unexpected-source'))
+    run('unexpected-rfp-root-rejected', False, inv=True, error='unexpected generated RFP source comment')
+    rfp.write_bytes(rfp_body)
+    (runtime / 'modules/other.mjs').write_text('// See /mnt/p6/build/path\n')
+    run('other-comment-resource-rejected', False, inv=True, error='host task path in installed resource: modules/other.mjs')
+    (runtime / 'modules/other.mjs').unlink()
     output = {'pass': all(r['pass'] for r in results), 'checks': len(results), 'syntheticOnly': True,
               'actualNightlyPackaged': False, 'guestAcceptance': False, 'results': results}
     (root / 'result.json').write_text(json.dumps(output, indent=2) + '\n')

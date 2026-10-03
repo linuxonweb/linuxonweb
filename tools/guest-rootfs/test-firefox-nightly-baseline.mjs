@@ -12,6 +12,7 @@ import { prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEviden
 import { ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
 
 const TASK = '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
+export const CURRENT_TASK = '/mnt/p6/project/build/nightly-baseline-guest-20261003';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const PAGE = 'file:///opt/firefox/gpu-check/gpu-check.html';
 const PROBE = 'file:///home/admin/nightly-baseline-probe.html';
@@ -73,14 +74,27 @@ export function consolePayloads(logs, prefix) {
   return result;
 }
 
+export async function pinHtmlRuntimeDependencies(html, read) {
+  const files = [];
+  for (const match of html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)=["']([^"']+)["']/gi)) {
+    const url = new URL(match[1], 'http://owned.invalid/linux/index.html');
+    assert(url.origin === 'http://owned.invalid' && url.pathname.startsWith('/linux/') && !/%|\\/.test(url.pathname), 'HTML runtime dependency escapes owned Linux assets');
+    const filename = REPO + '/web/linux/' + url.pathname.slice('/linux/'.length);
+    await read(filename); files.push(filename);
+  }
+  assert(files.length > 0, 'HTML runtime dependencies missing');
+  return files;
+}
+
 function options(argv) {
   const result = {};
   for (let i = 0; i < argv.length; i += 2) { assert(argv[i]?.startsWith('--') && argv[i + 1] && !argv[i + 1].startsWith('--'), 'expected --key VALUE'); assert(!result[argv[i].slice(2)], 'duplicate option'); result[argv[i].slice(2)] = argv[i + 1]; }
-  const allowed = ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256', 'baseline', 'baseline-archive-sha256', 'baseline-manifest-sha256', 'chromium'];
+  const allowed = ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256', 'baseline', 'baseline-archive-sha256', 'baseline-manifest-sha256', 'chromium', 'task-root'];
   for (const key of Object.keys(result)) assert(allowed.includes(key), 'unknown option ' + key);
   for (const key of ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256']) assert(result[key], 'missing --' + key);
   for (const key of ['overlay-report-sha256', 'nightly-report-sha256', ...(result.baseline ? ['baseline-archive-sha256', 'baseline-manifest-sha256'] : [])]) assert(digest(result[key]), 'invalid --' + key);
   assert(result.baseline || !(result['baseline-archive-sha256'] || result['baseline-manifest-sha256']), 'baseline hashes require --baseline');
+  assert(!result['task-root'] || result['task-root'] === CURRENT_TASK, 'unreviewed task root');
   return result;
 }
 
@@ -90,8 +104,10 @@ field.addEventListener('input',()=>{document.querySelector('pre').textContent=fi
 
 // Hooks extend phase work; admission, ownership, CPUs, deadlines and cleanup remain shared.
 export async function runIsolatedNightlyGuest(argv, hooks = {}) {
-  const TASK = hooks.task || '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
   const opt = options(argv), out = path.resolve(opt.out), candidate = path.resolve(opt.candidate), fullDir = path.resolve(opt['nightly-package']), baseline = opt.baseline && path.resolve(opt.baseline);
+  const TASK = opt['task-root'] || hooks.task || '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
+  assert(!opt['task-root'] || !hooks.task || hooks.task === TASK, 'runner task override mismatch');
+  const taskAllowanceBytes = (TASK === CURRENT_TASK ? 4 : 2) * 1024 ** 3;
   assert(out.startsWith(TASK + '/'), 'output outside dedicated task');
   for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
     assert(process.env[key], key + ' required');
@@ -120,7 +136,17 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   }
   const liveManifest = JSON.parse(await read(REPO + '/web/linux/boot-manifest.json'));
   for (const key of Object.keys(candidateManifest.assets)) if (key !== 'firefox') assert(same(liveManifest.assets[key], candidateManifest.assets[key]), 'QA server system asset descriptor mismatch ' + key);
-  for (const name of ['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'storage-panel.mjs', 'vmlinux.wasm', 'initramfs.cpio']) await read(REPO + '/web/linux/' + name);
+  for (const entry of await fs.readdir(REPO + '/web/linux')) if (/\.(?:js|mjs|html|css)$/.test(entry)) await read(REPO + '/web/linux/' + entry);
+  await pinHtmlRuntimeDependencies((await read(REPO + '/web/linux/index.html')).toString(), read);
+  async function pinRuntime(directory) {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      const filename = directory + '/' + entry.name;
+      if (entry.isDirectory()) await pinRuntime(filename);
+      else if (/\.(?:js|mjs|wasm)$/.test(entry.name)) await read(filename);
+    }
+  }
+  await pinRuntime(REPO + '/web/linux/dist');
+  for (const name of ['vmlinux.wasm', 'initramfs.cpio']) await read(REPO + '/web/linux/' + name);
   for (const [key, name] of [['kernel', 'vmlinux.wasm'], ['plain', 'initramfs.cpio']]) {
     const p = REPO + '/web/linux/' + name;
     assert(inputs[p] === candidateManifest.assets[key].sha256 && (await fs.stat(p)).size === candidateManifest.assets[key].bytes, 'actual QA system asset mismatch ' + key);
@@ -140,7 +166,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   if (hooks.serverOverlay) serverSource = hooks.serverOverlay(serverSource);
   serverSource += '\nserver.on("connection",s=>{sockets.add(s);s.on("close",()=>sockets.delete(s));});export {server};\n';
   const realParent = await fs.realpath(path.dirname(out)); assert(realParent === TASK || realParent.startsWith(TASK + '/'), 'output parent escapes task');
-  assert(Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]) < 2 * 1024 ** 3, 'task allowance already exhausted');
+  assert(Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]) < taskAllowanceBytes, 'task allowance already exhausted');
   await fs.mkdir(out); await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
   await fs.writeFile(out + '/owned-build-preflight.json', JSON.stringify({ activeBuilds, checkedAt: new Date().toISOString() }, null, 2) + '\n'); await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
   for (const name of ['firefox-host-cpus.mjs','firefox-browser-affinity.mjs','check-firefox-nightly-benchmark.mjs']) await fs.copyFile(REPO + '/tools/guest-rootfs/' + name, out + '/' + name);
@@ -161,7 +187,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   let exitInfo, spawnError, ws, next = 0;
   const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const pending = new Map(), errors = [];
-  const report = { schema: 1, pass: false, scope: hooks.scope || (baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm'), identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
+  const report = { schema: 1, pass: false, scope: hooks.scope || (baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm'), task: TASK, taskAllowanceBytes, identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
   const childState = () => {
     let alive = false, ownedProfileArgument = false;
     if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) {
@@ -197,7 +223,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     if (Date.now() - lastStorageCheck < 30000) return;
     lastStorageCheck = Date.now();
     const usage = Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]), disk = await fs.statfs(TASK);
-    assert(usage < 2 * 1024 ** 3, '2 GiB task allowance exhausted'); assert(disk.bavail * disk.bsize >= 20 * 1024 ** 3, '20 GiB free reserve exhausted');
+    assert(usage < taskAllowanceBytes, 'task allowance exhausted'); assert(disk.bavail * disk.bsize >= 20 * 1024 ** 3, '20 GiB free reserve exhausted');
   }
   async function until(fn, ms, label) { const end = Date.now() + ms; for (;;) { assert(!exitInfo && !spawnError, 'owned browser exited: ' + JSON.stringify(exitInfo || spawnError)); await storageCheck(); if (await fn()) return; assert(Date.now() < end, label + ' deadline'); await sleep(400); } }
   const logs = () => ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)))()`);
@@ -325,7 +351,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     for (const socket of service.sockets) socket.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
     report.browserExit = exitInfo; report.spawnError = spawnError; report.serverClosed = !server.listening; report.errors = errors; report.requests = service.requests; report.inputs = inputs;
     report.storageBytes = Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]);
-    if (exitInfo?.code !== 0 || !report.serverClosed || report.storageBytes > 2 * 1024 ** 3) report.pass = false;
+    if (exitInfo?.code !== 0 || !report.serverClosed || report.storageBytes > taskAllowanceBytes) report.pass = false;
     await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n');
   }
   console.log(JSON.stringify({ pass: report.pass, phases: report.phases.map(p => [p.label, p.pass]), error: report.error, out })); if (!report.pass) process.exitCode = 1;
@@ -393,12 +419,28 @@ async function selfTest(out) {
   check('owned build command preflight detects active PID', () => assert(syntheticBuild.length === 1 && syntheticBuild[0].pid === process.pid, 'build preflight'));
   const syntheticRunner = await ownedBuildProcesses(process.pid + ' node test-firefox-nightly-baseline.mjs --nightly-package /mnt/p6/build/firefox-nightly-musl-recovery-20261002/package');
   check('runner argument mentioning build directory is not a compiler', () => assert(syntheticRunner.length === 0, 'runner preflight'));
+  const admissionArgs = ['--out', out, '--candidate', out, '--overlay-report-sha256', 'a'.repeat(64), '--nightly-package', out, '--nightly-report-sha256', 'b'.repeat(64)];
+  check('authorized current task root admitted', () => assert(options([...admissionArgs, '--task-root', CURRENT_TASK])['task-root'] === CURRENT_TASK, 'current task'));
+  check('arbitrary task root rejected', () => reject(() => options([...admissionArgs, '--task-root', '/tmp/arbitrary'])));
+  check('duplicate task root rejected', () => reject(() => options([...admissionArgs, '--task-root', CURRENT_TASK, '--task-root', CURRENT_TASK])));
+  const html = await fs.readFile(REPO + '/web/linux/index.html', 'utf8');
+  const htmlPins = {}, htmlDependencies = await pinHtmlRuntimeDependencies(html, async filename => { htmlPins[filename] = sha(await fs.readFile(filename)); });
+  await fs.writeFile(out + '/html-runtime-dependencies.json', JSON.stringify(htmlPins, null, 2) + '\n');
+  check('actual HTML xterm dependency bytes pinned', () => assert(['@xterm/xterm/css/xterm.css', '@xterm/xterm/lib/xterm.js', '@xterm/addon-fit/lib/addon-fit.js'].every(name => htmlDependencies.includes(REPO + '/web/linux/node_modules/' + name)), 'HTML xterm pins'));
+  let missingDependencyRejected = false;
+  try { await pinHtmlRuntimeDependencies(html, async filename => { if (filename.endsWith('/xterm/lib/xterm.js')) throw Error('missing xterm dependency'); await fs.readFile(filename); }); }
+  catch (error) { missingDependencyRejected = String(error).includes('missing xterm dependency'); }
+  check('missing loaded xterm dependency fails admission', () => assert(missingDependencyRejected, 'missing dependency admission'));
+  let externalDependencyRejected = false;
+  try { await pinHtmlRuntimeDependencies('<script src="https://external.invalid/runtime.js"></script>', async () => { throw Error('external read attempted'); }); }
+  catch (error) { externalDependencyRejected = String(error).includes('escapes owned Linux assets'); }
+  check('external HTML dependency rejected before read', () => assert(externalDependencyRejected, 'external dependency admission'));
   const report = { pass: true, checks, count: checks.length, syntheticOnly: true, realGuestAcceptance: false, browserStarted: false };
   await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify({ pass: true, checks: checks.length, out }));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-if (process.argv[2] === '--help') console.log('Run: node test-firefox-nightly-baseline.mjs --out TASK/NEW --candidate GPU_OVERLAY_DIR --overlay-report-sha256 SHA --nightly-package FULL_PACKAGE_DIR --nightly-report-sha256 SHA [--baseline DIR --baseline-archive-sha256 SHA --baseline-manifest-sha256 SHA] [--chromium PATH]\nContract tests only: node test-firefox-nightly-baseline.mjs --self-test TASK/NEW\nTMPDIR/TMP/TEMP must be disk-backed in ' + TASK + '.');
+if (process.argv[2] === '--help') console.log('Run: node test-firefox-nightly-baseline.mjs --out TASK/NEW --candidate GPU_OVERLAY_DIR --overlay-report-sha256 SHA --nightly-package FULL_PACKAGE_DIR --nightly-report-sha256 SHA [--baseline DIR --baseline-archive-sha256 SHA --baseline-manifest-sha256 SHA] [--chromium PATH] [--task-root ' + CURRENT_TASK + ']\nContract tests only: node test-firefox-nightly-baseline.mjs --self-test TASK/NEW\nTMPDIR/TMP/TEMP must be disk-backed inside the selected task. Legacy task ' + TASK + ' retains 2 GiB; the authorized current task allows 4 GiB.');
 else if (process.argv[2] === '--self-test') { assert(process.argv.length === 4, '--self-test OUT required'); await selfTest(path.resolve(process.argv[3])); }
 else await runIsolatedNightlyGuest(process.argv.slice(2));
 }

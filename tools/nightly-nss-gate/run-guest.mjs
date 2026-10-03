@@ -145,11 +145,13 @@ async function exportDatabases(context, previous, mode) {
 
 export async function run(argv) {
   const { own, baseline } = parseOptions(argv);
+  const taskIndex = baseline.indexOf('--task-root');
+  const task = taskIndex === -1 ? TASK : baseline[taskIndex + 1];
   let report, fixtureProcess, fixtureExit, fixtureSpawnError, endpoints, fixture, fixtureHash, customRoot, firstDatabase, firstState;
   const extraPins = {}, pin = async (read, filename) => { const bytes = await read(filename); extraPins[filename] = sha(bytes); return bytes; };
   try {
     report = await runIsolatedNightlyGuest(baseline, {
-      task: TASK, scope: 'nightly-nss-' + own.mode,
+      task, scope: 'nightly-nss-' + own.mode,
       preferences: 'user_pref("devtools.chrome.enabled",true);\nuser_pref("devtools.console.stdout.chrome",true);\n',
       selectCpus: selectNssHostCpus, saveBootEvidence: saveNssBootEvidence,
       async admit({ opt, out, full, read }) {
@@ -158,7 +160,7 @@ export async function run(argv) {
         check(sha(trustBytes) === own['trust-report-sha256'], 'reviewed trust report changed');
         trustChainContract(JSON.parse(trustBytes), full);
         const directory = await fs.realpath(own.fixtures);
-        check(directory.startsWith(TASK + '/'), 'fixtures outside owned task');
+        check(directory.startsWith(task + '/'), 'fixtures outside owned task');
         const fixtureBytes = await pin(read, directory + '/fixtures.json'); fixtureHash = sha(fixtureBytes);
         check(fixtureHash === own['fixtures-sha256'], 'reviewed fixture manifest changed'); fixture = JSON.parse(fixtureBytes);
         fixtureContract(fixture, fixtureHash);
