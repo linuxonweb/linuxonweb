@@ -105,6 +105,15 @@ six-CPU setup was introduced, and historical eight-CPU evidence remains intact.
 
 This review started no browser, guest, compiler, package, promotion or deployment.
 The existing 64-CPU UI clamp remains a separate limitation for hosts above that
-range. The PBL benchmark and older runners outside this shared-helper migration
-still need the same phase revalidation before future invocation. Nothing here
+range. Older runners outside this shared-helper migration still need the same
+phase revalidation before future invocation. Nothing here
 establishes Nightly, JIT, GPU, TLS or release acceptance.
+
+The PBL benchmark runner subsequently adopts the same helper for each arm's
+selection, preboot, startup and completion checks. It pins/copies the helper
+alongside the runner, retains the original startup-log filename and saves
+independent CPU JSON. All six ABBAAB boots must keep the first arm's observed
+host count, and a fresh run-end nproc reading must agree. Syntax and whitespace
+checks pass; no benchmark/browser/guest was launched. Exact Nightly identity,
+fatal-path rejection and performance acceptance still need migration before
+using this historical runner as a release gate.

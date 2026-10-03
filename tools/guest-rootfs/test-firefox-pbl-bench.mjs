@@ -19,7 +19,8 @@ import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, guestCpuPrebootStateExpression, saveGuestCpuEvidence, saveHostCpuPhaseEvidence } from './firefox-host-cpus.mjs';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const task = process.env.PBLBENCH_TASK || '/mnt/p6/build/guest-jit-pbl-bench-20261001';
 const HTTP_PORT = 4201, CDP_PORT = 9411;
@@ -27,8 +28,6 @@ if (process.argv.length !== 3) throw Error('usage: OUT');
 const out = path.resolve(process.argv[2]);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const hostNproc = Number(execFileSync('nproc', [], { encoding: 'utf8' }).trim());
-if (!Number.isInteger(hostNproc) || hostNproc < 1) throw Error('invalid host nproc');
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
   if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 4 * 1024 ** 3) throw Error('disk-backed task scratch required');
@@ -45,7 +44,7 @@ const jitLogBudget = process.env.PBLBENCH_LOG_BUDGET === undefined ? null : Numb
 const guestReadyMode = process.env.PBLBENCH_GUEST_READY === '1';
 if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < 25 || jitLogBudget > 10000)) throw Error('invalid PBLBENCH_LOG_BUDGET');
 const inputs = {};
-for (const source of [fileURLToPath(import.meta.url), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) inputs[source] = sha(await fs.readFile(source));
+for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) inputs[source] = sha(await fs.readFile(source));
 // Served manifests: the arm's own manifest with the Firefox URL pointed at
 // the rewritten /linux/initramfs-firefox.cpio.gz route. Hashes stay exact.
 for (const [id, arm] of Object.entries(arms)) {
@@ -58,6 +57,7 @@ for (const [id, arm] of Object.entries(arms)) {
   await fs.writeFile(arm.served, JSON.stringify(manifest, null, 2) + '\n');
 }
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
+await fs.copyFile(path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), out + '/firefox-host-cpus.mjs');
 await fs.copyFile(fixturePath, out + '/fixture.html');
 let mainAdapter = null;
 if (jitLogBudget !== null) {
@@ -125,10 +125,11 @@ async function boot(index, armId) {
     await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
     const browserHardwareConcurrency = await ev('navigator.hardwareConcurrency');
-    if (!Number.isInteger(browserHardwareConcurrency) || browserHardwareConcurrency < 1) throw Error('invalid browser hardwareConcurrency');
-    const hostCores = Math.min(64, browserHardwareConcurrency);
-    rec.cpu = { hostNproc, browserHardwareConcurrency, hostCores, requestedGuestCpus: hostCores };
-    if (hostCores !== Math.min(64, hostNproc)) throw Error('browser/host CPU count mismatch: ' + JSON.stringify(rec.cpu));
+    rec.cpu = selectHostCpus(readHostNproc(), browserHardwareConcurrency);
+    report.comparisonHostNproc ??= rec.cpu.hostNproc;
+    rec.comparisonHostCpuStable = rec.cpu.hostNproc === report.comparisonHostNproc;
+    await fs.writeFile(dir + '/comparison-cpu.json', JSON.stringify({ initialHostNproc: report.comparisonHostNproc, cpu: rec.cpu, pass: rec.comparisonHostCpuStable }, null, 2) + '\n');
+    if (!rec.comparisonHostCpuStable) throw Error('host CPU allocation changed between benchmark arms');
     await ev(`(async()=>{localStorage.removeItem('linuxonweb.system.active.v1');localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${rec.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(bootPrefs)});await put('admin/pblbench/${fileName}',${JSON.stringify(fixture)});${guestReadyMode ? `await put('admin/pblbench/${readyName}',${JSON.stringify(readyFixture)});` : ''}await h.destroy();return true;})()`);
     const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
     if (manifest.version !== arm.version) throw Error('served manifest mismatch');
@@ -137,13 +138,13 @@ async function boot(index, armId) {
       if (rec.mainAdapterSHA256 !== mainAdapter.sha256) throw Error('served main.js diagnostic adapter differs');
     }
     const start = Date.now();
+    rec.prebootCpu = await saveHostCpuPhaseEvidence(rec.cpu, await ev(guestCpuPrebootStateExpression), dir, 'cold-preboot');
     await call('Page.navigate', { url: origin + '/linux/index.html?firefox=1&renderer=canvas2d&gpu=0' });
     await until(async () => { try { if ((await guestLogs()).includes('starting /bin/firefox as admin')) { rec.launchMs = Date.now() - start; return true; } } catch (e) { if (!/context|Cannot|Failed to fetch/.test(String(e))) throw e; } return false; }, 180000, 'Firefox launch');
     // Preserve SMP evidence before benchmark logs can evict startup history.
     const startupLogs = await guestLogs();
-    rec.cpu.guestBootCpus = [...startupLogs.matchAll(/smp: Brought up \d+ nodes?, (\d+) CPUs?\b/g)].map(m => Number(m[1])).at(-1) ?? null;
     await fs.writeFile(dir + '/startup-guest-logs.txt', startupLogs);
-    if (rec.cpu.guestBootCpus !== rec.cpu.hostCores) throw Error('guest/host CPU count mismatch: ' + JSON.stringify(rec.cpu));
+    rec.cpu = await saveGuestCpuEvidence(rec.cpu, startupLogs, await ev(guestCpuStateExpression), dir, 'cold');
     if (guestReadyMode) {
       await until(async () => {
         const ready = readyLines(await guestLogs()).find(r => r.event === 'ready' && r.label === label && r.url === readyURL && /Firefox\//.test(r.ua) && r.createdAt >= start);
@@ -176,7 +177,8 @@ async function boot(index, armId) {
     rec.errorLines = lines.filter(l => l.event === 'error');
     const state = await ev(`(async()=>({system:(await(await import('./boot-assets.mjs')).systemUsage()).version,browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),isolated:crossOriginIsolated,visibility:document.visibilityState}))()`);
     rec.state = state;
-    rec.checks = { version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), hostCpuSelection: state.browserHardwareConcurrency === rec.cpu.browserHardwareConcurrency && state.selectedGuestCpus === rec.cpu.hostCores, guestCpuCountMatchesHost: rec.cpu.guestBootCpus === rec.cpu.hostCores, benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0 };
+    rec.finalCpu = await saveHostCpuPhaseEvidence(rec.cpu, state, dir, 'cold-final');
+    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0 };
     rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
     rec.fatalLines = logs.split('\n').filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-20);
     rec.pass = Object.values(rec.checks).every(Boolean);
@@ -226,8 +228,10 @@ try {
   if (harness) Object.assign(report, classify());
   const changed = []; for (const [p, h] of Object.entries(inputs)) if (sha(await fs.readFile(p)) !== h) changed.push(p);
   report.inputsUnchanged = changed.length === 0; report.changedInputs = changed;
+  report.finalHostNproc = readHostNproc();
+  report.hostAllocationStable = report.finalHostNproc === report.comparisonHostNproc;
   report.checksumsIdentical = harness && Object.values(report.verdicts).every(x => x.checksumsIdentical);
-  report.pass = harness && report.inputsUnchanged && report.checksumsIdentical;
+  report.pass = harness && report.inputsUnchanged && report.checksumsIdentical && report.hostAllocationStable;
 } catch (error) { report.error = String(error.stack || error); }
 finally {
   for (const socket of service.sockets) socket.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve));

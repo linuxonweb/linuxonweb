@@ -22,13 +22,18 @@ in /mnt/p6/build/firefox-nightly-musl-root-review-20261002/cpu-phase-review-run1
 These are harness checks, not new guest acceptance. Available-count observations
 varied between six and eight without an established cause; do not hardcode a
 count, assert a hardware change, or loosen checks without actual harness/browser
-evidence. PBL and older non-helper runners need equivalent phase checks before
+evidence. Older non-helper runners need equivalent phase checks before
 invocation. The existing UI clamp remains; exact host counts above64 require a
 deliberate UI limit change rather than claiming exact agreement after clamping.
 
 The PBL benchmark runner now applies the same host-count setup to each arm and
 saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.
-Its syntax check passes; new Nightly benchmarks are pending the full binary.
+It now uses the shared fresh reader at preboot/startup/final, retains CPU/helper
+input evidence, rejects host changes between all six ABBAAB arms and records
+the final live host count. Its syntax check passes; new Nightly benchmarks are
+pending the full binary. CPU migration alone does not establish exact Nightly
+build identity, fatal-path rejection or a no-regression performance verdict;
+those acceptance predicates still need deliberate migration before invocation.
 Homepage, DevTools, WebGPU W1 and WebGL F1a diagnostic runners now share
 host-count selection and independently saved startup kernel evidence for every
 cold/update/warm boot. Thirty-eight fixture checks and six syntax checks pass;
