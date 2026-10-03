@@ -12,11 +12,12 @@ The native `defs.mk` adapter adds `-Wl,--strip-debug` only to `firefox`,
 `plugin-container` and `xpcshell` on Linux/wasm32. Configure prevents DWARF in
 new Mozilla and Cargo C/C++/Rust compilation. Final wasm-ld stripping also
 removes DWARF from prebuilt native sysroot/dependency archives, **before** the
-compiler driver's original automatic Binaryen `-O2`. It preserves function
-names, native Wasm exceptions, imported shared memory, exported growable table,
-stack/TLS globals and the existing eight MiB stack contract. It does not change
-`gfxtest`, diagnostic sanitizer fixtures or runtime backtrace policy. Existing
-explicitly unavailable native unwind queries remain unavailable.
+compiler driver's original automatic Binaryen `-O2`. Linker stripping preserves
+function names before optimization; the unchanged automatic `-O2` can remove
+them. It preserves native Wasm exceptions, imported shared memory, exported
+growable table, stack/TLS globals and the existing eight MiB stack contract.
+It does not change `gfxtest`, diagnostic sanitizer fixtures or runtime backtrace
+policy. Existing explicitly unavailable native unwind queries remain unavailable.
 
 No active recovery source, recipe, generated configuration, object or browser
 was changed by this packet. The user subsequently requested a baseline rebuild
