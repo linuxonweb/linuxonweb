@@ -94,6 +94,17 @@ passes at /mnt/p6/build/firefox-nightly-musl-root-review-20261002/recipe-review-
 No Nightly browser binary, guest JIT, GPU acceptance or deployment is yet
 established. Inspect the actual process/status before continuing a build.
 
+Run15 completes the actual combined Firefox Rust release library: libgkrust.a
+is1,398,801,246 bytes, SHA5a8c3745927a5b4e07d50a2e7bee07e65100cce1228358107923c19583e60f8a.
+Root independently hashes the archive and checks all7,101 native Wasm member
+magics against the retained manifest; Stylo256, trust19 and wgpu_bindings105
+members are present. Evidence is tools/nightly-musl/evidence/gkrust-actual-
+compilation-run15.json and gkrust-review-run1.json in the root-review task.
+Run15 reaches its20-minute bound during error-free C++ compilation; Run16
+continues unchanged source incrementally under j4 and existing caps. Inspect
+actual process/status before continuing. No browser link or guest acceptance
+is established by the combined Rust archive.
+
 Subsequent full-build runs pass Rustix, the padded time64 timestamp constructor
 and cubeb's native C preflight, then expose target C++ flags leaking into a host
 shader-optimizer build. The stable native Wasm/ILP32/ICU memory overlays and
