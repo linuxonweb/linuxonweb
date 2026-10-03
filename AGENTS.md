@@ -142,6 +142,22 @@ verified before declaring a coherent build. Run23 resumes with unchanged bounds:
 PID/PGID1309945, unified72244, status/build-run23.json and logs/build-run23.log.
 Current state must be revalidated; public v10 and both release gates are pending.
 
+Run23 reaches its twenty-minute bound without compiler errors. Its exact group
+is empty and unified72244 is reaped143. The graph has1,113/3,012 native objects:
+the two additional paths came from prephase component builds, while155 existing
+outputs were rebuilt during Run23. Exactly155/552 affected inttypes consumers
+have fresh native objects and naturally regenerated shim dependencies; the397
+remaining consumers retain their exact appended prerequisites. All original
+dependency backups remain intact. The Rust archive remains460be7c1/all7,101
+native members. Root checks2,647 retained boundary/pin/object/dependency/archive
+predicates in full-boundary-run23-review-run1.json under the root-review task.
+Evidence is tools/nightly-musl/evidence/full-build-boundary-coherence-run23.json.
+The checker snapshot requires an owned task recipe directory and terminal empty
+group; it must not be invoked directly from the repository. Full coherence,
+Nightly linking, guest JIT and both authorized releases remain pending. Recheck
+actual status before continuation; the next full segment keeps all existing
+job/time/storage bounds and preserves source, outputs and caches.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
