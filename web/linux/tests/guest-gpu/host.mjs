@@ -33,7 +33,7 @@ export function createWebGLContextLease() {
 
 /** One device and resource table per connection. No guest memory/shared views. */
 export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
-  allowGraphics = false, allowUniforms = false, allowTextures = false, allowDepth = false, graphicsTranslatorOptions, graphicsTranslatorFactory,
+  allowGraphics = false, allowUniforms = false, allowTextures = false, allowDepth = false, graphicsTranslatorOptions, graphicsTranslatorFactory, graphicsBackendFactory,
   allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease } = {}) {
   const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
   let device, contextLease, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
@@ -122,6 +122,11 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     if (allowDepth && !allowTextures) fail('depth profile requires the texture profile');
     const uniformOptions = allowUniforms ? (allowTextures ? { allowUniforms, allowTextures } : { allowUniforms }) : undefined;
     let adapter;
+    if (graphicsBackendFactory) {
+      if (!allowGraphics || allowClear || allowCompute || allowUniforms || allowTextures || allowDepth || allowWebGL) fail("external graphics backend requires the resource-free graphics profile");
+      const native = await initialize(graphicsBackendFactory(), value => value.renderer.close());
+      graphicsRenderer = native.renderer; report.backend = native.backend; report.adapter = native.adapter;
+    } else {
     try {
       if (!gpu) fail('WebGPU API unavailable', -19);
       adapter = await initialize(gpu.requestAdapter({ powerPreference: 'high-performance' }));
@@ -150,6 +155,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       report.adapter = { vendor: String(gl.getParameter(gl.VENDOR)).slice(0, 128),
         description: String(gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER)).slice(0, 512), isFallbackAdapter: null };
     }
+    }
     if (allowCompute) {
       const factory = translatorFactory ?? (await import('../guest-vulkan-compute/translator/index.mjs')).createSpirvTranslator;
       const created = await initialize(factory(translatorOptions), value => value.close());
@@ -166,7 +172,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       const renderer = webgl ? await import('../guest-vulkan-webgl/renderer.mjs') : await import('../guest-vulkan-graphics/renderer.mjs');
       if (closed) fail('session closed', -19);
       validateGraphicsShader = webgl ? renderer.validateWebGLShader : renderer.validateTranslatedShader;
-      graphicsRenderer = webgl ? renderer.createWebGLRenderer(contextLease.gl, { onEvent(event) {
+      if (!graphicsBackendFactory) graphicsRenderer = webgl ? renderer.createWebGLRenderer(contextLease.gl, { onEvent(event) {
         if (event.type === 'lost' && !closed) { lost = true; report.error = event.message; cleanup(); }
       }, ...(uniformOptions ?? {}), ...(allowDepth ? { allowDepth } : {}) }) :
         renderer.createGraphicsRenderer(device, allowDepth ? { ...uniformOptions, allowDepth } : uniformOptions);
@@ -181,13 +187,13 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       const exact = n => { if (length !== n) fail('invalid payload length'); };
       let body = new Uint8Array(), status = 0, terminal = false;
       try {
-        if (report.backend === 'webgl2' && opcode >= OP.SHADER && opcode <= OP.STORAGE_READBACK && opcode !== OP.DESTROY && opcode !== OP.CLOSE)
+        if ((report.backend === 'webgl2' || graphicsBackendFactory) && opcode >= OP.SHADER && opcode <= OP.STORAGE_READBACK && opcode !== OP.DESTROY && opcode !== OP.CLOSE)
           fail('operation unavailable on the WebGL graphics backend');
         switch (opcode) {
           case OP.HELLO: exact(0); body = encoder.encode(JSON.stringify({ version: VERSION, maxResources: 64, maxTarget: 512, backend: report.backend,
             shader: report.backend === 'webgl2' ? 'SPIR-V' : 'WGSL', ...(allowClear ? { clearImage: true } : {}),
             ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}),
-            ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:report.backend==='webgl2'} : {}),
+            ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:graphicsRenderer.integerViewport??report.backend==='webgl2'} : {}),
             ...(allowUniforms ? {uniformProfile:1,maxUniformRange:16384,uniformOffsetAlignment:256,maxUniformBuffer:65536} : {}),
             ...(allowTextures ? {textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}),
             ...(allowDepth ? {depthProfile:1,depthFormats:['d32-sfloat','d16-unorm'],maxDepthDimension:128} : {}), adapter: report.adapter })); break;

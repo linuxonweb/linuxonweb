@@ -45,7 +45,7 @@ let config = { enabled: false, backend: "auto" };
 export function configureVk(value) {
     if (!value || typeof value !== "object")
         return;
-    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl"].includes(value.backend) ? value.backend : "auto" };
+    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true };
 }
 
 function view(memory, pointer, length) {
@@ -162,20 +162,27 @@ async function openSession(flags, log) {
     hostModule ??= Promise.all([import("../tests/guest-gpu/host.mjs"), import("../gputest.mjs")]);
     const [{ serveGPU }, { GPUTEST_TRANSLATORS }] = await hostModule;
     const backend = flags & VK_OPEN_FLAG_FORCE_WEBGL ? "webgl" : flags & VK_OPEN_FLAG_FORCE_WEBGPU ? "webgpu" : config.backend;
-    const gpu = backend === "webgl" ? null : globalThis.navigator?.gpu;
+    const gpu = backend === "webgl" || backend === "wgpu" ? null : globalThis.navigator?.gpu;
+    const wgpuFactory = backend === "wgpu" ? async () => {
+        const { createWgpuRenderer } = await import("../tests/guest-vulkan-wgpu/bridge.mjs");
+        const renderer = await createWgpuRenderer({backend: config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter});
+        return { renderer, backend: "wgpu", adapter: renderer.adapter };
+    } : undefined;
     const id = nextSession++;
     const { session, connection } = createSession(id, log);
     sessions.set(id, session);
     session.done = serveGPU(connection, {
-        gpu, allowGraphics: true, allowWebGL: backend !== "webgpu", allowUniforms: true, allowTextures: true, allowDepth: true,
+        gpu, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu", allowTextures: backend !== "wgpu", allowDepth: backend !== "wgpu",
+        graphicsBackendFactory: wgpuFactory,
         timeoutMs: 0x7fffffff,
         graphicsTranslatorOptions: GPUTEST_TRANSLATORS.wgsl, webglTranslatorOptions: GPUTEST_TRANSLATORS.glsl,
         onEvent(event) {
             if (event.type === "adapter")
-                log(`vk session ${id} backend=${event.backend} adapter=${JSON.stringify({ vendor: event.vendor, architecture: event.architecture, description: event.description })}`);
+                log(`vk session ${id} backend=${event.backend} adapter=${JSON.stringify({ vendor: event.vendor, architecture: event.architecture, description: event.description, name:event.name, driver:event.driver, driverInfo:event.driverInfo, deviceType:event.deviceType, wgpuBackend:event.backend, forceFallbackAdapter:event.forceFallbackAdapter })}`);
         },
     }).then((report) => {
         log(`vk session ${id} closed commands=${report.commands} passes=${report.graphicsPasses} draws=${report.graphicsDraws}${report.error ? " error=" + JSON.stringify(report.error) : ""}`);
+        if (backend === "wgpu") log("GUEST_WGPU_HOST_REPORT " + JSON.stringify(report));
         return report;
     }, (error) => {
         log(`vk session ${id} failed: ${error?.message ?? error}`);

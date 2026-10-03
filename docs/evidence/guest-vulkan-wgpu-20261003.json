@@ -1,0 +1,572 @@
+{
+  "schema": 1,
+  "pass": true,
+  "guestVulkanGpuBenchmarkAcceptance": true,
+  "wgpuWebGLFallbackAcceptance": true,
+  "firefoxGpuAcceptance": false,
+  "releaseAcceptance": false,
+  "scope": "bounded real guest Vulkan public-loader app through browser Rust wgpu; same-package hardware/host-SwiftShader WebGPU comparison plus separate GL fallback",
+  "speedup": 16.597866670058963,
+  "medianSpeedup": 17.996521911954687,
+  "arms": {
+    "hardware": {
+      "result": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-hardware-run1/result.json",
+        "bytes": 303337,
+        "sha256": "797b452e860876aab87db0f01328dee506df45f802f23a03cbcbb1c3bb25c932"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-hardware-run1/validation.json",
+        "bytes": 6678,
+        "sha256": "f8a0b89989454ebb2abca923107b10057c87e0ca79fe83430f1a219337b24a5f"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-hardware-run1/guest-log.txt",
+        "bytes": 4308,
+        "sha256": "d9d27993aab85f976035ce690398207ca7d6adaeb076f8c68ef044b6b74e6989"
+      },
+      "completedFPS": 38.163326,
+      "elapsedMs": 786.095,
+      "frameTimeMs": {
+        "count": 30,
+        "min": 16.975,
+        "median": 25.1575,
+        "p90": 31.485,
+        "p95": 31.93,
+        "max": 33.72,
+        "mean": 26.20316666666667
+      },
+      "checks": {
+        "execution": true,
+        "exactLogRows": true,
+        "actualVulkan": true,
+        "noGuestFailures": true,
+        "completedFrameRows": true,
+        "completedElapsed": true,
+        "fullPixelReference": true,
+        "hostCompletion": true,
+        "rustBackend": true,
+        "nativeCleanup": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "servedSourceManifest": true,
+        "noExceptions": true,
+        "backendChoice": true,
+        "adapterIdentity": true,
+        "controlIdentity": true,
+        "rustAdapterDeviceClass": true
+      },
+      "adapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "navigatorAdapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": ""
+      },
+      "hostSummary": {
+        "commands": 118,
+        "draws": 0,
+        "clears": 0,
+        "readbacks": 0,
+        "dispatches": 0,
+        "uploads": 0,
+        "translations": 0,
+        "translatorsCreated": 0,
+        "translatorsClosed": 0,
+        "released": 5,
+        "adapter": {
+          "backend": "BrowserWebGpu",
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "",
+          "forceFallbackAdapter": false,
+          "integerViewport": false,
+          "maxVertexStride": 2048,
+          "name": "",
+          "requestedBackend": "Backends(BROWSER_WEBGPU)",
+          "vendor": 0
+        },
+        "error": null,
+        "graphicsTranslations": 2,
+        "graphicsPasses": 35,
+        "graphicsDraws": 35,
+        "graphicsUploads": 35,
+        "graphicsReadbacks": 35,
+        "graphicsUniformUploads": 0,
+        "graphicsTextureUploads": 0,
+        "graphicsTranslatorsCreated": 1,
+        "graphicsTranslatorsClosed": 1,
+        "graphics": {
+          "draws": 35,
+          "nativeObjects": 0,
+          "passes": 35,
+          "readbacks": 35,
+          "resources": 0,
+          "state": "closed",
+          "allocatedBytes": 0,
+          "recordingDraws": 0
+        },
+        "backend": "wgpu",
+        "acquisitionError": null,
+        "contextsCreated": 0,
+        "contextsClosed": 0,
+        "cleanupErrors": []
+      },
+      "browserGroupEmpty": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "browserIdentity": {
+        "devices": [
+          {
+            "vendorId": 4318,
+            "deviceId": 5966,
+            "vendorString": "",
+            "deviceString": "",
+            "driverVendor": "NVIDIA",
+            "driverVersion": "580.173.02"
+          },
+          {
+            "vendorId": 32902,
+            "deviceId": 22807,
+            "vendorString": "",
+            "deviceString": "",
+            "driverVendor": "",
+            "driverVersion": ""
+          }
+        ],
+        "glRenderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0 NVIDIA 580.173.02)",
+        "glVendor": "Google Inc. (NVIDIA Corporation)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 8d3c5a8caebd)"
+      },
+      "cpuCount": 6
+    },
+    "software": {
+      "result": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-software-run1/result.json",
+        "bytes": 310211,
+        "sha256": "f5973badcd953c378fc7da3bc393440d5555100587ecd0ada646e7ad545d2516"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-software-run1/validation.json",
+        "bytes": 6724,
+        "sha256": "0f6dc68cfa4b58312348b5964bae9a9981bc333a4186a1e8ac05736db6e84243"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-software-run1/guest-log.txt",
+        "bytes": 4366,
+        "sha256": "0a071ac8393de241f3da1779ce1a186228bb87278172dc13f1e305479d955c91"
+      },
+      "completedFPS": 2.299291,
+      "elapsedMs": 13047.5,
+      "frameTimeMs": {
+        "count": 30,
+        "min": 339.935,
+        "median": 452.7475,
+        "p90": 512.965,
+        "p95": 520.235,
+        "max": 537.015,
+        "mean": 434.91666666666674
+      },
+      "checks": {
+        "execution": true,
+        "exactLogRows": true,
+        "actualVulkan": true,
+        "noGuestFailures": true,
+        "completedFrameRows": true,
+        "completedElapsed": true,
+        "fullPixelReference": true,
+        "hostCompletion": true,
+        "rustBackend": true,
+        "nativeCleanup": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "servedSourceManifest": true,
+        "noExceptions": true,
+        "backendChoice": true,
+        "adapterIdentity": true,
+        "controlIdentity": true,
+        "rustAdapterDeviceClass": true
+      },
+      "adapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Cpu",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "navigatorAdapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": ""
+      },
+      "hostSummary": {
+        "commands": 118,
+        "draws": 0,
+        "clears": 0,
+        "readbacks": 0,
+        "dispatches": 0,
+        "uploads": 0,
+        "translations": 0,
+        "translatorsCreated": 0,
+        "translatorsClosed": 0,
+        "released": 5,
+        "adapter": {
+          "backend": "BrowserWebGpu",
+          "device": 0,
+          "deviceType": "Cpu",
+          "driver": "",
+          "driverInfo": "",
+          "forceFallbackAdapter": false,
+          "integerViewport": false,
+          "maxVertexStride": 2048,
+          "name": "",
+          "requestedBackend": "Backends(BROWSER_WEBGPU)",
+          "vendor": 0
+        },
+        "error": null,
+        "graphicsTranslations": 2,
+        "graphicsPasses": 35,
+        "graphicsDraws": 35,
+        "graphicsUploads": 35,
+        "graphicsReadbacks": 35,
+        "graphicsUniformUploads": 0,
+        "graphicsTextureUploads": 0,
+        "graphicsTranslatorsCreated": 1,
+        "graphicsTranslatorsClosed": 1,
+        "graphics": {
+          "draws": 35,
+          "nativeObjects": 0,
+          "passes": 35,
+          "readbacks": 35,
+          "resources": 0,
+          "state": "closed",
+          "allocatedBytes": 0,
+          "recordingDraws": 0
+        },
+        "backend": "wgpu",
+        "acquisitionError": null,
+        "contextsCreated": 0,
+        "contextsClosed": 0,
+        "cleanupErrors": []
+      },
+      "browserGroupEmpty": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "browserIdentity": {
+        "devices": [
+          {
+            "vendorId": 65535,
+            "deviceId": 65535,
+            "vendorString": "Google Inc. (NVIDIA)",
+            "deviceString": "ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA NVIDIA GeForce MX110 (0x0000174E)), NVIDIA-580.173.2.0)",
+            "driverVendor": "SwANGLE",
+            "driverVersion": "580.173.2.0"
+          }
+        ],
+        "glRenderer": "ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA NVIDIA GeForce MX110 (0x0000174E)), NVIDIA-580.173.2.0)",
+        "glVendor": "Google Inc. (NVIDIA)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 8d3c5a8caebd)"
+      },
+      "cpuCount": 6
+    },
+    "webglFallback": {
+      "result": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-fallback-run1/result.json",
+        "bytes": 306354,
+        "sha256": "3c3d03c207ed465f6333f58bab6c9985380ba16ad7fd86b3cc301d2c191b3b60"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-fallback-run1/validation.json",
+        "bytes": 6705,
+        "sha256": "f732e1140480f53fe276f30928a68f8da20e42fc7c9a22e0550c93b294427f8b"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-fallback-run1/guest-log.txt",
+        "bytes": 4472,
+        "sha256": "121c9d21f1085322758c08a0bf2fd24818dd143ca00d2d2e91723a2db67299fc"
+      },
+      "completedFPS": 39.714059,
+      "elapsedMs": 755.4,
+      "frameTimeMs": {
+        "count": 30,
+        "min": 18.21,
+        "median": 24.5275,
+        "p90": 29.555,
+        "p95": 35.14,
+        "max": 37.42,
+        "mean": 25.179999999999996
+      },
+      "checks": {
+        "execution": true,
+        "exactLogRows": true,
+        "actualVulkan": true,
+        "noGuestFailures": true,
+        "completedFrameRows": true,
+        "completedElapsed": true,
+        "fullPixelReference": true,
+        "hostCompletion": true,
+        "rustBackend": true,
+        "nativeCleanup": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "servedSourceManifest": true,
+        "noExceptions": true,
+        "backendChoice": true,
+        "adapterIdentity": true
+      },
+      "adapter": {
+        "backend": "Gl",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "forceFallbackAdapter": false,
+        "integerViewport": true,
+        "maxVertexStride": 252,
+        "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+        "requestedBackend": "Backends(GL)",
+        "vendor": 4318
+      },
+      "navigatorAdapter": null,
+      "hostSummary": {
+        "commands": 118,
+        "draws": 0,
+        "clears": 0,
+        "readbacks": 0,
+        "dispatches": 0,
+        "uploads": 0,
+        "translations": 0,
+        "translatorsCreated": 0,
+        "translatorsClosed": 0,
+        "released": 5,
+        "adapter": {
+          "backend": "Gl",
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "forceFallbackAdapter": false,
+          "integerViewport": true,
+          "maxVertexStride": 252,
+          "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+          "requestedBackend": "Backends(GL)",
+          "vendor": 4318
+        },
+        "error": null,
+        "graphicsTranslations": 2,
+        "graphicsPasses": 35,
+        "graphicsDraws": 35,
+        "graphicsUploads": 35,
+        "graphicsReadbacks": 35,
+        "graphicsUniformUploads": 0,
+        "graphicsTextureUploads": 0,
+        "graphicsTranslatorsCreated": 1,
+        "graphicsTranslatorsClosed": 1,
+        "graphics": {
+          "draws": 35,
+          "nativeObjects": 0,
+          "passes": 35,
+          "readbacks": 35,
+          "resources": 0,
+          "state": "closed",
+          "allocatedBytes": 0,
+          "recordingDraws": 0
+        },
+        "backend": "wgpu",
+        "acquisitionError": null,
+        "contextsCreated": 0,
+        "contextsClosed": 0,
+        "cleanupErrors": []
+      },
+      "browserGroupEmpty": true,
+      "browserExit": {
+        "code": 0,
+        "signal": null
+      },
+      "browserIdentity": {
+        "devices": [
+          {
+            "vendorId": 4318,
+            "deviceId": 5966,
+            "vendorString": "",
+            "deviceString": "",
+            "driverVendor": "NVIDIA",
+            "driverVersion": "580.173.02"
+          },
+          {
+            "vendorId": 32902,
+            "deviceId": 22807,
+            "vendorString": "",
+            "deviceString": "",
+            "driverVendor": "",
+            "driverVersion": ""
+          }
+        ],
+        "glRenderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0 NVIDIA 580.173.02)",
+        "glVendor": "Google Inc. (NVIDIA Corporation)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 8d3c5a8caebd)"
+      },
+      "cpuCount": 6
+    }
+  },
+  "comparison": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-comparison-run1.json",
+    "bytes": 16226,
+    "sha256": "a0dbe7358c43aa24cdda098ed4cc6ca401add65060e8bde9c168641ac83d516b"
+  },
+  "checker": {
+    "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/check-benchmark.mjs",
+    "bytes": 9114,
+    "sha256": "87466b282b137fa7406f074fd636df6f6aecebca0897c539295969353fd9d796"
+  },
+  "sourceSnapshot": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-source/source-lock.json",
+    "bytes": 7540,
+    "sha256": "d06c1d8ac533ab3b56fad2061ee11f1b43cb5ae1a92efcf72d01556c9bc32e39"
+  },
+  "package": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/benchmark-package-combined/package.json",
+    "bytes": 13283,
+    "sha256": "54e691f0c9c3947ea6c5774351726af1439bc8b447a66d557bdf7858b9f94ec3"
+  },
+  "guestArtifact": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/app-build-combined/guest-vulkan-wgpu-benchmark.wasm",
+    "bytes": 405457,
+    "sha256": "df6ddd7797eb58fd7190d457bc1fc475d7ad11ccc0a13ec664021ad3f86ec581"
+  },
+  "hostBuild": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-combined/build.json",
+    "bytes": 4518,
+    "sha256": "7a4acbec0cc83c341953fa99259e05e0ff8597ddfd08574f1a52a7c40d9cfeb9"
+  },
+  "appBuild": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/app-build-combined/build.json",
+    "bytes": 11484,
+    "sha256": "911e18da3fdb6d8a5cdd0362859aa4945d996f8ddae24d363d002e5f9157e7f3"
+  },
+  "hostArtifacts": [
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-combined/guest_vulkan_wgpu_host.wasm",
+      "bytes": 5570533,
+      "sha256": "3b63dc8cf7dee024e0be7c00c7bef1fade564b83b191013f96a2471f5ae8e533"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-combined/guest_vulkan_wgpu_host.js",
+      "bytes": 111508,
+      "sha256": "4178cccf94678f898b6c57e5142507d973c7574c48f978b4b656bc1b546c9f80"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-combined/guest_vulkan_wgpu_host_bg.wasm",
+      "bytes": 3945263,
+      "sha256": "be0ac5b5d8ff145629c27147a60dd4b2e4c41a977d2235a60c80a57c13cfb385"
+    }
+  ],
+  "sourceInputs": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/Cargo.toml",
+      "bytes": 507,
+      "sha256": "af8739130287d2f454cea3d2b0d926ce871590b4b4f2e961980b664780163348"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/Cargo.lock",
+      "bytes": 26835,
+      "sha256": "bfb4c8cfebaa528f2da21d90255fec2d2ac6be0fcfa63f11f7fcf2b9ffc726cf"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/src/lib.rs",
+      "bytes": 22997,
+      "sha256": "6ffc8ff0d104ab4145e8b3da36ac180e6c373180b230ea8619a2f3aaefe69e3b"
+    }
+  ],
+  "pixelReference": "First warmup frame checks all 65,536 RGBA components against independent C float reference, tolerance 2 and zero failures; all 34 subsequent frames retain the checked full-buffer checksum. Hardware/software checksum equality is not required.",
+  "timing": "Five warmup frames excluded, 30 measured frames. Guest monotonic clock surrounds vkQueueSubmit plus vkQueueWaitIdle; rendering and readback complete. Pixel CPU oracle and presentation excluded.",
+  "independentHistoricalReview": {
+    "scope": "earlier immutable WebGPU pair only; not later combined/GL execution",
+    "report": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/reviewer-run1/review.json",
+      "bytes": 29855,
+      "sha256": "3eac066fb51168a21cd9574a06515e65ad89cf70a461d5041a7df7613d4a3f1b"
+    },
+    "correctedComparison": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/reviewer-run1/comparison-hardened.json",
+      "bytes": 15965,
+      "sha256": "37af25c5d7cd56a403bca9c461566744cfe7f29db8901cfd1289b3497427975f"
+    },
+    "controls": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/reviewer-run1/checker-controls-hardened.json",
+      "bytes": 3910,
+      "sha256": "2d75db84e1122a2c15f1edf0d872e2e8baf2d0760ed0ad984242da648893231c"
+    },
+    "actualPredicates": 171,
+    "negativeControlsRejected": 17,
+    "reorderPositiveControlsPassed": 1,
+    "earlierSourceSnapshot": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/accepted-webgpu-pair-source/source-lock.json",
+      "bytes": 7368,
+      "sha256": "e44cc2d9b4a24770459f1e22f290ebef55ce29153152ce2d3ec12776f11b682a"
+    }
+  },
+  "retainedFailures": [
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/hardware-guest-run1/result.json",
+      "bytes": 159034,
+      "sha256": "8b7adc831b47238a3d1015ad0bb0a0ac7edf43c95918a2965ec681bc62540adf"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/hardware-guest-run2/result.json",
+      "bytes": 281901,
+      "sha256": "30ce23aeb825075f58db75719df55e848ad3bfdbcf16514b846034e6556593cb"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/fallback-guest-run1/result.json",
+      "bytes": 295910,
+      "sha256": "5ee1addedd4c25e6a0790977ecee8fd7a3a308a4eb2cf2d82179b441adc4974a"
+    }
+  ],
+  "dependencyFix": "Official pinned wgpu 30.0.1 nullable browser bindings replace the 30.0.0 JsOption success-null panic; no vendor patch.",
+  "limitations": [
+    "Nonconformant Vulkan subset: no bindings, textures, depth, compute, indexed drawing or WSI.",
+    "Software baseline is host SwiftShader, not guest Mesa/Lavapipe.",
+    "Explicit GL path tested; automatic missing-WebGPU fallback not independently simulated.",
+    "Actual browser child oom_score_adj is 0, not 1000.",
+    "Earlier independent 171-check review does not directly cover the combined candidate.",
+    "No current Nightly Firefox GPU API, compositor or browser acceptance."
+  ],
+  "docs": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/docs/guest-vulkan-wgpu-20261003.md",
+      "bytes": 9872,
+      "sha256": "ed31f392d697d878feb91cf51b214c0430b10689904150a9790b5903affb46a4"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/docs/firefox-nightly-gpu-integration-plan-20261003.md",
+      "bytes": 5170,
+      "sha256": "3262efc33774eb15ecbdf7ee67d401d3d8b75ec35ccb5ddc2c99d426fcbfe31f"
+    }
+  ]
+}

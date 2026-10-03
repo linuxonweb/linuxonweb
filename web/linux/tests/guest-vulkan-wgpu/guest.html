@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Guest Vulkan through Rust wgpu</title>
+<button id="boot">Run isolated guest Vulkan benchmark</button><button id="stop">Stop</button>
+<canvas id="display" width="640" height="480"></canvas><pre id="log"></pre>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice,inputDevice} from '../../dist/index.js';
+const params=new URLSearchParams(location.search),backend=params.get('backend')||'webgpu';
+const report=window.guestWgpuResults={isolated:crossOriginIsolated,logs:'',bootLogs:'',bootConfigurationEvidence:[],errors:[],done:false,pass:false,backend};
+let machine,deadline,stopped=false,partial='';const decoder=new TextDecoder();
+const finish=(pass)=>{if(report.done)return;report.done=true;report.pass=pass;clearTimeout(deadline);document.documentElement.dataset.result=pass?'pass':'fail';};
+const fail=error=>{report.errors.push(String(error));finish(false);};
+function log(bytes){const text=decoder.decode(new Uint8Array(bytes),{stream:true});report.logs=(report.logs+text).slice(-1048576);const lines=(partial+text).split('\n');partial=lines.pop().slice(-8192);for(const raw of lines){const line=raw.replaceAll('\r','');const exit=/^GUEST_WGPU_EXIT status=(\d+)/.exec(line);if(exit){report.exitStatus=Number(exit[1]);finish(report.exitStatus===0);}if(/^GUEST_WGPU_.*FAIL/.test(line))report.errors.push(line);}document.querySelector('#log').textContent=report.logs.slice(-24000);}
+async function bootConsole(stream){const reader=stream.getReader(),decoder=new TextDecoder();let pending='';try{for(;;){const{value,done}=await reader.read();if(done)break;const text=decoder.decode(new Uint8Array(value),{stream:true});report.bootLogs=(report.bootLogs+text).slice(-131072);const lines=(pending+text).split('\n');pending=lines.pop().slice(-8192);for(const line of lines)if(/Memory:|smp: Brought up/.test(line))report.bootConfigurationEvidence.push(line.replaceAll('\r',''));}}catch(e){if(!stopped)report.bootConsoleError=String(e);}finally{reader.releaseLock();}}
+const digest=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+document.querySelector('#boot').onclick=async()=>{document.querySelector('#boot').disabled=true;deadline=setTimeout(()=>{fail('finite guest deadline');machine?.close();},480000);try{
+  if(!crossOriginIsolated||!['webgpu','webgl','auto'].includes(backend))throw Error('isolated reviewed backend required');
+  const metadata=await(await fetch('./candidate/package.json')).json(),archive=new Uint8Array(await(await fetch('./candidate/initramfs.cpio')).arrayBuffer());
+  if(!metadata.passPackage||!metadata.testOnly||metadata.bytes!==archive.length||metadata.archiveSha256!==await digest(archive))throw Error('candidate package identity mismatch');
+  report.package=metadata;const cpus=navigator.hardwareConcurrency;if(!Number.isInteger(cpus)||cpus<1||cpus>64)throw Error('exact browser CPU allocation unavailable');
+  report.configuration={cpus,memoryBytes:1073741824,cmdline:'console=hvc0 rdinit=/init',gpuHostcall:{stallMs:30000,ownerConfig:{vk:{backend:'wgpu',wgpuBackend:backend,forceFallbackAdapter:false}}},visibility:document.visibilityState};
+  machine=await spawnMachine({cpus,devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}},initcpio:archive,cmdline:report.configuration.cmdline,devices:[consoleDevice(null,new WritableStream({write:log})),entropyDevice(),inputDevice()],framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'},gpuHostcall:report.configuration.gpuHostcall});
+  window.guestWgpuMachine=machine;report.gpuEvents=machine.gpuHostcall?.events??[];void bootConsole(machine.bootConsole);machine.closed.catch(e=>{if(!report.done&&!stopped)fail(e);});
+}catch(e){fail(e);}};
+document.querySelector('#stop').onclick=()=>{stopped=true;clearTimeout(deadline);machine?.close();report.stopped=true;};
+</script>

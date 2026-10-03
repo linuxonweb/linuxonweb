@@ -157,7 +157,8 @@ static int hello(VkInstance instance) {
     instance->clear_supported = strstr(data, "\"clearImage\":true") != NULL;
     instance->compute_supported = strstr(data, "\"computeProfile\":1") != NULL;
     instance->graphics_supported = strstr(data, "\"graphicsProfile\":1") != NULL;
-    instance->webgl_backend = strstr(data, "\"backend\":\"webgl2\"") != NULL;
+    instance->webgl_backend = strstr(data, "\"backend\":\"webgl2\"") != NULL ||
+        (strstr(data, "\"maxVertexStride\":252") && strstr(data, "\"integerViewport\":true"));
     if (instance->webgl_backend && (!instance->graphics_supported || instance->compute_supported || instance->clear_supported ||
         !strstr(data, "\"maxVertexStride\":252") || !strstr(data, "\"integerViewport\":true"))) return -1;
     /* Opt-in A3 uniform-buffer profile; absent from the older host profiles. */
