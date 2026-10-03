@@ -1,0 +1,28 @@
+{
+  "claim": "Actual native bundled Expat scoped compile and static namespace separation; no browser link/guest acceptance",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/expat-static-review-run2.json",
+    "bytes": 18344,
+    "sha256": "49032a9b322d392b970c887161cb06cbca5be1f26de239945930afb0ce80f45b"
+  },
+  "checksPassed": 143,
+  "aliases": 58,
+  "unchangedMozillaWrapperExports": 28,
+  "actualNativeUnitsBuiltAndValidated": 3,
+  "actualGraphObjectsAuditedForDirectCallers": 3011,
+  "directCallersOutsideBundledExpat": 0,
+  "sourceFilesUnchanged": 5,
+  "compilerLog": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/expat-run1.log",
+    "bytes": 8716,
+    "sha256": "0365e9aa31cc00e44195c7609ac8899c29afc90c769ee8c7c88c329bc7e81cda"
+  },
+  "appliedAdapterReport": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-expat-static-port-run1.json",
+    "bytes": 2866,
+    "sha256": "027b455516c1c854714bce9c0443a1d446a1368ddca44494951edcc8fb209ad1"
+  },
+  "guestAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false
+}

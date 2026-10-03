@@ -1,0 +1,35 @@
+{
+  "claim": "Full native build bounded phase progress and exact shared-header rebuild state, no linked Nightly/browser acceptance",
+  "run": "run41",
+  "terminalExit": 2,
+  "ownedProcessGroupEmpty": true,
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run41-review-run1.json",
+    "bytes": 441189,
+    "sha256": "d931b24f302e4634c6332423f6185b20cbf21b9477bfc9ae88a3d6c3772e383b"
+  },
+  "boundaryChecksPassed": 4148,
+  "rebuiltObjectsDuringPhase": 156,
+  "compilerErrorCount": 66,
+  "expectedNativeObjects": 3011,
+  "existingNativeObjects": 3011,
+  "pixmanHeaderReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run41-review-run1.json",
+    "bytes": 172189,
+    "sha256": "47169730e4563ebf067bf241f584e579bdd3c1aae0e993095fdd58d9de59f61c"
+  },
+  "pixmanHeaderChecksPassed": 1533,
+  "pixmanConsumers": 763,
+  "coherentPixmanConsumers": 763,
+  "pendingPixmanConsumers": 0,
+  "allPixmanConsumersCoherent": true,
+  "freezeHeaderScript": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-pixman-header.py",
+    "bytes": 2469,
+    "sha256": "1f98b95ba60afa0469782ac0b228429f593ef87f57c5bb502c11944db728f1f9"
+  },
+  "guestAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false,
+  "terminalFailure": "All three final browser links fail on bundled/static Expat duplicate definitions; diagnostic count includes linker errors, not C/C++ compilation failures"
+}

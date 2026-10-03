@@ -1,5 +1,18 @@
 # Current continuation — 2026-10-02
 
+Run41 is terminal/reaped2, exact PGID1962945 empty. It rebuilt156 objects,
+3011/3011 native graph objects remain present,4148 boundary checks pass,
+and all763 Pixman header consumers are now coherent (1533 independent checks).
+All three final browser links fail on bundled/static Expat duplicates;66
+error records are link diagnostics. The scoped Expat preinclude adds58 private
+aliases without changing upstream parser sources/public headers. Actual3-unit
+compile and validators pass; root143 checks prove zero Expat collisions and
+all28 Mozilla wrappers unchanged. The initial review incorrectly expected30;
+the source-declared exact list has28, none missing. See native-expat-static.json
+and docs/firefox-nightly-expat-static-20261003.md. Full retry Run42 is j4/20min,
+owned PGID2006321/unified56056; poll/reap before edits or another build. No
+Nightly/browser/JIT/GPU acceptance or deployment yet; public v10 unchanged.
+
 2026-10-03 broad safety preparation: generator/checker now have a separate
 broad mode for the selected full Nightly JIT, retaining unchanged integer
 case bodies and fallback claims. Broad requires14 compiled,7 bailout,2
