@@ -1,0 +1,69 @@
+{
+  "claim": "Actual native static libc++ proof and narrowly gated ELF DT_NEEDED configure policy correction; actual no-debug configure/flag/link admission passes, full rebuild pending",
+  "checked": 1791057725.136477,
+  "scope": "Linux wasm32 only",
+  "failedOriginalConfigure": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/configure-run5-no-debug.json",
+    "bytes": 809,
+    "sha256": "2b9cd22eb5fe44ae2020e954b748269cab4bcd717a69fe8e759e74e53a7f677c"
+  },
+  "failedOriginalLog": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/configure-run5-no-debug.log",
+    "bytes": 7216,
+    "sha256": "e7f79865252d0d2b19a9095261c08560bdaebeb0aed4e6f4fc1b3f940e53752d"
+  },
+  "realSuccessfulProbe": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/libstdcxx-probe/result.json",
+    "bytes": 1006,
+    "sha256": "56e7d8a0e063beb63fd78f326fd9dbd05f04c4ad11127425a8c594f825d4284d"
+  },
+  "realDriverTrace": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/libstdcxx-probe/driver-trace.log",
+    "bytes": 21386,
+    "sha256": "cdcb151abf2533522c01d2613ff3797eaf52a44531d132a9aee7ca5abd4aae52"
+  },
+  "originalSource": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/before-flags.configure",
+    "bytes": 25424,
+    "sha256": "b674a19a9647b9c267aede8bacc3c6dec97e1ee70b6b8d2f2dd8514ea7f8bb4d"
+  },
+  "sourceDiff": {
+    "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/native-libstdcxx-elf-check.patch",
+    "bytes": 462,
+    "sha256": "4d7aebcae68f4fc8bf83b01ad626de9b6d76195b708b2e9dc97affe005ba5378"
+  },
+  "appliedSource": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/build/moz.configure/flags.configure",
+    "bytes": 25556,
+    "sha256": "0e1383b905be88ac62d67a6be63df9376fc999e04c9f7f70c09073ca19b32697"
+  },
+  "successfulConfigure": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/configure-run6-no-debug.json",
+    "bytes": 808,
+    "sha256": "279da27e23704959a5882dfab024a3b4e484442d8891619a81931dd8c3263dc4"
+  },
+  "successfulConfigureLog": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/configure-run6-no-debug.log",
+    "bytes": 27325,
+    "sha256": "d4dea8b7e12db09fa1ba3207c26cacc6e6f20136fc834dad48e86e15012a3ac2"
+  },
+  "generatedAdmission": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/generated-verification.json",
+    "bytes": 6140183,
+    "sha256": "5032d5dca559f146c747c8f9c00e4b46ea35ddc756c7ecb76b6f1a6be91f7a2b"
+  },
+  "generatedAdmissionChecksPassed": 1556,
+  "generatedCompileFlagRows": 1476,
+  "generatedBackendFiles": 737,
+  "fullBuild": {
+    "phase": "build",
+    "run": "run53",
+    "pgid": 98039,
+    "unifiedHandle": 59109,
+    "stateAtAdmission": "running"
+  },
+  "nightlyBrowserAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

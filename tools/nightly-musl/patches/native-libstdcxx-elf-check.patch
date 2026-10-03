@@ -1,0 +1,13 @@
+--- a/build/moz.configure/flags.configure
++++ b/build/moz.configure/flags.configure
+@@ -21,7 +21,9 @@
+     extra_toolchain_flags,
+     linker_ldflags,
+     llvm_objdump,
+-    when=target_has_linux_kernel,
++    # Native Linux/Wasm uses static libc++ and has no ELF DT_NEEDED records.
++    when=target_has_linux_kernel
++    & depends(target.cpu)(lambda cpu: cpu != "wasm32"),
+ )
+ @checking("whether we're trying to statically link with libstdc++")
+ @imports("os")
