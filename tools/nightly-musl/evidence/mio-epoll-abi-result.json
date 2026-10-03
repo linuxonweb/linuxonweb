@@ -1,0 +1,36 @@
+{
+  "scope": "Native Wasm Linux musl C/Rust epoll_event declarations and flags used by Mio; host-instantiated Wasm, no guest poll execution",
+  "pass": true,
+  "rows": [
+    {
+      "name": "size",
+      "c": 16,
+      "rust": 16
+    },
+    {
+      "name": "align",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "data",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "in",
+      "c": 1,
+      "rust": 1
+    },
+    {
+      "name": "out",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "edge",
+      "c": 2147483648,
+      "rust": 2147483648
+    }
+  ]
+}

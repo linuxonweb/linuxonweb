@@ -1,0 +1,47 @@
+{
+  "scope": "Native wasm32 musl compiled C sizes and copied actual serialization/deserialize bodies; host-instantiated Wasm, no guest scheduler execution",
+  "pass": true,
+  "sizes": {
+    "c_pthread": 4,
+    "c_pointer": 4,
+    "rust_pthread": 4,
+    "rust_pointer": 4
+  },
+  "rows": [
+    {
+      "opaque_bits": 0,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 1,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 305419896,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 2147483647,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 2147483648,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 3735928559,
+      "roundtrip": true
+    },
+    {
+      "opaque_bits": 4294967295,
+      "roundtrip": true
+    }
+  ],
+  "imports": [
+    {
+      "module": "env",
+      "name": "memory",
+      "kind": "memory"
+    }
+  ]
+}

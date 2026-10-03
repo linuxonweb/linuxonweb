@@ -1,0 +1,10 @@
+const fs = require('fs');
+const bytes=fs.readFileSync('audio-pthread-abi/probe.wasm');
+const moduleObject=new WebAssembly.Module(bytes);
+const memory=new WebAssembly.Memory({initial:128,maximum:65536,shared:true});
+const instance=new WebAssembly.Instance(moduleObject,{env:{memory}});
+const x=instance.exports;
+const sizes={c_pthread:x.c_pthread_size(),c_pointer:x.c_pointer_size(),rust_pthread:x.r_pthread_size(),rust_pointer:x.r_pointer_size()};
+const rows=[0,1,0x12345678,0x7fffffff,0x80000000,0xdeadbeef,0xffffffff].map(id=>({opaque_bits:id,roundtrip:x.roundtrip(id)===1}));
+const result={scope:'Native wasm32 musl compiled C sizes and copied actual serialization/deserialize bodies; host-instantiated Wasm, no guest scheduler execution',pass:Object.values(sizes).every(n=>n===4)&&rows.every(r=>r.roundtrip),sizes,rows,imports:WebAssembly.Module.imports(moduleObject)};
+fs.writeFileSync('audio-pthread-abi/result.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));if(!result.pass)process.exit(1);

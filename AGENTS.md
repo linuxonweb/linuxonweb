@@ -69,6 +69,17 @@ Independent six-check snapshot/component review:
 /mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-overlays-review-run1.json.
 These are bounded build results, not browser or guest acceptance.
 
+Runs8/9 pass native musl opaque pthread serialization, explicit NSPR/IPC no-fork
+error paths, Mio's Linux epoll backend and a task-owned filesystem header
+visibility wrapper. Native C/Rust pointer/epoll probes and exact CoreDump source
+preflight pass; these are host-instantiated Wasm/compile checks, not guest tests.
+Run9 ends with incomplete PKCS#11 Rust bindings used by rsclientcerts. The NSS
+audit finds Nightly's existing static Rust CKBI loader; do not transplant the
+old128 LOWLAND profile-root hook. The old119-root seed has stale explicit trust
+relative to current certdata, so its preservation alone cannot establish Nightly
+TLS acceptance. Fresh-profile initialization and existing user-trust preservation
+remain under audit. No complete Nightly binary or deployment yet.
+
 Full-runtime Nightly packaging preparation is in
 tools/guest-rootfs/package-firefox-nightly.py and
 docs/firefox-nightly-package-20261002.md. Twenty synthetic fixture checks and

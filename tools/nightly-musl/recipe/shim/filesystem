@@ -1,0 +1,12 @@
+// Match Firefox STL wrapper visibility for the native Linux/Wasm libc++ header.
+#ifndef NIGHTLY_NATIVE_FILESYSTEM_VISIBILITY_H
+#define NIGHTLY_NATIVE_FILESYSTEM_VISIBILITY_H
+#pragma GCC system_header
+#if defined(__wasm__) && defined(__linux__)
+#pragma GCC visibility push(default)
+#include_next <filesystem>
+#pragma GCC visibility pop
+#else
+#include_next <filesystem>
+#endif
+#endif

@@ -1,0 +1,13 @@
+{
+  "scope": "Native Linux/Wasm only, preserves other platforms; sysroot intentionally omits fork; no runtime fork implementation claimed",
+  "files": [
+    {
+      "path": "source/firefox-159.0a1/nsprpub/pr/src/md/unix/uxproces.c",
+      "sha256": "13ce5c18da3d4b946e6bba6c340d22a6ee5f573fd2aa9239f6ed303e07f11672"
+    },
+    {
+      "path": "source/firefox-159.0a1/ipc/chromium/src/base/process_util_linux.cc",
+      "sha256": "fc85582d722300fc5d87a5510cbca460199a0cb6ead97a10e5b4d04fa098f8d7"
+    }
+  ]
+}
