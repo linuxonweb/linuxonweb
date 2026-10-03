@@ -1,0 +1,167 @@
+{
+  "claim": "Run27 retained object boundary with three Abseil raw-mmap compile errors; all552 inttypes prerequisites coherent; full graph/link/browser guest acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run27",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1481836,
+    "pgid": 1481836,
+    "started": 1791024891.3386753,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run27.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18374397952,
+    "free_bytes": 76602830848,
+    "checked": 1791025709.7415874,
+    "exit_code": 2,
+    "finished": 1791025722.437642,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 90369,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "freezer_session": {
+    "session_id": 88960,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "compiler_error_count": 3,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 2204,
+    "missing_expected_object_count": 808,
+    "existing_expected_object_bytes": 1738991407,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 991,
+    "new_paths_written_before_phase_count": 18,
+    "rebuilt_existing_written_during_phase_count": 1
+  },
+  "phase_directory_first": [],
+  "phase_directory_last": [],
+  "next_phase_held_for_parent_review": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run27.json",
+      "bytes": 796,
+      "sha256": "4a2421a139273a5d556542783a281488baf0a41cfc3eb8b797dced0f3e266a07"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run27.json",
+      "bytes": 603567,
+      "sha256": "4a81c856fc36b41aa4a5dcc88d01d97ae6fbb4324b4741a038751171829f0ddf"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run27.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run27.json",
+      "bytes": 449867,
+      "sha256": "38a8e2fabcf811be995da54c026edc77a07537d8262f6437d6e7811d144da9bc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run27-boundary.json",
+      "bytes": 651453,
+      "sha256": "5d96d1a1a294d3ff1f360f5286750a5fa415bdbd2b2143005ba10aa449963c28"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run27-group-cleanup.json",
+      "bytes": 955,
+      "sha256": "b494abe4b7e1ef5364977c63e5f28640f1ae82b37f6d78eb5952242f6d512b95"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run27.log",
+      "bytes": 133182,
+      "sha256": "6e46ca885e483819c5caadf86b0c9518242313499ee18c3bcfb628dbcf632a42"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-prerequisite-refresh-run1.json",
+      "bytes": 520262,
+      "sha256": "307ca97d721c1c5964db27c220346cb0c1661f77d290ada9a14645c588bed3ae"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-consumer-inventory-run1.json",
+      "bytes": 267185,
+      "sha256": "a26bad222ed6d6e9a4d1c1fbf67d2eaf740c88cb90204f8632664afc08865831"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-inttypes-progress.py",
+      "bytes": 3864,
+      "sha256": "2a1f8a5836367d4910245661bedaa94a35471d19deef49835be2515cddc62988"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-build-boundary.py",
+      "bytes": 4721,
+      "sha256": "43c7fcbaae7823e6cdbf3f76c22c561a68f7d85545bc0ff1d11b1b0ea36e1a16"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/inttypes.h",
+      "bytes": 305,
+      "sha256": "056c55532c5be17edd7f2ff7de0987be0e53f72b55d12be6b4a476849c1ac4de"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-mmap-preflight/original-direct_mmap.h",
+      "bytes": 5952,
+      "sha256": "40638f1a0a62a2a3a4bba8bc3398e4b7da0ec3627eeefe7274be084c2e5899d3"
+    }
+  ],
+  "coherence_freezer_session": {
+    "session_id": 83573,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "compiler_errors": [
+    "13:41.28 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/direct_mmap.h:134:17: error: static assertion failed due to requirement 'sizeof(unsigned long) == 8': Platform is not 64-bit",
+    "13:41.29 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/direct_mmap.h:136:15: error: use of undeclared identifier 'SYS_mmap'",
+    "13:41.29 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/direct_mmap.h:141:35: error: use of undeclared identifier 'SYS_munmap'"
+  ],
+  "blocker": {
+    "object": "third_party/abseil-cpp/absl/base/malloc_internal_gn/Unified_cpp_malloc_internal_gn0.o",
+    "header": "third_party/abseil-cpp/absl/base/internal/direct_mmap.h",
+    "cause": "Native ILP32 Linux/Wasm falls into unimplemented raw-syscall64 default path",
+    "followup_corrective_packet": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-abseil-mmap-actual.json"
+  },
+  "root_independent_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run27-review-run1.json",
+    "bytes": 354629,
+    "sha256": "6865c003a5fe0d1a3577a74749075fa0a66953dc68369ff4af1c862f57b11cf6",
+    "passed_predicates": 3341
+  },
+  "source_mutated_by_followup": true,
+  "before_header_sha256": "40638f1a0a62a2a3a4bba8bc3398e4b7da0ec3627eeefe7274be084c2e5899d3"
+}

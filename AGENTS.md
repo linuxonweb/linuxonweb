@@ -210,6 +210,31 @@ dependency predicates; two earlier review failures remain retained, including
 the exported-header alias correction. This closes prerequisite coherence only;
 the full3012-object graph, linking and Nightly guest/JIT acceptance remain open.
 
+Run27 stops with exit2 after831.10s at Abseil's raw mapping helper: the
+unrecognized native Linux/Wasm target enters its64-bit branch, failing the
+unsigned-long width assertion and references to SYS_mmap/SYS_munmap. Exact
+PGID1481836 is empty and unified90369 is reaped2. The terminal graph advances
+to2,204/3,012 native objects, with1,009 new paths since Run26:991 compiled during
+Run27 and18 by prephase components. Two existing objects were rebuilt, one
+during Run27 and one by the prephase MFBT component. All552 original
+inttypes consumers are coherent and the Rust archive is unchanged. Root's
+full-boundary-run27-review-run1.json passes3,341 actual predicates and records
+the three errors from this one helper. The narrow next fix selects Abseil's
+existing libc mapping fallback for native Linux/Wasm outside WASI, preserving
+other target paths and musl's64-bit offset ABI. Full linking, guest JIT/GPU
+acceptance and both Sites deployments remain pending.
+
+Abseil's one-line native Linux/Wasm guard now selects its existing libc
+mapping fallback, preserving musl off_t64 and every runtime body. Paired native
+C++ checks retain all three original errors and accept the exact forwarding
+signature. Actual abseil-run1 compiles the formerly failing unity object in3.59s;
+unified34843 is reaped0 and PGID1524033 is empty. Root independently verifies115
+source/pin/ABI/component/ownership predicates in native-abseil-mmap-review-run1.json.
+The six scoped files and review are retained in tools/nightly-musl. Undefined
+mmap/munmap remain honest final-link prerequisites; no mapping runtime, linked
+Nightly, guest JIT or release acceptance is claimed. Resume the full build under
+unchanged j4/twenty-minute/20GiB task and reserve bounds after this packet commits.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

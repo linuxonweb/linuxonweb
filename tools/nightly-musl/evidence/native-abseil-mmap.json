@@ -1,0 +1,180 @@
+{
+  "claim": "Native Abseil existing libc-fallback compile selection and actual formerly failing malloc_internal_gn unit; no linked browser/mapping runtime/signal safety acceptance",
+  "terminal": {
+    "phase": "abseil",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "third_party/abseil-cpp/absl/base/malloc_internal_gn",
+      "-j4"
+    ],
+    "pid": 1524033,
+    "pgid": 1524033,
+    "started": 1791026113.2013543,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/abseil-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18390114304,
+    "free_bytes": 76589404160,
+    "checked": 1791026113.2021863,
+    "exit_code": 0,
+    "finished": 1791026116.7944827,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 34843,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_pgid_empty": true,
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/base/malloc_internal_gn/Unified_cpp_malloc_internal_gn0.o",
+    "bytes": 96211,
+    "sha256": "dd88487f10f34e61cb49b07359e5d149f50b0add1811422ab1bfcfc1d97ca366",
+    "mtime_ns": 1791026115120592146,
+    "native_magic": true,
+    "newer_than_header_and_phase": true
+  },
+  "dependency_contains_corrected_header_and_owned_mman": true,
+  "actual_compile_argv_capture_claim": false,
+  "configured_component_argv": [
+    "bash",
+    "-c",
+    "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+    "nightly-musl",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+    "build",
+    "--allow-subdirectory-build",
+    "third_party/abseil-cpp/absl/base/malloc_internal_gn",
+    "-j4"
+  ],
+  "source_guard_only": true,
+  "other_platform_bodies_unchanged": true,
+  "async_signal_safe_mode_remains_disabled_by_existing_wasm_cfg": true,
+  "mapping_implementation": {
+    "declaration": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/sys/mman.h",
+    "preserved_candidate_source": "web/linux/firefox-shims/mmap-shim.c",
+    "current_config_LIBS": [
+      ""
+    ],
+    "libc_archive_mmap_munmap_definitions_found": false,
+    "final_link_supply_pending": true,
+    "no_syscall_numbers_or_offset_conversion_added": true
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/native-abseil-mmap-port.py",
+      "bytes": 1873,
+      "sha256": "2cab17bca980dddc954db8d4e74e1c5ec6b7e6b2c193a90bd8f461897307aa26"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/probe-native-abseil-mmap.py",
+      "bytes": 2706,
+      "sha256": "d4cc3d73985ccf02e5b1224f7b43ce468b434cef40fab22b6a2f35369e8f6683"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-abseil-mmap.patch",
+      "bytes": 302,
+      "sha256": "fd929fed3422d2e21bd752d1ceb4346e20fc6cca1759b66b2a9b753fce94fbb5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-mmap-preflight/result.json",
+      "bytes": 4414,
+      "sha256": "447b49729fda380b2cc29ac5f1eefeb2b0c2ab6f5001fc31511bfc1540e1d922"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-mmap-preflight/original-direct_mmap.h",
+      "bytes": 5952,
+      "sha256": "40638f1a0a62a2a3a4bba8bc3398e4b7da0ec3627eeefe7274be084c2e5899d3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/direct_mmap.h",
+      "bytes": 6004,
+      "sha256": "159a6756755e993aa08c629040636ce5567f0dc435738b5984f03f9417dd1791"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/low_level_alloc.h",
+      "bytes": 4926,
+      "sha256": "0f7dd074b79f49b57c2491987e722dbc0301018937e2a0573e10b3df8afe0649"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/abseil-cpp/absl/base/internal/low_level_alloc.cc",
+      "bytes": 24351,
+      "sha256": "c8d0eb92b93100e440fc2f0c764c0161cc47024948762899fccc9dc0d38f7b69"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-abseil-mmap-port.json",
+      "bytes": 507,
+      "sha256": "cb97a5fcd67f5c5ac9c86e8e5453773675eb1c260ef4eb14f491643e33ed349a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/abseil-run1.json",
+      "bytes": 889,
+      "sha256": "2e798e99d73f322fdec07ba1a88ee78df0bb0f6f32cb32488a8ab61244ba80af"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/abseil-run1-group-cleanup.json",
+      "bytes": 1051,
+      "sha256": "65b5f1a11f46bd67bfe2b6817e4f745f52aa1723b66ebde321083f6fa014c3f6"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/abseil-run1.log",
+      "bytes": 900,
+      "sha256": "abfd6d5d74cb34aeddde8409837951c93d432099091ad44d4ef55a3bedab8fde"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/base/malloc_internal_gn/Unified_cpp_malloc_internal_gn0.o",
+      "bytes": 96211,
+      "sha256": "dd88487f10f34e61cb49b07359e5d149f50b0add1811422ab1bfcfc1d97ca366"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/base/malloc_internal_gn/.deps/Unified_cpp_malloc_internal_gn0.o.pp",
+      "bytes": 163951,
+      "sha256": "ef194a8766c2160bb1e2b94c7c58e66373cba86050d97bc680723baecff613dc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/abseil-cpp/absl/base/malloc_internal_gn/Unified_cpp_malloc_internal_gn0.cpp",
+      "bytes": 601,
+      "sha256": "8adc6c609276c5b0164eb0b7b3405f3ef463004526ff9ee06c5298c8ac415e70"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/shim/sys/mman.h",
+      "bytes": 1943,
+      "sha256": "47983e6461ef20ebaf2fb5be0dc64864352dadb6943163eda402a8cc64d0cd1b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 2731,
+      "sha256": "5e741cc8ae9f4f37961d223b532b77c5b32863286950e0b1ee66f2fc5b24ef1b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/abseil-mmap-preflight/actual-object-undefined-symbols.txt",
+      "bytes": 683,
+      "sha256": "252e2e15296d3bd63e0f69aecdcd2d73c9b126f347c94ed0ac80b06d5b607ced"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/firefox-shims/mmap-shim.c",
+      "bytes": 15049,
+      "sha256": "cf9f7592186c95dbe9589d8e86bd86fd724b8f06f9c539826ca3a3707c621e97"
+    }
+  ],
+  "root_independent_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-abseil-mmap-review-run1.json",
+    "bytes": 9672,
+    "sha256": "115dea3181f32a6c1ef4a0dc7c773be2ee8e429a77c3d8bf8f2cb4ec05303bad",
+    "passed_predicates": 115
+  }
+}
