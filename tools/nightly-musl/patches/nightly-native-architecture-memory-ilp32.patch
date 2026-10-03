@@ -1,0 +1,338 @@
+--- a/config/external/icu/data/icu_data.S
++++ b/config/external/icu/data/icu_data.S
+@@ -18,7 +18,7 @@
+ #elif defined(__APPLE__)
+ .data
+ .const
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ .section .rodata,"",@
+ #else
+ .section .rodata
+@@ -26,6 +26,6 @@
+ .balign 16
+ ICU_DATA_SYMBOL:
+ .incbin ICU_DATA_FILE
+-#ifdef __wasi__
++#if defined(__wasi__) || defined(__wasm__)
+ .size ICU_DATA_SYMBOL, . - ICU_DATA_SYMBOL
+ #endif
+--- a/intl/icu/source/common/putilimp.h
++++ b/intl/icu/source/common/putilimp.h
+@@ -160,6 +160,8 @@
+ #ifdef U_HAVE_MMAP
+     /* Use the predefined value. */
+ #elif U_PLATFORM_USES_ONLY_WIN32_API
++#   define U_HAVE_MMAP 0
++#elif defined(__wasm__)
+ #   define U_HAVE_MMAP 0
+ #else
+ #   define U_HAVE_MMAP 1
+--- a/intl/icu/source/common/umapfile.h
++++ b/intl/icu/source/common/umapfile.h
+@@ -40,7 +40,7 @@
+ 
+ #if UCONFIG_NO_FILE_IO
+ #   define MAP_IMPLEMENTATION MAP_NONE
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ #   define MAP_IMPLEMENTATION MAP_STDIO
+ #elif U_PLATFORM_USES_ONLY_WIN32_API
+ #   define MAP_IMPLEMENTATION MAP_WIN32
+--- a/js/src/jit/ProcessExecutableMemory.cpp
++++ b/js/src/jit/ProcessExecutableMemory.cpp
+@@ -29,7 +29,7 @@
+ 
+ #ifdef XP_WIN
+ #  include "mozilla/StackWalk_windows.h"
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ #  if defined(JS_CODEGEN_WASM32)
+ #    include <cstdlib>
+ #  else
+@@ -392,7 +392,7 @@
+     MOZ_CRASH("DecommitPages failed");
+   }
+ }
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ #  if defined(JS_CODEGEN_WASM32)
+ static void* ReserveProcessExecutableMemory(size_t bytes) {
+   return malloc(bytes);
+@@ -838,7 +838,7 @@
+     return nullptr;
+   }
+ 
+-#if !defined(__wasi__)
++#if !defined(__wasi__) && !defined(__wasm__)
+   gc::RecordMemoryAlloc(bytes);
+ #endif
+ 
+@@ -865,7 +865,7 @@
+   MOZ_MAKE_MEM_NOACCESS(addr, bytes);
+   if (decommit) {
+     DecommitPages(addr, bytes);
+-#if !defined(__wasi__)
++#if !defined(__wasi__) && !defined(__wasm__)
+     gc::RecordMemoryFree(bytes);
+ #endif
+   }
+@@ -923,7 +923,7 @@
+ bool js::jit::ReprotectRegion(void* start, size_t size,
+                               ProtectionSetting protection,
+                               MustFlushICache flushICache) {
+-#if defined(JS_CODEGEN_WASM32)
++#if defined(JS_CODEGEN_WASM32) || defined(__wasm__)
+   return true;
+ #endif
+ 
+@@ -960,8 +960,9 @@
+   // We use the C++ fence here -- and not AtomicOperations::fenceSeqCst() --
+   // primarily because ReprotectRegion will be called while we construct our own
+   // jitted atomics.  But the C++ fence is sufficient and correct, too.
+-#ifdef __wasi__
+-  MOZ_CRASH("NYI FOR WASI.");
++#if defined(__wasi__) || defined(__wasm__)
++  // Native Wasm pages are not host executable instruction memory.
++  return true;
+ #else
+   std::atomic_thread_fence(std::memory_order_seq_cst);
+ 
+--- a/js/src/vm/ArrayBufferObject.cpp
++++ b/js/src/vm/ArrayBufferObject.cpp
+@@ -17,7 +17,7 @@
+ #include <string.h>
+ 
+ #include "vm/ArrayBufferObject-inl.h"
+-#if !defined(XP_WIN) && !defined(__wasi__)
++#if !defined(XP_WIN) && !defined(__wasi__) && !defined(__wasm__)
+ #  include <sys/mman.h>
+ #endif
+ #include <tuple>  // std::tuple
+@@ -204,7 +204,7 @@
+   }
+ 
+   gc::RecordMemoryAlloc(initialCommittedSize);
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+   void* data = nullptr;
+   if (int err = posix_memalign(&data, gc::SystemPageSize(), mappedSize)) {
+     MOZ_ASSERT(err == ENOMEM);
+@@ -249,7 +249,7 @@
+   if (!VirtualAlloc(dataEnd, delta, MEM_COMMIT, PAGE_READWRITE)) {
+     return false;
+   }
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+   // posix_memalign'd memory is already committed
+   return true;
+ #else
+@@ -276,7 +276,7 @@
+ #ifdef XP_WIN
+   VirtualFree(base, 0, MEM_RELEASE);
+   gc::RecordMemoryFree(committedSize);
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+   free(base);
+   (void)committedSize;
+ #else
+@@ -1594,7 +1594,7 @@
+   if (!VirtualAlloc(addr, byteLen, MEM_COMMIT, PAGE_READWRITE)) {
+     MOZ_CRASH("wasm discard: decommitted memory but failed to recommit");
+   };
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+   memset(addr, 0, byteLen);
+ #else  // !XP_WIN
+   void* data = MozTaggedAnonymousMmap(addr, byteLen, PROT_READ | PROT_WRITE,
+--- a/js/src/vm/BytecodeUtil.cpp
++++ b/js/src/vm/BytecodeUtil.cpp
+@@ -2775,7 +2775,7 @@
+ 
+     json.beginObject();
+ 
+-    json.property("id", offset);
++    json.property("id", static_cast<uint32_t>(offset));
+     json.property("line", range.frontLineNumber());
+     json.property("name", CodeName(op));
+ 
+--- a/js/src/vm/JSONPrinter.cpp
++++ b/js/src/vm/JSONPrinter.cpp
+@@ -197,7 +197,7 @@
+   out_.printf("%" PRIu64, value);
+ }
+ 
+-#if defined(XP_DARWIN) || defined(__OpenBSD__) || defined(__wasi__)
++#if defined(XP_DARWIN) || defined(__OpenBSD__) || defined(__wasi__) || defined(__wasm__)
+ void JSONPrinter::property(const char* name, size_t value) {
+   propertyName(name);
+   out_.printf("%zu", value);
+--- a/js/src/vm/JSONPrinter.h
++++ b/js/src/vm/JSONPrinter.h
+@@ -51,7 +51,7 @@
+   void property(const char* name, uint32_t value);
+   void property(const char* name, int64_t value);
+   void property(const char* name, uint64_t value);
+-#if defined(XP_DARWIN) || defined(__OpenBSD__) || defined(__wasi__)
++#if defined(XP_DARWIN) || defined(__OpenBSD__) || defined(__wasi__) || defined(__wasm__)
+   // On OSX and OpenBSD, size_t is long unsigned, uint32_t is unsigned, and
+   // uint64_t is long long unsigned. Everywhere else, size_t matches either
+   // uint32_t or uint64_t.
+--- a/js/src/vm/SharedArrayObject.cpp
++++ b/js/src/vm/SharedArrayObject.cpp
+@@ -226,7 +226,7 @@
+     MOZ_ASSERT(!result);  // this always "fails" when unlocking unlocked
+                           // memory...which is the only case we care about
+   }
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+   AtomicOperations::memsetSafeWhenRacy(addr, 0, byteLen);
+ #else  // !XP_WIN
+   void* data = MozTaggedAnonymousMmap(
+--- a/mfbt/Assertions.h
++++ b/mfbt/Assertions.h
+@@ -14,7 +14,7 @@
+ #endif
+ 
+ #if (defined(MOZ_HAS_MOZGLUE) || defined(MOZILLA_INTERNAL_API)) && \
+-    !defined(__wasi__)
++    !defined(__wasi__) && !defined(__wasm__)
+ #  define MOZ_DUMP_ASSERTION_STACK
+ #endif
+ #if defined(XP_WIN) && (defined(DEBUG) || defined(FUZZING))
+--- a/mfbt/Poison.cpp
++++ b/mfbt/Poison.cpp
+@@ -14,7 +14,7 @@
+ #  include <windows.h>
+ #elif !defined(__OS2__)
+ #  include <unistd.h>
+-#  ifndef __wasi__
++#  if !defined(__wasi__) && !defined(__wasm__)
+ #    include <sys/mman.h>
+ #    ifndef MAP_ANON
+ #      ifdef MAP_ANONYMOUS
+@@ -84,7 +84,7 @@
+ 
+ #  define RESERVE_FAILED 0
+ 
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ 
+ #  define RESERVE_FAILED 0
+ 
+--- a/mfbt/TaggedAnonymousMemory.cpp
++++ b/mfbt/TaggedAnonymousMemory.cpp
+@@ -2,7 +2,7 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-#ifdef XP_LINUX
++#if defined(XP_LINUX) && !defined(__wasm__)
+ 
+ #  include "mozilla/TaggedAnonymousMemory.h"
+ 
+--- a/mfbt/TaggedAnonymousMemory.h
++++ b/mfbt/TaggedAnonymousMemory.h
+@@ -31,7 +31,7 @@
+ 
+ #ifndef XP_WIN
+ 
+-#  ifdef __wasi__
++#  if defined(__wasi__) || defined(__wasm__)
+ #    include <stdlib.h>
+ #  else
+ #    include <sys/mman.h>
+@@ -40,7 +40,7 @@
+ 
+ #  include "mozilla/Types.h"  // IWYU pragma: keep(MFBT_API)
+ 
+-#  ifdef XP_LINUX
++#  if defined(XP_LINUX) && !defined(__wasm__)
+ 
+ #    ifdef __cplusplus
+ extern "C" {
+--- a/mozglue/misc/MmapFaultHandler.cpp
++++ b/mozglue/misc/MmapFaultHandler.cpp
+@@ -4,7 +4,7 @@
+ 
+ #include "MmapFaultHandler.h"
+ 
+-#if defined(XP_UNIX) && !defined(XP_DARWIN) && !defined(__wasi__)
++#if defined(XP_UNIX) && !defined(XP_DARWIN) && !defined(__wasi__) && !defined(__wasm__)
+ 
+ #  include "mozilla/Assertions.h"
+ #  include "mozilla/Atomics.h"
+--- a/mozglue/misc/MmapFaultHandler.h
++++ b/mozglue/misc/MmapFaultHandler.h
+@@ -32,7 +32,7 @@
+ #  define MMAP_FAULT_HANDLER_BEGIN_BUFFER(buf, bufLen) {
+ #  define MMAP_FAULT_HANDLER_CATCH(retval) }
+ 
+-#elif defined(__wasi__)
++#elif defined(__wasi__) || defined(__wasm__)
+ 
+ #  define MMAP_FAULT_HANDLER_BEGIN_HANDLE(fd) {
+ #  define MMAP_FAULT_HANDLER_BEGIN_BUFFER(buf, bufLen) {
+--- a/third_party/rust/mls-rs-core/src/time.rs
++++ b/third_party/rust/mls-rs-core/src/time.rs
+@@ -5,7 +5,7 @@
+ use core::time::Duration;
+ use mls_rs_codec::{MlsDecode, MlsEncode, MlsSize};
+ 
+-#[cfg(target_arch = "wasm32")]
++#[cfg(all(target_arch = "wasm32", not(target_os = "linux")))]
+ use wasm_bindgen::prelude::*;
+ 
+ /// Wasm-compatible representation of a timestamp.
+@@ -61,7 +61,7 @@
+     }
+ }
+ 
+-#[cfg(all(not(target_arch = "wasm32"), feature = "std"))]
++#[cfg(all(any(not(target_arch = "wasm32"), target_os = "linux"), feature = "std"))]
+ impl MlsTime {
+     /// Current system time.
+     pub fn now() -> Self {
+@@ -94,13 +94,13 @@
+     }
+ }
+ 
+-#[cfg(all(not(target_arch = "wasm32"), feature = "std"))]
++#[cfg(all(any(not(target_arch = "wasm32"), target_os = "linux"), feature = "std"))]
+ #[derive(Debug, thiserror::Error)]
+ #[error("Overflow while adding {0:?}")]
+ /// Overflow in time conversion.
+ pub struct TimeOverflow(Duration);
+ 
+-#[cfg(all(not(target_arch = "wasm32"), feature = "std"))]
++#[cfg(all(any(not(target_arch = "wasm32"), target_os = "linux"), feature = "std"))]
+ impl TryFrom<MlsTime> for std::time::SystemTime {
+     type Error = TimeOverflow;
+ 
+@@ -112,7 +112,7 @@
+     }
+ }
+ 
+-#[cfg(all(not(target_arch = "wasm32"), feature = "std"))]
++#[cfg(all(any(not(target_arch = "wasm32"), target_os = "linux"), feature = "std"))]
+ impl TryFrom<std::time::SystemTime> for MlsTime {
+     type Error = std::time::SystemTimeError;
+ 
+@@ -122,7 +122,7 @@
+     }
+ }
+ 
+-#[cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))]
++#[cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "linux"))))]
+ #[wasm_bindgen(inline_js = r#"
+ export function date_now() {
+   return Date.now();
+@@ -137,7 +137,7 @@
+     fn date_now() -> f64;
+ }
+ 
+-#[cfg(target_arch = "wasm32")]
++#[cfg(all(target_arch = "wasm32", not(target_os = "linux")))]
+ impl MlsTime {
+     pub fn now() -> Self {
+         Self {

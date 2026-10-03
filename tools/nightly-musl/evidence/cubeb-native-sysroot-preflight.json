@@ -1,0 +1,8 @@
+{
+  "compiler_pass": true,
+  "native_wasm_object": true,
+  "bytes": 563,
+  "sha256": "7466be755f8a29b0b4ddd904b7230247ed7bcfd18a585888d94b0c7177a70669",
+  "sysroot": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot",
+  "source": "third_party/rust/cubeb-core/src/log.c"
+}

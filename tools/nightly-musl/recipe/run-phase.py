@@ -12,7 +12,7 @@ log=root/'logs'/f'{phase}-{run}.log'; status=root/'status'/f'{phase}-{run}.json'
 if log.exists() or status.exists(): raise SystemExit('Refusing to overwrite evidence')
 args=['bash','-c','set -eu; source "$1"; cd "$2"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach "${@:3}"','nightly-musl',str(root/'recipe/environment.sh'),str(root/'source/firefox-159.0a1'),*commands[phase]]
 policy=json.loads((root/'status/storage-policy.json').read_text())
-start=time.time(); limit=12*60; reason=None
+start=time.time(); limit=(20 if phase=="build" else 12)*60; reason=None
 with log.open('w') as out:
  p=subprocess.Popen(args,stdout=out,stderr=subprocess.STDOUT,start_new_session=True)
  meta={'phase':phase,'run':run,'argv':args,'pid':p.pid,'pgid':p.pid,'started':start,'log':str(log),'timeout_seconds':limit,'state':'running'}
@@ -25,7 +25,7 @@ with log.open('w') as out:
    meta.update(task_bytes=usage,free_bytes=free,checked=now); status.write_text(json.dumps(meta,indent=2)); next_check=now+20
    if usage>=policy['limit_bytes']: reason='authorized20GiBtasklimit'
    if free<=policy['reserve_bytes']: reason='20GiBdiskreserve'
-  if now-start>limit: reason='12minboundedphase'
+  if now-start>limit: reason='boundedphase'
   if reason:
    os.killpg(p.pid,signal.SIGTERM)
    try: p.wait(timeout=10)

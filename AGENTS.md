@@ -47,6 +47,16 @@ passes at /mnt/p6/build/firefox-nightly-musl-root-review-20261002/recipe-review-
 No Nightly browser binary, guest JIT, GPU acceptance or deployment is yet
 established. Inspect the actual process/status before continuing a build.
 
+Subsequent full-build runs pass Rustix, the padded time64 timestamp constructor
+and cubeb's native C preflight, then expose target C++ flags leaking into a host
+shader-optimizer build. The stable native Wasm/ILP32/ICU memory overlays and
+Linux std-clock selection are frozen in tools/nightly-musl/patches; a fresh
+MFBT rebuild passes. Configure run4-cargo-scoped-flags passes with an owned
+Cargo environment adapter; actual host/guest compiler argv and the next full
+build remain to be verified. Independent six-check snapshot/component review:
+/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-overlays-review-run1.json.
+These are bounded build results, not browser or guest acceptance.
+
 Nightly JIT preparation is ready in tools/nightly-jit-prep and
 docs/firefox-nightly-jit-prep-20261002.md. Selected overlay-run4 regenerates all
 239 opcode IDs and initially admits 42 integer operations. Host-run2 passes

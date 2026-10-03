@@ -1,0 +1,28 @@
+--- a/third_party/rust/zeitstempel/src/unix.rs
++++ b/third_party/rust/zeitstempel/src/unix.rs
+@@ -12,10 +12,8 @@
+ ///
+ /// [`clock_gettime`]: https://manpages.debian.org/buster/manpages-dev/clock_gettime.3.en.html
+ pub fn now_including_suspend() -> u64 {
+-    let mut ts = libc::timespec {
+-        tv_sec: 0,
+-        tv_nsec: 0,
+-    };
++    // timespec may contain private time64 padding; initialize the whole value.
++    let mut ts: libc::timespec = unsafe { std::mem::zeroed() };
+     unsafe {
+         libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut ts);
+     }
+@@ -32,10 +30,8 @@
+ /// [`clock_gettime`]: https://manpages.debian.org/buster/manpages-dev/clock_gettime.3.en.html
+ /// [`FreeBSD clock_gettime`]: https://man.freebsd.org/cgi/man.cgi?query=clock_gettime&manpath=FreeBSD+15.0-RELEASE
+ pub fn now_awake() -> u64 {
+-    let mut ts = libc::timespec {
+-        tv_sec: 0,
+-        tv_nsec: 0,
+-    };
++    // timespec may contain private time64 padding; initialize the whole value.
++    let mut ts: libc::timespec = unsafe { std::mem::zeroed() };
+     #[cfg(any(target_os = "linux", target_os = "android"))]
+     let clock = libc::CLOCK_MONOTONIC;
+     #[cfg(target_os = "freebsd")]
