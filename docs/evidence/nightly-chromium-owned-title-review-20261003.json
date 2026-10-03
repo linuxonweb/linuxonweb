@@ -1,0 +1,339 @@
+{
+  "schema": 1,
+  "scope": "Read-only narrow Chromium ownership helper review. Captured argv replay uses explicit test ownership metadata; no new live process, browser, Firefox, package, GPU, JIT, TLS or release acceptance.",
+  "sourcePath": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs",
+  "sourceSha256": "abcc6c055377763c69dc7faf3d9e3a9a4539f0a5cdb4c10898f4c01cda20b10e",
+  "fixturePath": "/mnt/p6/project/build/nightly-baseline-guest-20261003/chromium-argv-diagnostic/result.json",
+  "fixtureSha256": "376055d48f35cb087b81ed00557030e8c5cbfaf94a5431463bb23d88184d5c01",
+  "reviewerPath": "/mnt/p6/project/build/nightly-chromium-owned-title-review-20261003/review.mjs",
+  "reviewerSha256": "5020343022bee644725f64085d790d0a942ab949b2c4a1a57db2e7a0a5f0a00f",
+  "checks": [
+    {
+      "name": "captured flattened title 250ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 500ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 750ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 1000ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 1250ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 1500ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 1750ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 2000ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 2250ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 2500ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 2750ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "captured flattened title 3000ms",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "all twelve captured observations retained",
+      "pass": true
+    },
+    {
+      "name": "fixture terminal exit 0 and empty group",
+      "pass": true
+    },
+    {
+      "name": "native argv accepted",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "native custom executable accepted",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "flattened custom executable rejected",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "foreign actual exe",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "foreign expected exe",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "foreign group",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "foreign session",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "foreign spawned pid",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "flattened executable prefix collision",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "missing final NUL",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "missing title terminator",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "truncated final title word",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "extra final NUL",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "mixed NUL flattened and native flags",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "mixed NUL captured title then native flags",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "quoted flattened profile",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "single quoted title",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "tab delimiter",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "newline delimiter",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "double space delimiter",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "profile with whitespace rejected",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "profile with quote rejected",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "profile with backslash rejected",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "duplicate profile",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "conflicting profile",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "profile prefix collision",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "profile flag prefix collision",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "duplicate port",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "conflicting port",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "port flag prefix collision",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "missing port",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "wrong port",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "renderer helper",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "split helper type",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "native duplicate profile",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "native helper type",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "read actual proc executable",
+      "pass": true
+    },
+    {
+      "name": "read actual proc stat group and session",
+      "pass": true
+    },
+    {
+      "name": "child exit and spawn-error guards retained",
+      "pass": true
+    },
+    {
+      "name": "bounded endpoint wait retained",
+      "pass": true
+    },
+    {
+      "name": "strict CDP per-call guard retained",
+      "pass": true
+    },
+    {
+      "name": "endpoint ownership gate retained",
+      "pass": true
+    },
+    {
+      "name": "fixture and source unchanged across review",
+      "pass": true
+    }
+  ],
+  "passed": 57,
+  "failed": 0,
+  "pass": true
+}

@@ -1,7 +1,7 @@
 // Isolated native Linux/Wasm Nightly baseline. No JIT, GPU or TLS acceptance
 // follows from this runner. Run --help; --self-test never launches a browser.
 import fs from 'node:fs/promises';
-import { openSync, closeSync, readFileSync } from 'node:fs';
+import { openSync, closeSync, readFileSync, readlinkSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -14,12 +14,30 @@ import { ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly
 const TASK = '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
 export const CURRENT_TASK = '/mnt/p6/project/build/nightly-baseline-guest-20261003';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const DEFAULT_CHROMIUM = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
+const DEFAULT_CHROMIUM_BINARY = '/home/a/.local/archpkg/pacman/usr/lib/chromium/chromium';
 const PAGE = 'file:///opt/firefox/gpu-check/gpu-check.html';
 const PROBE = 'file:///home/admin/nightly-baseline-probe.html';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const digest = value => /^[a-f0-9]{64}$/.test(value || '');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+export function ownedChromiumArguments(raw, profile, owned) {
+  if (!Number.isInteger(owned.pid) || owned.pid < 1 || owned.pid !== owned.pgid || owned.pid !== owned.session || owned.actualExecutable !== owned.expectedExecutable) return false;
+  if (typeof raw !== 'string' || /[\s'"\\]/.test(profile)) return false;
+  let argv = raw.split('\0');
+  if (argv.at(-1) !== '') return false;
+  argv.pop();
+  if (argv.length === 1) {
+    if (!owned.defaultLauncher || owned.expectedExecutable !== DEFAULT_CHROMIUM_BINARY || /['"\r\n\t]/.test(argv[0])) return false;
+    argv = argv[0].split(' ');
+    if (argv.some(a => !a) || argv[0] !== owned.expectedExecutable || argv.at(-1) !== 'about:blank') return false;
+  } else if (argv[0] !== owned.expectedExecutable || argv.some(a => /\s/.test(a))) return false;
+  if (argv.some(a => a === '--type' || a.startsWith('--type='))) return false;
+  const profiles = argv.filter(a => a.startsWith('--user-data-dir'));
+  const ports = argv.filter(a => a.startsWith('--remote-debugging-port'));
+  return profiles.length === 1 && profiles[0] === '--user-data-dir=' + profile && ports.length === 1 && ports[0] === '--remote-debugging-port=0';
+}
 const assert = (value, message) => { if (!value) throw Error(message); };
 const fatal = logs => logs.split('\n').filter(line => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError:|indirect call (?:type mismatch|to null)/i.test(line));
 
@@ -177,7 +195,10 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   const origin = 'http://127.0.0.1:' + server.address().port;
   const prefs = (hooks.preferences || '') + ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'devtools.console.stdout.chrome:true', 'browser.download.alwaysOpenPanel:false', 'browser.download.panel.shown:true', 'browser.download.folderList:2'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("browser.download.dir","/home/admin/Downloads");\nuser_pref("browser.helperApps.neverAsk.saveToDisk","application/json");\nuser_pref("datareporting.policy.firstRunURL", "");\n' + (baseline ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(PROBE) + ');\n' : '');
-  const executable = opt.chromium || '/home/a/.local/archpkg/pacman/usr/bin/chromium';
+  const executable = opt.chromium || DEFAULT_CHROMIUM;
+  const defaultLauncher = executable === DEFAULT_CHROMIUM;
+  const expectedExecutable = await fs.realpath(defaultLauncher ? DEFAULT_CHROMIUM_BINARY : executable);
+  await read(executable); if (defaultLauncher) await read(expectedExecutable);
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', '--user-data-dir=' + out + '/profile', '--disk-cache-dir=' + out + '/cache', 'about:blank'];
   const launchCommand = browserLaunchCommand(executable, args, affinityPlan);
   await fs.writeFile(out + '/command.json', JSON.stringify(launchCommand, null, 2) + '\n');
@@ -193,8 +214,11 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) {
       try {
         process.kill(child.pid, 0);
-        const argv = readFileSync('/proc/' + child.pid + '/cmdline', 'utf8').split('\0');
-        ownedProfileArgument = argv.includes('--user-data-dir=' + out + '/profile') && argv.includes('--remote-debugging-port=0');
+        const raw = readFileSync('/proc/' + child.pid + '/cmdline', 'utf8');
+        const stat = readFileSync('/proc/' + child.pid + '/stat', 'utf8');
+        const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+        const actualExecutable = readlinkSync('/proc/' + child.pid + '/exe');
+        ownedProfileArgument = ownedChromiumArguments(raw, out + '/profile', {pid:child.pid, pgid:Number(fields[2]), session:Number(fields[3]), actualExecutable, expectedExecutable, defaultLauncher});
         alive = ownedProfileArgument;
       } catch {}
     }
@@ -291,7 +315,9 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     }, 1000, 'owned detached browser group');
     let activePortText;
     await until(async () => {
-      assert(childState().alive, 'owned browser/profile unavailable');
+      // The owned taskset/launcher process can precede Chromium's exec. Wait
+      // within this deadline; every endpoint and CDP call still checks its argv.
+      if (!childState().alive) return false;
       let stat;
       try { stat = await fs.lstat(out + '/profile/DevToolsActivePort'); activePortText = await fs.readFile(out + '/profile/DevToolsActivePort', 'utf8'); }
       catch (error) { if (error.code === 'ENOENT') return false; throw error; }

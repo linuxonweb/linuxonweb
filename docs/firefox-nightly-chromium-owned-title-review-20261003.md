@@ -1,0 +1,9 @@
+# Nightly Chromium process ownership admission, 2026-10-03
+
+The actual bundled Chromium rewrites `/proc/PID/cmdline` into one NUL-terminated, space-separated process title. The previous NUL-array argument check excluded two launches before any guest request or phase. Both failed admissions and their complete cleanup remain retained.
+
+The existing 20-second endpoint deadline now permits the launcher-to-Chromium exec transition. Admission checks the exact spawned PID, process group and session, resolved executable, owned profile and one `--remote-debugging-port=0` flag. The default launcher alone accepts its captured flattened title; exact token boundaries reject duplicate flags, mixed NUL forms, helpers, quotes, whitespace paths, profile collisions and truncated titles. Custom executables retain native argument handling. Endpoint UUID/port, child exit/spawn errors and every CDP ownership check remain mandatory. The launcher and actual bundled executable are hashed as test inputs.
+
+The [independent review](evidence/nightly-chromium-owned-title-review-20261003.json) passes 57 host checks, including all twelve actual captured process titles. The focused controls pass 24 checks and the existing harness passes 49. These checks do not establish browser acceptance.
+
+The subsequent real Nightly159 guest boot matches six freshly observed host CPUs, actual Chromium affinity and kernel SMP, with 4096 MiB guest memory. Firefox exits with status 139 before a Firefox window or the default page appears. Baseline, NSS, JIT, GPU and release acceptance remain pending. The failed run is reaped, its owned group is empty and its server is closed. Retained diagnostic handoff: `/mnt/p6/project/build/nightly-baseline-guest-20261003/actual-baseline-run55-failed-handoff.json`, SHA256 `a6abf7d4f48fd893300c46184cc6ba47d09ae57be22ce24ccae9d917c0600ee6`.
