@@ -1,0 +1,2527 @@
+{
+  "terminal": {
+    "checked": 1791016805.618132,
+    "claim": "Terminal native object/rebuild progress; no full browser, guest, JIT or GPU acceptance",
+    "terminal": {
+      "phase": "build",
+      "run": "run20",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "-j4"
+      ],
+      "pid": 1204136,
+      "pgid": 1204136,
+      "started": 1791015518.5666847,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run20.log",
+      "timeout_seconds": 1200,
+      "state": "completed",
+      "task_bytes": 17303666688,
+      "free_bytes": 76524486656,
+      "checked": 1791016713.8416898,
+      "exit_code": -15,
+      "finished": 1791016718.8676407,
+      "stop_reason": "boundedphase"
+    },
+    "process_group_empty": true,
+    "unified_exec_handle": 88883,
+    "unified_exec_reaped_exit": 143,
+    "graph_counts": {
+      "expected_native_object_count": 3012,
+      "existing_expected_object_count": 979,
+      "missing_expected_object_count": 2033,
+      "existing_expected_object_bytes": 1082893162,
+      "existing_non_wasm_magic": {}
+    },
+    "new_expected_objects_since_run19": [
+      {
+        "path": "dom/webserial/Unified_cpp_dom_webserial0.o",
+        "exists": true,
+        "bytes": 5469431,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016059344961368,
+        "inode": 21948581
+      },
+      {
+        "path": "dom/webserial/Unified_cpp_dom_webserial1.o",
+        "exists": true,
+        "bytes": 1346723,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016076703114687,
+        "inode": 21948592
+      },
+      {
+        "path": "dom/webtransport/api/Unified_cpp_dom_webtransport_api0.o",
+        "exists": true,
+        "bytes": 2295035,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016084004179134,
+        "inode": 21948586
+      },
+      {
+        "path": "dom/webtransport/child/Unified_cpp_webtransport_child0.o",
+        "exists": true,
+        "bytes": 135737,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016091085241618,
+        "inode": 21948593
+      },
+      {
+        "path": "dom/webtransport/parent/Unified_cpp_webtransport_parent0.o",
+        "exists": true,
+        "bytes": 1026951,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016118056479420,
+        "inode": 21948594
+      },
+      {
+        "path": "dom/webtransport/shared/Unified_cpp_webtransport_shared0.o",
+        "exists": true,
+        "bytes": 2230770,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016114672449600,
+        "inode": 21948595
+      },
+      {
+        "path": "dom/workers/Unified_cpp_dom_workers0.o",
+        "exists": true,
+        "bytes": 3356660,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016154061796417,
+        "inode": 21948597
+      },
+      {
+        "path": "dom/workers/Unified_cpp_dom_workers1.o",
+        "exists": true,
+        "bytes": 5323878,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016176683995332,
+        "inode": 21948598
+      },
+      {
+        "path": "dom/workers/loader/Unified_cpp_dom_workers_loader0.o",
+        "exists": true,
+        "bytes": 1032802,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016119406491315,
+        "inode": 21948585
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers0.o",
+        "exists": true,
+        "bytes": 3845305,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016159504844294,
+        "inode": 21948596
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers1.o",
+        "exists": true,
+        "bytes": 1850434,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016186717083493,
+        "inode": 21948599
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers2.o",
+        "exists": true,
+        "bytes": 1159679,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016188907102731,
+        "inode": 21948601
+      },
+      {
+        "path": "dom/workers/sharedworkers/Unified_cpp_sharedworkers0.o",
+        "exists": true,
+        "bytes": 1671415,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016157181823862,
+        "inode": 21948587
+      },
+      {
+        "path": "dom/worklet/Unified_cpp_dom_worklet0.o",
+        "exists": true,
+        "bytes": 1591547,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016199000191375,
+        "inode": 21948602
+      },
+      {
+        "path": "dom/worklet/loader/Unified_cpp_dom_worklet_loader0.o",
+        "exists": true,
+        "bytes": 389576,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016172511958662,
+        "inode": 21948600
+      },
+      {
+        "path": "dom/xhr/Unified_cpp_dom_xhr0.o",
+        "exists": true,
+        "bytes": 2782991,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016207259263885,
+        "inode": 21948603
+      },
+      {
+        "path": "dom/xml/Unified_cpp_dom_xml0.o",
+        "exists": true,
+        "bytes": 1316188,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016210011288041,
+        "inode": 21948604
+      },
+      {
+        "path": "dom/xslt/base/Unified_cpp_dom_xslt_base0.o",
+        "exists": true,
+        "bytes": 303004,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016202936225934,
+        "inode": 21948605
+      },
+      {
+        "path": "dom/xslt/xml/Unified_cpp_dom_xslt_xml0.o",
+        "exists": true,
+        "bytes": 205184,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016214373326324,
+        "inode": 21948606
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath0.o",
+        "exists": true,
+        "bytes": 1109132,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016222244395387,
+        "inode": 21948607
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath1.o",
+        "exists": true,
+        "bytes": 407876,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016230956471806,
+        "inode": 21948610
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath2.o",
+        "exists": true,
+        "bytes": 160489,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016234508502955,
+        "inode": 21948611
+      },
+      {
+        "path": "dom/xslt/xslt/Unified_cpp_dom_xslt_xslt0.o",
+        "exists": true,
+        "bytes": 2434717,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016240653556834,
+        "inode": 21948608
+      },
+      {
+        "path": "dom/xslt/xslt/Unified_cpp_dom_xslt_xslt1.o",
+        "exists": true,
+        "bytes": 1562852,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016263182754267,
+        "inode": 21948614
+      },
+      {
+        "path": "dom/xul/Unified_cpp_dom_xul0.o",
+        "exists": true,
+        "bytes": 2053398,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016249133631167,
+        "inode": 21948609
+      },
+      {
+        "path": "dom/xul/Unified_cpp_dom_xul1.o",
+        "exists": true,
+        "bytes": 1681566,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016265522774765,
+        "inode": 21948612
+      },
+      {
+        "path": "editor/composer/Unified_cpp_editor_composer0.o",
+        "exists": true,
+        "bytes": 486864,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016258151710192,
+        "inode": 21948613
+      },
+      {
+        "path": "editor/libeditor/Unified_cpp_editor_libeditor0.o",
+        "exists": true,
+        "bytes": 4228104,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016304335114507,
+        "inode": 21948615
+      },
+      {
+        "path": "editor/libeditor/Unified_cpp_editor_libeditor1.o",
+        "exists": true,
+        "bytes": 9362101,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016381915792361,
+        "inode": 21948626
+      },
+      {
+        "path": "editor/libeditor/Unified_cpp_editor_libeditor2.o",
+        "exists": true,
+        "bytes": 4211952,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016374105724191,
+        "inode": 21948629
+      },
+      {
+        "path": "editor/libeditor/Unified_cpp_editor_libeditor3.o",
+        "exists": true,
+        "bytes": 3546878,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016426778183662,
+        "inode": 21948650
+      },
+      {
+        "path": "editor/spellchecker/Unified_cpp_editor_spellchecker0.o",
+        "exists": true,
+        "bytes": 1686293,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016282924927149,
+        "inode": 21948616
+      },
+      {
+        "path": "editor/txmgr/Unified_cpp_editor_txmgr0.o",
+        "exists": true,
+        "bytes": 255584,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016281595915514,
+        "inode": 21948617
+      },
+      {
+        "path": "extensions/auth/nsAuthSASL.o",
+        "exists": true,
+        "bytes": 131306,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016271581827832,
+        "inode": 21948618
+      },
+      {
+        "path": "extensions/auth/nsHttpNegotiateAuth.o",
+        "exists": true,
+        "bytes": 289052,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016280997910279,
+        "inode": 21948619
+      },
+      {
+        "path": "extensions/auth/nsIAuthModule.o",
+        "exists": true,
+        "bytes": 144867,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016287764969515,
+        "inode": 21948620
+      },
+      {
+        "path": "extensions/auth/Unified_cpp_extensions_auth0.o",
+        "exists": true,
+        "bytes": 362190,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016295889040612,
+        "inode": 21948623
+      },
+      {
+        "path": "extensions/permissions/Unified_cpp_permissions0.o",
+        "exists": true,
+        "bytes": 2658227,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016321663266049,
+        "inode": 21948621
+      },
+      {
+        "path": "extensions/pref/autoconfig/src/Unified_cpp_pref_autoconfig_src0.o",
+        "exists": true,
+        "bytes": 1068538,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016297532054988,
+        "inode": 21948622
+      },
+      {
+        "path": "extensions/spellcheck/hunspell/glue/Unified_cpp_hunspell_glue0.o",
+        "exists": true,
+        "bytes": 1439017,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016317755231879,
+        "inode": 21948624
+      },
+      {
+        "path": "extensions/spellcheck/hunspell/src/Unified_cpp_hunspell_src0.o",
+        "exists": true,
+        "bytes": 3022258,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016324028286726,
+        "inode": 21948625
+      },
+      {
+        "path": "extensions/spellcheck/ipc/Unified_cpp_spellcheck_ipc0.o",
+        "exists": true,
+        "bytes": 2399925,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016354861556156,
+        "inode": 21948627
+      },
+      {
+        "path": "extensions/spellcheck/src/Unified_cpp_spellcheck_src0.o",
+        "exists": true,
+        "bytes": 2167988,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016362275620904,
+        "inode": 21948628
+      },
+      {
+        "path": "gfx/2d/InlineTranslator.o",
+        "exists": true,
+        "bytes": 1855134,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016372948714091,
+        "inode": 21948630
+      },
+      {
+        "path": "gfx/2d/NativeFontResourceFreeType.o",
+        "exists": true,
+        "bytes": 80790,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016377243751583,
+        "inode": 21948648
+      },
+      {
+        "path": "gfx/2d/ScaledFontFontconfig.o",
+        "exists": true,
+        "bytes": 264570,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016387031837008,
+        "inode": 21948657
+      },
+      {
+        "path": "gfx/2d/UnscaledFontFreeType.o",
+        "exists": true,
+        "bytes": 168700,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016391159873029,
+        "inode": 21948668
+      },
+      {
+        "path": "gfx/2d/Unified_cpp_gfx_2d0.o",
+        "exists": true,
+        "bytes": 4787473,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016426364180053,
+        "inode": 21948675
+      },
+      {
+        "path": "gfx/2d/Unified_cpp_gfx_2d1.o",
+        "exists": true,
+        "bytes": 3278608,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016418129108259,
+        "inode": 21948677
+      },
+      {
+        "path": "gfx/2d/Unified_cpp_gfx_2d2.o",
+        "exists": true,
+        "bytes": 573227,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016429252205228,
+        "inode": 21948682
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-base85-stream.o",
+        "exists": true,
+        "bytes": 9564,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016362622623934,
+        "inode": 21948631
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-bentley-ottmann-rectangular.o",
+        "exists": true,
+        "bytes": 33902,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016363094628056,
+        "inode": 21948632
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-bentley-ottmann-rectilinear.o",
+        "exists": true,
+        "bytes": 22682,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016363506631653,
+        "inode": 21948633
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-bentley-ottmann.o",
+        "exists": true,
+        "bytes": 44483,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016364146637242,
+        "inode": 21948634
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-boxes-intersect.o",
+        "exists": true,
+        "bytes": 27270,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016364541640691,
+        "inode": 21948635
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-cff-subset.o",
+        "exists": true,
+        "bytes": 166623,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016366057653929,
+        "inode": 21948636
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-clip-surface.o",
+        "exists": true,
+        "bytes": 34559,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016366315656181,
+        "inode": 21948637
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-deflate-stream.o",
+        "exists": true,
+        "bytes": 9208,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016366566658373,
+        "inode": 21948638
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-ft-font.o",
+        "exists": true,
+        "bytes": 186048,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016367811669243,
+        "inode": 21948639
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-image-source.o",
+        "exists": true,
+        "bytes": 86695,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016368393674324,
+        "inode": 21948640
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-mask-compositor.o",
+        "exists": true,
+        "bytes": 82714,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016368942679118,
+        "inode": 21948641
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-path-stroke-traps.o",
+        "exists": true,
+        "bytes": 50610,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016369400683116,
+        "inode": 21948642
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-path-stroke-tristrip.o",
+        "exists": true,
+        "bytes": 33521,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016369770686346,
+        "inode": 21948643
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-pdf-interchange.o",
+        "exists": true,
+        "bytes": 148251,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016370719694632,
+        "inode": 21948644
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-pdf-operators.o",
+        "exists": true,
+        "bytes": 79809,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016371294699652,
+        "inode": 21948645
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-pdf-shading.o",
+        "exists": true,
+        "bytes": 19766,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016371561701983,
+        "inode": 21948646
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-pdf-surface.o",
+        "exists": true,
+        "bytes": 376827,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016373979723091,
+        "inode": 21948647
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-polygon-intersect.o",
+        "exists": true,
+        "bytes": 49378,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016374635728818,
+        "inode": 21948649
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-polygon-reduce.o",
+        "exists": true,
+        "bytes": 44267,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016375193733689,
+        "inode": 21948651
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-rectangular-scan-converter.o",
+        "exists": true,
+        "bytes": 37942,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016375648737661,
+        "inode": 21948652
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-surface-wrapper.o",
+        "exists": true,
+        "bytes": 64112,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016375973740498,
+        "inode": 21948653
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-tor-scan-converter.o",
+        "exists": true,
+        "bytes": 49597,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016376569745700,
+        "inode": 21948654
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-traps-compositor.o",
+        "exists": true,
+        "bytes": 110916,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016377156750824,
+        "inode": 21948655
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-truetype-subset.o",
+        "exists": true,
+        "bytes": 97621,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016377792756375,
+        "inode": 21948656
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-type1-fallback.o",
+        "exists": true,
+        "bytes": 66555,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016378124759273,
+        "inode": 21948658
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-type1-glyph-names.o",
+        "exists": true,
+        "bytes": 4928,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016378322761002,
+        "inode": 21948659
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-type1-subset.o",
+        "exists": true,
+        "bytes": 85121,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016379057767417,
+        "inode": 21948660
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-type3-glyph-surface.o",
+        "exists": true,
+        "bytes": 50309,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016379328769782,
+        "inode": 21948661
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-core-compositor.o",
+        "exists": true,
+        "bytes": 63982,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016379673772793,
+        "inode": 21948662
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-display.o",
+        "exists": true,
+        "bytes": 83884,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016380087776407,
+        "inode": 21948663
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-fallback-compositor.o",
+        "exists": true,
+        "bytes": 43969,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016380419779304,
+        "inode": 21948664
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-render-compositor.o",
+        "exists": true,
+        "bytes": 121417,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016381411787963,
+        "inode": 21948665
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-screen.o",
+        "exists": true,
+        "bytes": 47292,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016381798791340,
+        "inode": 21948666
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-source.o",
+        "exists": true,
+        "bytes": 75343,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016382340796070,
+        "inode": 21948667
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-surface-shm.o",
+        "exists": true,
+        "bytes": 39816,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016382593798278,
+        "inode": 21948669
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-surface.o",
+        "exists": true,
+        "bytes": 127838,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016383395805278,
+        "inode": 21948670
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-visual.o",
+        "exists": true,
+        "bytes": 14797,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016383706807992,
+        "inode": 21948671
+      },
+      {
+        "path": "gfx/cairo/cairo/src/cairo-xlib-xcb-surface.o",
+        "exists": true,
+        "bytes": 295,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016383891809607,
+        "inode": 21948672
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src0.o",
+        "exists": true,
+        "bytes": 372356,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016386593833186,
+        "inode": 21948673
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src1.o",
+        "exists": true,
+        "bytes": 351862,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016388691851494,
+        "inode": 21948674
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src2.o",
+        "exists": true,
+        "bytes": 413262,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016391744878133,
+        "inode": 21948676
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src3.o",
+        "exists": true,
+        "bytes": 724378,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016397101924871,
+        "inode": 21948678
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src4.o",
+        "exists": true,
+        "bytes": 435668,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016399994950109,
+        "inode": 21948679
+      },
+      {
+        "path": "gfx/cairo/cairo/src/Unified_c_gfx_cairo_cairo_src5.o",
+        "exists": true,
+        "bytes": 229673,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016401923966935,
+        "inode": 21948680
+      },
+      {
+        "path": "gfx/config/Unified_cpp_gfx_config0.o",
+        "exists": true,
+        "bytes": 1356745,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016435563260234,
+        "inode": 21948681
+      },
+      {
+        "path": "gfx/gl/GLContextProviderGLX.o",
+        "exists": true,
+        "bytes": 335033,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016439714296409,
+        "inode": 21948683
+      },
+      {
+        "path": "gfx/gl/GLContextProviderLinux.o",
+        "exists": true,
+        "bytes": 26088,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016435260257593,
+        "inode": 21948685
+      },
+      {
+        "path": "gfx/gl/GLScreenBuffer.o",
+        "exists": true,
+        "bytes": 154054,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016440831306143,
+        "inode": 21948688
+      },
+      {
+        "path": "gfx/gl/SharedSurfaceDMABUF.o",
+        "exists": true,
+        "bytes": 163545,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016451828401959,
+        "inode": 21948690
+      },
+      {
+        "path": "gfx/gl/Unified_cpp_gfx_gl0.o",
+        "exists": true,
+        "bytes": 3869393,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016492093752573,
+        "inode": 21948692
+      },
+      {
+        "path": "gfx/gl/Unified_cpp_gfx_gl1.o",
+        "exists": true,
+        "bytes": 188634,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016509126900793,
+        "inode": 21948696
+      },
+      {
+        "path": "gfx/graphite2/src/Unified_cpp_gfx_graphite2_src0.o",
+        "exists": true,
+        "bytes": 545106,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016432529233791,
+        "inode": 21948684
+      },
+      {
+        "path": "gfx/graphite2/src/Unified_cpp_gfx_graphite2_src1.o",
+        "exists": true,
+        "bytes": 269327,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016435182256913,
+        "inode": 21948686
+      },
+      {
+        "path": "gfx/harfbuzz/src/Unified_cpp_gfx_harfbuzz_src0.o",
+        "exists": true,
+        "bytes": 26186735,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016603192718399,
+        "inode": 21948687
+      },
+      {
+        "path": "gfx/ipc/GPUParent.o",
+        "exists": true,
+        "bytes": 687105,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016468756549403,
+        "inode": 21948689
+      },
+      {
+        "path": "gfx/ipc/Unified_cpp_gfx_ipc0.o",
+        "exists": true,
+        "bytes": 3557461,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016527943064465,
+        "inode": 21948694
+      },
+      {
+        "path": "gfx/ipc/Unified_cpp_gfx_ipc1.o",
+        "exists": true,
+        "bytes": 3517907,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016573318458900,
+        "inode": 21948701
+      },
+      {
+        "path": "gfx/layers/DMABUFSurfaceImage.o",
+        "exists": true,
+        "bytes": 250235,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016456899446134,
+        "inode": 21948691
+      },
+      {
+        "path": "gfx/layers/ImageContainer.o",
+        "exists": true,
+        "bytes": 841497,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016474460599072,
+        "inode": 21948693
+      },
+      {
+        "path": "gfx/layers/PersistentBufferProvider.o",
+        "exists": true,
+        "bytes": 491491,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016495005777917,
+        "inode": 21948695
+      },
+      {
+        "path": "gfx/layers/TextureClient.o",
+        "exists": true,
+        "bytes": 722293,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016515189953539,
+        "inode": 21948697
+      },
+      {
+        "path": "gfx/layers/TextureHost.o",
+        "exists": true,
+        "bytes": 548747,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016546841228785,
+        "inode": 21948699
+      },
+      {
+        "path": "gfx/layers/DMABUFTextureClientOGL.o",
+        "exists": true,
+        "bytes": 62929,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016558321328574,
+        "inode": 21948703
+      },
+      {
+        "path": "gfx/layers/DMABUFTextureHostOGL.o",
+        "exists": true,
+        "bytes": 243487,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016576877489822,
+        "inode": 21948704
+      },
+      {
+        "path": "gfx/layers/WebRenderTextureHost.o",
+        "exists": true,
+        "bytes": 278580,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016592446625071,
+        "inode": 21948709
+      },
+      {
+        "path": "gfx/layers/Unified_cpp_gfx_layers0.o",
+        "exists": true,
+        "bytes": 3129407,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016641265048907,
+        "inode": 21948722
+      },
+      {
+        "path": "gfx/layers/Unified_cpp_gfx_layers1.o",
+        "exists": true,
+        "bytes": 2426180,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016676827357433,
+        "inode": 21948753
+      },
+      {
+        "path": "gfx/ots/src/Unified_cpp_gfx_ots_src0.o",
+        "exists": true,
+        "bytes": 1841553,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016525535043522,
+        "inode": 21948698
+      },
+      {
+        "path": "gfx/ots/src/Unified_cpp_gfx_ots_src1.o",
+        "exists": true,
+        "bytes": 837904,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016533422112112,
+        "inode": 21948700
+      },
+      {
+        "path": "gfx/ots/src/Unified_cpp_gfx_ots_src2.o",
+        "exists": true,
+        "bytes": 1729645,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016548943247058,
+        "inode": 21948702
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-access-accessors.o",
+        "exists": true,
+        "bytes": 269397,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016550640261810,
+        "inode": 22337038
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-access.o",
+        "exists": true,
+        "bytes": 323610,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016552571278595,
+        "inode": 22337039
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-arm.o",
+        "exists": true,
+        "bytes": 13110,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016552714279838,
+        "inode": 22337040
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-bits-image.o",
+        "exists": true,
+        "bytes": 101849,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016553949290573,
+        "inode": 22337041
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-combine-float.o",
+        "exists": true,
+        "bytes": 562335,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016557060317614,
+        "inode": 22337042
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-combine32.o",
+        "exists": true,
+        "bytes": 110998,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016558213327635,
+        "inode": 22337043
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-conical-gradient.o",
+        "exists": true,
+        "bytes": 20690,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016558432329538,
+        "inode": 22337044
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-edge-accessors.o",
+        "exists": true,
+        "bytes": 26721,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016558859333250,
+        "inode": 22337045
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-edge.o",
+        "exists": true,
+        "bytes": 26737,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016559298337065,
+        "inode": 22337046
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-fast-path.o",
+        "exists": true,
+        "bytes": 541878,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016564127379033,
+        "inode": 22337047
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-filter.o",
+        "exists": true,
+        "bytes": 14571,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016564293380476,
+        "inode": 22337048
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-general.o",
+        "exists": true,
+        "bytes": 21068,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016564429381658,
+        "inode": 22337049
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-glyph.o",
+        "exists": true,
+        "bytes": 37238,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016564684383874,
+        "inode": 22337050
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-gradient-walker.o",
+        "exists": true,
+        "bytes": 16549,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016564820385056,
+        "inode": 22337051
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-image.o",
+        "exists": true,
+        "bytes": 34920,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016565092387419,
+        "inode": 22337052
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-implementation.o",
+        "exists": true,
+        "bytes": 27484,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016565254388827,
+        "inode": 22337053
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-linear-gradient.o",
+        "exists": true,
+        "bytes": 20226,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016565413390209,
+        "inode": 22337054
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-matrix.o",
+        "exists": true,
+        "bytes": 61075,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016565846393972,
+        "inode": 22337055
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-mips.o",
+        "exists": true,
+        "bytes": 13114,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016565968395032,
+        "inode": 22337056
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-noop.o",
+        "exists": true,
+        "bytes": 16943,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016566120396353,
+        "inode": 22337057
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-ppc.o",
+        "exists": true,
+        "bytes": 13110,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016566246397448,
+        "inode": 22337058
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-radial-gradient.o",
+        "exists": true,
+        "bytes": 20412,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016566453399247,
+        "inode": 22337059
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-region16.o",
+        "exists": true,
+        "bytes": 85882,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016567741410439,
+        "inode": 22337060
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-region32.o",
+        "exists": true,
+        "bytes": 83019,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016568957421006,
+        "inode": 22337061
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-region64f.o",
+        "exists": true,
+        "bytes": 87756,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016570092430869,
+        "inode": 22337062
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-riscv.o",
+        "exists": true,
+        "bytes": 13118,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016570214431929,
+        "inode": 22337063
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-solid-fill.o",
+        "exists": true,
+        "bytes": 9729,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016570358433180,
+        "inode": 22337064
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-trap.o",
+        "exists": true,
+        "bytes": 32046,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016570701436160,
+        "inode": 22337065
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-utils.o",
+        "exists": true,
+        "bytes": 28860,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016570948438307,
+        "inode": 22337066
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman-x86.o",
+        "exists": true,
+        "bytes": 13110,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016571071439375,
+        "inode": 22337067
+      },
+      {
+        "path": "gfx/pixman/pixman/pixman/pixman.o",
+        "exists": true,
+        "bytes": 41673,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016571430442495,
+        "inode": 22337068
+      },
+      {
+        "path": "gfx/skia/skcms.o",
+        "exists": true,
+        "bytes": 172987,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016572979455954,
+        "inode": 21948705
+      },
+      {
+        "path": "gfx/skia/skcms_TransformBaseline.o",
+        "exists": true,
+        "bytes": 404187,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016575249475678,
+        "inode": 21948706
+      },
+      {
+        "path": "gfx/skia/SkBitmapProcState.o",
+        "exists": true,
+        "bytes": 105720,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016577435494671,
+        "inode": 21948708
+      },
+      {
+        "path": "gfx/skia/SkBitmapProcState_matrixProcs.o",
+        "exists": true,
+        "bytes": 106917,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016579435512047,
+        "inode": 21948710
+      },
+      {
+        "path": "gfx/skia/SkBitmapProcState_opts.o",
+        "exists": true,
+        "bytes": 23023,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016580975525426,
+        "inode": 21948712
+      },
+      {
+        "path": "gfx/skia/SkBitmapProcState_opts_lasx.o",
+        "exists": true,
+        "bytes": 306,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016581083526364,
+        "inode": 21948713
+      },
+      {
+        "path": "gfx/skia/SkBitmapProcState_opts_ssse3.o",
+        "exists": true,
+        "bytes": 306,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016581186527259,
+        "inode": 21948714
+      },
+      {
+        "path": "gfx/skia/SkBlitMask_opts.o",
+        "exists": true,
+        "bytes": 86381,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016582979542835,
+        "inode": 21948715
+      },
+      {
+        "path": "gfx/skia/SkBlitMask_opts_ssse3.o",
+        "exists": true,
+        "bytes": 15447,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016584028551948,
+        "inode": 21948716
+      },
+      {
+        "path": "gfx/skia/SkBlitRow_D32.o",
+        "exists": true,
+        "bytes": 25200,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016585688566369,
+        "inode": 21948717
+      },
+      {
+        "path": "gfx/skia/SkBlitRow_opts.o",
+        "exists": true,
+        "bytes": 34449,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016587459581753,
+        "inode": 21948718
+      },
+      {
+        "path": "gfx/skia/SkBlitRow_opts_lasx.o",
+        "exists": true,
+        "bytes": 18218,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016589211596972,
+        "inode": 21948719
+      },
+      {
+        "path": "gfx/skia/SkBlitRow_opts_ml3.o",
+        "exists": true,
+        "bytes": 18217,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016590819610939,
+        "inode": 21948720
+      },
+      {
+        "path": "gfx/skia/SkBlitter.o",
+        "exists": true,
+        "bytes": 187839,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016593174631394,
+        "inode": 21948721
+      },
+      {
+        "path": "gfx/skia/SkBlitter_A8.o",
+        "exists": true,
+        "bytes": 109810,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016594883646237,
+        "inode": 21948723
+      },
+      {
+        "path": "gfx/skia/SkBlitter_ARGB32.o",
+        "exists": true,
+        "bytes": 178021,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016597600669835,
+        "inode": 21948724
+      },
+      {
+        "path": "gfx/skia/SkBlitter_Sprite.o",
+        "exists": true,
+        "bytes": 114131,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016599785688811,
+        "inode": 21948726
+      },
+      {
+        "path": "gfx/skia/SkColorSpace.o",
+        "exists": true,
+        "bytes": 78556,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016602028708290,
+        "inode": 21948727
+      },
+      {
+        "path": "gfx/skia/SkColorSpaceXformSteps.o",
+        "exists": true,
+        "bytes": 52513,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016604185727022,
+        "inode": 21948728
+      },
+      {
+        "path": "gfx/skia/SkCpu.o",
+        "exists": true,
+        "bytes": 14295,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016604776732154,
+        "inode": 21948730
+      },
+      {
+        "path": "gfx/skia/SkMatrix.o",
+        "exists": true,
+        "bytes": 233373,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016607860758934,
+        "inode": 21948731
+      },
+      {
+        "path": "gfx/skia/SkMemset_opts.o",
+        "exists": true,
+        "bytes": 39012,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016609126769927,
+        "inode": 21948732
+      },
+      {
+        "path": "gfx/skia/SkMemset_opts_avx.o",
+        "exists": true,
+        "bytes": 2603,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016609233770856,
+        "inode": 21948733
+      },
+      {
+        "path": "gfx/skia/SkMemset_opts_erms.o",
+        "exists": true,
+        "bytes": 2975,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016609418772463,
+        "inode": 21948734
+      },
+      {
+        "path": "gfx/skia/SkOpts.o",
+        "exists": true,
+        "bytes": 1463288,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016615869828474,
+        "inode": 21948735
+      },
+      {
+        "path": "gfx/skia/SkPath.o",
+        "exists": true,
+        "bytes": 234978,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016618601852193,
+        "inode": 21948737
+      },
+      {
+        "path": "gfx/skia/SkPictureData.o",
+        "exists": true,
+        "bytes": 314395,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016622595886867,
+        "inode": 21948738
+      },
+      {
+        "path": "gfx/skia/SkRTree.o",
+        "exists": true,
+        "bytes": 118857,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016624379902353,
+        "inode": 21948740
+      },
+      {
+        "path": "gfx/skia/SkScan_AntiPath.o",
+        "exists": true,
+        "bytes": 47845,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016625768914411,
+        "inode": 21948741
+      },
+      {
+        "path": "gfx/skia/SkScan_Antihair.o",
+        "exists": true,
+        "bytes": 111503,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016627667930895,
+        "inode": 21948742
+      },
+      {
+        "path": "gfx/skia/SkSpriteBlitter_ARGB32.o",
+        "exists": true,
+        "bytes": 43283,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016629581947509,
+        "inode": 21948745
+      },
+      {
+        "path": "gfx/skia/SkSwizzler_opts.o",
+        "exists": true,
+        "bytes": 41362,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016631400963297,
+        "inode": 21948746
+      },
+      {
+        "path": "gfx/skia/SkSwizzler_opts_lasx.o",
+        "exists": true,
+        "bytes": 17422,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016633017977332,
+        "inode": 21948747
+      },
+      {
+        "path": "gfx/skia/SkSwizzler_opts_ml3.o",
+        "exists": true,
+        "bytes": 17421,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016634507990265,
+        "inode": 21948748
+      },
+      {
+        "path": "gfx/skia/SkSwizzler_opts_ssse3.o",
+        "exists": true,
+        "bytes": 17423,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016635882002190,
+        "inode": 21948749
+      },
+      {
+        "path": "gfx/skia/SkVertices.o",
+        "exists": true,
+        "bytes": 127088,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016638923028582,
+        "inode": 21948750
+      },
+      {
+        "path": "gfx/skia/SkColorSpaceXformColorFilter.o",
+        "exists": true,
+        "bytes": 129778,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016641700052682,
+        "inode": 21948751
+      },
+      {
+        "path": "gfx/skia/SkPathOpsDebug.o",
+        "exists": true,
+        "bytes": 128051,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016644211074472,
+        "inode": 21948754
+      },
+      {
+        "path": "gfx/skia/SkPDFDevice.o",
+        "exists": true,
+        "bytes": 636877,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016649536120680,
+        "inode": 21948755
+      },
+      {
+        "path": "gfx/skia/SkPDFFont.o",
+        "exists": true,
+        "bytes": 407944,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016655096168922,
+        "inode": 21948756
+      },
+      {
+        "path": "gfx/skia/SkPDFType1Font.o",
+        "exists": true,
+        "bytes": 159289,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016658439197926,
+        "inode": 21948759
+      },
+      {
+        "path": "gfx/skia/SkFontHost_FreeType_common.o",
+        "exists": true,
+        "bytes": 524423,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016664030246430,
+        "inode": 21948761
+      },
+      {
+        "path": "gfx/skia/SkFontHost_cairo.o",
+        "exists": true,
+        "bytes": 156791,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016666864271015,
+        "inode": 21948763
+      },
+      {
+        "path": "gfx/skia/SkSLLexer.o",
+        "exists": true,
+        "bytes": 38288,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016667415275795,
+        "inode": 21948765
+      },
+      {
+        "path": "gfx/skia/SkParse.o",
+        "exists": true,
+        "bytes": 32632,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016668906288728,
+        "inode": 21948766
+      },
+      {
+        "path": "gfx/skia/SkParsePath.o",
+        "exists": true,
+        "bytes": 80153,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016671366310067,
+        "inode": 21948767
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia0.o",
+        "exists": true,
+        "bytes": 162879,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016673911332142,
+        "inode": 21948769
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia1.o",
+        "exists": true,
+        "bytes": 476264,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016677933367026,
+        "inode": 21948770
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia10.o",
+        "exists": true,
+        "bytes": 1528112,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016690058472177,
+        "inode": 21948774
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia11.o",
+        "exists": true,
+        "bytes": 1284137,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016699497554021,
+        "inode": 21948776
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia12.o",
+        "exists": true,
+        "bytes": 529028,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016704462597068,
+        "inode": 21948778
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia13.o",
+        "exists": true,
+        "bytes": 856093,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016710261647340,
+        "inode": 21948780
+      },
+      {
+        "path": "gfx/skia/Unified_cpp_gfx_skia14.o",
+        "exists": true,
+        "bytes": 614013,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016715828695598,
+        "inode": 21948781
+      },
+      {
+        "path": "gfx/src/X11Util.o",
+        "exists": true,
+        "bytes": 23913,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016579116509275,
+        "inode": 21948707
+      },
+      {
+        "path": "gfx/src/nsDeviceContext.o",
+        "exists": true,
+        "bytes": 994771,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016596077656607,
+        "inode": 21948711
+      },
+      {
+        "path": "gfx/src/Unified_cpp_gfx_src0.o",
+        "exists": true,
+        "bytes": 2245967,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016638560025432,
+        "inode": 21948725
+      },
+      {
+        "path": "gfx/thebes/PrintTarget.o",
+        "exists": true,
+        "bytes": 199743,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016611330789065,
+        "inode": 21948729
+      },
+      {
+        "path": "gfx/thebes/PrintTargetPDF.o",
+        "exists": true,
+        "bytes": 136424,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016620214866196,
+        "inode": 21948736
+      },
+      {
+        "path": "gfx/thebes/PrintTargetThebes.o",
+        "exists": true,
+        "bytes": 76699,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016626484920626,
+        "inode": 21948739
+      },
+      {
+        "path": "gfx/thebes/XlibDisplay.o",
+        "exists": true,
+        "bytes": 18319,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016627070925713,
+        "inode": 21948743
+      },
+      {
+        "path": "gfx/thebes/gfxASurface.o",
+        "exists": true,
+        "bytes": 271239,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016639249031411,
+        "inode": 21948744
+      },
+      {
+        "path": "gfx/thebes/gfxDrawable.o",
+        "exists": true,
+        "bytes": 269911,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016649593121175,
+        "inode": 21948752
+      },
+      {
+        "path": "gfx/thebes/gfxFT2FontBase.o",
+        "exists": true,
+        "bytes": 328143,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016663594242648,
+        "inode": 21948757
+      },
+      {
+        "path": "gfx/thebes/gfxFT2Utils.o",
+        "exists": true,
+        "bytes": 194133,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016676491354519,
+        "inode": 21948762
+      },
+      {
+        "path": "gfx/thebes/gfxFcPlatformFontList.o",
+        "exists": true,
+        "bytes": 1596444,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016713182672661,
+        "inode": 21948772
+      },
+      {
+        "path": "gfx/vr/service/OpenVRControllerMapper.o",
+        "exists": true,
+        "bytes": 52091,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016658341197076,
+        "inode": 21948758
+      },
+      {
+        "path": "gfx/vr/service/OpenVRCosmosMapper.o",
+        "exists": true,
+        "bytes": 31145,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016664227248139,
+        "inode": 21948760
+      },
+      {
+        "path": "gfx/vr/service/OpenVRDefaultMapper.o",
+        "exists": true,
+        "bytes": 31485,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016669936297663,
+        "inode": 21948764
+      },
+      {
+        "path": "gfx/vr/service/OpenVRKnucklesMapper.o",
+        "exists": true,
+        "bytes": 31386,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016675860349046,
+        "inode": 21948768
+      },
+      {
+        "path": "gfx/vr/service/OpenVRSession.o",
+        "exists": true,
+        "bytes": 800021,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016687310448348,
+        "inode": 21948771
+      },
+      {
+        "path": "gfx/vr/service/OpenVRViveMapper.o",
+        "exists": true,
+        "bytes": 31000,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016693133498841,
+        "inode": 21948775
+      },
+      {
+        "path": "gfx/vr/service/PuppetSession.o",
+        "exists": true,
+        "bytes": 49123,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016701170568527,
+        "inode": 21948777
+      },
+      {
+        "path": "gfx/vr/service/Unified_cpp_gfx_vr_service0.o",
+        "exists": true,
+        "bytes": 282389,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016713118672107,
+        "inode": 21948779
+      },
+      {
+        "path": "gfx/vr/service/openvr/dirtools_public.o",
+        "exists": true,
+        "bytes": 39995,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016639802036210,
+        "inode": 22337069
+      },
+      {
+        "path": "gfx/vr/service/openvr/envvartools_public.o",
+        "exists": true,
+        "bytes": 46196,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016640904045774,
+        "inode": 22337070
+      },
+      {
+        "path": "gfx/vr/service/openvr/hmderrors_public.o",
+        "exists": true,
+        "bytes": 70176,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016642238057351,
+        "inode": 22337071
+      },
+      {
+        "path": "gfx/vr/service/openvr/openvr_api_public.o",
+        "exists": true,
+        "bytes": 68206,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016643501068311,
+        "inode": 22337072
+      },
+      {
+        "path": "gfx/vr/service/openvr/pathtools_public.o",
+        "exists": true,
+        "bytes": 136005,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016645535085962,
+        "inode": 22337073
+      },
+      {
+        "path": "gfx/vr/service/openvr/sharedlibtools_public.o",
+        "exists": true,
+        "bytes": 2214,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016645626086751,
+        "inode": 22337074
+      },
+      {
+        "path": "gfx/vr/service/openvr/strtools_public.o",
+        "exists": true,
+        "bytes": 140513,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016647569103612,
+        "inode": 22337075
+      },
+      {
+        "path": "gfx/vr/service/openvr/vrpathregistry_public.o",
+        "exists": true,
+        "bytes": 177607,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016650183126294,
+        "inode": 22337076
+      }
+    ],
+    "existing_expected_outputs_rebuilt_during_run20": [
+      {
+        "path": "dom/midi/Unified_cpp_dom_midi1.o",
+        "exists": true,
+        "bytes": 773001,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015546866346800,
+        "inode": 21948520
+      },
+      {
+        "path": "dom/mls/Unified_cpp_dom_mls0.o",
+        "exists": true,
+        "bytes": 5757339,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015564806512338,
+        "inode": 21948521
+      },
+      {
+        "path": "dom/navigation/Unified_cpp_dom_navigation0.o",
+        "exists": true,
+        "bytes": 1672386,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015543644317027,
+        "inode": 21948522
+      },
+      {
+        "path": "dom/network/Unified_cpp_dom_network0.o",
+        "exists": true,
+        "bytes": 1932212,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015558521454389,
+        "inode": 21948524
+      },
+      {
+        "path": "dom/network/Unified_cpp_dom_network1.o",
+        "exists": true,
+        "bytes": 806668,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015574883605153,
+        "inode": 21948525
+      },
+      {
+        "path": "dom/notification/Unified_cpp_dom_notification0.o",
+        "exists": true,
+        "bytes": 3163015,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015589666741095,
+        "inode": 21948526
+      },
+      {
+        "path": "dom/onnx/Unified_cpp_dom_onnx0.o",
+        "exists": true,
+        "bytes": 2061701,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015595977799055,
+        "inode": 21948527
+      },
+      {
+        "path": "dom/payments/Unified_cpp_dom_payments0.o",
+        "exists": true,
+        "bytes": 2159735,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015608471913665,
+        "inode": 21948532
+      },
+      {
+        "path": "dom/payments/ipc/Unified_cpp_dom_payments_ipc0.o",
+        "exists": true,
+        "bytes": 1883194,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015591220755371,
+        "inode": 21948523
+      },
+      {
+        "path": "dom/performance/Unified_cpp_dom_performance0.o",
+        "exists": true,
+        "bytes": 3315380,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015628893100624,
+        "inode": 21948528
+      },
+      {
+        "path": "dom/performance/Unified_cpp_dom_performance1.o",
+        "exists": true,
+        "bytes": 785681,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015650975302294,
+        "inode": 21948534
+      },
+      {
+        "path": "dom/permission/Unified_cpp_dom_permission0.o",
+        "exists": true,
+        "bytes": 1932366,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015627720089897,
+        "inode": 21948531
+      },
+      {
+        "path": "dom/power/Unified_cpp_dom_power0.o",
+        "exists": true,
+        "bytes": 589066,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015627779090436,
+        "inode": 21948529
+      },
+      {
+        "path": "dom/promise/Unified_cpp_dom_promise0.o",
+        "exists": true,
+        "bytes": 1032196,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015641990220296,
+        "inode": 21948533
+      },
+      {
+        "path": "dom/prototype/PrototypeDocumentContentSink.o",
+        "exists": true,
+        "bytes": 634737,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015648753282023,
+        "inode": 22205642
+      },
+      {
+        "path": "dom/push/Unified_cpp_dom_push0.o",
+        "exists": true,
+        "bytes": 1283423,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015652081312381,
+        "inode": 21948535
+      },
+      {
+        "path": "dom/quota/Unified_cpp_dom_quota0.o",
+        "exists": true,
+        "bytes": 8800217,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015718667917520,
+        "inode": 21948536
+      },
+      {
+        "path": "dom/quota/Unified_cpp_dom_quota1.o",
+        "exists": true,
+        "bytes": 1396468,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015735289067939,
+        "inode": 21948540
+      },
+      {
+        "path": "dom/quota/Unified_cpp_dom_quota2.o",
+        "exists": true,
+        "bytes": 7359549,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015795497610888,
+        "inode": 21948548
+      },
+      {
+        "path": "dom/quota/Unified_cpp_dom_quota3.o",
+        "exists": true,
+        "bytes": 1090447,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015807203716119,
+        "inode": 21948550
+      },
+      {
+        "path": "dom/quota/Unified_cpp_dom_quota4.o",
+        "exists": true,
+        "bytes": 4992801,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015839011001539,
+        "inode": 21948552
+      },
+      {
+        "path": "dom/reporting/Unified_cpp_dom_reporting0.o",
+        "exists": true,
+        "bytes": 1824088,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015682249587072,
+        "inode": 21948537
+      },
+      {
+        "path": "dom/script/Unified_cpp_dom_script0.o",
+        "exists": true,
+        "bytes": 4283563,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015703663781525,
+        "inode": 21948538
+      },
+      {
+        "path": "dom/security/Unified_cpp_dom_security0.o",
+        "exists": true,
+        "bytes": 2174026,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015718130912656,
+        "inode": 21948541
+      },
+      {
+        "path": "dom/security/Unified_cpp_dom_security1.o",
+        "exists": true,
+        "bytes": 4089551,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015766553350240,
+        "inode": 21948545
+      },
+      {
+        "path": "dom/security/permissionspolicy/Unified_cpp_permissionspolicy0.o",
+        "exists": true,
+        "bytes": 608064,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015676667536313,
+        "inode": 21948539
+      },
+      {
+        "path": "dom/security/sanitizer/Unified_cpp_security_sanitizer0.o",
+        "exists": true,
+        "bytes": 1507509,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015700448752357,
+        "inode": 21948543
+      },
+      {
+        "path": "dom/security/trusted-types/Unified_cpp_trusted-types0.o",
+        "exists": true,
+        "bytes": 1016562,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015724259968154,
+        "inode": 21948544
+      },
+      {
+        "path": "dom/serializers/Unified_cpp_dom_serializers0.o",
+        "exists": true,
+        "bytes": 1511309,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015729369014391,
+        "inode": 21948542
+      },
+      {
+        "path": "dom/serviceworkers/Unified_cpp_dom_serviceworkers0.o",
+        "exists": true,
+        "bytes": 4469624,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015772887407336,
+        "inode": 21948546
+      },
+      {
+        "path": "dom/serviceworkers/Unified_cpp_dom_serviceworkers1.o",
+        "exists": true,
+        "bytes": 8003203,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015794726603953,
+        "inode": 21948547
+      },
+      {
+        "path": "dom/serviceworkers/Unified_cpp_dom_serviceworkers2.o",
+        "exists": true,
+        "bytes": 3729702,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015838301995185,
+        "inode": 21948555
+      },
+      {
+        "path": "dom/serviceworkers/Unified_cpp_dom_serviceworkers3.o",
+        "exists": true,
+        "bytes": 3971152,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015847858080800,
+        "inode": 21948551
+      },
+      {
+        "path": "dom/simpledb/Unified_cpp_dom_simpledb0.o",
+        "exists": true,
+        "bytes": 1513223,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015802098670241,
+        "inode": 21948549
+      },
+      {
+        "path": "dom/smil/Unified_cpp_dom_smil0.o",
+        "exists": true,
+        "bytes": 1523856,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015833232949745,
+        "inode": 21948554
+      },
+      {
+        "path": "dom/smil/Unified_cpp_dom_smil1.o",
+        "exists": true,
+        "bytes": 924291,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015856394157224,
+        "inode": 21948553
+      },
+      {
+        "path": "dom/storage/Unified_cpp_dom_storage0.o",
+        "exists": true,
+        "bytes": 2903368,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015879742366009,
+        "inode": 21948561
+      },
+      {
+        "path": "dom/storage/Unified_cpp_dom_storage1.o",
+        "exists": true,
+        "bytes": 1821206,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015911057645489,
+        "inode": 21948558
+      },
+      {
+        "path": "dom/storage/Unified_cpp_dom_storage2.o",
+        "exists": true,
+        "bytes": 575903,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015940363906497,
+        "inode": 21948562
+      },
+      {
+        "path": "dom/streams/Unified_cpp_dom_streams0.o",
+        "exists": true,
+        "bytes": 2718950,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015865745240887,
+        "inode": 21948557
+      },
+      {
+        "path": "dom/streams/Unified_cpp_dom_streams1.o",
+        "exists": true,
+        "bytes": 1287102,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015889887456619,
+        "inode": 21948559
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg0.o",
+        "exists": true,
+        "bytes": 1036520,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015869441273939,
+        "inode": 21948563
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg1.o",
+        "exists": true,
+        "bytes": 1537615,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015901473560020,
+        "inode": 21948564
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg2.o",
+        "exists": true,
+        "bytes": 1439390,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015930760821026,
+        "inode": 21948566
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg3.o",
+        "exists": true,
+        "bytes": 2057958,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015963072108399,
+        "inode": 21948568
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg4.o",
+        "exists": true,
+        "bytes": 1159597,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015991505360805,
+        "inode": 21948571
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg5.o",
+        "exists": true,
+        "bytes": 1163164,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016020006613392,
+        "inode": 21948574
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg6.o",
+        "exists": true,
+        "bytes": 1191499,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016052551901330,
+        "inode": 21948577
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg7.o",
+        "exists": true,
+        "bytes": 1427280,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016089144224493,
+        "inode": 21948580
+      },
+      {
+        "path": "dom/svg/Unified_cpp_dom_svg8.o",
+        "exists": true,
+        "bytes": 1104945,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016117148471419,
+        "inode": 21948583
+      },
+      {
+        "path": "dom/system/Unified_cpp_dom_system0.o",
+        "exists": true,
+        "bytes": 496079,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015871716294279,
+        "inode": 21948556
+      },
+      {
+        "path": "dom/url/Unified_cpp_dom_url0.o",
+        "exists": true,
+        "bytes": 449036,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015894057493844,
+        "inode": 21948567
+      },
+      {
+        "path": "dom/urlpattern/Unified_cpp_dom_urlpattern0.o",
+        "exists": true,
+        "bytes": 534258,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015897225522117,
+        "inode": 21948560
+      },
+      {
+        "path": "dom/view-transitions/Unified_cpp_dom_view-transitions0.o",
+        "exists": true,
+        "bytes": 2456989,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015931633828798,
+        "inode": 21948569
+      },
+      {
+        "path": "dom/vr/Unified_cpp_dom_vr0.o",
+        "exists": true,
+        "bytes": 1652553,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015926632784268,
+        "inode": 21948570
+      },
+      {
+        "path": "dom/vr/Unified_cpp_dom_vr1.o",
+        "exists": true,
+        "bytes": 1126650,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015954924035986,
+        "inode": 21948573
+      },
+      {
+        "path": "dom/webauthn/Unified_cpp_dom_webauthn0.o",
+        "exists": true,
+        "bytes": 5074159,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015985361306300,
+        "inode": 21948572
+      },
+      {
+        "path": "dom/webbrowserpersist/Unified_cpp_webbrowserpersist0.o",
+        "exists": true,
+        "bytes": 2773031,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791015988763336482,
+        "inode": 21948565
+      },
+      {
+        "path": "dom/webbrowserpersist/Unified_cpp_webbrowserpersist1.o",
+        "exists": true,
+        "bytes": 249709,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016007925506376,
+        "inode": 21948578
+      },
+      {
+        "path": "dom/webgpu/Unified_cpp_dom_webgpu0.o",
+        "exists": true,
+        "bytes": 2895575,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016004631477184,
+        "inode": 21948575
+      },
+      {
+        "path": "dom/webgpu/Unified_cpp_dom_webgpu1.o",
+        "exists": true,
+        "bytes": 1712748,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016035309748846,
+        "inode": 21948579
+      },
+      {
+        "path": "dom/webgpu/Unified_cpp_dom_webgpu2.o",
+        "exists": true,
+        "bytes": 3256428,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016093597263779,
+        "inode": 21948584
+      },
+      {
+        "path": "dom/webscheduling/Unified_cpp_dom_webscheduling0.o",
+        "exists": true,
+        "bytes": 693503,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016009558520846,
+        "inode": 21948576
+      },
+      {
+        "path": "dom/websocket/Unified_cpp_dom_websocket0.o",
+        "exists": true,
+        "bytes": 1103199,
+        "magic": "0061736d01000000",
+        "mtime_ns": 1791016037394767293,
+        "inode": 21948582
+      }
+    ],
+    "previously_existing_output_size_changes": [],
+    "retained_mtime_counts": {
+      "18": 147,
+      "19": 134,
+      "20": 296
+    },
+    "fixed_headers": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+        "mtime_ns": 1791012138194019803,
+        "size": 10703,
+        "inode": 23223275,
+        "sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/buildid.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/buildid.h",
+        "mtime_ns": 1791001665503667031,
+        "size": 35,
+        "inode": 21812573,
+        "sha256": "ec33fda5390ac4f7c968bee24cd9750b715bebe6e37804bdc3b34e4a665a5e92"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/source-repo.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/source-repo.h",
+        "mtime_ns": 1791001665694865952,
+        "size": 66,
+        "inode": 21812574,
+        "sha256": "852ba74889c9a05aa568ea1d8db0233e7ffbd2244bb8645f5b346042e795d43a"
+      }
+    ],
+    "header_dependency_counts": {
+      "objects_depending_on_header": 428,
+      "fresh": 428
+    },
+    "archive": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+      "bytes": 1398801246,
+      "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+      "inode": 23364221,
+      "mtime_ns": 1791012590785876013,
+      "native_wasm_object_count": 7101,
+      "known_component_object_counts": {
+        "gkrust-": 2,
+        "gkrust_shared-": 8,
+        "style-": 256,
+        "trust_anchors-": 19,
+        "wgpu_bindings-": 105
+      },
+      "run15_member_names_sizes_magic_equal": false,
+      "immutable_snapshot_claim": false
+    },
+    "pins": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run20-boundary.json",
+        "bytes": 546343,
+        "sha256": "30b84b7e7355bb85f1d1257e46570f50a7c7b5eb7b809794cbb92a4e05877822"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run20-group-cleanup.json",
+        "bytes": 968,
+        "sha256": "d0fab83736a14e7f10f3db2933df40d03c68e01f852e6f9a276fa7fcd371a336"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run20.json",
+        "bytes": 503345,
+        "sha256": "13278e25a1d8699fe111f7b1c10618635b60dbcb28f03a3c06e289397dfcadb6"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run20.json",
+        "bytes": 1695900,
+        "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-rebuild-diagnosis-terminal.json",
+        "bytes": 428380,
+        "sha256": "6ab85fe14e048775b150af187c08d4c0e847e0897f4283edc8e7c99bd1297d6b"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-rebuild-diagnosis-pre-boundary.json",
+        "bytes": 538431,
+        "sha256": "e208f99e3e59d39e177cd5d8ba53cdd75c6f94ac3335d5fc8aede9a7863ba7e7"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-rebuild-diagnosis-manifest-live.json",
+        "bytes": 15315,
+        "sha256": "3c06e4b3ff667dc8be804e7a6bcd99417b0bf19cb1f8bdc01dc9653fc86c5979"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/freeze-build-boundary.py",
+        "bytes": 4721,
+        "sha256": "43c7fcbaae7823e6cdbf3f76c22c561a68f7d85545bc0ff1d11b1b0ea36e1a16"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/diagnose-rebuild-progress.py",
+        "bytes": 4797,
+        "sha256": "c67b8580c15ccf2fee3b3dbd0b13826c0cb3b85a0d0bb088cd0a095d83c6da21"
+      }
+    ],
+    "next_action": "Unchanged j4/1200s/20GiB/reserve incremental build; no source/cache edits or removal."
+  },
+  "manifest_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-final-progress-manifest.json",
+    "bytes": 68360,
+    "sha256": "62f30d2e2bd02d5f43d267b4cf73a5120d7c66752fb6c24a478d305f9f8cb94e"
+  },
+  "root_review_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run20-review-run1.json",
+    "bytes": 110625,
+    "sha256": "e15032419a33273f802c9b6af3c43ce98a9600329be05e747ef15ef8c4abb72e"
+  },
+  "nightlyAcceptance": false,
+  "releaseAcceptance": false
+}

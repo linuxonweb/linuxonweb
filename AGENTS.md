@@ -77,6 +77,21 @@ diagnosis-run20.json. Run20 continues under unchanged bounds; inspect actual
 status before continuing. No linked Nightly/browser/JIT acceptance or deployment
 is established. Public v10 remains unchanged.
 
+Run20 terminal graph advances to979/3012 native objects:232 new paths and64
+previously existing outputs rebuilt during the segment,296 retained writes in
+total. All428 recorded shared-header dependencies are fresh. Its unchanged Rust
+archive remains1,398,801,246 bytes/all7,101 native members. The segment ends at
+1200.30s without compiler errors; exact PGID1204136 is empty and unified handle
+88883 reaped143. Root independently checks1,013 terminal/input/count/native-
+file/timestamp/header/archive predicates in full-boundary-run20-review-run1.json;
+the frozen packet is tools/nightly-musl/evidence/full-build-boundary-run20.json.
+The owned boundary freezer enriches the unchanged repository inspector's output
+with mtimes/inodes only after terminal/group-empty proof; that script is pinned.
+Run21 starts unchanged: PID/PGID1243720, unified handle35465, status/build-run21.json
+and logs/build-run21.log under the recovery task. It reuses the completed DOM
+sweep and resumes graphics compilation. Recheck current handles before work;
+linking, Nightly guest/JIT acceptance and both Sites releases remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
