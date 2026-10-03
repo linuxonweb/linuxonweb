@@ -1,0 +1,123 @@
+{
+  "claim": "Actual ggml-c browser-unit compile with unchanged inference/fatal semantics and existing unsupported-backtrace fallback; no guest/browser acceptance",
+  "terminal": {
+    "phase": "llama-c",
+    "run": "run1",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "--allow-subdirectory-build",
+      "third_party/llama.cpp/ggml-c.o",
+      "-j4"
+    ],
+    "pid": 1600605,
+    "pgid": 1600605,
+    "started": 1791028653.4120371,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/llama-c-run1.log",
+    "timeout_seconds": 720,
+    "state": "completed",
+    "task_bytes": 18699132928,
+    "free_bytes": 76278439936,
+    "checked": 1791028653.412742,
+    "exit_code": 0,
+    "finished": 1791028657.005467,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 86830,
+    "reaped": true,
+    "exit_code": 0
+  },
+  "exact_pgid_empty": true,
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/llama.cpp/ggml-c.o",
+    "bytes": 609477,
+    "sha256": "61298b49beaf5d74229ae4c4bd55c454ddfa5f3d92bc07691111dbbc31d9ddbb",
+    "mtime_ns": 1791028655645638516
+  },
+  "native_runtime": {
+    "calls": 100,
+    "imports": 0,
+    "nativeWasmRuntime": true
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-ggml-backtrace-review-run1.json",
+    "bytes": 2440,
+    "sha256": "9510883916aafb8280fd00ad30f7847c300200f4033ea82aeded9d6edb654064",
+    "passed_predicates": 27
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/ggml/src/ggml-c.c",
+      "bytes": 249833,
+      "sha256": "ba5ac9fec76a9619ecded17593a8e35865b734af08aa69d035aff6297d482066"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/ggml-backtrace-preflight/original-ggml-c.c",
+      "bytes": 249785,
+      "sha256": "24a243dc86572d9b5301012e943982a7d624f2d0a355d07904d8fe3498169f95"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/third_party/llama.cpp/.deps/ggml-c.o.pp",
+      "bytes": 21038,
+      "sha256": "7c812b1a9e9281607abcdec372afb8d3e1c7a2d99143b7474eab636ed0857e6f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/ggml-backtrace-preflight/result.json",
+      "bytes": 6433,
+      "sha256": "fe780c29595c1fe87e2d3f135289201081719718b81699c486db1a15cf50ff84"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-ggml-backtrace-port.json",
+      "bytes": 527,
+      "sha256": "cfb7cd699d7ece3be8e590cfa8eae541c7db49a32e9c970a159a74526b60d29c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/llama-c-run1.json",
+      "bytes": 868,
+      "sha256": "c6686f94e329360416c39653438d81218eaaefd0f0016a0752d9a894458aee60"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/llama-c-run1-group-cleanup.json",
+      "bytes": 1031,
+      "sha256": "ac3a0655029d1b45506fea1e918de89fbbaf68ff60412c71354de1b05389a4dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/llama-c-run1.log",
+      "bytes": 879,
+      "sha256": "56d0dc5fac205e37fe899ac3cef5a1be5c237968d7ab35fab5b4050c898aefd3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 3056,
+      "sha256": "ffeaf9e827dc90b4a0b6e22fb15c5aa505da59673ea01a83a88c23b9d7587840"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-ggml-backtrace-port.py",
+      "bytes": 1778,
+      "sha256": "b20a5ad19604a0b7aaf23fc982a1301ed53776ce250f2312363c902946ff2ed1"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-ggml-backtrace/probe.py",
+      "bytes": 3397,
+      "sha256": "056a4a834ab5e089ca9eec6debc9c123183919261d08de91aaaf7e134ebb2d44"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-ggml-backtrace-actual-undefined.txt",
+      "bytes": 2897,
+      "sha256": "9104e1d89e48e3da7e74ea48e9aa1425854492ca026c2ebcd27a5b1adf3143cc"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

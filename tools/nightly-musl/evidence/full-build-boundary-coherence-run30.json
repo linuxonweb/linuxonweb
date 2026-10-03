@@ -1,0 +1,126 @@
+{
+  "claim": "Run30 terminal native object progress and actual llama.cpp debugger backtrace error; browser link/guest/JIT acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run30",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1573454,
+    "pgid": 1573454,
+    "started": 1791027775.8237078,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run30.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18689409024,
+    "free_bytes": 76285800448,
+    "checked": 1791028122.622226,
+    "exit_code": 2,
+    "finished": 1791028128.5962653,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 11319,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 2478,
+    "missing_expected_object_count": 534,
+    "existing_expected_object_bytes": 1957635711,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 80,
+    "new_paths_written_before_phase_count": 2,
+    "rebuilt_existing_written_during_phase_count": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run30-review-run1.json",
+    "bytes": 388147,
+    "sha256": "7226f771fbdaf314080d27ca49b255189edcdfc373865e3b51336521469f6a62",
+    "passed_predicates": 3615
+  },
+  "compiler_errors": [
+    " 5:22.74 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/llama.cpp/ggml/src/ggml-c.c:196:27: error: call to undeclared function 'fork'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]"
+  ],
+  "before_source_snapshot": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/ggml-backtrace-preflight/original-ggml-c.c",
+    "bytes": 249785,
+    "sha256": "24a243dc86572d9b5301012e943982a7d624f2d0a355d07904d8fe3498169f95"
+  },
+  "source_mutated_by_followup": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run30.json",
+      "bytes": 796,
+      "sha256": "8f2afb723817033b2806041f98cc6497542fb653e53f9f63807c2f83d2e0dbc0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run30-boundary.json",
+      "bytes": 675264,
+      "sha256": "22f3b847ceafc3bbf59c29fccf0d1be5dfa4af4696b664a22778567755b0d68b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run30-group-cleanup.json",
+      "bytes": 955,
+      "sha256": "8f1651ebf0ffed49a564190349fd0a130d78bfc9137e4b05403bc498f0a5e440"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run30.json",
+      "bytes": 626284,
+      "sha256": "5508cfd38b2924ca5ce6835f8b8c05ec358ec0bc89ceb4b6755190f7e401c0d7"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run30.json",
+      "bytes": 254876,
+      "sha256": "03a7fec3a18c517ef446412ae8fb975ce45626b36171a491e0f3aacd258a9887"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run30.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run30.log",
+      "bytes": 76022,
+      "sha256": "dc62d7e6b016e00676eb8e43574c906057f41957ed34a9f16637e4f8ff47482b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/ggml-backtrace-preflight/original-ggml-c.c",
+      "bytes": 249785,
+      "sha256": "24a243dc86572d9b5301012e943982a7d624f2d0a355d07904d8fe3498169f95"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

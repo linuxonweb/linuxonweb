@@ -269,6 +269,26 @@ run29.json. Complete root packaging must still generate RFPTargetConstants.sys.m
 no linked browser, guest FPU/JIT or release acceptance is established. Continue
 the full build with unchanged limits after this packet commits.
 
+
+Run30 reaches2,478/3,012 native objects, adding80 during the phase and two
+prephase FPU telemetry objects. It exits2 after352.77s at llama.cpp's debugger
+backtrace fork call. Unified11319 is reaped2 and PGID1573454 is empty;
+root's3,615-check terminal review preserves coherent552 pointer-format
+consumers and the unchanged Rust archive. The one-line native Linux/Wasm
+selector uses llama.cpp's existing unsupported-backtrace fallback; inference,
+formatted fatal messages, abort callback and abort remain unchanged. Paired
+actual-source native compilation reproduces the original fork error and
+passes after correction;100 native Wasm fallback calls pass without imports.
+Actual llama-c-run1 builds the formerly failing609,477-byte browser object in
+3.59s, unified86830 reaped0, PGID1600605 empty. Root checks27 source-diff,
+command, native, symbol, natural dependency and terminal predicates. Evidence:
+tools/nightly-musl/evidence/native-ggml-backtrace.json and full-build-boundary-
+coherence-run30.json. A prelaunch driver-byte equality assumption failed only
+because the owned driver retains its task-relative root; no phase or source
+mutation occurred before that failure, and each driver's existing root is now
+preserved. Continue full build unchanged. Browser linking, actual Nightly JIT,
+GPU and both authorized Sites release gates remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
