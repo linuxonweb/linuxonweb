@@ -25,6 +25,18 @@ not browser acceptance or an ETA. Run17 ends with exit2 on the upstream
 Wasm-only exclusion of DuplicateFileHandle; its exact group is empty before
 any native Linux/musl adapter is applied. The20GiB cap and four-job limit remain.
 
+The narrow DuplicateFileHandle guard now enables the unchanged POSIX helper
+for native Linux/Wasm outside WASI. Actual MFBT and the formerly failing
+WebSerial single-source compilation pass; native ABI/preprocessor checks and
+eight real host POSIX diagnostic cases pass. Root independently checks74
+frozen pins, exact source diffs, native objects/commands and empty-group proofs
+in duplicate-fd-review-run1.json under the root-review task. The seven-file
+recipe/probe/evidence packet is saved in tools/nightly-musl. These results do
+not establish guest descriptor behavior or browser/JIT acceptance. Run18
+continues within unchanged bounds. Its header-triggered Rust rebuild refreshes
+libgkrust.a; Run15 archive evidence remains historical, not proof of equality
+with the current mutable build output.
+
 Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and

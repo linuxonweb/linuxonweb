@@ -1,0 +1,31 @@
+--- a/mfbt/UniquePtrExtensions.h
++++ b/mfbt/UniquePtrExtensions.h
+@@ -227,14 +227,14 @@
+ using UniqueFileHandle =
+     UniquePtr<detail::FileHandleType, detail::FileHandleDeleter>;
+ 
+-#ifndef __wasm__
+-// WASI does not have `dup`
++#if !defined(__wasm__) || (defined(XP_LINUX) && !defined(__wasi__))
++// WASI does not have `dup`; native Linux/Wasm has POSIX descriptors.
+ // On Unix, these set the close-on-exec flag for the new fd.
+ MFBT_API UniqueFileHandle DuplicateFileHandle(detail::FileHandleType aFile);
+ inline UniqueFileHandle DuplicateFileHandle(const UniqueFileHandle& aFile) {
+   return DuplicateFileHandle(aFile.get());
+ }
+-#endif  // not wasm
++#endif  // non-Wasm or native Linux/Wasm
+ 
+ #ifdef XP_UNIX
+ // For systems that don't have the full set of POSIX atomic cloexec APIs.
+--- a/mfbt/UniquePtrExtensions.cpp
++++ b/mfbt/UniquePtrExtensions.cpp
+@@ -46,7 +46,7 @@
+ }
+ #endif
+ 
+-#ifndef __wasm__
++#if !defined(__wasm__) || (defined(XP_LINUX) && !defined(__wasi__))
+ UniqueFileHandle DuplicateFileHandle(detail::FileHandleType aFile) {
+   if (FileHandleIsValid(aFile)) {
+ #  ifdef XP_WIN

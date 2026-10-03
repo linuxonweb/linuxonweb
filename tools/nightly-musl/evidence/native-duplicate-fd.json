@@ -1,0 +1,279 @@
+{
+  "scope": "Native Linux/Wasm POSIX DuplicateFileHandle compile restoration; real host dup diagnostic only, no guest serial/fd or full browser acceptance",
+  "probe": {
+    "scope": "Copied native MFBT declaration/body ABI and actual host Linux POSIX semantics; not guest fd/runtime acceptance",
+    "predicate": "#if !defined(__wasm__) || (defined(XP_LINUX) && !defined(__wasi__))",
+    "source_changes": {
+      "UniquePtrExtensions.h": {
+        "original_sha256": "c1848e66fb82f6f3a4499f9c3d3938aa09f26e901f55550dcf0979b773307140",
+        "copied_sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+      },
+      "UniquePtrExtensions.cpp": {
+        "original_sha256": "c7f7460dafdd1503661998dceccc7a13a3dc2df89d109304cd8efc56851fb7f8",
+        "copied_sha256": "a5f89595806aca8cc695aecddd13821387017ac1a1bf9764ae7d8b7e582a7074"
+      }
+    },
+    "results": {
+      "native-UniquePtrExtensions": 0,
+      "native-native-abi": 0,
+      "native-preprocess": 0,
+      "host-compile": 0,
+      "host-semantics": 0
+    },
+    "native_preprocessor_uses_atomic_cloexec": true,
+    "native_object_magic_checks": 2,
+    "native_abi_assertions": 6,
+    "host_semantics_cases": 8,
+    "source_mutated": false,
+    "objects": {
+      "UniquePtrExtensions.o": {
+        "bytes": 11187,
+        "sha256": "a64353cedf30c8e9cee4b9b1b4511cb9e8e7bcbe43c2c4406af032b00a89b90c"
+      },
+      "native-abi.o": {
+        "bytes": 9483,
+        "sha256": "5a77d314ae307600ba75cbeafdb7a6273a453a4c7b97837424408707e3dcf18f"
+      }
+    }
+  },
+  "application": {
+    "scope": "Native Linux/Wasm !__wasi__ enables unchanged POSIX helper; generic Wasm/WASI and all non-Wasm behavior preserved",
+    "predicate": "#if !defined(__wasm__) || (defined(XP_LINUX) && !defined(__wasi__))",
+    "source_changes": {
+      "UniquePtrExtensions.h": {
+        "original_sha256": "c1848e66fb82f6f3a4499f9c3d3938aa09f26e901f55550dcf0979b773307140",
+        "copied_sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+      },
+      "UniquePtrExtensions.cpp": {
+        "original_sha256": "c7f7460dafdd1503661998dceccc7a13a3dc2df89d109304cd8efc56851fb7f8",
+        "copied_sha256": "a5f89595806aca8cc695aecddd13821387017ac1a1bf9764ae7d8b7e582a7074"
+      }
+    },
+    "body_changed": false,
+    "probe": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/result.json",
+    "applied": true,
+    "terminal_build_pgid": 1075651,
+    "group_entries_before_apply": []
+  },
+  "actual_mfbt": {
+    "phase_exit_code": 0,
+    "native_objects": 2,
+    "defined_symbol": "_ZN7mozilla19DuplicateFileHandleEi",
+    "process_group_empty": true
+  },
+  "caller_preflight": {
+    "scope": "Current generated single-source command and native changed header; not captured Run17 unified command or guest serial acceptance",
+    "exit_code": 0,
+    "cwd": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/webserial",
+    "command_origin": "obj-nightly/clangd/compile_commands.json",
+    "object": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/PosixSerialPlatformService.o",
+      "bytes": 549344,
+      "sha256": "8352178e0d3bed3329c7680bb3bbc6fc33373b40834af687eab8b325084d8114",
+      "wasm_magic": true
+    }
+  },
+  "generator_note": "Safety guard hardened after successful application to refuse any active owned phase; source patch unchanged",
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run17.json",
+      "bytes": 796,
+      "sha256": "4706df361bcead0145093cf6b76800fe9205b8192302790a937bd9400fd686fd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run17-group-cleanup.json",
+      "bytes": 954,
+      "sha256": "1b460caa90e47a8e913112fd4ff0745148fc36c6c324fd53aa431e1650bfbef9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run17.log",
+      "bytes": 46378,
+      "sha256": "c78b42e30baeb1296d2433ca50cd689f618ead93c39721a973c97438f68ab15a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-duplicate-fd-port.json",
+      "bytes": 903,
+      "sha256": "e1ee9986ad854f50ecb8688e36f550c41aac993cbcfd5fea237dcb1fe30e8349"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/mfbt-run6.json",
+      "bytes": 837,
+      "sha256": "fd02475efe98546fb4c7293bcbe08a1d104a67719bde776b2fe728b284bfe984"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/mfbt-run6-group-cleanup.json",
+      "bytes": 999,
+      "sha256": "281774d495d4754fe0b5958b6125a36448c655a18212f00aabf1e8c2bdbccb7a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/mfbt-run6.log",
+      "bytes": 1782,
+      "sha256": "ff02cede1b70b68454d540f60cb401150f078622b23f3ad5dd9228f7e4d8dd6f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+      "bytes": 278048,
+      "sha256": "6477aec832763464782f543713d17b75521f3c890b52a919437a3fb5a8620d93"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt1.o",
+      "bytes": 124462,
+      "sha256": "3281b62cfbbcd6737081e516672ec798673e2af3df2141e06ba659806d5767e3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/actual-mfbt-symbols.txt",
+      "bytes": 4012,
+      "sha256": "32376d32076fd4a33ed670995f96313612026384b0c3a83602b9e3773721bf30"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/result.json",
+      "bytes": 1311,
+      "sha256": "082729708767fbacf2554d12e9c56b1a03655dc5dfc404c5ade5221254ce588a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/failed-run1.json",
+      "bytes": 1053,
+      "sha256": "192221f6e95106d1e2d5eec7441920d5f2ca5c2b46a06a3b8d3dd9e3a47fd669"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/run-run1.py",
+      "bytes": 4725,
+      "sha256": "76440b7e38160381780a33f78347d4721a7faad195c0f725c2315e8e16d8b140"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/run.py",
+      "bytes": 4740,
+      "sha256": "92c18fd675d0805ac0025bc5341031d3c22e48cf83bc5b88c6ffc84e0afad41b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-body.ii",
+      "bytes": 896455,
+      "sha256": "e9551a33709fa093a96481f9c171878c33a0aa01363901b35c80c8fee85260c7"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/UniquePtrExtensions.o",
+      "bytes": 11187,
+      "sha256": "a64353cedf30c8e9cee4b9b1b4511cb9e8e7bcbe43c2c4406af032b00a89b90c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-abi.o",
+      "bytes": 9483,
+      "sha256": "5a77d314ae307600ba75cbeafdb7a6273a453a4c7b97837424408707e3dcf18f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/serial-compile-database-entry.json",
+      "bytes": 4176,
+      "sha256": "bf2f6b9a13769912a9f4accb032c3be686828204421c93e4dfce29cdda4f8183"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/serial-preflight-result.json",
+      "bytes": 584,
+      "sha256": "45f32309004edcf51c872024d88da3f2c0d0415ce1a8d2f0cc6cab01dceef617"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/serial-preflight-argv.json",
+      "bytes": 4574,
+      "sha256": "511285bc25c4c1ee98b01074f25a5ed24652d5118d9ddb7ec41c5ec5c95655ee"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/serial-preflight.log",
+      "bytes": 1217,
+      "sha256": "93da4131422643d5948fc4d03629ef96e553c9dd13b4f7fbf017ba4184cf64b3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/PosixSerialPlatformService.o",
+      "bytes": 549344,
+      "sha256": "8352178e0d3bed3329c7680bb3bbc6fc33373b40834af687eab8b325084d8114"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/host-compile-run2-argv.json",
+      "bytes": 501,
+      "sha256": "7ee9a6bc5f272495a334797f89180ab0b7a772e0834b4c303c3a3cc5c0b05325"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/host-semantics-run2-argv.json",
+      "bytes": 202,
+      "sha256": "931a714dcd7c4095aa13dd32901299f50f6d31e10ef0387ea5cbbbdffe07877b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-UniquePtrExtensions-run2-argv.json",
+      "bytes": 4059,
+      "sha256": "21aefbbfa8070d07ef0878a1ed8d53578140e9aee885baba24a1b22ddfe353bf"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-native-abi-run2-argv.json",
+      "bytes": 4041,
+      "sha256": "4368af7fa1b519502e2c8130dda012daf68e7358fd9cd104a4f80260a5820058"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-preprocess-run2-argv.json",
+      "bytes": 4052,
+      "sha256": "1d30debc127ab9e7d142bbe280e68303f1e77a8b2dacdcc7a9ad5089eb3aee50"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/host-compile-run2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/host-semantics-run2.log",
+      "bytes": 138,
+      "sha256": "f70f3fb318fef21c295edc7e93e333c0edbe668c3708fb94c22dd9c2c6f17e98"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-UniquePtrExtensions-run2.log",
+      "bytes": 403,
+      "sha256": "46cfbc11ae9146e347b2b4f00c11310697b06fb0d1b74b3f1794f3fdf66bb120"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-native-abi-run2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/native-preprocess-run2.log",
+      "bytes": 403,
+      "sha256": "46cfbc11ae9146e347b2b4f00c11310697b06fb0d1b74b3f1794f3fdf66bb120"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-duplicate-fd-port.py",
+      "bytes": 3458,
+      "sha256": "7548bf3cbd31a4d602b05b52b6aba10e0c8cf16f49b28763daf6f4c46d9388b8"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-duplicate-file-handle.patch",
+      "bytes": 1101,
+      "sha256": "2cedc28a1d149f9403a7918cf80f8e44baa2da592ef318d44a8dbce4f68de2f2"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/duplicate-file-handle/native-abi.cpp",
+      "bytes": 533,
+      "sha256": "0a5d406a3acf74a6adebdd4cd2b7ec25c94e322cf2b2cea5038a5670b9c09bc0"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/duplicate-file-handle/host-semantics.cpp",
+      "bytes": 1122,
+      "sha256": "b8d6f37e2f05f57202243c0bb6dd55859645e89f37837598e9eef609c42a574c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+      "bytes": 10703,
+      "sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.cpp",
+      "bytes": 1889,
+      "sha256": "a5f89595806aca8cc695aecddd13821387017ac1a1bf9764ae7d8b7e582a7074"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/duplicate-file-handle/probe.py",
+      "bytes": 3050,
+      "sha256": "904e0170bca03d0395333cd47c286265ad42d1a995d1049b425e99576e4a30ad"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/duplicate-fd-preflight/probe-frozen.py",
+      "bytes": 3050,
+      "sha256": "904e0170bca03d0395333cd47c286265ad42d1a995d1049b425e99576e4a30ad"
+    }
+  ]
+}
