@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, guestCpuPrebootStateExpression, saveGuestCpuEvidence, saveHostCpuPhaseEvidence } from './firefox-host-cpus.mjs';
 import { TASK, FIXTURE_SHA256, armContract, pairContract, fatalLines, payloads, guestIdentityChecks, caseChecks, benchmarkAcceptance, ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
+import { prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const mode = process.env.PBLBENCH_MODE || 'nightly';
 if (!['nightly', 'historical'].includes(mode)) throw Error('PBLBENCH_MODE must be nightly or historical');
@@ -58,7 +59,7 @@ if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < 
 const inputs = {};
 const readInput = async source => { const bytes = await fs.readFile(source); inputs[source] = sha(bytes); return bytes; };
 const readPinned = async (source, expected) => { if (!/^[a-f0-9]{64}$/.test(expected || '')) throw Error('missing reviewed digest: ' + source); const bytes = await readInput(source); if (sha(bytes) !== expected) throw Error('reviewed digest changed: ' + source); return bytes; };
-for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) await readInput(source);
+for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-browser-affinity.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) await readInput(source);
 if (process.env.PBLBENCH_ARMS) inputs[process.env.PBLBENCH_ARMS] = sha(armsBytes);
 if (nightly) {
   if (inputs[fixturePath] !== FIXTURE_SHA256 || Object.keys(arms).sort().join('') !== 'AB') throw Error('Nightly requires exact original eight-case fixture and A/B arms');
@@ -150,9 +151,12 @@ async function boot(index, armId) {
   const profile = dir + '/profile', activePortPath = profile + '/DevToolsActivePort';
   await fs.mkdir(profile); // Exclusive fresh directory: never reuse a user's profile.
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profile, '--disk-cache-dir=' + dir + '/cache', 'about:blank'];
+  const affinityPlan = await prepareBrowserAffinity(dir);
+  const launchCommand = browserLaunchCommand(executable, args, affinityPlan);
+  await fs.writeFile(dir + '/command.json', JSON.stringify(launchCommand,null,2)+'\n');
   const fd = openSync(dir + '/browser.log', 'wx');
   const spawnedAt = Date.now();
-  const child = spawn(executable, args, { detached: true, env: { ...process.env, XDG_CACHE_HOME: dir + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
+  const child = spawn(launchCommand[0], launchCommand.slice(1), { detached: true, env: { ...process.env, XDG_CACHE_HOME: dir + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
   let exitInfo, spawnError; const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const rec = { index: index + 1, arm: armId, label, browserPid: child.pid, pass: false, navAttempts: 0, cases: [] };
   const childState = () => {
@@ -220,8 +224,13 @@ async function boot(index, armId) {
     await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
     const browserHardwareConcurrency = await ev('navigator.hardwareConcurrency');
-    rec.cpu = selectHostCpus(readHostNproc(), browserHardwareConcurrency);
+    rec.browserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, browserHardwareConcurrency, dir);
+    rec.cpu = selectHostCpus(rec.browserAffinity.hostNproc, browserHardwareConcurrency);
     if (nightly && (rec.cpu.hostNproc > 64 || rec.cpu.browserHardwareConcurrency !== rec.cpu.hostNproc)) throw Error('exact host CPU agreement requires unclamped equal counts <=64');
+    report.comparisonBrowserCpus ??= rec.browserAffinity.assignedCpus;
+    rec.comparisonBrowserAffinityStable = JSON.stringify(rec.browserAffinity.assignedCpus) === JSON.stringify(report.comparisonBrowserCpus);
+    await fs.writeFile(dir + '/comparison-affinity.json', JSON.stringify({ initialAssignedCpus:report.comparisonBrowserCpus, assignedCpus:rec.browserAffinity.assignedCpus, pass:rec.comparisonBrowserAffinityStable },null,2)+'\n');
+    if (!rec.comparisonBrowserAffinityStable) throw Error('actual browser CPU assignment changed between benchmark arms');
     report.comparisonHostNproc ??= rec.cpu.hostNproc;
     rec.comparisonHostCpuStable = rec.cpu.hostNproc === report.comparisonHostNproc;
     await fs.writeFile(dir + '/comparison-cpu.json', JSON.stringify({ initialHostNproc: report.comparisonHostNproc, cpu: rec.cpu, pass: rec.comparisonHostCpuStable }, null, 2) + '\n');
@@ -292,7 +301,8 @@ async function boot(index, armId) {
     const state = await ev(`(async()=>({system:(await(await import('./boot-assets.mjs')).systemUsage()).version,browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),isolated:crossOriginIsolated,visibility:document.visibilityState}))()`);
     rec.state = state;
     rec.finalCpu = await saveHostCpuPhaseEvidence(rec.cpu, state, dir, 'cold-final');
-    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0, noFatalLogs: observedFatalLines.size === 0, noFixtureErrors: rec.errorLines.length === 0, ...(nightly ? { ...caseChecks(rec.cases), ...rec.guestIdentityChecks, ...rec.eventChecks, guestNavigatorCpu: rec.hardwareConcurrency === rec.cpu.hostNproc, guestFirefoxUA: /Firefox\/159(?:\.0)?(?:\s|$)/.test(rec.userAgent || '') } : {}) };
+    rec.finalBrowserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, state.browserHardwareConcurrency, dir, 'browser-final');
+    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), ...rec.finalBrowserAffinity.checks, comparisonBrowserAffinityStable:rec.comparisonBrowserAffinityStable, comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0, noFatalLogs: observedFatalLines.size === 0, noFixtureErrors: rec.errorLines.length === 0, ...(nightly ? { ...caseChecks(rec.cases), ...rec.guestIdentityChecks, ...rec.eventChecks, guestNavigatorCpu: rec.hardwareConcurrency === rec.cpu.hostNproc, guestFirefoxUA: /Firefox\/159(?:\.0)?(?:\s|$)/.test(rec.userAgent || '') } : {}) };
     rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
     rec.fatalLines = [...observedFatalLines];
     rec.pass = Object.values(rec.checks).every(Boolean);

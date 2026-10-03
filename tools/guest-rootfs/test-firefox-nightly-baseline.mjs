@@ -1,12 +1,15 @@
 // Isolated native Linux/Wasm Nightly baseline. No JIT, GPU or TLS acceptance
 // follows from this runner. Run --help; --self-test never launches a browser.
 import fs from 'node:fs/promises';
-import { openSync, closeSync } from 'node:fs';
+import { openSync, closeSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
-import { saveHostCpuPhaseEvidence, guestCpuPrebootStateExpression, readHostNproc, selectHostCpus, saveGuestCpuEvidence, guestCpuChecks } from './firefox-host-cpus.mjs';
+import { saveHostCpuPhaseEvidence, guestCpuPrebootStateExpression, selectHostCpus, saveGuestCpuEvidence, guestCpuChecks } from './firefox-host-cpus.mjs';
+
+import { prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
+import { ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
 
 const TASK = '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -120,7 +123,8 @@ async function run(argv) {
     const p = REPO + '/web/linux/' + name;
     assert(inputs[p] === candidateManifest.assets[key].sha256 && (await fs.stat(p)).size === candidateManifest.assets[key].bytes, 'actual QA system asset mismatch ' + key);
   }
-  await read(fileURLToPath(import.meta.url)); await read(REPO + '/tools/guest-rootfs/firefox-host-cpus.mjs');
+  await read(fileURLToPath(import.meta.url));
+  for (const name of ['firefox-host-cpus.mjs', 'firefox-browser-affinity.mjs', 'check-firefox-nightly-benchmark.mjs']) await read(REPO + '/tools/guest-rootfs/' + name);
   const serverPath = REPO + '/web/desktop/dev-server.mjs';
   let serverSource = (await read(serverPath)).toString();
   assert(serverSource.includes('server.listen(port,') && serverSource.includes("const target = safePath(request.url || '/');") && serverSource.includes("const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));"), 'QA server anchors changed');
@@ -135,21 +139,54 @@ async function run(argv) {
   assert(Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]) < 2 * 1024 ** 3, 'task allowance already exhausted');
   await fs.mkdir(out); await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
   await fs.writeFile(out + '/owned-build-preflight.json', JSON.stringify({ activeBuilds, checkedAt: new Date().toISOString() }, null, 2) + '\n'); await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
-  await fs.copyFile(REPO + '/tools/guest-rootfs/firefox-host-cpus.mjs', out + '/firefox-host-cpus.mjs');
+  for (const name of ['firefox-host-cpus.mjs','firefox-browser-affinity.mjs','check-firefox-nightly-benchmark.mjs']) await fs.copyFile(REPO + '/tools/guest-rootfs/' + name, out + '/' + name);
   await fs.writeFile(out + '/server.mjs', serverSource);
+  await fs.mkdir(out + '/profile');
+  const affinityPlan = await prepareBrowserAffinity(out);
   const service = await import(pathToFileURL(out + '/server.mjs').href), server = service.server;
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   const origin = 'http://127.0.0.1:' + server.address().port;
   const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'devtools.console.stdout.chrome:true', 'browser.download.alwaysOpenPanel:false', 'browser.download.panel.shown:true', 'browser.download.folderList:2'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("browser.download.dir","/home/admin/Downloads");\nuser_pref("browser.helperApps.neverAsk.saveToDisk","application/json");\nuser_pref("datareporting.policy.firstRunURL", "");\n' + (baseline ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(PROBE) + ');\n' : '');
   const executable = opt.chromium || '/home/a/.local/archpkg/pacman/usr/bin/chromium';
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', '--user-data-dir=' + out + '/profile', '--disk-cache-dir=' + out + '/cache', 'about:blank'];
+  const launchCommand = browserLaunchCommand(executable, args, affinityPlan);
+  await fs.writeFile(out + '/command.json', JSON.stringify(launchCommand, null, 2) + '\n');
   const fd = openSync(out + '/browser.log', 'wx');
-  const child = spawn(executable, args, { detached: true, env: { ...process.env, XDG_CACHE_HOME: out + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
+  const spawnedAt = Date.now();
+  const child = spawn(launchCommand[0], launchCommand.slice(1), { detached: true, env: { ...process.env, XDG_CACHE_HOME: out + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
   let exitInfo, spawnError, ws, next = 0;
   const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const pending = new Map(), errors = [];
-  const report = { schema: 1, pass: false, scope: baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm', identity, origin, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
-  function call(method, params = {}) { return new Promise((resolve, reject) => { const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, 60000); pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params })); }); }
+  const report = { schema: 1, pass: false, scope: baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm', identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
+  const childState = () => {
+    let alive = false, ownedProfileArgument = false;
+    if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) {
+      try {
+        process.kill(child.pid, 0);
+        const argv = readFileSync('/proc/' + child.pid + '/cmdline', 'utf8').split('\0');
+        ownedProfileArgument = argv.includes('--user-data-dir=' + out + '/profile') && argv.includes('--remote-debugging-port=0');
+        alive = ownedProfileArgument;
+      } catch {}
+    }
+    return { pid:child.pid, alive, ownedProfileArgument, exitCode:child.exitCode, signalCode:child.signalCode, spawnError };
+  };
+  async function groupMembers() {
+    const members = [];
+    for (const entry of await fs.readdir('/proc')) {
+      if (!/^[0-9]+$/.test(entry)) continue;
+      try {
+        const raw = await fs.readFile('/proc/' + entry + '/stat', 'utf8');
+        const fields = raw.slice(raw.lastIndexOf(')') + 2).split(' ');
+        if (Number(fields[2]) === child.pid) members.push({pid:Number(entry),ppid:Number(fields[1]),pgid:Number(fields[2]),session:Number(fields[3]),state:fields[0]});
+      } catch {}
+    }
+    return members;
+  }
+  function call(method, params = {}) { return new Promise((resolve, reject) => {
+    if (!report.endpointOwnership?.verified || !childState().alive) { reject(Error('CDP requires verified live owned browser')); return; }
+    const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, 60000);
+    pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params }));
+  }); }
   async function ev(expression) { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; }
   let lastStorageCheck = 0;
   async function storageCheck() {
@@ -207,13 +244,38 @@ async function run(argv) {
     await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify({ phase: label, pass: true, cpu: cpu.guestBootCpus }));
   }
   try {
-    let port;
-    await until(async () => { try { [port] = (await fs.readFile(out + '/profile/DevToolsActivePort', 'utf8')).trim().split('\n'); return true; } catch (e) { if (e.code !== 'ENOENT') throw e; return false; } }, 20000, 'host browser startup');
-    const target = (await (await fetch('http://127.0.0.1:' + port + '/json/list')).json()).find(t => t.type === 'page'); ws = new WebSocket(target.webSocketDebuggerUrl);
+    await until(async () => {
+      report.ownedInitialGroup = await groupMembers();
+      return report.ownedInitialGroup.some(m => m.pid === child.pid && m.session === child.pid);
+    }, 1000, 'owned detached browser group');
+    let activePortText;
+    await until(async () => {
+      assert(childState().alive, 'owned browser/profile unavailable');
+      let stat;
+      try { stat = await fs.lstat(out + '/profile/DevToolsActivePort'); activePortText = await fs.readFile(out + '/profile/DevToolsActivePort', 'utf8'); }
+      catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+      const evidence = {...childState(), spawnedAt, activePortMtimeMs:stat.mtimeMs, activePortRegularFile:stat.isFile(), freshProfile:true};
+      report.endpointOwnershipAttempt = {activePortText, ...evidence};
+      await fs.writeFile(out + '/endpoint-ownership-attempt.json', JSON.stringify(report.endpointOwnershipAttempt,null,2) + '\n');
+      const [port, browserPath] = activePortText.trim().split('\n');
+      const provisional = ownedBrowserEndpoint(activePortText, {webSocketDebuggerUrl:'ws://127.0.0.1:' + port + browserPath}, evidence);
+      let response;
+      try { response = await fetch('http://127.0.0.1:' + provisional.port + '/json/version', {signal:AbortSignal.timeout(2000)}); } catch { return false; }
+      if (!response.ok) return false;
+      report.endpointOwnership = {...ownedBrowserEndpoint(activePortText, await response.json(), {...evidence,...childState()}), activePortText};
+      return true;
+    }, 20000, 'owned browser endpoint');
+    const target = (await (await fetch('http://127.0.0.1:' + report.endpointOwnership.port + '/json/list', {signal:AbortSignal.timeout(2000)})).json()).find(t => t.type === 'page');
+    const pageWebSocketURL = ownedPageEndpoint(target, report.endpointOwnership);
+    assert(childState().alive, 'owned browser exited before page connection');
+    report.endpointOwnership.pageTarget = target;
+    await fs.writeFile(out + '/endpoint-ownership.json', JSON.stringify(report.endpointOwnership,null,2) + '\n');
+    ws = new WebSocket(pageWebSocketURL);
     ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
-    await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
+    await new Promise((resolve, reject) => { const timer=setTimeout(()=>reject(Error('owned socket startup deadline')),5000); ws.onopen=()=>{clearTimeout(timer);resolve();}; ws.onerror=()=>{clearTimeout(timer);reject(Error('owned socket startup error'));}; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed document');
-    report.cpu = selectHostCpus(readHostNproc(), await ev('navigator.hardwareConcurrency'));
+    report.browserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, await ev('navigator.hardwareConcurrency'), out);
+    report.cpu = selectHostCpus(report.browserAffinity.hostNproc, report.browserAffinity.browserHardwareConcurrency);
     await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await dir('admin/Downloads');await put('admin/nightly-baseline-marker.txt',${JSON.stringify('nightly-baseline-preserved-v1\n')});await put('admin/nightly-baseline-probe.html',${JSON.stringify(probeHTML)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
     const url = origin + '/linux/index.html?firefox=1&renderer=canvas2d';
     if (baseline) { service.setVariant('baseline'); await phase('baseline', () => call('Page.navigate', { url })); service.setVariant('candidate'); await phase('update', () => ev("(()=>{document.querySelector('[data-storage=update]').click();return true;})()")); }
@@ -223,12 +285,26 @@ async function run(argv) {
     report.priorDownloadsPreserved = true;
     for (const [p, expected] of Object.entries(inputs)) assert(sha(await fs.readFile(p)) === expected, 'input changed ' + p);
     report.finalCpu = await saveHostCpuPhaseEvidence(report.phases.at(-1).cpu, await state(), out, 'end');
+    report.finalBrowserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, (await state()).browserHardwareConcurrency, out, 'browser-final');
     assert(errors.length === 0, 'outer browser exceptions'); report.pass = true;
   } catch (error) { report.error = String(error.stack || error); try { await fs.writeFile(out + '/failure-guest-logs.txt', await logs()); await shot('failure'); } catch {} }
   finally {
     if (ws?.readyState === 1) { try { await call('Page.navigate', { url: 'about:blank' }); await call('Browser.close'); } catch {} }
     for (const p of pending.values()) clearTimeout(p.timer); ws?.close(); await Promise.race([exited, sleep(5000)]);
-    if (!exitInfo && !spawnError) { try { process.kill(-child.pid, 'SIGTERM'); } catch {} await Promise.race([exited, sleep(5000)]); report.pass = false; report.forcedTermination = true; }
+    report.cleanupMembersBefore = await groupMembers();
+    const groupOwned = report.ownedInitialGroup?.some(m => m.pid === child.pid && m.session === child.pid);
+    if (report.cleanupMembersBefore.length && groupOwned) {
+      try { process.kill(-child.pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') report.cleanupError=String(error); }
+      await Promise.race([exited, sleep(5000)]);
+      if ((await groupMembers()).some(m => m.state !== 'Z')) {
+        try { process.kill(-child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') report.cleanupError=String(error); }
+        await sleep(1000);
+      }
+      report.pass = false; report.forcedTermination = true;
+    }
+    report.cleanupMembersAfter = await groupMembers();
+    report.ownedGroupEmpty = report.cleanupMembersAfter.length === 0;
+    if (!report.ownedGroupEmpty || report.cleanupError) report.pass = false;
     for (const socket of service.sockets) socket.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
     report.browserExit = exitInfo; report.spawnError = spawnError; report.serverClosed = !server.listening; report.errors = errors; report.requests = service.requests; report.inputs = inputs;
     report.storageBytes = Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]);

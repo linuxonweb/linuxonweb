@@ -60,6 +60,19 @@ full-browser runners still need equivalent actual-affinity setup before use.
 Nightly full-build/JIT/TLS/performance gates and both authorized Sites releases
 remain pending; public v10 is unchanged.
 
+Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
+helper, with launch/readback/final allocation evidence and no API overrides.
+ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
+CDP commands require fresh owned browser/page endpoints and live PID/profile;
+cleanup proves the private group empty. Existing build-isolation preflight
+remains. The shared helper passes34 pure checks; baseline43/benchmark118
+regressions pass. A live owned Chromium smoke records exact six-core affinity,
+rejects a deliberately wrong launch plan with actual failed evidence retained,
+and exits0 with its group empty. Root checks23 source/result/ownership predicates
+in nightly-browser-affinity-review-run2.json; frozen packet is
+ tools/nightly-musl/evidence/nightly-browser-affinity-preparation.json.
+This is preparation: no Nightly guest or new release acceptance is established.
+
 Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and

@@ -1,0 +1,167 @@
+{
+  "checked": 1791015320.2364354,
+  "scope": "browser-affinity and owned endpoint preparation",
+  "checks": [
+    {
+      "name": "syntax firefox-browser-affinity.mjs",
+      "pass": true
+    },
+    {
+      "name": "syntax test-firefox-browser-affinity.mjs",
+      "pass": true
+    },
+    {
+      "name": "syntax test-firefox-nightly-baseline.mjs",
+      "pass": true
+    },
+    {
+      "name": "syntax test-firefox-pbl-bench.mjs",
+      "pass": true
+    },
+    {
+      "name": "pure fixtures 34",
+      "pass": true
+    },
+    {
+      "name": "pure fixtures 43",
+      "pass": true
+    },
+    {
+      "name": "pure fixtures 118",
+      "pass": true
+    },
+    {
+      "name": "actual owned browser admission/final affinity",
+      "pass": true
+    },
+    {
+      "name": "browser group empties without force",
+      "pass": true
+    },
+    {
+      "name": "live dynamic endpoint ownership",
+      "pass": true
+    },
+    {
+      "name": "smoke excludes guest/release",
+      "pass": true
+    },
+    {
+      "name": "actual smoke input pin /mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-browser-affinity.mjs",
+      "pass": true
+    },
+    {
+      "name": "actual smoke input pin /mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-browser-affinity.mjs",
+      "pass": true
+    },
+    {
+      "name": "actual smoke input pin /mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-host-cpus.mjs",
+      "pass": true
+    },
+    {
+      "name": "actual smoke input pin /mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/check-firefox-nightly-benchmark.mjs",
+      "pass": true
+    },
+    {
+      "name": "baseline launches actual scheduler argv",
+      "pass": true
+    },
+    {
+      "name": "baseline commands require owned endpoint/PID",
+      "pass": true
+    },
+    {
+      "name": "baseline validates regular fresh browser port file",
+      "pass": true
+    },
+    {
+      "name": "baseline proves empty private group",
+      "pass": true
+    },
+    {
+      "name": "benchmark launches scheduler for each arm",
+      "pass": true
+    },
+    {
+      "name": "benchmark saves actual admission and final mask",
+      "pass": true
+    },
+    {
+      "name": "benchmark compares identical assigned cores and host counts",
+      "pass": true
+    },
+    {
+      "name": "wrong launch plan rejected with actual unchanged browser/host evidence retained",
+      "pass": true
+    }
+  ],
+  "pins": [
+    {
+      "path": "tools/guest-rootfs/firefox-browser-affinity.mjs",
+      "bytes": 4188,
+      "sha256": "016c8e9eb267956f017011857ecf8022a38a6e34c0da28a9564696edd962a679"
+    },
+    {
+      "path": "tools/guest-rootfs/test-firefox-browser-affinity.mjs",
+      "bytes": 11305,
+      "sha256": "e1d89064609a7e1363a62a6e245aa9083f536e68a52faf760d48f7f136b3dfa6"
+    },
+    {
+      "path": "tools/guest-rootfs/test-firefox-nightly-baseline.mjs",
+      "bytes": 44919,
+      "sha256": "4f5df2da24191557208c3c7815db8da55edbff529e13590ede05695e27a729af"
+    },
+    {
+      "path": "tools/guest-rootfs/test-firefox-pbl-bench.mjs",
+      "bytes": 41304,
+      "sha256": "10788b5f95284e1997eaad35b468deac3131d57c6ad788064f27a0e374b9619e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/self-test-run1/result.json",
+      "bytes": 3294,
+      "sha256": "897a937a780b294d475aac195b94f1f28fde3a3936c7fcaffed921ee615b684c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-baseline-gate-20261002/affinity-self-test-run1/result.json",
+      "bytes": 3979,
+      "sha256": "c7a4bc61566c7ac0289662725c32b59304d3cbc4a8a7fbe5a57a8824d657013e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-benchmark-gate-20261002/affinity-self-test-run1/result.json",
+      "bytes": 9497,
+      "sha256": "ba99ec6f7e3c3e38694a0a109e48d8f01b5a6df5ff7f01d205b61a7df2a9ffd3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/result.json",
+      "bytes": 3475,
+      "sha256": "97e4ca97d614fb1b49a5023a96726763a82c410804807e6a872ee42548de1a66"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/browser-affinity-launch.json",
+      "bytes": 188,
+      "sha256": "64c9f8cf7908f87a21fd83dfb8d0fa787f6b7a0666147ac046932a429695d72f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/browser-admission-affinity.json",
+      "bytes": 550,
+      "sha256": "eb921af89228cabb8788cf6e2cfc31ddd3c5c496c73ca8d8420aa3e1d5b3ce6e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/browser-final-affinity.json",
+      "bytes": 550,
+      "sha256": "eb921af89228cabb8788cf6e2cfc31ddd3c5c496c73ca8d8420aa3e1d5b3ce6e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/deliberately-wrong-affinity.json",
+      "bytes": 546,
+      "sha256": "e58c74f163e799830103a8bcbd429cfba8a219683561d3fd1fbd4ccbf3cab583"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-browser-affinity-20261003/live-run2/command.json",
+      "bytes": 478,
+      "sha256": "cb0207102df338616a6d9bd7840b3021d04f5ff74d9c6fa309c9bda32ec5ccbe"
+    }
+  ],
+  "nightlyGuestAcceptance": false,
+  "releaseAcceptance": false
+}

@@ -54,3 +54,37 @@ indentation; the code-install rerun uses the final runner. Syntax checks and
 `git diff --check` pass. These are correctness diagnostics, with no Nightly
 performance or full-browser acceptance claim. The running full build and
 public Sites v10 remain unchanged by this packet.
+
+## Full-browser runner preparation
+
+The Nightly baseline and original-eight-case ABBAAB runners use the shared
+`tools/guest-rootfs/firefox-browser-affinity.mjs` helper. It saves launch
+allocation, uses actual `taskset` affinity, reads the spawned browser's mask
+back at admission and completion, and rejects count or mask drift. ABBAAB
+also requires identical assigned core IDs across every arm. Original CPU,
+identity, checksum and performance gates remain intact.
+
+The baseline runner now verifies the fresh DevTools regular file, exact
+browser/page endpoint and spawned profile/PID before commands, then proves
+its private process group empty on cleanup. No fixed or discovered external
+browser is used. Package preflight still forbids execution during the owned
+full build. The helper smoke starts only its own Chromium, without a Linux
+guest or HTTP server.
+
+The shared helper passes34 admission predicates; existing baseline43 and
+benchmark118 predicates pass. Live owned Chromium admission/final evidence
+records six actual cores, and a deliberately wrong launch plan is rejected
+while preserving the unchanged real browser mask and count. Normal exit0 and
+empty private group are retained. Root independently checks23 source/result/
+ownership predicates in `nightly-browser-affinity-review-run2.json` under the
+root-review task, also frozen in
+`tools/nightly-musl/evidence/nightly-browser-affinity-preparation.json`.
+Reproduce pure or live helper checks with
+`node tools/guest-rootfs/test-firefox-browser-affinity.mjs --self-test|--live
+/mnt/p6/build/firefox-nightly-browser-affinity-20261003/NEW`, using that task's
+persistent `tmp` for all three temporary-directory environment variables.
+
+This prepares the real Nightly gates. Neither the synthetic regressions nor
+the live host-browser smoke establish full Nightly startup, TLS, JIT,
+performance or release acceptance. Both earlier live helper smokes remain
+retained; the second adds actual failed-admission evidence.
