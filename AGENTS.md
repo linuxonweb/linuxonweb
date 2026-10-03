@@ -22,12 +22,19 @@ Hg/Git mapping remains an inference. Evidence:
 `/mnt/p6/build/firefox-nightly-musl-metadata-20261002/acquisition-proof.json`.
 The owned musl source passes configure, export/pre-export, MFBT native Wasm
 compilation, 33 C/Rust ABI checks and static graph generation. Full build-run1
-fails in linux-raw-sys (missing Wasm/Linux general/net modules). Continue via
-Rustix's audited libc backend and remove an unused raw target dependency;
-do not alias x86 layouts or resume GNU compiler work. Owned corrected Rust
-target drops two ignored feature names while preserving the full existing ABI.
-Actual C++ commands retain SjLj and WebAssembly C++ ABI flags. No Nightly
-browser binary, guest JIT, GPU acceptance or deployment is yet established.
+fails in linux-raw-sys (missing Wasm/Linux general/net modules). Run2 removes
+the unused raw guest dependency and reaches two narrow Rustix libc cfg errors.
+Both are corrected: the musl STATX fallback requires linux_raw_dep, and wasm32
+uses asm-generic ioctl constants after ten exact native C/Wasm UAPI checks.
+Run3 compiles Rustix/tempfile successfully and continues the full browser build.
+Do not alias x86 layouts or resume GNU compiler work. Owned corrected Rust
+target drops two ignored feature names while preserving the full existing ABI;
+the warnings disappeared after preserving and invalidating only owned target
+dependency artifacts. Actual C++ commands retain SjLj and WebAssembly C++ ABI
+flags. The frozen recipe is in tools/nightly-musl; independent 18-check review
+passes at /mnt/p6/build/firefox-nightly-musl-root-review-20261002/recipe-review-run2.json.
+No Nightly browser binary, guest JIT, GPU acceptance or deployment is yet
+established. Inspect the actual process/status before continuing a build.
 
 The user also requires a default local version/WebGL/WebGPU test homepage and
 force-enabled GPU defaults. Implementation is in

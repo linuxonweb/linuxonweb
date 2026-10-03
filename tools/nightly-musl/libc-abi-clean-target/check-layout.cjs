@@ -1,0 +1,11 @@
+const fs = require('fs');
+const packet = '/mnt/p6/build/firefox-nightly-musl-recovery-20261002/libc-abi-clean-target/';
+const moduleBytes = fs.readFileSync(packet + 'layout.wasm');
+const wasm = new WebAssembly.Module(moduleBytes);
+const memory = new WebAssembly.Memory({initial:128, maximum:65536, shared:true});
+const instance = new WebAssembly.Instance(wasm, {env:{memory}});
+const rows = JSON.parse(fs.readFileSync(packet+'names.json')).map(name => ({name, c:instance.exports['c_'+name](), rust:instance.exports['r_'+name]()}));
+const result={scope:'host-instantiated native wasm32 Linux musl C/Rust declarations; not real guest runtime', pass:rows.every(r=>r.c===r.rust), imports:WebAssembly.Module.imports(wasm), rows};
+fs.writeFileSync(packet+'result.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result));
+if(!result.pass) process.exit(1);

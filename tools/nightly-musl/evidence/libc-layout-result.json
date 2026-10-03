@@ -1,0 +1,178 @@
+{
+  "scope": "host-instantiated native wasm32 Linux musl C/Rust declarations; not real guest runtime",
+  "pass": true,
+  "imports": [
+    {
+      "module": "env",
+      "name": "memory",
+      "kind": "memory"
+    }
+  ],
+  "rows": [
+    {
+      "name": "char_size",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "char_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pointer_size",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pointer_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "time_size",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "time_align",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "off_size",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "off_align",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "pthread_size",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pthread_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "timespec_size",
+      "c": 16,
+      "rust": 16
+    },
+    {
+      "name": "timespec_align",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "stat_size",
+      "c": 128,
+      "rust": 128
+    },
+    {
+      "name": "stat_align",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "pthread_attr_size",
+      "c": 36,
+      "rust": 36
+    },
+    {
+      "name": "pthread_attr_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pthread_mutex_size",
+      "c": 24,
+      "rust": 24
+    },
+    {
+      "name": "pthread_mutex_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pthread_cond_size",
+      "c": 48,
+      "rust": 48
+    },
+    {
+      "name": "pthread_cond_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "pthread_rwlock_size",
+      "c": 32,
+      "rust": 32
+    },
+    {
+      "name": "pthread_rwlock_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "sigset_size",
+      "c": 128,
+      "rust": 128
+    },
+    {
+      "name": "sigset_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "stack_size",
+      "c": 12,
+      "rust": 12
+    },
+    {
+      "name": "stack_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "sem_size",
+      "c": 16,
+      "rust": 16
+    },
+    {
+      "name": "sem_align",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "timespec_tv_nsec",
+      "c": 8,
+      "rust": 8
+    },
+    {
+      "name": "stat_st_size",
+      "c": 48,
+      "rust": 48
+    },
+    {
+      "name": "stat_st_atime",
+      "c": 72,
+      "rust": 72
+    },
+    {
+      "name": "stat_st_atime_nsec",
+      "c": 80,
+      "rust": 80
+    },
+    {
+      "name": "stat_st_ctime_nsec",
+      "c": 112,
+      "rust": 112
+    }
+  ]
+}

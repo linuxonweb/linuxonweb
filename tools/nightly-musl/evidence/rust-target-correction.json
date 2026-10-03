@@ -1,0 +1,13 @@
+{
+  "original": "/nix/store/p6v8d8xzp3mg6vs2nr8hjslxdifaa0l3-wasm32-unknown-linux-musl.json/wasm32-unknown-linux-musl.json",
+  "originalSHA256": "9b26fa48449aa1971671a3ba4947fe65f544c11f6ce984e3f9cd15a72b92d499",
+  "owned": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/rust-target/wasm32-unknown-linux-musl.json",
+  "ownedSHA256": "485dd3c8f0cd20098593ef35e616cbfc14bce9c2d8f38ea86abeffcc5119ddf3",
+  "removedIgnoredFeatures": [
+    "+llvm",
+    "+-wasm-enable-sjlj"
+  ],
+  "retainedFeatures": "+atomics,+bulk-memory,+mutable-globals,+sign-ext",
+  "allOtherFieldsIdentical": true,
+  "panicStrategy": "abort"
+}

@@ -1,0 +1,10 @@
+{
+  "limit_bytes": 21474836480,
+  "reserve_bytes": 21474836480,
+  "owned_roots": [
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002",
+    "/mnt/p6/build/firefox-nightly-musl-metadata-20261002"
+  ],
+  "authorized_by": "root /root agent explicit message2026-10-02",
+  "authorized_at": 1791001782.8737729
+}

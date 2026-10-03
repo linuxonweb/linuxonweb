@@ -1,0 +1,60 @@
+--- a/security/nss/nss.gyp
++++ b/security/nss/nss.gyp
+@@ -9,17 +9,16 @@
+         {
+           'target_name': 'nss_libs',
+           'type': 'none',
+-          'dependencies': [
+-            'lib/softoken/softoken.gyp:softokn3',
+-          ],
++          'dependencies': [],
+           'conditions': [
+-            [ 'OS=="solaris" and target_arch=="sparc64"', {
++            [ 'wasm_static==0 and OS=="solaris" and target_arch=="sparc64"', {
+               'dependencies': [
+                 'lib/freebl/freebl.gyp:freebl_64int_3',
+                 'lib/freebl/freebl.gyp:freebl_64fpu_3',
+               ],
+-            }, {
++            }, 'wasm_static==0', {
+               'dependencies': [
++                'lib/softoken/softoken.gyp:softokn3',
+                 'lib/freebl/freebl.gyp:freebl3',
+               ],
+             }],
+@@ -35,7 +34,7 @@
+                 'lib/util/util.gyp:nssutil3',
+               ],
+             }],
+-            [ 'OS=="linux"', {
++            [ 'wasm_static==0 and OS=="linux"', {
+               'dependencies': [
+                 'lib/freebl/freebl.gyp:freeblpriv3',
+               ],
+--- a/security/nss/lib/nss/nss.gyp
++++ b/security/nss/lib/nss/nss.gyp
+@@ -28,7 +28,6 @@
+         'nss_static',
+         '<(DEPTH)/lib/certhigh/certhigh.gyp:certhi',
+         '<(DEPTH)/lib/cryptohi/cryptohi.gyp:cryptohi',
+-        '<(DEPTH)/lib/pk11wrap/pk11wrap.gyp:pk11wrap',
+         '<(DEPTH)/lib/certdb/certdb.gyp:certdb',
+         '<(DEPTH)/lib/pki/pki.gyp:nsspki',
+         '<(DEPTH)/lib/dev/dev.gyp:nssdev',
+@@ -36,5 +35,16 @@
+         '<(DEPTH)/lib/libpkix/libpkix.gyp:libpkix',
+       ],
++      'conditions': [
++        [ 'wasm_static==1', {
++          'dependencies': [
++            '<(DEPTH)/lib/pk11wrap/pk11wrap.gyp:pk11wrap_static',
++          ],
++        }, {
++          'dependencies': [
++            '<(DEPTH)/lib/pk11wrap/pk11wrap.gyp:pk11wrap',
++          ],
++        }],
++      ],
+     },
+     {
+       'target_name': 'nss3',

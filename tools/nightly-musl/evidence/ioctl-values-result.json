@@ -1,0 +1,56 @@
+{
+  "scope": "native wasm32 compiler and Linux sysroot UAPI, host-instantiated values",
+  "pass": true,
+  "rows": [
+    {
+      "name": "_IOC_NONE",
+      "c": 0,
+      "expected": 0
+    },
+    {
+      "name": "_IOC_READ",
+      "c": 2,
+      "expected": 2
+    },
+    {
+      "name": "_IOC_WRITE",
+      "c": 1,
+      "expected": 1
+    },
+    {
+      "name": "_IOC_SIZEBITS",
+      "c": 14,
+      "expected": 14
+    },
+    {
+      "name": "_IOC_DIRBITS",
+      "c": 2,
+      "expected": 2
+    },
+    {
+      "name": "_IOC_NRSHIFT",
+      "c": 0,
+      "expected": 0
+    },
+    {
+      "name": "_IOC_TYPESHIFT",
+      "c": 8,
+      "expected": 8
+    },
+    {
+      "name": "_IOC_SIZESHIFT",
+      "c": 16,
+      "expected": 16
+    },
+    {
+      "name": "_IOC_DIRSHIFT",
+      "c": 30,
+      "expected": 30
+    },
+    {
+      "name": "STATX__RESERVED",
+      "c": 2147483648,
+      "expected": 2147483648
+    }
+  ]
+}

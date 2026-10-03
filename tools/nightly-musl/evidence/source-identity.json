@@ -1,0 +1,13 @@
+{
+  "version": "159.0a1",
+  "officialBuildID": "20261002211853",
+  "localBuildID": "20261003042618",
+  "hgRevision": "dfc77f7a6d716f1a20a2576597638d4fc21cd916",
+  "gitMirrorRevision": "bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23",
+  "fullHgGitIdentity": "inference, pinned subject/author date and8canonicalfilepairs checked",
+  "proofs": {
+    "source-overlay-manifest.json": "968d93bce98086f921438bf9aff5d61e599ff0d81cc25fea9472db961517bc84",
+    "acquisition-proof.json": "341e247e8ef5c744e07da4b5b36351fc9cc785581ea1ab7c76e10f7d34c83167",
+    "hg-git-source-pairs.json": "af21a9e9ee57b899db3f447e647dea269a80008fbae30e90bf550340f73fb8ea"
+  }
+}

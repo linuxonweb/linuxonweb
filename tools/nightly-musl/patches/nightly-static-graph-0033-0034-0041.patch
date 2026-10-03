@@ -1,0 +1,284 @@
+--- a/browser/app/moz.build
++++ b/browser/app/moz.build
+@@ -108,7 +108,9 @@
+     DIRS += ["macbuild/Contents"]
+ 
+ browser_linkage = "standalone"
+-if CONFIG["FUZZING_SNAPSHOT"] or CONFIG["AFLFUZZ"]:
++if CONFIG["TARGET_CPU"] == "wasm32":
++    browser_linkage = "dependent"
++elif CONFIG["FUZZING_SNAPSHOT"] or CONFIG["AFLFUZZ"]:
+     browser_linkage = "dependent"
+ 
+ if CONFIG["MOZ_NO_PIE_COMPAT"]:
+--- a/toolkit/moz.configure
++++ b/toolkit/moz.configure
+@@ -196,7 +196,7 @@
+ 
+ @depends(target)
+ def fold_libs(target):
+-    return target.os in ("WINNT", "OSX", "iOS", "Android")
++    return target.os in ("WINNT", "OSX", "iOS", "Android") or target.cpu == "wasm32"
+ 
+ 
+ set_config("MOZ_FOLD_LIBS", fold_libs)
+--- a/toolkit/library/moz.build
++++ b/toolkit/library/moz.build
+@@ -19,6 +19,8 @@
+         # "libxul.dylib"
+         GeckoFramework(name, output_category=output_category)
+         SHARED_LIBRARY_NAME = "XUL"
++    elif CONFIG["TARGET_CPU"] == "wasm32":
++        Library(name)
+     else:
+         GeckoSharedLibrary(name, output_category=output_category)
+         SHARED_LIBRARY_NAME = "xul"
+@@ -100,7 +102,7 @@
+     if CONFIG["RUSTC_NATVIS_LDFLAGS"]:
+         LDFLAGS += CONFIG["RUSTC_NATVIS_LDFLAGS"]
+ 
+-    if name == "xul-real":
++    if name == "xul-real" and CONFIG["TARGET_CPU"] != "wasm32":
+         SYMBOLS_FILE = "../libxul.symbols"
+ 
+     # Disable full lto for xul-gtest, it takes a lot of time with no clear
+@@ -408,10 +410,16 @@
+             CONFIG["DLL_PREFIX"],
+             CONFIG["DLL_SUFFIX"].lstrip(".").replace(".", "_"),
+         )
+-    GeneratedFile(
+-        "buildid.cpp", script="gen_buildid.py", inputs=["!build/%s.list" % libxul_list]
+-    )
++    if CONFIG["TARGET_CPU"] == "wasm32":
++        GeneratedFile("buildid.cpp", script="gen_buildid.py")
++    else:
++        GeneratedFile(
++            "buildid.cpp", script="gen_buildid.py", inputs=["!build/%s.list" % libxul_list]
++        )
+ 
+     EXPORTS += [
+         "buildid_section.h",
+     ]
++
++if CONFIG["TARGET_CPU"] == "wasm32":
++    OS_LIBS += ['epoxy', 'Xi', 'Xrandr', 'Xcursor', 'Xcomposite', 'Xdamage', 'Xinerama', 'Xfixes', 'Xrender', 'Xext', 'X11', 'xcb', 'Xau', 'expat']
+--- a/toolkit/library/build/moz.build
++++ b/toolkit/library/build/moz.build
+@@ -12,7 +12,7 @@
+ 
+ Libxul("xul-real")
+ 
+-if CONFIG["COMPILE_ENVIRONMENT"]:
++if CONFIG["COMPILE_ENVIRONMENT"] and CONFIG["TARGET_CPU"] != "wasm32":
+     if CONFIG["MOZ_WIDGET_TOOLKIT"] in ("cocoa", "uikit"):
+         full_libname = SHARED_LIBRARY_NAME
+     else:
+--- a/config/external/gkcodecs/moz.build
++++ b/config/external/gkcodecs/moz.build
+@@ -9,9 +9,12 @@
+ # both from libxul (when decoding using the codec integration layer Gecko
+ # provides) and from ffmpeg (when decoding and encoding through ffmpeg).
+ 
+-GeckoSharedLibrary("gkcodecs")
+-SHARED_LIBRARY_NAME = "gkcodecs"
+-SYMBOLS_FILE = "gkcodecs.symbols"
++if CONFIG["TARGET_CPU"] == "wasm32":
++    Library("gkcodecs")
++else:
++    GeckoSharedLibrary("gkcodecs")
++    SHARED_LIBRARY_NAME = "gkcodecs"
++    SYMBOLS_FILE = "gkcodecs.symbols"
+ if CONFIG["MOZ_SYSTEM_AV1"]:
+     DEFINES["MOZ_SYSTEM_AV1"] = True
+ if CONFIG["MOZ_SYSTEM_LIBVPX"]:
+--- a/config/external/lgpllibs/moz.build
++++ b/config/external/lgpllibs/moz.build
+@@ -8,8 +8,11 @@
+ #
+ # Any library added here should also be reflected in the about:license page.
+ 
+-GeckoSharedLibrary("lgpllibs")
+-SHARED_LIBRARY_NAME = "lgpllibs"
++if CONFIG["TARGET_CPU"] == "wasm32":
++    Library("lgpllibs")
++else:
++    GeckoSharedLibrary("lgpllibs")
++    SHARED_LIBRARY_NAME = "lgpllibs"
+ 
+ # For some reason, mingw builds export way too many symbols.
+ if CONFIG["TARGET_OS"] == "WINNT" and CONFIG["CC_TYPE"] != "clang-cl":
+--- a/widget/gtk/mozgtk/moz.build
++++ b/widget/gtk/mozgtk/moz.build
+@@ -2,7 +2,10 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-SharedLibrary("mozgtk")
++if CONFIG["TARGET_CPU"] == "wasm32":
++    Library("mozgtk")
++else:
++    SharedLibrary("mozgtk")
+ 
+ SOURCES += [
+     "mozgtk.c",
+--- a/media/ffvpx/libavcodec/moz.build
++++ b/media/ffvpx/libavcodec/moz.build
+@@ -17,7 +17,10 @@
+ 
+ LOCAL_INCLUDES += ['/modules/fdlibm/inexact-math-override']
+ 
+-SharedLibrary('mozavcodec')
++if CONFIG["TARGET_CPU"] == "wasm32":
++    Library("mozavcodec")
++else:
++    SharedLibrary('mozavcodec')
+ SOURCES += [
+     'adts_header.c',
+     'adts_parser.c',
+@@ -195,7 +198,8 @@
+   CXXFLAGS += CONFIG["MOZ_LIBVPX_CFLAGS"]
+   OS_LIBS += CONFIG["MOZ_LIBVPX_LIBS"]
+ 
+-SYMBOLS_FILE = 'avcodec.symbols'
++if CONFIG["TARGET_CPU"] != "wasm32":
++    SYMBOLS_FILE = 'avcodec.symbols'
+ NoVisibilityFlags()
+ 
+ USE_LIBS += [
+--- a/media/ffvpx/libavutil/moz.build
++++ b/media/ffvpx/libavutil/moz.build
+@@ -13,7 +13,10 @@
+ if CONFIG['TARGET_CPU'] == 'aarch64':
+     DIRS += ['aarch64']
+ 
+-SharedLibrary('mozavutil')
++if CONFIG["TARGET_CPU"] == "wasm32":
++    Library("mozavutil")
++else:
++    SharedLibrary('mozavutil')
+ SOURCES += [
+     'avsscanf.c',
+     'avstring.c',
+@@ -123,7 +126,8 @@
+         "hwcontext_mediacodec.h"
+     ]
+ 
+-SYMBOLS_FILE =  'avutil.symbols'
++if CONFIG["TARGET_CPU"] != "wasm32":
++    SYMBOLS_FILE =  'avutil.symbols'
+ NoVisibilityFlags()
+ 
+ OS_LIBS += CONFIG['REALTIME_LIBS']
+--- a/toolkit/toolkit.mozbuild
++++ b/toolkit/toolkit.mozbuild
+@@ -164,9 +164,10 @@
+ ):
+     DIRS += ["/testing/geckodriver"]
+ 
+-DIRS += [
+-    "/media/gmp-clearkey/0.1",
+-]
++if CONFIG["TARGET_CPU"] != "wasm32":
++    DIRS += [
++        "/media/gmp-clearkey/0.1",
++    ]
+ 
+ if CONFIG["MOZ_WMF_CDM"] and CONFIG["ENABLE_TESTS"]:
+     DIRS += [
+--- a/dom/media/moz.build
++++ b/dom/media/moz.build
+@@ -31,10 +31,8 @@
+     "driftcontrol",
+     "eme",
+     "encoder",
+-    "fake-cdm",
+     "flac",
+     "gmp",
+-    "gmp-plugin-openh264",
+     "imagecapture",
+     "ipc",
+     "mediacapabilities",
+@@ -56,6 +54,9 @@
+     "webrtc",
+     "webvtt",
+ ]
++
++if CONFIG["TARGET_CPU"] != "wasm32":
++    DIRS += ["fake-cdm", "gmp-plugin-openh264"]
+ 
+ if CONFIG["MOZ_ANDROID_HLS_SUPPORT"]:
+     DIRS += ["hls"]
+--- a/dom/media/eme/moz.build
++++ b/dom/media/eme/moz.build
+@@ -48,7 +48,8 @@
+ if CONFIG["MOZ_WMF_CDM"]:
+     DIRS += ["mediafoundation"]
+ 
+-DIRS += ["clearkey"]
++if CONFIG["TARGET_CPU"] != "wasm32":
++    DIRS += ["clearkey"]
+ 
+ include("/ipc/chromium/chromium-config.mozbuild")
+ 
+--- a/toolkit/library/gen_buildid.py
++++ b/toolkit/library/gen_buildid.py
+@@ -9,9 +9,12 @@
+ from variables import get_buildid
+ 
+ 
+-def main(output, input_file):
+-    with open(input_file) as fh:
+-        objs = [l.strip() for l in fh.readlines()]
++def main(output, input_file=None):
++    if input_file:
++        with open(input_file) as fh:
++            objs = [l.strip() for l in fh.readlines()]
++    else:
++        objs = []
+ 
+     write_file(output, None)
+ 
+--- a/security/moz.build
++++ b/security/moz.build
+@@ -25,9 +25,12 @@
+ 
+ include("/build/gyp_base.mozbuild")
+ if CONFIG["MOZ_FOLD_LIBS"]:
+-    GeckoSharedLibrary("nss")
+-    # TODO: The library name can be changed when bug 845217 is fixed.
+-    SHARED_LIBRARY_NAME = "nss3"
++    if CONFIG["TARGET_CPU"] == "wasm32":
++        Library("nss")
++    else:
++        GeckoSharedLibrary("nss")
++        # TODO: The library name can be changed when bug 845217 is fixed.
++        SHARED_LIBRARY_NAME = "nss3"
+ 
+     USE_LIBS += [
+         "nspr4",
+@@ -41,10 +44,12 @@
+ 
+     OS_LIBS += CONFIG["REALTIME_LIBS"]
+ 
+-    SYMBOLS_FILE = "nss.symbols"
++    if CONFIG["TARGET_CPU"] != "wasm32":
++        SYMBOLS_FILE = "nss.symbols"
+     # This changes the default targets in the NSS build, among
+     # other things.
+     gyp_vars["moz_fold_libs"] = 1
++    gyp_vars["wasm_static"] = int(CONFIG["TARGET_CPU"] == "wasm32")
+     # Some things in NSS need to link against nssutil, which
+     # gets folded, so this tells them what to link against.
+     gyp_vars["moz_folded_library_name"] = "nss"
+--- a/toolkit/xre/gfxtest/moz.build
++++ b/toolkit/xre/gfxtest/moz.build
+@@ -29,6 +29,9 @@
+ OS_LIBS += CONFIG["MOZ_GTK3_LIBS"]
+ OS_LIBS += CONFIG["DL_LIBS"]
+ 
++if CONFIG["TARGET_CPU"] == "wasm32":
++    OS_LIBS += ["Xau"]
++
+ if CONFIG["MOZ_ASAN"] or CONFIG["MOZ_UBSAN"] or CONFIG["MOZ_TSAN"]:
+     USE_LIBS += ["sanitizer-options"]
+ 

@@ -1,0 +1,7 @@
+{
+  "applied": true,
+  "reason": "wasm32 uses rustix_use_libc and rustix_no_linux_raw; build.rs disables linux_raw_dep but Cargo target dependency previously remained selected",
+  "cargo_toml_sha256": "2b7edc9625819946595b243f4fbc3b6ecc7e1492c04e5a39fec7f2877b5ea7c8",
+  "lock_changed": false,
+  "host_dependencies_preserved": true
+}

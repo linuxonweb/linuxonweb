@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+export RUST_TARGET_PATH="/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/rust-target${RUST_TARGET_PATH:+:$RUST_TARGET_PATH}"
+printf "%q " "$@" >> /mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/actual-rustc-argv-run3.log
+printf "\n" >> /mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/actual-rustc-argv-run3.log
+exec /nix/store/m1lr4f6ghlmi7qls1x6x3gig8cxahjjl-rust-nightly-complete-with-components-2026-07-22/bin/rustc --sysroot /nix/store/il527fj9xjncr0p64rwvlh3m9qs9jqza-rust-sysroot-wasm32-unknown-linux-musl -Zunstable-options "$@"

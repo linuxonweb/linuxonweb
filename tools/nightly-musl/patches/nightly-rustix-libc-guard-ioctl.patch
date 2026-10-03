@@ -1,0 +1,23 @@
+--- a/third_party/rust/rustix/src/backend/libc/fs/syscalls.rs
++++ b/third_party/rust/rustix/src/backend/libc/fs/syscalls.rs
+@@ -2073,7 +2073,7 @@
+     // [it's deprecated]: https://patchwork.kernel.org/project/linux-fsdevel/patch/20200505095915.11275-7-mszeredi@redhat.com/
+     #[cfg(any(not(linux_raw_dep), not(target_env = "musl")))]
+     const STATX__RESERVED: u32 = c::STATX__RESERVED as u32;
+-    #[cfg(target_env = "musl")]
++    #[cfg(all(linux_raw_dep, target_env = "musl"))]
+     const STATX__RESERVED: u32 = linux_raw_sys::general::STATX__RESERVED;
+     if (mask.bits() & STATX__RESERVED) == STATX__RESERVED {
+         return Err(io::Errno::INVAL);
+--- a/third_party/rust/rustix/src/ioctl/linux.rs
++++ b/third_party/rust/rustix/src/ioctl/linux.rs
+@@ -51,7 +51,8 @@
+     target_arch = "riscv32",
+     target_arch = "riscv64",
+     target_arch = "loongarch64",
+-    target_arch = "csky"
++    target_arch = "csky",
++    target_arch = "wasm32"
+ ))]
+ mod consts {
+     use super::Opcode;
