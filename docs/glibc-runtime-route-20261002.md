@@ -861,3 +861,15 @@ The executed recipe's preserved snapshots are distinguished from the subsequent
 extension to NPTL mappings. Backend __longjmp/____longjmp_chk still require
 reviewed recorded definitions and final linking. These compile controls do not
 establish thread cancellation or complete GNU sysroot/Nightly/JIT acceptance.
+
+
+The true-entry capture fix25 builds successfully. Root checks all five source
+pairs, unchanged reused TargetMachine16/GNUFrames18/LowerSjLj23 objects,
+compiler bytes and four fresh empty groups. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal25-build-independent1/root-proof.json`.
+Coherent26 source review confirms component identities and only the approved
+C++ catch helper additions over provider3. A final GNUFrames rebuild is
+approved before consumer12 composition. Separate normal/SjLj/C++/forged-source
+control suites are prepared, not yet executed. Allocating GNU fatal handling
+remains unresolved; status-core source work is separate from accepted V1
+runtime and does not silently replace genuine GNU abort behavior.

@@ -165,8 +165,17 @@ empty groups. Proof:
 `/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal23-build-independent1/root-proof.json`.
 Consumer23 passes that IR failure, then MachineVerifier finds that the original
 capture register definition in OrigEntry does not dominate a return reached
-from the SjLj resume path. A correction to actual entry capture placement is
-pending; runtime is still unaccepted. C++ controls separately reveal overbroad llvm.wasm.* rejection
+from the SjLj resume path. Reviewed proposal25 moves the unique marker-result
+COPY to true machine entry before frame subtraction. Its one-unit FrameLowering
+build passes; root checks five source pairs, unchanged reused TargetMachine16,
+GNUFrames18 and LowerSjLj23 objects and all four fresh empty stage groups.
+Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal25-build-independent1/root-proof.json`.
+Coherent proposal26 sources combine reviewed provider3 membership, C++ catch
+provenance, LowerSjLj23 and FrameLowering25; root verifies component source
+identity and approves one final GNUFrames rebuild. Consumer12 normal, SjLj,
+C++ and forged-attribute controls are prepared separately, unexecuted. No
+composed runtime acceptance or genuine GNU fatal admission is claimed. C++ controls separately reveal overbroad llvm.wasm.* rejection
 of genuine frontend get.exception/get.ehselector calls with actual CatchPad
 tokens. Narrow provenance checks are needed. Preserve all failed controls.
 
