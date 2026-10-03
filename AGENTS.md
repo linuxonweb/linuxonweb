@@ -1,5 +1,14 @@
 # Current continuation — 2026-10-02
 
+Run40 is terminal/reaped143 at the20min bound; exact PGID1923539 empty.
+All3011 native objects present,175 objects rebuilt during phase,0 compiler
+errors,4149 frozen boundary predicates pass; Rust archive unchanged.
+Actual Pixman shared-header dependency set has763 consumers:607 coherent,
+156 still pending. Independent1533 header checks pass while explicitly
+retaining the incomplete state. Evidence full-build-boundary-coherence-run40.json.
+Do not claim all objects' existence implies all shared-header rebuilds complete.
+Continue the full build with a fresh bounded phase; public v10 unchanged.
+
 2026-10-03 native final-link contract: forced actual make/driver rows now
 resolve imported shared memory/max4GiB, exported growable table, exported
 stack pointer and8MiB stack for firefox/plugin-container/xpcshell only.
