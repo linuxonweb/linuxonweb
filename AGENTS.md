@@ -1,5 +1,18 @@
 # Current continuation — 2026-10-02
 
+2026-10-03 broad safety preparation: generator/checker now have a separate
+broad mode for the selected full Nightly JIT, retaining unchanged integer
+case bodies and fallback claims. Broad requires14 compiled,7 bailout,2
+fallback and2 policy cases in each actual main/Worker context. Preparation
+passes integer304/broad400 semantic checks and integer58/broad121 synthetic
+checker regressions; independent review307 checks includes96 generated JS
+syntax checks and exact source/result/claim/hash bindings. Evidence is
+tools/nightly-musl/evidence/broad-safety-preparation.json. These are not guest
+or browser acceptance. Full build plan now requires broad raw-log evidence,
+without contradictory integer exclusions. Active baseline build Run41 is
+j4/20min, owned PGID1962945/unified12590; poll/reap before source edits or
+another build. No Nightly deployment; public v10 unchanged.
+
 Run40 is terminal/reaped143 at the20min bound; exact PGID1923539 empty.
 All3011 native objects present,175 objects rebuilt during phase,0 compiler
 errors,4149 frozen boundary predicates pass; Rust archive unchanged.

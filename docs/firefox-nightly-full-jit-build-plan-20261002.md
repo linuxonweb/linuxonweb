@@ -249,8 +249,8 @@ Reinspect the owner's status/process group before beginning the transition.
    | Finite gate | Actual evidence required |
    | --- | --- |
    | Native primitive/fpcast | Rebuild the current native-musl C fixtures with the same compiler/fpcast tool; adapt their historical task/output routes and hardcoded2-CPU runners before invocation. Install/call/free through real private syscalls0x6a490001/2, sync0x6a490003 and stats0x6a490004. Preserve negative import/limits/start/segment/free tests. |
-   | In-Firefox integer smoke | A no-argument var-local integer loop with >1000 heads, unique source filename and independently known result must log an actual installed module/run inside Nightly Firefox. The main thread and a Worker run distinct loops. UA alone is not a build identity: bind application/platform/local BuildID, archive and runtime manifest too. |
-   | Bailout/restore | Overflow, negative zero, modulo edge cases, type changes, branch/stack restoration and partial-work exits agree with interpreter results. Excluded argument/double/lexical/array/property/Math/call/throw cases keep correct behavior and cannot claim compiled coverage. Confirm handler/throw rejection and no repeated hot rejection/incorrect IC cursor. |
+   | In-Firefox broad admission | Generate the separate broad fixture with `tools/nightly-jit-safety/generate.mjs OUT LABEL broad`. Require actual source-specific install followed by Normal run for all fourteen admitted cases in both main and Worker: integers/branches, arguments and argument writes, doubles/division, lexical locals, dense array reads/writes/length, monomorphic property reads/writes and Math.abs/Math.max. Check raw logs with `check.py --scope broad`. Exact results alone cannot prove compilation. UA alone is not a build identity: bind application/platform/local BuildID, archive and runtime manifest too. |
+   | Bailout/restore and fallback | Overflow, negative zero, modulo edge cases, type changes, branch/stack restoration and partial-work exits agree with interpreter results, with actual installed-function Bail evidence. The broad fixture retains string-change/arbitrary-call fallback and Finally/Throw policy rejection; none can claim compilation. Confirm no repeated hot rejection/incorrect IC cursor. Add actual array bounds/type and object shape/GC mutation guards before full acceptance; the initial broad fixture does not cover them. |
    | Cache/GC | Same shared bytecode in different scripts/globals remains separate; fresh unique integer helpers compile once before mutations. Force a major GC through actual privileged Cu.forceGC/forceShrinkingGC and observe epoch advance plus eviction/recompile. Actual incremental-GC skip needs a privileged verified driver/diagnostic showing GC active and no entry. Allocation pressure or elapsed time is insufficient. |
    | Debugger/coverage | Attach the actual guest debugger, break/step the target integer loop, verify local values/results and no specializer entry while the frame isDebuggee. Separately use current Debugger.collectCoverageInfo/getOffsetsCoverage or real LCOV mode to establish script counts, nonzero coverage and no entry. Test attachment to a previously compiled loop as well as fresh code. Plain console opening does not prove debugging/coverage. |
    | Cancellation | First prove a no-argument integer infinite loop compiled; invoke an actual browser stop/slow-script interruption from outside the blocked page. Require a bounded interrupt exit, control restored and a subsequent page calculation in the same Firefox process. Worker.terminate or killing the guest is cleanup, not proof of interrupt handling. |
@@ -263,10 +263,13 @@ Reinspect the owner's status/process group before beginning the transition.
    CPU helpers independently at each boot. `test-firefox-pbl-bench.mjs` already
    accepts PBLBENCH_TASK/ARMS/FIXTURE and saves startup SMP evidence; keep that
    logic. Its readiness accepts any Firefox UA, so add exact guest Nightly
-   build evidence. The old safety fixture/checker demands arrays/properties/
-   Math compile and cannot be copied unchanged into a42-op integer phase.
-   Create an explicit integer admission/mutation list; keep broader cases as
-   correctness/fallback checks and retain historical safety results unchanged.
+   build evidence. The new safety tools have separate integer and broad modes.
+   The integer control retains its historical nineteen cases and fallback claims;
+   it cannot establish the selected239-opcode broad browser's admission. The
+   broad fixture has twenty-five cases in each context, and its checker rejects
+   missing/duplicate cases or lowered claims. Generate and retain each mode in
+   a fresh directory; do not apply integer exclusion requirements to the broad
+   browser. Keep historical safety results unchanged.
    Session-startup assumes pkg.sourceSha256 equals the baseline arm: bind both
    full packages to the correct source archive or provide independently pinned
    arm fields, rather than rewriting proof metadata to make that check pass.
@@ -291,10 +294,11 @@ Reinspect the owner's status/process group before beginning the transition.
    failure fails the run. Predeclare any precision confirmation with adequate
    batch duration; never discard inconvenient samples after seeing them.
 
-   Add an explicitly no-argument var-local integer coverage fixture whose
-   compiled status is proved, plus excluded-array/argument/lexical and bailout
-   cases. The existing int-loop uses let: do not presume its emitted bytecode
-   satisfies this narrower admission policy without actual compile evidence.
+   Run the selected broad admission fixture and bailout/fallback cases alongside
+   the original performance fixture. The original int-loop uses let: require
+   its actual compilation evidence under the selected broad coverage. Keep the
+   separate no-argument var-local integer control for emitter diagnostics; it
+   cannot replace broad acceptance or reduce the original performance cases.
    Optional C is the same B binary with PBLJIT=0, using a verified guest
    environment adapter in a diagnostic comparison; it isolates the specializer
    from PBL policy overhead but does not replace primary A/B acceptance.
@@ -304,9 +308,9 @@ Reinspect the owner's status/process group before beginning the transition.
    specializer rejects them, so semantic fallback alone does not waive timing
    regressions.
 
-   If broader coverage is needed to meet acceptance, migrate one admitted
-   surface at a time against Nightly APIs and repeat its actual guest gates;
-   do not silently widen the current whitelist. Promote only after complete
+   If the selected broad coverage fails acceptance, fix the affected Nightly
+   API/emitter paths and repeat their actual guest gates; do not lower admission
+   requirements to make the run pass. Promote only after complete
    original/bounded acceptance and evidence freshness review, then execute
    release1 through the already authorized Sites plan. Accepted Nightly JIT
    becomes GPU rollback baseline. Vulkan/OpenGL/Firefox WebGL/WebGPU work and

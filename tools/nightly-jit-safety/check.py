@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
-"""Strict initial integer guest gate. Raw observer logs required; no full acceptance."""
+"""Strict integer/broad guest evidence gates. Raw observer logs required."""
 import argparse, hashlib, json, re
 from pathlib import Path
+
+BROAD_CLAIMS = {
+    **dict.fromkeys(('sum','branch','argument','double','lexical','array','property',
+                     'math','setarg','doublediv','arraywrite','arraylength',
+                     'propertywrite','mathmax'), 'compiled'),
+    **dict.fromkeys(('overflow','negzero','modzero','modnegative','modoverflow',
+                     'typechange','stackrestore'), 'bailout'),
+    **dict.fromkeys(('typenonnumeric','call'), 'excluded'),
+    **dict.fromkeys(('handler','throw'), 'policy-excluded'),
+}
 
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def number(o,key,lo,hi):
@@ -32,6 +42,16 @@ def parse(log):
 
 def check(contract,log,scope='integer'):
     events,obs=parse(log);errors=[];rows=[]
+    if scope not in ('smoke','integer','broad'):
+        raise ValueError('unknown safety scope')
+    if scope!='smoke' and contract.get('coverage','integer')!=scope:
+        errors.append('fixture coverage does not match requested scope')
+    if scope=='broad':
+        expected={(context,id):claim for context in ('main','worker')
+                  for id,claim in BROAD_CLAIMS.items()}
+        actual={(c['context'],c['id']):c['claim'] for c in contract['cases']}
+        if actual!=expected or len(contract['cases'])!=len(expected):
+            errors.append('broad admission cases missing, duplicated or changed')
     def case_window(c):
         selected=[e for e in events if e.get('label')==contract['label'] and e.get('context')==c['context'] and e.get('id')==c['id']]
         starts=[e for e in selected if e.get('event')=='case-start'];ends=[e for e in selected if e.get('event')=='case-done']
@@ -65,7 +85,7 @@ def check(contract,log,scope='integer'):
             expected_policy={'handler':'policy-finally','throw':'policy-throw'}.get(c['id'])
             proved=bool(expected_policy) and not any(o.get('event') in ['install','run','bail','noentry'] for o in own) and any(o.get('event')==expected_policy and valid_context(o) and o.get('fn')=='0' and o.get('kind')=='-1' and (o['tid'],o['tls']) in thread_sets[c['context']] for o in window)
         else:proved=False
-        required=scope=='integer' or c['id'] in ['sum','branch']
+        required=scope in ('integer','broad') or c['id'] in ['sum','branch']
         forbidden_install=c['claim'] in ['excluded','policy-excluded'] and any(o.get('event') in ['install','run','bail','noentry'] for o in own)
         ok=semantic and not forbidden_install and (proved or not required)
         rows.append({'context':c['context'],'id':c['id'],'claim':c['claim'],'semantic':semantic,'sourceSpecificProof':proved,'forbiddenInstallation':forbidden_install,'required':required,'pass':ok})
@@ -79,7 +99,7 @@ def check(contract,log,scope='integer'):
     return {'kind':'guest-evidence-check','scope':scope,'pass':not errors,'fullJITAcceptance':False,'rows':rows,'distinctThreadsTLS':bool(threads),'errors':errors,'pending':['compiled build/CPU gates independent','observer compile/integration and actual policy execution','verified privileged GC/debugger/coverage/interruption','active incremental GC','native stack/TLS callback probes','browser/TLS/performance/release acceptance']}
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--fixture',type=Path,required=True);p.add_argument('--logs',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--scope',choices=['smoke','integer'],default='integer');a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--fixture',type=Path,required=True);p.add_argument('--logs',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--scope',choices=['smoke','integer','broad'],default='integer');a=p.parse_args()
     if not str(a.out.resolve()).startswith('/mnt/p6/build/'):p.error('disk-backed task evidence required')
     contract=json.loads((a.fixture/'contract.json').read_text())
     result=check(contract,a.logs.read_text(),a.scope)

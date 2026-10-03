@@ -1,4 +1,29 @@
-This packet prepares separate latest-Nightly integer safety fixtures. It has
+2026-10-03: the selected full Nightly JIT build now uses broad coverage. The
+safety tools therefore support a separate `broad` generation/checker mode;
+the original integer cases and their exclusion claims remain unchanged. Broad
+mode requires fourteen admitted cases, seven bailout cases, two fallback cases
+and two policy exclusions in each of main and Worker (twenty-five per context).
+Arguments, doubles, lexical locals, arrays, properties and Math must compile;
+additional cases exercise argument writes, division with a variable operand,
+array writes/length, property writes and Math.max. The broad checker rejects
+dropped or duplicated cases and weakened admission claims, and requires the
+same actual source/window/installed-function/thread/TLS/exit proof as integer
+mode. Use `generate.mjs OUT LABEL broad` and `check.py --scope broad` for the
+selected broad browser. Node and synthetic checker tests remain preparation,
+never browser execution or full JIT acceptance. Bounds/type/shape mutation
+guards and the full GC/debugger/interruption/native ABI gates remain pending.
+
+Selected preparation evidence is `broad-contract-run2` under the task root
+`/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002`: integer304
+and broad400 Node semantic checks pass, as do integer58 and broad121 synthetic
+checker regressions. The independent review passes307 checks, including96
+actual generated-file syntax commands, unchanged integer source, exact broad
+expected results/claims/source identities and file hashes. Run1 is retained;
+run2 uses a variable division operand to avoid constant-folded division.
+The repository evidence is `tools/nightly-musl/evidence/broad-safety-preparation.json`.
+No fixture has been executed in guest Firefox.
+
+The historical packet below prepares separate latest-Nightly integer safety fixtures. It has
 not run Firefox, a guest, a browser build, or a deployment. Node semantics and
 synthetic log regressions are preparation only. The accepted baseline/full PBL
 build, native primitive/fpcast probes, exact build identity, startup SMP,

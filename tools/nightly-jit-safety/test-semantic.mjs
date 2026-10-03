@@ -1,6 +1,10 @@
 import { cases, source, encode } from './cases.mjs';
+import { broadCases } from './cases-broad.mjs';
+const coverage=process.argv[2]||'integer';
+if(!['integer','broad'].includes(coverage))throw Error('unknown semantic coverage');
+const selected=coverage==='broad'?broadCases:cases;
 let checks=0;
-for(const c of cases){
+for(const c of selected){
   (0,eval)(source(c));
   for(let round=0;round<16;round++){
     let got,threw=false;
@@ -9,4 +13,4 @@ for(const c of cases){
     checks++;
   }
 }
-console.log(JSON.stringify({kind:'Node-semantic-preparation',pass:true,checks,cases:cases.length,guestAcceptance:false}));
+console.log(JSON.stringify({kind:'Node-semantic-preparation',coverage,pass:true,checks,cases:selected.length,guestAcceptance:false}));

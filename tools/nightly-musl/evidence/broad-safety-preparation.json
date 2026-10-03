@@ -1,0 +1,102 @@
+{
+  "claim": "Broad safety fixture preparation preserves integer control and requires broader compilation evidence; not guest execution",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/review.json",
+    "bytes": 77063,
+    "sha256": "91a2cb0a1ecd0542214065036ffc46f950caa2d7c453686acfddb01c1e2c72dd"
+  },
+  "checksPassed": 307,
+  "generatedSyntaxChecks": 96,
+  "integerSemanticChecks": 304,
+  "broadSemanticChecks": 400,
+  "integerSyntheticCheckerChecks": 58,
+  "broadSyntheticCheckerChecks": 121,
+  "casesPerContext": 25,
+  "admittedCasesPerContext": 14,
+  "bailoutCasesPerContext": 7,
+  "fallbackCasesPerContext": 2,
+  "policyCasesPerContext": 2,
+  "reports": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/semantic-integer.json",
+      "bytes": 118,
+      "sha256": "24d370e4123949ed487dbce4fb991ace26a3c9bac6b660ef93b47e4748111355"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/semantic-broad.json",
+      "bytes": 116,
+      "sha256": "3d2a3aaca16ca0520e6a115c516a718eeae5b8352e3ad0106c766eaa1b06ed22"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/contract-integer.json",
+      "bytes": 2278,
+      "sha256": "81330666bc1633b868b7440a0dd75b1d7148ec96f85fc1e626c19a0bfd1fc185"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/contract-broad.json",
+      "bytes": 132,
+      "sha256": "13b488b90af234767e9cdbb9cc5cbfda5a1811fa7afb369fe62a1d4c3423d938"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/generate-integer.json",
+      "bytes": 164,
+      "sha256": "16d171ec4e7e121b2cca056d258e5d1c6627fe63480ece54d13cccd703b288b5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/generate-broad.json",
+      "bytes": 160,
+      "sha256": "2a2f259d91c00e0dd7c3152a9c0a67c4f72949ee32c7fb863e6fce4e555aecc3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/integer/contract.json",
+      "bytes": 19849,
+      "sha256": "31a7dcb2f77552c6b8b7f7de384fdf7e03b2076e8831c51bf8837da77e40edb3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/broad-contract-run2/broad/contract.json",
+      "bytes": 25529,
+      "sha256": "bcf3ce9b63cdba58227f92c0f6ffb40a0385ad5480adb3cb6517c7fa9bd83c65"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/cases.mjs",
+      "bytes": 2792,
+      "sha256": "f61822d365946f8ca2c9f686a75fff84a7cf3ef24e89171afa2f6a45cb15442f"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/cases-broad.mjs",
+      "bytes": 1069,
+      "sha256": "0584481556a91bbebc6444be93c7f014d2bcd3d574d8861d7a693902dc6173e3"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/generate.mjs",
+      "bytes": 3512,
+      "sha256": "97cbedfcfba845f1c6473be95d2a699e967dc9e92ff2a154dc739e0741e8f142"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/check.py",
+      "bytes": 8590,
+      "sha256": "19a30a396d0144fafa98089c1847acfc909eff9fa03e036680815e30aba82123"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/test-semantic.mjs",
+      "bytes": 776,
+      "sha256": "7bfeb6eb8c129df305cdf240d697ff083cac02f442301f2d9d85ab13488f439d"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/test-contract.py",
+      "bytes": 8829,
+      "sha256": "d97487c32789fbe3c0279e821427873e899e1316c478bfa9be082beafae3e6a0"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-safety/test-broad-contract.py",
+      "bytes": 4716,
+      "sha256": "a8dad0042552d47c4f6693febf0720f16fda2bccd9a7aaeabaa5af540d8e4e65"
+    }
+  ],
+  "guestAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "fullJITAcceptance": false,
+  "releaseAcceptance": false
+}
