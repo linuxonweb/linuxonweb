@@ -75,5 +75,38 @@
   ],
   "fullBuildAcceptance": false,
   "guestAcceptance": false,
-  "releaseAcceptance": false
+  "releaseAcceptance": false,
+  "run54Launch": {
+    "pid": 160603,
+    "pgid": 160603,
+    "started": 1791059423.5211232,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run54-objects.log",
+    "timeout_seconds": 7200,
+    "build_mode": "objects-only",
+    "object_goal_evidence": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run54-objects-object-goals.json",
+    "object_goal_count": 577,
+    "object_goals_sha256": "8d5ad36ccfdf2cad6e067e35dd5a42f47cdee8da4239c60787a823fc13d23a5e",
+    "process_address_space_limit_bytes": 68719476736,
+    "group_rss_limit_bytes": 51539607552,
+    "host_available_memory_floor_bytes": 2147483648,
+    "child_oom_score_adj": 1000,
+    "child_core_limit_bytes": 0,
+    "owner": "/root/restart_no_debug_nightly",
+    "unifiedSession": 4372,
+    "jobs": 4,
+    "taskDiskCapGiB": 32,
+    "freeSpaceReserveGiB": 20,
+    "observation": "launch/current running observation; not completion",
+    "actualFourCompilerObservation": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run54-objects-active-compilers-run2.json"
+  },
+  "requiredNextStage": "Owner reap and exact group-empty proof, then ordinary full-build j1 serial final links with unchanged original Binaryen-O2",
+  "mandatoryDiaryFollowup": {
+    "done": false,
+    "when": "after actual full no-debug rebuild",
+    "requires": [
+      "actual final Firefox bytes",
+      "absolute binary path",
+      "important lessons and mistakes"
+    ]
+  }
 }

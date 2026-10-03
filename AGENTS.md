@@ -1,4 +1,45 @@
-# Latest continuation — actual no-debug configuration and Run53 launch, 2026-10-03
+# Latest continuation — no-debug object stage and parallel GPU gate, 2026-10-03
+
+Run53 was gracefully stopped for the user-authorized parallel object stage:
+actual child exit -15, owner-reaped unified 59109 exit 143, exact PGID 98039
+fully empty. Its retained evidence includes 109 fresh non-Cargo native objects
+and the completed no-debug Rust archive: 204,433,482 bytes, 7098 native Wasm
+members, zero members with `.debug_*` sections. Archive SHA256 is
+`773e119a73dd8777f57a143f1620973257a53683b572e2a1f9d8217fac019efd`.
+This is fresh compilation evidence; Run53 did not complete the full build.
+
+Run54-objects is LIVE, owned by `/root/restart_no_debug_nightly`: exact
+PGID 160603, unified session 4372, explicit object-only j4/7200 seconds.
+It admits 577 current generated object goals; their proven 589-node closure
+contains no program-link goals. Focused admission/guard checks pass 24/0.
+Guards remain inherited AS 64 GiB, polled group RSS 48 GiB, host available-RAM
+floor 2 GiB, core 0, oom_score_adj 1000, task disk cap 32 GiB and free-space
+reserve 20 GiB. Status/log/admission are under the recovery task as
+`status/build-run54-objects.json`, `logs/build-run54-objects.log` and
+`status/build-run54-objects-object-goals.json`. Ask the owner to reap/change
+its phase; do not mutate active source/config/recipes or run another build.
+The owner must reap and prove the group empty before the mandatory ordinary
+j1 full build and serial final links/unchanged original Binaryen-O2. Object-only
+completion will not establish full-build or browser acceptance. Packet:
+`tools/nightly-musl/evidence/object-only-parallel-stage.json`, commit 0ad0ac1.
+
+After the actual full no-debug rebuild succeeds, repository diary.md must
+record the final Firefox binary size and absolute path, plus important lessons
+and mistakes. This mandatory followup remains pending. Check actual object
+freshness and no-DWARF sections before full-build acceptance, then complete
+baseline package/guest gates and the fresh whole broad JIT build/acceptance.
+No final binary size, optimizer memory improvement, full-build/browser/JIT/GPU
+acceptance or Sites release is established. Public Sites v10 stays unchanged.
+
+The user also authorizes parallel GPU development NOW. Separate owners
+`/root/guest_vulkan_gpu` and `/root/test_guest_vulkan_wgpu` must first pass a
+simple matched GPU-versus-software Vulkan benchmark through genuine guest
+Vulkan -> browser-host Rust wgpu, WebGPU by default with WebGL fallback.
+No Firefox GPU tests or relinks until that benchmark passes. Hardware and
+SwiftShader host API probes succeeded; they are not guest Vulkan acceptance.
+Older LIVE entries below are historical observations.
+
+# Previous continuation — actual no-debug configuration and Run53 launch, 2026-10-03
 
 The requested no-debug restart is running as Run53, owned by subagent
 `/root/restart_no_debug_nightly`: exact PGID 98039, unified 59109, j1/7200 seconds,

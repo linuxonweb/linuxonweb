@@ -79,3 +79,36 @@ optimization. Run4 passed 85 checks; Run5 adds Cargo and scoped make checks.
 These corrections change evidence predicates, not the compiler, link recipe,
 code optimizer or native exception behavior. No browser, GPU or Sites release
 acceptance is established here.
+
+## Actual recovery rebuild and object-stage transition
+
+Configure run6-no-debug passed after the narrow native Linux/wasm32 ELF-policy
+adapter. Actual generated configuration passes 1556 checks, including C/C++/
+assembly flags, Rust defaults and the three strip-before-original-O2 final-link
+rows. Run53 naturally rebuilt Cargo: its current libgkrust.a is 204,433,482
+bytes with 7098 native Wasm members and no `.debug_*` sections. Its pinned
+SHA256 is `773e119a73dd8777f57a143f1620973257a53683b572e2a1f9d8217fac019efd`.
+
+The user authorized faster object compilation followed by serial final links.
+Run53 was stopped/reaped (child -15, unified 59109 exit 143, PGID 98039 empty),
+retaining 109 fresh non-Cargo native objects and the completed Rust archive.
+The explicit opt-in object-only mode admits 577 generated goals whose actual
+GNU make closure has 589 nodes and no program links. Its 24 focused admission
+and inherited-guard checks pass. Default full-build behavior remains unchanged.
+
+Run54-objects is running under owner `/root/restart_no_debug_nightly`, exact
+PGID 160603/unified 4372: j4, 7200 seconds, AS 64 GiB, polled RSS 48 GiB,
+available-RAM floor 2 GiB, core 0, oom_score_adj 1000, disk cap 32 GiB and
+reserve 20 GiB. All four observed compiler children omit debug flags. Check
+its current status rather than treating this launch observation as completion.
+Reap and prove the group empty before the ordinary j1 full build/final links
+with unchanged original Binaryen-O2. No active source/config/recipe mutation
+is permitted while this owner is running. Selected launch and terminal pins
+are in `tools/nightly-musl/evidence/object-only-parallel-stage.json`.
+
+Object-stage completion is not full-build acceptance. Actual Mozilla object
+freshness/no-DWARF review, serial final build, baseline package/guest acceptance
+and later broad JIT acceptance remain required. After the full no-debug rebuild,
+write actual final Firefox size/path and lessons/mistakes to repository diary.md;
+this mandatory followup remains pending. No optimizer-memory benefit or new
+public Sites release is claimed.
