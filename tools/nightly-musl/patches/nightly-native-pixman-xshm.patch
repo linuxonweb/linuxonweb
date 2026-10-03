@@ -1,0 +1,48 @@
+--- a/gfx/pixman/pixman/pixman/pixman.h
++++ b/gfx/pixman/pixman/pixman/pixman.h
+@@ -73,6 +73,10 @@
+ #include "cairo/pixman-rename.h"
+ #endif
+ 
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++#include "NightlyPixmanStaticNames.h"
++#endif
++
+ #include <pixman-version.h>
+ 
+ #ifdef  __cplusplus
+--- a/gfx/pixman/pixman/pixman/moz.build
++++ b/gfx/pixman/pixman/pixman/moz.build
+@@ -6,6 +6,9 @@
+     'pixman-version.h',
+     'pixman.h',
+ ]
++
++if CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32":
++    EXPORTS += ["NightlyPixmanStaticNames.h"]
+ 
+ SOURCES += [
+     'pixman-access-accessors.c',
+--- a/widget/gtk/mozgtk/mozgtk.c
++++ b/widget/gtk/mozgtk/mozgtk.c
+@@ -24,5 +24,10 @@
+ // This is also used to force libxul to depend on the mozgtk library. If we
+ // ever can remove this workaround for system Cairo, we'll need something
+ // to replace it for that purpose.
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++// Static linking needs a wrapper in place of ELF load-order interposition.
++MOZ_EXPORT Bool __wrap_XShmQueryExtension(Display* aDisplay) { return False; }
++#else
+ MOZ_EXPORT Bool XShmQueryExtension(Display* aDisplay) { return False; }
+ #endif
++#endif
+--- a/defs.mk
++++ b/defs.mk
+@@ -5,4 +5,7 @@
+ override LDFLAGS = $(MOZ_LTO_LDFLAGS) $(filter-out -Wl$(NIGHTLY_WASM_COMMA)-rpath-link$(NIGHTLY_WASM_COMMA)%,$(COMPUTED_LDFLAGS)) $(PGO_LDFLAGS)
+ OS_LIBS := $(filter-out -Wl$(NIGHTLY_WASM_COMMA)--as-needed -Wl$(NIGHTLY_WASM_COMMA)--no-as-needed,$(OS_LIBS))
+ OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a
++ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)
++override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=XShmQueryExtension
+ endif
++endif

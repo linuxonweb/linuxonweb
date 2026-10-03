@@ -1,0 +1,228 @@
+{
+  "claim": "Scoped native static-link namespace repairs, successful component builds and actual symbol acceptance; full Nightly browser remains unlinked",
+  "sourceVersion": "159.0a1",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/static-names-review-run4.json",
+    "bytes": 50897,
+    "sha256": "bafa1140449bfab1a84f1dcaa63100916dcedc8146ea77032276a9877cd0ffb7"
+  },
+  "checksPassed": 161,
+  "nativeSymbols": {
+    "png": {
+      "objects": 15,
+      "renamed": 12,
+      "remainingCollisions": 0
+    },
+    "cairo": {
+      "objects": 44,
+      "renamed": 939,
+      "remainingCollisions": 0
+    },
+    "pixman": {
+      "objects": 31,
+      "renamed": 81,
+      "remainingCollisions": 0
+    }
+  },
+  "componentBuilds": [
+    {
+      "phase": "pixman",
+      "run": "static-run1",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "--allow-subdirectory-build",
+        "gfx/pixman/pixman/pixman/target-objects",
+        "-j4",
+        "--verbose"
+      ],
+      "pid": 1853688,
+      "pgid": 1853688,
+      "started": 1791036827.9863045,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/pixman-static-run1.log",
+      "timeout_seconds": 720,
+      "state": "completed",
+      "task_bytes": 21013913600,
+      "free_bytes": 73949356032,
+      "checked": 1791036827.987007,
+      "exit_code": 0,
+      "finished": 1791036833.706872,
+      "stop_reason": null,
+      "driverHandleReaped": true,
+      "exactGroupEmpty": true
+    },
+    {
+      "phase": "cairo",
+      "run": "static-run1",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "--allow-subdirectory-build",
+        "gfx/cairo/cairo/src/target-objects",
+        "-j4",
+        "--verbose"
+      ],
+      "pid": 1854983,
+      "pgid": 1854983,
+      "started": 1791036870.0181046,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/cairo-static-run1.log",
+      "timeout_seconds": 720,
+      "state": "completed",
+      "task_bytes": 21014044672,
+      "free_bytes": 73949147136,
+      "checked": 1791036870.0189626,
+      "exit_code": 0,
+      "finished": 1791036877.9397087,
+      "stop_reason": null,
+      "driverHandleReaped": true,
+      "exactGroupEmpty": true
+    },
+    {
+      "phase": "mozgtk",
+      "run": "static-run1",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "--allow-subdirectory-build",
+        "widget/gtk/mozgtk/target-objects",
+        "-j4",
+        "--verbose"
+      ],
+      "pid": 1855803,
+      "pgid": 1855803,
+      "started": 1791036892.2799845,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/mozgtk-static-run1.log",
+      "timeout_seconds": 720,
+      "state": "completed",
+      "task_bytes": 21014278144,
+      "free_bytes": 73949003776,
+      "checked": 1791036892.280678,
+      "exit_code": 0,
+      "finished": 1791036895.8982544,
+      "stop_reason": null,
+      "driverHandleReaped": true,
+      "exactGroupEmpty": true
+    }
+  ],
+  "boundaryRun38": {
+    "nativeObjects": 3011,
+    "expected": 3011,
+    "naturallyRebuiltExisting": 168,
+    "compilerErrors": 0,
+    "boundedStop": true,
+    "rootChecks": 4161,
+    "rustMembers": 7101,
+    "rustContentMultisetIdentical": true,
+    "rustRenamedMembers": 522
+  },
+  "inputPins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/static-names-review-run4.json",
+      "bytes": 50897,
+      "sha256": "bafa1140449bfab1a84f1dcaa63100916dcedc8146ea77032276a9877cd0ffb7"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run38-review-run2.json",
+      "bytes": 443958,
+      "sha256": "88c1b78e937f3b9c1a3f630d9c71bc49c87b81bc3392cdc81c2ca003a10ef64c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/rust-run38-name-only-review-run1.json",
+      "bytes": 77516,
+      "sha256": "d3dd47034788a3a3b505d5d709660ecba795de5938c6e95d94c3bdb8790744df"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-static-names-port-run1.json",
+      "bytes": 3535,
+      "sha256": "f3df20cc5d0cab58607232b9e5eb9e736f9fcd971c05e39749c3a98842a5e2ea"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-static-names-port-run2.json",
+      "bytes": 945,
+      "sha256": "57025bd5d04bc229b878bc49711f22ca0ed5b046d69ae3082a7b2ba8c2a7ff0b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-pixman-xshm-port-run1.json",
+      "bytes": 2843,
+      "sha256": "e6826c58c6a3f6fe30fa58590b320a431618519a314cb6a67887ae11be801d5b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/xshm-firefox-dry-run1.log",
+      "bytes": 4297,
+      "sha256": "3bf04e0b07abb8dd7e10805b6b33a9f532961c9f296004b3278254b667ebe9a6"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/xshm-gfxtest-dry-run1.log",
+      "bytes": 272,
+      "sha256": "3da00001755c1eeeaf214be01c5e003bc7310d9fcde2ac999af6d550a893bf29"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/NightlyPngStaticNames.h",
+      "bytes": 887,
+      "sha256": "c39eec29e89f66bbed8f21b4037330ac59faf86d96a438b741afa94eff79727a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/NightlyCairoStaticNames.h",
+      "bytes": 82582,
+      "sha256": "254b46b9bee78f9455608ef6bbf2e7388450f4c8a726798b519bdbc87c6a0f0d"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/NightlyPixmanStaticNames.h",
+      "bytes": 7206,
+      "sha256": "aa1647c92cf602f4ae10687822a87349191dc504c6ed8aac885d01235e9f8245"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/cairo-static/defs.mk",
+      "bytes": 330,
+      "sha256": "7ece70c057ba01e842a116b32573f5f8485c48c9438cf2f65e223ede81aca4fb"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 747,
+      "sha256": "d2bdfc231be98ab7d1108cc3cf4aeb898eac47652aa8b04bc6373d77194e2b72"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-static-names.patch",
+      "bytes": 3164,
+      "sha256": "9185d3c96ea097f598dca11ba4eda3366129eabc6007c1be1f86047b8dd46bdc"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-pixman-xshm.patch",
+      "bytes": 1792,
+      "sha256": "57e0885b26af54f2b2dda2af71e36d7c5065c13ed57e498ad7ef4270cd8621f5"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-static-names-port.py",
+      "bytes": 4041,
+      "sha256": "d990af21b864a3007b5018be51e3d94d157e61ca9d45edb1a88ee00f691b0c85"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-pixman-xshm-port.py",
+      "bytes": 4135,
+      "sha256": "1d0c1632080e292d08f3e50af67e181716b4b4e49ad7596be5fba3413c43c27b"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 4071,
+      "sha256": "e1c7115d2d094a53c8cb8fddbf34fe7bd79166641e47c3a19e62bb80d4a289a5"
+    }
+  ],
+  "nightlyBrowserAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false
+}

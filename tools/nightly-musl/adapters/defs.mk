@@ -5,4 +5,7 @@ NIGHTLY_WASM_COMMA := ,
 override LDFLAGS = $(MOZ_LTO_LDFLAGS) $(filter-out -Wl$(NIGHTLY_WASM_COMMA)-rpath-link$(NIGHTLY_WASM_COMMA)%,$(COMPUTED_LDFLAGS)) $(PGO_LDFLAGS)
 OS_LIBS := $(filter-out -Wl$(NIGHTLY_WASM_COMMA)--as-needed -Wl$(NIGHTLY_WASM_COMMA)--no-as-needed,$(OS_LIBS))
 OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a
+ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)
+override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=XShmQueryExtension
+endif
 endif

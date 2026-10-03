@@ -1,0 +1,16 @@
+// Native static-link namespace for the pinned Nightly bundled png implementation.
+#pragma once
+#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
+#define png_error MOZ_PNG_native_static_png_error
+#define png_get_cICP MOZ_PNG_native_static_png_get_cICP
+#define png_get_eXIf MOZ_PNG_native_static_png_get_eXIf
+#define png_get_eXIf_1 MOZ_PNG_native_static_png_get_eXIf_1
+#define png_handle_chunk MOZ_PNG_native_static_png_handle_chunk
+#define png_resolve_file_gamma MOZ_PNG_native_static_png_resolve_file_gamma
+#define png_set_cICP MOZ_PNG_native_static_png_set_cICP
+#define png_set_eXIf MOZ_PNG_native_static_png_set_eXIf
+#define png_set_eXIf_1 MOZ_PNG_native_static_png_set_eXIf_1
+#define png_set_option MOZ_PNG_native_static_png_set_option
+#define png_write_cICP MOZ_PNG_native_static_png_write_cICP
+#define png_zlib_inflate MOZ_PNG_native_static_png_zlib_inflate
+#endif

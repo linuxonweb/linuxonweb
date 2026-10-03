@@ -1,0 +1,91 @@
+--- a/media/libsoundtouch/src/moz.build
++++ b/media/libsoundtouch/src/moz.build
+@@ -69,7 +69,9 @@
+     soundtouch_defines = WASM_DEFINES
+ 
+ else:
+-    SOURCES += ["/config/external/rlbox/rlbox_thread_locals.cpp"]
++    # The native static browser already owns this shared RLBox TLS storage.
++    if not (CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32"):
++        SOURCES += ["/config/external/rlbox/rlbox_thread_locals.cpp"]
+     if CONFIG['INTEL_ARCHITECTURE']:
+         if CONFIG['MOZ_SAMPLE_TYPE_FLOAT32']:
+             SOURCES += ['sse_optimized.cpp']
+--- a/ipc/chromium/src/third_party/moz.build
++++ b/ipc/chromium/src/third_party/moz.build
+@@ -42,7 +42,8 @@
+     UNIFIED_SOURCES += [
+         'libevent/epoll.c',
+     ]
+-    if CONFIG['OS_TARGET'] != 'Android':
++    if CONFIG['OS_TARGET'] != 'Android' and not (CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32"):
++        # Native musl already provides epoll_create/ctl/wait.
+         UNIFIED_SOURCES += [
+             'libevent/epoll_sub.c',
+         ]
+--- a/media/libsoundtouch/src/RLBoxSoundTouchFactory.h
++++ b/media/libsoundtouch/src/RLBoxSoundTouchFactory.h
+@@ -5,6 +5,11 @@
+ #include "SoundTouch.h"
+ 
+ // Exposed C API that is used by RLBox
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++#  define MOZ_SOUNDTOUCH_CLEAR NightlySoundTouchClear
++#else
++#  define MOZ_SOUNDTOUCH_CLEAR Clear
++#endif
+ 
+ extern "C" {
+ 
+@@ -22,6 +27,6 @@
+                 const soundtouch::SAMPLETYPE* samples, uint numSamples);
+ uint ReceiveSamples(soundtouch::SoundTouch* mTimeStretcher,
+                     soundtouch::SAMPLETYPE* output, uint maxSamples);
+-void Clear(soundtouch::SoundTouch* mTimeStretcher);
++void MOZ_SOUNDTOUCH_CLEAR(soundtouch::SoundTouch* mTimeStretcher);
+ void Flush(soundtouch::SoundTouch* mTimeStretcher);
+ }
+--- a/media/libsoundtouch/src/RLBoxSoundTouchFactory.cpp
++++ b/media/libsoundtouch/src/RLBoxSoundTouchFactory.cpp
+@@ -56,7 +56,7 @@
+   return mTimeStretcher->receiveSamples(output, maxSamples);
+ }
+ 
+-void Clear(SoundTouch* mTimeStretcher) { mTimeStretcher->clear(); }
++void MOZ_SOUNDTOUCH_CLEAR(SoundTouch* mTimeStretcher) { mTimeStretcher->clear(); }
+ 
+ void Flush(SoundTouch* mTimeStretcher) { return mTimeStretcher->flush(); }
+ }
+--- a/media/libsoundtouch/src/RLBoxSoundTouch.cpp
++++ b/media/libsoundtouch/src/RLBoxSoundTouch.cpp
+@@ -152,7 +152,7 @@
+ }
+ 
+ void RLBoxSoundTouch::clear() {
+-  return mSandbox.invoke_sandbox_function(Clear, mTimeStretcher);
++  return mSandbox.invoke_sandbox_function(MOZ_SOUNDTOUCH_CLEAR, mTimeStretcher);
+ }
+ 
+ void RLBoxSoundTouch::flush() {
+--- a/media/libpng/pnglibconf.h
++++ b/media/libpng/pnglibconf.h
+@@ -731,3 +731,7 @@
+ #endif
+ 
+ #endif /* PNGLCONF_H */
++
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++#  include "NightlyPngStaticNames.h"
++#endif
+--- a/media/libpng/moz.build
++++ b/media/libpng/moz.build
+@@ -92,6 +92,9 @@
+ if CONFIG['MOZ_TREE_FREETYPE']:
+     DEFINES['FT_CONFIG_OPTION_USE_PNG'] = True
+ 
++if CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32":
++    EXPORTS += ["NightlyPngStaticNames.h"]
++
+ Library('mozpng')
+ 
+ FINAL_LIBRARY = 'xul'

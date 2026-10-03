@@ -23,10 +23,16 @@ XShm interposition. Run38 adds81 Pixman names through its normal exported
 header and replaces ELF XShm interposition with a narrowly scoped --wrap for
 firefox/plugin-container/xpcshell. Dry final Firefox command has the wrapper;
 gfxtest does not. This shared header requires natural browser/Rust recompilation.
-Run38 owned PID/PGID1799592, unified handle58772, j4/20min/20GiB bounds; recheck
-actual live handle/status before any source/prerequisite mutation. No browser
-link, startup, Nightly JIT or release acceptance yet. Final static-names source
-packet remains uncommitted until terminal native symbol/boundary review.
+Run38 terminal/reaped143 (bounded20min), PGID1799592 empty. All3011 native
+objects remain present,168 existing outputs rebuilt,0 compiler errors; root4161
+boundary checks pass. Rust refresh changes522 member names but all7101 actual
+member content hashes/sizes/magic remain identical with multiplicity. Scoped
+pixman/cairo/mozgtk target-objects builds pass, handles reaped0/groups empty.
+Root161 static namespace checks confirm PNG12/Cairo939/Pixman81 collisions
+gone across15/44/31 objects and the SoundTouch/epoll/XShm/TLS link inputs.
+See docs/firefox-nightly-static-names-20261003.md and native-static-names.json.
+Continue natural shared-header rebuild before final link. No browser startup,
+Nightly JIT, GPU or release acceptance yet; public v10 unchanged.
 
 Run34 reaches all three final browser program links and exits2 because wasm-ld
 rejects ELF --as-needed/--no-as-needed flags. It is terminal/reaped, exact group
