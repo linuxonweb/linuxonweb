@@ -6,6 +6,9 @@ override LDFLAGS = $(MOZ_LTO_LDFLAGS) $(filter-out -Wl$(NIGHTLY_WASM_COMMA)-rpat
 OS_LIBS := $(filter-out -Wl$(NIGHTLY_WASM_COMMA)--as-needed -Wl$(NIGHTLY_WASM_COMMA)--no-as-needed,$(OS_LIBS))
 OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a
 ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)
+# Prebuilt native dependencies may contain DWARF even with no-symbol configure.
+# Strip it at the final link before the driver's unchanged Binaryen -O2 pass.
+override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--strip-debug
 override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=XShmQueryExtension
 # Retain the mapping adapter while musl also owns its shm symbols.
 OS_LIBS := $(filter-out /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a,$(OS_LIBS))

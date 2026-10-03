@@ -99,6 +99,19 @@ Reinspect the owner's status/process group before beginning the transition.
    in provenance are allowed; writable compiler/object/log/cache destinations
    must point only to the new task.
 
+   Add `ac_add_options --disable-debug-symbols` alongside `--disable-debug`
+   in the fresh shipping configuration. The latter disables debug assertions
+   but leaves DWARF enabled by default. Use the updated repository native
+   `defs.mk` adapter's browser-program-only `--strip-debug` flag so prebuilt
+   dependency archive DWARF is removed by wasm-ld before the unchanged
+   automatic Binaryen `-O2`. Keep the accepted baseline's active recipe and
+   object tree intact. Verify generated `MOZ_DEBUG_SYMBOLS` is absent/false,
+   Rust default flags omit `debuginfo=2` and `strip=none`, and actual C/C++,
+   Cargo C/C++ and rustc commands contain no DWARF-generating flags. Retain
+   optimized code, native Wasm exceptions and frame-pointer behavior. Details
+   and real small-module checks are in
+   `docs/firefox-nightly-no-debug-symbols-20261003.md`.
+
    Keep `--disable-jit` (which selects JS_CODEGEN_NONE). Add
    `ac_add_options --enable-portable-baseline-interp`; omit FORCE, simulator and
    AOT-IC options. Add the prepared standalone PblJit.cpp to the native Wasm PBL
@@ -184,7 +197,9 @@ Reinspect the owner's status/process group before beginning the transition.
    limit or callback ordinal has been measured;177851 and16777216 belong to
    historical128 evidence and must not become predicates.
 
-   Strip only a separate copy if the accepted install recipe requires it. Apply
+   Confirm the fresh raw browser has no `.debug_*` custom sections; retain raw
+   bytes and a separately named packaging copy. The prior debug-bearing
+   baseline must be stripped only in that separate packaging copy. Apply
    the current Binaryen23-slot transform, with complete command/log hashes:
 
    ```bash

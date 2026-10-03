@@ -1,0 +1,88 @@
+{
+  "claim": "Fresh no-DWARF configuration preparation and real small native-Wasm archive/link checks; no full-browser or guest acceptance",
+  "releaseAcceptance": false,
+  "passed": 101,
+  "failed": 0,
+  "selectedReport": {
+    "path": "/mnt/p6/build/firefox-nightly-no-debug-20261003/probe-run5/result.json",
+    "sha256": "23c33ca345f0ffe846781940890968eafd1de073811a1fba524d806bf30d4dbb"
+  },
+  "actualRetainedConfig": {
+    "MOZ_DEBUG_SYMBOLS": 1,
+    "MOZ_DEBUG_FLAGS": [
+      "-gdwarf-4",
+      "-gsimple-template-names",
+      "--start-no-unused-arguments",
+      "-mllvm=-dwarf-linkage-names=Abstract",
+      "--end-no-unused-arguments"
+    ],
+    "rustDebugFlags": [
+      "-C",
+      "debuginfo=2",
+      "-C",
+      "strip=none",
+      "-C",
+      "force-frame-pointers=yes"
+    ]
+  },
+  "shippingRustFlags": [
+    "-C",
+    "force-frame-pointers=yes"
+  ],
+  "changes": [
+    "Shipping mozconfig disables debug symbols",
+    "Linux/wasm32 final firefox/plugin-container/xpcshell links strip DWARF before unchanged automatic Binaryen -O2"
+  ],
+  "actualProofs": [
+    "C/C++ and Rust DWARF emission follows actual upstream configure/frontend branches",
+    "Cargo release profile has no debug override",
+    "Real make rows preserve browser-only and native-Wasm scope",
+    "Real debug-bearing archive loses DWARF at preoptimizer link",
+    "Preoptimizer noncustom sections byte-identical; postoptimizer contract/instruction sequences preserved",
+    "Real WABT validation plus direct/indirect/native EH execution"
+  ],
+  "notEstablished": [
+    "Full Firefox no-debug configure/rebuild",
+    "Linux guest browser/JIT/GPU acceptance",
+    "Optimizer memory sufficiency for full browser",
+    "Sites deployment"
+  ],
+  "activeRecoveryMutation": false,
+  "failedDiagnosticsRetained": [
+    "probe-run1",
+    "probe-run2",
+    "probe-run3"
+  ],
+  "selectedFiles": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/build/moz.configure/rust.configure",
+      "bytes": 50490,
+      "sha256": "0365d74bec8fa770a1b3e0c3cfd5af982da49b7e47bd8c1e8a1e1fb5708a1f68"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/python/mozbuild/mozbuild/frontend/context.py",
+      "bytes": 123250,
+      "sha256": "940cca5600601d051608853280950032a80f0c5ad69e22c3c53b21ca5812edc8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/Cargo.toml",
+      "bytes": 20849,
+      "sha256": "d9a9719e8b251e7b5267bf02e67ea16acd24fe4c2672b6cb0c31c578914cbc96"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/mozconfig",
+      "bytes": 1045,
+      "sha256": "dbfbcaec292d9eb97665f4874f9836c65d37c0cb48e9b35c46d527be15981807"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 2236,
+      "sha256": "960e7fd7ce748b1b9165ab0f4fe67a133c169e60b4f9055b732d2eb2329471ca"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/no-debug-symbols/probe.py",
+      "bytes": 12634,
+      "sha256": "1b741d01bbad6e6d0202624fd9035e3ce15ec07658f8c0b77d8d4e19928d081b"
+    }
+  ]
+}

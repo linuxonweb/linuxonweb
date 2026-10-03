@@ -17,6 +17,8 @@ ac_add_options --disable-audio-backends
 ac_add_options --without-wasm-sandboxed-libraries
 ac_add_options --disable-release
 ac_add_options --disable-debug
+# Fresh shipping builds must not feed DWARF into the automatic Binaryen -O2.
+ac_add_options --disable-debug-symbols
 ac_add_options --disable-jit
 ac_add_options --disable-lto
 ac_add_options --disable-warnings-as-errors
