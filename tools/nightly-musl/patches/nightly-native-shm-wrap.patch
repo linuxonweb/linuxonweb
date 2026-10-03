@@ -1,0 +1,13 @@
+--- a/defs.mk
++++ b/defs.mk
+@@ -7,6 +7,10 @@
+ OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a
+ ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)
+ override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=XShmQueryExtension
++# Retain the mapping adapter while musl also owns its shm symbols.
++OS_LIBS := $(filter-out /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a,$(OS_LIBS))
++OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-wrapped-shm/libnightly-native-mapping.a
++override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=shm_open -Wl$(NIGHTLY_WASM_COMMA)--wrap=shm_unlink
+ # Match the native Rust target's shared process memory and 8 MiB stack.
+ # Export the table for guest callbacks/JIT and keep its static indices growable.
+ override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--import-memory -Wl$(NIGHTLY_WASM_COMMA)--max-memory=4294967296 -Wl$(NIGHTLY_WASM_COMMA)--shared-memory

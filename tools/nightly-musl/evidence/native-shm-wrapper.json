@@ -1,0 +1,28 @@
+{
+  "claim": "Actual native shm wrapper compile, validation and final-link scope; Run43 reaches missing XPTCall backend",
+  "reviews": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-shm-wrapper-review-run1.json",
+      "bytes": 3241,
+      "sha256": "846ea4db910d3a297814c3a8c9a6bc013e724ed25b995e414f48fe2c4f6f544b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-shm-link-scope-run1.json",
+      "bytes": 18476,
+      "sha256": "21ba183ad68b72e20c29e01597a2cfddd6864efc397f88fac1f4020451aee055"
+    }
+  ],
+  "buildStatus": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run43.json",
+    "bytes": 795,
+    "sha256": "5f089fda93032ee4e1b3cdf784c47abc3fc7e74b5fcd470faf01b24346dbc828"
+  },
+  "log": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run43.log",
+    "bytes": 9689,
+    "sha256": "6a30bd45e7c40dfdd48755a4b85750c77f408f652aa132688f2ca7c861c956f0"
+  },
+  "guestAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false
+}

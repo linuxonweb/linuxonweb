@@ -1,3 +1,18 @@
+# Latest continuation — 2026-10-03
+
+Run42 and Run43 are terminal/reaped2; owned PGIDs2006321/2013510 empty.
+Run42 confirms Expat collisions resolved, then fails on shm_open/shm_unlink
+owned by both musl and the mapping adapter. Run43 resolves those through a
+fresh mapping archive with only those two definitions renamed to __wrap_*,
+and browser-only linker wrapping. Original mapping source/archive retained;
+gfxtest keeps the original archive. Root native compile/validator review8
+checks and four forced actual program-link rows pass. Run43 full boundary4148
+and Pixman1533 checks pass,3011 native objects and763 coherent header consumers.
+Current blocker is the absent native Wasm XPTCall backend (Stub3 and following).
+No live owned build, no Nightly browser/JIT/GPU/deployment acceptance. Public
+v10 unchanged. Next: real current-metadata inbound/outbound XPTCall marshalling,
+fresh native build, then browser startup/JIT acceptance.
+
 # Current continuation — 2026-10-02
 
 Run41 is terminal/reaped2, exact PGID1962945 empty. It rebuilt156 objects,
