@@ -4,7 +4,9 @@ A real native Linux/Wasm Vulkan app now renders through Rust wgpu in the browser
 The final combined backend completes the matched WebGPU workload **16.5979× faster
 on the NVIDIA GPU than on host SwiftShader**. The same package also passes the
 wgpu WebGL fallback. These are offscreen render-and-readback results, not display
-FPS or Firefox GPU acceptance. Firefox GPU tests remain paused pending root review.
+FPS or Firefox GPU acceptance. These numbers describe the immutable initial
+combined candidate. The subsequent resource profile and fresh 18.1778× regression
+are documented in [the Zink milestone](guest-zink-wgpu-resources-20261003.md).
 Public v10 and Nightly build inputs are unchanged by this work.
 
 | Final combined candidate | Completed FPS | 30-frame elapsed | Median frame | p95 frame |
@@ -68,7 +70,7 @@ requires integer viewport coordinates. Completion is synchronous at the guest
 queue boundary; wgpu GL completion/map polling yields to the Worker event loop
 and has a 60-second deadline.
 
-This is a **nonconformant Vulkan subset**. The selected Rust backend rejects
+This is a **nonconformant Vulkan subset**. The initial simple profile rejects
 compute, uniforms, descriptor resources, textures/samplers, depth/stencil,
 push constants, index buffers, instancing, WSI and general Vulkan extensions.
 Unsupported operations return errors; they are not silently accepted. The

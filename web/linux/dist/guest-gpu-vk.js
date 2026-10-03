@@ -45,7 +45,7 @@ let config = { enabled: false, backend: "auto" };
 export function configureVk(value) {
     if (!value || typeof value !== "object")
         return;
-    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true };
+    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true, allowResources: value.allowResources === true };
 }
 
 function view(memory, pointer, length) {
@@ -165,14 +165,14 @@ async function openSession(flags, log) {
     const gpu = backend === "webgl" || backend === "wgpu" ? null : globalThis.navigator?.gpu;
     const wgpuFactory = backend === "wgpu" ? async () => {
         const { createWgpuRenderer } = await import("../tests/guest-vulkan-wgpu/bridge.mjs");
-        const renderer = await createWgpuRenderer({backend: config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter});
+        const renderer = await createWgpuRenderer({backend: config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter, allowResources:config.allowResources});
         return { renderer, backend: "wgpu", adapter: renderer.adapter };
     } : undefined;
     const id = nextSession++;
     const { session, connection } = createSession(id, log);
     sessions.set(id, session);
     session.done = serveGPU(connection, {
-        gpu, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu", allowTextures: backend !== "wgpu", allowDepth: backend !== "wgpu",
+        gpu, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu" || config.allowResources, allowTextures: backend !== "wgpu" || config.allowResources, allowDepth: backend !== "wgpu" || config.allowResources,
         graphicsBackendFactory: wgpuFactory,
         timeoutMs: 0x7fffffff,
         graphicsTranslatorOptions: GPUTEST_TRANSLATORS.wgsl, webglTranslatorOptions: GPUTEST_TRANSLATORS.glsl,

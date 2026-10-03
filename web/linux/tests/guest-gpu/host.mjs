@@ -77,6 +77,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     return new Uint8Array(words(id).buffer);
   };
   const get = (id, kind) => { const r = resources.get(id); if (!r || r.kind !== kind) fail('unknown resource or wrong type'); return r; };
+  const getTexture=id=>{const r=resources.get(id);if(!r||!(r.kind==="graphics-texture"||(graphicsRenderer?.supportsSampledTargets&&r.kind==="graphics-target"&&r.width<=128&&r.height<=128)))fail("unknown sampled texture or wrong type");return r;};
   const budget = bytes => {
     if (closed || lost) fail('device unavailable', -19);
     if (!Number.isSafeInteger(bytes) || bytes < 0 || nextId > 0xffffffff || resources.size >= 64 || allocation + bytes > 16 * 1024 * 1024) fail('resource budget exceeded', -12);
@@ -123,7 +124,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     const uniformOptions = allowUniforms ? (allowTextures ? { allowUniforms, allowTextures } : { allowUniforms }) : undefined;
     let adapter;
     if (graphicsBackendFactory) {
-      if (!allowGraphics || allowClear || allowCompute || allowUniforms || allowTextures || allowDepth || allowWebGL) fail("external graphics backend requires the resource-free graphics profile");
+      if (!allowGraphics || allowClear || allowCompute || allowWebGL) fail("external graphics backend supports only the negotiated graphics profile");
       const native = await initialize(graphicsBackendFactory(), value => value.renderer.close());
       graphicsRenderer = native.renderer; report.backend = native.backend; report.adapter = native.adapter;
     } else {
@@ -195,7 +196,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             ...(allowCompute ? {computeProfile: 1, maxStorageBuffer:65536, workgroupSize:[64,1,1]} : {}),
             ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:graphicsRenderer.integerViewport??report.backend==='webgl2'} : {}),
             ...(allowUniforms ? {uniformProfile:1,maxUniformRange:16384,uniformOffsetAlignment:256,maxUniformBuffer:65536} : {}),
-            ...(allowTextures ? {textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}),
+            ...(allowTextures ? {...(graphicsRenderer?.supportsSampledTargets ? {sampledColorTargets:1}:{}),textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}),
             ...(allowDepth ? {depthProfile:1,depthFormats:['d32-sfloat','d16-unorm'],maxDepthDimension:128} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
@@ -379,7 +380,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           }
           case OP.TEXTURE_UPLOAD: {
             if (!allowTextures || length < 12) fail('invalid texture upload');
-            const texture = get(v.getUint32(0,true), 'graphics-texture'), width = v.getUint32(4,true), height = v.getUint32(8,true);
+            const texture = getTexture(v.getUint32(0,true)), width = v.getUint32(4,true), height = v.getUint32(8,true);
             if (width !== texture.width || height !== texture.height || length !== 12 + width*height*4) fail('invalid texture upload extent');
             await graphicsRenderer.uploadTexture(texture.object, payload.subarray(12)); report.graphicsTextureUploads++; break;
           }
@@ -434,7 +435,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
               if (!Array.isArray(drawTextures) || drawTextures.length > 4) fail('invalid graphics texture bindings');
               const textures = drawTextures.map(binding => {
                 record(binding, ['group','binding','texture','sampler'], 'texture binding');
-                return { ...binding, texture:get(binding.texture, 'graphics-texture').object, sampler:get(binding.sampler, 'graphics-sampler').object };
+                return { ...binding, texture:getTexture(binding.texture).object, sampler:get(binding.sampler, 'graphics-sampler').object };
               });
               return { ...draw, pipeline:pipeline.object, vertexBuffers, uniforms, textures };
             });

@@ -28,7 +28,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, depth_supported, webgl_backend, failed;
+    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, sampled_target_supported, depth_supported, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
     uint32_t instance_extensions_enabled; /* Bit per instance_extension_table index. */
     /* B2a (GUEST_VK_ZINK builds): features enabled at vkCreateDevice. */
@@ -167,6 +167,7 @@ static int hello(VkInstance instance) {
     /* Opt-in A4 sampled-texture profile, layered on the uniform profile. */
     instance->texture_supported = instance->uniform_supported && strstr(data, "\"textureProfile\":1") &&
         strstr(data, "\"maxSampledTextures\":4") && strstr(data, "\"maxTextureDimension\":128");
+    instance->sampled_target_supported=instance->texture_supported && strstr(data,"\"sampledColorTargets\":1");
     /* Opt-in A5 depth-attachment profile, layered on the texture profile. */
     instance->depth_supported = instance->texture_supported && strstr(data, "\"depthProfile\":1") &&
         strstr(data, "\"maxDepthDimension\":128");

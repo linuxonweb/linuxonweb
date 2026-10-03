@@ -249,9 +249,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreat
     r->width=i->extent.width;r->height=i->extent.height;r->size=(size_t)r->width*r->height*4;r->layout=VK_IMAGE_LAYOUT_UNDEFINED;
     r->bgra=i->format==VK_FORMAT_B8G8R8A8_UNORM;
     r->graphics_target=(i->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)!=0;r->sampled=(i->usage & VK_IMAGE_USAGE_SAMPLED_BIT)!=0;
-    /* B2f: a Zink color image with attachment+sampled usage is a host render
-     * target only; sampling a render target is not implemented yet. */
-    if(zink_color&&r->graphics_target)r->sampled=0;
+    /* Shared attachment/sampled storage is admitted only when the host
+     * explicitly negotiates sampledColorTargets. Legacy hosts retain rejection. */
+    if(zink_color&&r->graphics_target&&!live->sampled_target_supported)r->sampled=0;
 #ifdef GUEST_VK_ZINK
     r->zink_color=zink_color;
 #endif

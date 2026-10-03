@@ -1,0 +1,429 @@
+{
+  "schema": 1,
+  "pass": true,
+  "scope": "bounded actual Mesa26.2.3 GLES2/Zink indexed uniform/texture/depth correctness through Rust wgpu plus unchanged GPU-heavy matched Vulkan regression",
+  "eglPrimitiveAcceptance": true,
+  "guestVulkanGpuBenchmarkAcceptance": true,
+  "firefoxGpuAcceptance": false,
+  "compositorAcceptance": false,
+  "releaseAcceptance": false,
+  "checks": {
+    "allFinalEglArmsPass": true,
+    "sameEglPackage": true,
+    "sameEglArchive": true,
+    "sameEglServedRuntimeHashes": true,
+    "sameEglRunnerSources": true,
+    "gpuHeavyVulkanPairPass": true,
+    "finalRustSourceMatchesBuild": true
+  },
+  "eglArms": {
+    "egl-final-hardware": {
+      "report": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-hardware/result.json",
+        "bytes": 365579,
+        "sha256": "ea81ee6455e2ba56ff388884539d467d06ba8f0b4039ff315be54a081de1a723"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-hardware/validation.json",
+        "bytes": 3101,
+        "sha256": "a691a592e0eaccab4acd0d6624c8e7da66e4f37bfd9138836b645fbfe2550210"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-hardware/guest-log.txt",
+        "bytes": 35607,
+        "sha256": "bb2f09b3c32a329833d85366f5800e582c7f9ef6843dba61b35b4e8305aa4cf4"
+      },
+      "checks": {
+        "execution": true,
+        "exactWorkload": true,
+        "actualMesa": true,
+        "honestProfile": true,
+        "noGuestFailures": true,
+        "completedFrames": true,
+        "depthControl": true,
+        "fullPixelReference": true,
+        "successExit": true,
+        "actualRustOperations": true,
+        "translatorCleanup": true,
+        "nativeCleanup": true,
+        "adapter": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "noExceptions": true
+      },
+      "result": {
+        "completed": "6",
+        "elapsed_ms": "11347.260",
+        "pixel_checks": "98304",
+        "pixel_failures": "0",
+        "checksum": "3180957125"
+      },
+      "frameChecksums": [
+        "540894661",
+        "540894661",
+        "540894661",
+        "3180957125",
+        "3180957125",
+        "3180957125"
+      ],
+      "adapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "apiAdapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": ""
+      },
+      "cleanup": {
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "groupEmpty": true,
+        "serverClosed": true
+      }
+    },
+    "egl-final-software": {
+      "report": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-software/result.json",
+        "bytes": 362252,
+        "sha256": "4644f8ab58365fc9b46c0f3a184a4350f532a8e9f4ad8c72da1d0920851dac56"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-software/validation.json",
+        "bytes": 3103,
+        "sha256": "69efa3d6bb7c557e3dc260127d8f6debcf73c7b1a18b2280cff6e802efb398b3"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-software/guest-log.txt",
+        "bytes": 35605,
+        "sha256": "d52c627b919c79ff84225fe8cef6e29b2d9a300647bc2144e31f50a13525d31f"
+      },
+      "checks": {
+        "execution": true,
+        "exactWorkload": true,
+        "actualMesa": true,
+        "honestProfile": true,
+        "noGuestFailures": true,
+        "completedFrames": true,
+        "depthControl": true,
+        "fullPixelReference": true,
+        "successExit": true,
+        "actualRustOperations": true,
+        "translatorCleanup": true,
+        "nativeCleanup": true,
+        "adapter": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "noExceptions": true
+      },
+      "result": {
+        "completed": "6",
+        "elapsed_ms": "7435.120",
+        "pixel_checks": "98304",
+        "pixel_failures": "0",
+        "checksum": "3180957125"
+      },
+      "frameChecksums": [
+        "3291271621",
+        "3291271621",
+        "3291271621",
+        "3180957125",
+        "3180957125",
+        "3180957125"
+      ],
+      "adapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Cpu",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "apiAdapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": ""
+      },
+      "cleanup": {
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "groupEmpty": true,
+        "serverClosed": true
+      }
+    },
+    "egl-final-gl": {
+      "report": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-gl/result.json",
+        "bytes": 361152,
+        "sha256": "8fe3dffd9d89bc14fde5ae221d540e28061667a73c2500cefac1bc1841517691"
+      },
+      "validation": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-gl/validation.json",
+        "bytes": 3185,
+        "sha256": "ca854ac8b54303d23179bfefbfc2f62f6f73b7a33a2e7d558f2d1e5034f2a6a0"
+      },
+      "rawLog": {
+        "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-gl/guest-log.txt",
+        "bytes": 35771,
+        "sha256": "44ace2ef7c1d717cdf76271361a3c1164ecaf65373ac2747396426e5ebf83274"
+      },
+      "checks": {
+        "execution": true,
+        "exactWorkload": true,
+        "actualMesa": true,
+        "honestProfile": true,
+        "noGuestFailures": true,
+        "completedFrames": true,
+        "depthControl": true,
+        "fullPixelReference": true,
+        "successExit": true,
+        "actualRustOperations": true,
+        "translatorCleanup": true,
+        "nativeCleanup": true,
+        "adapter": true,
+        "exactCpus": true,
+        "ownership": true,
+        "sourcePins": true,
+        "noExceptions": true
+      },
+      "result": {
+        "completed": "6",
+        "elapsed_ms": "12656.165",
+        "pixel_checks": "98304",
+        "pixel_failures": "0",
+        "checksum": "3180957125"
+      },
+      "frameChecksums": [
+        "540894661",
+        "540894661",
+        "540894661",
+        "3180957125",
+        "3180957125",
+        "3180957125"
+      ],
+      "adapter": {
+        "backend": "Gl",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "forceFallbackAdapter": false,
+        "integerViewport": true,
+        "maxVertexStride": 252,
+        "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+        "requestedBackend": "Backends(GL)",
+        "vendor": 4318
+      },
+      "apiAdapter": null,
+      "cleanup": {
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "groupEmpty": true,
+        "serverClosed": true
+      }
+    }
+  },
+  "vulkanRegression": {
+    "comparison": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-benchmark-comparison.json",
+      "bytes": 16237,
+      "sha256": "9555813eaba04a29843570cb4880bfe4e26866e28ac61069bbaffe067ecb3062"
+    },
+    "checks": {
+      "hardwareValid": true,
+      "softwareValid": true,
+      "hardwareWebGpu": true,
+      "softwareWebGpu": true,
+      "sameGuestBinaryAndRustAssets": true,
+      "sameWorkload": true,
+      "sameCpuAllocation": true,
+      "sameCompletedFrames": true,
+      "sameRunnerSources": true,
+      "sameServedSources": true,
+      "sameRequestedBytes": true,
+      "substantialCompletedRenderSpeedup": true
+    },
+    "speedup": 18.17783877119736,
+    "medianSpeedup": 18.641109632511004,
+    "arms": {
+      "hardware": {
+        "completedFPS": 38.657801,
+        "elapsedMs": 776.04,
+        "frameTimeMs": {
+          "count": 30,
+          "min": 16.115,
+          "median": 24.4225,
+          "p90": 29.705,
+          "p95": 31.36,
+          "max": 41.665,
+          "mean": 25.867999999999995
+        },
+        "adapter": {
+          "backend": "BrowserWebGpu",
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "",
+          "forceFallbackAdapter": false,
+          "integerViewport": false,
+          "maxVertexStride": 2048,
+          "name": "",
+          "requestedBackend": "Backends(BROWSER_WEBGPU)",
+          "vendor": 0
+        },
+        "apiAdapter": {
+          "vendor": "nvidia",
+          "architecture": "maxwell",
+          "description": ""
+        },
+        "result": {
+          "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-benchmark-hardware/result.json",
+          "bytes": 306543,
+          "sha256": "d7a6efbd70a6c95fb04124646f9dff816d1c1315fd0f335395550bf992c1e485"
+        },
+        "rawLog": {
+          "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-benchmark-hardware/guest-log.txt",
+          "bytes": 4308,
+          "sha256": "e98f5b62ecf30ab2762835226e3d3b4245d2466bb37c873f66c62e337f3979ba"
+        }
+      },
+      "software": {
+        "completedFPS": 2.126645,
+        "elapsedMs": 14106.73,
+        "frameTimeMs": {
+          "count": 30,
+          "min": 354.445,
+          "median": 455.2625,
+          "p90": 649.385,
+          "p95": 718.81,
+          "max": 724.65,
+          "mean": 470.22433333333345
+        },
+        "adapter": {
+          "backend": "BrowserWebGpu",
+          "device": 0,
+          "deviceType": "Cpu",
+          "driver": "",
+          "driverInfo": "",
+          "forceFallbackAdapter": false,
+          "integerViewport": false,
+          "maxVertexStride": 2048,
+          "name": "",
+          "requestedBackend": "Backends(BROWSER_WEBGPU)",
+          "vendor": 0
+        },
+        "apiAdapter": {
+          "vendor": "google",
+          "architecture": "swiftshader",
+          "description": ""
+        },
+        "result": {
+          "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-benchmark-software/result.json",
+          "bytes": 310775,
+          "sha256": "74aae2a9d292eaf6f0746cd2a0a3517e32c897ae3fa335a0bf70c68f94568109"
+        },
+        "rawLog": {
+          "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-benchmark-software/guest-log.txt",
+          "bytes": 4335,
+          "sha256": "c27be7e20d326cae4ed084a3e01efb208fc93c387a3c5a1f5d992415e3ddafe5"
+        }
+      }
+    }
+  },
+  "sourceLock": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-final-source/source-lock.json",
+    "bytes": 34525,
+    "sha256": "712ac80bef889d458190d795517496f3d07990d937b93350a6ef0cbf312d5a85"
+  },
+  "builds": {
+    "host-build-resources-final": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-resources-final/build.json",
+      "bytes": 4610,
+      "sha256": "d3547fa4b973976e22ce17710b61411d63a8f9a8caa21268864ace4f8ecae0fa"
+    },
+    "egl-build-run2": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-build-run2/build.json",
+      "bytes": 12610,
+      "sha256": "7e5211588f3bd2bc15982eded642a0bd9a30392578e71528b3dddcc3bf23da5e"
+    },
+    "app-build-resources-regression": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/app-build-resources-regression/build.json",
+      "bytes": 11868,
+      "sha256": "56de7489564e3bc5a222e3820b0edcf57b1eb02f001ec263f8ad573426555501"
+    }
+  },
+  "packages": {
+    "egl-package-resources-final": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-package-resources-final/package.json",
+      "bytes": 14465,
+      "sha256": "7a79c289b564acf439673375d6d076565fdaddff928fe1380d7fcc2fbbc39d05"
+    },
+    "benchmark-package-resources-final": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/benchmark-package-resources-final/package.json",
+      "bytes": 13681,
+      "sha256": "6bacd6e37571333a8c8d981d1a313008f0825a80f8ac67a009fe76037bf6aef0"
+    }
+  },
+  "formatSectionComparison": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/resources-format-section-comparison.json",
+    "bytes": 5900,
+    "sha256": "53582f82a3e841d1778208f71cf4d9eb61fad2b153a77e7c05fe8b9384844559"
+  },
+  "earlierImmutableEglSource": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-source-run2/source-lock.json",
+    "bytes": 16930,
+    "sha256": "c21771e5eb44d13c220bd717d5f41df321ddbe933564f23972a22f7af6d4271c"
+  },
+  "preservedInitialBenchmarkSource": {
+    "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/combined-source/source-lock.json",
+    "bytes": 7540,
+    "sha256": "d06c1d8ac533ab3b56fad2061ee11f1b43cb5ae1a92efcf72d01556c9bc32e39"
+  },
+  "failures": {
+    "eglTextureUpload": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-hardware-run1/result.json",
+      "bytes": 350960,
+      "sha256": "f4c3afb4d11c61015f6d8fa115bfbd7b6cc7d57b006f22d91b80e96f22e603bc"
+    },
+    "rustCompile": {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-resources-run1/cargo-build.log",
+      "bytes": 638,
+      "sha256": "e6e60dd8fe721168820de602826062179eac20a0e543adca97f237654f7a4c65"
+    }
+  },
+  "pixelSemantics": {
+    "egl": "full independent reference all98304RGBAcomponents over6frames tolerance2; each phase stable checksum, different depth-disabled phase",
+    "vulkan": "full independent firstwarmup65536RGBAreference tolerance2 then34stable all-bytechecksums; completedrender+readbacktiming"
+  },
+  "identity": "same-browser hardware navigator nvidia/maxwell and CDP primary NVIDIA vendor4318/device5966; privacy-reduced Rust WebGPU PCI/name fields,Other; SwiftShader API google/swiftshader and RustCpu; true RustGl NVIDIA renderer; noGLsoftware ratio",
+  "reviewScope": "historical independent171-check review covers original pair/checker, not this resource extension or new EGL runs",
+  "ownership": "all final browser groups owner-reaped0/empty/serversclosed; actual browser oom_score_adj0",
+  "dependencies": [
+    "current159 source/object/build availability and staticEGL/C++ABI/EH/TLS/fpcast integration",
+    "additional GL operations and compositor/presentation acceptance",
+    "current Firefox remoteWGPU codec/executor independently implemented",
+    "stable Rust runtime assets/Worker import closure and ownerConfig promotion before later release"
+  ]
+}

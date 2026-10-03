@@ -6,6 +6,13 @@
  * bias, anisotropy, comparison or unnormalized coordinates. The staging bytes
  * are read when the copy executes, so rewriting them and resubmitting the same
  * command buffer re-uploads without re-recording. Deliberately NONCONFORMANT. */
+static int texture_staging_buffer(const struct resource *b) {
+    if(!b)return 0;
+#ifdef GUEST_VK_ZINK
+    if(b->generic&&(b->usage&VK_BUFFER_USAGE_TRANSFER_SRC_BIT))return 1;
+#endif
+    return b->staging;
+}
 static int texture_image_barrier(VkPipelineStageFlags src,VkPipelineStageFlags dst,const VkImageMemoryBarrier *b) {
     const VkPipelineStageFlags shaders=VK_PIPELINE_STAGE_VERTEX_SHADER_BIT|VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     int to_transfer=b->newLayout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&b->dstAccessMask==VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -20,7 +27,7 @@ static VKAPI_ATTR void VKAPI_CALL copy_buffer_to_image(VkCommandBuffer cb,VkBuff
     SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return;
     struct resource *i=resource_get(RID(image),R_IMAGE),*b=resource_get(RID(buffer),R_BUFFER);
-    if(command.graphics.in_pass||!i||!i->sampled||!b||!b->staging||layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL||count!=1||!region||
+    if(command.graphics.in_pass||!i||!i->sampled||!texture_staging_buffer(b)||layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL||count!=1||!region||
        region->bufferOffset%4||region->bufferOffset>b->size||i->size>b->size-region->bufferOffset||region->bufferRowLength||region->bufferImageHeight||
        region->imageSubresource.aspectMask!=VK_IMAGE_ASPECT_COLOR_BIT||region->imageSubresource.mipLevel||region->imageSubresource.baseArrayLayer||
        region->imageSubresource.layerCount!=1||region->imageOffset.x||region->imageOffset.y||region->imageOffset.z||
@@ -36,7 +43,7 @@ static VKAPI_ATTR void VKAPI_CALL copy_buffer_to_image(VkCommandBuffer cb,VkBuff
 /* Submit-time prevalidation against the simulated layout/content state. */
 static int texture_prepare_copy(const struct recorded *c,VkImageLayout layouts[MAX_RES],unsigned initialized[MAX_RES]) {
     struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
-    if(!live->texture_supported||!i||!i->sampled||!i->host||!resource_get(i->memory,R_MEMORY)||!b||!b->staging||!m||!m->bytes||
+    if(!live->texture_supported||!i||!i->sampled||!i->host||!resource_get(i->memory,R_MEMORY)||!texture_staging_buffer(b)||!m||!m->bytes||
        layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL||c->offset%4||c->offset>b->size||i->size>b->size-c->offset)return 0;
     initialized[i-resources]=1;return 1;
 }
