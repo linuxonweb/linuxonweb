@@ -1,5 +1,8 @@
 # Nightly final optimization retry — 2026-10-03
 
+The Run47/Run48 configuration below is historical. The latest retry is Run49,
+described at the end, with the user's requested2GiB available-RAM floor.
+
 The native-musl Firefox159 baseline is still incomplete. Run47's two concurrent
 Binaryen `-O2` optimizers exhausted host memory: kernel evidence records the
 death of optimizer2175585 and four Chrome processes. The plugin-container
@@ -69,3 +72,44 @@ transformed helpers, and run the full baseline guest gates. Then follow the
 separate fresh whole PBL/broad-JIT build and acceptance plan. No old128 object
 substitution, reduced JIT admission scope, GPU acceptance or Sites release is
 established here. Public v10 remains unchanged.
+
+## Run49: original optimizer, more swap, requested memory limits
+
+Run48 stopped at its former8GiB available-RAM floor after about14minutes,
+exit143. The parent exited while optimizer2240018 remained live in the owned
+group; a targeted SIGKILL cleared that group. Its terminal native artifacts
+pass4152 boundary checks and1533 Pixman checks:3012/3012 native objects,
+552/552 inttypes consumers,763/763 Pixman consumers, unchanged pinned native
+Rust archive. These retained artifacts do not establish a finished browser.
+
+The user added swap again, requested the previous optimizer, lowered the RAM
+floor to2GiB and allowed higher resident memory. The host now reports59GiB swap.
+The source link adapter remains unchanged: no stripping or `--no-wasm-opt`
+change was applied to the build. Run49 keeps the actual compiler-driver
+`wasm-opt ../../dist/bin/firefox -O2 -o ../../dist/bin/firefox` operation.
+
+Run49 usesj1,7200seconds,48GiB virtual address space and32GiB polled group
+resident memory. The available-RAM stop floor is2GiB. Full-build-only
+`NIGHTLY_ADDRESS_SPACE_GIB` accepts decimal24..48; default24.
+`NIGHTLY_RESIDENT_MEMORY_GIB` accepts decimal24..32; default24. Preflight now
+requires at least4GiB available RAM and available RAM plus free swap at least
+the selected address-space bound plus2GiB. Swap can support virtual allocation;
+resident memory and host available RAM remain separate live checks. Disk
+allowance32GiB and free-space reserve20GiB remain unchanged.
+
+The supervisor now waits for all live process-group members when stopping,
+even if the parent exits first. It escalates remaining members toSIGKILL and
+verifies no live survivors. Normal parent exit also checks for remaining
+children.33 actual preparation checks pass, including a real parent which
+exits onSIGTERM while its child ignoresSIGTERM, bounded escalation, real
+isolated24/48GiB limits with oversized mappings rejected, a30GiB untouched
+virtual mapping admitted under48GiB, RAM/swap readers, preflight boundaries,
+and override validity/scoping. No physical30GiB allocation is performed.
+
+Live observation verifies optimizer2300129, owned PGID2297842, inherited48GiB
+RLIMIT_AS and OOM priority1000, original-O2 argv, and actual supervisor32GiB
+resident/2GiB RAM settings. Unified session34812; status/log are the same task's
+`status/build-run49.json` and`logs/build-run49.log`. Evidence and source hashes
+are bound in`tools/nightly-musl/evidence/original-optimizer-swap-retry.json`.
+Recheck exact live handles before further changes. Nightly full-build, guest,
+JIT, GPU and deployment acceptance remain pending; public v10 is unchanged.

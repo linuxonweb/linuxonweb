@@ -20,13 +20,26 @@ if 'NIGHTLY_BUILD_TIMEOUT_SECONDS' in os.environ:
  limit=int(requested)
  if not 1200<=limit<=7200: raise SystemExit('Build timeout must remain bounded between 1200 and 7200 seconds')
 memory_limit=24*1024**3 if phase=='build' else None
+address_space_limit=memory_limit
+if 'NIGHTLY_RESIDENT_MEMORY_GIB' in os.environ:
+ if phase!='build': raise SystemExit('Resident-memory override is only valid for the full build phase')
+ requested=os.environ['NIGHTLY_RESIDENT_MEMORY_GIB']
+ if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=32:
+  raise SystemExit('Resident-memory limit must be decimal GiB between 24 and 32')
+ memory_limit=int(requested)*1024**3
+if 'NIGHTLY_ADDRESS_SPACE_GIB' in os.environ:
+ if phase!='build': raise SystemExit('Address-space override is only valid for the full build phase')
+ requested=os.environ['NIGHTLY_ADDRESS_SPACE_GIB']
+ if not requested.isascii() or not requested.isdecimal() or not 24<=int(requested)<=48:
+  raise SystemExit('Address-space limit must be decimal GiB between 24 and 48')
+ address_space_limit=int(requested)*1024**3
 def available_memory():
  for line in Path('/proc/meminfo').read_text().splitlines():
   if line.startswith('MemAvailable:'): return int(line.split()[1])*1024
  raise RuntimeError('Cannot determine host available memory')
 def prepare_child():
  if memory_limit is not None:
-  resource.setrlimit(resource.RLIMIT_AS,(memory_limit,memory_limit))
+  resource.setrlimit(resource.RLIMIT_AS,(address_space_limit,address_space_limit))
   # Prefer an owned build victim if the host still reaches its OOM boundary.
   Path('/proc/self/oom_score_adj').write_text('1000')
 def group_memory(pgid):
@@ -38,13 +51,49 @@ def group_memory(pgid):
    if int(fields[2])==pgid: total+=int(fields[21])*os.sysconf('SC_PAGE_SIZE')
   except (FileNotFoundError,ProcessLookupError,PermissionError): continue
  return total
-if memory_limit is not None and available_memory()<memory_limit:
- raise SystemExit('Full build needs at least 24 GiB host available memory before launch')
+def live_group(pgid):
+ members=[]
+ for process in Path('/proc').iterdir():
+  if not process.name.isdecimal(): continue
+  try:
+   fields=(process/'stat').read_text().rsplit(')',1)[1].split()
+   if int(fields[2])==pgid and fields[0]!='Z': members.append(int(process.name))
+  except (FileNotFoundError,ProcessLookupError,PermissionError): continue
+ return members
+def stop_group(p,grace_seconds=10):
+ # The mach parent can exit before an optimizer which ignores SIGTERM.
+ # Waiting only on the parent left Run48's 24 GiB optimizer alive.
+ initial=live_group(p.pid)
+ try: os.killpg(p.pid,signal.SIGTERM)
+ except ProcessLookupError: pass
+ deadline=time.monotonic()+grace_seconds
+ while time.monotonic()<deadline:
+  p.poll()
+  if not live_group(p.pid): break
+  time.sleep(0.1)
+ remaining=live_group(p.pid)
+ if remaining:
+  try: os.killpg(p.pid,signal.SIGKILL)
+  except ProcessLookupError: pass
+ p.wait(timeout=10)
+ deadline=time.monotonic()+10
+ while live_group(p.pid) and time.monotonic()<deadline: time.sleep(0.1)
+ survivors=live_group(p.pid)
+ if survivors: raise RuntimeError('Owned build descendants survived cleanup: '+str(survivors))
+ return {'initial_members':initial,'sigkill_members':remaining,'live_members_after':survivors}
+def free_swap():
+ for line in Path('/proc/meminfo').read_text().splitlines():
+  if line.startswith('SwapFree:'): return int(line.split()[1])*1024
+ raise RuntimeError('Cannot determine host free swap')
+if memory_limit is not None:
+ preflight_available=available_memory(); preflight_swap=free_swap()
+ if preflight_available<4*1024**3 or preflight_available+preflight_swap<address_space_limit+2*1024**3:
+  raise SystemExit('Full build needs 4 GiB available RAM and address-space limit plus 2 GiB in available RAM/free swap')
 start=time.time(); reason=None
 with log.open('w') as out:
  p=subprocess.Popen(args,stdout=out,stderr=subprocess.STDOUT,start_new_session=True,preexec_fn=prepare_child)
  meta={'phase':phase,'run':run,'argv':args,'pid':p.pid,'pgid':p.pid,'started':start,'log':str(log),'timeout_seconds':limit,'state':'running'}
- if memory_limit is not None: meta.update(process_address_space_limit_bytes=memory_limit,group_rss_limit_bytes=memory_limit,host_available_memory_floor_bytes=8*1024**3,child_oom_score_adj=1000)
+ if memory_limit is not None: meta.update(process_address_space_limit_bytes=address_space_limit,group_rss_limit_bytes=memory_limit,host_available_memory_floor_bytes=2*1024**3,child_oom_score_adj=1000,preflight_available_memory_bytes=preflight_available,preflight_free_swap_bytes=preflight_swap)
  status.write_text(json.dumps(meta,indent=2)); print(json.dumps(meta),flush=True)
  next_check=start
  while p.poll() is None:
@@ -54,7 +103,7 @@ with log.open('w') as out:
    meta.update(group_rss_bytes=rss,host_available_memory_bytes=available,memory_checked=now)
    status.write_text(json.dumps(meta,indent=2))
    if rss>=memory_limit: reason='buildGroupMemoryLimit'
-   if available<=8*1024**3: reason='hostAvailableMemoryReserve'
+   if available<=2*1024**3: reason='hostAvailableMemoryReserve'
   if now>=next_check:
    usage=sum(int(subprocess.check_output(['du','-sx','--block-size=1',path]).split()[0]) for path in policy['owned_roots']); free=shutil.disk_usage(root).free
    meta.update(task_bytes=usage,free_bytes=free,checked=now); status.write_text(json.dumps(meta,indent=2)); next_check=now+20
@@ -62,11 +111,10 @@ with log.open('w') as out:
    if free<=policy['reserve_bytes']: reason='20GiBdiskreserve'
   if now-start>limit: reason='boundedphase'
   if reason:
-   os.killpg(p.pid,signal.SIGTERM)
-   try: p.wait(timeout=10)
-   except subprocess.TimeoutExpired: os.killpg(p.pid,signal.SIGKILL); p.wait()
+   meta['group_cleanup']=stop_group(p)
    break
   time.sleep(2)
+ if live_group(p.pid): meta['group_cleanup']=stop_group(p)
  meta.update(state='completed',exit_code=p.wait(),finished=time.time(),stop_reason=reason)
  status.write_text(json.dumps(meta,indent=2)); print(json.dumps(meta),flush=True)
 raise SystemExit(meta['exit_code'] if meta['exit_code']>=0 else 128-meta['exit_code'])

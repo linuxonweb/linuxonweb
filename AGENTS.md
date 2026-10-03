@@ -1,4 +1,33 @@
-# Latest continuation — serial Nightly optimization, 2026-10-03
+# Latest continuation — original optimizer retry with more swap, 2026-10-03
+
+User explicitly requested retrying the original optimizer, then lowered the
+available-RAM stop floor to2GiB and authorized higher resident memory. Host now
+has59GiB swap. Run49 LIVE: j1,7200seconds, owned PGID2297842, unified34812;
+first optimizer2300129. Actual original Binaryen -O2 command and inherited
+48GiB RLIMIT_AS/oom_score_adj1000 verified. Resident group bound32GiB,
+available-RAM stop floor2GiB. No stripping/optimizer change; defs.mk unchanged.
+Full-build overrides NIGHTLY_ADDRESS_SPACE_GIB=24..48 and
+NIGHTLY_RESIDENT_MEMORY_GIB=24..32; defaults24GiB each. Preflight requires4GiB
+available RAM and available RAM+free swap >=address-space limit+2GiB.
+Disk allowance32GiB/free-space reserve20GiB unchanged. Poll exact Run49
+handle/group before changing active recipe/source or starting another build.
+
+Run48 terminated/reaped143 at the former8GiB RAM floor, before its time bound.
+Its parent exited while optimizer2240018 remained; exact owned group was
+SIGKILLed and verified empty. Freeze/review passes4152 native boundary checks
+(3012/3012 objects,552/552 inttypes, pinned7101-member Rust archive) and1533
+Pixman checks(763/763 consumers). No completed browser output. Supervisor now
+waits for all live group members and escalates remaining descendants, even
+after the parent exits. Real fast-parent/SIGTERM-ignoring-child regression
+and memory/config tests pass33checks; source/evidence in
+docs/firefox-nightly-final-optimization-20261003.md and
+tools/nightly-musl/evidence/original-optimizer-swap-retry.json.
+No Nightly baseline/browser/JIT/GPU/deploy acceptance yet. Public v10 unchanged.
+Goal active inline; no subagents. Next completed baseline/package/guest gates,
+then separate fresh whole broad-PBL/JIT build. Older LIVE entries below are
+historical observations, superseded by this entry.
+
+# Previous continuation — serial Nightly optimization, 2026-10-03
 
 Run47 j2 terminated/reaped143 at its 20-minute bound; PGID2173102 empty.
 Actual host OOM killed optimizer2175585 and four Chrome processes before

@@ -1,0 +1,104 @@
+{
+  "checked": 1791050369.949176,
+  "claim": "Terminal Run48 artifact review, real supervisor regression checks, original optimizer Run49 launched with user-requested bounds",
+  "evidence": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run48.json",
+      "bytes": 1116,
+      "sha256": "b2ede691252a342e7d7dca1bdcda1df21c65959d6ee96f7d16610e3aa558d2f2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run48-boundary.json",
+      "bytes": 722378,
+      "sha256": "69113ef59d7bb67dcf88f50cc63846f861ef9c8e234a89beaa9fb1a42af36e0e"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run48-descendant-cleanup.json",
+      "bytes": 1631,
+      "sha256": "3d705ee64ca1e27e3410e066c6a4480188b0e142bf2b2f29257e63810d876ded"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run48-group-cleanup.json",
+      "bytes": 1289,
+      "sha256": "925498618bcaa2aaf95f9e71eb694bf4c4829c21c5f808206b8ba4a9e39ed872"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run48-run-phase.py",
+      "bytes": 6303,
+      "sha256": "56a9bdcd5743f74a186c2cd3324ee2ef92140be0be8ec5e395f1965c0099777a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/swap-supervisor-port-run1.json",
+      "bytes": 985,
+      "sha256": "eb7c3d56077d14c0b9cbc00a1208ffe038efe4bd87dd06d476ee82d028fc5f93"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run48-review-run1.json",
+      "bytes": 441766,
+      "sha256": "63fee1797dd9017524f64e2a46ffd28987bb22a1ca50cdba408bafddd0c2ce78"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run48-review-run1.json",
+      "bytes": 172190,
+      "sha256": "467e260acce0e0d568da6fa61d62e678e37ed8036d4486d9eb3132c5d70d0b36"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run48/capture.json",
+      "bytes": 26163,
+      "sha256": "3a165d2b593102b2976ab3700a86e6ddac8e9951a4abc2335523c61d9a6341c1"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run48/compiler-response.txt",
+      "bytes": 22419,
+      "sha256": "de53c96bb048ecdbf0206654e5fabe4560eb26e5ea2344f06bd53b6a80a12973"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/actual-firefox-link-run48/link-inputs-0.txt",
+      "bytes": 121370,
+      "sha256": "882d273ea90eed3ad5e4be0c2a41bedfd65c719dc5bb931a8e17be141b46800d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/check-swap-supervisor-run1.py",
+      "bytes": 5472,
+      "sha256": "f0dd6c67859057db3cc7ca46d8a6d02f570c28364677e3f0ad3c1613a61081e7"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/swap-supervisor-run1.json",
+      "bytes": 4641,
+      "sha256": "ad145e99124c9225fa16875ab0127cc49cab8a70d5a3e5b3d0725b1cebb2310d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/build-run49-live-supervisor-run1.json",
+      "bytes": 3047,
+      "sha256": "4c5f5cb70e51bbbae25d5c145476c862dad883df51cd3726302e40749d6d7c2f"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 8827,
+      "sha256": "0279a2a672a6fcd3a8b4b96a731f40d1567882b61d3f0f993b188696251ad245"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 2020,
+      "sha256": "64b4d62b5dd7ef384397e4dcbba33650cc7bc27cf0b85b96cbb917801ebc094c"
+    }
+  ],
+  "supervisorChecks": 33,
+  "run49": {
+    "pid": 2297842,
+    "pgid": 2297842,
+    "unifiedSession": 34812,
+    "firstOptimizerPid": 2300129,
+    "stateAtObservation": "running",
+    "jobs": 1,
+    "timeoutSeconds": 7200,
+    "addressSpaceGiB": 48,
+    "groupResidentGiB": 32,
+    "availableRamFloorGiB": 2
+  },
+  "fullBuildAcceptance": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false
+}
