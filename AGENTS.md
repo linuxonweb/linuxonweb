@@ -1,3 +1,61 @@
+# Latest continuation — Run52 main size and static validation, 2026-10-03
+
+Run52 main Firefox completed its unchanged original Binaryen-O2 operation.
+The raw debug-bearing main is 2,335,263,664 bytes, SHA256
+`d418d84a6e68ad569264a74721587aee1f7ceaa16a901d032a4990617034bf2f`.
+A separate debug-stripped copy is 176,370,407 bytes, SHA256
+`8c236b2d18a627f272ec9931cc84625dcb02dcf0abc8fa28a88d40e58db90a64`.
+Stripping removes 2,158,893,257 bytes (92.4%), six debug sections; all 16 remaining
+section payload hashes match and the original main remains unchanged.
+The 2.335 GB debug file is not the final download artifact.
+
+Actual separate stripped-main `wasm-validate --enable-all` passes exit 0 in
+15.03 seconds under inherited 16 GiB AS/core 0; peak polled RSS 6.38 GiB and
+minimum available RAM 11.50 GiB. Exact validator group 69632 empty after reaping.
+Earlier raw validation under 8 GiB AS aborted with `std::bad_alloc`; this retained
+allocation diagnostic does not prove an invalid module. Raw ABI inspection
+finds 238253 functions,207620 elements and maximum 23 element parameters;
+raw indirect targets are not yet uniformly 23i64->i64. This is static evidence,
+not guest/browser/JIT acceptance.
+
+Run52 is now terminal: user-requested SIGTERM for the no-debug rebuild,
+actual child exit -15, owner-reaped unified43377 wrapper exit143. Exact PGID26369
+is fully empty. Main/plugin original-O2 finished; xpcshell reached original-O2
+optimizer75550 before interruption and build cleanup removed its unfinished
+output. Completed main/plugin and native objects remain retained. Shutdown
+record: `status/build-run52-no-debug-stop.json`. No full-build success or
+full-build/package/guest/JIT/GPU/Sites acceptance is implied.
+
+Retained public v10 runtime has a 157,967,665-byte Firefox 128.14.0 executable
+inside the 88,910,833-byte gzip Firefox+Linux archive. Actual archive hash
+matches the local manifest and retained v10 deployment record. Current Sites
+v10/source commit `b9656d4705aa4f6a073fa1b7122acf53a728a7c1` is confirmed by
+parent tool observation; the public manifest returns 403, no current public
+artifact was downloaded. The 178,196,480-byte whole-Site source tar is a
+separate artifact. Public v10 unchanged. Measured sources/reports/logs and
+hash provenance are pinned in
+`tools/nightly-musl/evidence/nightly-size-and-validation-run52.json`.
+
+The latest user delegation supersedes historical inline/no-subagents notes:
+run most commands through fresh subagents with minimal task context, keeping
+the same inherited model and reasoning effort. The user authorizes scoped
+commits on the current branch. For the requested no-debug restart, freeze retained artifacts after the
+now-proven empty group, reconfigure without debug and
+verify actual flags/dependency coherence, with scoped linker debug stripping
+before original-O2. Actual flag verification is pending.
+No optimizer-memory improvement is claimed from that unmeasured change.
+Next complete the no-debug build, strip/transform/validate all required helpers and
+main, package and pass actual baseline guest gates; then the fresh whole broad
+JIT build and acceptance, authorized Sites release, then GPU acceptance/release.
+After the actual no-debug rebuild, write its final Firefox binary size and
+absolute path in repository `diary.md`, plus important lessons and mistakes.
+This followup is mandatory and not yet completed. The old configuration used
+`--disable-debug` without `--disable-debug-symbols`; section composition was
+overlooked before repeated O2 retries. Inspect section sizes/actual flags before
+repeating massive optimizers; metadata-removal size benefit is measured, while
+optimizer code-work/RAM benefit remains unmeasured.
+Older LIVE entries below are historical observations.
+
 # Latest continuation — host reboot recovery, 2026-10-03
 
 Run51 was interrupted by an external host reboot. Previous boot

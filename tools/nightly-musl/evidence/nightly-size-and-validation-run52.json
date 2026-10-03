@@ -1,0 +1,589 @@
+{
+  "checked": 1791056892.3770316,
+  "claim": "Completed original-O2 main, byte-preserving separate debug strip and actual static Wasm validation; incomplete Run52 subsequently stopped for user-requested no-debug rebuild",
+  "taskRoot": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002",
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/evidence.json",
+      "bytes": 22046,
+      "sha256": "769f944a636ff3575bec284a0ceaffcce4f8c1a58bc5041f54773ceddc545c4f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/strip-result.json",
+      "bytes": 1454,
+      "sha256": "2815d072065ecb9cec0d65ee927f8a209c9bc658eaf89704a897eaeef2d2d50c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/measure.py",
+      "bytes": 3386,
+      "sha256": "5e5cd2f9b926c644950efafe50a5875de26b012fc2647129002f7e73218da4ed"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/compare.py",
+      "bytes": 5219,
+      "sha256": "82f99aa9ad342d35182558b5add08a046c7d51725560ab332fd3c01d4cc7c641"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/strip.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/build-process-group.txt",
+      "bytes": 5759,
+      "sha256": "857addf1b2a74015916080579f2a777c7b585df47455298d81b738af44c7615a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/v10-runtime-lock.json",
+      "bytes": 65074,
+      "sha256": "de72b896419b376d926001d231283ebbad6b64b085fa68f047765495cebbf0a3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-stripped-validation-run52.json",
+      "bytes": 4456,
+      "sha256": "8c23a1e40549258f9be30611cddab83296f2247b6a0f5fd10f42d9a0e56dd8d4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/firefox-stripped-validation-run52.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-native-validation-run52.json",
+      "bytes": 1286,
+      "sha256": "25c3097e1072147ea3708385bf3e58cc18d5b0dd44ae6cb1bdee6fb4995b8a7c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/firefox-native-validation-run52.log",
+      "bytes": 90,
+      "sha256": "462cb69c28e2e39e36da60e7d96ed04ca7dc3bbd6af16c71d66ba6c2f44079fa"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/result.json",
+      "bytes": 258413,
+      "sha256": "09ed0768051256e5fd0b6415c2e6425d21069c14bd49dcefddd28621bebeb9bc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/inspector.py",
+      "bytes": 9641,
+      "sha256": "22ef28f2f5833561928ffc9873c3e5974fe33be61ea319b06873021d4d150528"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-jit-prep/inspect-wasm.py",
+      "bytes": 9641,
+      "sha256": "22ef28f2f5833561928ffc9873c3e5974fe33be61ea319b06873021d4d150528"
+    },
+    {
+      "path": "/usr/bin/wasm-validate",
+      "bytes": 1124712,
+      "sha256": "77c04d5445984b86ea1f830d20a1ede6d183ee2babc450b3d6d1d488cce40652"
+    },
+    {
+      "path": "/usr/bin/wasm-objdump",
+      "bytes": 932168,
+      "sha256": "9fdee230ad783d862896509e995fcb4ebf272a66ad9dfeb142b6a03802ee7824"
+    },
+    {
+      "path": "/nix/store/7hx2lqdpdaz7hprc97p1zalqbygznffb-llvm-binutils-21.1.8/bin/llvm-objcopy",
+      "bytes": 277392,
+      "sha256": "1da7b8370d878eb56c6a0cfed89b1b703b2dc2bb3ff2b915fa3ad385a83aaaea"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/boot-manifest.json",
+      "bytes": 662,
+      "sha256": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/baseline-inventory.json",
+      "bytes": 2379509,
+      "sha256": "242578923ea016fd92553f2142f8bb35e0443f061ce84a7f4ea8a1cd7acdafc7"
+    },
+    {
+      "path": "/mnt/p6/build/guest-jit-sites-20261002/release-result.json",
+      "bytes": 5162,
+      "sha256": "3c028f041261a2143f17f261d7443134f7ff929e9cd90e70d2a4625acc9d1680"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52-launch-context.json",
+      "bytes": 614,
+      "sha256": "9a2f041a555722e29b124e345471986e2bf2aa0cdf1d26f52cb473c5bc9c0588"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/code.log",
+      "bytes": 5777535,
+      "sha256": "2047f829ddc9bf1ea8c1ad47fb2cf2a273a8115406a8b7eb26e14f6cdc31e9be"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/elem.log",
+      "bytes": 6995567,
+      "sha256": "2390840ca4c73e9ca14d9a82d6890b4053c74840b077211064c553651a55d9e9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/export.log",
+      "bytes": 170,
+      "sha256": "c165bdad8097516d37b5a6628214e36dbf661bb65bbf275e00a75f8ce7c15bad"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/function.log",
+      "bytes": 5155691,
+      "sha256": "290f1471b5621b3243531369c3e2aab0e550232ac4c2889f2306eb822f46a79a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/global.log",
+      "bytes": 165,
+      "sha256": "4950195d1807e4bb82e98928577454a1c01c9c7a63741f0e1bc42e353a84a730"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/headers.log",
+      "bytes": 1646,
+      "sha256": "8239a6590c9181850fd64a959089c1a8e1806df51a4c1b8038f583fbc1da630d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/import.log",
+      "bytes": 302,
+      "sha256": "a9bf2587b61307a5f591559f42a3b1ed26e8a7b05aaf361868e712fc9206dac8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/table.log",
+      "bytes": 100,
+      "sha256": "63346739574fda594dd5a91007300912f8844b2a2eef16831832749cfc3aeeb1"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/tag.log",
+      "bytes": 90,
+      "sha256": "4ea82708e99346968041e73bfb0e241f3cdb4c68a458604fa93c077c846e40ea"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/firefox-linked-abi-run52/type.log",
+      "bytes": 43372,
+      "sha256": "1e538aeb7425b4c133a7654f502a3cf28b3811c98303592edc4936975310913f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52-no-debug-stop.json",
+      "bytes": 13467,
+      "sha256": "4c5d87e5c0c84ad78fffe1b94768a4d6e84fe504f37ab6fd94c03903cdb61510"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52.json",
+      "bytes": 1332,
+      "sha256": "4cbfcab929396fdbf086bd515d88aadb6116bb810928699e883ceb720957dbd9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run52.log",
+      "bytes": 1006,
+      "sha256": "d9cba6f80e223dcf29793dfb2024833b883c068d856a3ff9f17e3206478a3728"
+    }
+  ],
+  "moduleHashProvenance": "Large module hashes are retained actual before/after measurements in the pinned source reports; this documentation pass checks bindings and file sizes without rehashing the multi-gigabyte raw module.",
+  "main": {
+    "originalO2Completed": true,
+    "raw": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+      "bytes": 2335263664,
+      "sha256_before": "d418d84a6e68ad569264a74721587aee1f7ceaa16a901d032a4990617034bf2f",
+      "sha256_after": "d418d84a6e68ad569264a74721587aee1f7ceaa16a901d032a4990617034bf2f"
+    },
+    "separateDebugStripped": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/firefox.strip-debug.wasm",
+      "bytes": 176370407,
+      "sha256": "8c236b2d18a627f272ec9931cc84625dcb02dcf0abc8fa28a88d40e58db90a64"
+    },
+    "removedDebugBytes": 2158893257,
+    "removedPercent": 92.448,
+    "debugSectionsRemoved": 6,
+    "sectionCountsBeforeAfter": [
+      22,
+      16
+    ],
+    "all16NonDebugPayloadHashesIdentical": true,
+    "debugNamesRemoved": [
+      ".debug_abbrev",
+      ".debug_info",
+      ".debug_str",
+      ".debug_line",
+      ".debug_loc",
+      ".debug_ranges"
+    ],
+    "notFinalDownloadArtifact": true
+  },
+  "strippedStaticValidation": {
+    "argv": [
+      "/usr/bin/wasm-validate",
+      "--enable-all",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/firefox.strip-debug.wasm"
+    ],
+    "tool": {
+      "path": "/usr/bin/wasm-validate",
+      "resolved_path": "/usr/bin/wasm-validate",
+      "sha256": "77c04d5445984b86ea1f830d20a1ede6d183ee2babc450b3d6d1d488cce40652",
+      "version": "1.0.41"
+    },
+    "input": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/size-comparison-run52/firefox.strip-debug.wasm",
+      "bytes": 176370407,
+      "sha256_before": "8c236b2d18a627f272ec9931cc84625dcb02dcf0abc8fa28a88d40e58db90a64",
+      "sha256_after": "8c236b2d18a627f272ec9931cc84625dcb02dcf0abc8fa28a88d40e58db90a64",
+      "unchanged": true
+    },
+    "limits": {
+      "address_space_bytes": 17179869184,
+      "core_bytes": 0,
+      "timeout_seconds": 180,
+      "admission_available_memory_bytes": 12884901888,
+      "host_available_memory_floor_bytes": 4294967296
+    },
+    "state": "terminal",
+    "pid": 69632,
+    "pgid": 69632,
+    "returncode": 0,
+    "elapsed_seconds": 15.02505458900032,
+    "peak_group_rss_bytes": 6852685824,
+    "min_available_memory_bytes": 12347465728,
+    "stop_reason": null,
+    "remaining_group": [],
+    "actual_child_limits_observation": {
+      "pid": 69632,
+      "observed_while_running": true,
+      "source": "/proc/69632/limits, direct read during validation",
+      "max_address_space_soft_bytes": 17179869184,
+      "max_address_space_hard_bytes": 17179869184,
+      "max_core_soft_bytes": 0,
+      "max_core_hard_bytes": 0
+    },
+    "validation_passed": true,
+    "acceptance_scope": "Static Wasm validation of separate debug-stripped original-O2 main only; no baseline/package/guest/JIT/GPU/deployment acceptance."
+  },
+  "earlierRawValidation": {
+    "returncode": -6,
+    "addressSpaceGiB": 8,
+    "inputUnchanged": true,
+    "log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/firefox-native-validation-run52.log",
+      "bytes": 90,
+      "sha256": "462cb69c28e2e39e36da60e7d96ed04ca7dc3bbd6af16c71d66ba6c2f44079fa",
+      "mtime_ns": 1791056110506492592
+    },
+    "diagnostic": "std::bad_alloc; allocation failure under 8GiB AS is retained, not a module-invalidity claim"
+  },
+  "rawABI": {
+    "functionCount": 238253,
+    "definedFunctionCount": 238250,
+    "codeBodyCount": 238250,
+    "elementEntryCount": 207620,
+    "maxElementParameters": 23,
+    "maxFunctionParameters": 32,
+    "everyElementUses23I64ToI64": false,
+    "imports": [
+      {
+        "kind": "func",
+        "index": 0,
+        "binding": "linux.syscall",
+        "descriptor": "sig=14 <linux.syscall>"
+      },
+      {
+        "kind": "func",
+        "index": 1,
+        "binding": "linux.get_thread_area",
+        "descriptor": "sig=11 <linux.get_thread_area>"
+      },
+      {
+        "kind": "func",
+        "index": 2,
+        "binding": "linux.copy_siginfo",
+        "descriptor": "sig=0 <linux.copy_siginfo>"
+      },
+      {
+        "kind": "memory",
+        "index": 0,
+        "binding": "env.memory",
+        "descriptor": "pages: initial=882 max=65536 shared"
+      }
+    ],
+    "exports": [
+      {
+        "kind": "global",
+        "index": 0,
+        "name": "__stack_pointer"
+      },
+      {
+        "kind": "func",
+        "index": 7,
+        "name": "_start"
+      },
+      {
+        "kind": "table",
+        "index": 0,
+        "name": "__indirect_function_table"
+      }
+    ],
+    "tableDeclarations": [
+      "- table[0] type=funcref initial=207623"
+    ],
+    "stackPointerGlobal": "- global[0] i32 mutable=1 <__stack_pointer> - init i32=8388608",
+    "structuralValidation": false,
+    "requireFpcast": false,
+    "pass": true
+  },
+  "oldRuntime": {
+    "archive": "/mnt/p6/project/linux/linuxonweb/web/linux/initramfs-firefox.cpio.gz",
+    "archiveBytes": 88910833,
+    "archiveSHA256": "ce0d881dec8cea0728c5f513461f66de736c631c837e0e4c847cdf315c996745",
+    "executable": {
+      "name": "opt/firefox/firefox",
+      "bytes": 157967665,
+      "sha256": "f1b32608c447fd86bf0d7a9891b1de623c3609f3317e4ff6c4882d9841007d15"
+    },
+    "version": "128.14.0",
+    "inventoryMatches": true,
+    "artifactScope": "88,910,833-byte gzip Firefox+Linux initramfs; executable is an uncompressed member"
+  },
+  "retainedV10Deployment": {
+    "record": "/mnt/p6/build/guest-jit-sites-20261002/release-result.json",
+    "record_sha256": "3c028f041261a2143f17f261d7443134f7ff929e9cd90e70d2a4625acc9d1680",
+    "projectId": "appgprj_6ab78cc88a948191a1abaabd04b81fe0",
+    "sitesCommit": "b9656d4705aa4f6a073fa1b7122acf53a728a7c1",
+    "versionNumber": 10,
+    "deploymentStatus": "succeeded",
+    "url": "https://linuxonweb.exact-coot-7512.chatgpt.site",
+    "firefoxArchiveBytes": 88910833,
+    "firefoxArchiveSHA256": "ce0d881dec8cea0728c5f513461f66de736c631c837e0e4c847cdf315c996745",
+    "archiveBytes": 178196480,
+    "archiveSHA256": "d9a9e03eca222deb4c542b2f1fb02c9129d4d9f920f01e2e3e24de3b86eebe38",
+    "archiveStorageContentHash": "sha256:cc80971bb64047e21ce7c3199a7f6a2c9014a824e3b0ef5ad54f3eab61bd1637",
+    "archiveHashSemantics": "Server content_hash differs from local tar SHA; normalization semantics are not established. These are recorded separately; public full route hashes were verified against local audited dist.",
+    "public_manifest_fresh_retrieval": false
+  },
+  "publicObservation": {
+    "currentV10UnchangedConfirmedByBuildOwner": true,
+    "publicManifestHTTPStatusReportedByBuildOwner": 403,
+    "freshDownload": false,
+    "wholeSiteTarIsDifferentArtifact": true
+  },
+  "run52Observation": {
+    "observedAt": 1791056892.3770316,
+    "unifiedSessionOwnedByParent": 43377,
+    "statusPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52.json",
+    "statusSnapshotSHA256": "449980672a9f25714db4effb86c671fa4f794df1dff119733c3f926b7e9455c8",
+    "statusSnapshot": {
+      "phase": "build",
+      "run": "run52",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "-j1"
+      ],
+      "pid": 26369,
+      "pgid": 26369,
+      "started": 1791054943.790046,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run52.log",
+      "timeout_seconds": 7200,
+      "state": "running",
+      "process_address_space_limit_bytes": 68719476736,
+      "group_rss_limit_bytes": 51539607552,
+      "host_available_memory_floor_bytes": 2147483648,
+      "child_oom_score_adj": 1000,
+      "child_core_limit_bytes": 0,
+      "preflight_available_memory_bytes": 39389593600,
+      "preflight_free_swap_bytes": 64424505344,
+      "peak_process_address_space": {
+        "pid": 51789,
+        "bytes": 53000736768,
+        "observed_at": 1791056668.275893
+      },
+      "group_rss_bytes": 431894528,
+      "host_available_memory_bytes": 38913277952,
+      "memory_checked": 1791056891.2284985,
+      "task_bytes": 25715630080,
+      "free_bytes": 55163449344,
+      "checked": 1791056883.776282
+    },
+    "exactGroup": [
+      "  26369   26368   26369 SNsl       32:28 /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach build -j1",
+      "  26403   26369   26369 SN         32:27 /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach build -j1",
+      "  26405   26369   26369 SN         32:27 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -f client.mk -j1 -s",
+      "  26410   26405   26369 SN         32:27 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -C /mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly",
+      "  26592   26410   26369 SN         32:25 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make compile",
+      "  26602   26592   26369 SN         32:25 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make recurse_compile",
+      "  75033   26602   26369 SN         00:02 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -C js/xpconnect/shell target",
+      "  75035   75033   26369 S<         00:02 /nix/store/v8llyqw71lygr2llhmcc8ya5bdlzq45v-bash-5.3p9/bin/bash /nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++ -std=gnu++20 -o ../../../dist/bin/xpcshell -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstrict-flex-arrays=1 -fno-rtti -pthread -fno-sized-deallocation -fno-aligned-new -fno-math-errno -fno-exceptions -fdiagnostics-absolute-paths -fPIC -Wno-error=implicit-int-conversion -Xclang -fc++-abi=webassembly -gdwarf-4 -gsimple-template-names --start-no-unused-arguments -mllvm=-dwarf-linkage-names=Abstract --end-no-unused-arguments -O2 -fno-omit-frame-pointer -funwind-tables -Wl,@/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/xpconnect/shell/xpcshell.list -Wl,--build-id=uuid -Wl,-z,noexecstack -Wl,-z,text -Wl,-z,relro -Wl,-z,now -Wl,-z,nocopyreloc -fuse-ld=lld -Wl,-O0 -fstack-protector-strong -rdynamic -Wl,--wrap=XShmQueryExtension -Wl,--wrap=shm_open -Wl,--wrap=shm_unlink -Wl,--wrap=exit -Wl,--wrap=__pthread_tsd_run_dtors -Wl,--import-memory -Wl,--max-memory=4294967296 -Wl,--shared-memory -Wl,--export-table -Wl,--growable-table -Wl,--export=__stack_pointer -Wl,-z,stack-size=8388608 ../../../third_party/angle/translator_gn/libtranslator_gn.a ../../../third_party/angle/angle_common_gn/libangle_common_gn.a ../../../third_party/angle/angle_common_shader_state_gn/libangle_common_shader_state_gn.a ../../../third_party/angle/preprocessor_gn/libpreprocessor_gn.a ../../../js/src/build/libjs_static.a ../../../build/pure_virtual/libpure_virtual.a ../../../wasm32-unknown-linux-musl/release/libgkrust.a -pie -ldl -lm -lpthread -lc -lresolv -L/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib -lffi -L/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib -L/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib -L/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib -L/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib -L/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib -L/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib -L/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib -L/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib -L/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib -L/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib -L/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib -L/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib -L/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib -L/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib -L/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib -L/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib -L/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib -lgtk-3 -lgdk-3 -lfreetype -lz -lpng16 -lfontconfig -lpangocairo-1.0 -lpangoft2-1.0 -lpango-1.0 -lfribidi -lharfbuzz -pthread -latk-1.0 -lcairo-gobject -lcairo -lXext -lXrender -lX11 -lpixman-1 -lgdk_pixbuf-2.0 -lintl -lgio-2.0 -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lpcre2-8 -lrt -L/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib -L/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib -L/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib -lxcb-shm -lX11-xcb -lxcb -lXfixes -lXrandr -lepoxy -lXi -lXcursor -lXcomposite -lXdamage -lXinerama -lXau -lexpat /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-wrapped-shm/libnightly-native-mapping.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "  75041   75035   26369 SN         00:02 /nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang++ @/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tmp/cc-params.YGShlz",
+      "  75042   75041   26369 RN         00:01 /mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/wasm-ld -m wasm32 -L/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib -L/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib -L/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib -L/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib -L/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib -L/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib -L/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib -L/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib -L/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib -L/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib -L/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib -L/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib -L/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib -L/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib -L/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib -L/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib -L/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib -L/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib -L/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib -L/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib -L/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib -L/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib -L/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib -L/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/lib -L/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/lib -L/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/lib -L/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/lib -L/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib -L/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib -L/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib -L/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib -L/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib -L/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib -L/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib -L/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib -L/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib -L/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib -L/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib -L/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib -L/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib -L/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib -L/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib -L/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib -L/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib -L/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib -L/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib -L/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib -L/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib -L/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib -L/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib -L/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib -L/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib -L/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib -L/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib -L/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib -L/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib -L/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib -L/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib -L/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib -L/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib -L/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib -L/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib -L/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib -L/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib -L/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib -L/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib -L/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib -L/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib -L/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib -L/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib -L/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib -L/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib -L/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib -L/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib -L/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib -L/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib -L/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib -L/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib -L/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib -L/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib -L/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib -L/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/lib -L/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/lib -L/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/lib -L/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/lib -L/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib -L/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib -L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib -L/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/wasm32-unknown-linux-musl/lib -L/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl -L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/wasm32-linux-musl -L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/usr/lib/wasm32-linux-musl -L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/usr/lib -L/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib /nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/crt1.o --table-base=3 @/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/xpconnect/shell/xpcshell.list --build-id=uuid -z noexecstack -z text -z relro -z now -z nocopyreloc -O0 --wrap=XShmQueryExtension --wrap=shm_open --wrap=shm_unlink --wrap=exit --wrap=__pthread_tsd_run_dtors --import-memory --max-memory=4294967296 --shared-memory --export-table --growable-table --export=__stack_pointer -z stack-size=8388608 ../../../third_party/angle/translator_gn/libtranslator_gn.a ../../../third_party/angle/angle_common_gn/libangle_common_gn.a ../../../third_party/angle/angle_common_shader_state_gn/libangle_common_shader_state_gn.a ../../../third_party/angle/preprocessor_gn/libpreprocessor_gn.a ../../../js/src/build/libjs_static.a ../../../build/pure_virtual/libpure_virtual.a ../../../wasm32-unknown-linux-musl/release/libgkrust.a -ldl -lm -lpthread -lc -lresolv -lffi -lgtk-3 -lgdk-3 -lfreetype -lz -lpng16 -lfontconfig -lpangocairo-1.0 -lpangoft2-1.0 -lpango-1.0 -lfribidi -lharfbuzz -latk-1.0 -lcairo-gobject -lcairo -lXext -lXrender -lX11 -lpixman-1 -lgdk_pixbuf-2.0 -lintl -lgio-2.0 -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lpcre2-8 -lrt -lxcb-shm -lX11-xcb -lxcb -lXfixes -lXrandr -lepoxy -lXi -lXcursor -lXcomposite -lXdamage -lXinerama -lXau -lexpat /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-wrapped-shm/libnightly-native-mapping.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++abi.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libunwind.a --shared-memory -lpthread -lc /mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl/libclang_rt.builtins.a -o ../../../dist/bin/xpcshell --keep-section=target_features"
+    ],
+    "statusAndLogAreMutable": true,
+    "logPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run52.log",
+    "logBytes": 1006,
+    "logSHA256AtObservation": "d9cba6f80e223dcf29793dfb2024833b883c068d856a3ff9f17e3206478a3728",
+    "logTail": [
+      " 0:15.79 browser/app/firefox",
+      "16:22.75 ipc/app/plugin-container",
+      "32:26.28 js/xpconnect/shell/xpcshell"
+    ],
+    "stage": "plugin-container original-O2 finished; xpcshell link has started (log at 32:26.28); full build still running"
+  },
+  "nextFreshWholeJitBuild": {
+    "policy": "Disable debug symbols before compilation and original O2 in the next fresh whole JIT build, as requested by the user",
+    "actualFlagVerificationPending": true,
+    "optimizerRamBenefitMeasured": false
+  },
+  "fullBuildAcceptance": false,
+  "packageAcceptance": false,
+  "guestAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false,
+  "precommitBuildObservation": {
+    "observedAt": 1791057014.530648,
+    "state": "running",
+    "pid": 26369,
+    "pgid": 26369,
+    "unifiedSessionOwnedByParent": 43377,
+    "exactGroup": [
+      "  26369   26368   26369 SNsl       34:30 /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach build -j1",
+      "  26403   26369   26369 SN         34:30 /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach build -j1",
+      "  26405   26369   26369 SN         34:30 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -f client.mk -j1 -s",
+      "  26410   26405   26369 SN         34:30 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -C /mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly",
+      "  26592   26410   26369 SN         34:27 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make compile",
+      "  26602   26592   26369 SN         34:27 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make recurse_compile",
+      "  75033   26602   26369 SN         02:04 /nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin/make -C js/xpconnect/shell target",
+      "  75035   75033   26369 S<         02:04 /nix/store/v8llyqw71lygr2llhmcc8ya5bdlzq45v-bash-5.3p9/bin/bash /nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++ -std=gnu++20 -o ../../../dist/bin/xpcshell -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstrict-flex-arrays=1 -fno-rtti -pthread -fno-sized-deallocation -fno-aligned-new -fno-math-errno -fno-exceptions -fdiagnostics-absolute-paths -fPIC -Wno-error=implicit-int-conversion -Xclang -fc++-abi=webassembly -gdwarf-4 -gsimple-template-names --start-no-unused-arguments -mllvm=-dwarf-linkage-names=Abstract --end-no-unused-arguments -O2 -fno-omit-frame-pointer -funwind-tables -Wl,@/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/xpconnect/shell/xpcshell.list -Wl,--build-id=uuid -Wl,-z,noexecstack -Wl,-z,text -Wl,-z,relro -Wl,-z,now -Wl,-z,nocopyreloc -fuse-ld=lld -Wl,-O0 -fstack-protector-strong -rdynamic -Wl,--wrap=XShmQueryExtension -Wl,--wrap=shm_open -Wl,--wrap=shm_unlink -Wl,--wrap=exit -Wl,--wrap=__pthread_tsd_run_dtors -Wl,--import-memory -Wl,--max-memory=4294967296 -Wl,--shared-memory -Wl,--export-table -Wl,--growable-table -Wl,--export=__stack_pointer -Wl,-z,stack-size=8388608 ../../../third_party/angle/translator_gn/libtranslator_gn.a ../../../third_party/angle/angle_common_gn/libangle_common_gn.a ../../../third_party/angle/angle_common_shader_state_gn/libangle_common_shader_state_gn.a ../../../third_party/angle/preprocessor_gn/libpreprocessor_gn.a ../../../js/src/build/libjs_static.a ../../../build/pure_virtual/libpure_virtual.a ../../../wasm32-unknown-linux-musl/release/libgkrust.a -pie -ldl -lm -lpthread -lc -lresolv -L/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib -lffi -L/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib -L/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib -L/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib -L/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib -L/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib -L/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib -L/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib -L/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib -L/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib -L/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib -L/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib -L/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib -L/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib -L/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib -L/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib -L/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib -L/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib -lgtk-3 -lgdk-3 -lfreetype -lz -lpng16 -lfontconfig -lpangocairo-1.0 -lpangoft2-1.0 -lpango-1.0 -lfribidi -lharfbuzz -pthread -latk-1.0 -lcairo-gobject -lcairo -lXext -lXrender -lX11 -lpixman-1 -lgdk_pixbuf-2.0 -lintl -lgio-2.0 -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lpcre2-8 -lrt -L/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib -L/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib -L/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib -lxcb-shm -lX11-xcb -lxcb -lXfixes -lXrandr -lepoxy -lXi -lXcursor -lXcomposite -lXdamage -lXinerama -lXau -lexpat /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-wrapped-shm/libnightly-native-mapping.a /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "  75041   75035   26369 SN         02:04 /nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang++ @/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tmp/cc-params.YGShlz",
+      "  75550   75041   26369 SNl        01:45 /nix/store/p7j7pwaj6izvwkzqahz3l85lfm19ls95-binaryen-129/bin/wasm-opt ../../../dist/bin/xpcshell -O2 -o ../../../dist/bin/xpcshell"
+    ],
+    "optimizerRows": [
+      "  75550   75041   26369 SNl        01:45 /nix/store/p7j7pwaj6izvwkzqahz3l85lfm19ls95-binaryen-129/bin/wasm-opt ../../../dist/bin/xpcshell -O2 -o ../../../dist/bin/xpcshell"
+    ],
+    "statusSnapshot": {
+      "phase": "build",
+      "run": "run52",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "-j1"
+      ],
+      "pid": 26369,
+      "pgid": 26369,
+      "started": 1791054943.790046,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run52.log",
+      "timeout_seconds": 7200,
+      "state": "running",
+      "process_address_space_limit_bytes": 68719476736,
+      "group_rss_limit_bytes": 51539607552,
+      "host_available_memory_floor_bytes": 2147483648,
+      "child_oom_score_adj": 1000,
+      "child_core_limit_bytes": 0,
+      "preflight_available_memory_bytes": 39389593600,
+      "preflight_free_swap_bytes": 64424505344,
+      "peak_process_address_space": {
+        "pid": 51789,
+        "bytes": 53000736768,
+        "observed_at": 1791056668.275893
+      },
+      "group_rss_bytes": 6344613888,
+      "host_available_memory_bytes": 33782546432,
+      "memory_checked": 1791057013.4830842,
+      "task_bytes": 28773396480,
+      "free_bytes": 52295901184,
+      "checked": 1791056991.6099515
+    },
+    "statusSnapshotSHA256": "1671c42a9ab956dcec70645bdbb74fe1f9fdecd3d21752ce47ccb17d2df4a4c0",
+    "logSHA256AtObservation": "d9cba6f80e223dcf29793dfb2024833b883c068d856a3ff9f17e3206478a3728",
+    "logTail": [
+      " 0:15.79 browser/app/firefox",
+      "16:22.75 ipc/app/plugin-container",
+      "32:26.28 js/xpconnect/shell/xpcshell"
+    ]
+  },
+  "userRequestedRestart": {
+    "instruction": "Stop the still-incomplete Run52 and rebuild without debug symbols now",
+    "stopPendingAtDocumentationUpdate": false,
+    "ownedGroup": 26369,
+    "fullBuildHandleOwnedByParent": 43377,
+    "preserveCompletedMainPluginAndNativeObjects": true,
+    "requiredNextOwnerWork": "Freeze retained artifacts after the now-proven empty group; configure no-debug build, verify flags/coherence and scoped linker debug stripping before original O2",
+    "actualFlagVerificationPending": true,
+    "optimizerRamBenefitMeasured": false
+  },
+  "terminalBuildObservation": {
+    "observedAt": 1791057148.5236475,
+    "status": {
+      "phase": "build",
+      "run": "run52",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "-j1"
+      ],
+      "pid": 26369,
+      "pgid": 26369,
+      "started": 1791054943.790046,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run52.log",
+      "timeout_seconds": 7200,
+      "state": "completed",
+      "process_address_space_limit_bytes": 68719476736,
+      "group_rss_limit_bytes": 51539607552,
+      "host_available_memory_floor_bytes": 2147483648,
+      "child_oom_score_adj": 1000,
+      "child_core_limit_bytes": 0,
+      "preflight_available_memory_bytes": 39389593600,
+      "preflight_free_swap_bytes": 64424505344,
+      "peak_process_address_space": {
+        "pid": 51789,
+        "bytes": 53000736768,
+        "observed_at": 1791056668.275893
+      },
+      "group_rss_bytes": 6468751360,
+      "host_available_memory_bytes": 33659588608,
+      "memory_checked": 1791057064.4097009,
+      "task_bytes": 28773900288,
+      "free_bytes": 52295397376,
+      "checked": 1791057056.9186592,
+      "exit_code": -15,
+      "finished": 1791057066.494045,
+      "stop_reason": null
+    },
+    "exactGroup": [],
+    "stopRecordGroupFullyEmpty": true,
+    "parentReportedUnifiedSession": 43377,
+    "parentReportedReapedWrapperExit": 143,
+    "shutdownReason": "User requested rebuilding without debug information because current debug-bearing output is too large and slow",
+    "artifactsAfter": {
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox": {
+        "size": 2335263664,
+        "inode": 22862386,
+        "mtime_ns": 1791055923890104116
+      },
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/plugin-container": {
+        "size": 2335211230,
+        "inode": 22862387,
+        "mtime_ns": 1791056887301775381
+      }
+    },
+    "xpcshellRemovedByBuildCleanup": true,
+    "fullBuildAcceptance": false
+  },
+  "requiredDiaryFollowup": {
+    "afterNoDebugBuild": "Record actual final Firefox binary size and absolute path in repo diary.md, plus important lessons and mistakes learned",
+    "completed": false,
+    "lessons": [
+      "--disable-debug alone left debug symbols enabled; --disable-debug-symbols was missing",
+      "Section composition was overlooked before repeated original-O2 retries; measured debug metadata was 92.4% of this raw main",
+      "Metadata removal size benefit is measured; optimizer code-work and RAM benefit still require measurement",
+      "Inspect actual section sizes and compiler/link flags before repeating massive optimizer work"
+    ]
+  }
+}

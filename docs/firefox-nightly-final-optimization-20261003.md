@@ -206,3 +206,97 @@ are present; the expanded argument list equals the captured Run49 list exactly.
 This confirms the retry retained the link configuration; completed module
 validation and real browser behavior still require the finished artifact.
 The capture and two unchanged input snapshots are bound in the recovery packet.
+
+## Run52 original-O2 main: measured size and static validation
+
+The main Firefox original automatic Binaryen `-O2` operation completed in
+Run52. The raw debug-bearing executable is 2,335,263,664 bytes, SHA256
+`d418d84a6e68ad569264a74721587aee1f7ceaa16a901d032a4990617034bf2f`.
+A separately written `llvm-objcopy --strip-debug` copy is 176,370,407 bytes,
+SHA256 `8c236b2d18a627f272ec9931cc84625dcb02dcf0abc8fa28a88d40e58db90a64`.
+This removes 2,158,893,257 bytes (92.4%), precisely the six `.debug_*` sections.
+All 16 retained section payloads remain byte-identical, including code, data,
+types, elements, imports, exports and the retained non-debug custom sections.
+Actual before/after raw hashes match. The active build's raw main was preserved;
+its 2.335 GB debug-bearing size is not a final download size. The strip operation
+finished exit 0 in 0.51 seconds under 12 GiB AS/core 0 and 180 seconds; its peak polled
+RSS was 26,378,240 bytes. It wrote a separate disk-backed status artifact.
+
+Actual `wasm-validate --enable-all` on this separate stripped original-O2 main
+passes exit 0 in 15.03 seconds with unchanged input hashes. The actual running
+child inherited 16 GiB address space and zero core limits. The bounded runner
+uses 180 seconds,12 GiB available-memory admission and 4 GiB available-RAM stop
+floor, with disk-backed scratch. Peak polled group RSS is 6,852,685,824 bytes
+(6.38 GiB), minimum available RAM 12,347,465,728 bytes (11.50 GiB). Exact owned
+validator PGID69632 is empty after reaping; its log is empty. Earlier validation
+of the raw debug file under 8 GiB AS aborted with `std::bad_alloc`; its report
+and diagnostic log are retained. That allocation diagnostic does not establish
+module invalidity. The successful stripped validation and byte-identical
+retained sections establish static validity of this measured main, while
+browser behavior still requires guest acceptance.
+
+Raw-main ABI inspection measures 238253 functions,238250 defined functions/code
+bodies and 207620 element entries. Maximum element parameters is 23; maximum
+parameters over all functions is 32. The raw table still contains mixed
+signatures (`everyElementUses23I64ToI64=false`); passing the inspection without
+`requireFpcast` does not accept the guest's 23-i64 indirect-call contract.
+The actual imported shared memory has maximum 65536 pages (4 GiB), the exported
+growable table starts at 207623 entries, and exported stack pointer initializes
+to 8388608. Main and every required helper still need the actual fpcast
+transform, transformed static/ABI validation and package/guest gates.
+
+At the pinned read-only observation, Run52 remains running in owned PGID26369,
+unified 43377. Plugin-container's original-O2 operation has finished and the
+build log advances to xpcshell at 32:26.28, with its actual link running; later original-O2 optimizer 75550 is directly
+observed. The full build retains j1/7200 seconds,64 GiB inherited AS,48 GiB polled process-group
+RSS threshold and 2 GiB available-RAM floor; its main handle belongs to the
+parent owner. These observations are progress, not terminal/reaped full-build
+evidence. Recheck the exact group and mutable status/log before changes.
+
+The size comparison's retained runtime is Firefox 128.14.0: the uncompressed
+executable member is 157,967,665 bytes, SHA256
+`f1b32608c447fd86bf0d7a9891b1de623c3609f3317e4ff6c4882d9841007d15`.
+The gzip Firefox+Linux initramfs is 88,910,833 bytes, SHA256
+`ce0d881dec8cea0728c5f513461f66de736c631c837e0e4c847cdf315c996745`.
+The actual local archive matches the boot manifest, baseline member inventory
+and retained v10 deployment record. The new stripped main is 18,402,742 bytes
+larger than the old executable member (about 11.6%); this compares executable
+bytes, not gzip package sizes. No final new package/download size is measured.
+Parent tool observation confirms current Sites v10 and source commit
+`b9656d4705aa4f6a073fa1b7122acf53a728a7c1`. Public manifest retrieval returned 403;
+no current public artifact bytes were fetched. The retained 178,196,480-byte
+whole-Site source tar is a different artifact from either executable or gzip
+runtime archive; its local SHA and server content hash have distinct recorded
+semantics. Public v10 remains unchanged.
+
+The compact provenance packet is
+`tools/nightly-musl/evidence/nightly-size-and-validation-run52.json`. It pins
+actual comparison sources, reports, logs, ABI inspector/source snapshot,
+validator/tool identities, retained manifest/inventory/deployment record and
+launch metadata. Large module hashes come from pinned actual measurement
+reports; this documentation pass verifies their bindings and file sizes
+without repeating the multi-gigabyte raw hash. The current Sites observation
+and 403 are parent-reported tool observations, not fresh downloaded-file pins.
+
+The user subsequently requested stopping this still-incomplete Run52 and
+rebuilding without debug symbols now. The owned group received SIGTERM;
+actual child status records exit -15 and the parent reaped unified43377 with
+wrapper exit143. Exact PGID26369 is fully empty, confirmed by the retained stop
+record and a fresh read-only group check. Completed main/plugin remain; build
+cleanup removed interrupted xpcshell. This stop is a requested configuration
+change, not optimizer failure or full-build success. The next owner freezes
+retained artifacts, reconfigures without debug, verifies actual compiler flags
+and dependency coherence, and checks scoped linker debug stripping before
+original-O2. No optimizer-RAM benefit is measured or promised.
+After the actual no-debug rebuild, record its final Firefox binary size and
+absolute path in repository `diary.md`, with important lessons/mistakes learned;
+this mandatory user-requested followup remains pending. The prior configuration
+had `--disable-debug` but omitted `--disable-debug-symbols`, and debug-section
+composition was overlooked before repeated O2 retries. Inspect actual section
+sizes and compiler/link flags before repeating massive optimizers. The measured
+92.4% metadata-removal size benefit does not measure optimizer code-work or RAM
+benefit; keep those claims distinct.
+Current stripping preserves the completed main. Full-build,
+all-main/helper strip/fpcast/package validation, baseline guest, fresh whole
+broad-JIT browser acceptance, GPU and both authorized Sites releases remain
+pending. This packet accepts only the measured static main validation.
