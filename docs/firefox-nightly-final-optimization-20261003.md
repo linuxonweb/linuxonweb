@@ -300,3 +300,66 @@ Current stripping preserves the completed main. Full-build,
 all-main/helper strip/fpcast/package validation, baseline guest, fresh whole
 broad-JIT browser acceptance, GPU and both authorized Sites releases remain
 pending. This packet accepts only the measured static main validation.
+
+## Actual no-debug configuration and Run53 restart
+
+After the user-requested Run52 stop and fully empty group 26369, the frozen
+boundary passes 4152 native and 1533 Pixman checks: 3012 native objects, 552 inttypes
+consumers and 763 Pixman consumers are coherent at that boundary. The retained
+7101-member Rust archive pin describes the old configuration. Natural Cargo
+recompilation in Run53 means it is not a current no-debug archive claim.
+
+The shipping configuration now includes `--disable-debug-symbols`. Its first
+actual configure attempt, run5-no-debug, exits1 because the Linux ELF
+`DT_NEEDED` libstdc++ detector expected ELF metadata from native Wasm. A narrow
+Linux/wasm32 decorator guard excludes only that detector, preserving its body
+and other-target behavior. A real 567177-byte native Wasm iostream probe links
+static libc++/libc++abi; the independent prerequisite review passes 14 checks.
+Configure run6-no-debug actually completes exit 0, with owner-reaped unified 10766
+and exact PGID 92100 empty. This is executed configure evidence.
+
+Generated configuration verification passes 1556 checks. All 1476 computed C/C++
+rows across 737 backend files omit debug flags; `MOZ_DEBUG_SYMBOLS` is absent.
+Rust default flags retain frame pointers and cap-lints but omit `debuginfo=2`.
+Four forced actual make/driver traces select `--strip-debug` in the linker
+command for firefox, plugin-container and xpcshell before the unchanged original
+automatic Binaryen `-O2`; gfxtest keeps its previous linker scope. The native
+Wasm ABI/EH, shared imported memory/max 4 GiB, growable exported table, exported
+stack pointer/8 MiB stack and browser-only wrapper contracts remain selected.
+These traces establish generated link admission, not completed Firefox links.
+
+Real small native-Wasm no-debug preparation passes 101 checks; independent
+review passes 121. Both pre-O2 fixture modules retain their function names;
+both unchanged-O2 fixture modules omit those names. The corrected review and
+the failed initial name predicate are retained. Metadata stripping's scope
+must be stated at the stage actually measured.
+
+Run53 is live under `/root/restart_no_debug_nightly`, exact PGID 98039 and owned
+unified 59109. It retains j1, 7200 seconds, 64 GiB inherited address space, 48 GiB
+polled group RSS, 2 GiB host available-RAM floor, zero core limit and OOM priority 1000.
+Task disk cap 32 GiB and free-space reserve 20 GiB remain unchanged. The actual
+first compiler observation records rustc `opt-level=2`, `strip=debuginfo`, no
+`debuginfo=2`, and inherited 64 GiB/core 0/OOM 1000 guards. The build log shows real
+Cargo recompilation. The owner must reap or alter its handle; recheck exact
+group, status and log before changing build inputs. No Run53 final link or
+optimizer completion has yet been observed.
+
+The compact packet `tools/nightly-musl/evidence/no-debug-rebuild-launch-run53.json`
+pins the actual configuration, generated verification, first compiler observation,
+small probe/reviews, Run52 stop and frozen boundary reports. It embeds a dated
+live launch/status observation because the supervisor status changes while
+running. It does not repeat multi-gigabyte module/archive hashes. Actual
+regeneration and compiler flags do not yet establish natural rebuild completion
+or all-object dependency coherence. The measured Run52 debug-removal size
+benefit remains separate from unmeasured optimizer code-work or RAM benefits.
+
+After successful completion of the actual no-debug build, repository `diary.md`
+must record its final Firefox binary size and absolute path, plus important
+lessons and mistakes. That mandatory user-requested followup remains pending;
+the diary is currently absent. The old `--disable-debug` alone did not disable
+symbols, and section composition was overlooked before repeated O2 retries.
+Inspect section sizes and actual compiler/linker flags before massive retries.
+Full-build and object coherence, main/helper strip/fpcast/static validation,
+package and baseline guest gates, fresh whole broad JIT acceptance, then the
+authorized JIT Sites release, and GPU acceptance/second release remain pending.
+Public v10 remains unchanged.

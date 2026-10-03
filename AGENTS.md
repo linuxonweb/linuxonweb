@@ -1,4 +1,53 @@
-# Latest continuation — Run52 main size and static validation, 2026-10-03
+# Latest continuation — actual no-debug configuration and Run53 launch, 2026-10-03
+
+The requested no-debug restart is running as Run53, owned by subagent
+`/root/restart_no_debug_nightly`: exact PGID 98039, unified 59109, j1/7200 seconds,
+64 GiB inherited AS, 48 GiB polled group RSS, 2 GiB available-RAM floor, core 0,
+oom_score_adj 1000; task disk cap 32 GiB/free-space reserve 20 GiB unchanged.
+Recheck exact group/status/log and ask the owner to reap or change its build.
+Do not mutate active source/configuration/recipes or start a concurrent build.
+Current work is natural Cargo recompilation; actual rustc uses opt-level=2 and
+strip=debuginfo without debuginfo=2, with inherited guards directly observed.
+No Run53 final link, optimizer completion or full-build success is established.
+
+Run52 was frozen after fully empty group 26369: 4152 native boundary checks and
+1533 Pixman checks pass, 3012 native objects/552 inttypes/763 Pixman consumers
+coherent. That is the pre-configuration boundary, not proof of rebuilt no-debug
+object coherence. Old 7101-member Rust evidence is historical while Cargo rebuilds.
+Configure run5-no-debug failed exit 1 on an ELF DT_NEEDED detector's assumption.
+The scoped Linux/wasm32-only guard preserves the original detector body and
+other targets; a real 567177-byte native Wasm iostream link uses static libc++.
+Configure run6-no-debug succeeds: owner-reaped unified 10766 exit 0, PGID 92100 empty.
+
+Actual regenerated no-debug configuration passes 1556 checks: 1476 computed
+C/C++ flag rows across 737 backend files omit debug flags, MOZ_DEBUG_SYMBOLS is
+absent, and Rust default flags omit debuginfo=2. Four forced make/driver rows
+verify firefox/plugin-container/xpcshell --strip-debug before the unchanged
+automatic Binaryen-O2; gfxtest retains its previous linker scope. Native Wasm
+ABI/EH, memory/table/8 MiB stack and browser wrap contracts remain selected.
+Real small no-debug preparation passes 101 checks; independent review 121 and
+ELF prerequisite 14 pass, with failed initial review predicates retained.
+Evidence: tools/nightly-musl/evidence/no-debug-rebuild-launch-run53.json.
+Generated flags and first compiler admission do not establish all-object
+dependency coherence, finished browser artifacts or guest acceptance.
+
+Metadata-removal size benefit is measured on Run52; optimizer code-work/RAM
+improvement from the new configuration remains unmeasured. After the actual
+no-debug rebuild succeeds, write the final Firefox binary size and absolute
+path in repository diary.md, with important lessons and mistakes. This
+mandatory followup remains pending; diary.md is currently absent. Inspect
+section sizes and actual flags before repeating massive optimizers: the old
+--disable-debug configuration omitted --disable-debug-symbols.
+Next finish the no-debug build and natural object coherence, strip/transform/
+validate main and all required helpers, package and pass baseline guest gates;
+then a fresh whole broad JIT build and acceptance, authorized Sites release,
+then GPU acceptance and the second authorized release. Public v10 unchanged;
+no full-build/package/guest/JIT/GPU/Sites acceptance is implied.
+Run most commands through fresh subagents with minimal task context, using the
+same inherited model and reasoning effort; scoped commits remain authorized.
+Older LIVE and pending-flag entries below are historical observations.
+
+# Previous continuation — Run52 main size and static validation, 2026-10-03
 
 Run52 main Firefox completed its unchanged original Binaryen-O2 operation.
 The raw debug-bearing main is 2,335,263,664 bytes, SHA256

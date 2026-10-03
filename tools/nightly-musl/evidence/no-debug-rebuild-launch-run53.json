@@ -1,0 +1,337 @@
+{
+  "claim": "Executed no-debug configure and generated link/first compiler admission; live Run53 restart, not full-build or guest acceptance",
+  "recordedAtUTC": "2026-10-03T20:07:17.595676+00:00",
+  "releaseAcceptance": false,
+  "preparationCommits": [
+    "90992183eebae3ef3540dde45633aefb781d35ca",
+    "5173553",
+    "26f70658677bf46eb085787b71fb193a1186a770"
+  ],
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52-no-debug-stop.json",
+      "bytes": 13467,
+      "sha256": "4c5d87e5c0c84ad78fffe1b94768a4d6e84fe504f37ab6fd94c03903cdb61510"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run52-boundary.json",
+      "bytes": 722609,
+      "sha256": "4783b05ddbea76fb4c52a4a1914bd1a012fbf80922b7dd9ead36c9c90a808519"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run52-review-run1.json",
+      "bytes": 441767,
+      "sha256": "f5b04c9f1cdb3d68e822c33f3336ab6c0feb81887b0dd611cb1711b2bcbb6270"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run52-review-run1.json",
+      "bytes": 172189,
+      "sha256": "583fd4e9a205f5c6525fae75b4e69ab2f7d7622c71b3c8e59d66ee79cff17ab3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/configure-run5-no-debug.json",
+      "bytes": 809,
+      "sha256": "2b9cd22eb5fe44ae2020e954b748269cab4bcd717a69fe8e759e74e53a7f677c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/configure-run6-no-debug.json",
+      "bytes": 808,
+      "sha256": "279da27e23704959a5882dfab024a3b4e484442d8891619a81931dd8c3263dc4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/apply.json",
+      "bytes": 1716,
+      "sha256": "17c2f4a7ad72fbcd1ee23d14b1d140c7a4cbffbe8e67ccb2c3ac4f96ae82f4be"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/generated-verification.json",
+      "bytes": 6140183,
+      "sha256": "5032d5dca559f146c747c8f9c00e4b46ea35ddc756c7ecb76b6f1a6be91f7a2b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/build-run53-first-compiler-observation.json",
+      "bytes": 2353,
+      "sha256": "c4a0a1f0e600e41197180014b6218aed4835b4960fa248e7e6e0f8832efae81a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-reconfigure-run5/libstdcxx-probe/result.json",
+      "bytes": 1006,
+      "sha256": "56e7d8a0e063beb63fd78f326fd9dbd05f04c4ad11127425a8c594f825d4284d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-no-debug-20261003/probe-run5/result.json",
+      "bytes": 49187,
+      "sha256": "23c33ca345f0ffe846781940890968eafd1de073811a1fba524d806bf30d4dbb"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-no-debug-20261003/review-run1/result.json",
+      "bytes": 15911,
+      "sha256": "f564d2ab90a231c8e49b63bfdef6c04adc0b47c082726a4e6dfe99d13b7b3b8c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-no-debug-20261003/review-run1/elf-prerequisite.json",
+      "bytes": 3633,
+      "sha256": "47147648697b1852b648f7687973483ac4a60c9819ea11174413656c6ce0b040"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-no-debug-20261003/review-run1/manifest.json",
+      "bytes": 1388,
+      "sha256": "6a48f0fcecbcbf898c318b3f03a67205e00b5ea6ec73bb6b613cf6c0ab414875"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/evidence/no-debug-symbols.json",
+      "bytes": 3231,
+      "sha256": "9310b695a0c3442caef232217b61d87531c1d9a323f676be50920054ad0a39ae"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/native-libstdcxx-elf-check.patch",
+      "bytes": 462,
+      "sha256": "4d7aebcae68f4fc8bf83b01ad626de9b6d76195b708b2e9dc97affe005ba5378"
+    }
+  ],
+  "previousBoundary": {
+    "run": "run52",
+    "childExit": -15,
+    "ownerReapedWrapperExit": 143,
+    "pgid": 26369,
+    "fullyEmpty": true,
+    "nativeChecks": 4152,
+    "nativeObjects": 3012,
+    "inttypesConsumers": 552,
+    "pixmanChecks": 1533,
+    "pixmanConsumers": 763,
+    "rustMembers": 7101,
+    "rustArchiveCurrentNoDebugClaim": false,
+    "largeArtifactHashes": "Refer to pinned measured reports; multi-gigabyte files not rehashed in this documentation pass"
+  },
+  "configure": {
+    "failedRun": "run5-no-debug",
+    "failedExit": 1,
+    "reason": "ELF DT_NEEDED detector assumption on Linux wasm32 using static libc++",
+    "guardScope": "Linux wasm32 only; detector body and other targets unchanged",
+    "actualIostreamProbeBytes": 567177,
+    "successfulRun": "run6-no-debug",
+    "actualExit": 0,
+    "pgid": 92100,
+    "ownerReportedUnifiedSession": 10766,
+    "ownerReportedReapedExit": 0,
+    "ownerReportedGroupEmpty": true
+  },
+  "generatedAdmission": {
+    "passed": 1556,
+    "failed": 0,
+    "computedCAndCxxRows": 1476,
+    "backendFiles": 737,
+    "MOZ_DEBUG_SYMBOLS": "absent",
+    "rustDefaultFlags": [
+      "-C",
+      "force-frame-pointers=yes",
+      "--cap-lints",
+      "warn"
+    ],
+    "scopedStripDebugPrograms": [
+      "firefox",
+      "plugin-container",
+      "xpcshell"
+    ],
+    "stripStage": "Linker before unchanged automatic Binaryen -O2",
+    "gfxtestStripScopeChanged": false,
+    "nativeContract": "Wasm C++ ABI/EH, imported shared memory/max 4GiB, exported growable table, exported stack pointer/8MiB stack and scoped browser wraps selected",
+    "fullNaturalObjectCoherenceAccepted": false
+  },
+  "smallPreparation": {
+    "actualChecks": 101,
+    "independentChecks": 121,
+    "elfPrerequisiteChecks": 14,
+    "failedInitialReviewPredicatesRetained": true,
+    "functionNameScope": "Both pre-O2 fixtures retain names; both original-O2 fixtures omit names"
+  },
+  "launchObservation": {
+    "ownerAgent": "/root/restart_no_debug_nightly",
+    "ownerReportedUnifiedSession": 59109,
+    "observedAtEpoch": 1791058037.5956953,
+    "sourcePath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run53.json",
+    "sourceMutable": true,
+    "bytesRead": 1256,
+    "sha256OfSnapshotBytes": "b2bb0011c84d2277e80b8243b4635bf66c49616f1a1752221eb4926a1d08e932",
+    "statusSnapshot": {
+      "phase": "build",
+      "run": "run53",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "-j1"
+      ],
+      "pid": 98039,
+      "pgid": 98039,
+      "started": 1791057691.7671316,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run53.log",
+      "timeout_seconds": 7200,
+      "state": "running",
+      "process_address_space_limit_bytes": 68719476736,
+      "group_rss_limit_bytes": 51539607552,
+      "host_available_memory_floor_bytes": 2147483648,
+      "child_oom_score_adj": 1000,
+      "child_core_limit_bytes": 0,
+      "preflight_available_memory_bytes": 39959367680,
+      "preflight_free_swap_bytes": 63919620096,
+      "peak_process_address_space": {
+        "pid": 104479,
+        "bytes": 3172220928,
+        "observed_at": 1791057881.8044147
+      },
+      "group_rss_bytes": 1790119936,
+      "host_available_memory_bytes": 38335918080,
+      "memory_checked": 1791058036.7836037,
+      "task_bytes": 27283836928,
+      "free_bytes": 53807747072,
+      "checked": 1791058015.2145383
+    },
+    "exactGroupMembers": [
+      {
+        "pid": 98039,
+        "state": "S",
+        "comm": "python3"
+      },
+      {
+        "pid": 98073,
+        "state": "S",
+        "comm": "python3"
+      },
+      {
+        "pid": 98075,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98080,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98902,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98912,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98913,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98915,
+        "state": "S",
+        "comm": "make"
+      },
+      {
+        "pid": 98918,
+        "state": "S",
+        "comm": "python"
+      },
+      {
+        "pid": 98919,
+        "state": "S",
+        "comm": "cargo"
+      },
+      {
+        "pid": 110850,
+        "state": "S",
+        "comm": "rustc"
+      }
+    ],
+    "logPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run53.log",
+    "logTailSnapshot": [
+      " 5:34.83    Compiling powerfmt v0.2.0",
+      " 5:34.99    Compiling chunky-vec v0.1.0",
+      " 5:35.08    Compiling fluent-fallback v0.7.2",
+      " 5:35.39    Compiling deranged v0.5.8",
+      " 5:36.38    Compiling goblin v0.9.2",
+      " 5:41.99    Compiling icu_calendar v2.1.1",
+      " 5:43.75    Compiling db-crypto v0.1.0 (/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/application-services/components/support/db-crypto)",
+      " 5:43.79    Compiling quinn-udp v0.6.2",
+      " 5:43.83    Compiling wgpu-core v30.0.0 (https://github.com/gfx-rs/wgpu?rev=4f4dc63098fae64a0e6d1d3dc6f4f328da8fd5c8#4f4dc630)",
+      " 5:43.87    Compiling flatbuffers v25.12.19",
+      " 5:43.92    Compiling mls-rs-crypto-hpke v0.21.0",
+      " 5:44.21    Compiling icu_collator v2.1.1 (/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/rust/icu_collator)"
+    ],
+    "authorizedDiskTaskLimitGiB": 32,
+    "freeSpaceReserveGiB": 20,
+    "actualFirstCompilerObservation": {
+      "observed": 1791057769.9565766,
+      "pgid": 98039,
+      "nproc": 8,
+      "compiler_members": [
+        {
+          "pid": 98919,
+          "name": "cargo",
+          "selected_flags": [
+            "--target=wasm32-unknown-linux-musl"
+          ],
+          "limits": [
+            "Max core file size        0                    0                    bytes     ",
+            "Max address space         68719476736          68719476736          bytes     "
+          ],
+          "oom_score_adj": "1000",
+          "affinity_cpus": 8
+        },
+        {
+          "pid": 101008,
+          "name": "rustc",
+          "selected_flags": [
+            "/nix/store/il527fj9xjncr0p64rwvlh3m9qs9jqza-rust-sysroot-wasm32-unknown-linux-musl",
+            "opt-level=2",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+            "wasm32-unknown-linux-musl",
+            "incremental=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/incremental",
+            "strip=debuginfo",
+            "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+            "libc=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/liblibc-0e54a8f5f4bf49b5.rmeta",
+            "mozbuild=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libmozbuild-89a12a05bf6c695c.rmeta",
+            "nserror=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libnserror-1410425da4a5fe4c.rmeta",
+            "nsstring=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libnsstring-617971f6515c84d0.rmeta",
+            "thin_vec=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libthin_vec-878dd03a73f5698a.rmeta",
+            "threadbound=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libthreadbound-3e573037600f9e3e.rmeta"
+          ],
+          "limits": [
+            "Max core file size        0                    0                    bytes     ",
+            "Max address space         68719476736          68719476736          bytes     "
+          ],
+          "oom_score_adj": "1000",
+          "affinity_cpus": 8
+        }
+      ]
+    },
+    "ownershipRule": "Ask owning subagent to reap or change this build; no active source/config/recipe/output mutation by this recording task"
+  },
+  "mandatoryDiary": {
+    "path": "/mnt/p6/project/linux/linuxonweb/diary.md",
+    "existsAtObservation": false,
+    "writeAfterSuccessfulActualNoDebugBuild": true,
+    "required": [
+      "Final actual Firefox binary size in bytes",
+      "Absolute final Firefox binary path",
+      "Important lessons and mistakes"
+    ],
+    "pending": true
+  },
+  "notEstablished": [
+    "Run53 final link or original-O2 completion",
+    "Full no-debug rebuild or all-object dependency coherence",
+    "Final no-debug Firefox size or package download size",
+    "Optimizer code-work or RAM improvement",
+    "Main and required helper fpcast/static/package validation",
+    "Baseline guest or fresh whole broad JIT acceptance",
+    "GPU acceptance or either authorized Sites release"
+  ],
+  "publicSite": "Retained v10 unchanged"
+}
