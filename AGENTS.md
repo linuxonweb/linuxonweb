@@ -60,6 +60,23 @@ full-browser runners still need equivalent actual-affinity setup before use.
 Nightly full-build/JIT/TLS/performance gates and both authorized Sites releases
 remain pending; public v10 is unchanged.
 
+Run19 reaches its twenty-minute bound without compiler errors; root checks21
+terminal/status/input/storage predicates in full-boundary-run19-review-run1.json.
+Its graph remains747/3012 with identical object bytes. Read-only Run20 diagnosis
+shows retained shared-header recompilation:147 Run18 objects,134 Run19 objects
+and64 live Run20 objects at the frozen observation. The corrected
+UniquePtrExtensions.h and generated identity headers keep fixed mtimes. Four
+observed compiler PIDs disappear after producing fresh native outputs; their
+individual exit codes were not captured. Of349 existing objects referencing
+the corrected header,346 are fresh at this snapshot. These counts describe
+retained last writes, not new graph paths. Root's39-check frozen review corrects
+one relative dependency-path audit error; the failed first review is preserved.
+A later independent26-check review verifies23 genuine new native object paths
+absent at Run19. Evidence is tools/nightly-musl/evidence/full-build-rebuild-
+diagnosis-run20.json. Run20 continues under unchanged bounds; inspect actual
+status before continuing. No linked Nightly/browser/JIT acceptance or deployment
+is established. Public v10 remains unchanged.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

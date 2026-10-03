@@ -1,0 +1,565 @@
+{
+  "diagnosis": {
+    "checked": 1791016130.9522176,
+    "claim": "Read-only live Run20 retained header-rebuild diagnosis, not new graph-path completion or browser acceptance",
+    "cause": "Native DuplicateFileHandle correction updated shared UniquePtrExtensions.h after Run17. Existing dependent object bytes/counts can remain equal while recompilation refreshes mtimes. Run18/19 retained completed recompilation; current compiler observations corroborate Run20 progress.",
+    "graph_expected": 3012,
+    "graph_existing_at_run19_boundary": 747,
+    "graph_existing_bytes_at_run19_boundary": 904841396,
+    "fixed_headers": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+        "mtime_ns": 1791012138194019803,
+        "size": 10703,
+        "inode": 23223275,
+        "sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/buildid.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/buildid.h",
+        "mtime_ns": 1791001665503667031,
+        "size": 35,
+        "inode": 21812573,
+        "sha256": "ec33fda5390ac4f7c968bee24cd9750b715bebe6e37804bdc3b34e4a665a5e92"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/source-repo.h",
+        "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/source-repo.h",
+        "mtime_ns": 1791001665694865952,
+        "size": 66,
+        "inode": 21812574,
+        "sha256": "852ba74889c9a05aa568ea1d8db0233e7ffbd2244bb8645f5b346042e795d43a"
+      }
+    ],
+    "retained_mtime_windows": {
+      "18": {
+        "retained_expected_outputs_written": 147,
+        "bytes": 314988875,
+        "first": [
+          "accessible/aom/Unified_cpp_accessible_aom0.o",
+          {
+            "mtime_ns": 1791012505169348726,
+            "size": 435876,
+            "inode": 21948588,
+            "run_last_written": 18
+          }
+        ],
+        "last": [
+          "dom/html/input/Unified_cpp_dom_html_input0.o",
+          {
+            "mtime_ns": 1791013689673196494,
+            "size": 603325,
+            "inode": 21948396,
+            "run_last_written": 18
+          }
+        ],
+        "status": {
+          "phase": "build",
+          "run": "run18",
+          "argv": [
+            "bash",
+            "-c",
+            "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+            "nightly-musl",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+            "build",
+            "-j4"
+          ],
+          "pid": 1112158,
+          "pgid": 1112158,
+          "started": 1791012490.7119188,
+          "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run18.log",
+          "timeout_seconds": 1200,
+          "state": "completed",
+          "task_bytes": 17052737536,
+          "free_bytes": 76867354624,
+          "checked": 1791013680.5139186,
+          "exit_code": -15,
+          "finished": 1791013690.9176507,
+          "stop_reason": "boundedphase"
+        }
+      },
+      "19": {
+        "retained_expected_outputs_written": 134,
+        "bytes": 412743353,
+        "first": [
+          "dom/geolocation/Unified_cpp_dom_geolocation0.o",
+          {
+            "mtime_ns": 1791014200625683548,
+            "size": 363387,
+            "inode": 21948400,
+            "run_last_written": 19
+          }
+        ],
+        "last": [
+          "dom/modelcontext/Unified_cpp_dom_modelcontext0.o",
+          {
+            "mtime_ns": 1791015375214740521,
+            "size": 906290,
+            "inode": 21948511,
+            "run_last_written": 19
+          }
+        ],
+        "status": {
+          "phase": "build",
+          "run": "run19",
+          "argv": [
+            "bash",
+            "-c",
+            "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+            "nightly-musl",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+            "build",
+            "-j4"
+          ],
+          "pid": 1163240,
+          "pgid": 1163240,
+          "started": 1791014175.7434936,
+          "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run19.log",
+          "timeout_seconds": 1200,
+          "state": "completed",
+          "task_bytes": 17065238528,
+          "free_bytes": 76763926528,
+          "checked": 1791015366.1110346,
+          "exit_code": -15,
+          "finished": 1791015377.3868763,
+          "stop_reason": "boundedphase"
+        }
+      },
+      "20": {
+        "retained_expected_outputs_written": 64,
+        "bytes": 143792255,
+        "first": [
+          "dom/navigation/Unified_cpp_dom_navigation0.o",
+          {
+            "mtime_ns": 1791015543644317027,
+            "size": 1672386,
+            "inode": 21948522,
+            "run_last_written": 20
+          }
+        ],
+        "last": [
+          "dom/webtransport/api/Unified_cpp_dom_webtransport_api0.o",
+          {
+            "mtime_ns": 1791016084004179134,
+            "size": 2295035,
+            "inode": 21948586,
+            "run_last_written": 20
+          }
+        ],
+        "status": {
+          "phase": "build",
+          "run": "run20",
+          "argv": [
+            "bash",
+            "-c",
+            "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+            "nightly-musl",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+            "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+            "build",
+            "-j4"
+          ],
+          "pid": 1204136,
+          "pgid": 1204136,
+          "started": 1791015518.5666847,
+          "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run20.log",
+          "timeout_seconds": 1200,
+          "state": "running",
+          "task_bytes": 17080254464,
+          "free_bytes": 76748910592,
+          "checked": 1791016064.1845863
+        }
+      }
+    },
+    "directory_ranges": {
+      "18": {
+        "first": [
+          " 0:01.89 accessible/aom",
+          " 0:01.91 accessible/base",
+          " 0:01.95 toolkit/library/rust/libgkrust.a"
+        ],
+        "last": [
+          "19:44.61 dom/html/input",
+          "19:55.47 dom/html",
+          "19:58.90 dom/indexedDB"
+        ]
+      },
+      "19": {
+        "first": [
+          " 0:03.25 dom/bindings",
+          " 0:03.53 dom/geolocation",
+          " 0:25.07 dom/html"
+        ],
+        "last": [
+          "19:35.26 dom/modelcontext",
+          "19:43.73 dom/navigation",
+          "19:59.33 dom/network"
+        ]
+      },
+      "20": {
+        "first": [
+          " 0:03.56 dom/mls",
+          " 0:03.57 dom/midi",
+          " 0:03.59 dom/navigation"
+        ],
+        "last": [
+          " 8:38.68 dom/webtransport/api",
+          " 9:17.99 dom/webtransport/child",
+          " 9:25.34 dom/webtransport/parent"
+        ]
+      }
+    },
+    "dependency_counts": {
+      "objects_depending_on_header": 349,
+      "fresh": 346,
+      "stale": 3
+    },
+    "four_observed_compiler_completions": [
+      {
+        "sample_pin": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "mtime_ns": 1791015850184046312,
+          "size": 132306,
+          "inode": 21812770,
+          "sha256": "651e58811b6c66fe559becef836f51d15ec26f51071c5715686d3c3dadc96f6f"
+        },
+        "pid": 1213486,
+        "start_ticks": "241072275",
+        "output": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/smil/Unified_cpp_dom_smil1.o",
+        "before": {
+          "mtime_ns": 1791011310193284249,
+          "size": 924291,
+          "inode": 21948556
+        },
+        "after": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/smil/Unified_cpp_dom_smil1.o",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/smil/Unified_cpp_dom_smil1.o",
+          "mtime_ns": 1791015856394157224,
+          "size": 924291,
+          "inode": 21948553,
+          "sha256": "b2978c1083882435838b2e09df579046224842c6a577d2d362433021a0181541"
+        },
+        "same_process_live": false,
+        "retained_new_output": true
+      },
+      {
+        "sample_pin": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "mtime_ns": 1791015850184046312,
+          "size": 132306,
+          "inode": 21812770,
+          "sha256": "651e58811b6c66fe559becef836f51d15ec26f51071c5715686d3c3dadc96f6f"
+        },
+        "pid": 1213638,
+        "start_ticks": "241072793",
+        "output": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/storage/Unified_cpp_dom_storage0.o",
+        "before": {
+          "mtime_ns": 1791011351431205171,
+          "size": 2903368,
+          "inode": 21948558
+        },
+        "after": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/storage/Unified_cpp_dom_storage0.o",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/storage/Unified_cpp_dom_storage0.o",
+          "mtime_ns": 1791015879742366009,
+          "size": 2903368,
+          "inode": 21948561,
+          "sha256": "b92bb230da4894538e676de2e38f9e8fe19f02bceea94f4869a4cb189cff164b"
+        },
+        "same_process_live": false,
+        "retained_new_output": true
+      },
+      {
+        "sample_pin": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "mtime_ns": 1791015850184046312,
+          "size": 132306,
+          "inode": 21812770,
+          "sha256": "651e58811b6c66fe559becef836f51d15ec26f51071c5715686d3c3dadc96f6f"
+        },
+        "pid": 1213663,
+        "start_ticks": "241072859",
+        "output": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/streams/Unified_cpp_dom_streams0.o",
+        "before": {
+          "mtime_ns": 1791011337223229089,
+          "size": 2718950,
+          "inode": 21948559
+        },
+        "after": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/streams/Unified_cpp_dom_streams0.o",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/streams/Unified_cpp_dom_streams0.o",
+          "mtime_ns": 1791015865745240887,
+          "size": 2718950,
+          "inode": 21948557,
+          "sha256": "e0cd30bd8f24c5dbb991de873b2fec557565839b271d673822bacfb83412d15e"
+        },
+        "same_process_live": false,
+        "retained_new_output": true
+      },
+      {
+        "sample_pin": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+          "mtime_ns": 1791015850184046312,
+          "size": 132306,
+          "inode": 21812770,
+          "sha256": "651e58811b6c66fe559becef836f51d15ec26f51071c5715686d3c3dadc96f6f"
+        },
+        "pid": 1213913,
+        "start_ticks": "241073755",
+        "output": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/svg/Unified_cpp_dom_svg0.o",
+        "before": {
+          "mtime_ns": 1791011381996165029,
+          "size": 1036520,
+          "inode": 21948564
+        },
+        "after": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/svg/Unified_cpp_dom_svg0.o",
+          "resolved": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dom/svg/Unified_cpp_dom_svg0.o",
+          "mtime_ns": 1791015869441273939,
+          "size": 1036520,
+          "inode": 21948563,
+          "sha256": "ee2a4c945e612388549cd9e5a9f55b54a0b4da8de61f8496911fc98196374907"
+        },
+        "same_process_live": false,
+        "retained_new_output": true
+      }
+    ],
+    "raw_evidence": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-rebuild-diagnosis-live-run3.json",
+        "bytes": 478868,
+        "sha256": "197022f1e67f3034683a3643a72de548affdbd1ab84402faab831c14265025bd"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-retained-output-mtimes-live.json",
+        "bytes": 2448321,
+        "sha256": "822645932d335d7308e5827b29c9da46bb831d1015f8bf52828d13c55df76b95"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/diagnose-rebuild-progress.py",
+        "bytes": 4797,
+        "sha256": "c67b8580c15ccf2fee3b3dbd0b13826c0cb3b85a0d0bb088cd0a095d83c6da21"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-compiler-sample-1791015850181908768.json",
+        "bytes": 132306,
+        "sha256": "651e58811b6c66fe559becef836f51d15ec26f51071c5715686d3c3dadc96f6f"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/rebuild-probe-observer-optimization.json",
+        "bytes": 642,
+        "sha256": "6350015b7b1f4be6d5e9055b0d4acbc01f5f477aaa78165c58849ec437489eac"
+      }
+    ],
+    "log_prefixes": [
+      {
+        "run": "18",
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run18.log",
+        "prefix_bytes": 157260,
+        "sha256": "8572839b032764a58a8b791d5f717186cdeba4fff710dbae35377d6328603915",
+        "matches_original_report": true
+      },
+      {
+        "run": "19",
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run19.log",
+        "prefix_bytes": 157604,
+        "sha256": "f6a26cf38144ca0d1d8e6edadc36b5c9bf27b02190c2fdcdfb9ebd319c76c46f",
+        "matches_original_report": true
+      },
+      {
+        "run": "20",
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run20.log",
+        "prefix_bytes": 70337,
+        "sha256": "730adf3b08edc7970f281060d5d3844cd1cb3a06f95720b433514d40372ae5e3",
+        "matches_original_report": true
+      }
+    ],
+    "limitations": [
+      "Run18/19 original graph manifests omitted mtimes; this snapshot reconstructs retained last-write classification, not overwritten prior content.",
+      "Observation confirms four processes exited with fresh output; per-process exit codes were not captured because they were descendants of make.",
+      "Three retained header-dependent outputs remain older than header at this live snapshot.",
+      "Two expensive owned observer attempts were terminated and replaced by bounded whitespace dependency scanning; main build unaffected."
+    ],
+    "next_action": "Continue unchanged finite Run20. At terminal, verify exact group empty, freeze current graph/archive and final mtime diagnosis. Continue unchanged incremental phase if no blocker; no source/cache edits required."
+  },
+  "diagnosis_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-rebuild-diagnosis-manifest-live.json",
+    "bytes": 15315,
+    "sha256": "3c06e4b3ff667dc8be804e7a6bcd99417b0bf19cb1f8bdc01dc9653fc86c5979"
+  },
+  "root_review_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/rebuild-diagnosis-run20-review-run2.json",
+    "bytes": 4017,
+    "sha256": "f677c0fedabd3098c2fec983a7d264ce1c515e0626fb6efa0389cc7eada5c78a"
+  },
+  "run19_boundary_review_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run19-review-run1.json",
+    "bytes": 2570,
+    "sha256": "f167efacc9cf9d438ee13274918e15e0cac22bed70e2f55f707cc1998641b243"
+  },
+  "nightlyAcceptance": false,
+  "releaseAcceptance": false,
+  "new_paths_snapshot": {
+    "checked": 1791016247.1293597,
+    "baseline_graph_sha256": "58c347bdc6a967d54e0be5bae7f4712a6529cf17a11ef870c2101d14ad8799ad",
+    "new_expected_paths_since_run19": [
+      {
+        "path": "dom/webserial/Unified_cpp_dom_webserial0.o",
+        "size": 5469431,
+        "mtime_ns": 1791016059344961368,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/webserial/Unified_cpp_dom_webserial1.o",
+        "size": 1346723,
+        "mtime_ns": 1791016076703114687,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/webtransport/api/Unified_cpp_dom_webtransport_api0.o",
+        "size": 2295035,
+        "mtime_ns": 1791016084004179134,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/webtransport/child/Unified_cpp_webtransport_child0.o",
+        "size": 135737,
+        "mtime_ns": 1791016091085241618,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/webtransport/parent/Unified_cpp_webtransport_parent0.o",
+        "size": 1026951,
+        "mtime_ns": 1791016118056479420,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/webtransport/shared/Unified_cpp_webtransport_shared0.o",
+        "size": 2230770,
+        "mtime_ns": 1791016114672449600,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/Unified_cpp_dom_workers0.o",
+        "size": 3356660,
+        "mtime_ns": 1791016154061796417,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/Unified_cpp_dom_workers1.o",
+        "size": 5323878,
+        "mtime_ns": 1791016176683995332,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/loader/Unified_cpp_dom_workers_loader0.o",
+        "size": 1032802,
+        "mtime_ns": 1791016119406491315,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers0.o",
+        "size": 3845305,
+        "mtime_ns": 1791016159504844294,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers1.o",
+        "size": 1850434,
+        "mtime_ns": 1791016186717083493,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/remoteworkers/Unified_cpp_remoteworkers2.o",
+        "size": 1159679,
+        "mtime_ns": 1791016188907102731,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/workers/sharedworkers/Unified_cpp_sharedworkers0.o",
+        "size": 1671415,
+        "mtime_ns": 1791016157181823862,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/worklet/Unified_cpp_dom_worklet0.o",
+        "size": 1591547,
+        "mtime_ns": 1791016199000191375,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/worklet/loader/Unified_cpp_dom_worklet_loader0.o",
+        "size": 389576,
+        "mtime_ns": 1791016172511958662,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xhr/Unified_cpp_dom_xhr0.o",
+        "size": 2782991,
+        "mtime_ns": 1791016207259263885,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xml/Unified_cpp_dom_xml0.o",
+        "size": 1316188,
+        "mtime_ns": 1791016210011288041,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/base/Unified_cpp_dom_xslt_base0.o",
+        "size": 303004,
+        "mtime_ns": 1791016202936225934,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/xml/Unified_cpp_dom_xslt_xml0.o",
+        "size": 205184,
+        "mtime_ns": 1791016214373326324,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath0.o",
+        "size": 1109132,
+        "mtime_ns": 1791016222244395387,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath1.o",
+        "size": 407876,
+        "mtime_ns": 1791016230956471806,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/xpath/Unified_cpp_dom_xslt_xpath2.o",
+        "size": 160489,
+        "mtime_ns": 1791016234508502955,
+        "magic": "0061736d01000000"
+      },
+      {
+        "path": "dom/xslt/xslt/Unified_cpp_dom_xslt_xslt0.o",
+        "size": 2434717,
+        "mtime_ns": 1791016240653556834,
+        "magic": "0061736d01000000"
+      }
+    ],
+    "claim": "Live observed new native object paths, not full browser acceptance"
+  },
+  "new_paths_snapshot_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run20-new-object-paths-live.json",
+    "bytes": 4230,
+    "sha256": "71a1edb9141b528cd924a2f738312a067864fcf042b6f7fee6dd14416c6d7561"
+  },
+  "new_paths_root_review_pin": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/run20-new-object-paths-review-run1.json",
+    "bytes": 3352,
+    "sha256": "7ea9f550f22ed69e2f5534f41cfbd6120016839a25d927546acfcb1f5f71e77e"
+  }
+}
