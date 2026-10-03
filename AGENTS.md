@@ -1,3 +1,37 @@
+# Current continuation — 2026-10-02
+
+Following tests must set Linux/Wasm CPUs to the host count (currently `nproc=8`)
+and record/assert the actual host and guest counts. This supersedes historical
+hardcoded two-CPU test setup; preserve old results as historical evidence and
+use the same CPU count for new comparative benchmarks.
+
+Latest acquired Nightly is 159.0a1, official build `20261002211853`, Hg
+`dfc77f7a6d716f1a20a2576597638d4fc21cd916`, Git mirror
+`bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23`. The 198-file overlay passes all
+baseline/new blob checks and eight canonical Hg/Git source pairs. Whole-tree
+Hg/Git mapping remains an inference. Evidence:
+`/mnt/p6/build/firefox-nightly-musl-metadata-20261002/acquisition-proof.json`.
+The owned musl source passes configure, export/pre-export, MFBT native Wasm
+compilation, 33 C/Rust ABI checks and static graph generation. Full build-run1
+fails in linux-raw-sys (missing Wasm/Linux general/net modules). Continue via
+Rustix's audited libc backend and remove an unused raw target dependency;
+do not alias x86 layouts or resume GNU compiler work. Owned corrected Rust
+target drops two ignored feature names while preserving the full existing ABI.
+Actual C++ commands retain SjLj and WebAssembly C++ ABI flags. No Nightly
+browser binary, guest JIT, GPU acceptance or deployment is yet established.
+
+The user also requires a default local version/WebGL/WebGPU test homepage and
+force-enabled GPU defaults. Implementation is in
+`tools/guest-rootfs/firefox-gpu-check/gpu-check.html` and
+`tools/guest-rootfs/package-firefox-gpu-check.py`, with integration instructions
+in `docs/firefox-default-gpu-page-20261002.md`. Nine host rendering/error checks,
+five package checks and a real isolated Firefox128 default-page cold-launch
+smoke pass. Existing guest WebGL/WebGPU failures remain honestly visible;
+this is not Nightly or guest GPU acceptance. Candidate-only evidence is under
+`/mnt/p6/build/firefox-default-gpu-page-20261002`. Integrate this overlay into
+the actual Nightly archive after full build, then run the host-CPU-count guest
+gates. Public v10 and local production payloads remain unchanged.
+
 # Musl recovery — 2026-10-02 (latest user direction; read this first)
 
 The user stopped glibc implementation and explicitly requested saving that
@@ -20,8 +54,9 @@ five configure overlays and selective Rust libc0.2.186 target support. Its
 configure/export/MFBT/33 ABI checks passed; full Nightly never built. The old
 build entrypoint was disabled by the now-superseded glibc request. Recover in
 `/mnt/p6/build/firefox-nightly-musl-recovery-20261002`, with fresh objects,
-caches and rebased recipe paths. Initial task allowance is 8 GiB including
-source, with a 20 GiB free-space reserve; report before enlarging it. All task
+caches and rebased recipe paths. Current task allowance is 20 GiB including
+source, objects and caches, with a 20 GiB free-space reserve; report before
+enlarging it. All task
 temp/cache/output paths must stay disk-backed, never `/tmp`.
 
 Source-only JIT audit remains at

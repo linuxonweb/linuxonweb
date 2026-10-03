@@ -10,11 +10,13 @@
   h1 { margin: 0 0 4px; font-size: 1.35rem; }
   p.lead { margin: 0 0 16px; color: var(--muted); }
   .grid { display: flex; flex-wrap: wrap; gap: 16px; }
-  section { flex: 1 1 340px; max-width: 520px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #101e1c; }
+  section { box-sizing: border-box; min-width: 0; flex: 1 1 340px; max-width: 520px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #101e1c; }
   h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.05rem; }
   .badge { padding: 2px 8px; border-radius: 999px; font-size: .78rem; font-weight: 650; border: 1px solid currentColor; }
   .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); }
-  canvas { display: block; width: 320px; height: 240px; margin-bottom: 10px; border-radius: 6px; background: #000; }
+  canvas { display: block; width: 320px; max-width: 100%; height: auto; aspect-ratio: 4 / 3; margin-bottom: 10px; border-radius: 6px; background: #000; }
+  .browser { max-width: 1056px; margin-bottom: 16px; color: var(--muted); overflow-wrap: anywhere; }
+  .browser strong { color: #eef6f4; }
   .fps { margin: -4px 0 10px; color: var(--muted); font: .8rem ui-monospace, monospace; }
   table { width: 100%; border-collapse: collapse; font-size: .82rem; }
   td { padding: 3px 6px; border-top: 1px solid #1c302d; vertical-align: top; overflow-wrap: anywhere; }
@@ -23,6 +25,7 @@
 </head>
 <body>
 <h1>WebGL / WebGPU check</h1>
+<div class="browser"><strong id="browser-version">Reading browser version…</strong><br><span id="browser-build"></span><br><span id="browser-ua"></span></div>
 <p class="lead">Both demos start automatically. A spinning cube and a rising frame count mean the API really renders here.</p>
 <div class="grid">
   <section>
@@ -40,6 +43,20 @@
 </div>
 <script>
 "use strict";
+// Identity comes from this document's browser, including inside the guest.
+// UA/buildID may be reduced by browser privacy settings; report them verbatim.
+const browserIdentity = window.gpuCheckBrowser = {
+  userAgent: navigator.userAgent,
+  firefoxVersion: navigator.userAgent.match(/Firefox\/([^\s]+)/)?.[1] || null,
+  buildID: typeof navigator.buildID === "string" ? navigator.buildID : null,
+};
+document.getElementById("browser-version").textContent = browserIdentity.firefoxVersion
+  ? `Firefox ${browserIdentity.firefoxVersion} (reported by this browser)`
+  : "Firefox version unavailable in this browser";
+document.getElementById("browser-build").textContent = browserIdentity.buildID
+  ? `Reported build ID: ${browserIdentity.buildID}` : "Build ID not exposed to this page";
+document.getElementById("browser-ua").textContent = browserIdentity.userAgent;
+console.log("GPUCHECK browser=" + JSON.stringify(browserIdentity));
 // Results are mirrored into document.title so automated tests can read them:
 // "GPUCHECK webgl=<state> webgpu=<state>", state = pending|ok|fail|none|skipped.
 const state = { webgl: "pending", webgpu: "pending" };
@@ -136,6 +153,10 @@ function fpsMeter(api) {
 function startWebGL() {
   const canvas = document.getElementById("webgl-canvas");
   const errors = [];
+  canvas.addEventListener("webglcontextlost", () => {
+    row("webgl", "error", "context lost; reload to retry");
+    fail("webgl", "error");
+  });
   canvas.addEventListener("webglcontextcreationerror", e => errors.push(e.statusMessage || "(no message)"));
   let gl = canvas.getContext("webgl2", { antialias: false }), version = 2;
   if (!gl) { gl = canvas.getContext("webgl", { antialias: false }); version = 1; }
@@ -193,6 +214,8 @@ function startWebGL() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.uniformMatrix4fv(lm, false, new Float32Array(multiply(proj, modelView((performance.now() - start) / 1000))));
     gl.drawArrays(gl.TRIANGLES, 0, 36);
+    const error = gl.getError();
+    if (error !== gl.NO_ERROR) { row("webgl", "error", `GL error ${error}`); fail("webgl", "error"); return; }
     const n = frame();
     if (!verified && n >= 3) {
       // The cube covers the centre; its faces are bright, the clear colour is not.
@@ -203,9 +226,12 @@ function startWebGL() {
       else { state.webgl = "fail"; badge("webgl", "bad", "no pixels"); row("webgl", "centre pixel", Array.from(px).join(",")); }
       publish();
     }
-    requestAnimationFrame(draw);
+    requestAnimationFrame(safeDraw);
   }
-  requestAnimationFrame(draw);
+  function safeDraw() {
+    try { draw(); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
+  }
+  requestAnimationFrame(safeDraw);
 }
 
 const WGSL = `
@@ -218,7 +244,7 @@ const WGSL = `
   @fragment fn fs(@location(0) c : vec3<f32>) -> @location(0) vec4<f32> { return vec4<f32>(c, 1.0); }`;
 
 async function startWebGPU() {
-  if (!("gpu" in navigator)) { row("webgpu", "navigator.gpu", "absent"); fail("webgpu", "unavailable"); return; }
+  if (!navigator.gpu) { row("webgpu", "navigator.gpu", "absent"); fail("webgpu", "unavailable"); return; }
   row("webgpu", "navigator.gpu", "present");
   let adapter;
   try { adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" }); }
@@ -246,7 +272,16 @@ async function runWebGPU(adapter, mode) {
   let device;
   try { device = await adapter.requestDevice(); }
   catch (error) { row("webgpu", "requestDevice", `failed: ${error.message}`); fail("webgpu", "error"); return "error"; }
-  let lostMessage = null, resolveLost;
+  let lostMessage = null, resolveLost, failed = false;
+  function renderError(error) {
+    if (failed) return;
+    failed = true;
+    row("webgpu", "error", error.message || String(error));
+    fail("webgpu", "error");
+  }
+  device.addEventListener("uncapturederror", event => renderError(event.error));
+  // Capture shader/pipeline/resource validation as well as first-frame errors.
+  device.pushErrorScope("validation");
   const lostEarly = new Promise(resolve => { resolveLost = resolve; });
   device.lost.then(lost => {
     lostMessage = lost.message || lost.reason;
@@ -268,6 +303,7 @@ async function runWebGPU(adapter, mode) {
     canvas.replaceWith(fresh);
     canvas = fresh;
     blit = canvas.getContext("2d");
+    if (!blit) throw new Error("2D readback presentation context unavailable");
   }
   row("webgpu", "presentation", mode === "canvas" ? `webgpu canvas (${format})` : "offscreen render + readback to 2D canvas");
   const module = device.createShaderModule({ code: WGSL });
@@ -313,6 +349,7 @@ async function runWebGPU(adapter, mode) {
     return rows;
   }
   function check(rows) {
+    if (failed || lostMessage) return;
     // The cube covers the centre; its faces are bright, the clear colour is not.
     const i = (h / 2) * rowBytes + (w / 2) * 4;
     const bright = format.startsWith("bgra") ? rows[i + 2] + rows[i + 1] + rows[i] : rows[i] + rows[i + 1] + rows[i + 2];
@@ -320,7 +357,6 @@ async function runWebGPU(adapter, mode) {
     else { state.webgpu = "fail"; badge("webgpu", "bad", "no pixels"); row("webgpu", "centre pixel", Array.from(rows.slice(i, i + 4)).join(",")); }
     publish();
   }
-  device.pushErrorScope("validation");
   const setUniform = () => device.queue.writeBuffer(ubuf, 0, new Float32Array(multiply(proj, modelView((performance.now() - start) / 1000))));
 
   if (mode === "readback") {
@@ -335,7 +371,7 @@ async function runWebGPU(adapter, mode) {
     let shown = 0, submitted = 0;
     await new Promise(resolve => {
       function tick() {
-        if (lostMessage) { resolve(); return; }
+        if (lostMessage || failed) { resolve(); return; }
         const slot = slots.find(candidate => !candidate.busy);
         if (slot) {
           slot.busy = true;
@@ -357,33 +393,39 @@ async function runWebGPU(adapter, mode) {
               checked = true;
               const copy = rows.slice();
               const error = await device.popErrorScope();
-              if (error) { row("webgpu", "validation error", error.message); fail("webgpu", "error"); }
+              if (error) renderError(error);
               else check(copy);
             }
             slot.buffer.unmap();
             slot.busy = false;
-          }, () => { slot.busy = false; });
+          }).catch(error => { slot.busy = false; renderError(error); });
         }
-        requestAnimationFrame(tick);
+        requestAnimationFrame(safeTick);
       }
-      requestAnimationFrame(tick);
+      function safeTick() {
+        try { tick(); } catch (error) { renderError(error); resolve(); }
+      }
+      requestAnimationFrame(safeTick);
     });
-    return "lost";
+    return lostMessage ? "lost" : "error";
   }
 
   // Canvas mode: draw a few frames, then verify one offscreen frame. A
   // device lost before the check counts as a presentation failure.
   let stopped = false;
   function draw() {
-    if (stopped || lostMessage) return;
+    if (stopped || lostMessage || failed) return;
     setUniform();
     const encoder = device.createCommandEncoder();
     encodePass(encoder, context.getCurrentTexture().createView());
     device.queue.submit([encoder.finish()]);
     frame();
-    requestAnimationFrame(draw);
+    requestAnimationFrame(safeDraw);
   }
-  requestAnimationFrame(draw);
+  function safeDraw() {
+    try { draw(); } catch (error) { renderError(error); }
+  }
+  requestAnimationFrame(safeDraw);
   for (let i = 0; i < 5; i++) await new Promise(resolve => requestAnimationFrame(resolve));
   const verdict = await Promise.race([
     lostEarly,
@@ -392,7 +434,7 @@ async function runWebGPU(adapter, mode) {
       await new Promise(resolve => setTimeout(resolve, 500));
       if (lostMessage) return "lost";
       const error = await device.popErrorScope();
-      if (error) { row("webgpu", "validation error", error.message); fail("webgpu", "error"); return "error"; }
+      if (error) { renderError(error); return "error"; }
       check(await renderOffscreen());
       return "ok";
     })(),
