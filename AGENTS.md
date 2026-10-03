@@ -52,10 +52,25 @@ and cubeb's native C preflight, then expose target C++ flags leaking into a host
 shader-optimizer build. The stable native Wasm/ILP32/ICU memory overlays and
 Linux std-clock selection are frozen in tools/nightly-musl/patches; a fresh
 MFBT rebuild passes. Configure run4-cargo-scoped-flags passes with an owned
-Cargo environment adapter; actual host/guest compiler argv and the next full
-build remain to be verified. Independent six-check snapshot/component review:
+Cargo environment adapter. Run7 captures four actual host GLSL compiler
+commands without guest ABI flags and three guest browser Clang commands
+retaining WebAssembly ABI/SjLj; the independent five-check capture review
+passes at /mnt/p6/build/firefox-nightly-musl-root-review-20261002/cargo-flags-review-run1.json.
+Guest Cargo C++ helper argv and full browser completion remain unverified.
+Independent six-check snapshot/component review:
 /mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-overlays-review-run1.json.
 These are bounded build results, not browser or guest acceptance.
+
+Full-runtime Nightly packaging preparation is in
+tools/guest-rootfs/package-firefox-nightly.py and
+docs/firefox-nightly-package-20261002.md. Twenty synthetic fixture checks and
+an independent five-check encoded-record/defaults audit pass. The tool replaces
+all opt/firefox resources together, preserves all outside records and requires
+actual complete-build/fpcast evidence. Real preflight refuses the still-missing
+Nightly binary; no real archive or runtime acceptance has been produced.
+NSS seed freshness, default-page integration and host-count guest gates remain
+pending. Evidence: /mnt/p6/build/firefox-nightly-package-20261002/fixture-run2
+and /mnt/p6/build/firefox-nightly-musl-root-review-20261002/package-review-run1.json.
 
 Nightly JIT preparation is ready in tools/nightly-jit-prep and
 docs/firefox-nightly-jit-prep-20261002.md. Selected overlay-run4 regenerates all

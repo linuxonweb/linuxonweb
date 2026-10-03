@@ -12,7 +12,7 @@ export HOST_CC=/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bi
 export HOST_CXX=/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/c++
 export AR=/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar
 export RUSTC=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/rustc
-export CARGO=/nix/store/mmjy07fhyvyin7hxyn1qswkq9zkky1sg-cargo-nightly-complete-2026-07-22/bin/cargo
+export CARGO=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/cargo
 export NIX_CXXSTDLIB_COMPILE='-isystem /nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/wasm32-linux-musl/c++/v1 -isystem /nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/c++/v1'
 export NIX_CXXSTDLIB_LINK='-stdlib=libc++ -lc++ -lc++abi'
 export TMPDIR=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/tmp
@@ -39,3 +39,5 @@ export PKG_CONFIG_PATH_wasm32_unknown_linux_musl=/nix/store/sjhvjggjz2czv2nhyncn
 export MOZ_BUILD_DATE=20261003042618
 export MOZ_SOURCE_REPO=https://hg.mozilla.org/mozilla-central
 export MOZ_SOURCE_CHANGESET=dfc77f7a6d716f1a20a2576597638d4fc21cd916
+
+export WASM_MUSL_SYSROOT=/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot

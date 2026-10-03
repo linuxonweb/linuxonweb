@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Firefox exports full per-target flags. cc-rs accumulates global flags too,
+# which would otherwise pass the guest C++ ABI option to host build tools.
+guest_target=0
+for argument in "$@"; do
+  case "$argument" in
+    wasm32-unknown-linux-musl|--target=wasm32-unknown-linux-musl) guest_target=1 ;;
+  esac
+done
+if (( guest_target )); then
+  case " ${CXXFLAGS_wasm32_unknown_linux_musl:-} " in
+    *" -Xclang -fc++-abi=webassembly "*) ;;
+    *) echo 'Missing target-scoped native Wasm C++ ABI flags' >&2; exit 2 ;;
+  esac
+fi
+printf 'guest_cxxflags=%q host_cxxflags=%q\n' "${CXXFLAGS_wasm32_unknown_linux_musl:-}" "${CXXFLAGS_x86_64_unknown_linux_gnu:-}" >> /mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/cargo-scoped-flags.log
+unset CFLAGS CXXFLAGS
+exec /nix/store/mmjy07fhyvyin7hxyn1qswkq9zkky1sg-cargo-nightly-complete-2026-07-22/bin/cargo "$@"
