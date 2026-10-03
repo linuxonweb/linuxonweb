@@ -1,4 +1,31 @@
-# Latest continuation — no-debug object stage and parallel GPU gate, 2026-10-03
+# Latest continuation — Vulkan gate passed; serial no-debug full build, 2026-10-03
+
+The user-required simple guest Vulkan hardware/software gate has passed through
+the genuine public Vulkan loader -> guest ICD/hostcall -> browser-host Rust wgpu
+path. The final resource-profile module completes render/readback at 38.657801
+FPS on NVIDIA versus 2.126645 FPS on host SwiftShader: 18.17783877119736x.
+Both arms bind identical guest/package/Rust assets, served runtime/requested
+bytes, workload, runner and six CPUs; five warmup frames precede 30 measured
+frames. This is completed offscreen rendering, not presentation FPS.
+
+Actual Mesa 26.2.3 Zink EGL/GLES2 also passes its indexed uniform/texture/depth
+primitive on hardware WebGPU, SwiftShader WebGPU and genuine wgpu WebGL.
+Each arm checks all 98,304 RGBA components across six frames with zero failures
+and tolerance two; disabling depth makes the second far black draw overwrite
+the textured near draw. Real Rust draw/upload/readback counts and zero-resource
+native/translator/browser/server cleanup are retained. Evidence and scope:
+`docs/evidence/guest-zink-wgpu-resources-20261003.json`, scoped 17-file commit
+`7c90a762485bac165383635b319011a5d6340502`. Firefox GPU tests are now permitted
+by the benchmark gate, but current Nightly159 GPU APIs, compositor and release
+remain untested/unaccepted. Current WebGPU ABI work is isolated preparation;
+do not reuse old128 wire layouts or modify the live baseline/JIT build.
+The historical 171-check review covered the earlier primitive only. A new
+read-only review confirms the retained final evidence and exposed check-egl.mjs
+admission gaps for missing requests/runnerSources and empty CPU check maps.
+The scoped checker hardening now rejects those and inconsistent identity pins;
+210 bounded regression checks and all three retained-arm CLI rechecks pass.
+No browser was relaunched. Review packet:
+`docs/evidence/guest-zink-wgpu-checker-hardening-20261003.json`.
 
 Run53 was gracefully stopped for the user-authorized parallel object stage:
 actual child exit -15, owner-reaped unified 59109 exit 143, exact PGID 98039
@@ -8,19 +35,29 @@ members, zero members with `.debug_*` sections. Archive SHA256 is
 `773e119a73dd8777f57a143f1620973257a53683b572e2a1f9d8217fac019efd`.
 This is fresh compilation evidence; Run53 did not complete the full build.
 
-Run54-objects is LIVE, owned by `/root/restart_no_debug_nightly`: exact
-PGID 160603, unified session 4372, explicit object-only j4/7200 seconds.
-It admits 577 current generated object goals; their proven 589-node closure
-contains no program-link goals. Focused admission/guard checks pass 24/0.
+Run54-objects completed: actual child exit 0, owner-reaped unified 4372 exit 0,
+exact PGID 160603 empty, elapsed 4965.65 seconds. The terminal generated graph
+and actual inspection prove 3012/3012 native Wasm objects, 318,599,161 bytes,
+all fresh after autoconf and no `.debug_*` sections. The completed Rust archive
+remains unchanged: 204,433,482 bytes, 7098 native members, zero debug members.
+Saved proof: `status/build-run54-objects-terminal.json`,
+`status/full-graph-estimate-run54-objects.json`,
+`status/no-debug-object-review-run54.json`; read-only audit unified 71918 reaped 0.
+The object-only admission was 577 goals/589-node closure with no program links;
+focused admission/guard checks passed 24/0. This does not accept a full build.
+
+Run55 is the mandatory ordinary full j1 build, owned by
+`/root/restart_no_debug_nightly`: saved running status exact PGID 300325,
+unified session 72115, 7200 seconds, object mode unset, original automatic
+Binaryen-O2 unchanged and serial final links. Launch admission is
+`status/build-run55-launch-admission.json`; no full-build success is established.
 Guards remain inherited AS 64 GiB, polled group RSS 48 GiB, host available-RAM
 floor 2 GiB, core 0, oom_score_adj 1000, task disk cap 32 GiB and free-space
 reserve 20 GiB. Status/log/admission are under the recovery task as
-`status/build-run54-objects.json`, `logs/build-run54-objects.log` and
-`status/build-run54-objects-object-goals.json`. Ask the owner to reap/change
+`status/build-run55.json` and `logs/build-run55.log`. Ask the owner to reap/change
 its phase; do not mutate active source/config/recipes or run another build.
-The owner must reap and prove the group empty before the mandatory ordinary
-j1 full build and serial final links/unchanged original Binaryen-O2. Object-only
-completion will not establish full-build or browser acceptance. Packet:
+The owner must reap and prove the group empty before source/config changes or
+another build. Full-build and browser acceptance remain pending. Object packet:
 `tools/nightly-musl/evidence/object-only-parallel-stage.json`, commit 0ad0ac1.
 
 After the actual full no-debug rebuild succeeds, repository diary.md must
@@ -28,15 +65,17 @@ record the final Firefox binary size and absolute path, plus important lessons
 and mistakes. This mandatory followup remains pending. Check actual object
 freshness and no-DWARF sections before full-build acceptance, then complete
 baseline package/guest gates and the fresh whole broad JIT build/acceptance.
-No final binary size, optimizer memory improvement, full-build/browser/JIT/GPU
-acceptance or Sites release is established. Public Sites v10 stays unchanged.
-
-The user also authorizes parallel GPU development NOW. Separate owners
-`/root/guest_vulkan_gpu` and `/root/test_guest_vulkan_wgpu` must first pass a
-simple matched GPU-versus-software Vulkan benchmark through genuine guest
-Vulkan -> browser-host Rust wgpu, WebGPU by default with WebGL fallback.
-No Firefox GPU tests or relinks until that benchmark passes. Hardware and
-SwiftShader host API probes succeeded; they are not guest Vulkan acceptance.
+NSS outer-runner preparation is scoped six-file commit
+`42bd883edc23acc0609154fc6e1b62199ccaf22e`: 93 synthetic/source checks, no real
+guest execution, tlsAcceptance=false and releaseAcceptance=false. Fresh whole
+broad-JIT transition preparation is in
+`/mnt/p6/project/build/nightly-jit-transition-review-20261003/README.txt`:
+129 unchanged finite pins and 12 current broad-source matches, no full JIT build.
+No final binary size, optimizer memory improvement, full-build/baseline/NSS/JIT/
+Firefox-GPU acceptance or Sites release is established. Public Sites v10 stays
+unchanged; retain the authorized JIT release first, GPU release later.
+Run most commands through fresh subagents with minimal task context and the
+same inherited model/reasoning effort; scoped commits remain authorized.
 Older LIVE entries below are historical observations.
 
 # Previous continuation — actual no-debug configuration and Run53 launch, 2026-10-03

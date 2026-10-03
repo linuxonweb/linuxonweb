@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "scope": "Independent retained-report consistency review and bounded EGL checker admission regressions; no browser rerun or new rendering acceptance",
+  "checks": 210,
+  "pass": true,
+  "regression": {
+    "path": "/mnt/p6/project/build/zink-egl-checker-hardening-20261003/regression-run1.json",
+    "bytes": 53910,
+    "sha256": "093e0fd4432453772d75f8ee49d081ecb2f9c948c6aa8e3ed04cbe0939d5f4dc"
+  },
+  "checker": {
+    "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/check-egl.mjs",
+    "bytes": 10480,
+    "sha256": "41324aaf5db4a8a44c272232dcecea0c25963491cbb9c3454613462ebdf0a87d"
+  },
+  "regressionSource": {
+    "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/test-check-egl.mjs",
+    "bytes": 8858,
+    "sha256": "3b235c08e54a77862a3b47e24babee960bb015b86c84f5166049a84777e92d6f"
+  },
+  "retainedReports": [
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-hardware/result.json",
+      "bytes": 365579,
+      "sha256": "ea81ee6455e2ba56ff388884539d467d06ba8f0b4039ff315be54a081de1a723"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-software/result.json",
+      "bytes": 362252,
+      "sha256": "4644f8ab58365fc9b46c0f3a184a4350f532a8e9f4ad8c72da1d0920851dac56"
+    },
+    {
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/egl-final-gl/result.json",
+      "bytes": 361152,
+      "sha256": "8fe3dffd9d89bc14fde5ae221d540e28061667a73c2500cefac1bc1841517691"
+    }
+  ],
+  "renewedValidations": [
+    {
+      "path": "/mnt/p6/project/build/zink-egl-checker-hardening-20261003/hardware-validation.json",
+      "bytes": 3214,
+      "sha256": "3b429d6603b39cc0ac8a58d2c17f1be7f24ecddae8f4d0086f526079ffc3cd95"
+    },
+    {
+      "path": "/mnt/p6/project/build/zink-egl-checker-hardening-20261003/software-validation.json",
+      "bytes": 3216,
+      "sha256": "51faac265a4b49fc803c331b08cd84d630eb62a3391799eb632eb9a0060f20cf"
+    },
+    {
+      "path": "/mnt/p6/project/build/zink-egl-checker-hardening-20261003/gl-validation.json",
+      "bytes": 3298,
+      "sha256": "d8443952633f363d490a0dfc21213eeea9dc43909b4c09c306db7fe26237b845"
+    }
+  ],
+  "sourceReview": {
+    "verificationMoment": "Before checker hardening and the new documentation paragraph; retained commit/source evidence was read-only verified.",
+    "scopedGpuCommit": "7c90a762485bac165383635b319011a5d6340502",
+    "changedFilesMatchCommit": 17,
+    "frozenSourceSnapshotsMatched": 93,
+    "evidencePathHashReferencesMatched": 25,
+    "depthControl": "Actual farther black second draw is rejected with depth LESS in frames0-2 and overwrites the near textured/tinted draw with depth disabled in frames3-5; independent full RGBA reference checks every frame.",
+    "resourceCleanup": "Each retained arm proves12draws/6passes/6readbacks/7uniformuploads/1textureupload/2translations; native resources/bytes zero, translator closed, owned browser reaped/groupempty/serverclosed."
+  },
+  "admissionChanges": [
+    "Require exact nonvacuous three-key CPU and affinity check maps and all observed numeric identities.",
+    "Recompute assigned/browser CPU list agreement and bind SMP evidence to actual guest boot logs.",
+    "Bind each served input to its requested hash; reject absent/conflicting request identities and require all four candidate assets.",
+    "Bind exact embedded package bytes/hash, top and nested package/archive identities and both Rust asset hashes/bytes.",
+    "Require run-egl.mjs/browser-session.mjs/egl.html pins from independently reviewed local files or explicit snapshot map; bind page to served/requested hashes.",
+    "Restrict mode/backend to hardware/webgpu,software/webgpu,hardware/webgl; reject hardware RustCpu."
+  ],
+  "limits": [
+    "Current guest page and shared CPU selector already require exact host count within reviewed1..64 CPU limit; no clamping.",
+    "Request/source-map order and identical duplicate requests are irrelevant; exact package serialization key order is part of raw-byte identity.",
+    "Optional runner pin map must come from reviewer-trusted snapshot, not report.runnerSources.",
+    "Report consistency and reviewer-trusted runner bindings cannot authenticate a fully fabricated internally coherent report.",
+    "Original rendering evidence and output acceptance scope retained; no Firefox/compositor/release acceptance."
+  ]
+}

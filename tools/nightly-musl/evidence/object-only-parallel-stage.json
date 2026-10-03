@@ -71,6 +71,26 @@
       "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/object-only/probe.py",
       "bytes": 6750,
       "sha256": "6e2896c9fdc87989d89f453d68afddece369085179fc63e46e035250d046723d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run54-objects.json",
+      "bytes": 475378,
+      "sha256": "80b5d607445a00f58e1872c5e58799bec86ff4e07fce8747bc9d34c396d573f2"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-object-review-run54.json",
+      "bytes": 984973,
+      "sha256": "ce4180d23a47a0ccf6f20da67eede835b5e65cf79ddbaefe95ea54f20165e1c5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-launch-admission.json",
+      "bytes": 2324,
+      "sha256": "332c429604a4396ebe552c348e7f7c5be1267f430ab4c48856ce7f97a51e81af"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/verify-no-debug-objects.py",
+      "bytes": 3256,
+      "sha256": "d21bd99229de6b632de925c9b5ca7d99a26514c1409bb9ce53f2ba55478446ae"
     }
   ],
   "fullBuildAcceptance": false,
@@ -99,7 +119,7 @@
     "observation": "launch/current running observation; not completion",
     "actualFourCompilerObservation": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/run54-objects-active-compilers-run2.json"
   },
-  "requiredNextStage": "Owner reap and exact group-empty proof, then ordinary full-build j1 serial final links with unchanged original Binaryen-O2",
+  "requiredNextStage": "Run55 ordinary j1 full-build/final links remains live; owner must reap and prove exact group empty, inspect all final binaries, then actual baseline package/guest gates",
   "mandatoryDiaryFollowup": {
     "done": false,
     "when": "after actual full no-debug rebuild",
@@ -108,5 +128,65 @@
       "absolute binary path",
       "important lessons and mistakes"
     ]
+  },
+  "run54Terminal": {
+    "observedAt": 1791064422.6661487,
+    "ownedPGID": 160603,
+    "owner": "/root/restart_no_debug_nightly",
+    "unifiedSession": 4372,
+    "ownerReapedExit": 0,
+    "actualChildExit": 0,
+    "ownedGroupMembers": [],
+    "elapsedSeconds": 4965.649413108826,
+    "pins": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run54-objects.json",
+        "bytes": 28882,
+        "sha256": "6bf925584e7d3f9c909bc42501c16e40ad0aa9e0e2277ef90464adf93515404d"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run54-objects.log",
+        "bytes": 11664560,
+        "sha256": "89a9ee739630b5bfe93ec428613f64866174715222de6374037189a0c3345599"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run54-objects-object-goals.json",
+        "bytes": 56049,
+        "sha256": "ce2812a0e72634311c4a3c3a250e5ef5907537765018fc16442c66b3fcc87060"
+      }
+    ],
+    "objectStageSuccess": true,
+    "fullBuildSuccess": false,
+    "next": "terminal native no-debug/freshness review, then ordinary serial j1 full build"
+  },
+  "actualNativeObjects": {
+    "expected_native_objects": 3012,
+    "passed_objects": 3012,
+    "autoconf_mtime_ns": 1791057583151162349,
+    "owned_group_members": [],
+    "rust_archive_unchanged_since_complete_inspection": true,
+    "bytes": 318599161,
+    "objectsWithDebugSections": 0,
+    "objectsFreshAfterAutoconf": 3012,
+    "failedObjects": 0
+  },
+  "run55Launch": {
+    "pid": 300325,
+    "pgid": 300325,
+    "started": 1791064475.8626885,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run55.log",
+    "timeout_seconds": 7200,
+    "build_mode": "full",
+    "process_address_space_limit_bytes": 68719476736,
+    "group_rss_limit_bytes": 51539607552,
+    "host_available_memory_floor_bytes": 2147483648,
+    "child_oom_score_adj": 1000,
+    "child_core_limit_bytes": 0,
+    "owner": "/root/restart_no_debug_nightly",
+    "unifiedSession": 72115,
+    "jobs": 1,
+    "objectModeUnset": true,
+    "observation": "actual launch; not full-build completion",
+    "admissionPath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-launch-admission.json"
   }
 }

@@ -99,6 +99,20 @@ accepted sources and binaries directly. Previous benchmark snapshots and the
 171-check independent historical review remain immutable; that review did not
 cover this resource extension or its EGL runs.
 
+An independent read-only review found that the EGL checker accepted missing
+requests/runner pins and empty CPU check maps. The scoped hardening requires
+complete CPU/affinity identities, matching source/request/package/Rust hashes,
+and independently reviewed runner pins. All three retained reports still pass;
+210 bounded regressions reject missing, rebound or conflicting evidence and
+retain harmless manifest ordering and identical duplicate requests. No browser
+was rerun and the original reports are unchanged. The default runner pins come
+from colocated files; frozen replay may supply independently reviewed snapshot
+pins, never pins copied from the report being tested. Embedded package hashing
+uses `package-egl.py`'s exact indent-two JSON plus newline byte contract, including
+key order. This checks evidence consistency; it does not authenticate a wholly
+fabricated report or extend rendering acceptance. The new review is pinned in
+[the checker evidence](evidence/guest-zink-wgpu-checker-hardening-20261003.json).
+
 Builds, raw logs, complete source snapshots, packages and checker results are
 pinned in [the resource-profile evidence](evidence/guest-zink-wgpu-resources-20261003.json).
 The actual Nightly159 ABI/static-EGL and public host-asset dependencies are in

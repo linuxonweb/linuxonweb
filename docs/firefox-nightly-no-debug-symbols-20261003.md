@@ -112,3 +112,24 @@ and later broad JIT acceptance remain required. After the full no-debug rebuild,
 write actual final Firefox size/path and lessons/mistakes to repository diary.md;
 this mandatory followup remains pending. No optimizer-memory benefit or new
 public Sites release is claimed.
+
+## Completed object stage and serial full build
+
+Run54-objects completed exit 0 in 4965.65 seconds; its owner reaped unified
+4372 exit 0 and verified exact PGID 160603 fully empty. Terminal inspection
+of the current generated graph finds all 3012 expected native Wasm objects,
+318,599,161 bytes in total. Every object is newer than regenerated autoconf,
+and every object has zero `.debug_*` sections. The current Rust archive still
+matches its completed 204,433,482-byte/7098-member no-DWARF inspection by
+size and mtime. This establishes object-stage evidence, not browser acceptance.
+
+Ordinary full-build Run55 was then launched with object-only mode unset and
+j1, preserving serial final links and unchanged original automatic Binaryen-O2.
+Owner `/root/restart_no_debug_nightly` holds exact PGID 300325/unified 72115.
+The 7200-second/AS64 GiB/RSS48 GiB/available-RAM-floor2 GiB/core0/oom1000,
+32 GiB task-cap/20 GiB reserve guards remain unchanged. Its recovery-task
+status/log are `status/build-run55.json` and `logs/build-run55.log`; immutable
+admission is `status/build-run55-launch-admission.json`. The owner must reap
+and prove the group empty before any source/config/recipe mutation or another
+build. Final optimized binaries, full-build success, package/guest gates and
+the mandatory diary.md final Firefox size/path/lessons entry remain pending.
