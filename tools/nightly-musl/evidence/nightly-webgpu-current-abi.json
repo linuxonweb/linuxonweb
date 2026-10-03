@@ -1,0 +1,1119 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-03T22:17:12.564568+00:00",
+  "claim": "Current Nightly159 source/codec/native ABI preparation and genuine host Rust wgpu bounded primitive; no guest or Firefox integration acceptance",
+  "taskRoot": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003",
+  "revision": "4f4dc63098fae64a0e6d1d3dc6f4f328da8fd5c8",
+  "schemaSha256": "28235bf51d12010b38b1909794fdd2f7a2ba2543cad7e1666614b24be8275ba4",
+  "actualCurrentSourcePins": {
+    "count": 86,
+    "manifest": {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/source-pins.json",
+      "bytes": 22032,
+      "sha256": "16940d006c3c835a4c9ef72df4bcb6a3c3b41ec69f0c34140735332a8cfdd4d4"
+    }
+  },
+  "acceptance": {
+    "sourceCodecNativeAbiPreparation": true,
+    "hostBrowserWebGpuCopyMapComputePrimitive": true,
+    "hostBrowserWebGlCopyMapHardwarePrimitive": true,
+    "softwareWebGpuMirror": true,
+    "softwareWebGlMirror": false,
+    "nativeGuestTransport": false,
+    "productionOwnerIntegration": false,
+    "firefoxGpuAcceptance": false,
+    "nativeEhExecution": false,
+    "deviceLossRuntimeAcceptance": false,
+    "outOfMemoryInternalErrorRuntimeAcceptance": false,
+    "driverMemoryReclamationMeasured": false,
+    "releaseAcceptance": false,
+    "optimizerRamImprovement": false
+  },
+  "sourceFiles": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.lock",
+      "bytes": 28677,
+      "sha256": "d3f9bb9acd624cfa6d7cf3df49ab59aa7726fd2a9179dd01c597681ff20773f6"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.toml",
+      "bytes": 912,
+      "sha256": "1ee795c6f0bc19f846cccafd3c8cbb37f04e93a8dac166d34b8ecb3d1c4794f8"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/README.md",
+      "bytes": 3237,
+      "sha256": "8a98dbd58bbd6b5f55aec90c0d811da7b598bd6d2f09bb7052d4dbea4872952a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/browser-session.mjs",
+      "bytes": 11794,
+      "sha256": "a66bbcd172d217a6abb6d45ed5b440e3c98e54c9ae1b1e7d7c7e63ebf68bcfd8"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/check.py",
+      "bytes": 6684,
+      "sha256": "fb20e94aa38753f41f79fcdbcc4a1eb6211d7baca9cfbf6ae228ca8c6067b2d3"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/inspect-layout.py",
+      "bytes": 864,
+      "sha256": "5f3cb0e49da064302d82ae9aa59cad5784afdfd6625c653f237b51cdaf52df53"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/layout.cpp",
+      "bytes": 2462,
+      "sha256": "81625142dd7a83a44046327ed00e12504b4cb1227caa18bf1d55ab733fd47b05"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/prepare.py",
+      "bytes": 3415,
+      "sha256": "21267f24b2564f6e3b5f344667a8bbf97bb5ee50d26b4b5d7c4becf43705d948"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/probe.html",
+      "bytes": 4019,
+      "sha256": "41e07842038c1481383dfd3995cf9c83169b6c89897d90f98a83ecf5a40ffb0e"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run-bounded.py",
+      "bytes": 2435,
+      "sha256": "eb36d2c37b07fb6882fa68cd58ee3da26685d50833e11c147fb3fb736baf6313"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run-layout.mjs",
+      "bytes": 1162,
+      "sha256": "876da08a1464919cf336045c1a1a022b3973b05530bf2fbbe88113f858679436"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run.mjs",
+      "bytes": 2085,
+      "sha256": "103801d809a3f2a9f619b0db8e0d80bb575242f6406876bf536fa5dd39e22ac9"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/src/lib.rs",
+      "bytes": 41169,
+      "sha256": "73e22ae897fc5db550b72214c92fe51d47dddd36d7360a4b6590c037ac712d65"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/test-check.py",
+      "bytes": 1719,
+      "sha256": "78fead1bed53a69779187e27e5544dc3328548e9f3d18a01862e299c11a4ae20"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/docs/firefox-nightly-webgpu-current-abi-20261003.md",
+      "bytes": 5962,
+      "sha256": "b38fcab7e3a527319a66b8a17e26363999d8cd52afa550091940d94317d167bb"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/source-pins.json",
+      "bytes": 22032,
+      "sha256": "16940d006c3c835a4c9ef72df4bcb6a3c3b41ec69f0c34140735332a8cfdd4d4"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/schema.rs",
+      "bytes": 12165,
+      "sha256": "28235bf51d12010b38b1909794fdd2f7a2ba2543cad7e1666614b24be8275ba4"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/wgpu_ffi_generated.h",
+      "bytes": 190663,
+      "sha256": "b8a2a6b62ad8eda80ee4a8fed64d37e7ae4d99c42f26dfaeaf9c2c879a6d2ea2"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.o",
+      "bytes": 1713,
+      "sha256": "574352d0a205cc7c468715005d307a81e7d48577fdf909714a7766a4215165f2"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.wasm",
+      "bytes": 1333,
+      "sha256": "78150e3207ef040c96507cc662302f6b7dc6ed364a7374ea8d9fd9b10a6839ba"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-fpcast.wasm",
+      "bytes": 1266,
+      "sha256": "967abbb81842e898ff662ed0477c317d65564d28748d4f72014242eb7c385715"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-result.json",
+      "bytes": 1395,
+      "sha256": "bed1d6aa61da78dea98aba7c794bd5a0e87e954f10729a508127db6d05d0a7a7"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-reverified.json",
+      "bytes": 754,
+      "sha256": "ae58727596371a07c2049eb43184766689682f22b4095f8f37e7b2e94265f27b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-inspect/result.json",
+      "bytes": 7044,
+      "sha256": "51bc46528ade8505385c231616db705cbc544b6aeda13482fa2ce5a09d99a0ce"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-fpcast-inspect/result.json",
+      "bytes": 8094,
+      "sha256": "385b051e24957a599d91b0b688da2f2d1a1233bdb730cd7dd6e2644c913ba3e3"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/candidate/nightly_webgpu_current.js",
+      "bytes": 94579,
+      "sha256": "7df30409f8d8c87647e9ef889ca141ac6f59edb937f96f2051d3efc01faee78e"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/candidate/nightly_webgpu_current_bg.wasm",
+      "bytes": 4177725,
+      "sha256": "3597546ca437c1396a54bc78c6cf765c37c4235bb248e8ff8b730c330a3a890a"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/target/wasm32-unknown-unknown/release/nightly_webgpu_current.wasm",
+      "bytes": 5855753,
+      "sha256": "f8b4a3b84685240679ea53caa90bf03ac9ca5c52bed44a13cba6454d3a07e3ea"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/final-check-result.json",
+      "bytes": 196,
+      "sha256": "5019458817feb06cd2fd005a4a5e6374d02552e8a7effb30881d2508d1ae94c8"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/checker-negative-result.json",
+      "bytes": 1004,
+      "sha256": "0c88eeb866fc3bb2f9d15721c88a1c1aaacfb6484a4ebca23be86ec80015496d"
+    }
+  ],
+  "boundedCommands": [
+    {
+      "name": "native-layout5",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-layout5.json",
+        "bytes": 1218,
+        "sha256": "07099e2562f4c48c8e97b63fb8b52a21365a8c10c1dd163655e0ee7a65126e19"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-layout5.log",
+        "bytes": 1048,
+        "sha256": "b34470f699abb095ac153c2a28477c345e766728432199b025648fb6ee3cb345"
+      },
+      "result": {
+        "argv": [
+          "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+          "-std=c++20",
+          "-fwasm-exceptions",
+          "-fno-rtti",
+          "-DMOZILLA_INTERNAL_API",
+          "-isystem",
+          "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/wasm32-linux-musl/c++/v1",
+          "-isystem",
+          "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/c++/v1",
+          "-I/mnt/p6/project/build/nightly-webgpu-current-abi-20261003",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nspr",
+          "-include",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozilla-config.h",
+          "-c",
+          "web/linux/tests/nightly-webgpu-current/layout.cpp",
+          "-o",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.o"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 5.063864648000163,
+        "peakGroupRss": 159690752,
+        "pgid": 292088,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "native-link2",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-link2.json",
+        "bytes": 627,
+        "sha256": "c4c57d4ccdf21b496d5aae0fdc724f53ae86351a518866f43f5b1ad9aab867d7"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-link2.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "result": {
+        "argv": [
+          "wasm-ld",
+          "--no-entry",
+          "--export=get_layout",
+          "--export=get_layout_count",
+          "--export=get_map_golden",
+          "--export=invoke_map_callback",
+          "--export-memory",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.o",
+          "-o",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.wasm"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.5908242229997995,
+        "peakGroupRss": 12279808,
+        "pgid": 296134,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "fpcast",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/fpcast.json",
+        "bytes": 581,
+        "sha256": "c736490139520d20ce0619a76c41794ce944ac74cbc02c2ff237466b3491aeb7"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/fpcast.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "result": {
+        "argv": [
+          "wasm-opt",
+          "--all-features",
+          "--disable-compact-imports",
+          "--pass-arg=max-func-params@23",
+          "--fpcast-emu",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout.wasm",
+          "-o",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-fpcast.wasm"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.5936732079990179,
+        "peakGroupRss": 8765440,
+        "pgid": 296155,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "native-validate",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-validate.json",
+        "bytes": 400,
+        "sha256": "22b58c0929cedbbc5757912009474f97959637588c35d1b43b7265686dcf275d"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-validate.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "result": {
+        "argv": [
+          "wasm-validate",
+          "--enable-all",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/layout-fpcast.wasm"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.586796632000187,
+        "peakGroupRss": 0,
+        "pgid": 296177,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "inspect-layout",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/inspect-layout.json",
+        "bytes": 362,
+        "sha256": "417ee32d3ce14990fccef7ae1f3de0da8615b6d34440db01ad4f02cb72011fca"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/inspect-layout.log",
+        "bytes": 36,
+        "sha256": "4aedce3b51655a6d8b470e212cca38b76cf8d2c0aa4216b2aef2d6cc48a2f8d4"
+      },
+      "result": {
+        "argv": [
+          "python3",
+          "web/linux/tests/nightly-webgpu-current/inspect-layout.py"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.5598712189985235,
+        "peakGroupRss": 12107776,
+        "pgid": 297913,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "native-execute3",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-execute3.json",
+        "bytes": 391,
+        "sha256": "591af2a4c487ad05e0dc992d110e77b50799b3a2f792684eb5594dfeb7618a69"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-execute3.log",
+        "bytes": 348,
+        "sha256": "1c2a0439cb267f3128ddef8b153cc9f72042c91ec6a0610bdd3b6f65a7b6afc3"
+      },
+      "result": {
+        "argv": [
+          "node",
+          "--disable-wasm-trap-handler",
+          "web/linux/tests/nightly-webgpu-current/run-layout.mjs"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.5768281139989995,
+        "peakGroupRss": 59310080,
+        "pgid": 329246,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "release5",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/release5.json",
+        "bytes": 497,
+        "sha256": "4edd1fc404d7d78249820a8b292cd6a9553d01d86ef1362c4d41fd1cf843b1e6"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/release5.log",
+        "bytes": 673,
+        "sha256": "7502248a735e08b32836a74b9b5e53d83433ecf915a5067c7310a9079a71c1f5"
+      },
+      "result": {
+        "argv": [
+          "cargo",
+          "build",
+          "--offline",
+          "--locked",
+          "--release",
+          "--manifest-path",
+          "web/linux/tests/nightly-webgpu-current/Cargo.toml",
+          "--target",
+          "wasm32-unknown-unknown",
+          "-j2"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 7.3512732469989714,
+        "peakGroupRss": 525135872,
+        "pgid": 315443,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "bindgen3",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/bindgen3.json",
+        "bytes": 618,
+        "sha256": "a0f2d29a6b826564add7fa9024132504e64fed55234a813b5e6a9da61ed66ebd"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/bindgen3.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "result": {
+        "argv": [
+          "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/bindgen-cli/bin/wasm-bindgen",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/target/wasm32-unknown-unknown/release/nightly_webgpu_current.wasm",
+          "--target",
+          "web",
+          "--out-dir",
+          "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/candidate"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 1.202442522999263,
+        "peakGroupRss": 251265024,
+        "pgid": 316241,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "final-check3",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/final-check3.json",
+        "bytes": 403,
+        "sha256": "009757c897080d03aaaf17604b5bad35c033a831ed88e410fa2c38374fb22782"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/final-check3.log",
+        "bytes": 170,
+        "sha256": "2618b3b0f144f1d6c053f8113444decb6e7d43443be50a123c1625b750d36ff8"
+      },
+      "result": {
+        "argv": [
+          "python3",
+          "web/linux/tests/nightly-webgpu-current/check.py",
+          "browser-hardware6",
+          "browser-software5"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 0.6780412289990636,
+        "peakGroupRss": 11583488,
+        "pgid": 334964,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    },
+    {
+      "name": "checker-negative3",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/checker-negative3.json",
+        "bytes": 358,
+        "sha256": "43dc2f408a535d3ab15253348d7a6b98d20316f84ddba1605a4f0dc675ec4ea5"
+      },
+      "log": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/checker-negative3.log",
+        "bytes": 796,
+        "sha256": "1f38cca5f43f617b346db3e310d261bb7a310c9028c21dfd68537b9518103a97"
+      },
+      "result": {
+        "argv": [
+          "python3",
+          "web/linux/tests/nightly-webgpu-current/test-check.py"
+        ],
+        "exit": 0,
+        "error": null,
+        "seconds": 1.4254443150002771,
+        "peakGroupRss": 37306368,
+        "pgid": 334988,
+        "remainingGroup": [],
+        "coreBytes": 0,
+        "addressSpaceBytes": 4294967296,
+        "jobs": 2,
+        "taskCapBytes": 4294967296,
+        "diskReserveBytes": 21474836480
+      }
+    }
+  ],
+  "checks": {
+    "admission": {
+      "pass": true,
+      "checks": 216,
+      "reports": [
+        "browser-hardware6",
+        "browser-software5"
+      ],
+      "guestAcceptance": false,
+      "firefoxGpuAcceptance": false,
+      "releaseAcceptance": false
+    },
+    "negativeAdmission": {
+      "pass": true,
+      "checks": 7,
+      "faults": [
+        {
+          "name": "missing-request",
+          "exit": 1,
+          "diagnostic": "AssertionError: actual request /probe.html"
+        },
+        {
+          "name": "missing-helper",
+          "exit": 1,
+          "diagnostic": "AssertionError: complete runner/helper source set"
+        },
+        {
+          "name": "rebound-helper",
+          "exit": 1,
+          "diagnostic": "AssertionError: complete runner/helper source set"
+        },
+        {
+          "name": "empty-affinity",
+          "exit": 1,
+          "diagnostic": "AssertionError: actual CPU affinity required checks"
+        },
+        {
+          "name": "duplicate-cpus",
+          "exit": 1,
+          "diagnostic": "AssertionError: actual CPU affinity numeric identity/unique allocation"
+        },
+        {
+          "name": "false-affinity",
+          "exit": 1,
+          "diagnostic": "AssertionError: actual CPU affinity required checks"
+        },
+        {
+          "name": "leaked-resource",
+          "exit": 1,
+          "diagnostic": "AssertionError: measured registries cleanup"
+        }
+      ]
+    },
+    "freshNativeExecution": {
+      "pass": true,
+      "checks": 10,
+      "rows": [
+        {
+          "name": "layout",
+          "callbacks": [
+            {
+              "input": 0,
+              "actual": 11,
+              "expected": 11
+            },
+            {
+              "input": 9,
+              "actual": 20,
+              "expected": 20
+            },
+            {
+              "input": 1031,
+              "actual": 1042,
+              "expected": 1042
+            }
+          ]
+        },
+        {
+          "name": "layout-fpcast",
+          "callbacks": [
+            {
+              "input": 0,
+              "actual": 11,
+              "expected": 11
+            },
+            {
+              "input": 9,
+              "actual": 20,
+              "expected": 20
+            },
+            {
+              "input": 1031,
+              "actual": 1042,
+              "expected": 1042
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "browserReports": [
+    {
+      "name": "browser-hardware6",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-hardware6/result.json",
+        "bytes": 57959,
+        "sha256": "0a08d61e986e282eb9d5bfcbc67bf9c5ba29b2c696ea1506f160725601c17aa8"
+      },
+      "pass": true,
+      "requests": [
+        {
+          "url": "/probe.html",
+          "sha256": "41e07842038c1481383dfd3995cf9c83169b6c89897d90f98a83ecf5a40ffb0e",
+          "bytes": 4019
+        },
+        {
+          "url": "/candidate/nightly_webgpu_current.js",
+          "sha256": "7df30409f8d8c87647e9ef889ca141ac6f59edb937f96f2051d3efc01faee78e",
+          "bytes": 94579
+        },
+        {
+          "url": "/native.json",
+          "sha256": "bed1d6aa61da78dea98aba7c794bd5a0e87e954f10729a508127db6d05d0a7a7",
+          "bytes": 1395
+        },
+        {
+          "url": "/candidate/nightly_webgpu_current_bg.wasm",
+          "sha256": "3597546ca437c1396a54bc78c6cf765c37c4235bb248e8ff8b730c330a3a890a",
+          "bytes": 4177725
+        }
+      ],
+      "runnerSources": {
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/src/lib.rs": "73e22ae897fc5db550b72214c92fe51d47dddd36d7360a4b6590c037ac712d65",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.toml": "1ee795c6f0bc19f846cccafd3c8cbb37f04e93a8dac166d34b8ecb3d1c4794f8",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.lock": "d3f9bb9acd624cfa6d7cf3df49ab59aa7726fd2a9179dd01c597681ff20773f6",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/probe.html": "41e07842038c1481383dfd3995cf9c83169b6c89897d90f98a83ecf5a40ffb0e",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run.mjs": "103801d809a3f2a9f619b0db8e0d80bb575242f6406876bf536fa5dd39e22ac9",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/browser-session.mjs": "a66bbcd172d217a6abb6d45ed5b440e3c98e54c9ae1b1e7d7c7e63ebf68bcfd8",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/prepare.py": "21267f24b2564f6e3b5f344667a8bbf97bb5ee50d26b4b5d7c4becf43705d948",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/layout.cpp": "81625142dd7a83a44046327ed00e12504b4cb1227caa18bf1d55ab733fd47b05",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/inspect-layout.py": "5f3cb0e49da064302d82ae9aa59cad5784afdfd6625c653f237b51cdaf52df53",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run-bounded.py": "eb36d2c37b07fb6882fa68cd58ee3da26685d50833e11c147fb3fb736baf6313",
+        "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-browser-affinity.mjs": "016c8e9eb267956f017011857ecf8022a38a6e34c0da28a9564696edd962a679",
+        "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/check-firefox-nightly-benchmark.mjs": "9789f42908443e2044eb02af1552bc7c0b9a60b11432bd4a019f71f8fe4c874d"
+      },
+      "apiIdentity": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "device": "",
+        "description": ""
+      },
+      "rustAdapters": [
+        {
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "",
+          "name": "",
+          "vendor": 0
+        },
+        {
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "",
+          "name": "",
+          "vendor": 0
+        },
+        {
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+          "vendor": 4318
+        }
+      ],
+      "backends": [
+        "BrowserWebGpu",
+        "BrowserWebGpu",
+        "Gl"
+      ],
+      "all16ComputedValues": [
+        13,
+        46,
+        79,
+        112,
+        145,
+        178,
+        211,
+        244,
+        277,
+        310,
+        343,
+        376,
+        409,
+        442,
+        475,
+        508
+      ],
+      "resourceCounts": [
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "affinity": {
+        "schema": 1,
+        "hostNproc": 6,
+        "runnerCpuList": "0-7",
+        "runnerCgroup": "0::/cpulimit.slice/cpulimit-70.slice\n",
+        "assignedCpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "launchHostNproc": 6,
+        "ownedPid": 328776,
+        "browserHardwareConcurrency": 6,
+        "browserCpuList": "0-5",
+        "runnerCgroupObserved": "0::/cpulimit.slice/cpulimit-70.slice\n",
+        "browserCgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-328776.scope\n",
+        "checks": {
+          "hostAllocationStable": true,
+          "browserCountMatchesHost": true,
+          "actualBrowserAffinity": true
+        }
+      },
+      "oomScoreAdjObserved": 0,
+      "groupEmpty": true,
+      "serverClosed": true,
+      "peakGroupRssBytes": 1111793664
+    },
+    {
+      "name": "browser-software5",
+      "report": {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-software5/result.json",
+        "bytes": 59501,
+        "sha256": "380c6ad1941e32bf60a74b743716d31d61b99b5fe754a424993c880d79f56bff"
+      },
+      "pass": true,
+      "requests": [
+        {
+          "url": "/probe.html",
+          "sha256": "41e07842038c1481383dfd3995cf9c83169b6c89897d90f98a83ecf5a40ffb0e",
+          "bytes": 4019
+        },
+        {
+          "url": "/candidate/nightly_webgpu_current.js",
+          "sha256": "7df30409f8d8c87647e9ef889ca141ac6f59edb937f96f2051d3efc01faee78e",
+          "bytes": 94579
+        },
+        {
+          "url": "/native.json",
+          "sha256": "bed1d6aa61da78dea98aba7c794bd5a0e87e954f10729a508127db6d05d0a7a7",
+          "bytes": 1395
+        },
+        {
+          "url": "/candidate/nightly_webgpu_current_bg.wasm",
+          "sha256": "3597546ca437c1396a54bc78c6cf765c37c4235bb248e8ff8b730c330a3a890a",
+          "bytes": 4177725
+        }
+      ],
+      "runnerSources": {
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/src/lib.rs": "73e22ae897fc5db550b72214c92fe51d47dddd36d7360a4b6590c037ac712d65",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.toml": "1ee795c6f0bc19f846cccafd3c8cbb37f04e93a8dac166d34b8ecb3d1c4794f8",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/Cargo.lock": "d3f9bb9acd624cfa6d7cf3df49ab59aa7726fd2a9179dd01c597681ff20773f6",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/probe.html": "41e07842038c1481383dfd3995cf9c83169b6c89897d90f98a83ecf5a40ffb0e",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run.mjs": "103801d809a3f2a9f619b0db8e0d80bb575242f6406876bf536fa5dd39e22ac9",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/browser-session.mjs": "a66bbcd172d217a6abb6d45ed5b440e3c98e54c9ae1b1e7d7c7e63ebf68bcfd8",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/prepare.py": "21267f24b2564f6e3b5f344667a8bbf97bb5ee50d26b4b5d7c4becf43705d948",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/layout.cpp": "81625142dd7a83a44046327ed00e12504b4cb1227caa18bf1d55ab733fd47b05",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/inspect-layout.py": "5f3cb0e49da064302d82ae9aa59cad5784afdfd6625c653f237b51cdaf52df53",
+        "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/run-bounded.py": "eb36d2c37b07fb6882fa68cd58ee3da26685d50833e11c147fb3fb736baf6313",
+        "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-browser-affinity.mjs": "016c8e9eb267956f017011857ecf8022a38a6e34c0da28a9564696edd962a679",
+        "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/check-firefox-nightly-benchmark.mjs": "9789f42908443e2044eb02af1552bc7c0b9a60b11432bd4a019f71f8fe4c874d"
+      },
+      "apiIdentity": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "",
+        "description": ""
+      },
+      "rustAdapters": [
+        {
+          "device": 0,
+          "deviceType": "Cpu",
+          "driver": "",
+          "driverInfo": "",
+          "name": "",
+          "vendor": 0
+        },
+        {
+          "device": 0,
+          "deviceType": "Cpu",
+          "driver": "",
+          "driverInfo": "",
+          "name": "",
+          "vendor": 0
+        },
+        {
+          "device": 0,
+          "deviceType": "Other",
+          "driver": "",
+          "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "name": "ANGLE (NVIDIA, Vulkan 1.4.312 (NVIDIA NVIDIA GeForce MX110 (0x0000174E)), NVIDIA)",
+          "vendor": 4318
+        }
+      ],
+      "backends": [
+        "BrowserWebGpu",
+        "BrowserWebGpu",
+        "Gl"
+      ],
+      "all16ComputedValues": [
+        13,
+        46,
+        79,
+        112,
+        145,
+        178,
+        211,
+        244,
+        277,
+        310,
+        343,
+        376,
+        409,
+        442,
+        475,
+        508
+      ],
+      "resourceCounts": [
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "affinity": {
+        "schema": 1,
+        "hostNproc": 6,
+        "runnerCpuList": "0-7",
+        "runnerCgroup": "0::/cpulimit.slice/cpulimit-70.slice\n",
+        "assignedCpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "launchHostNproc": 6,
+        "ownedPid": 324296,
+        "browserHardwareConcurrency": 6,
+        "browserCpuList": "0-5",
+        "runnerCgroupObserved": "0::/cpulimit.slice/cpulimit-70.slice\n",
+        "browserCgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-324296.scope\n",
+        "checks": {
+          "hostAllocationStable": true,
+          "browserCountMatchesHost": true,
+          "actualBrowserAffinity": true
+        }
+      },
+      "oomScoreAdjObserved": 0,
+      "groupEmpty": true,
+      "serverClosed": true,
+      "peakGroupRssBytes": 158961664
+    }
+  ],
+  "nativeContracts": {
+    "pointerBytes": 4,
+    "timeBytes": 8,
+    "nativeIdBytes": 8,
+    "wireIdBytes": 12,
+    "mapGoldenBytes": 48,
+    "successfulMapResponseBytes": 37,
+    "fpcastSlots": 23,
+    "indirectCallbackInputs": [
+      0,
+      9,
+      1031
+    ],
+    "indirectCallbackOutputs": [
+      11,
+      20,
+      1042
+    ],
+    "usesRealNsString": true,
+    "nativeEhCompileFlag": true,
+    "nativeEhExecution": false
+  },
+  "hostTypeConversion": {
+    "firefoxVendoredTypes": "wgpu-types30.0.0 pinned Git",
+    "publicHostApi": "wgpu30.0.1/wgpu-types30.0.1",
+    "explicitConversions": true,
+    "transmutation": false,
+    "publicBackendDefaultRequestMapping": {
+      "path": "/home/a/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wgpu-30.0.1/src/backend/webgpu.rs",
+      "bytes": 171523,
+      "sha256": "38ac841e850c31b1902f4247b6e43c18d702dcf732655703ebcecc55f8015068"
+    }
+  },
+  "limits": {
+    "maxBatchBytes": 1048576,
+    "maxBatchMessages": 128,
+    "maxBufferBytes": 1048576,
+    "maxLiveBufferBytes": 4194304,
+    "maxSessionIds": 256,
+    "dispatchAxisMaximum": 64,
+    "dispatchWorkgroupsMaximum": 4096,
+    "optionalFeatures": []
+  },
+  "limitations": [
+    "Adapter chosen at host server creation; RequestAdapter power preference/full limits negotiation incomplete",
+    "DestroyDevice unsupported; close explicitly destroys current device",
+    "No native Linux guest transport or current Firefox frontend callbacks/promise/shmem integration",
+    "No write-map, general layouts, textures, render or presentation",
+    "Actual unsolicited lost/error handlers implemented but loss/OOM/internal paths unaccepted",
+    "Measured cleanup counts owned registries/device/queue/surface handles, not driver memory reclamation or complete Rust heap state",
+    "Chromium actual oom_score_adj0; no inherited1000 browser guard claim",
+    "Software mirror applies to actual WebGPU SwiftShader CPU; GL remains NVIDIA hardware"
+  ],
+  "retainedFailures": {
+    "browserReports": [
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-hardware/result.json",
+        "bytes": 16947,
+        "sha256": "edb49284dbb775096e4808c3ea6bdf985cd231e0b8f4f2371e94dd6347f9e396"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-software3/result.json",
+        "bytes": 3267,
+        "sha256": "c04d40f64f154bc2327eb20aa34eed12e4b36e68a52422d30ca4c8c789198998"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-software4/result.json",
+        "bytes": 3268,
+        "sha256": "a7c40b6715e322e3fba0d73e9bff0ed430bd5406165cf52fb8bfe82fa9e6ffde"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/browser-hardware5/result.json",
+        "bytes": 3368,
+        "sha256": "ac013a559587997912742555008d2f56bbb21fb416e5502a6e1df3a570dcc5de"
+      }
+    ],
+    "nativeNodeTrapCage": {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-execute2.json",
+      "bytes": 356,
+      "sha256": "1feabf7de9e3c59cda73a0c8d6b3d7ceecc82819c93e8f43dc7b38071cfb70ce"
+    },
+    "initialCompileAndAdmissionLogs": [
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check.log",
+        "bytes": 16708,
+        "sha256": "9f7a01043d3c67e5417fa43792c7148ca1319374852eb3b670a1f79987ff0350"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check2.log",
+        "bytes": 6451,
+        "sha256": "9201b23f495a60fbea0010bd1995cd45769a459f9bfc8fae8b79c76fdbf04ef0"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check3.log",
+        "bytes": 6369,
+        "sha256": "6cef51e40b63e5ad21570b0e55e9160efd6be5a58ac492812312c09d7d37d86a"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check4.log",
+        "bytes": 189,
+        "sha256": "52ed02a923e615e096711681b13eec1646876778380d0a2dea04921efb7df8a3"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check5.log",
+        "bytes": 3626,
+        "sha256": "a7aaee93d8ab2ae11a142217ac4d334ab432848123117b23a333e55a30d1adda"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check6.log",
+        "bytes": 683,
+        "sha256": "483ebd5c8b9aa400b5c14c96a7f6fad43f718cbf9a845225a73ee0155553e766"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/check7.log",
+        "bytes": 683,
+        "sha256": "04296ea0c8672d3f9750a2d41c00adb01474ec74a86cebe11a7760b059b9cc8b"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/checker-negative.log",
+        "bytes": 439,
+        "sha256": "2551a8bbe675d18270ebc7138e53b186b85cde982faed997d1ba4ae4a51c61db"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/checker-negative2.log",
+        "bytes": 439,
+        "sha256": "2551a8bbe675d18270ebc7138e53b186b85cde982faed997d1ba4ae4a51c61db"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-inspect.log",
+        "bytes": 204,
+        "sha256": "12676f80898f69b20fc5d5b15c7ef0303c7f076da72cd183b299605c081efcfa"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-layout.log",
+        "bytes": 3724,
+        "sha256": "9ce0ae4dfc775fb414d0575c5d7db47efef1001a96003e1f854ad4c8950b6ef6"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-layout-real.log",
+        "bytes": 386,
+        "sha256": "91f180af075b54097df0c1bc64bc88312e167454282740cf5242f34d5a4da6a1"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-webgpu-current-abi-20261003/native-layout3.log",
+        "bytes": 3632,
+        "sha256": "ad41a37e614eb323438b822f0b5fdf6243f939af5af0043c6f1c03f0050d88fb"
+      }
+    ]
+  },
+  "nextRequirements": [
+    "Actual current native guest batch/callback/shmem transport connected to this separate server",
+    "Current Firefox frontend promise/error/lifecycle and full required native FFI contracts",
+    "Required features/limits/power preference, device-loss/error/resource and texture/render/presentation coverage",
+    "Owner completed current Nightly build/package and guest/browser GPU gate; preserve public v10 until accepted successor"
+  ],
+  "checkerFreezeSeparateFromRuntime": {
+    "description": "Checker-only predicates and negative controls hardened after the runtime freeze; browser/native executables and runners remain unchanged. Source files include final checker/test hashes; browserReports runnerSources records the actual twelve runtime source files.",
+    "checks": 216,
+    "negativeControls": 7,
+    "unchangedFrozenBrowserReports": [
+      "browser-hardware6",
+      "browser-software5"
+    ]
+  },
+  "independentReview": {
+    "packet": {
+      "path": "/mnt/p6/project/build/nightly-webgpu-current-review-20261003/review-packet.json",
+      "bytes": 3555,
+      "sha256": "b09f034fd2df3a2b715d5933b54a81f82b7af9bbe92280f0289af6fd5743c9b4"
+    },
+    "pass": true,
+    "sourceProtocolReportPacketChecks": 331,
+    "freshNativeExecutionChecks": 14,
+    "nativeValidatorExitCodes": [
+      0,
+      0
+    ],
+    "reviewedEvidence": {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/evidence/nightly-webgpu-current-abi.json",
+      "bytes": 39739,
+      "sha256": "47e37b8520dcabe4df23fef128527335ca7538f13740176ebec1fa72f769c5b6"
+    },
+    "reviewedDocument": {
+      "path": "/mnt/p6/project/linux/linuxonweb/docs/firefox-nightly-webgpu-current-abi-20261003.md",
+      "bytes": 5137,
+      "sha256": "e17590e59c8decd58a77b85f3a2233ead5693b160425f5e7f1d52c699c553760"
+    },
+    "postReviewChanges": "Only add review reference to evidence/document and refresh document source pin; no runtime source, runner, executable or report changes.",
+    "nativeGuestTransport": false,
+    "productionOwnerIntegration": false,
+    "firefoxGpuAcceptance": false,
+    "softwareWebGlMirror": false,
+    "deviceLossRuntimeAcceptance": false,
+    "outOfMemoryInternalErrorRuntimeAcceptance": false,
+    "driverMemoryReclamationMeasured": false,
+    "releaseAcceptance": false
+  }
+}

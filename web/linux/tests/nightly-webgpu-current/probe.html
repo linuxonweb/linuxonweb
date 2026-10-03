@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Current Nightly remote codec primitive</title><script type="module">
+import init,{RemoteServer,golden,buffer_fixture,protocol_version,stale_buffer_fixture,stale_scope_fixture}from'/candidate/nightly_webgpu_current.js';
+const native=await(await fetch('/native.json')).json();
+window.result=(async()=>{await init();const protocol=protocol_version(),g=JSON.parse(golden());
+const assert=(v,m)=>{if(!v)throw Error(m)};assert(g.decoded&&g.truncatedRejected&&g.trailingRejected&&g.wrongCountRejected,'codec negative controls');assert(g.nativeIdBytes===8&&g.wireIdBytes===12,'ID wire/native distinction');const ffiNative=[...native.layout];assert(ffiNative[1]===8,'native time64');ffiNative[1]=null;assert(JSON.stringify(g.ffiLayout)===JSON.stringify(ffiNative),'Rust/C++ native layout equality');assert(JSON.stringify(g.map)===JSON.stringify(native.map),'independent native golden equality');
+let schemaRejected=false;try{const wrong=await RemoteServer.create(99,'auto','wrong-revision');wrong.close()}catch{schemaRejected=true}assert(schemaRejected,'schema revision rejection');
+const apiAdapter=await navigator.gpu?.requestAdapter(); const apiIdentity=apiAdapter?{vendor:apiAdapter.info.vendor,architecture:apiAdapter.info.architecture,device:apiAdapter.info.device,description:apiAdapter.info.description,isFallbackAdapter:apiAdapter.isFallbackAdapter}:null;
+const runs=[];for(const [backend,compute]of[['auto',false],['auto',true],['webgl',false]]){let server;try{
+server=await RemoteServer.create(41,backend,protocol);const input=new Uint8Array(new Uint32Array(Array.from({length:16},(_,i)=>i*11+2)).buffer);
+const batch=buffer_fixture(compute,backend==='webgl');const output=JSON.parse(await server.dispatch(41,batch,compute?24:15,input));assert(output.pass,'backend errors');assert(output.capabilities.bufferCopyReadMap&&output.capabilities.wgslComputeStorage===(output.backend!=='Gl')&&!output.capabilities.texturesRender,'honest capability profile');assert(output.mapped.length===1,'exactly one completed map');
+const actual=Array.from(new Uint32Array(Uint8Array.from(output.mapped[0]).buffer));const expected=Array.from({length:16},(_,i)=>(i*11+2)*(compute?3:1)+(compute?7:0));assert(JSON.stringify(actual)===JSON.stringify(expected),'all copy/compute results');
+const map=output.replies.at(-1);assert(map[0]===6&&map.length===37&&map[16]===0&&map[20]===0,'current successful map response');
+let staleSessionRejected=false,truncatedRejected=false,staleIdRejected=false;
+try{await server.dispatch(42,batch,compute?24:15,input)}catch{staleSessionRejected=true}
+try{await server.dispatch(41,batch.slice(0,-1),compute?24:15,input)}catch{truncatedRejected=true}
+try{await server.dispatch(41,stale_buffer_fixture(),2,new Uint8Array())}catch{staleIdRejected=true}
+assert(staleSessionRejected&&truncatedRejected&&staleIdRejected,'session/codec/stale device controls');
+const resourcesBeforeClose=server.resource_count();assert(resourcesBeforeClose>0,'live resource observation');const cleaned=server.close();assert(cleaned===0,'resource cleanup');let closedRejected=false;try{await server.dispatch(41,new Uint8Array(),0,new Uint8Array())}catch{closedRejected=true}assert(closedRejected,'closed-session control');
+runs.push({backend,compute,actual,expected,output,staleSessionRejected,truncatedRejected,staleIdRejected,closedRejected,resourcesBeforeClose,resourcesAfterClose:server.resource_count(),cleaned,pass:true});
+}finally{server?.close();server?.free()}}
+let staleScopeRejected=false;const scopeServer=await RemoteServer.create(77,'auto',protocol);try{await scopeServer.dispatch(77,stale_scope_fixture(),1,new Uint8Array())}catch{staleScopeRejected=true}finally{scopeServer.close();scopeServer.free()}assert(staleScopeRejected,'empty pop validates device');
+return{apiIdentity,staleScopeRejected,pass:runs.every(r=>r.pass),protocol,golden:g,native,runs,schemaRejected,scope:'current remote codec and Rust browser primitive; no Firefox or guest integration'};})();
+</script>
