@@ -1,0 +1,24 @@
+--- a/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp
++++ b/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp
+@@ -1098,15 +1098,21 @@
+     case FE_TONEAREST:
+       mode_str = "0";
+       break;
++#ifdef FE_DOWNWARD
+     case FE_DOWNWARD:
+       mode_str = "1";
+       break;
++#endif
++#ifdef FE_UPWARD
+     case FE_UPWARD:
+       mode_str = "2";
+       break;
++#endif
++#ifdef FE_TOWARDZERO
+     case FE_TOWARDZERO:
+       mode_str = "3";
+       break;
++#endif
+   }
+   result.AppendLiteral("std:");
+   result.Append(mode_str);

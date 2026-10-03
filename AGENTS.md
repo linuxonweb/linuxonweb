@@ -250,6 +250,25 @@ tools/nightly-musl/evidence/native-abseil-stack.json and full-build-boundary-
 coherence-run28.json. This is diagnostic/component acceptance, not guest signal,
 linked browser or JIT acceptance. Continue full build unchanged after commit.
 
+Run29 reaches2,396/3,012 native objects, adding173 during the phase plus
+one prephase Abseil object. It exits2 after314.59s on three optional fenv macros
+in nsUserCharacteristics.cpp. Unified26978 is reaped2, PGID1549619 empty;
+root's3,533-check terminal review retains coherent552 consumers and unchanged
+Rust. The telemetry correction adds only guards around FE_DOWNWARD, FE_UPWARD
+and FE_TOWARDZERO cases, using the actual platform macros without inventing
+rounding modes or changing floating-point behavior. Native original/fixed
+switch checks, six native-Wasm reporting cases and real host four-mode
+rounding preservation pass. rfp-run1 compiles the formerly failing1,752,059-byte
+object, then exits2 on a local generated-JS packaging prerequisite; its failure
+is retained. The explicit native target-objects command rfp-run2 exits0,
+validating the existing fresh object without claiming a second recompilation.
+Unified67107/89611 are reaped2/0; both groups empty. Root checks36 source,
+native/host, dependency, timestamp and terminal predicates. Evidence:
+tools/nightly-musl/evidence/native-fenv.json and full-build-boundary-coherence-
+run29.json. Complete root packaging must still generate RFPTargetConstants.sys.mjs;
+no linked browser, guest FPU/JIT or release acceptance is established. Continue
+the full build with unchanged limits after this packet commits.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline

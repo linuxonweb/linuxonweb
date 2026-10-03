@@ -1,0 +1,198 @@
+{
+  "claim": "Corrected formerly failing native FPU telemetry object and object-target gate; first packaging failure retained; no guest rounding/browser/JIT acceptance",
+  "terminals": [
+    {
+      "phase": "rfp",
+      "run": "run1",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "--allow-subdirectory-build",
+        "toolkit/components/resistfingerprinting",
+        "-j4"
+      ],
+      "pid": 1565253,
+      "pgid": 1565253,
+      "started": 1791027488.358119,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/rfp-run1.log",
+      "timeout_seconds": 720,
+      "state": "completed",
+      "task_bytes": 18543890432,
+      "free_bytes": 76434333696,
+      "checked": 1791027488.358737,
+      "exit_code": 2,
+      "finished": 1791027509.9621139,
+      "stop_reason": null
+    },
+    {
+      "phase": "rfp",
+      "run": "run2",
+      "argv": [
+        "bash",
+        "-c",
+        "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+        "nightly-musl",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+        "build",
+        "--allow-subdirectory-build",
+        "toolkit/components/resistfingerprinting/target-objects",
+        "-j4"
+      ],
+      "pid": 1568063,
+      "pgid": 1568063,
+      "started": 1791027584.1834369,
+      "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/rfp-run2.log",
+      "timeout_seconds": 720,
+      "state": "completed",
+      "task_bytes": 18548355072,
+      "free_bytes": 76429869056,
+      "checked": 1791027584.1841116,
+      "exit_code": 0,
+      "finished": 1791027587.8011668,
+      "stop_reason": null
+    }
+  ],
+  "unified_sessions": [
+    {
+      "session_id": 67107,
+      "reaped": true,
+      "exit_code": 2
+    },
+    {
+      "session_id": 89611,
+      "reaped": true,
+      "exit_code": 0
+    }
+  ],
+  "exact_pgids_empty": true,
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/toolkit/components/resistfingerprinting/nsUserCharacteristics.o",
+    "bytes": 1752059,
+    "sha256": "1f1f382a84d796bb2c16dd70bda806e7a77d1f1d367a7d1b244e536ca432a4fd",
+    "mtime_ns": 1791027505259764267,
+    "compiled_during": "rfp-run1",
+    "rfp_run2_existing_object_target_validation": true
+  },
+  "native_runtime": {
+    "cases": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        -1
+      ],
+      [
+        2,
+        -1
+      ],
+      [
+        3,
+        -1
+      ],
+      [
+        -1,
+        -1
+      ],
+      [
+        2147483647,
+        -1
+      ]
+    ],
+    "imports": 0,
+    "nativeWasmRuntime": true
+  },
+  "host_runtime_exit": 0,
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-fenv-review-run1.json",
+    "bytes": 2907,
+    "sha256": "1608723168dff6067b853ded771fcf99f936c2a912be2f4bf7252974fa239e57",
+    "passed_predicates": 36
+  },
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp",
+      "bytes": 55743,
+      "sha256": "a52295dc20beefa4661dd6e356d05d214ccb545d5f53fafeed19d01f0709d441"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/fenv-preflight/original-nsUserCharacteristics.cpp",
+      "bytes": 55665,
+      "sha256": "81750263322911a2bcd98a1dc3da224ddaff841f2b1c63b8b24a7148226b6f92"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/toolkit/components/resistfingerprinting/.deps/nsUserCharacteristics.o.pp",
+      "bytes": 437679,
+      "sha256": "ea33b7f745df88e3bee2037a84e8c916b1581f9afb4762ad8e85524fa42a6df1"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/fenv-preflight/result.json",
+      "bytes": 5960,
+      "sha256": "3dbbbf21da6e6b7057f362854f34664ceee2f01168fb631584ebbaab70cba8d9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/native-fenv-port.json",
+      "bytes": 502,
+      "sha256": "46fa1d917d2670b1f80366969ef9abd582de23935092360081b0c2fdf83d63ce"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/rfp-run1.json",
+      "bytes": 869,
+      "sha256": "9c3abff088387172fbfef7614870076c3a1b0eb51dbbd09df8486920a5c8fedc"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/rfp-run2.json",
+      "bytes": 886,
+      "sha256": "dec5a75babdda86d68131f9e2463987b326e976ee6070f45b303aa0aba8486f0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/rfp-run1-group-cleanup.json",
+      "bytes": 1032,
+      "sha256": "b7f212edb8415b1da0f5166c685a518bbb4c9869c9b6ec115bd343991bbf67a0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/rfp-run2-group-cleanup.json",
+      "bytes": 1048,
+      "sha256": "3384f19eb0ea696dde4ee0027f44c8fbad70d16150353c7e5f07686fa1ca636f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/rfp-run1.log",
+      "bytes": 3648,
+      "sha256": "ffc941f56cbc3f1a264cfed582ee0b81a17fc998e3a42354f42213f081066b41"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/rfp-run2.log",
+      "bytes": 903,
+      "sha256": "0d28b6e011952fe4ecf568bb98f825660a39f4374248e1f6c8fe71b9c0276491"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 2964,
+      "sha256": "659e1bfbbd3719ecf82e197255d9de0d5294ed1ecebd027da76aa480eaafde59"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-fenv-port.py",
+      "bytes": 1813,
+      "sha256": "a2dd3f2c083557e609e607b1be4765a9594338050f29d99b228f1dcc7eca208c"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-fenv/probe.py",
+      "bytes": 4440,
+      "sha256": "5349a33b460da0bdaed396204e8e1b81965355fd16be878a143b1f8789e20c96"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

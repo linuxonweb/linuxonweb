@@ -1,0 +1,128 @@
+{
+  "claim": "Run29 terminal native graph progress and actual optional fenv compile errors; browser link/guest acceptance pending",
+  "terminal": {
+    "phase": "build",
+    "run": "run29",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1549619,
+    "pgid": 1549619,
+    "started": 1791027010.4320068,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run29.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 18536480768,
+    "free_bytes": 76441907200,
+    "checked": 1791027318.5036786,
+    "exit_code": 2,
+    "finished": 1791027325.0208306,
+    "stop_reason": null
+  },
+  "unified_session": {
+    "session_id": 26978,
+    "reaped": true,
+    "exit_code": 2
+  },
+  "exact_pgid_empty": true,
+  "graph": {
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 2396,
+    "missing_expected_object_count": 616,
+    "existing_expected_object_bytes": 1840877383,
+    "existing_non_wasm_magic": {}
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "coherence": {
+    "required_count": 552,
+    "naturally_regenerated_fresh_count": 552,
+    "all_required_consumers_complete": true,
+    "new_paths_written_during_phase_count": 173,
+    "new_paths_written_before_phase_count": 1,
+    "rebuilt_existing_written_during_phase_count": 0
+  },
+  "root_review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run29-review-run1.json",
+    "bytes": 379666,
+    "sha256": "cdd269796847e6ca02130fe436b743e60514f05fc8e02802db4e96ea95ba6290",
+    "passed_predicates": 3533
+  },
+  "compiler_errors": [
+    " 4:40.75 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp:1101:10: error: use of undeclared identifier 'FE_DOWNWARD'",
+    " 4:40.81 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp:1104:10: error: use of undeclared identifier 'FE_UPWARD'",
+    " 4:40.88 E /mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/resistfingerprinting/nsUserCharacteristics.cpp:1107:10: error: use of undeclared identifier 'FE_TOWARDZERO'"
+  ],
+  "before_source_snapshot": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/fenv-preflight/original-nsUserCharacteristics.cpp",
+    "bytes": 55665,
+    "sha256": "81750263322911a2bcd98a1dc3da224ddaff841f2b1c63b8b24a7148226b6f92"
+  },
+  "source_mutated_by_followup": true,
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run29.json",
+      "bytes": 797,
+      "sha256": "d8ca52ed6395a9bc3efa1b897c98ebf897fdd69ddfddd2be44632fd5f3cba21f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run29-boundary.json",
+      "bytes": 668075,
+      "sha256": "9aabc85818d35ad728ad71c6b39223cacdb44513abcf175f25eedec30a85ada5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run29-group-cleanup.json",
+      "bytes": 956,
+      "sha256": "729ef841e16b85d81c7cb1b95768146c5b77a889076f04da41353b2f0802d2d0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run29.json",
+      "bytes": 619422,
+      "sha256": "60bed4be0989b67b4a2504c4c075689081c45cf9c51abd24bd907a136296bb87"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/inttypes-coherence-run29.json",
+      "bytes": 278786,
+      "sha256": "f5f80ee3624cadda354aef7df3772b2d1090ca98a94da02a338eb42123062a6b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run29.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run29.log",
+      "bytes": 63434,
+      "sha256": "8f24a20ce2c84cd3ed13dc5ffed8b09c312f32f8355b1bb334147aa5e33a9862"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/fenv-preflight/original-nsUserCharacteristics.cpp",
+      "bytes": 55665,
+      "sha256": "81750263322911a2bcd98a1dc3da224ddaff841f2b1c63b8b24a7148226b6f92"
+    }
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}
