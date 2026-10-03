@@ -8,6 +8,15 @@ Read-only Sites inspection confirms the same public project at version10.
 The concrete two-release sequence and acceptance/rollback requirements are in
 docs/firefox-nightly-sites-release-plan-20261002.md; no new deployment occurred.
 
+The Nightly Sites verifier preparation binds the corrected local default-page
+path, page privacy-reduced BuildID versus exact privileged identity, all eight
+original benchmark cases and launch/readiness bounds, and current-ABI compute
+evidence if enabled in the later GPU release. Root independently reruns133
+synthetic predicates and checks four frozen-source/report/storage predicates
+in sites-verifier-preparation-review-run1.json under the root-review task.
+Every preparation report retains releaseAcceptance=false. Actual private and
+public guest QA integration, accepted packages and deployment remain pending.
+
 Run16's generated-make progress snapshot records707 existing native Wasm object
 paths of3,012 expected, with retained input/object pins. Root independently
 checks twelve snapshot/hash/count/object/status predicates in full-graph-review-
