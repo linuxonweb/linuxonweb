@@ -1,0 +1,12 @@
+{
+  "claim": "Broader Nightly JIT preparation: real emitted Wasm and native diagnostic compile; no full browser/guest acceptance",
+  "broadHostChecks": 1969,
+  "integerHostChecks": 972,
+  "nativeObjectBytes": 663344,
+  "nightlyJitAcceptance": false,
+  "guestAcceptance": false,
+  "releaseAcceptance": false,
+  "reviewPath": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/jit-broad-review-run1.json",
+  "reviewSHA256": "cbacfedddf50fdc4853c5f9ecf79076f06e6caef93ec8ed4bd3f1516d7f5ca95",
+  "rootCheckCount": 83
+}

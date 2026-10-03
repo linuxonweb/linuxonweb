@@ -1,5 +1,33 @@
 # Current continuation — 2026-10-02
 
+2026-10-03: the user resumes the active goal, JIT first, then GPU. Work remains
+inline under the latest user-provided no-subagent instruction. Nightly JIT
+preparation now has an explicit --coverage broad mode: source-derived239
+opcodes, arguments/doubles/arrays/properties/globals/Math paths and current
+Watchtower/PBL cursor hooks. Actual ASan/UBSan+Wasm emitter1969/0; integer
+control972/0 and its generated overlay bytes equal selected run4. Actual native
+PblJit diagnostic compile passes (663,344B) and whole-object wasm-validate
+passes. Root83-check review is jit-broad-review-run1.json, SHA cbacfedddf50fdc4853c5f9ecf79076f06e6caef93ec8ed4bd3f1516d7f5ca95.
+This is preparation against an isolated diagnostic PBL config, not a full PBL
+browser or guest acceptance. Full build plan now selects broad preparation
+from the eventual accepted source copy; no diagnostic/old128 object relink.
+See docs/firefox-nightly-jit-broad-20261003.md. Public v10 unchanged.
+
+Run36 terminal/reaped2, group empty, root4162 checks: PNG12 aliases,
+SoundTouch Clear and single RLBox TLS owner, musl epoll ownership fixed.
+Cairo preinclude was mistakenly attached to unused legacy CFLAGS variables.
+Run37 corrects COMPUTED_CFLAGS/COMPUTED_CXXFLAGS: actual compiler command
+includes the header,44 real objects rebuilt,939 Cairo collisions gone.
+Run37 terminal/reaped2/group empty, root4148 checks; next errors Pixman and
+XShm interposition. Run38 adds81 Pixman names through its normal exported
+header and replaces ELF XShm interposition with a narrowly scoped --wrap for
+firefox/plugin-container/xpcshell. Dry final Firefox command has the wrapper;
+gfxtest does not. This shared header requires natural browser/Rust recompilation.
+Run38 owned PID/PGID1799592, unified handle58772, j4/20min/20GiB bounds; recheck
+actual live handle/status before any source/prerequisite mutation. No browser
+link, startup, Nightly JIT or release acceptance yet. Final static-names source
+packet remains uncommitted until terminal native symbol/boundary review.
+
 Run34 reaches all three final browser program links and exits2 because wasm-ld
 rejects ELF --as-needed/--no-as-needed flags. It is terminal/reaped, exact group
 empty. Root checks4,152 boundary predicates, all3,012 native objects and552

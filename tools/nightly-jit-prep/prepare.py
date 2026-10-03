@@ -5,6 +5,8 @@ from pathlib import Path
 p=argparse.ArgumentParser()
 p.add_argument('--source',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
+p.add_argument('--coverage', choices=('integer', 'broad'), default='integer',
+               help='Broad migrates existing args/numbers/arrays/properties/Math coverage; acceptance remains unproven')
 a=p.parse_args()
 repo=Path(__file__).resolve().parents[2]
 out=a.output.resolve(); source=a.source.resolve()
@@ -34,7 +36,7 @@ for m in re.finditer(r'^\s*MACRO\((\w+),\s*\w+,\s*(?:"[^"]*"|NULL),\s*(\d+),\s*(
 assert len(ops)==len(re.findall(r'^\s*MACRO\((\w+),',optext,re.M))
 assert len(ops)>220 and len(ops)<256 and len({o['name'] for o in ops})==len(ops)
 names={o['name'] for o in ops}; assert set(allowed)<=names
-(out/'opcode-audit.json').write_text(json.dumps({'source_sha256':inputs[-1]['sha256'],'ops':ops,'integer_whitelist':allowed,'default':'reject'},indent=2)+'\n')
+(out/'opcode-audit.json').write_text(json.dumps({'source_sha256':inputs[-1]['sha256'],'ops':ops,'integer_whitelist':allowed if a.coverage == 'integer' else None,'coverage':a.coverage,'default':'reject'},indent=2)+'\n')
 rel='js/src/vm/PortableBaselineInterpret.cpp'; original=read(source/rel)
 text=change(original,'namespace js {\nnamespace pbl {\n','''namespace js {
 namespace pbljit {
@@ -140,12 +142,13 @@ bool IntegerOpcodeAllowed(JSOp op) {
 }
 
 '''
-text=change(text,'constexpr uint32_t kMaxInstalls = 4000;\n','constexpr uint32_t kMaxInstalls = 4000;\n\n'+whitelist,'integer whitelist')
-text=change(text,'    for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {\n      JSOp op = JSOp(*pc);\n','    for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {\n      JSOp op = JSOp(*pc);\n      if (!IntegerOpcodeAllowed(op)) return reject("phase-one opcode", pc);\n','scan whitelist before liveness')
-text=change(text,'      if (uint32_t(bits >> 32) == kTagObject) {\n','      if (uint32_t(bits >> 32) != TagOf(Ty::Int)) return reject("phase-one head type", head);\n      if (uint32_t(bits >> 32) == kTagObject) {\n','Int32 head-live guards')
-start=text.index('// Translate one loop. `init` sets up a fresh Compiler for each attempt.')
-end=text.index('void FreeCompiler(Compiler* c)',start)
-text=text[:start]+'''// Integer-only translation: type disagreement is a rejection, never a Double retry.
+if a.coverage == 'integer':
+    text=change(text,'constexpr uint32_t kMaxInstalls = 4000;\n','constexpr uint32_t kMaxInstalls = 4000;\n\n'+whitelist,'integer whitelist')
+    text=change(text,'    for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {\n      JSOp op = JSOp(*pc);\n','    for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {\n      JSOp op = JSOp(*pc);\n      if (!IntegerOpcodeAllowed(op)) return reject("phase-one opcode", pc);\n','scan whitelist before liveness')
+    text=change(text,'      if (uint32_t(bits >> 32) == kTagObject) {\n','      if (uint32_t(bits >> 32) != TagOf(Ty::Int)) return reject("phase-one head type", head);\n      if (uint32_t(bits >> 32) == kTagObject) {\n','Int32 head-live guards')
+    start=text.index('// Translate one loop. `init` sets up a fresh Compiler for each attempt.')
+    end=text.index('void FreeCompiler(Compiler* c)',start)
+    text=text[:start]+'''// Integer-only translation: type disagreement is a rejection, never a Double retry.
 template <typename Init>
 Compiler* TranslateLoop(Init init, Buf& m) {
   void* mem = malloc(sizeof(Compiler));
@@ -159,8 +162,8 @@ Compiler* TranslateLoop(Init init, Buf& m) {
 }
 
 '''+text[end:]
-checks.append({'name':'single translation attempt, no widening','expected':1,'actual':text.count('c->attempts = 1;'),'pass':text.count('c->attempts = 1;')==1})
-text=change(text,'''        if (frame->isFunctionFrame()) {
+    checks.append({'name':'single translation attempt, no widening','expected':1,'actual':text.count('c->attempts = 1;'),'pass':text.count('c->attempts = 1;')==1})
+    text=change(text,'''        if (frame->isFunctionFrame()) {
           k.argv = reinterpret_cast<const uint64_t*>(frame->argv());
           k.nformals = frame->numFormalArgs();
           k.argsAliased = script->argsObjAliasesFormals();
@@ -176,6 +179,6 @@ save(original,text,'host-test/mock.h')
 # Record checked API inputs even for currently disabled broad features.
 for rel in ['js/src/vm/Watchtower.h','js/src/jit/BaselineFrame.h','js/src/vm/JSContext.h','js/src/gc/GCRuntime.h','js/src/jsapi.cpp','js/src/jit/JitOptions.cpp','js/moz.configure','js/src/vm/moz.build']:
     read(source/rel)
-manifest={'scope':'integer-only source overlay and host emitter preparation; no Nightly compile/runtime acceptance','source':str(source),'official_build':'20261002211853','hg':'dfc77f7a6d716f1a20a2576597638d4fc21cd916','git_mirror':'bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23','libc':'musl','full_tree_hg_git_identity':'inference; acquisition proof establishes reviewed overlay/canonical pairs','generator':{'path':str(Path(__file__).resolve()),'sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},'checks':checks,'pass':all(c['pass'] for c in checks),'inputs':inputs,'files':[{'path':str(f.relative_to(out)),'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'bytes':f.stat().st_size} for f in sorted(out.rglob('*')) if f.is_file()]}
+manifest={'scope':a.coverage+' source overlay and host emitter preparation; no Nightly compile/runtime acceptance','coverage':a.coverage,'source':str(source),'official_build':'20261002211853','hg':'dfc77f7a6d716f1a20a2576597638d4fc21cd916','git_mirror':'bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23','libc':'musl','full_tree_hg_git_identity':'inference; acquisition proof establishes reviewed overlay/canonical pairs','generator':{'path':str(Path(__file__).resolve()),'sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},'checks':checks,'pass':all(c['pass'] for c in checks),'inputs':inputs,'files':[{'path':str(f.relative_to(out)),'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'bytes':f.stat().st_size} for f in sorted(out.rglob('*')) if f.is_file()]}
 (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
-print(json.dumps({'pass':manifest['pass'],'anchorChecks':len(checks),'opcodeCount':len(ops),'allowedOpcodeCount':len(allowed),'output':str(out)}))
+print(json.dumps({'pass':manifest['pass'],'coverage':a.coverage,'anchorChecks':len(checks),'opcodeCount':len(ops),'allowedOpcodeCount':len(allowed) if a.coverage == 'integer' else None,'output':str(out)}))

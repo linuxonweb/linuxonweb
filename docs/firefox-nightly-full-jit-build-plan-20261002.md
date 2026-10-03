@@ -79,11 +79,14 @@ Reinspect the owner's status/process group before beginning the transition.
    accepted musl source, including every owned architecture/libc/static/NSS/
    wgpu correction and vendored Cargo checksum update, before applying JIT.
    Do not replay old overlays onto a newer corrected file. Re-run
-   `tools/nightly-jit-prep/prepare.py` against this accepted copy, into a fresh
-   output. Compare its baseline input hashes to selected
+   `tools/nightly-jit-prep/prepare.py --coverage broad` against this accepted
+   copy, into a fresh output. The broader preparation and native diagnostic
+   compile now pass; see `docs/firefox-nightly-jit-broad-20261003.md`.
+   Compare its baseline input hashes to selected
    `/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/overlay-run4/manifest.json`;
    review changed anchors rather than blindly copying an obsolete full file.
-   Replay the 972-assertion host preparation against the selected new packet.
+   Replay the 1,969-assertion broad host preparation against the selected new
+   packet. Retain the 972-assertion integer control and its separate overlay.
 
    Copy the final accepted recipe, then rebase *every* recovery-root reference
    in the new recipe/source `.mozconfig`: environment, run-phase root/log/status,
@@ -112,9 +115,11 @@ Reinspect the owner's status/process group before beginning the transition.
    upstream PBL configuration alone defaults the runtime option to false.
    Specialization starts after1000 loop heads and honors `PBLJIT=0` separately;
    that environment variable disables the specializer, not the PBL tier.
-   Keep the generated239 opcodes and explicit42-operation integer whitelist.
-   Arguments, doubles, lexical/TDZ checks, arrays, properties, globals, Math
-   and arbitrary helper calls remain outside compiled coverage in this phase.
+   Keep the generated239 opcodes and original broad compiler rejection paths.
+   Arguments, doubles, lexical/TDZ checks, arrays, monomorphic properties,
+   guarded globals and supported Math operations belong to this full-build
+   candidate. Arbitrary helper calls remain fallback. The explicit42-operation
+   integer whitelist belongs only to the separate safety/control overlay.
 
 3. **Configure and build the complete PBL graph from fresh objects.** Do not
    preinclude a copied header that merely defines PBL. Configuration changes
