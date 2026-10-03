@@ -22,15 +22,13 @@ await check('actual host nproc is a positive integer', () => assert.ok(Number.is
 await check('host/browser agreement selects eight', () => assert.equal(cpu.requestedGuestCpus, 8));
 await check('one CPU lower bound', () => assert.equal(selectHostCpus(1, 1).requestedGuestCpus, 1));
 await check('64 CPU upper boundary', () => assert.equal(selectHostCpus(64, 64).requestedGuestCpus, 64));
-await check('host and browser above UI range clamp to 64', () => {
-  const high = selectHostCpus(128, 128);
-  assert.equal(high.requestedGuestCpus, 64);
-  assert.equal(high.hostNproc, 128);
-  assert.equal(high.browserHardwareConcurrency, 128);
-  const evidence = guestCpuEvidence(high, 'smp: Brought up 1 node, 64 CPUs', { browserHardwareConcurrency: 128, selectedGuestCpus: 64 }, 128);
-  assert.ok(Object.values(evidence.checks).every(Boolean));
+await check('host above UI range rejects instead of accepting a clamped count', () => assert.throws(() => selectHostCpus(128, 128), /exceeds reviewed UI limit/));
+await check('above-range host/browser disagreement rejects', () => assert.throws(() => selectHostCpus(128, 32), /CPU count mismatch/));
+await check('two different above-range counts cannot agree through clamping', () => assert.throws(() => selectHostCpus(128, 256), /CPU count mismatch/));
+await check('forged clamped selection fails phase checks', () => {
+  const high = { hostNproc: 128, browserHardwareConcurrency: 128, requestedGuestCpus: 64 };
+  assert.equal(hostCpuPhaseChecks(high, { browserHardwareConcurrency: 128, selectedGuestCpus: 64 }, 128).hostCpuSelection, false);
 });
-await check('clamped host/browser disagreement rejects', () => assert.throws(() => selectHostCpus(128, 32), /CPU count mismatch/));
 for (const value of [undefined, null, 0, -1, 1.5, NaN, Infinity, '8']) {
   const label = String(value);
   await check('invalid host ' + label, () => assert.throws(() => selectHostCpus(value, 8), /invalid host nproc/));

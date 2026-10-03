@@ -117,3 +117,11 @@ host count, and a fresh run-end nproc reading must agree. Syntax and whitespace
 checks pass; no benchmark/browser/guest was launched. Exact Nightly identity,
 fatal-path rejection and performance acceptance still need migration before
 using this historical runner as a release gate.
+
+The subsequent exact-count correction makes the shared helper reject hosts
+above64 and mismatching raw host/browser counts before selection. It no longer
+accepts a64-CPU guest for a128-CPU host, and two different counts above64 cannot
+appear equal through clamping. Phase checks also reject forged clamped evidence.
+The product UI remains unchanged. Root reruns68 CPU fixtures and43 Nightly
+baseline fixtures; all pass. These are host contract checks, not new guest
+acceptance. The historical available-count variation remains unexplained.

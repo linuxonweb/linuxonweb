@@ -43,6 +43,12 @@ evidence. Older non-helper runners need equivalent phase checks before
 invocation. The existing UI clamp remains; exact host counts above64 require a
 deliberate UI limit change rather than claiming exact agreement after clamping.
 
+Shared selection now refuses raw host/browser mismatches and hosts above64;
+phase checks also refuse forged clamped evidence. Root reruns68 CPU fixtures,
+43 baseline and118 benchmark preparation predicates after this correction.
+No new browser or guest acceptance occurs. Preserve historical results and
+the unresolved six/eight available-count observations.
+
 Nightly benchmark migration now binds full native-musl baseline/PBL package,
 compiled app/platform identity and retained configure/compiler/link evidence;
 checks all144 original rows/checksums and every case/launch/readiness ratio;

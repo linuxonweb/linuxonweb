@@ -14,9 +14,13 @@ export function readHostNproc() {
 export function selectHostCpus(hostNproc, browserHardwareConcurrency) {
   validCount(hostNproc, 'host nproc');
   validCount(browserHardwareConcurrency, 'browser hardwareConcurrency');
-  // Match main.js's 1–64 UI range, with no fallback for invalid evidence.
-  const hostCores = Math.min(64, Math.max(1, browserHardwareConcurrency));
-  const expectedHostCores = Math.min(64, hostNproc);
+  if (browserHardwareConcurrency !== hostNproc)
+    throw Error('browser/host CPU count mismatch: ' + JSON.stringify({ hostNproc, browserHardwareConcurrency }));
+  // Tests require the exact host count. The existing UI limit cannot silently
+  // turn a larger host into a successful 64-CPU acceptance result.
+  if (hostNproc > 64) throw Error('exact host CPU count exceeds reviewed UI limit: ' + hostNproc);
+  const hostCores = hostNproc;
+  const expectedHostCores = hostNproc;
   const cpu = { hostNproc, browserHardwareConcurrency, hostCores, expectedHostCores, requestedGuestCpus: hostCores };
   if (hostCores !== expectedHostCores) throw Error('browser/host CPU count mismatch: ' + JSON.stringify(cpu));
   return cpu;
@@ -28,7 +32,9 @@ export const guestCpuPrebootStateExpression = '({browserHardwareConcurrency:navi
 export function hostCpuPhaseChecks(cpu, state, observedHostNproc) {
   return {
     hostAllocationStable: Number.isInteger(observedHostNproc) && observedHostNproc > 0 && observedHostNproc === cpu.hostNproc,
-    hostCpuSelection: state.browserHardwareConcurrency === cpu.browserHardwareConcurrency && state.selectedGuestCpus === cpu.requestedGuestCpus,
+    hostCpuSelection: Number.isInteger(cpu.hostNproc) && cpu.hostNproc > 0 && cpu.hostNproc <= 64 &&
+      cpu.browserHardwareConcurrency === cpu.hostNproc && cpu.requestedGuestCpus === cpu.hostNproc &&
+      state.browserHardwareConcurrency === cpu.hostNproc && state.selectedGuestCpus === cpu.hostNproc,
   };
 }
 
