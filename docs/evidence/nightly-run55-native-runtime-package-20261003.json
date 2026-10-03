@@ -1,0 +1,1474 @@
+{
+  "pass": true,
+  "claim": "Actual frozen full runtime and default-page package, structural acceptance only",
+  "identity": {
+    "version": "159.0a1",
+    "officialBuildID": "20261002211853",
+    "localBuildID": "20261003042618",
+    "hgRevision": "dfc77f7a6d716f1a20a2576597638d4fc21cd916",
+    "gitMirrorRevision": "bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23",
+    "fullHgGitIdentity": "inference, pinned subject/author date and8canonicalfilepairs checked",
+    "proofs": {
+      "source-overlay-manifest.json": "968d93bce98086f921438bf9aff5d61e599ff0d81cc25fea9472db961517bc84",
+      "acquisition-proof.json": "341e247e8ef5c744e07da4b5b36351fc9cc785581ea1ab7c76e10f7d34c83167",
+      "hg-git-source-pairs.json": "af21a9e9ee57b899db3f447e647dea269a80008fbae30e90bf550340f73fb8ea"
+    }
+  },
+  "fullPackage": {
+    "initramfs-firefox.cpio.gz": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/initramfs-firefox.cpio.gz",
+      "bytes": 281887656,
+      "allocatedBytes": 281894912,
+      "sha256": "0b65cf5bb92612dc871deee945d58b63d3d391804ffcebeb914aa2746f46f2eb"
+    },
+    "boot-manifest.json": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/boot-manifest.json",
+      "bytes": 695,
+      "allocatedBytes": 4096,
+      "sha256": "7c06f3d7da492d5814f5d13aac17fe013ce0c427d7b6d1d4a873bdb0535a6d0f"
+    },
+    "package-report.json": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/package-report.json",
+      "bytes": 10911,
+      "allocatedBytes": 12288,
+      "sha256": "8052e5e5ca91f87e107fed1b95a28a95649d671900ec05db8729dd3ee2b09a8c"
+    },
+    "archive-inventory.json": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/archive-inventory.json",
+      "bytes": 3805267,
+      "allocatedBytes": 3809280,
+      "sha256": "ca7301e85d2dea4961e0abf281affbf2d0c91360a8d4cb95aed00fc960aa522a"
+    },
+    "runtime-inventory.json": {
+      "path": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/runtime-inventory.json",
+      "bytes": 1911606,
+      "allocatedBytes": 1912832,
+      "sha256": "8e9ec3ea3aacfa6794bbc7a8b4829415e8883acc53b8fd9d6fe994c3a4f12550"
+    }
+  },
+  "defaultPagePackage": {
+    "initramfs-firefox.cpio.gz": {
+      "path": "/mnt/p6/build/firefox-default-gpu-page-20261002/candidate-run55/initramfs-firefox.cpio.gz",
+      "bytes": 280673250,
+      "allocatedBytes": 280674304,
+      "sha256": "2ae5c706a08f67cbadae26167ac81df87db36aa11e101e8c6876889db06f1d5a"
+    },
+    "boot-manifest.json": {
+      "path": "/mnt/p6/build/firefox-default-gpu-page-20261002/candidate-run55/boot-manifest.json",
+      "bytes": 678,
+      "allocatedBytes": 4096,
+      "sha256": "d67a46900c7f57866b52c47b7672be6a39b8903cf733c9b5170d9c0120962faf"
+    },
+    "package.json": {
+      "path": "/mnt/p6/build/firefox-default-gpu-page-20261002/candidate-run55/package.json",
+      "bytes": 3310,
+      "allocatedBytes": 4096,
+      "sha256": "1dab026c08a3204bfc2316e4c63c5c0cdf790ad614357c188943c18b295bbf34"
+    }
+  },
+  "modules": {
+    "firefox": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+        "bytes": 175262059,
+        "allocatedBytes": 175267840,
+        "sha256": "973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm",
+        "bytes": 188796635,
+        "allocatedBytes": 188801024,
+        "sha256": "12afe0d5be898fbf9448e485b853e86f0f1dc035b67ca5cad27fa27c6906e867"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/firefox-abi-review.json",
+        "bytes": 4640,
+        "allocatedBytes": 8192,
+        "sha256": "044ffd3caf6bd8cf6a0846ffdb6b01ab86c445633bc542fe2d06180dedcf0376"
+      }
+    },
+    "plugin-container": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/plugin-container",
+        "bytes": 175258761,
+        "allocatedBytes": 175263744,
+        "sha256": "ea6a04776c734f1da79da69707794205d0a9b583784f4c7ab0368e76b53d80f7"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/plugin-container.fpcast.wasm",
+        "bytes": 188790569,
+        "allocatedBytes": 188796928,
+        "sha256": "30b8e980b42c740e452b5425a4882a758e92634bf0383eda59343146593dde63"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/plugin-container-abi-review.json",
+        "bytes": 4676,
+        "allocatedBytes": 8192,
+        "sha256": "eb77cb360becf47f30e16ce34b052b14fce0cc606e3986b58c13bd128a5d0334"
+      }
+    },
+    "xpcshell": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/xpcshell",
+        "bytes": 175268572,
+        "allocatedBytes": 175276032,
+        "sha256": "52eb8a4d2e687408aafb7bf2c10fd1958604773c2f796361d20c7cb7d0153dc9"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/xpcshell.fpcast.wasm",
+        "bytes": 188800380,
+        "allocatedBytes": 188801024,
+        "sha256": "f8bf72b5ba5b2c6b0eb41c95a06e8a54bcf096f694db1eaaa43ac402f55cace4"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/xpcshell-abi-review.json",
+        "bytes": 4644,
+        "allocatedBytes": 8192,
+        "sha256": "437adb387189e575909074a7b0c1df270ab76d3b6ebbae7552b4435bff52fbc7"
+      }
+    },
+    "pingsender": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pingsender",
+        "bytes": 361069,
+        "allocatedBytes": 364544,
+        "sha256": "3fac1db02b5bcdef56bcbbf0952bfbaf52d620d853404edb518c4582553b797e"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/pingsender.fpcast.wasm",
+        "bytes": 410433,
+        "allocatedBytes": 413696,
+        "sha256": "7d747716a056bf8bc2aae4d99c377172f6eceb5a9e67f30c9955081e805c6dcd"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/pingsender-abi-review.json",
+        "bytes": 4178,
+        "allocatedBytes": 8192,
+        "sha256": "6bb6e8fbe4e756af34c1fddcd1fb9f21c281fa916a2be9ee3fd81774f6c5f9dc"
+      }
+    },
+    "gfxtest": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/gfxtest",
+        "bytes": 973901,
+        "allocatedBytes": 974848,
+        "sha256": "5859187031bfdc7fe7893d055e2750d2a6d0292b6fd834ee47a46ca5c5171ceb"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/gfxtest.fpcast.wasm",
+        "bytes": 1025840,
+        "allocatedBytes": 1028096,
+        "sha256": "099146084b82d70ac936d60205094b3a9db1c2bc38c958cb13c4eab5d877cfcc"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/gfxtest-abi-review.json",
+        "bytes": 4172,
+        "allocatedBytes": 8192,
+        "sha256": "bdb39163a7cdc8b168a658921366433837fba881e7d8836a545f3756ca97e5f4"
+      }
+    },
+    "certutil": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/certutil",
+        "bytes": 2752962,
+        "allocatedBytes": 2756608,
+        "sha256": "89b6553390c104f407ff9c79abc5fc8825b226619543c079d3714d623dd9733e"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/certutil.fpcast.wasm",
+        "bytes": 2916535,
+        "allocatedBytes": 2920448,
+        "sha256": "983d466dbd35818e643cc8da581f25c8f226e2bb2a0877fc5e41638e7ce33db6"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/certutil-abi-review.json",
+        "bytes": 4055,
+        "allocatedBytes": 4096,
+        "sha256": "f90f112c72831954b9ef2d0458877aa57977e198dfa0733de2a8795c76843e6b"
+      }
+    },
+    "pk12util": {
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pk12util",
+        "bytes": 2655652,
+        "allocatedBytes": 2658304,
+        "sha256": "12de38f2e127020ec1442a79d4d333a449ca0e03581ee02c940df3485fe54121"
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/pk12util.fpcast.wasm",
+        "bytes": 2819830,
+        "allocatedBytes": 2822144,
+        "sha256": "db2b206310284ebef2497fce1e3353221d9fafca86c4a5ed165b269b5c891e16"
+      },
+      "abiReview": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/pk12util-abi-review.json",
+        "bytes": 4055,
+        "allocatedBytes": 4096,
+        "sha256": "06892ed46f4deb8781d47d0c9cfc505bcd5fdf828f98d9546c4ce4941e2e7229"
+      }
+    }
+  },
+  "abiPredicates": 143,
+  "distinctExecutableModules": 7,
+  "executableRecords": 8,
+  "firefoxBinAlias": {
+    "rawIsSymlink": true,
+    "rawTarget": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+    "installedMaterialized": true,
+    "duplicateUncompressedPayloadBytes": 188796635,
+    "sameValidatedModule": true
+  },
+  "rawRuntimeRecords": 9047,
+  "rawRuntimeLogicalBytes": 814536417,
+  "installedRuntimeRecords": 9048,
+  "installedRuntimeLogicalBytes": 869098072,
+  "fullArchiveUncompressedBytes": 913111396,
+  "defaultArchiveUncompressedBytes": 913136072,
+  "fullOutsideRuntimeRecordsPreserved": true,
+  "overlayExistingRecordsUnchanged": 12903,
+  "overlayModifiedRecords": [
+    "opt/firefox/defaults/pref/wasm.js"
+  ],
+  "overlayAddedRecords": [
+    "opt/firefox/gpu-check",
+    "opt/firefox/gpu-check/gpu-check.html",
+    "opt/firefox/distribution",
+    "opt/firefox/distribution/distribution.ini"
+  ],
+  "initHomeProfilesCodeUnchanged": true,
+  "runtimeInventorySHA256": "528b53259c3f4a2758cb93b3ce7464432b666204e55018ac99fd3c7302978f4b",
+  "runtimeTextSanitizations": {
+    "chrome/toolkit/content/global/buildconfig.html": {
+      "rawSHA256": "ad17a3dac3d6a6719be0c3315bb5f9546d73313b5b60c8b615b88afe8a8fc494",
+      "installedSHA256": "74a95e1192c1ce381cfa351ede989a264eef16b4d01cd9c23cecdc11e763abd6",
+      "rawBytes": 4123,
+      "installedBytes": 3963,
+      "replacementCount": 4,
+      "reason": "Generated about:buildconfig compiler display and configure tokens only"
+    },
+    "modules/RFPTargetConstants.sys.mjs": {
+      "rawSHA256": "ab93161f4966b1f9973048ef53572cab688523409615aab09b27910b2da9580c",
+      "installedSHA256": "4d87a0ccbe1448b98a533c5490cee9099d62a627f7261549f9275ef212d4127d",
+      "rawBytes": 5538,
+      "installedBytes": 5310,
+      "replacementCount": 3,
+      "reason": "Generated comment line 2 only; source paths become relative"
+    }
+  },
+  "buildEvidence": {
+    "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/build-evidence-v3.json",
+    "bytes": 17410,
+    "allocatedBytes": 20480,
+    "sha256": "ca0a5e21ec7483a1b2de98750d00ed14ad4f24eb8db3a1ab05c69ccd484d42b4"
+  },
+  "phaseProofs": {
+    "package-run55-v3": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55-v3.json",
+        "bytes": 3425,
+        "allocatedBytes": 4096,
+        "sha256": "6b5a7faca7bb1b2f54cc36c6cafcda90b7876795cbd026f7fe4f3eb0246a266e"
+      },
+      "elapsedSeconds": 73.1837752829997,
+      "peakGroupRssBytes": 709435392,
+      "minimumAvailableBytes": 38770540544,
+      "ownedPGID": 375890
+    },
+    "default-page-run55": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/default-page-run55.json",
+        "bytes": 1754,
+        "allocatedBytes": 4096,
+        "sha256": "a28d6c961a8d37c816521ca9db032ae712d69d0d0f54755b0f865173744150ed"
+      },
+      "elapsedSeconds": 86.78413693900075,
+      "peakGroupRssBytes": 6648492032,
+      "minimumAvailableBytes": 32494923776,
+      "ownedPGID": 378267
+    }
+  },
+  "overlaySourceFreeze": {
+    "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/default-page-run55-source-freeze.json",
+    "bytes": 2835,
+    "allocatedBytes": 4096,
+    "sha256": "81b21260922457ac6b17ba1743b9dfc903eacefdea0d75f9f2efd35921f39d18"
+  },
+  "retainedExcludedAttempts": {
+    "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/retained-preparation-failures.json",
+    "bytes": 1827,
+    "allocatedBytes": 4096,
+    "sha256": "32259763245d86595f51b5b5679fe992de876fb2ee507601606b34fa8b1017b1"
+  },
+  "sourceIdentity": {
+    "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/evidence/source-identity.json",
+    "bytes": 643,
+    "allocatedBytes": 4096,
+    "sha256": "20052ba173eccfa41b036721bed8b14d42c17fe703d196855fcf9b55416561c3"
+  },
+  "fixtureResult": {
+    "path": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run58/result.json",
+    "bytes": 6621,
+    "allocatedBytes": 8192,
+    "sha256": "9e07a5c62aebe38f77d5605bc5411d8daa7423ad578d9d8326ca9e280db2e304"
+  },
+  "independentReview": {
+    "path": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/review-report.json",
+    "bytes": 5459,
+    "allocatedBytes": 8192,
+    "sha256": "8ae47a073c8d31956f898374b07d6619a9fdadebea39b0f6b701d62af6da8f06"
+  },
+  "guestAcceptance": false,
+  "nssTlsAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false,
+  "remaining": [
+    "Coordinated actual baseline private guest cold/warm/profile/update/defaultpage gates",
+    "Current159 staticNSS exactDER/purpose/date inventory and guestTLS negatives",
+    "Fresh whole broadPBL/JIT build and guest acceptance",
+    "Current159 Firefox GPU integration and release acceptance"
+  ],
+  "diskUsageAllocatedBytes": {
+    "/mnt/p6/project/build/nightly-native-package-transform-20261003": 706117632,
+    "/mnt/p6/build/firefox-nightly-package-20261002": 624574464,
+    "/mnt/p6/build/firefox-default-gpu-page-20261002": 725143552
+  },
+  "schema": 1,
+  "sanitizerReviewCommit": "3849be7c",
+  "frozenAggregate": {
+    "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-package-handoff.json",
+    "bytes": 14341,
+    "sha256": "920a618bcbfa979058548afcaeba07a34de70b4e6aa52e838d5b34894072c1a1"
+  },
+  "ownerFullBuildProofs": {
+    "build-run55.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55.json",
+      "bytes": 1356,
+      "sha256": "44db452f78615e9615e5796e152414e176ae37d0502e5a19a55f8aec618b2a05"
+    },
+    "build-run55-final-binaries.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-binaries.json",
+      "bytes": 10953,
+      "sha256": "66f43c56500118bd6abad7627fd227676052057d3099cd8fb2d1a51610604573"
+    },
+    "build-run55-final-raw-validation.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-raw-validation.json",
+      "bytes": 6724,
+      "sha256": "dcc91b17cb6152d516e1cf99b44b79f326feef313313659e9cc2725e8f9bbc78"
+    },
+    "no-debug-object-review-run55.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/no-debug-object-review-run55.json",
+      "bytes": 984964,
+      "sha256": "ea6feefd63867c9a539e6fb0b2fc8376c82e6aa32edbe78139e8e58fc6253206"
+    }
+  },
+  "initOnlyTrustAdapter": {
+    "package-report.json": {
+      "path": "/mnt/p6/build/firefox-nightly-trust-package-20261002/candidate-public-v10-run1/package-report.json",
+      "bytes": 4296,
+      "sha256": "f86781a62c0f0caa7b2a4dc15c789c311940e520155656edbd00df928a468f64"
+    },
+    "boot-manifest.json": {
+      "path": "/mnt/p6/build/firefox-nightly-trust-package-20261002/candidate-public-v10-run1/boot-manifest.json",
+      "bytes": 738,
+      "sha256": "39977e3da733715113c131dadc6b15ee79d6cf79ff3f96ec89cdf8103cbc91cb"
+    }
+  },
+  "exactRawFinalCommandsAndLogs": {
+    "schema": 1,
+    "completeBuild": true,
+    "sourceIdentitySHA256": "20052ba173eccfa41b036721bed8b14d42c17fe703d196855fcf9b55416561c3",
+    "runtimeInventorySHA256": "528b53259c3f4a2758cb93b3ce7464432b666204e55018ac99fd3c7302978f4b",
+    "rawBinarySHA256": "973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64",
+    "finalBinarySHA256": "12afe0d5be898fbf9448e485b853e86f0f1dc035b67ca5cad27fa27c6906e867",
+    "commands": {
+      "fpcast": {
+        "argv": [
+          "/usr/bin/wasm-opt",
+          "--all-features",
+          "--disable-compact-imports",
+          "--pass-arg=max-func-params@23",
+          "--fpcast-emu",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+          "-o",
+          "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm"
+        ],
+        "exitCode": 0,
+        "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-firefox.log",
+        "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "structuralValidation": {
+        "argv": [
+          "/usr/bin/wasm-validate",
+          "--enable-all",
+          "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm"
+        ],
+        "exitCode": 0,
+        "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-firefox.log",
+        "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fullBuild": {
+        "argv": [
+          "bash",
+          "-c",
+          "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+          "nightly-musl",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+          "build",
+          "-j1"
+        ],
+        "exitCode": 0,
+        "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run55.log",
+        "logSHA256": "8c857daec509b8bfb102bb06c069619edd6a1207d2c7fa06a2953ca82abd8742"
+      }
+    },
+    "rawInspectorReportSHA256": "6b134874bb9948e2a49cd7b9edfa6f55da87e14185e013fafe99a730b4288f39",
+    "finalInspectorReportSHA256": "982917ffae4c16452f6285381983edf0f10335ce2694cd0e94e68d63739577de",
+    "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/firefox-abi-review.json",
+    "abiReviewSHA256": "044ffd3caf6bd8cf6a0846ffdb6b01ab86c445633bc542fe2d06180dedcf0376",
+    "rawFreezePath": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run55-final-binaries.json",
+    "rawFreezeSHA256": "66f43c56500118bd6abad7627fd227676052057d3099cd8fb2d1a51610604573",
+    "rawValidationReportSHA256": "dcc91b17cb6152d516e1cf99b44b79f326feef313313659e9cc2725e8f9bbc78",
+    "noDebugObjectsReportSHA256": "ea6feefd63867c9a539e6fb0b2fc8376c82e6aa32edbe78139e8e58fc6253206",
+    "runtimeTextSanitizations": {
+      "chrome/toolkit/content/global/buildconfig.html": {
+        "rawSHA256": "ad17a3dac3d6a6719be0c3315bb5f9546d73313b5b60c8b615b88afe8a8fc494",
+        "installedSHA256": "74a95e1192c1ce381cfa351ede989a264eef16b4d01cd9c23cecdc11e763abd6",
+        "rawBytes": 4123,
+        "installedBytes": 3963,
+        "replacementCount": 4,
+        "reason": "Generated about:buildconfig compiler display and configure tokens only"
+      },
+      "modules/RFPTargetConstants.sys.mjs": {
+        "rawSHA256": "ab93161f4966b1f9973048ef53572cab688523409615aab09b27910b2da9580c",
+        "installedSHA256": "4d87a0ccbe1448b98a533c5490cee9099d62a627f7261549f9275ef212d4127d",
+        "rawBytes": 5538,
+        "installedBytes": 5310,
+        "replacementCount": 3,
+        "reason": "Generated comment line 2 only; source paths become relative"
+      }
+    },
+    "nativeBinaries": {
+      "plugin-container": {
+        "rawBinarySHA256": "ea6a04776c734f1da79da69707794205d0a9b583784f4c7ab0368e76b53d80f7",
+        "finalBinarySHA256": "30b8e980b42c740e452b5425a4882a758e92634bf0383eda59343146593dde63",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/plugin-container",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/plugin-container.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-plugin-container.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/plugin-container.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-plugin-container.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "598709b6245310cc40595b54b5d8a10419b460e3c6397259fa7b53031fc1b9f6",
+        "finalInspectorReportSHA256": "821dad7c98eed134092a562cff48ed714a27c8f18b1f1766de8ca020fdb7aeb2",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/plugin-container-abi-review.json",
+        "abiReviewSHA256": "eb77cb360becf47f30e16ce34b052b14fce0cc606e3986b58c13bd128a5d0334"
+      },
+      "xpcshell": {
+        "rawBinarySHA256": "52eb8a4d2e687408aafb7bf2c10fd1958604773c2f796361d20c7cb7d0153dc9",
+        "finalBinarySHA256": "f8bf72b5ba5b2c6b0eb41c95a06e8a54bcf096f694db1eaaa43ac402f55cace4",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/xpcshell",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/xpcshell.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-xpcshell.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/xpcshell.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-xpcshell.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "80c6a080109f83aba5da5369ff32fb956b55f48942958ed8e6bc04b855a346b5",
+        "finalInspectorReportSHA256": "fd812ba23c6d8da375aa7d69d4477155a4592eb2264e5af083b8c31690522711",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/xpcshell-abi-review.json",
+        "abiReviewSHA256": "437adb387189e575909074a7b0c1df270ab76d3b6ebbae7552b4435bff52fbc7"
+      },
+      "pingsender": {
+        "rawBinarySHA256": "3fac1db02b5bcdef56bcbbf0952bfbaf52d620d853404edb518c4582553b797e",
+        "finalBinarySHA256": "7d747716a056bf8bc2aae4d99c377172f6eceb5a9e67f30c9955081e805c6dcd",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pingsender",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/pingsender.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-pingsender.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/pingsender.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-pingsender.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "d62ea94352d3db5b0e1a8eb263b234fb755d6a15ac9f66b48acf85d974a71fea",
+        "finalInspectorReportSHA256": "d43e7fb6c737003a124cd0a6358d0085099b665ff8247a2b74c56970c6be8542",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/pingsender-abi-review.json",
+        "abiReviewSHA256": "6bb6e8fbe4e756af34c1fddcd1fb9f21c281fa916a2be9ee3fd81774f6c5f9dc"
+      },
+      "gfxtest": {
+        "rawBinarySHA256": "5859187031bfdc7fe7893d055e2750d2a6d0292b6fd834ee47a46ca5c5171ceb",
+        "finalBinarySHA256": "099146084b82d70ac936d60205094b3a9db1c2bc38c958cb13c4eab5d877cfcc",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/gfxtest",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/gfxtest.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-gfxtest.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/gfxtest.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-gfxtest.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "a0baa4b47879e612f7b5e8a0ed8ee277324cfebf5909c758c10fda1be102c5d2",
+        "finalInspectorReportSHA256": "2c496a4e3a83551a11f83c72980d004acf6b5e0876a8fc79ee75c5c9c0e667bc",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/gfxtest-abi-review.json",
+        "abiReviewSHA256": "bdb39163a7cdc8b168a658921366433837fba881e7d8836a545f3756ca97e5f4"
+      },
+      "certutil": {
+        "rawBinarySHA256": "89b6553390c104f407ff9c79abc5fc8825b226619543c079d3714d623dd9733e",
+        "finalBinarySHA256": "983d466dbd35818e643cc8da581f25c8f226e2bb2a0877fc5e41638e7ce33db6",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/certutil",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/certutil.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-certutil.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/certutil.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-certutil.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "5ea340edba64d93ee0816470459be98dbffe69ec6b0e43a67dad2b8be777e1e3",
+        "finalInspectorReportSHA256": "ef0785ac77e5358d82d4fb4325a0ada82dbe82aabc5a63e969a0c99bd5a9d59e",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/certutil-abi-review.json",
+        "abiReviewSHA256": "f90f112c72831954b9ef2d0458877aa57977e198dfa0733de2a8795c76843e6b"
+      },
+      "pk12util": {
+        "rawBinarySHA256": "12de38f2e127020ec1442a79d4d333a449ca0e03581ee02c940df3485fe54121",
+        "finalBinarySHA256": "db2b206310284ebef2497fce1e3353221d9fafca86c4a5ed165b269b5c891e16",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pk12util",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/pk12util.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-pk12util.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/pk12util.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-pk12util.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "rawInspectorReportSHA256": "50e9e8093db40d2135e3ee807d69e31f17f5e1131a7ec53957f657c8a4920f39",
+        "finalInspectorReportSHA256": "70383499af3c0ceaec869c1cb0eb7433133c32280a03aaf298301657fd7cdd2d",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/pk12util-abi-review.json",
+        "abiReviewSHA256": "06892ed46f4deb8781d47d0c9cfc505bcd5fdf828f98d9546c4ce4941e2e7229"
+      },
+      "firefox-bin": {
+        "rawBinarySHA256": "973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64",
+        "finalBinarySHA256": "12afe0d5be898fbf9448e485b853e86f0f1dc035b67ca5cad27fa27c6906e867",
+        "commands": {
+          "fpcast": {
+            "argv": [
+              "/usr/bin/wasm-opt",
+              "--all-features",
+              "--disable-compact-imports",
+              "--pass-arg=max-func-params@23",
+              "--fpcast-emu",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+              "-o",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-firefox.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "structuralValidation": {
+            "argv": [
+              "/usr/bin/wasm-validate",
+              "--enable-all",
+              "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-firefox.log",
+            "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "fullBuild": {
+            "argv": [
+              "bash",
+              "-c",
+              "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+              "nightly-musl",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+              "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+              "build",
+              "-j1"
+            ],
+            "exitCode": 0,
+            "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run55.log",
+            "logSHA256": "8c857daec509b8bfb102bb06c069619edd6a1207d2c7fa06a2953ca82abd8742"
+          }
+        },
+        "rawInspectorReportSHA256": "6b134874bb9948e2a49cd7b9edfa6f55da87e14185e013fafe99a730b4288f39",
+        "finalInspectorReportSHA256": "982917ffae4c16452f6285381983edf0f10335ce2694cd0e94e68d63739577de",
+        "abiReviewPath": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/firefox-abi-review.json",
+        "abiReviewSHA256": "044ffd3caf6bd8cf6a0846ffdb6b01ab86c445633bc542fe2d06180dedcf0376",
+        "aliasOf": "firefox"
+      }
+    },
+    "guestAcceptance": false,
+    "releaseAcceptance": false,
+    "packagerSHA256": "d51a65c1826d6205ef6712e066884cd8f912afcfccc6d442b8033ed6e1ed118f"
+  },
+  "postLinkPhaseSummaries": {
+    "default-page-run55": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/default-page-run55.json",
+        "bytes": 1754,
+        "sha256": "a28d6c961a8d37c816521ca9db032ae712d69d0d0f54755b0f865173744150ed"
+      },
+      "ownedPGID": 378267,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 86.78413693900075,
+      "peakGroupRssBytes": 6648492032,
+      "minimumAvailableBytes": 32494923776,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/default-page-run55.log",
+      "logSHA256": "d8794da5410d482ae24bf0f4be9859712d604c15e4345915cc1f6c6cc9be18b3"
+    },
+    "final-certutil-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-certutil-inspect.json",
+        "bytes": 1262,
+        "sha256": "b02f10cea136e7c5ff9b959a3229f22c4409a13f37808008ffb72b1017aa60dc"
+      },
+      "ownedPGID": 359727,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0340550630007783,
+      "peakGroupRssBytes": 13963264,
+      "minimumAvailableBytes": 39307644928,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-certutil-inspect.log",
+      "logSHA256": "7caee2f8cd12a2c599fcb4f824c8dbd760e33559ea90ec120aeef70a17555abe"
+    },
+    "final-firefox-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-firefox-inspect.json",
+        "bytes": 1240,
+        "sha256": "f061537484eed481a7d86095d94d6a3f1624e9403d7fdc1eb5ed0009810bc53a"
+      },
+      "ownedPGID": 351981,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 7.099480610999308,
+      "peakGroupRssBytes": 158883840,
+      "minimumAvailableBytes": 39198277632,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-firefox-inspect.log",
+      "logSHA256": "3881e5a20c7a78b7e35f73226bacbbf81d062d3b30063b16b38e3e77903dc7a5"
+    },
+    "final-gfxtest-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-gfxtest-inspect.json",
+        "bytes": 1259,
+        "sha256": "36627527d18b5270faca1c495347348af8cc1c8415dae327ff570ce2c36ce2d3"
+      },
+      "ownedPGID": 356222,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0337548549996427,
+      "peakGroupRssBytes": 13910016,
+      "minimumAvailableBytes": 39353401344,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-gfxtest-inspect.log",
+      "logSHA256": "d32735d6b678290e7e0c1865d6d1c8311ce147d7dfd13a2cb3a94071ad39a933"
+    },
+    "final-pingsender-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-pingsender-inspect.json",
+        "bytes": 1268,
+        "sha256": "26af0db10f573888ed5af05ccca5e6d5320daa1f19491cdea60b92b59343b50e"
+      },
+      "ownedPGID": 356070,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0341098329990928,
+      "peakGroupRssBytes": 13541376,
+      "minimumAvailableBytes": 39295688704,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-pingsender-inspect.log",
+      "logSHA256": "702575a143856548b3f1a3262fc9b12fd55c1176c31d6e13907480014b293e53"
+    },
+    "final-pk12util-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-pk12util-inspect.json",
+        "bytes": 1262,
+        "sha256": "76460a848dbe12091da4a1f24024ad72ccc30a2a95e4c5a3cbb876b2fc1abc59"
+      },
+      "ownedPGID": 359900,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0345796729998256,
+      "peakGroupRssBytes": 13922304,
+      "minimumAvailableBytes": 39305445376,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-pk12util-inspect.log",
+      "logSHA256": "8c28ab972f058ff3d77401c0c0ffdc92bc75cc3a4903f75421e4b0f084ebb733"
+    },
+    "final-plugin-container-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-plugin-container-inspect.json",
+        "bytes": 1286,
+        "sha256": "a32ff17890cd2c615071bb9caf5bd516fb4546939362407d585defa356cbd809"
+      },
+      "ownedPGID": 354292,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 7.101249467999878,
+      "peakGroupRssBytes": 158392320,
+      "minimumAvailableBytes": 39020011520,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-plugin-container-inspect.log",
+      "logSHA256": "2e783d25fc93e4d2f44e2c7d54408cc3ab9bcca71338c8c5cbe20f0af86dc41f"
+    },
+    "final-xpcshell-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/final-xpcshell-inspect.json",
+        "bytes": 1262,
+        "sha256": "648639cfec42ed8415c1d6422cb00a073a18fe9c7b3eb507ee15eae821269a4e"
+      },
+      "ownedPGID": 355750,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 7.099607918000402,
+      "peakGroupRssBytes": 248766464,
+      "minimumAvailableBytes": 38940532736,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/final-xpcshell-inspect.log",
+      "logSHA256": "1e25fba767a263b1110857552023b4b68e449134c98bfea917a5ba8863525302"
+    },
+    "fpcast-certutil": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-certutil.json",
+        "bytes": 1211,
+        "sha256": "92ee0e940a287aa3ca7cb043f1094e7d92b39b252ae8880d29a50d356bac7cb0"
+      },
+      "ownedPGID": 359655,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0352292669995222,
+      "peakGroupRssBytes": 15331328,
+      "minimumAvailableBytes": 39319027712,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-certutil.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-firefox": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-firefox.json",
+        "bytes": 1210,
+        "sha256": "e43ec4f78f8e360774a5b2122bb11e2d1b3be8b3a516e013007cbb7a90839deb"
+      },
+      "ownedPGID": 350362,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 33.385219133000646,
+      "peakGroupRssBytes": 3586375680,
+      "minimumAvailableBytes": 35850723328,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-firefox.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-gfxtest": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-gfxtest.json",
+        "bytes": 1208,
+        "sha256": "67d7729b6811ae9b9d62142d1c2d5d8db6d8e528a1d50f24ac75d3dd9b70e8cc"
+      },
+      "ownedPGID": 356160,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0352888239995082,
+      "peakGroupRssBytes": 12324864,
+      "minimumAvailableBytes": 39335186432,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-gfxtest.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-pingsender": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-pingsender.json",
+        "bytes": 1217,
+        "sha256": "a79595be426aef5c0e1b16e04ebd19c5eb81e43e4776fe475d0fc1b2031d3de7"
+      },
+      "ownedPGID": 356008,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0341322730000684,
+      "peakGroupRssBytes": 11501568,
+      "minimumAvailableBytes": 39301484544,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-pingsender.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-pk12util": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-pk12util.json",
+        "bytes": 1211,
+        "sha256": "d0b7f1499f001c7901c8a206f53ecac4d2f4edc9f939aadfbad7be42db0ba66b"
+      },
+      "ownedPGID": 359839,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0338806050003768,
+      "peakGroupRssBytes": 15151104,
+      "minimumAvailableBytes": 39227486208,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-pk12util.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-plugin-container": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-plugin-container.json",
+        "bytes": 1237,
+        "sha256": "1020d1fbd1a31f1b4db695b48befcf2bd826b24e0b700dc4c54fe3c046ec0cb1"
+      },
+      "ownedPGID": 353172,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 32.374720744001024,
+      "peakGroupRssBytes": 3587133440,
+      "minimumAvailableBytes": 35774423040,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-plugin-container.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fpcast-xpcshell": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/fpcast-xpcshell.json",
+        "bytes": 1212,
+        "sha256": "d068f157db985eea29e9a682cd69631177d4301128912707a9483504e6d296b3"
+      },
+      "ownedPGID": 354663,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 32.37803332799922,
+      "peakGroupRssBytes": 3585634304,
+      "minimumAvailableBytes": 35653169152,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/fpcast-xpcshell.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "independent-final-package-audit": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/independent-final-package-audit.json",
+        "bytes": 1015,
+        "sha256": "f484f2bf7d1cec141443ea28824caef0cca1b2186667fb7d917a51d4a46cfd55"
+      },
+      "ownedPGID": 381433,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 20.2535238319997,
+      "peakGroupRssBytes": 53223424,
+      "minimumAvailableBytes": 39422201856,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/independent-final-package-audit.log",
+      "logSHA256": "f7a83357c951a3fb999de66f854e5d3e097369c1539bb26e4ebd4f0424f0adbd"
+    },
+    "package-run55-v2": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55-v2.json",
+        "bytes": 3428,
+        "sha256": "cd27ff8f301de04b651580660410481c3093ead8cb329978be298405cda1d34f"
+      },
+      "ownedPGID": 368583,
+      "exitCode": -15,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 69.05633527499958,
+      "peakGroupRssBytes": 810147840,
+      "minimumAvailableBytes": 38685683712,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/package-run55-v2.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "package-run55-v3": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55-v3.json",
+        "bytes": 3425,
+        "sha256": "6b5a7faca7bb1b2f54cc36c6cafcda90b7876795cbd026f7fe4f3eb0246a266e"
+      },
+      "ownedPGID": 375890,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 73.1837752829997,
+      "peakGroupRssBytes": 709435392,
+      "minimumAvailableBytes": 38770540544,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/package-run55-v3.log",
+      "logSHA256": "f0f236e23461b8792f39eb186034ed48383b02ed694c50927ba8e133218cc1f1"
+    },
+    "package-run55": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55.json",
+        "bytes": 3381,
+        "sha256": "4f1aad88aaba3fcd91c9d118711517324cec7234d7a786c709a9ddbdf4831b28"
+      },
+      "ownedPGID": 363582,
+      "exitCode": -15,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 20.317867543999455,
+      "peakGroupRssBytes": 205942784,
+      "minimumAvailableBytes": 39269634048,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/package-run55.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw-certutil-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-certutil-inspect.json",
+        "bytes": 1232,
+        "sha256": "d7d465c8ede67ff906a939a9df78d3732a8ef93b07cfc4af64531ce748652952"
+      },
+      "ownedPGID": 359612,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0345010669989279,
+      "peakGroupRssBytes": 13778944,
+      "minimumAvailableBytes": 39363436544,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-certutil-inspect.log",
+      "logSHA256": "f0e55f150e85031e7f6d3b7f6976da620ffcc7c19394bac456517ae43761084a"
+    },
+    "raw-firefox-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-firefox-inspect.json",
+        "bytes": 1209,
+        "sha256": "35878f79c40abe4887894c1ee4cb8665a90299b7d20c8e52a7c7645d6c39248d"
+      },
+      "ownedPGID": 349868,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 5.076316177999615,
+      "peakGroupRssBytes": 130322432,
+      "minimumAvailableBytes": 39301279744,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-firefox-inspect.log",
+      "logSHA256": "7605d4b22bea99931492b33b90c2fad6a88950b4199f1ea188e24844f2a53e93"
+    },
+    "raw-gfxtest-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-gfxtest-inspect.json",
+        "bytes": 1229,
+        "sha256": "02593e5cdaf6dd5dc0288a3f203881fae95c9a6441934e89bb56489b7a47e3ca"
+      },
+      "ownedPGID": 356122,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0344686480002565,
+      "peakGroupRssBytes": 14000128,
+      "minimumAvailableBytes": 39323344896,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-gfxtest-inspect.log",
+      "logSHA256": "83e3e3a5e4c82f6e11b5b45a9f938c1ccd093077510dd4132848194e6c9ef0a3"
+    },
+    "raw-pingsender-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-pingsender-inspect.json",
+        "bytes": 1237,
+        "sha256": "0eb44da9a9bd53374d80253e52a30823c5c851746d12e5b4b1fc9a2c6080dbfd"
+      },
+      "ownedPGID": 355968,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.034126220001781,
+      "peakGroupRssBytes": 13967360,
+      "minimumAvailableBytes": 39305654272,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-pingsender-inspect.log",
+      "logSHA256": "514055f60e406324baa6b95532cfea725fb8dfe144cb4c70d03efe7a2c491223"
+    },
+    "raw-pk12util-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-pk12util-inspect.json",
+        "bytes": 1232,
+        "sha256": "3d855d9f18dd171c5d8412f05f7c37ab929570504fd511be4ae642d733023b99"
+      },
+      "ownedPGID": 359801,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0342755330002547,
+      "peakGroupRssBytes": 13930496,
+      "minimumAvailableBytes": 39266013184,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-pk12util-inspect.log",
+      "logSHA256": "5dac9db4294e1320f88687587927d388223c920be091b63a85feb71d2ed33668"
+    },
+    "raw-plugin-container-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-plugin-container-inspect.json",
+        "bytes": 1256,
+        "sha256": "d2cfaa892fc8dd0fedd12cea8aaec8af625889965176db771f11ec0e858223b9"
+      },
+      "ownedPGID": 353031,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 5.078645744999449,
+      "peakGroupRssBytes": 131633152,
+      "minimumAvailableBytes": 39258562560,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-plugin-container-inspect.log",
+      "logSHA256": "60c73eb3f11b4a3287a445962f5f67a51e86009caf0f78d6977b4666c2f8cc3a"
+    },
+    "raw-validate-certutil": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-validate-certutil.json",
+        "bytes": 1026,
+        "sha256": "a0e3fb9cdb049a932f0b353e87e7077689319b0d597517a3b1d1306df44ecb52"
+      },
+      "ownedPGID": 359581,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.03499387300144,
+      "peakGroupRssBytes": 17416192,
+      "minimumAvailableBytes": 39365451776,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-validate-certutil.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw-validate-pk12util": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-validate-pk12util.json",
+        "bytes": 1028,
+        "sha256": "3d1d9f26bd9df306b94e7ed52eaf16a4e5da659f6f7d7ca3c9f15c20f4d74f9b"
+      },
+      "ownedPGID": 359765,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0358027219990618,
+      "peakGroupRssBytes": 17649664,
+      "minimumAvailableBytes": 39273644032,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-validate-pk12util.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw-xpcshell-inspect": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/raw-xpcshell-inspect.json",
+        "bytes": 1231,
+        "sha256": "fc930b69d3d41442ddec22976cea9809df8a3d4fa1bb9f39c1c45c4848e5680d"
+      },
+      "ownedPGID": 354499,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 5.08209876500041,
+      "peakGroupRssBytes": 131518464,
+      "minimumAvailableBytes": 39230640128,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/raw-xpcshell-inspect.log",
+      "logSHA256": "12cba37a3443b6785751672115388d3df04290cee40b1777f09ac29461a161c6"
+    },
+    "supervisor-inherited-guards": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/supervisor-inherited-guards.json",
+        "bytes": 1211,
+        "sha256": "50b93dcc0812390c82d1d9d4ad78741961598525235ec8465ee73535e0820301"
+      },
+      "ownedPGID": 348528,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 3.0561751820005156,
+      "peakGroupRssBytes": 15339520,
+      "minimumAvailableBytes": 39502626816,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/supervisor-inherited-guards.log",
+      "logSHA256": "1668bb2bcd196f4eeddd365b6659d2539ccdc680346c3d569907078fdc896c5c"
+    },
+    "validate-certutil": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-certutil.json",
+        "bytes": 1026,
+        "sha256": "57632bc8b0d3763513a421a922fa99c98c292bb3c5e8fea3db937326fcc6326e"
+      },
+      "ownedPGID": 359684,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0341338500002166,
+      "peakGroupRssBytes": 17793024,
+      "minimumAvailableBytes": 39307644928,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-certutil.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-firefox": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-firefox.json",
+        "bytes": 1026,
+        "sha256": "9aaa3f225c8c578854ecfa5fbb0362c558e76d5ab56147e0171b5a3bfbad46d8"
+      },
+      "ownedPGID": 351675,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 12.155334709999806,
+      "peakGroupRssBytes": 7821565952,
+      "minimumAvailableBytes": 31611584512,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-firefox.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-gfxtest": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-gfxtest.json",
+        "bytes": 1023,
+        "sha256": "3024c314e4ceffeadf352b494b52fd3d1fce1840b9a330666dcbb6bd23857282"
+      },
+      "ownedPGID": 356194,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.033955001999857,
+      "peakGroupRssBytes": 15581184,
+      "minimumAvailableBytes": 39335727104,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-gfxtest.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-pingsender": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-pingsender.json",
+        "bytes": 1030,
+        "sha256": "44f7336b5c112e19b7daf8ee7c374746e5b9672b98ed38e0bf73d6f4f4d1aa03"
+      },
+      "ownedPGID": 356043,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0340542979993188,
+      "peakGroupRssBytes": 15491072,
+      "minimumAvailableBytes": 39298461696,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-pingsender.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-pk12util": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-pk12util.json",
+        "bytes": 1026,
+        "sha256": "499d922f997ec26757699b6cdf94934ddb32eaed80a1c550123fcf9b90cbcb03"
+      },
+      "ownedPGID": 359873,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 1.0362152090001473,
+      "peakGroupRssBytes": 18927616,
+      "minimumAvailableBytes": 39225532416,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-pk12util.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-plugin-container": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-plugin-container.json",
+        "bytes": 1044,
+        "sha256": "f65aecd98965ba46dae5bb8f96893050f772b0b81e17e53f586fedf9ab69a99d"
+      },
+      "ownedPGID": 353986,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 12.156134754999584,
+      "peakGroupRssBytes": 7820378112,
+      "minimumAvailableBytes": 31555260416,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-plugin-container.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate-xpcshell": {
+      "proof": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/validate-xpcshell.json",
+        "bytes": 1028,
+        "sha256": "c3deb80a9e4505ff61d1e0716ccf761d0c37e14931d1a1640db0808f63467512"
+      },
+      "ownedPGID": 355454,
+      "exitCode": 0,
+      "ownerReaped": true,
+      "groupEmpty": true,
+      "stopReason": null,
+      "elapsedSeconds": 12.157285684001181,
+      "peakGroupRssBytes": 7821598720,
+      "minimumAvailableBytes": 31304388608,
+      "log": "/mnt/p6/project/build/nightly-native-package-transform-20261003/logs/validate-xpcshell.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "excludedAttempts": {
+    "claim": "Retained failed/stopped preparation before accepted real package",
+    "initialInventoryFailure": {
+      "actualToolSession": 80321,
+      "exitCode": 1,
+      "archiveCreated": false,
+      "diagnostic": "host task path in installed resource: chrome/toolkit/content/global/buildconfig.html"
+    },
+    "initialSanitationReviewerFailure": "/mnt/p6/project/build/nightly-run55-packaging-harness-review-20261003/functional-sanitation-negative-initial.json",
+    "interruptedFirstPackage": {
+      "actualToolSession": 72523,
+      "phaseEvidence": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55.json",
+      "reason": "Parent/reviewer-directed literal-display and token-boundary hardening before acceptance",
+      "partialArchive": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55/initramfs-firefox.cpio.gz",
+      "partialArchiveBytes": 43581424,
+      "excludedFromAcceptance": true
+    },
+    "correctedFixtureResult": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run58/result.json",
+    "correctedChecks": 52,
+    "guestAcceptance": false,
+    "interruptedSecondPackage": {
+      "actualToolSession": 48110,
+      "phaseEvidence": "/mnt/p6/project/build/nightly-native-package-transform-20261003/status/package-run55-v2.json",
+      "reason": "Parent/reviewer-directed canonical generated header and script/style-context guard",
+      "partialArchive": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v2/initramfs-firefox.cpio.gz",
+      "partialArchiveBytes": 281887656,
+      "excludedFromAcceptance": true
+    },
+    "retainedFixture57Failure": {
+      "result": "/mnt/p6/build/firefox-nightly-package-20261002/fixture-run57/result.json",
+      "reason": "Stronger script guard changed expected diagnostic; actual negative remained rejected",
+      "acceptance": false
+    }
+  },
+  "overlay": {
+    "passPackage": true,
+    "candidateOnly": true,
+    "sourceSha256": "0b65cf5bb92612dc871deee945d58b63d3d391804ffcebeb914aa2746f46f2eb",
+    "sourceManifestSha256": "7c06f3d7da492d5814f5d13aac17fe013ce0c427d7b6d1d4a873bdb0535a6d0f",
+    "sourceVersion": "test-nightly-0b65cf5bb92612dc",
+    "archiveSha256": "2ae5c706a08f67cbadae26167ac81df87db36aa11e101e8c6876889db06f1d5a",
+    "bytes": 280673250,
+    "uncompressedBytes": 913136072,
+    "version": "ad1890a33eb3",
+    "added": {
+      "opt/firefox/gpu-check": {
+        "mode": "0o40755",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "opt/firefox/gpu-check/gpu-check.html": {
+        "mode": "0o100644",
+        "bytes": 23150,
+        "sha256": "4e1b2f309e22fe5ef555c6a1a5f221bac75690b016a3afc228fae0466d0c8f21"
+      },
+      "opt/firefox/distribution": {
+        "mode": "0o40755",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "opt/firefox/distribution/distribution.ini": {
+        "mode": "0o100644",
+        "bytes": 372,
+        "sha256": "939a40b18947b328363548d603b9236bb93c71c6663eee68f40581c7927fca0b"
+      }
+    },
+    "modified": [
+      "opt/firefox/defaults/pref/wasm.js"
+    ],
+    "unchangedRecords": 12903,
+    "totalRecords": 12908,
+    "pageSource": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-gpu-check/gpu-check.html",
+    "pageSha256": "4e1b2f309e22fe5ef555c6a1a5f221bac75690b016a3afc228fae0466d0c8f21",
+    "pageUrl": "file:///opt/firefox/gpu-check/gpu-check.html",
+    "defaults": {
+      "browser.startup.homepage": "file:///opt/firefox/gpu-check/gpu-check.html",
+      "browser.startup.page": 1,
+      "webgl.force-enabled": true,
+      "webgl.disabled": false,
+      "webgl.enable-webgl2": true,
+      "webgl.disable-fail-if-major-performance-caveat": true,
+      "dom.webgpu.enabled": true,
+      "gfx.webgpu.ignore-blocklist": true
+    },
+    "defaultsSha256": "4d64803d936d14a3da7c164e0338b4c9497f830278a15a37ba838b8ad7952b2c",
+    "originalOrderPreserved": true,
+    "tailPreserved": true,
+    "existingMetadataExceptBodySizePreserved": true,
+    "initUnchanged": true,
+    "homeAndProfilesUnchanged": true,
+    "source": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/initramfs-firefox.cpio.gz",
+    "manifest": "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/boot-manifest.json",
+    "filesystems": {
+      "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/initramfs-firefox.cpio.gz": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-nightly-package-20261002/candidate-real-run55-v3/boot-manifest.json": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-default-gpu-page-20261002": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      },
+      "/mnt/p6/build/firefox-default-gpu-page-20261002/scratch": {
+        "mount": "/mnt/p6",
+        "type": "ext4"
+      }
+    },
+    "scratch": {
+      "TMPDIR": "/mnt/p6/build/firefox-default-gpu-page-20261002/scratch",
+      "TMP": "/mnt/p6/build/firefox-default-gpu-page-20261002/scratch",
+      "TEMP": "/mnt/p6/build/firefox-default-gpu-page-20261002/scratch"
+    },
+    "releaseGatesPending": [
+      "guest-Firefox-version-and-GPU-rendering",
+      "cold-warm-startup",
+      "profile-preserving-update"
+    ]
+  },
+  "limits": {
+    "addressSpaceBytes": 17179869184,
+    "polledGroupRSSBytes": 12884901888,
+    "hostAvailableFloorBytes": 4294967296,
+    "coreBytes": 0,
+    "oomScoreAdj": 1000,
+    "phaseTimeoutSeconds": 900,
+    "binaryenWorkers": 1,
+    "transformTaskCapBytes": 4294967296,
+    "packageTaskCapBytes": 2147483648,
+    "overlayTaskCapBytes": 2147483648,
+    "freeReserveBytes": 21474836480,
+    "allScratchDiskBacked": true,
+    "boundEnlargement": false
+  },
+  "sizesExplicit": {
+    "rawMainBytes": 175262059,
+    "fpcastMainBytes": 188796635,
+    "wholeDefaultPageGzipBytes": 280673250
+  }
+}
