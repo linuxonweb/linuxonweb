@@ -37,6 +37,15 @@ continues within unchanged bounds. Its header-triggered Rust rebuild refreshes
 libgkrust.a; Run15 archive evidence remains historical, not proof of equality
 with the current mutable build output.
 
+Run18 reaches its twenty-minute bound without compiler errors; the exact group
+is empty before inspection. Its frozen graph has747 existing native objects
+of3,012 expected and the refreshed Rust archive has7,101 native members.
+Root independently checks19 frozen boundary/input/storage predicates in
+full-boundary-run18-review-run1.json under the root-review task. The provisional
+archive hardlink shares Cargo's mutable inode and has no immutable claim.
+Run19 resumes with unchanged j4/time/storage bounds. Browser linking, Nightly
+startup and JIT acceptance remain pending.
+
 Following tests must set Linux/Wasm CPUs to the dynamically observed host count
 and record/assert the actual host and guest counts. This supersedes historical
 hardcoded two-CPU test setup; preserve old results as historical evidence and

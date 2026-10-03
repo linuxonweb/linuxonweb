@@ -1,0 +1,387 @@
+{
+  "claim": "Full-build boundary artifact/native-object progress; no linked browser or guest acceptance",
+  "checked": 1791013729.5871236,
+  "status": {
+    "phase": "build",
+    "run": "run18",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1112158,
+    "pgid": 1112158,
+    "started": 1791012490.7119188,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run18.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 17052737536,
+    "free_bytes": 76867354624,
+    "checked": 1791013680.5139186,
+    "exit_code": -15,
+    "finished": 1791013690.9176507,
+    "stop_reason": "boundedphase"
+  },
+  "process_group_empty": true,
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+    "bytes": 1398801246,
+    "sha256": "460be7c1c8a6fb47fef86f736c32a8096a86bb7f46fd1ce515ef435ccdb86ba4",
+    "inode": 23364221,
+    "mtime_ns": 1791012590785876013,
+    "native_wasm_object_count": 7101,
+    "known_component_object_counts": {
+      "gkrust-": 2,
+      "gkrust_shared-": 8,
+      "style-": 256,
+      "trust_anchors-": 19,
+      "wgpu_bindings-": 105
+    },
+    "run15_member_names_sizes_magic_equal": false,
+    "immutable_snapshot_claim": false
+  },
+  "actual_rustc_argv": [
+    "--crate-name",
+    "gkrust",
+    "--edition=2015",
+    "toolkit/library/rust/lib.rs",
+    "--error-format=json",
+    "--json=diagnostic-rendered-ansi,artifacts,future-incompat",
+    "--crate-type",
+    "staticlib",
+    "--emit=dep-info,link",
+    "-C",
+    "opt-level=2",
+    "-C",
+    "panic=abort",
+    "-C",
+    "embed-bitcode=no",
+    "--cfg",
+    "feature=\"mozilla-central-workspace-hack\"",
+    "--check-cfg",
+    "cfg(docsrs,test)",
+    "--check-cfg",
+    "cfg(feature, values(\"mozilla-central-workspace-hack\"))",
+    "-C",
+    "metadata=4f1c0aeccb06f252",
+    "-C",
+    "extra-filename=-7faf5dcd584fdc44",
+    "--out-dir",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+    "--target",
+    "wasm32-unknown-linux-musl",
+    "-C",
+    "linker=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/build/cargo-linker",
+    "-C",
+    "incremental=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/incremental",
+    "-C",
+    "strip=debuginfo",
+    "-L",
+    "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+    "-L",
+    "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/release/deps",
+    "--extern",
+    "gkrust_shared=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libgkrust_shared-99b00d63e21bd9ba.rlib",
+    "--extern",
+    "mozglue_static=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libmozglue_static-7012e8dee0f55e0c.rlib",
+    "--extern",
+    "mozilla_central_workspace_hack=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libmozilla_central_workspace_hack-cf38a3e3c735f5dd.rlib",
+    "--extern",
+    "swgl=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libswgl-864162f829626ecb.rlib",
+    "-C",
+    "debuginfo=2",
+    "-C",
+    "strip=none",
+    "-C",
+    "force-frame-pointers=yes",
+    "--cap-lints",
+    "warn",
+    "-Clto=off",
+    "--cfg",
+    "rustix_use_libc",
+    "--cfg",
+    "rustix_no_linux_raw",
+    "-A",
+    "warnings",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/build/cubeb-core-456dec9072022910/out",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/build/mozglue-static-adedf825f28fb39d/out",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/build/swgl-713a546e8fc3e5d8/out",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin",
+    "-L",
+    "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin",
+    "-L",
+    "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin",
+    "-L",
+    "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib"
+  ],
+  "pins": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run18.json",
+      "bytes": 809,
+      "sha256": "e80a9ba1471d3b92d804d8797e3daefacbb8ef2741c0c5e9af71fdef36f6c1b5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run18-group-cleanup.json",
+      "bytes": 968,
+      "sha256": "9fbdb71130046de73b94444cca7d5a2aaa82b2ad33ab532be2aabd43f68fb87a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run18.log",
+      "bytes": 157260,
+      "sha256": "8572839b032764a58a8b791d5f717186cdeba4fff710dbae35377d6328603915"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/gkrust-native-members-run18.json",
+      "bytes": 1695900,
+      "sha256": "ce1a9c93e5719bf86c424072400b4c749f56be682a2afa13783724c9e805b6c0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run18.json",
+      "bytes": 436431,
+      "sha256": "6c6046fed2793f525eeb35e12a454d0da0dbed55eb1ef1f6d2b82f84d547fe12"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47365,
+      "sha256": "4f9d991fb1d51cd92071bee830437953179d6f87f2e54d6922888fff0e2055dd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/.mozconfig",
+      "bytes": 929,
+      "sha256": "244935752dd5d8176fd0226ccb18b75ffec764d7d13af58d08ff2ea3af1a4f4a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/rust-target/wasm32-unknown-linux-musl.json",
+      "bytes": 1231,
+      "sha256": "485dd3c8f0cd20098593ef35e616cbfc14bce9c2d8f38ea86abeffcc5119ddf3"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.h",
+      "bytes": 10703,
+      "sha256": "147131f9f6e94d1749d5293f1b7161ff30560d0824579618a9d37694dfb8385a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mfbt/UniquePtrExtensions.cpp",
+      "bytes": 1889,
+      "sha256": "a5f89595806aca8cc695aecddd13821387017ac1a1bf9764ae7d8b7e582a7074"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run18-boundary.json",
+      "bytes": 475512,
+      "sha256": "a323ab761a13fc9903f05e0da9d75cdef785e80f0ee3dd02d207ae94fd0c07f9"
+    }
+  ],
+  "progress": {
+    "checked": 1791013728.9170396,
+    "expected_native_object_count": 3012,
+    "existing_expected_object_count": 747,
+    "missing_expected_object_count": 2265,
+    "existing_expected_object_bytes": 904841396,
+    "existing_non_wasm_magic": {},
+    "groups": {
+      "accessible": {
+        "expected": 31,
+        "existing": 31,
+        "bytes": 24492940
+      },
+      "browser": {
+        "expected": 5,
+        "existing": 5,
+        "bytes": 786288
+      },
+      "build": {
+        "expected": 1,
+        "existing": 1,
+        "bytes": 1589
+      },
+      "caps": {
+        "expected": 2,
+        "existing": 2,
+        "bytes": 2471038
+      },
+      "chrome": {
+        "expected": 1,
+        "existing": 1,
+        "bytes": 738517
+      },
+      "config": {
+        "expected": 390,
+        "existing": 390,
+        "bytes": 35547211
+      },
+      "devtools": {
+        "expected": 11,
+        "existing": 11,
+        "bytes": 4513746
+      },
+      "docshell": {
+        "expected": 4,
+        "existing": 4,
+        "bytes": 16133390
+      },
+      "dom": {
+        "expected": 348,
+        "existing": 300,
+        "bytes": 819754167
+      },
+      "editor": {
+        "expected": 7,
+        "existing": 0,
+        "bytes": 0
+      },
+      "extensions": {
+        "expected": 10,
+        "existing": 0,
+        "bytes": 0
+      },
+      "gfx": {
+        "expected": 239,
+        "existing": 0,
+        "bytes": 0
+      },
+      "hal": {
+        "expected": 2,
+        "existing": 0,
+        "bytes": 0
+      },
+      "image": {
+        "expected": 13,
+        "existing": 0,
+        "bytes": 0
+      },
+      "intl": {
+        "expected": 11,
+        "existing": 0,
+        "bytes": 0
+      },
+      "ipc": {
+        "expected": 21,
+        "existing": 0,
+        "bytes": 0
+      },
+      "js": {
+        "expected": 109,
+        "existing": 0,
+        "bytes": 0
+      },
+      "layout": {
+        "expected": 33,
+        "existing": 0,
+        "bytes": 0
+      },
+      "media": {
+        "expected": 709,
+        "existing": 0,
+        "bytes": 0
+      },
+      "memory": {
+        "expected": 2,
+        "existing": 0,
+        "bytes": 0
+      },
+      "mfbt": {
+        "expected": 2,
+        "existing": 2,
+        "bytes": 402510
+      },
+      "modules": {
+        "expected": 68,
+        "existing": 0,
+        "bytes": 0
+      },
+      "mozglue": {
+        "expected": 28,
+        "existing": 0,
+        "bytes": 0
+      },
+      "netwerk": {
+        "expected": 58,
+        "existing": 0,
+        "bytes": 0
+      },
+      "other-licenses": {
+        "expected": 1,
+        "existing": 0,
+        "bytes": 0
+      },
+      "parser": {
+        "expected": 8,
+        "existing": 0,
+        "bytes": 0
+      },
+      "security": {
+        "expected": 379,
+        "existing": 0,
+        "bytes": 0
+      },
+      "services": {
+        "expected": 1,
+        "existing": 0,
+        "bytes": 0
+      },
+      "startupcache": {
+        "expected": 1,
+        "existing": 0,
+        "bytes": 0
+      },
+      "storage": {
+        "expected": 4,
+        "existing": 0,
+        "bytes": 0
+      },
+      "third_party": {
+        "expected": 326,
+        "existing": 0,
+        "bytes": 0
+      },
+      "toolkit": {
+        "expected": 127,
+        "existing": 0,
+        "bytes": 0
+      },
+      "tools": {
+        "expected": 3,
+        "existing": 0,
+        "bytes": 0
+      },
+      "uriloader": {
+        "expected": 6,
+        "existing": 0,
+        "bytes": 0
+      },
+      "widget": {
+        "expected": 21,
+        "existing": 0,
+        "bytes": 0
+      },
+      "xpcom": {
+        "expected": 29,
+        "existing": 0,
+        "bytes": 0
+      },
+      "xpfe": {
+        "expected": 1,
+        "existing": 0,
+        "bytes": 0
+      }
+    },
+    "root_mk_sha256": "bf4d12d85baf7b759dc086864ba073a4a5fe318087f7a4380187654396866ddc",
+    "compile_target_count": 592,
+    "target_directory_count": 578
+  }
+}
