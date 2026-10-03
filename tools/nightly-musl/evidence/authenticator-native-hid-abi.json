@@ -1,0 +1,279 @@
+{
+  "status": "PASS",
+  "scope": "Configured native sysroot C UAPI and copied actual authenticator descriptor Rust layout, host-instantiated values; no guest HID runtime claim",
+  "c_argv": [
+    "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+    "--target=wasm32-unknown-linux-musl",
+    "--sysroot=/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot",
+    "-O2",
+    "-c",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/authenticator-hid-abi/probe.c",
+    "-o",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/authenticator-hid-abi/c.o"
+  ],
+  "rust_argv": [
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/rustc",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/authenticator-hid-abi/probe.rs",
+    "--edition=2021",
+    "--crate-type=lib",
+    "--emit=obj",
+    "--target=wasm32-unknown-linux-musl",
+    "-C",
+    "panic=abort",
+    "-O",
+    "--extern",
+    "libc=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/liblibc-1d0a6016c074ecff.rlib",
+    "-L",
+    "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+    "-o",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/authenticator-hid-abi/rust.o"
+  ],
+  "first_probe_failure": "Missing sys/ioctl.h prerequisite (actual upstream hidwrapper.h includes it); source probe-run1.c retained",
+  "sysroot_hidraw_sha256": "8d199ef04d2028df4f0ecd93f669cefb0cffc62798ffcd5b003cfd8c83ee499f",
+  "generated_constants_sha256": "3a4616d766c0ee7889610aacaf8937b00bd5859ab6118f59c19b51169a0562e7",
+  "rows": [
+    {
+      "name": "HIDIOCGRDESCSIZE",
+      "c": 2147764225,
+      "rust": 2147764225
+    },
+    {
+      "name": "HIDIOCGRDESC",
+      "c": 2416199682,
+      "rust": 2416199682
+    },
+    {
+      "name": "sizeof(c_int)",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "sizeof(report_descriptor)",
+      "c": 4100,
+      "rust": 4100
+    },
+    {
+      "name": "alignof(report_descriptor)",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "offset(size)",
+      "c": 0,
+      "rust": 0
+    },
+    {
+      "name": "offset(value)",
+      "c": 4,
+      "rust": 4
+    },
+    {
+      "name": "max_descriptor_size",
+      "c": 4096,
+      "rust": 4096
+    }
+  ],
+  "actual_compilation": {
+    "status": "PASS",
+    "archive": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libauthenticator-ca70d93d8a51e6e7.rlib",
+      "bytes": 23754456,
+      "sha256": "e76ba04f6f6ff53e9d2a92ccf7d68bf2aa0cbc131f04fc7811bf9cc01a3c1dd4"
+    },
+    "argv": [
+      "--crate-name",
+      "authenticator",
+      "--edition=2018",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/rust/authenticator/src/lib.rs",
+      "--error-format=json",
+      "--json=diagnostic-rendered-ansi,artifacts,future-incompat",
+      "--crate-type",
+      "lib",
+      "--emit=dep-info,metadata,link",
+      "-C",
+      "opt-level=2",
+      "-C",
+      "panic=abort",
+      "-C",
+      "embed-bitcode=no",
+      "--cfg",
+      "feature=\"crypto_nss\"",
+      "--cfg",
+      "feature=\"default\"",
+      "--cfg",
+      "feature=\"gecko\"",
+      "--cfg",
+      "feature=\"nss-rs\"",
+      "--cfg",
+      "feature=\"pkcs11-bindings\"",
+      "--check-cfg",
+      "cfg(docsrs,test)",
+      "--check-cfg",
+      "cfg(feature, values(\"aes\", \"bindgen\", \"binding-recompile\", \"bytes\", \"cbc\", \"crypto_dummy\", \"crypto_nss\", \"crypto_openssl\", \"crypto_rust\", \"default\", \"gecko\", \"hmac\", \"nss-rs\", \"openssl\", \"openssl-sys\", \"p256\", \"pkcs11-bindings\", \"rand_core\"))",
+      "-C",
+      "metadata=43f8b7ed5603bbf8",
+      "-C",
+      "extra-filename=-ca70d93d8a51e6e7",
+      "--out-dir",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+      "--target",
+      "wasm32-unknown-linux-musl",
+      "-C",
+      "linker=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/build/cargo-linker",
+      "-C",
+      "strip=debuginfo",
+      "-L",
+      "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps",
+      "-L",
+      "dependency=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/release/deps",
+      "--extern",
+      "base64=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libbase64-04edb55365834af2.rmeta",
+      "--extern",
+      "bitflags=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libbitflags-10db893a876055ec.rmeta",
+      "--extern",
+      "cfg_if=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libcfg_if-77c0dc46a31aabc1.rmeta",
+      "--extern",
+      "libc=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/liblibc-1d0a6016c074ecff.rmeta",
+      "--extern",
+      "libudev=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/liblibudev-660baa2c088673bc.rmeta",
+      "--extern",
+      "log=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/liblog-402e164f6201cbe3.rmeta",
+      "--extern",
+      "nss_rs=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libnss_rs-184f8102a937caf7.rmeta",
+      "--extern",
+      "pkcs11_bindings=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libpkcs11_bindings-287eb8c44d279492.rmeta",
+      "--extern",
+      "rand=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/librand-7567bde35b2686ec.rmeta",
+      "--extern",
+      "runloop=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/librunloop-452b41efc81bdef6.rmeta",
+      "--extern",
+      "serde=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libserde-aec962220be92117.rmeta",
+      "--extern",
+      "serde_bytes=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libserde_bytes-824b7cd6754fedf6.rmeta",
+      "--extern",
+      "serde_cbor=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libserde_cbor_2-2a0751aed72b1788.rmeta",
+      "--extern",
+      "serde_json=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libserde_json-4a6557fbc616b520.rmeta",
+      "--extern",
+      "sha2=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libsha2-471bdd78a9753c9e.rmeta",
+      "--cap-lints",
+      "allow",
+      "-C",
+      "debuginfo=2",
+      "-C",
+      "strip=none",
+      "-C",
+      "force-frame-pointers=yes",
+      "--cap-lints",
+      "warn",
+      "-Clto=off",
+      "--cfg",
+      "rustix_use_libc",
+      "--cfg",
+      "rustix_no_linux_raw",
+      "-A",
+      "warnings",
+      "-L",
+      "native=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/security"
+    ],
+    "native_wasm_members": [
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.00.rcgu.o",
+        "bytes": 6090316,
+        "sha256": "76542d1f51b282df81b4923efda691db336d90f19beaab870a71bc9544f01cad"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.01.rcgu.o",
+        "bytes": 1043741,
+        "sha256": "b7bc89848aa3ad150f7f462b6167900a1c5bc3c2a2b303a7a096deb62abfd185"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.02.rcgu.o",
+        "bytes": 803295,
+        "sha256": "2d18db135277c4636905f826b940cd7370d5c613b86af79b23c6d6975be67450"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.03.rcgu.o",
+        "bytes": 734798,
+        "sha256": "63a0dcaa734b40a3dfc52bf1ea4ca5d6e54a0bf4e7980da5464420f5e8845391"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.04.rcgu.o",
+        "bytes": 804350,
+        "sha256": "a5ea6f9549cc481f614da303826ba7fd475c559bd0ef6675cc83f4115da975ea"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.05.rcgu.o",
+        "bytes": 785281,
+        "sha256": "c360a9baeb258899cb7d47704b0066c6d8e8ddbd588135684c1ff7e74dccde49"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.06.rcgu.o",
+        "bytes": 951459,
+        "sha256": "75437c4dc339bb9e18e8f896cd3e98c5a38f102b3edbcb0bcf60bc1689f1635b"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.07.rcgu.o",
+        "bytes": 630616,
+        "sha256": "b38f1a4b28ae1306a10ed5236bcea0810f28cb49dd71a6d318e868569e61fcb2"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.08.rcgu.o",
+        "bytes": 800716,
+        "sha256": "b877c3880818988fdb801b88ebcbad9d1bc409b7949487664aee8c009b0a1859"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.09.rcgu.o",
+        "bytes": 845011,
+        "sha256": "784a1cd90ed2e3e86118de32293e84adda05d0adec80b13de3ede41e1acf8efa"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.10.rcgu.o",
+        "bytes": 699499,
+        "sha256": "7666b13ea6e0c7166410b2d64ad7f9392b90a85849421ffa99ea376c0b3a0d1b"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.11.rcgu.o",
+        "bytes": 988351,
+        "sha256": "d6b595434de358f2fbcf2bd9975bc002e26b3ede60939fb8f52ea36b05a07ff5"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.12.rcgu.o",
+        "bytes": 886316,
+        "sha256": "50d3e914dae7711091a51f41c5f07ae9a5c2edf07b8d59716b3f9b6493f2cf73"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.13.rcgu.o",
+        "bytes": 805644,
+        "sha256": "0cd564e4253cc52def27926c61a05445ed317e67e39e3f848e7a3c96297b0bd1"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.14.rcgu.o",
+        "bytes": 1126343,
+        "sha256": "cee3a70a59ebd0facaaaa4aa687b093e0dd6aa6cdf57afecda849e2256f89b49"
+      },
+      {
+        "name": "authenticator-ca70d93d8a51e6e7.authenticator.b3917962a47d91d5-cgu.15.rcgu.o",
+        "bytes": 883027,
+        "sha256": "b666104da5ca1e0407471ba7fb8f857645bbf4d6ca1a64c5eaedc7ed3a29c6d7"
+      }
+    ]
+  },
+  "source_files": {
+    "src/transport/linux/hidwrapper.rs": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/rust/authenticator/src/transport/linux/hidwrapper.rs",
+      "bytes": 1899,
+      "sha256": "9e1a5465b4cc7ce2424c1d8c28c681a0d040d62368935a1096d3505f90b5ca5b"
+    },
+    "src/transport/linux/ioctl_wasm32.rs": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/rust/authenticator/src/transport/linux/ioctl_wasm32.rs",
+      "bytes": 211,
+      "sha256": "3a4616d766c0ee7889610aacaf8937b00bd5859ab6118f59c19b51169a0562e7"
+    },
+    ".cargo-checksum.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/third_party/rust/authenticator/.cargo-checksum.json",
+      "bytes": 11180,
+      "sha256": "7d7e79a248216b353a22c83003f51f347fa3f65ebc20d777ed81da6c06622ef2"
+    }
+  }
+}

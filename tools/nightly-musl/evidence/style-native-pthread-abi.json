@@ -1,0 +1,130 @@
+{
+  "scope": "Native C++ Gecko PlatformThreadHandle type identity and Rust std RawPthread integer payload with C opaque-pointer bit conversion only in probe; host-instantiated native Wasm bit roundtrip, no live guest pthread claim",
+  "pass": true,
+  "size": 4,
+  "align": 4,
+  "rust_compile_assertions": 6,
+  "rows": [
+    {
+      "bits": 0,
+      "pass": true
+    },
+    {
+      "bits": 1,
+      "pass": true
+    },
+    {
+      "bits": 305419896,
+      "pass": true
+    },
+    {
+      "bits": 2147483647,
+      "pass": true
+    },
+    {
+      "bits": 2147483648,
+      "pass": true
+    },
+    {
+      "bits": 3735928559,
+      "pass": true
+    },
+    {
+      "bits": 4294967295,
+      "pass": true
+    }
+  ],
+  "status": "PASS",
+  "gecko_boundary_checks": 5,
+  "c_type_checks": 4,
+  "language_specific_abi": "musl C uses struct __pthread pointer; C++ uses unsigned long; Rust std RawPthread=u32, Rust libc uses opaque C pointer. Stylo exports existing RawPthread to actual C++ nsTArray<pthread_t>.",
+  "source_port": {
+    "source": "servo/components/style/global_style_data.rs",
+    "before_sha256": "0bbeffdef7d1766e49efcc7ec032c3f13649dae205235e0787a5c521ab29bf90",
+    "after_sha256": "650e3d4df2ab51538be9ea54bc9bc3abfae8827f9a7f16ab730ee38f920a39de",
+    "applied": true,
+    "scope": "Exact native Linux/musl/Wasm Gecko uses existing Unix JoinHandleExt and RawPthread; no libc ABI change or thread pool disablement"
+  },
+  "evidence": {
+    "probe.rs": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe.rs",
+      "bytes": 815,
+      "sha256": "9ec0ff6803953853cc17cbc4dfc2b4bd51ef1f76e5261ac4f813e33f726f21a4"
+    },
+    "probe.c": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe.c",
+      "bytes": 325,
+      "sha256": "1adad92b0236b060b8dcd78465c49f57a09b2d6c59b5acac118c0c6e1c69c0b4"
+    },
+    "probe.cpp": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe.cpp",
+      "bytes": 500,
+      "sha256": "1f3988a5e334c4a21c42cefa9557eefccde32ce106af2d168a41afc9ab2c0b6e"
+    },
+    "gecko-boundary.cpp": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/gecko-boundary.cpp",
+      "bytes": 501,
+      "sha256": "fd37442eb4d80075cf3f678526e3384ff7bf1458ed132460a4805902ba2a051b"
+    },
+    "gecko-argv.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/gecko-argv.json",
+      "bytes": 4139,
+      "sha256": "72ff2f8a1454207dccddb9f5faf46e5cc8a6aad5a14a0c10b93a97cc25f9707f"
+    },
+    "compile-run1.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/compile-run1.log",
+      "bytes": 639,
+      "sha256": "cc655ca7f7d1c5678fefc399efd3739c24feffd5068aa379d74261a15a9b1926"
+    },
+    "compile-run2.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/compile-run2.log",
+      "bytes": 270,
+      "sha256": "3623577b80d68be771804f005e4b6b35eaac7e4cd2d367a863ebe07019886871"
+    },
+    "compile-run3.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/compile-run3.log",
+      "bytes": 614,
+      "sha256": "af3efe1201fb52b04f1b6e3113edc4d3ac6141e4e9a15dc06690abe1b782b3c8"
+    },
+    "gecko-compile.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/gecko-compile.log",
+      "bytes": 1168,
+      "sha256": "8390fcf608758ff8d979b9769f0a4c56f3ae6d4ed3b73d383c67553d50191a48"
+    },
+    "result.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/result.json",
+      "bytes": 712,
+      "sha256": "40c9b3c65016f1c6b51315c1e852da80c5a754a2b89e6a03be47fac164b95af1"
+    },
+    "probe-c.o": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe-c.o",
+      "bytes": 280,
+      "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea"
+    },
+    "probe.o": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe.o",
+      "bytes": 363,
+      "sha256": "799a262f865e89b9202a2db35e49157a52e667eb5e94cb2d0fd8ebc13e4513c8"
+    },
+    "gecko-boundary.o": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/gecko-boundary.o",
+      "bytes": 54465,
+      "sha256": "1380462dcde9cd38a31131c4517381131dfe619cadf40527b3deaffd6287656b"
+    },
+    "probe.wasm": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/style-pthread-abi/probe.wasm",
+      "bytes": 477,
+      "sha256": "cd00241c8880e4a4aec3daff9d224e103889ee0d694f5a2995af1e4cf19c4997"
+    }
+  },
+  "cbindgen_mapping": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/servo/ports/geckolib/cbindgen.toml",
+    "bytes": 39158,
+    "sha256": "2e62b5a0a5cef973f4fd7e0d0473086c05f0547a110b28c9aa8a3371e2b33171"
+  },
+  "actual_generated_header": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/layout/style/ServoStyleConsts.h",
+    "bytes": 910188,
+    "sha256": "04dbca040ed3bb8ee17e9347290f2ce775bed97ccb849cfa94629f992c551c88"
+  }
+}

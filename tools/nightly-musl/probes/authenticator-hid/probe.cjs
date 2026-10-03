@@ -1,0 +1,1 @@
+const fs=require('fs');(async()=>{let a=[];for(const path of process.argv.slice(2)){const {instance}=await WebAssembly.instantiate(fs.readFileSync(path),{});a.push(Array.from({length:8},(_,i)=>instance.exports['v'+i]()>>>0));}process.stdout.write(JSON.stringify(a));})();

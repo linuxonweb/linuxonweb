@@ -1,0 +1,154 @@
+{
+  "status": "PASS",
+  "scope": "Isolated bounded replay of actual Firefox mozglue-static host Cargo build script, actual Run13 target-scoped CXX flags and current generated headers; genuine wrappers.cpp object. Full argv captured by cc-rs debug output; expanded Clang -### confirms native ABI and SjLj. This is not original Run13 process capture.",
+  "source": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/mozglue/static/rust/wrappers.cpp",
+    "bytes": 1032,
+    "sha256": "ba476264f586617bbfa70299a12dce35fd80ee79d4700b34e496e1cfb750d93d"
+  },
+  "build_script": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/build-script-build",
+    "bytes": 1251352,
+    "sha256": "32a1c61b7d900d4cdf54a351d2078919727016606880aac09905254a9edd4b2e"
+  },
+  "actual_build_script": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/release/build/mozglue-static-b4aa64d4a6b66042/build-script-build",
+    "bytes": 1251352,
+    "sha256": "32a1c61b7d900d4cdf54a351d2078919727016606880aac09905254a9edd4b2e"
+  },
+  "actual_run13_output": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/build/mozglue-static-adedf825f28fb39d/output",
+    "bytes": 9733,
+    "sha256": "638dea6197ba67a3c5927128c02d83208e5da1932f88bb1d17e9556a9d443d82"
+  },
+  "argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+    "-O2",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-g",
+    "-gdwarf-4",
+    "-fno-omit-frame-pointer",
+    "-mno-omit-leaf-frame-pointer",
+    "-matomics",
+    "-mbulk-memory",
+    "-mmutable-globals",
+    "-msign-ext",
+    "-mexception-handling",
+    "-fwasm-exceptions",
+    "-fdeclspec",
+    "--sysroot=/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot",
+    "-pthread",
+    "--target=wasm32-unknown-linux-musl",
+    "-I",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/js/src",
+    "-I",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include",
+    "-DMOZ_HAS_MOZGLUE",
+    "-std=gnu++20",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/stl_wrappers",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/system_wrappers",
+    "-include",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/config/gcc_hidden.h",
+    "-U_FORTIFY_SOURCE",
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-fstrict-flex-arrays=1",
+    "-DNDEBUG=1",
+    "-DTRIMMED=1",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nspr",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nss",
+    "-DMOZILLA_CLIENT",
+    "-include",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozilla-config.h",
+    "-fno-rtti",
+    "-pthread",
+    "-fno-sized-deallocation",
+    "-fno-aligned-new",
+    "-fno-math-errno",
+    "-fno-exceptions",
+    "-fdiagnostics-absolute-paths",
+    "-fPIC",
+    "-Wno-error=implicit-int-conversion",
+    "-Xclang",
+    "-fc++-abi=webassembly",
+    "-gdwarf-4",
+    "-gsimple-template-names",
+    "--start-no-unused-arguments",
+    "-mllvm=-dwarf-linkage-names=Abstract",
+    "--end-no-unused-arguments",
+    "-O2",
+    "-fno-omit-frame-pointer",
+    "-funwind-tables",
+    "-Wno-error=tautological-type-limit-compare",
+    "-Wno-invalid-offsetof",
+    "-Wno-range-loop-analysis",
+    "-Wno-deprecated-anon-enum-enum-conversion",
+    "-Wno-deprecated-enum-enum-conversion",
+    "-Wno-inline-new-delete",
+    "-Wno-error=deprecated-declarations",
+    "-Wno-error=array-bounds",
+    "-Wno-error=free-nonheap-object",
+    "-Wno-error=atomic-alignment",
+    "-Wno-error=deprecated-builtins",
+    "-Wno-psabi",
+    "-Wno-error=builtin-macro-redefined",
+    "-Wno-vla-cxx-extension",
+    "-Wno-unknown-warning-option",
+    "-Wno-character-conversion",
+    "-fno-strict-aliasing",
+    "-ffp-contract=off",
+    "-o",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/out/97cc2182c72ccc3b-wrappers.o",
+    "-c",
+    "wrappers.cpp"
+  ],
+  "object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/out/97cc2182c72ccc3b-wrappers.o",
+    "bytes": 6545,
+    "sha256": "d0a5e8ecda8bf6ce2ce1c1f06cf1851c29a00bbc3d5bc6b9366b95e5d7a474c4"
+  },
+  "archive": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/out/libwrappers.a",
+    "bytes": 6804,
+    "sha256": "d14030b5688ef033bf1064efb7c2f84720f6f96a93331162cfee2889830f93d3"
+  },
+  "evidence": {
+    "run.py": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/run.py",
+      "bytes": 808,
+      "sha256": "dc5540bda740c445125edd82548fa41b0fb08dc23d9559d1548fbb552d848482"
+    },
+    "actual-cc-env.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/actual-cc-env.json",
+      "bytes": 2038,
+      "sha256": "6b2b8473a74b0c36e77a8453fea705ac9a42858f2581c56973a251a394d35370"
+    },
+    "compile-run1.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/compile-run1.log",
+      "bytes": 173,
+      "sha256": "5f80dac59ef21c190bf605fd698f9334046cf2687a9c657963bd2a26bfb224cc"
+    },
+    "compile-run2.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/compile-run2.log",
+      "bytes": 14415,
+      "sha256": "992a8a59916d191a2ddbf4c99b1a8398ad9c7fe07d89a84e148ea49d37354c38"
+    },
+    "helper-argv.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/helper-argv.json",
+      "bytes": 2785,
+      "sha256": "a56bff1c3932a90f862faf55e4d4b3b3482dabc60068741fd4c989d216434892"
+    },
+    "expanded.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-helper-preflight/expanded.log",
+      "bytes": 15386,
+      "sha256": "4074f7cdcbc68f3f1fd1c7b7022c630e34378ab8c428d43c0200e4e8f1e8ddbe"
+    }
+  },
+  "original_capture_failed_evidence": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/mozglue-argv-capture/result-run1.json",
+    "bytes": 322,
+    "sha256": "16632f5807c6bfe86201b885b8397df8b2de0db271a2147ce075b60574a23a8f"
+  }
+}

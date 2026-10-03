@@ -1,0 +1,16 @@
+--- a/third_party/rust/authenticator/src/transport/linux/hidwrapper.rs
++++ b/third_party/rust/authenticator/src/transport/linux/hidwrapper.rs
+@@ -55,3 +55,6 @@
+ 
+ #[cfg(all(target_arch = "sparc64", target_endian = "big"))]
+ include!("ioctl_sparc64.rs");
++
++#[cfg(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))]
++include!("ioctl_wasm32.rs");
+--- /dev/null
++++ b/third_party/rust/authenticator/src/transport/linux/ioctl_wasm32.rs
+@@ -0,0 +1,4 @@
++// Native wasm32 Linux UAPI values verified against the configured sysroot.
++pub type __u32 = ::std::os::raw::c_uint;
++pub const _HIDIOCGRDESCSIZE: __u32 = 2147764225;
++pub const _HIDIOCGRDESC: __u32 = 2416199682;

@@ -118,6 +118,25 @@ missing native HID ioctl selection. Derive constants from the genuine native
 sysroot and preserve completed artifacts. This wgpu compile repair keeps the
 baseline's unavailable GPU adapter honest; it does not implement a GPU backend.
 
+Run13 passes the native HID adapter, then ends normally with exit2 after9m32s
+at Stylo's blanket Wasm exclusion of real Unix thread handles. Three exact
+native-Gecko cfg exceptions retain JoinHandleExt/RawPthread. Actual generated
+Gecko/Servo C++ signature checks, paired C/C++/Rust layouts and seven bit
+roundtrips pass: musl C uses an opaque pthread pointer, but musl C++ and Rust std
+use matching32-bit integer handles. No libc ABI or thread-pool behavior changes.
+The HID archive has16 compiled native Rust objects; paired sysroot ioctl/layout
+probes pass eight checks. An isolated replay of the actual mozglue-static build
+script captures its real cc-rs helper command and expanded Clang native C++ ABI
+and SjLj flags, with a genuine wrappers.cpp object; this is not an original
+Run13 process capture. Root's ten retained-hash/archive/ABI/replay checks pass in
+hid-style-helper-review-run2.json; incorrect root review predicates remain FAIL
+in run1. Scoped recipes/probes/patches/evidence are in tools/nightly-musl.
+Run14 is still incomplete: Firefox's Linux-only WebGPU Vulkan interop assumes
+HAL types unavailable on this native target. Audit its exports/caller fallback
+before a narrow adapter, and wait for the owned process group to empty before
+source edits. The current static trust-anchor target archive now exists, but
+actual linked function-table/module startup and guest TLS are still pending.
+
 Full-runtime Nightly packaging preparation is in
 tools/guest-rootfs/package-firefox-nightly.py and
 docs/firefox-nightly-package-20261002.md. Twenty synthetic fixture checks and
