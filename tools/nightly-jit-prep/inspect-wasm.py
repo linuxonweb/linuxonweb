@@ -128,7 +128,7 @@ def inspect(module, out, objdump):
                            if line.startswith(' - ')]
     stack = next((e for e in exports if e['name'] == '__stack_pointer'), None)
     stack_global = next((g for g in raw('Global') if stack and
-                         g.startswith('global[' + str(stack['index']) + '] ')), None)
+                         g.startswith('- global[' + str(stack['index']) + '] ')), None)
     uniform = bool(elements) and all(types[e['type']] ==
                                     {'params': ['i64'] * 23, 'results': ['i64']}
                                     for e in elements)

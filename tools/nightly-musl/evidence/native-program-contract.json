@@ -1,0 +1,39 @@
+{
+  "claim": "Actual native browser program link-argument contract and real scoped helper link/validate; full browser and guest acceptance pending",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-program-contract-review-run3.json",
+    "bytes": 273555,
+    "sha256": "0d10db74294254b52e18c73659137c4f91e968ed5691b92b5adea014412f7232"
+  },
+  "checksPassed": 1490,
+  "forcedLinkCommands": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-program-contract-run2/result.json",
+    "bytes": 335252,
+    "sha256": "2f8393ecf2bca386415028eab9e5f30b233dfc0045a1ad7f39c41665d304e5fb"
+  },
+  "helperLink": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/gfxtest-export-contract-run1/link-result.json",
+    "bytes": 4434,
+    "sha256": "64459f227fae7c11d367ee99b77fea79f5004c0fdf1a9fbee76cd488ee11c718"
+  },
+  "helperValidation": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/gfxtest-export-contract-run1/validate-result.json",
+    "bytes": 312,
+    "sha256": "bae8b0c91e86631448bba535edaf0ae5924fb13a7da0cf46c027facfce809059"
+  },
+  "helperInspector": {
+    "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-gfxtest-export-contract-run2/result.json",
+    "bytes": 19722,
+    "sha256": "6020f01e910bd46ebc7183b1d8844c2b8d0663b5ba0fe3b34faa460939071dae"
+  },
+  "buildRun39Review": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run39-review-run1.json",
+    "bytes": 441266,
+    "sha256": "8815329b8c5c6e85000eb5e5a283c4b45ee793d8e0c3fb76188a1c9a65715f73"
+  },
+  "generatedInputsUnchanged": 1417,
+  "nightlyBrowserAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

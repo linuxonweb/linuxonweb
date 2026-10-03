@@ -1,5 +1,19 @@
 # Current continuation — 2026-10-02
 
+2026-10-03 native final-link contract: forced actual make/driver rows now
+resolve imported shared memory/max4GiB, exported growable table, exported
+stack pointer and8MiB stack for firefox/plugin-container/xpcshell only.
+The8MiB value matches the actual native Rust target. Forced gfxtest row keeps
+only its previous driver defaults. No1417 inspected generated inputs changed.
+Separate real helper link/validate passes;823 elements/segment/signatures
+unchanged, exported table826/no max, actual stack initializer8388608.
+Inspector stack-global prefix lookup corrected. Root1490 predicates pass;
+see docs/firefox-nightly-native-program-contract-20261003.md and evidence
+native-program-contract.json. Full Firefox link/guest/JIT acceptance pending.
+Run39 terminal/reaped143/group empty after20min,189 phase object rebuilds,
+3011/3011 present,0 compiler errors,4149 frozen boundary checks pass.
+Continue full browser build; public v10 unchanged.
+
 2026-10-03: the user resumes the active goal, JIT first, then GPU. Work remains
 inline under the latest user-provided no-subagent instruction. Nightly JIT
 ABI inspection now has tools/nightly-jit-prep/inspect-wasm.py, measured on

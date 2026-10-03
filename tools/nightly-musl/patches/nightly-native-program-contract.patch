@@ -1,0 +1,13 @@
+--- a/defs.mk
++++ b/defs.mk
+@@ -7,5 +7,10 @@
+ OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-mapping-link/libnightly-native-mapping.a
+ ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)
+ override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=XShmQueryExtension
++# Match the native Rust target's shared process memory and 8 MiB stack.
++# Export the table for guest callbacks/JIT and keep its static indices growable.
++override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--import-memory -Wl$(NIGHTLY_WASM_COMMA)--max-memory=4294967296 -Wl$(NIGHTLY_WASM_COMMA)--shared-memory
++override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--export-table -Wl$(NIGHTLY_WASM_COMMA)--growable-table -Wl$(NIGHTLY_WASM_COMMA)--export=__stack_pointer
++override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)-z$(NIGHTLY_WASM_COMMA)stack-size=8388608
+ endif
+ endif
