@@ -1,5 +1,39 @@
 # libc change — 2026-10-02 (latest user direction; read this first)
 
+Latest continuation: producer31 and consumer13 compose successfully. Root
+independently verifies the actual compiler hash
+`31a8efbcefe712899402bdbf47a7a5adb1724b46a2bc7a88c5890e74facf7fbf`,
+all 237/45 ordered archive members and five fresh empty build groups. Proof:
+`/mnt/p6/build/glibc-native-forced-unwind-root-review-20261002/consumer13-build-independent1/root-proof.json`.
+Root also reruns producer31 normal records: 5,361 assertions at O0/O2/O3,
+108 pins, flags-off byte identity and 47 empty prior/root groups. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/records31-native-independent1/root-proof.json`.
+These normal controls still use a synthetic owner, not genuine cancellation.
+
+The SjLj record/context dominance failure is gone. Actual consumer13 controls
+now fail at O0/O2/O3 with `GNU call audit found an unconsumed admission`.
+The test agent localizes duplicated admissions to LowerSjLj converting an
+already-admitted CallInst into InvokeInst without retaining its admission/poll
+metadata; the subsequent final admission pass inserts another guard. Preserve
+the failures and fix the exact conversion, retaining the machine audit.
+Producer32 source review passes five source pairs and the exact LowerSjLj-only
+delta. It authenticates the original adjacent admission and early poll before
+transferring their metadata to the actual new invoke. Proof:
+`/mnt/p6/build/glibc-native-frame-plan-root-review-20261002/proposal32-source-independent1/root-proof.json`.
+The fresh sparse build and actual flagged controls remain pending.
+
+Distinct startup class8 source review validates nine frozen snapshot pins,
+two source pairs and the byte-unchanged primitive query/prepare/machine audit.
+Proof: `/mnt/p6/build/glibc-cancel-kernel-boundary-root-review-20261002/startup-class1-source-independent1/root-proof.json`.
+This authorizes preparing a rebase/control plan, not runtime admission. Final
+assembly/TLS bodies, worker phase ordering, saved-mask restoration and genuine
+owner publication still need executable evidence. The constructor-free gate
+does not cover Nightly: production must preserve delayed recorded C++ init.
+Fatal-status-v3 is source-only; its proposed persistent critical_depth=1 would
+conflict with the genuine bridge's no-critical-region import/signal boundary.
+Keep fatal-scope lifetime separate from short atomic mutation suppression;
+status0/3, epoch invalidation and actual consumer hooks remain incomplete.
+
 Latest continuation: coherent producer27 builds after correcting producer26's
 missing direct IntrinsicsWebAssembly.h include. Root independently verifies
 all five source pairs, exact FrameLowering25 archive reuse and four empty
