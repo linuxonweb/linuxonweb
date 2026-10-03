@@ -1,0 +1,73 @@
+--- a/config/external/mozinference/moz.build
++++ b/config/external/mozinference/moz.build
+@@ -6,8 +6,10 @@
+ # compiled statically with more recent instruction sets, and do no do dynamic
+ # dispatch (unfortunately). It is loaded dynamically as needed.
+ #
+-GeckoSharedLibrary("mozinference")
+-SHARED_LIBRARY_NAME = "mozinference"
+-
+-# Export only the symbols we need for dynamic linking
+-SYMBOLS_FILE = "mozinference.symbols"
++if CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32":
++    Library("mozinference")
++else:
++    GeckoSharedLibrary("mozinference")
++    SHARED_LIBRARY_NAME = "mozinference"
++    # Export only the symbols we need for dynamic linking
++    SYMBOLS_FILE = "mozinference.symbols"
+--- a/toolkit/library/moz.build
++++ b/toolkit/library/moz.build
+@@ -423,3 +423,6 @@
+ 
+ if CONFIG["TARGET_CPU"] == "wasm32":
+     OS_LIBS += ['epoxy', 'Xi', 'Xrandr', 'Xcursor', 'Xcomposite', 'Xdamage', 'Xinerama', 'Xfixes', 'Xrender', 'Xext', 'X11', 'xcb', 'Xau', 'expat']
++
++if CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "wasm32":
++    USE_LIBS += ["mozinference"]
+--- a/toolkit/components/ml/backends/llama/LlamaRuntimeLinker.cpp
++++ b/toolkit/components/ml/backends/llama/LlamaRuntimeLinker.cpp
+@@ -11,6 +11,7 @@
+ #include "nsXPCOMPrivate.h"
+ #include "nsXULAppAPI.h"
+ #include "prlink.h"
++#include "NightlyStaticInference.h"
+ 
+ #ifdef XP_WIN
+ #  include <windows.h>
+@@ -56,6 +57,9 @@
+ }
+ 
+ static PRLibrary* LoadLlamaLib(nsIFile* aFile) {
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++  return NightlyLoadStaticInference();
++#else
+   PRLibSpec lspec;
+   PathString path = aFile->NativePath();
+ #ifdef XP_WIN
+@@ -94,6 +98,7 @@
+ #endif
+   }
+   return lib;
++#endif
+ }
+ 
+ LlamaLibWrapper::LinkResult LlamaLibWrapper::Link() {
+@@ -148,6 +153,9 @@
+ 
+   sLinkStatus = LinkStatus_FAILED;
+ 
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++  sLlamaLib.mLlamaLib = LoadLlamaLib(nullptr);
++#else
+   // Get the path to the current executable/library
+ #ifdef XP_WIN
+   PathString path =
+@@ -193,6 +201,7 @@
+       libFile->HumanReadablePath().get());
+ 
+   sLlamaLib.mLlamaLib = LoadLlamaLib(libFile);
++#endif
+   if (!sLlamaLib.mLlamaLib) {
+     LOG(LogLevel::Error, "Failed to load llama library");
+     return false;

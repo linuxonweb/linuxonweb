@@ -1,0 +1,47 @@
+{
+  "claim": "Actual regenerated native static graph and freshly compiled inference loader; guest runtime and browser linking remain pending",
+  "review_path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-static-inference-review-run1.json",
+  "review_sha256": "9630eced01557424320004e2e90080dfd0952ac1ce884df27bb3350846701676",
+  "check_count": 3031,
+  "static_inference_object_count": 211,
+  "bound_function_count": 54,
+  "port": {
+    "claim": "Native static graph and NSPR binding adapter; acceptance requires actual component compilation and linking",
+    "changes": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/config/external/mozinference/moz.build",
+        "backup": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/static-inference-preflight/config/external/mozinference/moz.build",
+        "original_sha256": "b57f2040024139e3f313ab8cd67314013f3a31debfc57939106219c5a4862264",
+        "updated_sha256": "017ac6017c76cab8c293f92c2756e3e96048481c58bb1d1fdf90bee3d226c166"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/library/moz.build",
+        "backup": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/static-inference-preflight/toolkit/library/moz.build",
+        "original_sha256": "8da2810c115d98905d7a5b8c057d2a604da072ba915aa2a20fa9f56f4f99f342",
+        "updated_sha256": "10997f6eddcd4b1f27957b72961b55d88601112fd1f1b3f4a18d1a7ab2243f45"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/ml/backends/llama/LlamaRuntimeLinker.cpp",
+        "backup": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/static-inference-preflight/toolkit/components/ml/backends/llama/LlamaRuntimeLinker.cpp",
+        "original_sha256": "c7e0841a32cfe2a94749adddba98087bacac89e756af6ec3006071a37a0d90ad",
+        "updated_sha256": "5c019d4842168b6ab6afd507231c4036f654310f5ac70657127bdfeb5d4337fd"
+      }
+    ],
+    "adapter_sha256": "ea9d17fe45ada5962ba6801c7b882b3ddebf2badc246720328d10e4a24ff01df",
+    "adapter_destination": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/toolkit/components/ml/backends/llama/NightlyStaticInference.h",
+    "applied": true,
+    "owned_groups_empty_before_apply": true,
+    "guestAcceptance": false,
+    "releaseAcceptance": false
+  },
+  "reviewed_generated_delta": [
+    "browser/app/backend.mk",
+    "config/external/mozinference/backend.mk",
+    "ipc/app/backend.mk",
+    "js/xpconnect/shell/backend.mk",
+    "third_party/llama.cpp/backend.mk",
+    "third_party/parakeet.cpp/backend.mk"
+  ],
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

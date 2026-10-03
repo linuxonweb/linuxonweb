@@ -1,0 +1,35 @@
+{
+  "claim": "Terminal Run33 native build evidence; linking failed; no guest or release acceptance",
+  "review_path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run33-review-run1.json",
+  "review_sha256": "5a566f45cd5f286bcaef1c615f04008912cf19687c10db0a427050d038a4c3b1",
+  "status": {
+    "phase": "build",
+    "run": "run33",
+    "argv": [
+      "bash",
+      "-c",
+      "set -eu; source \"$1\"; cd \"$2\"; exec /nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3 ./mach \"${@:3}\"",
+      "nightly-musl",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1",
+      "build",
+      "-j4"
+    ],
+    "pid": 1660669,
+    "pgid": 1660669,
+    "started": 1791030637.2831244,
+    "log": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/build-run33.log",
+    "timeout_seconds": 1200,
+    "state": "completed",
+    "task_bytes": 19006189568,
+    "free_bytes": 75971391488,
+    "checked": 1791030637.2839699,
+    "exit_code": 2,
+    "finished": 1791030651.0357397,
+    "stop_reason": null
+  },
+  "existing_native_objects": 3012,
+  "expected_native_objects": 3012,
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

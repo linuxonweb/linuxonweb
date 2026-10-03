@@ -1,5 +1,28 @@
 # Current continuation — 2026-10-02
 
+
+Run33 is terminal/reaped (exit2, exact group empty), with all3,012 native
+object paths present. The actual certutil links and validates as native Wasm
+after the mapping adapter; the Firefox executable remains unlinked. Run33
+fails on mozinference ELF shared-library flags and missing
+_Unwind_RaiseException in pingsender/gfxtest. Its frozen root review has4,149
+checks; evidence is full-build-boundary-coherence-run33.json.
+
+The mozinference native graph now uses a static library, retained by xul.
+A narrowly gated runtime adapter registers54 real typed llama/ggml/parakeet
+functions with PR_LoadStaticLibrary, preserving normal NSPR lookup/unload and
+all existing initialization/log/error behavior. Other platforms retain the
+dynamic path. Actual backend regeneration passes in inference-run1; the first
+direct-object target was a no-op and is NOT compilation evidence. The normal
+target-objects run llama-linker-run2 recompiles the actual unified component,
+passes, and emits all54 direct symbol references. Root checks3,031 predicates,
+the exact six changed generated compile inputs and211 actual inference
+implementation object references in the browser graph. Source originals and
+original object/dependency are preserved. See docs/firefox-nightly-static-
+inference-20261003.md and tools/nightly-musl/evidence/native-static-inference.json.
+No guest inference/JIT/browser acceptance or deployment is established.
+
+
 The user explicitly authorizes two ChatGPT Sites releases: deploy after latest
 Nightly JIT works and passes guest acceptance, then deploy again after GPU
 support works and passes guest acceptance. Do not ask for the same approval
