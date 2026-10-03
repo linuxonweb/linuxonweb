@@ -172,6 +172,19 @@ bounds after inspecting actual current status; no source/cache changes are
 required. Nightly linking, JIT/GPU acceptance and both Sites releases remain
 pending, with public v10 unchanged.
 
+Run25 ends at its twenty-minute bound with no compiler errors. Exact
+PGID1390618 is empty; unified62896 is reaped143 and boundary/coherence
+handles89961/46837 are reaped0. It rebuilds174 existing native objects,
+advancing strict inttypes coherence to472/552 with80 prerequisites pending.
+There are no new graph paths; the graph stays1,113/3,012 and the Rust archive
+is unchanged. Root's saved reviewer passes2,331 actual terminal/pin/object/
+dependency/archive predicates in full-boundary-run25-review-run1.json.
+Evidence is tools/nightly-musl/evidence/full-build-boundary-coherence-run25.json.
+All original dependency backups and unfinished prerequisites remain intact.
+Compilation advances through graphics, hal and image sources. Continue the
+full build unchanged after actual status inspection; full coherence, linking,
+guest JIT/GPU acceptance and both authorized Sites releases remain pending.
+
 Nightly baseline and ABBAAB runners now use a shared actual-browser-affinity
 helper, with launch/readback/final allocation evidence and no API overrides.
 ABBAAB also rejects changed actual assigned core IDs between arms. Baseline
