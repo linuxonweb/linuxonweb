@@ -1,39 +1,50 @@
-// JIT packet 3b: interleaved cold-boot A/B of baseline Firefox `fa0217b54d99`
-// (archive 6c7fad94) vs PBL `test-pbl-6febc628d9f6f796` (archive 6febc628),
-// same kernel and plain rootfs (docs/guest-jit-pbl-diagnosis-20260930.md).
-// Derived from test-firefox-gpu-check.mjs. Boot order A B B A A B; each boot
-// gets a fresh headless Chromium profile (so no saved system selection, fresh
-// home), the arm's manifest/archive, a seeded user.js and the fixture in
-// admin/pblbench (lowercase: typed uppercase garbled the URL bar). Navigation is real guest input after Firefox starts.
-// The server's DNS/TCP proxy refuses everything (identical in both arms), so
-// the init's forced Bing URL fails fast.
-//
-// Usage: node test-firefox-pbl-bench.mjs OUT     Ports: HTTP 4201, CDP 9411.
-// JIT packet 4 reuse: PBLBENCH_TASK overrides the task root and PBLBENCH_ARMS
-// names a JSON file {A:{name,dir,version,archiveSha256},B:{...}} replacing the
-// two arms (verdict labels then read "B slower/faster than A").
-// JIT 6: PBLBENCH_FIXTURE replaces the fixture; the expected case-line count
-// is 3 rounds x its case rows.
+// Default: accepted full Nightly159 baseline A versus coherent full PBL/JIT B,
+// ABBAAB cold boots with exact compiled/live identity and strict no-regression.
+// Every boot has an exclusively created profile and an owned dynamic CDP port;
+// the QA HTTP server also uses an allocated loopback port. Guest navigation is
+// real keyboard input; identical DNS/TCP refusal isolates both arms.
+// Usage and reviewed provenance: docs/firefox-nightly-benchmark-gate-20261002.md.
+// Explicit PBLBENCH_MODE=historical retains the old packet3b defaults
+// (fa0217b54d99 versus test-pbl-6febc628d9f6f796), historical fixture overrides
+// and diagnostic noise labels. Historical mode cannot pass Nightly acceptance.
 import fs from 'node:fs/promises';
-import { openSync, closeSync } from 'node:fs';
+import { openSync, closeSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, guestCpuPrebootStateExpression, saveGuestCpuEvidence, saveHostCpuPhaseEvidence } from './firefox-host-cpus.mjs';
+import { TASK, FIXTURE_SHA256, armContract, pairContract, fatalLines, payloads, guestIdentityChecks, caseChecks, benchmarkAcceptance, ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const task = process.env.PBLBENCH_TASK || '/mnt/p6/build/guest-jit-pbl-bench-20261001';
-const HTTP_PORT = 4201, CDP_PORT = 9411;
+const mode = process.env.PBLBENCH_MODE || 'nightly';
+if (!['nightly', 'historical'].includes(mode)) throw Error('PBLBENCH_MODE must be nightly or historical');
+const nightly = mode === 'nightly';
+const task = process.env.PBLBENCH_TASK || (nightly ? TASK : '/mnt/p6/build/guest-jit-pbl-bench-20261001');
+if (nightly && task !== TASK) throw Error('Nightly gate requires dedicated task');
 if (process.argv.length !== 3) throw Error('usage: OUT');
 const out = path.resolve(process.argv[2]);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 for (const key of ['TMPDIR', 'TMP', 'TEMP']) {
   const actual = await fs.realpath(process.env[key]), stat = await fs.statfs(actual);
-  if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < 4 * 1024 ** 3) throw Error('disk-backed task scratch required');
+  if (!actual.startsWith(task + '/') || [0x01021994, 0x858458f6].includes(stat.type) || stat.bavail * stat.bsize < (nightly ? 20 : 4) * 1024 ** 3) throw Error('disk-backed task scratch/reserve required');
 }
-if (!out.startsWith(task + '/')) throw Error('output outside task'); await fs.mkdir(out);
-const arms = process.env.PBLBENCH_ARMS ? JSON.parse(await fs.readFile(process.env.PBLBENCH_ARMS, 'utf8')) : {
+if (!out.startsWith(task + '/')) throw Error('output outside task');
+const realParent = await fs.realpath(path.dirname(out));
+if (realParent !== task && !realParent.startsWith(task + '/')) throw Error('output parent escapes task');
+let lastStorageCheck = 0;
+async function storageCheck(force = false) {
+  if (!nightly || (!force && Date.now() - lastStorageCheck < 30000)) return;
+  lastStorageCheck = Date.now();
+  const usage = Number(execFileSync('du', ['-sb', task], { encoding: 'utf8' }).split(/\s/)[0]), disk = await fs.statfs(task);
+  if (usage >= 2 * 1024 ** 3 || disk.bavail * disk.bsize < 20 * 1024 ** 3) throw Error('Nightly2GiB allowance/20GiB reserve exhausted');
+}
+await storageCheck(true);
+if (nightly && (!process.env.PBLBENCH_ARMS || !/^[a-f0-9]{64}$/.test(process.env.PBLBENCH_ARMS_SHA256 || ''))) throw Error('Nightly requires explicit reviewed PBLBENCH_ARMS and PBLBENCH_ARMS_SHA256');
+await fs.mkdir(out);
+const armsBytes = process.env.PBLBENCH_ARMS ? await fs.readFile(process.env.PBLBENCH_ARMS) : null;
+if (nightly && sha(armsBytes) !== process.env.PBLBENCH_ARMS_SHA256) throw Error('reviewed arms digest changed');
+const arms = armsBytes ? JSON.parse(armsBytes) : {
   A: { name: 'baseline', dir: '/mnt/p6/build/firefox-ready-20260926/baseline-images', version: 'fa0217b54d99', archiveSha256: '6c7fad946e53f977bc6d55a80323f7ec6a9fa84858d1a245fe0916e2f6d17e65' },
   B: { name: 'pbl', dir: path.join(repo, 'web/linux/tests/runtime-candidates/pbl-v3'), version: 'test-pbl-6febc628d9f6f796', archiveSha256: '6febc628d9f6f7968bdb228d1590adcff83daabd8c6c4b63c8bb6a71c9afb486' },
 };
@@ -42,9 +53,42 @@ const order = (process.env.PBLBENCH_ORDER || 'ABBAAB').split('');
 const fixturePath = process.env.PBLBENCH_FIXTURE ? path.resolve(process.env.PBLBENCH_FIXTURE) : path.join(repo, 'web/linux/tests/guest-jit-pbl-bench.html');
 const jitLogBudget = process.env.PBLBENCH_LOG_BUDGET === undefined ? null : Number(process.env.PBLBENCH_LOG_BUDGET);
 const guestReadyMode = process.env.PBLBENCH_GUEST_READY === '1';
+if (nightly && (!guestReadyMode || order.join('') !== 'ABBAAB')) throw Error('Nightly requires ABBAAB and PBLBENCH_GUEST_READY=1');
 if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < 25 || jitLogBudget > 10000)) throw Error('invalid PBLBENCH_LOG_BUDGET');
 const inputs = {};
-for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) inputs[source] = sha(await fs.readFile(source));
+const readInput = async source => { const bytes = await fs.readFile(source); inputs[source] = sha(bytes); return bytes; };
+const readPinned = async (source, expected) => { if (!/^[a-f0-9]{64}$/.test(expected || '')) throw Error('missing reviewed digest: ' + source); const bytes = await readInput(source); if (sha(bytes) !== expected) throw Error('reviewed digest changed: ' + source); return bytes; };
+for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) await readInput(source);
+if (process.env.PBLBENCH_ARMS) inputs[process.env.PBLBENCH_ARMS] = sha(armsBytes);
+if (nightly) {
+  if (inputs[fixturePath] !== FIXTURE_SHA256 || Object.keys(arms).sort().join('') !== 'AB') throw Error('Nightly requires exact original eight-case fixture and A/B arms');
+  for (const [id, arm] of Object.entries(arms)) {
+    const n = arm.nightly;
+    if (!n) throw Error('missing explicit Nightly provenance ' + id);
+    const full = JSON.parse(await readPinned(n.fullPackageDir + '/package-report.json', n.fullReportSHA256));
+    const overlay = JSON.parse(await readPinned(arm.dir + '/package.json', n.overlayReportSHA256));
+    const fullManifest = JSON.parse(await readPinned(n.fullPackageDir + '/boot-manifest.json', overlay.sourceManifestSha256));
+    await readPinned(n.fullPackageDir + '/initramfs-firefox.cpio.gz', full.archiveSha256);
+    const build = JSON.parse(await readPinned(n.buildEvidencePath, full.buildEvidenceSHA256));
+    for (const c of Object.values(build.commands || {})) await readPinned(c.log, c.logSHA256);
+    const review = JSON.parse(await readPinned(n.buildReview.path, n.buildReview.sha256));
+    const acceptance = id === 'A' ? JSON.parse(await readPinned(n.baselineAcceptance.path, n.baselineAcceptance.sha256)) : null;
+    for (const e of [...(review.evidence || []), ...(acceptance?.evidence || [])]) await readPinned(e.path, e.sha256);
+    const candidateManifest = JSON.parse(await fs.readFile(arm.dir + '/boot-manifest.json'));
+    arm.nightlyIdentity = armContract(id, arm, full, overlay, fullManifest, candidateManifest, build, review, acceptance);
+    if ((await fs.stat(arm.dir + '/initramfs-firefox.cpio.gz')).size !== overlay.bytes) throw Error('archive size differs ' + id);
+  }
+  pairContract(arms.A.nightlyIdentity, arms.B.nightlyIdentity);
+  const activeBuilds = [];
+  for (const line of execFileSync('ps', ['-eo', 'pid,args'], { encoding: 'utf8' }).split('\n')) {
+    const m = /^\s*(\d+)\s+(.+)$/.exec(line);
+    if (!m || !/(?:^|[\s/])(?:clang(?:\+\+)?(?:-\d+)?|rustc|cargo|ninja|make|mach)(?:[\s.]|$)|build-full/.test(m[2])) continue;
+    let cwd; try { cwd = await fs.realpath('/proc/' + m[1] + '/cwd'); } catch { continue; }
+    if (Object.values(arms).some(a => Object.values(a.nightlyIdentity.reviewRoots).some(root => cwd === root || cwd.startsWith(root + '/') || m[2].includes(root)))) activeBuilds.push({ pid: Number(m[1]), cwd, argv: m[2] });
+  }
+  await fs.writeFile(out + '/owned-build-preflight.json', JSON.stringify({ activeBuilds, pass: activeBuilds.length === 0 }, null, 2) + '\n');
+  if (activeBuilds.length) throw Error('owned full builds active; preserve baseline and benchmark isolation');
+}
 // Served manifests: the arm's own manifest with the Firefox URL pointed at
 // the rewritten /linux/initramfs-firefox.cpio.gz route. Hashes stay exact.
 for (const [id, arm] of Object.entries(arms)) {
@@ -58,6 +102,7 @@ for (const [id, arm] of Object.entries(arms)) {
 }
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
 await fs.copyFile(path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), out + '/firefox-host-cpus.mjs');
+await fs.copyFile(path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), out + '/check-firefox-nightly-benchmark.mjs');
 await fs.copyFile(fixturePath, out + '/fixture.html');
 let mainAdapter = null;
 if (jitLogBudget !== null) {
@@ -84,13 +129,13 @@ serverSource += '\nserver.on("connection",socket=>{sockets.add(socket);socket.on
 for (const anchor of ['let target = safePath', 'requests.push', "throw Error('bench: network refused')", 'refusedTcp++; socket.destroy()']) if (!serverSource.includes(anchor)) throw Error('dev-server adapter anchor changed: ' + anchor);
 await fs.writeFile(out + '/server.mjs', serverSource);
 const service = await import(pathToFileURL(out + '/server.mjs').href), server = service.server;
-await new Promise((resolve, reject) => { server.once('error', reject); server.listen(HTTP_PORT, '127.0.0.1', resolve); });
+await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
 const origin = 'http://127.0.0.1:' + server.address().port;
-const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'browser.aboutwelcome.enabled:false', 'dom.max_script_run_time:0'].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("datareporting.policy.firstRunURL", "");\n';
+const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'browser.aboutwelcome.enabled:false', 'dom.max_script_run_time:0', ...(nightly ? ['devtools.chrome.enabled:true', 'devtools.console.stdout.chrome:true'] : [])].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("datareporting.policy.firstRunURL", "");\n';
 const fixture = await fs.readFile(fixturePath, 'utf8');
 const expectedCases = 3 * (fixture.match(/^ \['[^']+',/gm) || []).length;
 const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
-const report = { pass: false, origin, order, mainAdapter, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256 }])), boots: [], serverPid: process.pid };
+const report = { schema: 2, mode, scope: nightly ? 'nightly-original-eight-case-no-regression' : 'historical-diagnostic', nightlyBenchmarkAcceptance: false, jitAcceptance: false, gpuAcceptance: false, releaseAcceptance: false, pass: false, origin, httpPort: server.address().port, order, mainAdapter, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256, ...(nightly ? { nightlyIdentity: a.nightlyIdentity } : {}) }])), boots: [], serverPid: process.pid };
 
 // One boot = one owned headless Chromium with a fresh profile.
 report.guestReadinessMode = guestReadyMode;
@@ -102,30 +147,81 @@ async function boot(index, armId) {
   const readyName = 'pblready-' + label + '.html', readyURL = 'file:///home/admin/pblbench/' + readyName;
   const readyFixture = '<!doctype html><title>Firefox benchmark readiness</title><h1>Firefox ready</h1><script>requestAnimationFrame(()=>requestAnimationFrame(()=>console.log("PBLREADY "+JSON.stringify({event:"ready",label:' + JSON.stringify(label) + ',url:location.href,ua:navigator.userAgent,createdAt:Date.now()}))));</script>';
   const bootPrefs = prefs + (guestReadyMode ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(readyURL) + ');\n' : '');
-  const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--remote-debugging-port=' + CDP_PORT, '--user-data-dir=' + dir + '/profile', '--disk-cache-dir=' + dir + '/cache', 'about:blank'];
+  const profile = dir + '/profile', activePortPath = profile + '/DevToolsActivePort';
+  await fs.mkdir(profile); // Exclusive fresh directory: never reuse a user's profile.
+  const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profile, '--disk-cache-dir=' + dir + '/cache', 'about:blank'];
   const fd = openSync(dir + '/browser.log', 'wx');
+  const spawnedAt = Date.now();
   const child = spawn(executable, args, { detached: true, env: { ...process.env, XDG_CACHE_HOME: dir + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
   let exitInfo, spawnError; const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const rec = { index: index + 1, arm: armId, label, browserPid: child.pid, pass: false, navAttempts: 0, cases: [] };
+  const childState = () => {
+    let alive = false;
+    let ownedProfileArgument = false;
+    if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) { try { process.kill(child.pid, 0); const argv = readFileSync('/proc/' + child.pid + '/cmdline', 'utf8').split('\0'); ownedProfileArgument = argv.includes('--user-data-dir=' + profile) && argv.includes('--remote-debugging-port=0'); alive = ownedProfileArgument; } catch {} }
+    return { pid: child.pid, alive, ownedProfileArgument, exitCode: child.exitCode, signalCode: child.signalCode, spawnError };
+  };
   let ws, next = 0; const pending = new Map(), errors = [];
-  const call = (method, params = {}, deadline = 60000) => new Promise((resolve, reject) => { const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, deadline); pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params })); });
+  const call = (method, params = {}, deadline = 60000) => new Promise((resolve, reject) => { if (!rec.endpointOwnership?.verified || !childState().alive) { reject(Error('CDP command requires verified live owned browser')); return; } const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, deadline); pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params })); });
   const ev = async (expression, deadline) => { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, deadline); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; };
-  const until = async (fn, ms, what) => { const end = Date.now() + ms; for (;;) { if (await fn()) return; if (Date.now() > end) throw Error(what + ' deadline'); await sleep(500); } };
+  const until = async (fn, ms, what) => { const end = Date.now() + ms; for (;;) { await storageCheck(); if (await fn()) return; if (Date.now() > end) throw Error(what + ' deadline'); await sleep(500); } };
   const shot = async name => { const r = await call('Page.captureScreenshot', { format: 'png' }); await fs.writeFile(dir + '/' + name + '.png', Buffer.from(r.data, 'base64')); };
-  const guestLogs = () => ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)))()`);
+  const observedFatalLines = new Set();
+  const guestLogs = async () => { const logs = await ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)))()`); for (const line of fatalLines(logs)) observedFatalLines.add(line); return logs; };
   const key = async (k, code, v, modifiers = 0, type) => { const a = { key: k, code, windowsVirtualKeyCode: v, nativeVirtualKeyCode: v, modifiers }; if (type !== 'up') await call('Input.dispatchKeyEvent', { type: 'keyDown', ...a }); if (type !== 'down') await call('Input.dispatchKeyEvent', { type: 'keyUp', ...a }); };
   const clickGuest = async (x, y) => { const r = await ev("(()=>{const c=document.querySelector('canvas'),r=c.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,width:c.width,height:c.height}})()"); const p = { x: r.x + x * r.w / r.width, y: r.y + y * r.h / r.height }; await call('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p, buttons: 0 }); await call('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', buttons: 1, clickCount: 1 }); await call('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', buttons: 0, clickCount: 1 }); };
   const typeText = async text => { for (const ch of text) { const code = /[a-z]/i.test(ch) ? 'Key' + ch.toUpperCase() : /[0-9]/.test(ch) ? 'Digit' + ch : ({ '.': 'Period', '/': 'Slash', '-': 'Minus', ':': 'Semicolon' })[ch]; if (!code) throw Error('unsupported URL character ' + ch); const v = ({ '.': 190, '/': 191, '-': 189, ':': 186 })[ch] || ch.toUpperCase().charCodeAt(0), shifted = ch === ':'; if (shifted) await key('Shift', 'ShiftLeft', 16, 1, 'down'); await call('Input.dispatchKeyEvent', { type: 'keyDown', key: ch, code, windowsVirtualKeyCode: v, nativeVirtualKeyCode: v, text: ch, modifiers: shifted ? 1 : 0 }); await key(ch, code, v, shifted ? 1 : 0, 'up'); if (shifted) await key('Shift', 'ShiftLeft', 16, 0, 'up'); await sleep(180); } };
   const benchLines = logs => logs.split('\n').filter(l => l.includes('console.log: "PBLBENCH ')).flatMap(l => { try { return [JSON.parse(JSON.parse(l.slice(l.indexOf('"'))).slice(9))]; } catch { return []; } });
   const readyLines = logs => logs.split('\n').filter(l => l.includes('console.log: "PBLREADY ')).flatMap(l => { try { return [JSON.parse(JSON.parse(l.slice(l.indexOf('"'))).slice(9))]; } catch { return []; } });
+  const browserConsoleChord = async () => {
+    await key('Control', 'ControlLeft', 17, 2, 'down'); await key('Shift', 'ShiftLeft', 16, 10, 'down'); await key('J', 'KeyJ', 74, 10); await key('Shift', 'ShiftLeft', 16, 2, 'up'); await key('Control', 'ControlLeft', 17, 0, 'up');
+  };
+  const typeConsole = async text => {
+    const symbols = { ' ': ['Space', 32, false], '.': ['Period', 190, false], ':': ['Semicolon', 186, true], ',': ['Comma', 188, false], '-': ['Minus', 189, false], '+': ['Equal', 187, true], '"': ['Quote', 222, true], '(': ['Digit9', 57, true], ')': ['Digit0', 48, true], '{': ['BracketLeft', 219, true], '}': ['BracketRight', 221, true] };
+    for (const c of text) {
+      const spec = /[a-z]/i.test(c) ? ['Key' + c.toUpperCase(), c.toUpperCase().charCodeAt(0), /[A-Z]/.test(c)] : /[0-9]/.test(c) ? ['Digit' + c, c.charCodeAt(0), false] : symbols[c];
+      if (!spec) throw Error('unsupported identity probe key ' + c);
+      const [code, v, shifted] = spec;
+      if (shifted) await key('Shift', 'ShiftLeft', 16, 8, 'down');
+      await call('Input.dispatchKeyEvent', { type: 'keyDown', key: c, code, windowsVirtualKeyCode: v, nativeVirtualKeyCode: v, text: c, modifiers: shifted ? 8 : 0 }); await key(c, code, v, shifted ? 8 : 0, 'up');
+      if (shifted) await key('Shift', 'ShiftLeft', 16, 0, 'up'); await sleep(80);
+    }
+  };
   try {
-    await until(async () => { if (exitInfo || spawnError) throw Error('browser startup failed'); try { return (await fetch('http://127.0.0.1:' + CDP_PORT + '/json/version')).ok; } catch { return false; } }, 20000, 'browser');
-    const target = (await (await fetch('http://127.0.0.1:' + CDP_PORT + '/json/list')).json()).find(t => t.type === 'page'); ws = new WebSocket(target.webSocketDebuggerUrl);
+    let activePortText, portStat, version;
+    await until(async () => {
+      if (!childState().alive) throw Error('owned browser startup failed');
+      try { portStat = await fs.lstat(activePortPath); activePortText = await fs.readFile(activePortPath, 'utf8'); } catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+      rec.endpointOwnershipAttempt = { activePortText, activePortPath, profile, spawnedAt, activePortMtimeMs: portStat.mtimeMs, activePortRegularFile: portStat.isFile(), child: childState(), httpOrigin: origin };
+      await fs.writeFile(dir + '/endpoint-ownership-attempt.json', JSON.stringify(rec.endpointOwnershipAttempt, null, 2) + '\n');
+      // Validate the fresh file before fetching even read-only endpoint metadata.
+      const [port, browserPath] = activePortText.trim().split('\n');
+      const provisional = ownedBrowserEndpoint(activePortText, { webSocketDebuggerUrl: 'ws://127.0.0.1:' + port + browserPath }, { ...childState(), spawnedAt, activePortMtimeMs: portStat.mtimeMs, freshProfile: true, activePortRegularFile: portStat.isFile() });
+      let response; try { response = await fetch('http://127.0.0.1:' + provisional.port + '/json/version', { signal: AbortSignal.timeout(2000) }); } catch { if (!childState().alive) throw Error('owned browser exited before endpoint verification'); return false; }
+      if (!response.ok) return false;
+      version = await response.json();
+      rec.endpointOwnershipAttempt.reportedVersion = version;
+      await fs.writeFile(dir + '/endpoint-ownership-attempt.json', JSON.stringify(rec.endpointOwnershipAttempt, null, 2) + '\n');
+      rec.endpointOwnership = { ...ownedBrowserEndpoint(activePortText, version, { ...childState(), spawnedAt, activePortMtimeMs: portStat.mtimeMs, freshProfile: true, activePortRegularFile: portStat.isFile() }), activePortText, activePortPath, profile, httpOrigin: origin };
+      return true;
+    }, 20000, 'owned browser endpoint');
+    const cdpOrigin = 'http://127.0.0.1:' + rec.endpointOwnership.port;
+    const target = (await (await fetch(cdpOrigin + '/json/list', { signal: AbortSignal.timeout(2000) })).json()).find(t => t.type === 'page');
+    const pageWebSocketURL = ownedPageEndpoint(target, rec.endpointOwnership);
+    const freshText = await fs.readFile(activePortPath, 'utf8'), freshStat = await fs.lstat(activePortPath);
+    const freshVersion = await (await fetch(cdpOrigin + '/json/version', { signal: AbortSignal.timeout(2000) })).json();
+    ownedBrowserEndpoint(freshText, freshVersion, { ...childState(), spawnedAt, activePortMtimeMs: freshStat.mtimeMs, freshProfile: true, activePortRegularFile: freshStat.isFile() });
+    if (freshText !== activePortText || freshVersion.webSocketDebuggerUrl !== version.webSocketDebuggerUrl) throw Error('owned endpoint changed before websocket connection');
+    rec.endpointOwnership.pageTarget = target;
+    await fs.writeFile(dir + '/endpoint-ownership.json', JSON.stringify(rec.endpointOwnership, null, 2) + '\n');
+    if (!childState().alive) throw Error('owned browser exited before websocket connection');
+    ws = new WebSocket(pageWebSocketURL);
     ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
     await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed page');
     const browserHardwareConcurrency = await ev('navigator.hardwareConcurrency');
     rec.cpu = selectHostCpus(readHostNproc(), browserHardwareConcurrency);
+    if (nightly && (rec.cpu.hostNproc > 64 || rec.cpu.browserHardwareConcurrency !== rec.cpu.hostNproc)) throw Error('exact host CPU agreement requires unclamped equal counts <=64');
     report.comparisonHostNproc ??= rec.cpu.hostNproc;
     rec.comparisonHostCpuStable = rec.cpu.hostNproc === report.comparisonHostNproc;
     await fs.writeFile(dir + '/comparison-cpu.json', JSON.stringify({ initialHostNproc: report.comparisonHostNproc, cpu: rec.cpu, pass: rec.comparisonHostCpuStable }, null, 2) + '\n');
@@ -154,6 +250,23 @@ async function boot(index, armId) {
       rec.readyFixtureSHA256 = sha(readyFixture);
       await shot('guest-ready');
     } else await sleep(20000);
+    if (nightly) {
+      // Read live privileged appinfo, not navigator.buildID (often privacy-reduced).
+      // This keyboard driver is preparatory until exercised against full Nightly;
+      // inability to open/evaluate the console fails this gate without fallback.
+      await ev("document.querySelector('#fb').focus()");
+      await browserConsoleChord(); await sleep(5000);
+      const probe = 'console.log("PBLIDENTITY "+JSON.stringify({label:' + JSON.stringify(label) + ',version:Services.appinfo.version,platformVersion:Services.appinfo.platformVersion,appBuildID:Services.appinfo.appBuildID,platformBuildID:Services.appinfo.platformBuildID,OS:Services.appinfo.OS,XPCOMABI:Services.appinfo.XPCOMABI}))';
+      await fs.writeFile(dir + '/guest-identity-probe.txt', probe + '\n');
+      await typeConsole(probe); await key('Enter', 'Enter', 13);
+      let identityLogs;
+      await until(async () => { identityLogs = await guestLogs(); rec.guestIdentity = payloads(identityLogs, 'PBLIDENTITY ').find(p => p.label === label); return Boolean(rec.guestIdentity); }, 60000, 'exact guest Nightly identity');
+      await fs.writeFile(dir + '/identity-guest-logs.txt', identityLogs);
+      rec.guestIdentityChecks = guestIdentityChecks(rec.guestIdentity, arm.nightlyIdentity.compiled, label);
+      if (!Object.values(rec.guestIdentityChecks).every(Boolean)) throw Error('live guest Nightly version/build differs from compiled package');
+      await browserConsoleChord(); await sleep(2000);
+      rec.identityFinalCpu = await saveHostCpuPhaseEvidence(rec.cpu, await ev(guestCpuStateExpression), dir, 'identity-final');
+    }
     // Real input: address bar, select all, type, Enter; retry if the fixture
     // has not logged its start line (Firefox window not ready yet).
     for (;;) {
@@ -172,21 +285,26 @@ async function boot(index, armId) {
     const logs = await guestLogs(); await fs.writeFile(dir + '/guest-logs.txt', logs);
     const lines = benchLines(logs).filter(l => l.label === label);
     const startLine = lines.find(l => l.event === 'start'), done = lines.find(l => l.event === 'done');
+    rec.eventChecks = { oneStart: lines.filter(l => l.event === 'start').length === 1, oneDone: lines.filter(l => l.event === 'done').length === 1 };
     rec.hardwareConcurrency = startLine.hc; rec.userAgent = startLine.ua; rec.benchElapsedMs = done.elapsedMs; rec.benchOk = done.ok;
-    rec.cases = lines.filter(l => l.event === 'case').map(({ round, name, checksum, batchMs, medianBatchMs }) => ({ round, name, checksum, batchMs, medianBatchMs }));
+    rec.cases = lines.filter(l => l.event === 'case').map(({ round, name, checksum, reps, batchMs, medianBatchMs }) => ({ round, name, checksum, reps, batchMs, medianBatchMs }));
     rec.errorLines = lines.filter(l => l.event === 'error');
     const state = await ev(`(async()=>({system:(await(await import('./boot-assets.mjs')).systemUsage()).version,browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),isolated:crossOriginIsolated,visibility:document.visibilityState}))()`);
     rec.state = state;
     rec.finalCpu = await saveHostCpuPhaseEvidence(rec.cpu, state, dir, 'cold-final');
-    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0 };
+    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0, noFatalLogs: observedFatalLines.size === 0, noFixtureErrors: rec.errorLines.length === 0, ...(nightly ? { ...caseChecks(rec.cases), ...rec.guestIdentityChecks, ...rec.eventChecks, guestNavigatorCpu: rec.hardwareConcurrency === rec.cpu.hostNproc, guestFirefoxUA: /Firefox\/159(?:\.0)?(?:\s|$)/.test(rec.userAgent || '') } : {}) };
     rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
-    rec.fatalLines = logs.split('\n').filter(l => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError: unreachable/.test(l)).slice(-20);
+    rec.fatalLines = [...observedFatalLines];
     rec.pass = Object.values(rec.checks).every(Boolean);
   } catch (error) { rec.error = String(error.stack || error); try { await fs.writeFile(dir + '/failure-guest-logs.txt', await guestLogs()); await shot('failure'); } catch {} }
   finally {
-    if (ws?.readyState === 1) { try { await call('Page.navigate', { url: 'about:blank' }); await call('Browser.close'); } catch {} }
+    // Include late guest errors before closing the page, without evicting SMP.
+    try { await guestLogs(); } catch {}
+    rec.fatalLines = [...observedFatalLines];
+    if (rec.fatalLines.length) rec.pass = false;
+    if (rec.endpointOwnership?.verified && childState().alive && ws?.readyState === 1) { try { await call('Page.navigate', { url: 'about:blank' }); await call('Browser.close'); } catch {} }
     for (const p of pending.values()) clearTimeout(p.timer); ws?.close(); await Promise.race([exited, sleep(10000)]);
-    if (!exitInfo && !spawnError) { process.kill(-child.pid, 'SIGTERM'); await Promise.race([exited, sleep(5000)]); rec.forcedTermination = true; rec.pass = false; }
+    if (!exitInfo && !spawnError) { try { if (childState().alive) process.kill(-child.pid, 'SIGTERM'); } catch {} await Promise.race([exited, sleep(5000)]); rec.forcedTermination = true; rec.pass = false; }
     rec.browserExit = exitInfo; rec.outerErrors = errors;
     if (exitInfo?.code !== 0) rec.pass = false;
   }
@@ -225,18 +343,25 @@ function classify() {
 try {
   for (let i = 0; i < order.length; i++) { const rec = await boot(i, order[i]); report.boots.push(rec); await fs.writeFile(out + '/progress.json', JSON.stringify(report, null, 2) + '\n'); }
   const harness = order.join('') === 'ABBAAB' && report.boots.length === 6 && report.boots.every(b => b.pass);
-  if (harness) Object.assign(report, classify());
+  if (harness && !nightly) Object.assign(report, classify());
   const changed = []; for (const [p, h] of Object.entries(inputs)) if (sha(await fs.readFile(p)) !== h) changed.push(p);
   report.inputsUnchanged = changed.length === 0; report.changedInputs = changed;
   report.finalHostNproc = readHostNproc();
   report.hostAllocationStable = report.finalHostNproc === report.comparisonHostNproc;
-  report.checksumsIdentical = harness && Object.values(report.verdicts).every(x => x.checksumsIdentical);
+  report.checksumsIdentical = harness && (nightly ? report.boots.every(b => caseChecks(b.cases).exactRowsAndChecksums) : Object.values(report.verdicts).every(x => x.checksumsIdentical));
   report.pass = harness && report.inputsUnchanged && report.checksumsIdentical && report.hostAllocationStable;
 } catch (error) { report.error = String(error.stack || error); }
 finally {
   for (const socket of service.sockets) socket.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
   report.serverClosed = !server.listening; report.requests = service.requests.length; report.refused = service.refused(); report.inputs = inputs;
   if (!report.serverClosed) report.pass = false;
+  try { await storageCheck(true); } catch (error) { report.error = String(error); report.pass = false; }
+  if (nightly) {
+    report.acceptance = benchmarkAcceptance(report);
+    report.verdicts = report.acceptance.verdicts;
+    report.pass = report.pass && report.acceptance.pass;
+    report.nightlyBenchmarkAcceptance = report.pass;
+  }
   await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n');
 }
 console.log(JSON.stringify({ pass: report.pass, verdicts: report.verdicts && Object.fromEntries(Object.entries(report.verdicts).map(([k, x]) => [k, [x.ratio, x.verdict]])), hypotheses: report.hypotheses, error: report.error, out })); if (!report.pass) process.exitCode = 1;

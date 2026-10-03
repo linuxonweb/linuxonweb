@@ -17,7 +17,7 @@ at line1. Required admitted functions have no arguments and use var locals with
 | Integer compilation | sum, branch | Successful source-specific install followed by Normal run |
 | Integer bailout/restore | overflow, negzero, modzero, modnegative, modoverflow, typechange, stackrestore | Successful install followed by Bail from that source, plus exact final semantics |
 | Excluded correctness | typenonnumeric, argument, double, lexical, array, property, math, call | Source-specific rejection and no install/run/bail/NoEntry for that source |
-| Policy exclusion | handler, throw | Correct semantics; positive policy rejection observer still pending |
+| Policy exclusion | handler, throw | Source-specific `policy-finally` / `policy-throw`, valid proven context, correct semantics and no install/run/bail/NoEntry |
 
 The double type change is produced by Int32 addition overflow. Arbitrary string
 type changes and a double literal inside a loop remain excluded. Division is
@@ -37,8 +37,10 @@ Missing identity fields or a rejection from the other context cannot establish
 exclusion. `--scope smoke` requires
 compile/run proof for sum and branch and semantics for all cases, while reporting
 the remaining proofs individually. The default integer scope requires every
-case's proof and currently refuses full success because handler/throw policy
-rejection occurs before OnLoopHead and has no positive observer. Every result
+case's proof, including positive handler/throw policy events. Policy events require
+valid TID/TLS/epoch, `fn=0`, `kind=-1`, the case's source/window, and membership
+in that context's proven install/Normal-run identity. An ordinary opcode reject
+cannot substitute for a policy reason. Every result
 explicitly sets `fullJITAcceptance:false`. Neither mode validates build/CPU
 identity or substitutes for the other full acceptance gates.
 
@@ -67,6 +69,15 @@ executed. Captured events stop at the budget, so missing evidence fails. Logging
 adds overhead; comparative performance arms need the same setting, preferably
 disabled. The observer is diagnostic preparation and does not widen admission.
 
+The follow-on observer adds one diagnostic call at the existing
+`CanEnterPortableBaselineInterpreter` rejection, after the assertion that no
+JitScript exists and before `disableBaselineCompile`. The original Catch/Finally
+and Throw/ThrowWithStack policy scan, warmup threshold and admission are
+unchanged. Only an enabled, source-filtered rejected script is read again to
+emit `policy-catch`, `policy-finally`, `policy-throw` or `policy-throw-stack`;
+fixed TLS deduplication applies. The current fixture proves Finally and Throw
+only. Catch and ThrowWithStack hooks have no corresponding guest proof.
+
 `privileged-driver.js` supplies concrete Browser Console operations against a
 directly accessible **actual guest fixture content window**. It refuses missing
 content access. It calls Cu.forceGC, reruns the previously installed sum helper,
@@ -87,9 +98,45 @@ observed. Window.stop, Worker.terminate and VM/process killing are not used as
 interrupt proof. This driver is syntax checked but **unverified**; single-process
 content access, guest Browser Console automation, CSP/injection, slow-script timer
 delivery, remote-content actor transport and recovery behavior remain pending.
-Verified incremental-GC driving, positive handler policy observation and native
-pthread/TLS/errno/stack-canary callbacks remain unimplemented. The initial checker
-does not yet accept privileged records as a complete gate.
+The initial checker does not yet accept privileged records as a complete gate;
+native pthread/TLS/errno/stack-canary callbacks remain unimplemented.
+
+Current-source audit finds a genuine privileged incremental route:
+`Cu.getJSTestingFunctions()` calls `js::GetTestingFunctions`, whose standard
+function table unconditionally exposes `startgc`, `gcstate`, `finishgc` and
+`gcslice`. This is the browser XPConnect implementation, not an assumed shell
+global. The retained `incremental-api-audit-run1.json` binds the source files,
+anchors and exact signatures. `startgc(1)` supplies a one-unit WorkBudget;
+`gcstate()` reads the current runtime state and `finishgc()` completes an active
+incremental collection. The exact states are NotActive, Prepare, MarkRoots,
+Mark, Sweep, Finalize, Compact, Decommit and Finish. Browser scheduling tests
+also use this Cu API. Cu.forceGC and forceShrinkingGC are nonincremental.
+
+The optional `NightlySafetyDriver.incremental(actualContentWindow, rawLogPath)`
+requires a completed, directly accessible fixture in the same runtime and an
+actual unrotated guest stderr file beneath that fixture directory. IOUtils reads
+at most2MiB. Before touching GC, it requires the owned sum source's actual
+install/Normal-run records with matching valid TID/TLS/epoch/function identity.
+It refuses an already active GC, calls `startgc(1)` once, requires active states
+before and after invoking that exact sum loop and checks its result. It finishes
+the owned collection in finally before asynchronous I/O, retains errors and
+requires a newly appended source-specific `skip-incremental` with that proven
+TID/TLS, valid epoch and `fn=0`; any new specializer entry for the source fails.
+Run this separate operation before debugger/coverage. The slice may complete
+immediately or incremental GC may be unavailable; either fails, with no retry or
+allocation-pressure surrogate. Source availability does not prove API availability
+in the eventual guest. Same-process content access, stderr tee plumbing, actual
+active-state/skip observations and real cleanup remain unverified.
+
+After observer integration, actual guest stderr capture and main completion,
+the proposed Browser Console call is:
+
+```javascript
+await NightlySafetyDriver.incremental(actualContentWindow,
+  '/home/admin/nightly-jit-safety/safety-run3/guest-stderr.log');
+await NightlySafetyDriver.run(actualContentWindow);
+await NightlySafetyDriver.interrupt(actualContentWindow);
+```
 
 Reproduce preparation into fresh destinations:
 
@@ -97,20 +144,20 @@ Reproduce preparation into fresh destinations:
 export TMPDIR=/mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/tmp
 export TMP="$TMPDIR" TEMP="$TMPDIR" PYTHONDONTWRITEBYTECODE=1
 node tools/nightly-jit-safety/generate.mjs \
-  /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run2 safety-run2
+  /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run3 safety-run3
 python3 -B tools/nightly-jit-safety/prepare-observer.py \
   --overlay /mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/overlay-run4/overlay \
-  --out /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/observer-run5
+  --out /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/observer-run6
 node tools/nightly-jit-safety/test-semantic.mjs
 python3 -B tools/nightly-jit-safety/test-contract.py \
-  /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run2
+  /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run3
 node --check tools/nightly-jit-safety/privileged-driver.js
 ```
 
 After complete-build/fpcast/package acceptance, verified observer integration
 and native guest prerequisite gates, transfer all generated fixture files to
-`/home/admin/nightly-jit-safety/safety-run2/` in the isolated candidate guest.
-Open `file:///home/admin/nightly-jit-safety/safety-run2/safety-run2.html` in that
+`/home/admin/nightly-jit-safety/safety-run3/` in the isolated candidate guest.
+Open `file:///home/admin/nightly-jit-safety/safety-run3/safety-run3.html` in that
 guest Firefox with `PBLJIT_OBSERVE=1` and an adequate existing `PBLJIT_LOG` budget.
 The host harness must use the shared host CPU helper before every boot, retain
 startup SMP immediately, reread nproc after every phase and at run end, and reject
@@ -124,19 +171,22 @@ Check the actual retained raw log after that transport completes:
 
 ```bash
 python3 -B tools/nightly-jit-safety/check.py \
-  --fixture /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run2 \
-  --logs /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/guest-run2/guest-logs.txt \
-  --out /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/guest-run2/smoke-evidence.json \
+  --fixture /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/fixture-run3 \
+  --logs /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/guest-run3/guest-logs.txt \
+  --out /mnt/p6/build/firefox-nightly-jit-guest-safety-prepare-20261002/guest-run3/smoke-evidence.json \
   --scope smoke
 ```
 
-Retained selected preparation is `fixture-run1` (label `prep-run1`) and
-`observer-run4` under the task directory; earlier observer revisions remain
-retained. `result-run2.json` records304 Node semantic assertions,40 synthetic
-checker contracts, seven syntax checks and five observer structural checks.
-None establishes source-specific Nightly execution or compiles the observer.
-`manifest-run2.json` freezes the scoped tools, documentation and retained
-preparation inputs/results. Earlier `result-run1.json` remains historical.
+Retained selected preparation is `fixture-run2` (label `prep-policy-run2`) and
+`observer-run5` under the task directory. `result-run3.json` records304 Node
+semantic assertions,58 synthetic checker contracts,15 mocked privileged-driver
+contracts, seven syntax checks and eight observer structural checks. The policy
+mutations cover missing/invalid identities, wrong context, reason, source/window,
+and forbidden installation; missing actual policy events prevent integer success.
+None establishes Nightly execution, actual GC, browser availability or observer
+compilation. `manifest-run3.json` freezes the scoped tools, documentation, source
+API audit and selected artifacts/results. All earlier fixtures, observer revisions,
+result-run1/run2 and manifest-run1/run2 remain historical and unchanged.
 
 The preparation allowance is2GiB, with20GiB free-space reserve. All outputs and
 temp storage remain disk-backed in the task directory. Existing baseline trees,

@@ -61,7 +61,10 @@ def check(contract,log,scope='integer'):
         if c['claim']=='compiled':proved=matching(runs)
         elif c['claim']=='bailout':proved=matching(bails)
         elif c['claim']=='excluded':proved=not any(o.get('event') in ['install','run','bail','noentry'] for o in own) and any(o.get('event')=='reject' and valid_context(o) and number(o,'fn',0,2**32-1) and o.get('kind')=='-1' and (o['tid'],o['tls']) in thread_sets[c['context']] for o in window)
-        else:proved=False # pre-JitScript policy rejection has no actual observer yet
+        elif c['claim']=='policy-excluded':
+            expected_policy={'handler':'policy-finally','throw':'policy-throw'}.get(c['id'])
+            proved=bool(expected_policy) and not any(o.get('event') in ['install','run','bail','noentry'] for o in own) and any(o.get('event')==expected_policy and valid_context(o) and o.get('fn')=='0' and o.get('kind')=='-1' and (o['tid'],o['tls']) in thread_sets[c['context']] for o in window)
+        else:proved=False
         required=scope=='integer' or c['id'] in ['sum','branch']
         forbidden_install=c['claim'] in ['excluded','policy-excluded'] and any(o.get('event') in ['install','run','bail','noentry'] for o in own)
         ok=semantic and not forbidden_install and (proved or not required)
@@ -73,7 +76,7 @@ def check(contract,log,scope='integer'):
         done=[e for e in events if e.get('label')==contract['label'] and e.get('context')==context and e.get('event')=='done' and e.get('ok') is True]
         if len(done)!=1:errors.append('missing unique '+context+' completion')
     if any(e.get('event')=='error' for e in events):errors.append('fixture error')
-    return {'kind':'guest-evidence-check','scope':scope,'pass':not errors,'fullJITAcceptance':False,'rows':rows,'distinctThreadsTLS':bool(threads),'errors':errors,'pending':['compiled build/CPU gates independent','policy rejection observer','verified privileged GC/debugger/coverage/interruption','active incremental GC','native stack/TLS callback probes','browser/TLS/performance/release acceptance']}
+    return {'kind':'guest-evidence-check','scope':scope,'pass':not errors,'fullJITAcceptance':False,'rows':rows,'distinctThreadsTLS':bool(threads),'errors':errors,'pending':['compiled build/CPU gates independent','observer compile/integration and actual policy execution','verified privileged GC/debugger/coverage/interruption','active incremental GC','native stack/TLS callback probes','browser/TLS/performance/release acceptance']}
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--fixture',type=Path,required=True);p.add_argument('--logs',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--scope',choices=['smoke','integer'],default='integer');a=p.parse_args()

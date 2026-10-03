@@ -26,6 +26,27 @@ evidence. Older non-helper runners need equivalent phase checks before
 invocation. The existing UI clamp remains; exact host counts above64 require a
 deliberate UI limit change rather than claiming exact agreement after clamping.
 
+Nightly benchmark migration now binds full native-musl baseline/PBL package,
+compiled app/platform identity and retained configure/compiler/link evidence;
+checks all144 original rows/checksums and every case/launch/readiness ratio;
+rejects fatal logs, input drift and host/browser/kernel CPU changes across all
+six ABBAAB arms. HTTP/CDP ports are dynamic, and a fresh owned Chromium port
+file, live spawned PID/profile arguments and matching browser/page endpoints
+are required before commands or cleanup. Root independently reruns118 host
+fixtures and verifies six frozen source/result pins in benchmark-preparation-
+review-run1.json under the root-review task. Actual console/endpoint smoke and
+Nightly performance remain pending; no browser or guest was started here.
+
+JIT safety follow-on adds positive source-specific handler/throw policy
+rejection diagnostics without changing admission, plus a separate bounded
+Cu.getJSTestingFunctions incremental-GC driver. It requires active GC before
+and after the real fixture loop, a newly appended raw skip with matching
+thread/TLS identity and cleanup to NotActive. Root's31-check source/freeze
+review independently reruns304 semantics,58 synthetic contracts and15 mocked
+driver checks (jit-safety-preparation-review-run2.json). Selected fixture-run2
+and observer-run5 remain preparation only: no observer compilation, real GC,
+full Nightly JIT acceptance or release is established by these results.
+
 The PBL benchmark runner now applies the same host-count setup to each arm and
 saves/asserts kernel SMP evidence before benchmark logs can evict startup logs.
 It now uses the shared fresh reader at preboot/startup/final, retains CPU/helper

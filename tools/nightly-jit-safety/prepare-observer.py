@@ -64,6 +64,31 @@ void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,
   Observe(script, pc, cx, reason);
 }
 
+void ObservePolicy(JSScript* script, JSContext* cx) {
+  if (!ObserverEnabled(script)) return;
+  // Called only at the existing rejection point, before disabling baseline.
+  // Read the actual source policy without changing admission or allocating.
+  for (const auto& note : script->trynotes()) {
+    if (note.kind() == TryNoteKind::Catch) {
+      ObserveSkip(script, script->code(), cx, "policy-catch");
+      return;
+    }
+    if (note.kind() == TryNoteKind::Finally) {
+      ObserveSkip(script, script->code(), cx, "policy-finally");
+      return;
+    }
+  }
+  for (jsbytecode* pc = script->code(); pc < script->codeEnd();
+       pc += GetBytecodeLength(pc)) {
+    JSOp op = JSOp(*pc);
+    if (op == JSOp::Throw || op == JSOp::ThrowWithStack) {
+      ObserveSkip(script, pc, cx,
+                  op == JSOp::Throw ? "policy-throw" : "policy-throw-stack");
+      return;
+    }
+  }
+}
+
 '''
 s=replace(s,anchor,observer+anchor)
 s=replace(s,'if (IncrementalGC(cx)) return false;','if (IncrementalGC(cx)) {\n    ObserveSkip(script, pc, cx, "skip-incremental");\n    return false;\n  }')
@@ -72,7 +97,7 @@ s=replace(s,'    if (e->state != 1) return false;\n  }\n  // Same pc pointer',' 
 s=replace(s,'  if (kind == NoEntry || kind == Bail) {','  Observe(script, pc, cx, kind == NoEntry ? "noentry" : kind == Bail ? "bail" : kind == Interrupt ? "interrupt" : "run",\n          e->fn, kind, kind == NoEntry ? 0 : out.sp,\n          kind == NoEntry ? 0 : out.pcDelta, kind == NoEntry ? 0 : out.icIndex);\n  if (kind == NoEntry || kind == Bail) {')
 save(rel,old,s)
 rel='js/src/vm/PortableBaselineInterpret.cpp';old=(a.overlay/rel).read_text();s=old
-s=replace(s,'bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,','void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,\n                 const char* reason);\nbool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,')
+s=replace(s,'bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,','void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,\n                 const char* reason);\nvoid ObservePolicy(JSScript* script, JSContext* cx);\nbool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,')
 anchor='''            DISPATCH();
           }
         }
@@ -88,6 +113,8 @@ new='''            DISPATCH();
                 ctx.frameMgr.cxForLocalUseOnly(), "skip-coverage");
         }
         END_OP(LoopHead);'''
-s=replace(s,anchor,new);save(rel,old,s)
-(a.out/'manifest.json').write_text(json.dumps({'kind':'unapplied-observer-preparation','records':records,'budget':4096,'sourcePrefix':'file:///home/admin/nightly-jit-safety/','limitations':['Not compiled or run in current full browser.','Current inherited main loop handles pending interrupt before observer; interrupt means generated Wasm returned Interrupt, not cancellation completion.','NoEntry out storage is not read; bailout/run fields report actual output.','Handler policy rejection before OnLoopHead requires separate policy observer for positive exclusion proof.','Incremental event only proves skip at actual active state; verified incremental GC driver still required.','Diagnostics add syscall/stdio overhead; performance arms must use identical observer setting (prefer off).']},indent=2)+'\n')
+s=replace(s,anchor,new)
+s=replace(s,'  if (reject) {\n    MOZ_RELEASE_ASSERT(!state.script()->hasJitScript());\n    state.script()->disableBaselineCompile();','  if (reject) {\n    MOZ_RELEASE_ASSERT(!state.script()->hasJitScript());\n    js::pbljit::ObservePolicy(state.script(), cx);\n    state.script()->disableBaselineCompile();')
+save(rel,old,s)
+(a.out/'manifest.json').write_text(json.dumps({'kind':'unapplied-observer-preparation','records':records,'budget':4096,'sourcePrefix':'file:///home/admin/nightly-jit-safety/','policyEvents':['policy-catch','policy-finally','policy-throw','policy-throw-stack'],'limitations':['Not compiled or run in current full browser.','Current inherited main loop handles pending interrupt before observer; interrupt means generated Wasm returned Interrupt, not cancellation completion.','NoEntry out storage is not read; bailout/run fields report actual output.','Policy events describe the actual existing rejection before disableBaselineCompile; source scan is diagnostic only and deduplicated.','Incremental event only proves skip at actual active state; verified incremental GC driver still required.','Diagnostics add syscall/stdio overhead; performance arms must use identical observer setting (prefer off).']},indent=2)+'\n')
 print(json.dumps({'kind':'preparation','records':records}))

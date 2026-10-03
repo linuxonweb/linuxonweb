@@ -50,7 +50,69 @@ globalThis.NightlySafetyDriver = {
       if(result?.return!==8386560||!offsets?.some(o=>o.count>0))throw Error('missing real nonzero coverage');
       emit({event:'coverage-done',result:result.return,offsets});
     } finally {dbg.removeAllDebuggees();}
-    emit({event:'driver-done',ok:true,incrementalGC:'pending verified driver',interruption:'pending verified slow-script driver',nativeTLSStack:'pending native probes'});
+    emit({event:'driver-done',ok:true,incrementalGC:'separate optional operation; unverified',interruption:'pending verified slow-script driver',nativeTLSStack:'pending native probes'});
+  },
+  // Separate optional operation before Debugger/coverage. The caller must tee
+  // actual Firefox stderr into this guest file, with complete unrotated logs.
+  // No supplied manifest or elapsed/allocation heuristic establishes GC state.
+  async incremental(targetWindow, observerLogPath) {
+    const Cu=Components.utils;
+    const target=Cu.waiveXrays(targetWindow);
+    if(!target?.nightlySafetyMainDone||!target.njs_sum)throw Error('direct same-process fixture content window required');
+    const label=target.nightlySafetyLabel;
+    const prefix='/home/admin/nightly-jit-safety/'+label+'/';
+    if(typeof observerLogPath!=='string'||!observerLogPath.startsWith(prefix)||observerLogPath.includes('/../'))throw Error('owned absolute guest stderr log path required');
+    Cu.importGlobalProperties(['IOUtils']);
+    const io=globalThis.IOUtils;
+    if(!io?.read)throw Error('actual privileged IOUtils required');
+    const emit=o=>console.log('NJS_PRIV '+JSON.stringify({label,...o}));
+    const source='file://'+prefix+label+'-main-sum.js';
+    const decode=bytes=>new TextDecoder().decode(bytes);
+    const read=async()=>{const bytes=await io.read(observerLogPath,{maxBytes:2097153});if(bytes.length>2097152)throw Error('bounded raw observer log exceeds 2MiB');return decode(bytes);};
+    const observations=raw=>raw.split('\n').map((line,index)=>({line,index})).filter(o=>o.line.startsWith('PBLJIT_OBS ')).map(({line,index})=>({index,...Object.fromEntries([...line.matchAll(/(\w+)=([^\s]+)/g)].map(m=>[m[1],m[2]]))})).filter(o=>o.file===source&&o.line==='1');
+    const integer=(value,min,max)=>/^-?\d+$/.test(value||'')&&BigInt(value)>=min&&BigInt(value)<=max;
+    const identity=o=>integer(o.tid,1n,4294967295n)&&/^0x[0-9a-f]+$/i.test(o.tls||'')&&BigInt(o.tls)>0n&&BigInt(o.tls)<4294967296n&&integer(o.epoch,0n,18446744073709551615n);
+    const output=o=>integer(o.fn,1n,4294967295n)&&integer(o.sp,1n,4294967295n)&&integer(o.pcDelta,-2147483648n,2147483647n)&&integer(o.ic,0n,4294967295n);
+    let testing,started=false;
+    try {
+      const before=await read();
+      const prior=observations(before);
+      const install=prior.find(i=>i.event==='install'&&identity(i)&&integer(i.fn,1n,4294967295n)&&i.kind==='-1'&&prior.some(r=>r.index>i.index&&r.event==='run'&&r.kind==='1'&&identity(r)&&output(r)&&['tid','tls','epoch','fn'].every(k=>i[k]===r[k])));
+      if(!install)throw Error('missing actual source-specific pre-GC install/run identity');
+      testing=Cu.getJSTestingFunctions();
+      for(const name of ['startgc','gcstate','finishgc'])if(typeof testing[name]!=='function')throw Error('current Cu testing API unavailable: '+name);
+      if(testing.gcstate()!=='NotActive')throw Error('requires initially inactive GC');
+      emit({event:'incremental-start',api:'Cu.getJSTestingFunctions().startgc',workBudget:1,source,observerLogPath});
+      // Exact current API uses a WorkBudget; no unbounded slice or retry.
+      const active=new Set(['Prepare','MarkRoots','Mark','Sweep','Finalize','Compact','Decommit','Finish']);
+      let beforeState,afterState,result;
+      started=true;
+      try {
+        testing.startgc(1);
+        beforeState=testing.gcstate();
+        if(!active.has(beforeState))throw Error('no actual active incremental state before fixture loop: '+beforeState);
+        result=target.njs_sum();
+        afterState=testing.gcstate();
+        if(result!==8386560||!active.has(afterState))throw Error('incremental state/result not retained across fixture loop: '+afterState);
+        emit({event:'incremental-loop-done',beforeState,afterState,result});
+      } finally {
+        // Finish owned GC before asynchronous file I/O can start another GC.
+        testing.finishgc();started=false;
+        emit({event:'incremental-cleanup',state:testing.gcstate()});
+      }
+      if(testing.gcstate()!=='NotActive')throw Error('finishgc did not restore inactive state');
+      const after=await read();
+      if(!after.startsWith(before))throw Error('raw guest observer log rotated or changed');
+      const during=observations(after.slice(before.length));
+      const skip=during.find(o=>o.event==='skip-incremental'&&identity(o)&&o.tid===install.tid&&o.tls===install.tls&&o.fn==='0'&&o.kind==='-1');
+      if(!skip||during.some(o=>['install','run','bail','noentry'].includes(o.event)))throw Error('missing real source-specific incremental skip or forbidden specializer entry');
+      emit({event:'incremental-done',ok:true,beforeState,afterState,result,source,observerLogPath,rawBeforeCharacters:before.length,rawAfterCharacters:after.length,skip});
+    } catch(error) {
+      emit({event:'incremental-error',error:String(error)});
+      throw error;
+    } finally {
+      if(started&&testing){try{testing.finishgc();emit({event:'incremental-cleanup',state:testing.gcstate()});}catch(error){emit({event:'incremental-cleanup-error',error:String(error)});throw error;}}
+    }
   },
   // Opt-in separate operation. Actual content timer runs without a Debugger.
   // Browser slow-script machinery terminates through its interrupt callback.
