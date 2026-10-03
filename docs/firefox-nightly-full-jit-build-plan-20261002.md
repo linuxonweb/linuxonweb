@@ -171,8 +171,13 @@ Reinspect the owner's status/process group before beginning the transition.
    may invalidate most of them, and stale-plus-new copies can increase peak use.
    Read-only downloads offer simpler reuse. No Firefox128 object is eligible.
 
-4. **Derive the actual linked Wasm contract, then fpcast and package.** Keep
-   raw linked Firefox and complete dist/bin immutable. Inventory imports,
+4. **Derive the actual linked Wasm contract, then fpcast and package.**
+   Use tools/nightly-jit-prep/inspect-wasm.py on the actual raw Firefox and its
+   later fpcast image (the latter with --require-fpcast). Its actual-helper
+   verification is docs/firefox-nightly-wasm-abi-inspector-20261003.md; those
+   counts are examples, not the browser ABI. Preserve separate validation.
+
+   Keep raw linked Firefox and complete dist/bin immutable. Inventory imports,
    defined/exported memory/table/globals, limits, element segment offsets,
    target features, type/call_indirect signatures and stack/TLS exports from
    this binary. No current Nightly table minimum, stack initializer, memory

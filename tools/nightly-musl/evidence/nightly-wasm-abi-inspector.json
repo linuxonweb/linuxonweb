@@ -1,0 +1,75 @@
+{
+  "claim": "Wasm ABI inspector preparation verified on actual native Nightly helpers and actual generated JIT module",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/wasm-inspector-review-run1.json",
+    "bytes": 14405,
+    "sha256": "4f43f3cac72d305df282a97e5cfa416435d29c0bfd7b41150d56d80f9c325b18"
+  },
+  "checksPassed": 89,
+  "examples": [
+    {
+      "name": "inspect-pingsender-run2",
+      "report": {
+        "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-pingsender-run2/result.json",
+        "bytes": 19396,
+        "sha256": "c5763bc531190a92830ffa1d81aa66879bbf45c9c142e2eb610cec8a3bc8ec4a"
+      },
+      "functions": 616,
+      "elements": 592,
+      "maxElementParameters": 8,
+      "pass": true
+    },
+    {
+      "name": "inspect-pingsender-negative-run2",
+      "report": {
+        "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-pingsender-negative-run2/result.json",
+        "bytes": 19504,
+        "sha256": "7b9add934c37e0f3c48f475dcb3c98b1c4dbf033ef6dce4422bda8aac18047f8"
+      },
+      "functions": 616,
+      "elements": 592,
+      "maxElementParameters": 8,
+      "pass": false
+    },
+    {
+      "name": "inspect-pingsender-fpcast-run2",
+      "report": {
+        "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-pingsender-fpcast-run2/result.json",
+        "bytes": 16484,
+        "sha256": "fd8be63c783bb9b1cde3174ed6e6a9a5a2b4e68159b615558f14dd94fae7d387"
+      },
+      "functions": 972,
+      "elements": 592,
+      "maxElementParameters": 23,
+      "pass": true
+    },
+    {
+      "name": "inspect-gfxtest-run1",
+      "report": {
+        "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-gfxtest-run1/result.json",
+        "bytes": 18939,
+        "sha256": "64dd362fc6acc170294e82bcd760260c425695dadf4d69f364f42f885277abb5"
+      },
+      "functions": 1154,
+      "elements": 823,
+      "maxElementParameters": 9,
+      "pass": true
+    },
+    {
+      "name": "inspect-emitted-args-run1",
+      "report": {
+        "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-emitted-args-run1/result.json",
+        "bytes": 5340,
+        "sha256": "23daf6641fb0f48a3ec22e3805e9cdee742234bfdf5ccca0acfc80ccdef455e0"
+      },
+      "functions": 1,
+      "elements": 0,
+      "maxElementParameters": 0,
+      "pass": true
+    }
+  ],
+  "nightlyBrowserAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "guestAcceptance": false,
+  "releaseAcceptance": false
+}

@@ -2,6 +2,14 @@
 
 2026-10-03: the user resumes the active goal, JIT first, then GPU. Work remains
 inline under the latest user-provided no-subagent instruction. Nightly JIT
+ABI inspection now has tools/nightly-jit-prep/inspect-wasm.py, measured on
+actual native pingsender/gfxtest and a broad emitted loop. The actual helper
+fpcast+validator pass; all592 indirect entries use23i64->i64, and requiring
+that contract on the raw helper fails. Root89 input/semantic predicates pass.
+No browser ABI or guest acceptance is implied; apply to linked Firefox later.
+See docs/firefox-nightly-wasm-abi-inspector-20261003.md.
+
+Nightly JIT
 preparation now has an explicit --coverage broad mode: source-derived239
 opcodes, arguments/doubles/arrays/properties/globals/Math paths and current
 Watchtower/PBL cursor hooks. Actual ASan/UBSan+Wasm emitter1969/0; integer
