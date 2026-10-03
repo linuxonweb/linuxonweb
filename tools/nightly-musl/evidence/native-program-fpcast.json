@@ -1,0 +1,28 @@
+{
+  "claim": "Real linked helper JIT ABI transform preserves memory/table/stack contract; not Nightly browser/guest acceptance",
+  "rootReview": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-program-fpcast-review-run1.json",
+    "bytes": 11077,
+    "sha256": "ff5bf366414ece38b068a8f67f0745c909c44019f9904781d8b054af23efd607"
+  },
+  "checksPassed": 47,
+  "commandReport": {
+    "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/export-contract-fpcast-run2/result.json",
+    "bytes": 2603,
+    "sha256": "84acb1886b327bb9151e7bc4b0ffbc6ca47a898efa9aeb442189d448ffdb13b1"
+  },
+  "inspectorReport": {
+    "path": "/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/inspect-gfxtest-export-contract-fpcast-run2/result.json",
+    "bytes": 17182,
+    "sha256": "70bed44cc3457ed80a73911a1941ea1a026757445c3b30f4e0f6313b9be9c6f9"
+  },
+  "rawElements": 823,
+  "transformedElements": 823,
+  "uniformSignature": "(23 i64) -> i64",
+  "sharedMemoryPreserved": true,
+  "tableLimitsPreserved": true,
+  "stackInitializerPreserved": 8388608,
+  "guestAcceptance": false,
+  "nightlyJitAcceptance": false,
+  "releaseAcceptance": false
+}

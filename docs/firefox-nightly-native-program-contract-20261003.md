@@ -54,3 +54,13 @@ Next: continue natural shared-header rebuild, then real final Firefox links,
 validation and baseline guest startup. Fresh complete PBL/JIT compilation,
 benchmarks and guest acceptance follow. No Nightly browser/JIT/GPU acceptance
 or deployment is established by this packet; public Sites v10 stays unchanged.
+
+The real helper also passes the exact planned Binaryen transform with
+--all-features --disable-compact-imports --pass-arg=max-func-params@23
+--fpcast-emu, followed by whole-module wasm validation and required-fpcast
+inspection. All823 indirect entries now use(23i64)->i64. Memory import, table
+limits/element geometry, exports and stack initializer are preserved. Raw and
+transformed files remain separate. Root native-program-fpcast-review-run1.json
+passes the predicates pinned by evidence/native-program-fpcast.json. The first
+inspection attempt failed because its scratch directory was absent; the fixed
+run uses a verified disk-backed task scratch. No guest test is implied.

@@ -13,6 +13,11 @@ native-program-contract.json. Full Firefox link/guest/JIT acceptance pending.
 Run39 terminal/reaped143/group empty after20min,189 phase object rebuilds,
 3011/3011 present,0 compiler errors,4149 frozen boundary checks pass.
 Continue full browser build; public v10 unchanged.
+The separate real helper's exact23-slot fpcast transform and validation pass;
+all823 entries use23i64->i64, memory/table/stack/exports preserved. Root review
+uses actual logs/module/dump hashes; evidence/native-program-fpcast.json.
+This is helper preparation only. Build Run40 starts j4, bounded20min, owned
+PGID1923539/unified88441; poll/reap before source edits or another build.
 
 2026-10-03: the user resumes the active goal, JIT first, then GPU. Work remains
 inline under the latest user-provided no-subagent instruction. Nightly JIT
