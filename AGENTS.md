@@ -1,3 +1,26 @@
+# Latest continuation — serial Nightly optimization, 2026-10-03
+
+Run47 j2 terminated/reaped143 at its 20-minute bound; PGID2173102 empty.
+Actual host OOM killed optimizer2175585 and four Chrome processes before
+termination. Unfinished browser outputs were removed by build cleanup. Retained
+3012/3012 native objects,552/552 inttypes consumers and763/763 Pixman consumers
+pass4153 boundary +1533 Pixman checks; native Rust archive remains pinned.
+The user added swap (host now29GiB total) and explicitly requested retry.
+
+Run48 is now LIVE: j1,7200-second bound, owned PGID2237710, unified72143;
+first optimizer2240018. Poll exact handle/group before restarting or changing
+active source/recipe. Supervisor now permits opt-in full-build timeout1200..7200
+seconds and j1. Default timeout stays1200; new full-build memory bounds are24GiB
+inherited RLIMIT_AS/group RSS,8GiB host available RAM floor,24GiB preflight,
+inherited oom_score_adj1000. Actual child guards and18 config/memory checks pass.
+Reported32GiB task cap/20GiB disk reserve unchanged. Details/evidence:
+docs/firefox-nightly-final-optimization-20261003.md and
+tools/nightly-musl/evidence/final-optimization-retry.json. Helper packaging
+committed d07aab3:36 synthetic checks, additional verified transformed executables
+required for plugin-container/xpcshell. Real Nightly build/browser/JIT/GPU/deploy
+still unaccepted; public v10 unchanged. Next full baseline package/guest gates,
+then separate fresh whole broad-PBL/JIT build. Goal active inline; no subagents.
+
 # Latest continuation — /tmp relocation and limit, 2026-10-03
 
 User requested cleanup of RAM-backed /tmp, relocation of build artifacts to

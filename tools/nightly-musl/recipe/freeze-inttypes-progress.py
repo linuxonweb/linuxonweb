@@ -3,7 +3,7 @@ from pathlib import Path
 import json,hashlib,subprocess,sys,time
 T=Path(__file__).resolve().parents[1];run=sys.argv[1];previous=sys.argv[2];status_path=T/f'status/build-{run}.json';status=json.loads(status_path.read_text())
 assert status['state']=='completed' and str(status['pgid']) not in subprocess.check_output(['ps','-eo','pgid='],text=True).split()
-assert status['phase']=='build' and status['run']==run and status['argv'][-2:]==['build','-j4']
+assert status['phase']=='build' and status['run']==run and status['argv'][-2]=='build' and status['argv'][-1] in ('-j1','-j2','-j4')
 output=T/f'status/inttypes-coherence-{run}.json';assert not output.exists()
 manifest=T/'status/inttypes-prerequisite-refresh-run1.json';original=json.loads(manifest.read_text());shim=T/'recipe/shim/inttypes.h';assert hashlib.sha256(shim.read_bytes()).hexdigest()==original['adapter_sha256']
 assert hashlib.sha256(manifest.read_bytes()).hexdigest()=='307ca97d721c1c5964db27c220346cb0c1661f77d290ada9a14645c588bed3ae'

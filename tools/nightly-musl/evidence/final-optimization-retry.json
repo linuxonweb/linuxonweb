@@ -1,0 +1,84 @@
+{
+  "checked": 1791048912.3910363,
+  "claim": "Terminal Run47 artifacts reviewed; memory-bounded serial full baseline retry launched after user-added swap",
+  "evidence": [
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run47.json",
+      "bytes": 807,
+      "sha256": "6ae29c54bb78424d28a079002e3be9fa569a27d1d95b294beffe00ffa4d45c3a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run47-boundary.json",
+      "bytes": 722053,
+      "sha256": "c1df2b77857b632de19f5d82d35d479e7bac053b52ce4effc4f97742f2124b4c"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/full-graph-estimate-run47.json",
+      "bytes": 670926,
+      "sha256": "a1ce2a5201a06a77716a19475a1afdb2834ccf2280d59c510dc0acbb06da52b0"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run47-oom.log",
+      "bytes": 2283,
+      "sha256": "eea596aa59847ca5d325ecae41d702e9f5e288637b2a5e5597dbfc18c1545fa8"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/serial-memory-supervisor-port-run1.json",
+      "bytes": 1062,
+      "sha256": "367b8d959c3820e841e9961c24bfaaa7ec3a46d7c6520746ae0be9627a16cc4b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/full-boundary-run47-review-run1.json",
+      "bytes": 441842,
+      "sha256": "4858aa5959304f88430ee1a2e034fd1b4636853a13a7394994da88fb1cf35aa4"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/pixman-header-run47-review-run1.json",
+      "bytes": 172190,
+      "sha256": "0fbc4847081e618682854a5d012b493e173578a9fecac71f86832c7d433afc89"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/phase-memory-timeout-run1.json",
+      "bytes": 3295,
+      "sha256": "c30011c2eaa65d29e7a98442e453654fe902857b7fc00d2786d3fba546442c53"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-boundary-current-reviewer-preparation.json",
+      "bytes": 2112,
+      "sha256": "71f4d69c5469aaaef6f76e723f2e5e4b884b134696d9430d395f1fff2bed35fd"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/native-boundary-current-serial-reviewer-preparation.json",
+      "bytes": 336,
+      "sha256": "c4b75dd8da6a30f0f9caa9b1038d64174e5a43168a5a34083fdb1a97243eed92"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-root-review-20261002/build-run48-live-supervisor-run1.json",
+      "bytes": 1585,
+      "sha256": "638136620ca7719c2a61f397efd8be3ed4e7f5da8cc7b90335bf58ed24627f36"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/run-phase.py",
+      "bytes": 6303,
+      "sha256": "56a9bdcd5743f74a186c2cd3324ee2ef92140be0be8ec5e395f1965c0099777a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/freeze-inttypes-progress.py",
+      "bytes": 3901,
+      "sha256": "9baeb765192c4931be34aaf5024cde3136277df345876f2da85f961ff53cd7da"
+    }
+  ],
+  "fullBuildAcceptance": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false,
+  "run48": {
+    "pid": 2237710,
+    "pgid": 2237710,
+    "unifiedSession": 72143,
+    "stateAtObservation": "running",
+    "timeoutSeconds": 7200,
+    "jobs": 1
+  }
+}
