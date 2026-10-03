@@ -106,6 +106,20 @@ NSS seed freshness, default-page integration and host-count guest gates remain
 pending. Evidence: /mnt/p6/build/firefox-nightly-package-20261002/fixture-run2
 and /mnt/p6/build/firefox-nightly-musl-root-review-20261002/package-review-run1.json.
 
+The preparatory fresh-trust init packager is implemented and reviewed in
+package-firefox-nightly-trust.py. Sixty-one fixture checks and twelve independent
+real-archive checks pass: only init changes among11,470 encoded records. Candidate
+archive d2a42c0527df52ab1cc99640f8004cfbafc92d435f8b1bb518e4de6fa3ca748c
+still contains Firefox128; never boot, promote or deploy it alone. Feed it into
+the complete Nightly packager, then the GPU homepage overlay. The new
+test-firefox-nightly-baseline.mjs runner has36 synthetic contract checks and
+four independent regression checks passing after review; it validates compiled
+identity/report/input hashes, automatic default homepage, real keyboard/download
+fixtures, persistent home, update/warm caching and per-boot host-count SMP.
+No actual Nightly browser/guest ran. Review evidence:
+/mnt/p6/build/firefox-nightly-package-gate-review-20261002/review-run1.json.
+JIT, GPU and fresh/existing-profile NSS/TLS acceptance remain separate gates.
+
 Nightly JIT preparation is ready in tools/nightly-jit-prep and
 docs/firefox-nightly-jit-prep-20261002.md. Selected overlay-run4 regenerates all
 239 opcode IDs and initially admits 42 integer operations. Host-run2 passes
