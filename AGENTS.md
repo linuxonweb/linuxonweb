@@ -140,6 +140,17 @@ Root deterministic replay/input/object review passes 33 checks at
 This is preparatory evidence only: fully configure/link PBL and run real guest
 JIT/browser/performance gates before broader JIT coverage, promotion or release.
 
+The follow-on full PBL/JIT transition is planned in
+docs/firefox-nightly-full-jit-build-plan-20261002.md. Runtime and JitOptions
+layouts plus22 conditional surfaces require a coherent full configure/build;
+never mix the preparatory three-object diagnostics into baseline archives.
+Preserve the accepted baseline and use a separate full-build task with fresh
+source/objects and completely rebased writable wrapper/cache/log paths, under
+the established20GiB full-build cap/reserve and finite j4 phases. Actual final
+sizes and Nightly table/memory/fpcast contracts remain unmeasured. Nine document
+consistency checks pass; no full PBL build or guest acceptance occurred. Initial
+integer coverage is only42ops and does not finish broader JIT acceptance.
+
 The user also requires a default local version/WebGL/WebGPU test homepage and
 force-enabled GPU defaults. Implementation is in
 `tools/guest-rootfs/firefox-gpu-check/gpu-check.html` and
