@@ -136,11 +136,19 @@ and SjLj flags, with a genuine wrappers.cpp object; this is not an original
 Run13 process capture. Root's ten retained-hash/archive/ABI/replay checks pass in
 hid-style-helper-review-run2.json; incorrect root review predicates remain FAIL
 in run1. Scoped recipes/probes/patches/evidence are in tools/nightly-musl.
-Run14 is still incomplete: Firefox's Linux-only WebGPU Vulkan interop assumes
-HAL types unavailable on this native target. Audit its exports/caller fallback
-before a narrow adapter, and wait for the owned process group to empty before
-source edits. The current static trust-anchor target archive now exists, but
-actual linked function-table/module startup and guest TLS are still pending.
+Run14 exits2 normally after~8m15s; its process group is empty before source
+changes. Actual native Stylo and trust-anchor archives compile. The narrow
+WebGPU interop adapter excludes unavailable Vulkan/dma-buf internals only on
+wasm32/Linux/musl and preserves both original Linux C exports with explicit
+invalid/fd=-1 results. Actual cbindgen output is byte-identical; C++ caller
+fallbacks reject those results. A copied complete crate and the actual Run15
+wgpu_bindings archive compile; C++ declarations link to native Rust/musl and
+validate without synthetic Global execution. Root's127 retained-artifact,
+actual-object/header/source checks pass in wgpu-bindings-interop-review-run1.json.
+This repairs baseline compilation, not GPU support. Run15 starts with owned
+PID/PGID994708, j4/20minute guard, and compiles the full Firefox Rust library;
+C++ compilation continues. Inspect actual status/process before continuation.
+Linked browser, actual module startup and guest TLS remain pending.
 
 Full-runtime Nightly packaging preparation is in
 tools/guest-rootfs/package-firefox-nightly.py and
@@ -166,6 +174,17 @@ fixtures, persistent home, update/warm caching and per-boot host-count SMP.
 No actual Nightly browser/guest ran. Review evidence:
 /mnt/p6/build/firefox-nightly-package-gate-review-20261002/review-run1.json.
 JIT, GPU and fresh/existing-profile NSS/TLS acceptance remain separate gates.
+
+NSS/TLS gate preparation now includes exact173-DER/purpose/date inventory,
+five fixed-condition TLS fixtures, raw current-header PKCS#11 probe and a
+privileged Nightly driver in tools/nightly-nss-gate. Twenty-eight preparation,
+eight CPU/proxy and seven syntax checks pass; root independently verifies all
+frozen hashes and reruns28 checks in nss-gate-preparation-review-run1.json.
+Actual trust-anchor archive SHA5ada69e6a11b458c52bfb173f4755e3c3cb0981bcf1d727c968b90492c6b767b
+contains19 native Wasm objects. No guest/browser/server/build/link/deploy runs
+occurred in that packet. Driver APIs remain unverified in the guest; module
+policy, TLS/screenshots, fresh/no-seed and stopped-profile key/auth/trust
+preservation remain pending. See docs/firefox-nightly-nss-guest-gate-prepare-20261002.md.
 
 Nightly JIT preparation is ready in tools/nightly-jit-prep and
 docs/firefox-nightly-jit-prep-20261002.md. Selected overlay-run4 regenerates all

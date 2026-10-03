@@ -1,0 +1,1181 @@
+{
+  "status": "PASS",
+  "scope": "Exact native Empty HAL Vulkan interop cfg alignment; preserved exported invalid-result ABI. Copied full current crate and actual Run15 target compilation, native C++ declarations/link validation. No GPU backend or guest rendering claim.",
+  "port": {
+    "source": "gfx/wgpu_bindings/src/server.rs",
+    "before_sha256": "301fa6d0d048fd2bbd67d1cf955b7c7512f9c4d16ec2fb5a1209e612fd3c95dd",
+    "after_sha256": "dc01b56d78e28df994c5f629c8883780c8a9e831c17934f1238e97a0c94fd08a",
+    "linux_positive_guards": 23,
+    "linux_negative_guards": 1,
+    "preserved_exports": [
+      "wgpu_vkimage_create_with_dma_buf",
+      "wgpu_vksemaphore_create_signal_semaphore"
+    ],
+    "applied": true,
+    "scope": "Exact native Linux/musl/Wasm Empty HAL excludes Vulkan dma-buf/shared-texture/semaphore interop; preserves two Linux C++ ABI exports with invalid-result/fd=-1 failure contracts, general WebGPU server and other targets"
+  },
+  "cpp_export_type_checks": 3,
+  "header_byte_identical": true,
+  "generated_header": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/wgpu_ffi_generated.h",
+    "bytes": 190663,
+    "sha256": "b8a2a6b62ad8eda80ee4a8fed64d37e7ae4d99c42f26dfaeaf9c2c879a6d2ea2"
+  },
+  "actual_target_archive": {
+    "archive": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/deps/libwgpu_bindings-bdeca7edc846935a.rlib",
+      "bytes": 16041720,
+      "sha256": "2c5cec266899910277592e66010d5857717b0be748e5d281e4a326d8a8620f55"
+    },
+    "native_wasm_objects": [
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.00msbvzffzshl2vabwxu81lha.04qyjga.rcgu.o",
+        "bytes": 66341,
+        "sha256": "2e5fa7076016966961d8116f0573c74a0d73f27c8cbc66f5f21cb308918543a0"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.00oc00uc0u7ov5mfhf0idyjgk.04qyjga.rcgu.o",
+        "bytes": 54830,
+        "sha256": "a8160f78d67850be3767ebfa9a44d141be7e9b78ab20dfd257c66ce1e5daaeb7"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.02r9hamborv8xdjs97sgwtvk8.04qyjga.rcgu.o",
+        "bytes": 35987,
+        "sha256": "114ce12e72b7c8315bea9e7b3900acdb555ac90d15d856c81c348fac2123c047"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.06icg8axlw3e3z2jolwh7v2n0.04qyjga.rcgu.o",
+        "bytes": 12926,
+        "sha256": "def1adb3f5996c4d2663d00a09762c5afdb8cc284480f7870309bfd0d3ff6691"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gekvkidkgas6hw3qz59c96id.04qyjga.rcgu.o",
+        "bytes": 2946,
+        "sha256": "e7b3ce1dbe912d07305e1087568e63e678939bad932d11551cf8dcd770ae67f8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gnlqfx52kuo620njk2dkdxuh.04qyjga.rcgu.o",
+        "bytes": 2857,
+        "sha256": "30b63da8885f3971632de3f02782c7c111f4d4efa8323e33a214c2ff8bc9b6fb"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gvjfmz2f6co9h0ksyxd6watc.04qyjga.rcgu.o",
+        "bytes": 35130,
+        "sha256": "92a799cb5caddf5e0fa45ff7e4927ee059fcb17688ee307c6415db5dd201ed35"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0hl7xb43vh89o60m0k13n3fbe.04qyjga.rcgu.o",
+        "bytes": 5480,
+        "sha256": "76c631a304e563090272a849213a47220ee4bff1cc0210513c9fd531acafa4c6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0j5bhqdto6axfusgtj4ifwedy.04qyjga.rcgu.o",
+        "bytes": 17099,
+        "sha256": "5532ef947e31fbda03d6f1e778dc08123d396f777afb7b1bcc52ede280b1a55b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0lix89cgaaqr9zbairbky6b59.04qyjga.rcgu.o",
+        "bytes": 18963,
+        "sha256": "7d11a34ca28f7d7e62a5ad2bcb21aaf657651f5d0d83c236aa43085b701ae660"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0mg75gbq8myaowb92bl6j2uhw.04qyjga.rcgu.o",
+        "bytes": 79480,
+        "sha256": "c4d23b57a0e8e7ca27f322319b196b9012b0a58ff7d780a8d5572126d338868c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0qx77v1xj1hos7re23u8dj04l.04qyjga.rcgu.o",
+        "bytes": 8408,
+        "sha256": "d42eda67fa77353b5e5ca2ed0daabdc62ec3ddcbd9e557be3b9f6447d98fa97b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0wjkbhy5cfa3koqw8x2faww3d.04qyjga.rcgu.o",
+        "bytes": 3485,
+        "sha256": "4eb3c8fdcbd322ec7cd74bbef2e23254b45b68382dad0756694f06dde8eb3c2a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.121plongcymg1ohe3q3xnok7n.04qyjga.rcgu.o",
+        "bytes": 174171,
+        "sha256": "c0df5a725295ee75046363f21280bd6fb3fa3bdeb6cdc9a5accfbc765afe9831"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.12vdio8feeq354s1ruqwkooa7.04qyjga.rcgu.o",
+        "bytes": 5544,
+        "sha256": "ecd8b83cfcd43adcf3610968166bf5cfd6de281139c577b8dc35856757e72697"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1dnef1uebk3ibte8vqyz9xgue.04qyjga.rcgu.o",
+        "bytes": 49825,
+        "sha256": "0e347afb1f68e8051ee56b0d19319c31f836b1526d6374352c973b2ed20b257a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1fglu6f2cuplp9rvlil689fh9.04qyjga.rcgu.o",
+        "bytes": 4533,
+        "sha256": "c7f9d6952254a3923e76d60fc7ce1ad01cf7639f57de38baec765a5b5f758686"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1gxlp16298dycpg2krvqs2h3p.04qyjga.rcgu.o",
+        "bytes": 37681,
+        "sha256": "7ac64ccfa1e675eae051fdd5eecab4c5fc4bb30cd811eb0977573e01310d4236"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1i36gb7y3cjage9lbx1fpzque.04qyjga.rcgu.o",
+        "bytes": 91072,
+        "sha256": "d9f3b22c6e2cadef3dc2c0d1eb943a16f5264f45d33fbec50d8e17bab127eebd"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1ky5qq17q4pu9qwajcdn7z82j.04qyjga.rcgu.o",
+        "bytes": 2619,
+        "sha256": "53733adf84589a2b3eac432848ca909982f92a374328df7200b32dc8fe08a03b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1pzsmgvagtkpe1edsee6it93s.04qyjga.rcgu.o",
+        "bytes": 2730,
+        "sha256": "2091d6f461c619b021382e6a6e2c66d7995827f2dc7af55d1b72d24f351d4d75"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1qi8vwlbwsqk3mw070xn8k9a0.04qyjga.rcgu.o",
+        "bytes": 121875,
+        "sha256": "619ffbaa2e22d8d850d13e79a2cd42f3eb8aa8b47fd65e2d8f6d946552207366"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1ugtfh7jpvgl850z1hx1do9kr.04qyjga.rcgu.o",
+        "bytes": 20806,
+        "sha256": "0e5dec16cea560914dfd28e7e1574d499ea484fea2628f2440e5369d20b2f76f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1wky4su5tnejtq1opreo82bvc.04qyjga.rcgu.o",
+        "bytes": 6586,
+        "sha256": "3bf848bdd6f4cc2fa42c44df7bf12ecb15e96fef96fe3cd6a04aa58db431bb03"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.21yslj0qyz9sqwxzhx3h19lkg.04qyjga.rcgu.o",
+        "bytes": 117481,
+        "sha256": "ad91cc46c065f8853625ae593d0a2ef77d5e8c1719ac1e32bd1496f8428fe157"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2k0chzphw6s8ibipyxv9d81p7.04qyjga.rcgu.o",
+        "bytes": 33997,
+        "sha256": "0f322aa8dc3c7379776bb1cb820a43bbf761f6f343a687934462362f6fd23276"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2lmdmiyxnwp0bgvnr2t7qk6vw.04qyjga.rcgu.o",
+        "bytes": 37731,
+        "sha256": "60a39fe2127ea05bd6c3867db82ddeef0ab403f8fb285afb437af6ad004c4d02"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2rnzkq11x9idtl2apvcwr5tda.04qyjga.rcgu.o",
+        "bytes": 14259,
+        "sha256": "5b3057c5052f60040aac943a30e11befab96bae282225d64818cd6bdea4cddf2"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2uc2c4l2y2vblgxb4yd9gvw5s.04qyjga.rcgu.o",
+        "bytes": 2684,
+        "sha256": "f4db8059c83d546741e0bb8b783a621ff283316488a5cbf5845d6e6c9c3e0643"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.312dv5iup0mjm6afa55nhi7wr.04qyjga.rcgu.o",
+        "bytes": 365406,
+        "sha256": "ec6f0f729b05229a5f9af66aac9bad8b0608890de4736313d640026a9df4ff82"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.37cfjtvdmicvuq5b2cip81dv6.04qyjga.rcgu.o",
+        "bytes": 1159,
+        "sha256": "51c719a559933df100e54d5ca1c85b9997470c2321a87387f2ffe49ad8563117"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3ct9fgf67k1a7sndqk7ij62zm.04qyjga.rcgu.o",
+        "bytes": 119030,
+        "sha256": "27f8d0f756de2091c201ecff25606ad0ecc15312f9c664679dd145f5b3532c88"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3pyzwn9zxx0vxwj1mfqvhi429.04qyjga.rcgu.o",
+        "bytes": 21657,
+        "sha256": "0b230775082699f4bb09d1d62682d247713c4351d7b8f9ae644813e54c5afea5"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3to2go59yyjgwl892s7cliwq4.04qyjga.rcgu.o",
+        "bytes": 245010,
+        "sha256": "3962c0bf9bef893343f5043084b129f5e2344f3b6dce5363f4b92093c0a33285"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.400m50x57akirdyc1wrgw1xft.04qyjga.rcgu.o",
+        "bytes": 277878,
+        "sha256": "5c57c65c8404717dfcad333a1f9e4b275f0403e32f00bf21a84e8cbb5b53a6ad"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4c5hzr7z2o1jqcj1t9bp1t3uw.04qyjga.rcgu.o",
+        "bytes": 174314,
+        "sha256": "8b763db5fb85d132b0b031233651d797ebacb400871b09d6f4d298d8b3a0ec0f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4gaul5szwn55zm6x1bavhnff7.04qyjga.rcgu.o",
+        "bytes": 9641,
+        "sha256": "5d24eb0921f43ee0684875ed3047a429fcb278862627539769beb8523d0ce3e4"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4hu4hfqbxcnny91igcci1n7hm.04qyjga.rcgu.o",
+        "bytes": 358902,
+        "sha256": "b6c0c45f761799d9f2e8cac6ba1fc38d94325a853350487c7c188fcae846d01e"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4k6zwd8l1bopimecgw62vjsmm.04qyjga.rcgu.o",
+        "bytes": 93010,
+        "sha256": "a9e6f0e995ec0ad9d2cfa69003124f9221a3bc5393b7b31c8e59678a6282a209"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.50sgxmrm9shjm2qljmt4jlplv.04qyjga.rcgu.o",
+        "bytes": 944749,
+        "sha256": "dde7e6ce69329ac538d158fd62ffdcce2ab05b779666bf54e8d870efec13503f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.54vise1s36c69kq7lshhnmare.04qyjga.rcgu.o",
+        "bytes": 22289,
+        "sha256": "730ec3ef91568c90d39fe0fa68fbd0c04c0f0028e8e064e58cd654641f8f21d0"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5dogfcfvlvs2qbs4exqcv98v4.04qyjga.rcgu.o",
+        "bytes": 140392,
+        "sha256": "9fa436102db49ab939e9917b71ec673953e797974422b1b365ebb9a24badd21c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5vfli80qudu2ryqxassgzn5od.04qyjga.rcgu.o",
+        "bytes": 87322,
+        "sha256": "63a57f3e31fa6e903593e558c6ded24c756c2f1286d0e6b935c89bf3bba88b40"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5yb0gdj20978ux5ryre7f893s.04qyjga.rcgu.o",
+        "bytes": 2750,
+        "sha256": "08fa92540e07de5f38b1ebdb7b2f1ce4c108cc0c9fc3244623f1166dde17a816"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.61bemx2441elrlntsbgy1mivu.04qyjga.rcgu.o",
+        "bytes": 15357,
+        "sha256": "b9528ccdc2496e6a40fa741539d221b59af4ede9388b3f61a6ef5776fd58bc3b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6czlhorer027r3a46pkl2bcjb.04qyjga.rcgu.o",
+        "bytes": 5982,
+        "sha256": "0665749873fcb7aaded36953e22e55a17c5679bf2a90c481e864c402229e2fd1"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6f9jb012huwarnkqg9b8uoang.04qyjga.rcgu.o",
+        "bytes": 8216,
+        "sha256": "1abe4779a43be49132fe2b5df8577b6a1a59d05829437a01d4349f578546fd10"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6ju7ddg2rftbgicslj9sv92r4.04qyjga.rcgu.o",
+        "bytes": 88499,
+        "sha256": "61e1a5719c820250a46950a652f99e610cbcfdcabf21338d0f5a9c9101d5f674"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6ow387e19zzv6kpeq4vd13jbe.04qyjga.rcgu.o",
+        "bytes": 47912,
+        "sha256": "4b172ad998a09ed32f48f868c83f852c9918193a81fd9c03aa763ed808256a75"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6v0b18g664tbfpcvf4q3yozyi.04qyjga.rcgu.o",
+        "bytes": 45802,
+        "sha256": "7c463df6ae821b535ca1b8f875d7423eed39916558999c53f3ef2f79daa25cc3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.75yr6rzdrpi2qz88humkuszab.04qyjga.rcgu.o",
+        "bytes": 19219,
+        "sha256": "e99e3ecea5511817743aeda5fc04b086f643165ae2f7de7085cc1a984caee677"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.77bw57h1o96xfgtdfy4sgugof.04qyjga.rcgu.o",
+        "bytes": 107817,
+        "sha256": "7c1f99c5a5ddf1cec8d8c789c48c623a7acf9a79cc5c5d78af67dfe157bcc540"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.7escjajiext7jut965m5i8jzg.04qyjga.rcgu.o",
+        "bytes": 176512,
+        "sha256": "febef68c9f8de0782f66f78209fa2d5f4387e509096ae021ef1c4304cc7a5e2a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.7q1xyqdmxh80i1jl7lmnnk9dc.04qyjga.rcgu.o",
+        "bytes": 20892,
+        "sha256": "9562a010c9904dcaf338d143b28346ae5591a0bbd119bf23abc5d3c5c605d7bc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.85khf8qagy4zl1ru2vo3ejfmx.04qyjga.rcgu.o",
+        "bytes": 7316,
+        "sha256": "c5702cf21b0a5dac3f435dd99047613a6ee672e28fa4e744443c7e103379b0b4"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.87z3h022wzi18udv8sbrpdua0.04qyjga.rcgu.o",
+        "bytes": 402132,
+        "sha256": "a644b4edb33b7ad24c458ecc6f5c18bad7d2af1307351692ba1a2bcac7c3966b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8g1qnw2uco5i3wzwrikeqbku9.04qyjga.rcgu.o",
+        "bytes": 37692,
+        "sha256": "f62edf8e6750e23bcd3d9c447a88bbb6cf98c007db659849250a5ae96837997d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8ivfdfmk4i6u4p5p1qp5yca8p.04qyjga.rcgu.o",
+        "bytes": 784621,
+        "sha256": "43b312650ca061e19d29a7b7631a2e819df2cfd45b880e5d9fed860786f1dc65"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8r8kfzskfi76yk7ikds6auvuk.04qyjga.rcgu.o",
+        "bytes": 366338,
+        "sha256": "59f0663dcbd0a85151ce0f63f4b65cdba6e5b02a5ee21029a50509fec7be4291"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8r9lp3kfemu47jmdwl5nqdipe.04qyjga.rcgu.o",
+        "bytes": 226934,
+        "sha256": "0f434b93354a934c6cf96b2e8eb04f085531f104a0411bb1e12421a9b00ca0e8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8tgnum5mwqvicjm2gmqgb944z.04qyjga.rcgu.o",
+        "bytes": 217457,
+        "sha256": "aa75770cea88b56410dbb90206001f6bb85c4948dd0391f265f4eca90a51b9ab"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.9a7n8msiiztd7b3eusievq9a9.04qyjga.rcgu.o",
+        "bytes": 80591,
+        "sha256": "6d1a0262402f9de77aef4a234d156dd0826bd60c86293b8d5c3351f55d3c045e"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.9nquph1bvyf0upkh73f8tnkay.04qyjga.rcgu.o",
+        "bytes": 55408,
+        "sha256": "ee29626214085ab564dcb6f144ce632aafc6129aa6507cf1a04d9231da978216"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a6jnhf6zn5k4hw1m9etjjxwz9.04qyjga.rcgu.o",
+        "bytes": 18186,
+        "sha256": "8f1178a9338bdc8c5ec7a6c33ea66663ce64e188adc01b811ae39e6cb6ebd329"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a93lcqlctbibt54a3m3guembz.04qyjga.rcgu.o",
+        "bytes": 65799,
+        "sha256": "959496f80a9de64733caa129138c4e0ce59fa40ffb0f6b03ebb46e12eb3dcdfa"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a9w5n8rha5b0ppmnrrzrwgwd1.04qyjga.rcgu.o",
+        "bytes": 3661123,
+        "sha256": "4ed95cd007d121b8d1bce8691bc294cfd92d9c8c0355463c93b51b149f60220b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.aasvq2x3qdb0f1nnkf5uqoo9c.04qyjga.rcgu.o",
+        "bytes": 24489,
+        "sha256": "b126575b00113f2951c23c7e2c3b9ddc8f2964becfb490feaea0fc77857123d6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ai5n515pjdkyyl381cgnzmhu7.04qyjga.rcgu.o",
+        "bytes": 116207,
+        "sha256": "687581681e7cbcdc16ce8631ef0da84643fee22176e5cf7efb5f0dc73406a951"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ajnfptyhmxhntglw949194b38.04qyjga.rcgu.o",
+        "bytes": 48140,
+        "sha256": "051105d3d32cb50b9887536631fe5f172645282cf48b6cc969a158577f80246b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ary4z2y1lp6ani3lh4bfg7puh.04qyjga.rcgu.o",
+        "bytes": 83748,
+        "sha256": "e804876344fb83528ce586e0dbd2d9d86093b6b0b704f93c8d929f3569fddf9b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ateypqhrcmxz13w8vpkpdy09v.04qyjga.rcgu.o",
+        "bytes": 16957,
+        "sha256": "829243990b3da24eed583545e3a2e89d38202296ed28983a656b8c60da91beae"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.axzifzgwr9wplen0pthbh845c.04qyjga.rcgu.o",
+        "bytes": 18363,
+        "sha256": "2d97b73bbbc795b0a177fdffcd07df971a65417d2c859ac9f1a326cb7dbc94b1"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.b2ehc71od8jv10q6ffian74hw.04qyjga.rcgu.o",
+        "bytes": 27586,
+        "sha256": "8abed9917fb20968270c819e286c3ba60f9c85c41eee4cd7ad5b13a78c75a672"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.b3vnfszv3vd8b3r8k6we0kfrf.04qyjga.rcgu.o",
+        "bytes": 32145,
+        "sha256": "19348bc1adc1886ba7f152b2253ed87a5419deb26ac1136c95fa4d099ac6a7a6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bdgcte5fi0k61aqagwar04040.04qyjga.rcgu.o",
+        "bytes": 17184,
+        "sha256": "fa68b730ebf1e5695c41a3be8edcf029e048052c3966ebb0409fdf7a32100f49"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bl4omfjzxmw2vzkhrmmo56wv9.04qyjga.rcgu.o",
+        "bytes": 3613,
+        "sha256": "97e726873be2179a3047daad47a6d1b99bbf1b32c835b1f1e050e2ce5f06a25b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bzvdod9k1kz1imbdbo61g1cvp.04qyjga.rcgu.o",
+        "bytes": 34997,
+        "sha256": "1a0a11e8e679f0e5ce6de6b666bf00da2466bad62e3d8c656963641e9494aacc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c1pk9ephpuwkwxfz3kagltrn8.04qyjga.rcgu.o",
+        "bytes": 8467,
+        "sha256": "4f05d844986e7df9d00234e85a3e191834a07d581afa147ede426f9f230f76d4"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c7822qejte8znk01gy7z288cq.04qyjga.rcgu.o",
+        "bytes": 20546,
+        "sha256": "ecc1e86f347cdbe0667e7685f75a2f07e6c769a0a01ad28620663fc4769f30c8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c7odfx0x59jzqg5uum75jddlf.04qyjga.rcgu.o",
+        "bytes": 2991,
+        "sha256": "bf8cb210a1d28e3dbe7ceac62e211525648e1fe13dd18a044326b952e5bba3b7"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ceimjf7kcwen5idrd29lenknc.04qyjga.rcgu.o",
+        "bytes": 138894,
+        "sha256": "f00a65e741e88b6e97051adeb0a09e33a5a2702b97edb13ecf0f00f252438efe"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cg3lppfp7megfftv48nqetenx.04qyjga.rcgu.o",
+        "bytes": 10935,
+        "sha256": "c14c3bd97d907101062d2f2ad10ebbc56bcaf790506c727380308acdbf707d6d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ch842fsq54bnvcvbbv25zwwco.04qyjga.rcgu.o",
+        "bytes": 3159,
+        "sha256": "8b74e471e04aa02775fd5dedc56f2f4e4f07559c5ec5d100a63a6a7695d482c9"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cl7wufxbv6sxrlzxakejdm31v.04qyjga.rcgu.o",
+        "bytes": 837074,
+        "sha256": "6d1eb9197e30a340e9fff2ebdad4b951b96578f12f4d0b4d221f807a518ae49c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cmrflq4gg9ih0sjslm96hugj7.04qyjga.rcgu.o",
+        "bytes": 16774,
+        "sha256": "0082eebff05897deaafcc6c903235cbd2390e69901621c09e5a96edff334fb96"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cnydp1d5v2slssvtbjhw7uf3w.04qyjga.rcgu.o",
+        "bytes": 731629,
+        "sha256": "a6f6b27cf5c29876747c0faa2d73cd1975a51eaff5c67203f2848ec4d0ae951b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.d2uw84d6t784wiibm52o727uh.04qyjga.rcgu.o",
+        "bytes": 112291,
+        "sha256": "ffc9ac22229ec43d2bdb3e8bf199b054fe99a574636895893415a5699c21f710"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.d6k15rbvv32u3jkr2c4hlisox.04qyjga.rcgu.o",
+        "bytes": 234841,
+        "sha256": "db5b033e8762221ef2071b84bf3c84deb1b2ea3084f3bb0c32cfc5c72658ac1a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.dh25kqdtbfdibhkdvv8ftaxl3.04qyjga.rcgu.o",
+        "bytes": 119367,
+        "sha256": "0043bd89456d0041111af6057f734e3996a7e73191e7dbb3fd422f0b693a389e"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.drp5wpky4v5pzlo5zhvnpdiph.04qyjga.rcgu.o",
+        "bytes": 3837,
+        "sha256": "95cd4bb27ecfa38b3f500c4cde0b211163a7c2071d2b9963599fac71b49a8788"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.dvwdondtj7pb8rbmv5rf9opcb.04qyjga.rcgu.o",
+        "bytes": 31555,
+        "sha256": "01949fa0d8787f77c7f020efa217b4b63a8899374ef5628f43281911ceb552f8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e0upkkjlkoivv45tx3u5rlf8q.04qyjga.rcgu.o",
+        "bytes": 12568,
+        "sha256": "5e7f919532396ae1ee911199a76913107ef008e26623b9e7dc9888be7cf2a92f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e2o4h83lns6enf3kjx5z3xl7h.04qyjga.rcgu.o",
+        "bytes": 40214,
+        "sha256": "a6171d3b0486ff1c4e2baf7c639517ad4e9ce1c91852e25e028e25ebe757ce4f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e576clcevz9qf7gyz4594u1t2.04qyjga.rcgu.o",
+        "bytes": 15755,
+        "sha256": "f3a5d7bb68cd9af8b079c75b89ab706e2de94305d92baf76c71f61a6375de540"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ecckgmtjgt3qokfb1cao1epop.04qyjga.rcgu.o",
+        "bytes": 58109,
+        "sha256": "fa39d03b25330d2df4fe6139357462fc1d1321e93fb63b20a88c88bc1e74df91"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.edqtzidso6bnp89yf2g93xr7j.04qyjga.rcgu.o",
+        "bytes": 72223,
+        "sha256": "424089bf4db9e84e8b5a0e1b074277e628c67b1734176dc9da9c1d89b7e02255"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.eezvipbloaaen2y0xdgvx4oad.04qyjga.rcgu.o",
+        "bytes": 21535,
+        "sha256": "0a25ab08121c7691d28c2ba56ea3485ac8f1de29f8f41625c6de231af2ff07cc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.em9neal8oytkeko1sg0l7blq5.04qyjga.rcgu.o",
+        "bytes": 202187,
+        "sha256": "711ffe81fb4487435651ead6cea08b40018af37d13a986e8bcc1596b4deba322"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ep0cz5y5k6kt6g7ye32htawxy.04qyjga.rcgu.o",
+        "bytes": 14565,
+        "sha256": "3eb7e79770fffe60980ad49c46012fc36e3f1ccbedb6a673a77df82b27263c0d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.er7f0w33gjkiwdxqj0sq9wltn.04qyjga.rcgu.o",
+        "bytes": 30732,
+        "sha256": "7a82045a4a276973dfa2704dbb2c59449f4511e4fe98d56937d9055b3fa79f71"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.et9uz1vnsdlvomff0i5bnvtvi.04qyjga.rcgu.o",
+        "bytes": 89085,
+        "sha256": "b1f83240518d9c3481e57d521b183365f9b956625f7efb896ed80bd2bb7c977a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ewnzo71set9ck2h2yea1jbjg7.04qyjga.rcgu.o",
+        "bytes": 3902,
+        "sha256": "11b4968b11d87bc4bff75da6cad4df5f6cef11d2a26f699e06c999833ed3bcd0"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f2vttjxdz7rrqwz2ok0dfvh27.04qyjga.rcgu.o",
+        "bytes": 41279,
+        "sha256": "294203224ded6e7b160af0293d20ad0d198c0f91ab5eb637d9d672f569fce289"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f4o4bvf7wrg5j4k21lbcn9bom.04qyjga.rcgu.o",
+        "bytes": 105314,
+        "sha256": "81f76313a72c733d718dc14f96b1e2c037d181637d94077878c3c586e64c760b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f5fmk1vm4l016ss7vhuse8lrl.04qyjga.rcgu.o",
+        "bytes": 4938,
+        "sha256": "9b2d436310af2035cdaf2082e780ddf0b4afa6119c2b6a0cc674ca74ade01f87"
+      }
+    ]
+  },
+  "copied_preflight_archive": {
+    "archive": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/out/libwgpu_bindings-bdeca7edc846935a.rlib",
+      "bytes": 16052140,
+      "sha256": "baa0fd6fe73caaffe6c080f0b3069c3042e075fccbbe199472f553b21ba26312"
+    },
+    "native_wasm_objects": [
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.00msbvzffzshl2vabwxu81lha.0rcagf1.rcgu.o",
+        "bytes": 66431,
+        "sha256": "b41103b8ba2f65d663110446c7a5ba65a70887c190d3c84da87a7a5ba66a0364"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.00oc00uc0u7ov5mfhf0idyjgk.0rcagf1.rcgu.o",
+        "bytes": 54918,
+        "sha256": "bdafef575dc60352f6fedf5dd1a9305b3335d16d1e9bcdd25d6d05e8d0245e8d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.02r9hamborv8xdjs97sgwtvk8.0rcagf1.rcgu.o",
+        "bytes": 36075,
+        "sha256": "741836e4fd6792c7a28d377da7ca6faeb2f80997c921c2a425aeb4d525884571"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.06icg8axlw3e3z2jolwh7v2n0.0rcagf1.rcgu.o",
+        "bytes": 13014,
+        "sha256": "4a333b1b699c5e146d0e29e9aee41962c64ec1985002c98da50ef1069a73a4ef"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gekvkidkgas6hw3qz59c96id.0rcagf1.rcgu.o",
+        "bytes": 3034,
+        "sha256": "e33ce389cd8b5cff0b17ae6ea1781120e69e4e6c7f4f7b48622e0e7dda4b9d3f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gnlqfx52kuo620njk2dkdxuh.0rcagf1.rcgu.o",
+        "bytes": 2945,
+        "sha256": "d175d8913867230bf9edae4791ef2ce07bd0d2eecc368346f7197db06899a10a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0gvjfmz2f6co9h0ksyxd6watc.0rcagf1.rcgu.o",
+        "bytes": 35218,
+        "sha256": "6329bbb4b51a4523c8e3227578dbe28f2bf94651a765bf272ca565f7d3c32a3f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0hl7xb43vh89o60m0k13n3fbe.0rcagf1.rcgu.o",
+        "bytes": 5568,
+        "sha256": "c19aa19a40bdd925939fce81af4c61d331da25b1b5e4930d8bf8e37e325d6ef2"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0j5bhqdto6axfusgtj4ifwedy.0rcagf1.rcgu.o",
+        "bytes": 17187,
+        "sha256": "f6fa25afae0432f918d2d3a75c8660818080c419b53f65c321f76a88ee58b88f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0lix89cgaaqr9zbairbky6b59.0rcagf1.rcgu.o",
+        "bytes": 19051,
+        "sha256": "d179e7530418880aed05f9ff2d37a5ad9a8e0db53e3868b4eeca1109e6e2690e"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0mg75gbq8myaowb92bl6j2uhw.0rcagf1.rcgu.o",
+        "bytes": 79570,
+        "sha256": "c17daace875e724f8ce8a20146d09d3980656073a9a7d810a2086e2edf11f2e6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0qx77v1xj1hos7re23u8dj04l.0rcagf1.rcgu.o",
+        "bytes": 8496,
+        "sha256": "ccc8c01ec6adb2ece1581e78664fb43a68a707ddc29d3518a32eac2a9b943b6d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.0wjkbhy5cfa3koqw8x2faww3d.0rcagf1.rcgu.o",
+        "bytes": 3573,
+        "sha256": "4ca3ce5e34cc2bdb5ab5c55a9bbf4aed3811cdde7494593e05eb0e7ed5cdf673"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.121plongcymg1ohe3q3xnok7n.0rcagf1.rcgu.o",
+        "bytes": 174267,
+        "sha256": "50bb1a1bfed94e10a55673201e166e1410ebeda4e877aec1aa66102fb9f20161"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.12vdio8feeq354s1ruqwkooa7.0rcagf1.rcgu.o",
+        "bytes": 5632,
+        "sha256": "0565aac07e129fa7b857fe74fe3fa38ac7de10202b98da6e3e873f9bb9bbca6d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1dnef1uebk3ibte8vqyz9xgue.0rcagf1.rcgu.o",
+        "bytes": 49980,
+        "sha256": "99dd3080be6321c980cbb270951a2936d67503f873804c1099268380a19edf7f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1fglu6f2cuplp9rvlil689fh9.0rcagf1.rcgu.o",
+        "bytes": 4621,
+        "sha256": "6d1fdaa7f7cee423f1730491387b03aceed278847f174772f74b42eb66829afb"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1gxlp16298dycpg2krvqs2h3p.0rcagf1.rcgu.o",
+        "bytes": 37769,
+        "sha256": "4f423dc847f95748180c23682be0a0e6a9eb3b69b2d086497928984d08d43a31"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1i36gb7y3cjage9lbx1fpzque.0rcagf1.rcgu.o",
+        "bytes": 91161,
+        "sha256": "5d3baaf9d6f3cd0997f307279771a5cc35ff3c24dc2b12d56eaadd8471da9187"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1ky5qq17q4pu9qwajcdn7z82j.0rcagf1.rcgu.o",
+        "bytes": 2707,
+        "sha256": "aef145df22c9f4f8e4021e8e95bf262320009ba181de79cb12973c9101686e4c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1pzsmgvagtkpe1edsee6it93s.0rcagf1.rcgu.o",
+        "bytes": 2818,
+        "sha256": "d9b81d10ab762de24e7e8142b0408e8f8f03b3fae012d9e29461c3e6bab464e3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1qi8vwlbwsqk3mw070xn8k9a0.0rcagf1.rcgu.o",
+        "bytes": 121963,
+        "sha256": "f1b259fd0c9bb2ab97f35302fa62a5f6256a2a6040c16797afd7ed4a5220e8b6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1ugtfh7jpvgl850z1hx1do9kr.0rcagf1.rcgu.o",
+        "bytes": 20878,
+        "sha256": "df0923daf5ab0232f9999e93748e51e408e6783edb1a38f8cf4ef4fbc294e045"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.1wky4su5tnejtq1opreo82bvc.0rcagf1.rcgu.o",
+        "bytes": 6674,
+        "sha256": "9c80f0fa2321f1dcc0f3d5779128b7a7f32d54aa0d28868860c53503778e49d8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.21yslj0qyz9sqwxzhx3h19lkg.0rcagf1.rcgu.o",
+        "bytes": 117558,
+        "sha256": "81a3d8313dc486efa38b0e76360883f5dd0b01f338311a901f54ab809a8b151e"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2k0chzphw6s8ibipyxv9d81p7.0rcagf1.rcgu.o",
+        "bytes": 34085,
+        "sha256": "db654443fdeff23afcb0681f85f6b61f1e3b318bfbad1ce1b832571e5014458f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2lmdmiyxnwp0bgvnr2t7qk6vw.0rcagf1.rcgu.o",
+        "bytes": 37819,
+        "sha256": "000274f760b16ab5ef976bfa636889510aab937001911e79e7ead0b622f2f2cc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2rnzkq11x9idtl2apvcwr5tda.0rcagf1.rcgu.o",
+        "bytes": 14347,
+        "sha256": "d98d38f11b5af67336684208e34a09816cb3cd95f6246aeae761c220df944b47"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.2uc2c4l2y2vblgxb4yd9gvw5s.0rcagf1.rcgu.o",
+        "bytes": 2772,
+        "sha256": "6cd36e4576398aa0c18d322821d5d977d3a18c8eee44a0832aa719dd2272aa33"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.312dv5iup0mjm6afa55nhi7wr.0rcagf1.rcgu.o",
+        "bytes": 365496,
+        "sha256": "201789a0d2bad685a1f7de195fea1b8a4833a43e400415a4b510f85d9dc1e5e7"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.37cfjtvdmicvuq5b2cip81dv6.0rcagf1.rcgu.o",
+        "bytes": 1229,
+        "sha256": "59d27f0c016cf468974e0ad722177fb579893509909dbf7c47234d19df8ebfee"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3ct9fgf67k1a7sndqk7ij62zm.0rcagf1.rcgu.o",
+        "bytes": 119107,
+        "sha256": "dfe412bc983fb99a1f666e0682aa09e14d9fc3a7ccc0fa04928b6deffc74f558"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3pyzwn9zxx0vxwj1mfqvhi429.0rcagf1.rcgu.o",
+        "bytes": 21733,
+        "sha256": "8532856599bd68dbc2ee4b344c9f04ecc07cbb2e36c363ee87d490a78d69da12"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.3to2go59yyjgwl892s7cliwq4.0rcagf1.rcgu.o",
+        "bytes": 245108,
+        "sha256": "1d3840896b877499affc2bce6ac51bee87a99dac8bb959841f6f0ac772dfee43"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.400m50x57akirdyc1wrgw1xft.0rcagf1.rcgu.o",
+        "bytes": 277954,
+        "sha256": "67009f84a5c1e8e48475d64168886d8118eb6f60e6324158078c99d82a064732"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4c5hzr7z2o1jqcj1t9bp1t3uw.0rcagf1.rcgu.o",
+        "bytes": 174611,
+        "sha256": "7a80a6b1be4e1fa1990b6ccad065574ba075c316b92d9128f08d38d48edbf002"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4gaul5szwn55zm6x1bavhnff7.0rcagf1.rcgu.o",
+        "bytes": 9729,
+        "sha256": "d24dee44d028794596cf1f15376a9bb534bf8b717b4cdcb2549eb7955e0af034"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4hu4hfqbxcnny91igcci1n7hm.0rcagf1.rcgu.o",
+        "bytes": 359061,
+        "sha256": "be82ff758ce2db23da3c80ef99851219e7b94da2c9c1ff01fbd92dd580614f3a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.4k6zwd8l1bopimecgw62vjsmm.0rcagf1.rcgu.o",
+        "bytes": 93162,
+        "sha256": "057ad96c6f75e95ffe7fff9f96559e4a817b67fb5a0ccd6b9eba5a33024bb2f0"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.50sgxmrm9shjm2qljmt4jlplv.0rcagf1.rcgu.o",
+        "bytes": 944963,
+        "sha256": "e80b867ab18f343f69c3ad3a1f71d28f63531ce25f72c28a284d54cc9daa360d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.54vise1s36c69kq7lshhnmare.0rcagf1.rcgu.o",
+        "bytes": 22377,
+        "sha256": "34fb93a8db28623251b5d8733e78157ec45f76630d9b7cfe85618985b453da3b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5dogfcfvlvs2qbs4exqcv98v4.0rcagf1.rcgu.o",
+        "bytes": 140482,
+        "sha256": "4637424f3cc0890ef3e9c464a4e072d6108015a818f30c002c8ce5def71a306a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5vfli80qudu2ryqxassgzn5od.0rcagf1.rcgu.o",
+        "bytes": 87412,
+        "sha256": "9006661764205d3df5597998d0cfb0a2a4ea800bb5fbdd7f6656a0440930bf91"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.5yb0gdj20978ux5ryre7f893s.0rcagf1.rcgu.o",
+        "bytes": 2838,
+        "sha256": "50137fc6149ac685958181c22397ddd665a98591cb565ba14fdb569214d938c5"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.61bemx2441elrlntsbgy1mivu.0rcagf1.rcgu.o",
+        "bytes": 15427,
+        "sha256": "243e2e8ecda7b89471bb99229bcc2f58d785cafce64c31508cf1d9fa3c2fdf3d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6czlhorer027r3a46pkl2bcjb.0rcagf1.rcgu.o",
+        "bytes": 6070,
+        "sha256": "866842005479e97918e0f63aff6ab7f647e2b81ddd94129529996f45807fa238"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6f9jb012huwarnkqg9b8uoang.0rcagf1.rcgu.o",
+        "bytes": 8304,
+        "sha256": "0652c491d58ac115f472eb6f8dc4a6ed99cfd315428fe7498f644284d1ba8445"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6ju7ddg2rftbgicslj9sv92r4.0rcagf1.rcgu.o",
+        "bytes": 88587,
+        "sha256": "e13535ef02ada1697aa1d764f5c61126bec7f64f9de96cd724a40def354340be"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6ow387e19zzv6kpeq4vd13jbe.0rcagf1.rcgu.o",
+        "bytes": 48000,
+        "sha256": "f6aa43f8344dd9258d6ef1e0ccf66405d9891a8619b1f973af809c695ee7c4e5"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.6v0b18g664tbfpcvf4q3yozyi.0rcagf1.rcgu.o",
+        "bytes": 45890,
+        "sha256": "7cdfa33b872f0d66aee67ed55e4628870e5ab42a2cfee0fed6647f0008ce2843"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.75yr6rzdrpi2qz88humkuszab.0rcagf1.rcgu.o",
+        "bytes": 19307,
+        "sha256": "0bd0f7010ecb12fb2fbd483c66926ce4ffe445ffb041721742cf58de42ced4c3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.77bw57h1o96xfgtdfy4sgugof.0rcagf1.rcgu.o",
+        "bytes": 107905,
+        "sha256": "cb832683181243f1a00fc4acd6a35eb3e2025be3f459c204718adb0723f7eafc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.7escjajiext7jut965m5i8jzg.0rcagf1.rcgu.o",
+        "bytes": 176604,
+        "sha256": "e8fcabda60533509c95cea0914a129cccf1403c7306f1837413038b07b603dc1"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.7q1xyqdmxh80i1jl7lmnnk9dc.0rcagf1.rcgu.o",
+        "bytes": 20984,
+        "sha256": "58915c1e52cca8e6fc3b32a379f1b65ab666e1574b7c1d82e05da7b1bd33faf6"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.85khf8qagy4zl1ru2vo3ejfmx.0rcagf1.rcgu.o",
+        "bytes": 7404,
+        "sha256": "29b2a279c9a0a9122ced8afed7a3110d5f4a022b3e3815cd9a22a29d181bb714"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.87z3h022wzi18udv8sbrpdua0.0rcagf1.rcgu.o",
+        "bytes": 402278,
+        "sha256": "53e64df0807cba2be04e4fdb709764eea1ed7a6505f28e3b5bf44c940f17e460"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8g1qnw2uco5i3wzwrikeqbku9.0rcagf1.rcgu.o",
+        "bytes": 37780,
+        "sha256": "397d628a09c61bb582c31946c3f55174aec902d7a5959bd83a7c67c39159aff2"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8ivfdfmk4i6u4p5p1qp5yca8p.0rcagf1.rcgu.o",
+        "bytes": 784691,
+        "sha256": "a5c27758ff6419c2372cf25dde26b3e96dbede0e1231337b4e51f16146bc9b7c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8r8kfzskfi76yk7ikds6auvuk.0rcagf1.rcgu.o",
+        "bytes": 366428,
+        "sha256": "916cd586dc82863be1c6c5e6221ba2865475416130ccba4539296cc2309c659c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8r9lp3kfemu47jmdwl5nqdipe.0rcagf1.rcgu.o",
+        "bytes": 227022,
+        "sha256": "a919a9acf32f86fd417da6b79f9a1ef5fcd60c18aed32c1e204ef04c064622f3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.8tgnum5mwqvicjm2gmqgb944z.0rcagf1.rcgu.o",
+        "bytes": 217545,
+        "sha256": "721ef31e1b7ed2b578b394714e2b4117ae23147dd9b14975ca6b3ddc69921e1a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.9a7n8msiiztd7b3eusievq9a9.0rcagf1.rcgu.o",
+        "bytes": 80662,
+        "sha256": "dacd3c74e106ba4074eea5e921893b71d1077cc171bfb5ba6b4215f45bc74323"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.9nquph1bvyf0upkh73f8tnkay.0rcagf1.rcgu.o",
+        "bytes": 55497,
+        "sha256": "ee0eded8840f17700497bf71d7576ce466581177a79048f8c9faf3d2df012159"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a6jnhf6zn5k4hw1m9etjjxwz9.0rcagf1.rcgu.o",
+        "bytes": 18280,
+        "sha256": "f60c2533ebc46e3efcba112ff6c7c3c55657a51081c57e95b0133f37e924a705"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a93lcqlctbibt54a3m3guembz.0rcagf1.rcgu.o",
+        "bytes": 65945,
+        "sha256": "12e761cca725cab0df45c652cbec837a2cd7c61dfa196b63b5049ba7fb443307"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.a9w5n8rha5b0ppmnrrzrwgwd1.0rcagf1.rcgu.o",
+        "bytes": 3661198,
+        "sha256": "b342a54ec249269e9b99b4feafbad4b82102e9909b63a2e85c08bdbca16d7875"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.aasvq2x3qdb0f1nnkf5uqoo9c.0rcagf1.rcgu.o",
+        "bytes": 24577,
+        "sha256": "4f8a9d6ce089700024871e962e00574fc7867b7b147a28a5bfdd6cbc2330caa1"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ai5n515pjdkyyl381cgnzmhu7.0rcagf1.rcgu.o",
+        "bytes": 116278,
+        "sha256": "2941c32607efdabc0797d29033a05c655d4678f6f7cb28f63c828e1312df8fe8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ajnfptyhmxhntglw949194b38.0rcagf1.rcgu.o",
+        "bytes": 48230,
+        "sha256": "81b5c29cabf083c117196e9c2ddfdfd88ad23b7215c016d9697cd8118566d079"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ary4z2y1lp6ani3lh4bfg7puh.0rcagf1.rcgu.o",
+        "bytes": 83836,
+        "sha256": "41c42491326ec8b2984c1af0fddf78b06ecef533ae622110ff8a3921b04176f5"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ateypqhrcmxz13w8vpkpdy09v.0rcagf1.rcgu.o",
+        "bytes": 17045,
+        "sha256": "60a267f014d3f01ac81f77eefba1d7799c0a6a4f99abab44367dbb37c02a68b2"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.axzifzgwr9wplen0pthbh845c.0rcagf1.rcgu.o",
+        "bytes": 18451,
+        "sha256": "8c5f329cd94d7bb86f9ec07d59747ae1ed517086fd6f854a7f27232f70905d8a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.b2ehc71od8jv10q6ffian74hw.0rcagf1.rcgu.o",
+        "bytes": 27674,
+        "sha256": "2948cf9f037cb4d263dfcefd0680d8f7bad782a19560fa9ae6c96a5355fd6a57"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.b3vnfszv3vd8b3r8k6we0kfrf.0rcagf1.rcgu.o",
+        "bytes": 32234,
+        "sha256": "4feccd160e0f1c4b7293acca82de6d133b418be3252e16922f76454ca134aa37"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bdgcte5fi0k61aqagwar04040.0rcagf1.rcgu.o",
+        "bytes": 17254,
+        "sha256": "d31e0e664481167ddec85be29cb45d83a88e92e03315145529aecfc28d081687"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bl4omfjzxmw2vzkhrmmo56wv9.0rcagf1.rcgu.o",
+        "bytes": 3701,
+        "sha256": "53378eee16b190d7a80216666ea5b3c26a95e21f7b55e92c4aba016e97a9118f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.bzvdod9k1kz1imbdbo61g1cvp.0rcagf1.rcgu.o",
+        "bytes": 35086,
+        "sha256": "aa8dc5fecfff6bfc2c0951a6b765120424161cf972de42d7075575f9666bb6fc"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c1pk9ephpuwkwxfz3kagltrn8.0rcagf1.rcgu.o",
+        "bytes": 8555,
+        "sha256": "ce70e43e123968f1b3167483c7b0cc37f79c78044e713e2419d30f13b2a27523"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c7822qejte8znk01gy7z288cq.0rcagf1.rcgu.o",
+        "bytes": 20635,
+        "sha256": "6d9c30e2363567a7423fd03ba95c59843a161824d4c2a9cb2cfc5a52516656ac"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.c7odfx0x59jzqg5uum75jddlf.0rcagf1.rcgu.o",
+        "bytes": 3079,
+        "sha256": "daccc020fe30baa16e787f60263dacfb45f2a3cc6717fe663ec668981ca9da89"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ceimjf7kcwen5idrd29lenknc.0rcagf1.rcgu.o",
+        "bytes": 138982,
+        "sha256": "5c56d1cdf094d5056b91866aff93fae9792a8bb293a028aa5eea1b7ad24e97f4"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cg3lppfp7megfftv48nqetenx.0rcagf1.rcgu.o",
+        "bytes": 11023,
+        "sha256": "793b51ef33c3c6d96b33274a28d04cd8c28e620f299c35862b1740d6fbd6c418"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ch842fsq54bnvcvbbv25zwwco.0rcagf1.rcgu.o",
+        "bytes": 3247,
+        "sha256": "095f5470e38f94f30e9813a301edc47b61fec1716d560ec85b6a12fd8bbc7049"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cl7wufxbv6sxrlzxakejdm31v.0rcagf1.rcgu.o",
+        "bytes": 837294,
+        "sha256": "9240f6fcb78911db956e3ae2c407f0e30447bae9bc899a02ee1fb6934796e71c"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cmrflq4gg9ih0sjslm96hugj7.0rcagf1.rcgu.o",
+        "bytes": 16862,
+        "sha256": "a2387c4c7f81f2b19051d96dd003ebccbb22a99affed38495ef5660d50d22f64"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.cnydp1d5v2slssvtbjhw7uf3w.0rcagf1.rcgu.o",
+        "bytes": 731776,
+        "sha256": "293ed94e1b31683d371a605b4e3e1a03cd83e6e0e143b2aae4eabd8203130232"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.d2uw84d6t784wiibm52o727uh.0rcagf1.rcgu.o",
+        "bytes": 112375,
+        "sha256": "bf0c6f21a216e91817809fbccf19854d5437679d699ed5c5b8aedaa853c93d12"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.d6k15rbvv32u3jkr2c4hlisox.0rcagf1.rcgu.o",
+        "bytes": 234987,
+        "sha256": "b16b5e24112df9602a14a0a64d9b94adfb074b7202f643e3f629ee10e562d5e4"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.dh25kqdtbfdibhkdvv8ftaxl3.0rcagf1.rcgu.o",
+        "bytes": 119439,
+        "sha256": "9a479122c9841320ed1d1b4073618db6783978364a30b94d94b0a668694ee5b3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.drp5wpky4v5pzlo5zhvnpdiph.0rcagf1.rcgu.o",
+        "bytes": 3925,
+        "sha256": "3f44e7c0a001f14e1c460cd5de2cc72f2723221c25c7e6f68a9580eaf748474a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.dvwdondtj7pb8rbmv5rf9opcb.0rcagf1.rcgu.o",
+        "bytes": 31643,
+        "sha256": "852b640162827d03f5af2815a96549dbac2b54ff06050a07d090e7d5292074b2"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e0upkkjlkoivv45tx3u5rlf8q.0rcagf1.rcgu.o",
+        "bytes": 12638,
+        "sha256": "b1fefc23959d4341c4a84ae43185431d471d553fadd6dfde20c78dbf3a443118"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e2o4h83lns6enf3kjx5z3xl7h.0rcagf1.rcgu.o",
+        "bytes": 40305,
+        "sha256": "6f84d2ea8e963aba0e0f9991dbb5812d80dac1376d2ea70d2e6fd101150633a3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.e576clcevz9qf7gyz4594u1t2.0rcagf1.rcgu.o",
+        "bytes": 15843,
+        "sha256": "3e2a3486037ab7ffa4078bbbde3a4372bd2bfb119f325cc196e400c9a046813b"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ecckgmtjgt3qokfb1cao1epop.0rcagf1.rcgu.o",
+        "bytes": 58179,
+        "sha256": "c143bd8213f6afc040adcd13bc49b46c8b425d1b0cc4ec68bd1db29d3cc5be60"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.edqtzidso6bnp89yf2g93xr7j.0rcagf1.rcgu.o",
+        "bytes": 72311,
+        "sha256": "a3a603bafa2105e8e2412e5baf58c36db977b6418275eb0d458edbc30c3e52eb"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.eezvipbloaaen2y0xdgvx4oad.0rcagf1.rcgu.o",
+        "bytes": 21605,
+        "sha256": "1238515007b4dd3c9a01be7ea61f3700a3ad8c456cf1340dd0b89fd4f1a83a9d"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.em9neal8oytkeko1sg0l7blq5.0rcagf1.rcgu.o",
+        "bytes": 202278,
+        "sha256": "4c2131313ffe8cadd7b94273deb30ded19000f7cd4e3e19b229064c2046385a3"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ep0cz5y5k6kt6g7ye32htawxy.0rcagf1.rcgu.o",
+        "bytes": 14653,
+        "sha256": "237aec0411d43277da3957889851dcec09fb4f1069ca6c15703e5bce0c85359f"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.er7f0w33gjkiwdxqj0sq9wltn.0rcagf1.rcgu.o",
+        "bytes": 30804,
+        "sha256": "01a05775fffd024fd6d85a6c4eed2797947313a92cddeb35a31c48d6e17910fb"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.et9uz1vnsdlvomff0i5bnvtvi.0rcagf1.rcgu.o",
+        "bytes": 89175,
+        "sha256": "003ed41b0dfd6328b7351ceb977082b3229a807b1a5a8defc8b7edcdee9c0f00"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.ewnzo71set9ck2h2yea1jbjg7.0rcagf1.rcgu.o",
+        "bytes": 3990,
+        "sha256": "1cd88407a261b444671d1ae1e5c56fb9f5e9c6a28838fb15b6100f6537fe33a8"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f2vttjxdz7rrqwz2ok0dfvh27.0rcagf1.rcgu.o",
+        "bytes": 41349,
+        "sha256": "56ada803393096ac90f5811b15fad0ccc2f77268063c9d0317975cbdbee2c97a"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f4o4bvf7wrg5j4k21lbcn9bom.0rcagf1.rcgu.o",
+        "bytes": 105402,
+        "sha256": "243a33d5b66db7253457e5dec331e3817d79a96c1b2d5f86d4bea1e8acf3d693"
+      },
+      {
+        "name": "wgpu_bindings-bdeca7edc846935a.f5fmk1vm4l016ss7vhuse8lrl.0rcagf1.rcgu.o",
+        "bytes": 5026,
+        "sha256": "13ab03ac08175b085c79bc30b32eaf6e0483cfa28f23f3c92beb7bf90f3f10c0"
+      }
+    ]
+  },
+  "cpp_object": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/cpp-abi.o",
+    "bytes": 20855,
+    "sha256": "4d264eb2c864c0b2f83d3d3a7eb1b1e3a97ddc4d11347bb3adc2184f39450f10"
+  },
+  "linked_native_module": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/ffi-link.wasm",
+    "bytes": 7345358,
+    "sha256": "a15b4c8bf82347eb1cfa8e04e8aa1fdf0fb7ced11af641a8e20b5f4f93fbd7c0"
+  },
+  "module_validation": {
+    "valid": true,
+    "scope": "Actual C++ generated export declarations linked to full native copied Rust crate and configured musl libc; validation only, functions not invoked with an artificial Global",
+    "exports": [
+      {
+        "name": "interop_failure_contract",
+        "kind": "function"
+      }
+    ],
+    "imports": [
+      {
+        "module": "env",
+        "name": "memory",
+        "kind": "memory"
+      }
+    ]
+  },
+  "caller_source": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/dom/webgpu/SharedTextureDMABuf.cpp",
+    "bytes": 5550,
+    "sha256": "aba4519e700335cf7170acaf908f161029da592cd7e9d67cd309c4872e5ef01e"
+  },
+  "cbindgen_config": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/gfx/wgpu_bindings/cbindgen.toml",
+    "bytes": 3940,
+    "sha256": "3b905e3a14fcdcb5dbe5fe3a0a2ff19f54bdbbc7b0186de05823cdc1190e19bf"
+  },
+  "evidence": {
+    "argv.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/argv.json",
+      "bytes": 4963,
+      "sha256": "3d4f1bfdcc9b3e83ffdef1a7f24edca398b127daad25b70e3555bfc0643ecb92"
+    },
+    "run.py": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/run.py",
+      "bytes": 452,
+      "sha256": "54876457b0bab7231a4779f90ac29e1c866b17c1826e5b41f6ed1028151a7b5f"
+    },
+    "compile-run1.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/compile-run1.log",
+      "bytes": 498,
+      "sha256": "8a345e4ffc30c3cbb0bd75497d7f0dbe5a1d7618505c5161be9a04df7438a7b9"
+    },
+    "compile-run2.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/compile-run2.log",
+      "bytes": 555,
+      "sha256": "82c045cb3330f459a28be0332e958ebd021f33e278889d8dc0224899751cd84c"
+    },
+    "cpp-abi.cpp": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/cpp-abi.cpp",
+      "bytes": 845,
+      "sha256": "6e0af8eb4d1698033886bdb58f7d129350e3c3f9e0a9eaa1aa399cf9c0841041"
+    },
+    "cpp-argv.json": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/cpp-argv.json",
+      "bytes": 4053,
+      "sha256": "1368d7d53df6b742759f554f9dc83f4fb4ce27fec4c2b8dc921d7e3fa857b1ce"
+    },
+    "cpp-compile.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/cpp-compile.log",
+      "bytes": 1165,
+      "sha256": "686c0a94d9d37fac57019e4b4d0ab2b3c540ddd3aa6820fbfbfb323ebe203bb1"
+    },
+    "cbindgen.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/cbindgen.log",
+      "bytes": 33133,
+      "sha256": "c9532c99e87e9ec3a12a8d9f5db22c546d0030930f549e52a11911ffb19315ba"
+    },
+    "ffi-link.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/ffi-link.log",
+      "bytes": 635,
+      "sha256": "e33529e3d8c82b357a92cbca1463a1ad987270acb6f8bb7523515234117fe247"
+    },
+    "ffi-link-run2.log": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/wgpu-bindings-interop-preflight/ffi-link-run2.log",
+      "bytes": 112,
+      "sha256": "7787afc9b7f05604f1f1a2b510047b45ff8e26df8e95c1cf7828e0231d037261"
+    }
+  }
+}

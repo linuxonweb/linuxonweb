@@ -1,0 +1,331 @@
+--- a/gfx/wgpu_bindings/src/server.rs
++++ b/gfx/wgpu_bindings/src/server.rs
+@@ -32,7 +32,7 @@
+ use std::collections::HashMap;
+ #[allow(unused_imports)]
+ use std::mem;
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
+ use std::os::raw::{c_char, c_void};
+ use std::ptr;
+@@ -45,7 +45,7 @@
+ #[cfg(target_os = "windows")]
+ use windows::Win32::{Foundation, Graphics::Direct3D12};
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ use ash::{khr, vk};
+ 
+ // The seemingly redundant u64 suffix helps cbindgen with generating the right C++ code.
+@@ -79,7 +79,7 @@
+     unsafe { gfx_critical_note(msg.as_ptr()) }
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ fn get_linux_dmabuf_modifiers() -> Option<Vec<u64>> {
+     let mut modifiers_ptr: *const u64 = ptr::null();
+     let mut modifier_count = 0u32;
+@@ -101,7 +101,7 @@
+     Some(modifiers.to_vec())
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ const DMABUF_DEVICE_EXTENSIONS: &[&'static std::ffi::CStr] = &[
+     khr::external_memory_fd::NAME,
+     ash::ext::external_memory_dma_buf::NAME,
+@@ -111,7 +111,7 @@
+     khr::get_memory_requirements2::NAME,
+ ];
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ fn unsupported_dmabuf_extensions(
+     hal_adapter: &wgh::vulkan::Adapter,
+ ) -> Vec<&'static std::ffi::CStr> {
+@@ -352,7 +352,7 @@
+         return true;
+     }
+ 
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     {
+         if backend != wgt::Backend::Vulkan {
+             log::info!(concat!(
+@@ -523,7 +523,7 @@
+         }
+     }
+ 
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     {
+         let adapter = global.resolve_adapter_id(self_id);
+         let hal_adapter = unsafe { adapter.as_hal::<wgc::api::Vulkan>() }
+@@ -1153,14 +1153,14 @@
+ 
+ /// Destroys a `VkImage` and its dedicated `VkDeviceMemory` unless ownership has
+ /// been handed over with [`ScopedVkImage::release`].
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ struct ScopedVkImage<'a> {
+     device: &'a ash::Device,
+     image: vk::Image,
+     memory: vk::DeviceMemory,
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ impl<'a> ScopedVkImage<'a> {
+     fn new(device: &'a ash::Device, image: vk::Image) -> Self {
+         Self {
+@@ -1176,7 +1176,7 @@
+     }
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ impl Drop for ScopedVkImage<'_> {
+     fn drop(&mut self) {
+         if self.image != vk::Image::null() {
+@@ -1195,7 +1195,7 @@
+ /// Queries the memory requirements of `image` through
+ /// `vkGetImageMemoryRequirements2`. The caller always makes a dedicated
+ /// allocation, so the dedicated requirements are only reported, never acted on.
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ unsafe fn dedicated_image_memory_requirements(
+     instance: &ash::Instance,
+     device: &ash::Device,
+@@ -1239,20 +1239,29 @@
+     height: u32,
+     out_fd: *mut i32,
+ ) -> DMABufInfo {
+-    match create_dma_buf(global, device_id, width, height) {
+-        Ok((info, fd)) => {
+-            unsafe { *out_fd = fd };
+-            info
+-        }
+-        Err(msg) => {
+-            unsafe { gfx_critical_note(msg.as_ptr()) };
+-            unsafe { *out_fd = -1 };
+-            DMABufInfo::default()
+-        }
+-    }
+-}
+-
+-#[cfg(target_os = "linux")]
++    // The compiled native Wasm HAL has no Vulkan interop backend.
++    #[cfg(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))]
++    {
++        let _ = (global, device_id, width, height);
++        unsafe { *out_fd = -1; }
++        return DMABufInfo::default();
++    }
++    #[cfg(not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl")))]
++    {        match create_dma_buf(global, device_id, width, height) {
++            Ok((info, fd)) => {
++                unsafe { *out_fd = fd };
++                info
++            }
++            Err(msg) => {
++                unsafe { gfx_critical_note(msg.as_ptr()) };
++                unsafe { *out_fd = -1 };
++                DMABufInfo::default()
++            }
++        }
++    }
++}
++
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ fn create_dma_buf(
+     global: &Global,
+     device_id: id::DeviceId,
+@@ -1557,11 +1566,11 @@
+         parent: WebGPUParentPtr,
+         id: id::TextureId,
+     ) -> *mut core::ffi::c_void;
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     fn wgpu_server_get_dma_buf_info(parent: WebGPUParentPtr, id: id::TextureId) -> DMABufInfo;
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     fn wgpu_server_get_dma_buf_fd(parent: WebGPUParentPtr, id: id::TextureId) -> i32;
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     fn wgpu_server_get_linux_dmabuf_modifiers(
+         modifiers: *mut *const u64,
+         modifier_count: *mut u32,
+@@ -1659,7 +1668,7 @@
+     fn wgpu_texture_format_is_valid_for_webidl(format: *const nsCString) -> bool;
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ pub unsafe fn is_dmabuf_supported(
+     instance: &ash::Instance,
+     physical_device: vk::PhysicalDevice,
+@@ -1712,7 +1721,7 @@
+         )
+ }
+ 
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ pub fn select_memory_type(
+     props: &vk::PhysicalDeviceMemoryProperties,
+     flags: vk::MemoryPropertyFlags,
+@@ -1822,7 +1831,7 @@
+         true
+     }
+ 
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     fn create_texture_with_shared_texture_dmabuf(
+         &self,
+         device_id: id::DeviceId,
+@@ -2206,7 +2215,7 @@
+                         }
+                     }
+ 
+-                    #[cfg(target_os = "linux")]
++                    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+                     {
+                         let is_created = self.create_texture_with_shared_texture_dmabuf(
+                             device_id,
+@@ -3113,7 +3122,7 @@
+ /// the submission they belong to has been attempted. The actual
+ /// `vkDestroySemaphore` calls happen later, from an `on_submitted_work_done`
+ /// closure.
+-#[cfg(target_os = "linux")]
++#[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+ fn enqueue_signal_semaphores_destruction(
+     queue: &Arc<wgc::device::queue::Queue>,
+     device: Arc<wgc::device::Device>,
+@@ -3186,14 +3195,14 @@
+         device.handle_error(error, None, "Queue::submit");
+     }
+ 
+-    #[cfg(target_os = "linux")]
++    #[cfg(all(target_os = "linux", not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))))]
+     enqueue_signal_semaphores_destruction(
+         &queue,
+         device.clone(),
+         signal_semaphores.as_slice(),
+         !submission_succeeded,
+     );
+-    #[cfg(not(target_os = "linux"))]
++    #[cfg(any(not(target_os = "linux"), all(target_arch = "wasm32", target_os = "linux", target_env = "musl")))]
+     let _ = signal_semaphores;
+ 
+     submission_succeeded
+@@ -3219,53 +3228,62 @@
+     queue_id: id::QueueId,
+     out_fd: *mut i32,
+ ) -> VkSemaphoreHandle {
+-    use ash::vk::Handle as _;
+-    use wgc::resource::ParentDevice as _;
+-
+-    let queue = global.resolve_queue_id(queue_id);
+-    let device = queue.device().clone();
+-
+-    let hal_device =
+-        unsafe { device.as_hal::<wgc::api::Vulkan>() }.expect("Vulkan backend device on linux");
+-    let hal_queue =
+-        unsafe { queue.as_hal::<wgc::api::Vulkan>() }.expect("Vulkan backend queue on linux");
+-
+-    unsafe {
+-        *out_fd = -1;
+-
+-        let device = hal_device.raw_device();
+-
+-        let mut export_semaphore_create_info = vk::ExportSemaphoreCreateInfo::default()
+-            .handle_types(vk::ExternalSemaphoreHandleTypeFlags::OPAQUE_FD);
+-        let create_info =
+-            vk::SemaphoreCreateInfo::default().push_next(&mut export_semaphore_create_info);
+-        let semaphore = match device.create_semaphore(&create_info, None) {
+-            Err(err) => {
+-                let msg = CString::new(format!("create_semaphore() failed: {:?}", err)).unwrap();
+-                gfx_critical_note(msg.as_ptr());
+-                return VkSemaphoreHandle(0);
+-            }
+-            Ok(semaphore) => semaphore,
+-        };
+-
+-        let instance = hal_device.shared_instance().raw_instance();
+-        let external_semaphore_fd = khr::external_semaphore_fd::Device::new(instance, device);
+-        let get_fd_info = vk::SemaphoreGetFdInfoKHR::default()
+-            .semaphore(semaphore)
+-            .handle_type(vk::ExternalSemaphoreHandleTypeFlags::OPAQUE_FD);
+-
+-        match external_semaphore_fd.get_semaphore_fd(&get_fd_info) {
+-            Err(err) => {
+-                let msg = CString::new(format!("vkGetSemaphoreFdKHR failed: {:?}", err)).unwrap();
+-                gfx_critical_note(msg.as_ptr());
+-
+-                device.destroy_semaphore(semaphore, None);
+-                VkSemaphoreHandle(0)
+-            }
+-            Ok(fd) => {
+-                *out_fd = fd;
+-                hal_queue.add_signal_semaphore(semaphore, None);
+-                VkSemaphoreHandle(semaphore.as_raw())
++    // The compiled native Wasm HAL has no Vulkan interop backend.
++    #[cfg(all(target_arch = "wasm32", target_os = "linux", target_env = "musl"))]
++    {
++        let _ = (global, queue_id);
++        unsafe { *out_fd = -1; }
++        return VkSemaphoreHandle(0);
++    }
++    #[cfg(not(all(target_arch = "wasm32", target_os = "linux", target_env = "musl")))]
++    {        use ash::vk::Handle as _;
++        use wgc::resource::ParentDevice as _;
++    
++        let queue = global.resolve_queue_id(queue_id);
++        let device = queue.device().clone();
++    
++        let hal_device =
++            unsafe { device.as_hal::<wgc::api::Vulkan>() }.expect("Vulkan backend device on linux");
++        let hal_queue =
++            unsafe { queue.as_hal::<wgc::api::Vulkan>() }.expect("Vulkan backend queue on linux");
++    
++        unsafe {
++            *out_fd = -1;
++    
++            let device = hal_device.raw_device();
++    
++            let mut export_semaphore_create_info = vk::ExportSemaphoreCreateInfo::default()
++                .handle_types(vk::ExternalSemaphoreHandleTypeFlags::OPAQUE_FD);
++            let create_info =
++                vk::SemaphoreCreateInfo::default().push_next(&mut export_semaphore_create_info);
++            let semaphore = match device.create_semaphore(&create_info, None) {
++                Err(err) => {
++                    let msg = CString::new(format!("create_semaphore() failed: {:?}", err)).unwrap();
++                    gfx_critical_note(msg.as_ptr());
++                    return VkSemaphoreHandle(0);
++                }
++                Ok(semaphore) => semaphore,
++            };
++    
++            let instance = hal_device.shared_instance().raw_instance();
++            let external_semaphore_fd = khr::external_semaphore_fd::Device::new(instance, device);
++            let get_fd_info = vk::SemaphoreGetFdInfoKHR::default()
++                .semaphore(semaphore)
++                .handle_type(vk::ExternalSemaphoreHandleTypeFlags::OPAQUE_FD);
++    
++            match external_semaphore_fd.get_semaphore_fd(&get_fd_info) {
++                Err(err) => {
++                    let msg = CString::new(format!("vkGetSemaphoreFdKHR failed: {:?}", err)).unwrap();
++                    gfx_critical_note(msg.as_ptr());
++    
++                    device.destroy_semaphore(semaphore, None);
++                    VkSemaphoreHandle(0)
++                }
++                Ok(fd) => {
++                    *out_fd = fd;
++                    hal_queue.add_signal_semaphore(semaphore, None);
++                    VkSemaphoreHandle(semaphore.as_raw())
++                }
+             }
+         }
+     }
