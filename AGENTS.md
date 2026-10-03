@@ -612,7 +612,7 @@ retained; regenerating owned metadata selects providers without generator or
 kernel patches. Manifest24,001 entries
 `cb26cde7b2306b44409d43e4568fe380be897e02c35de252755bc12edb70dd86`,
 exact17 paths; see docs/glibc-memory-make-20261002.md. Root rehashed all47,053
-entries and32 paths across these packets; both external freezers exit0/empty.
+entries and 32 paths across these packets; both external freezers exit0/empty.
 Exact memory objects still need concurrent real guest integration. General
 madvise liveness/ownership and unknown mremap flag error behavior need review
 before claiming the full public APIs; guard/protection/default NPTL are absent.
@@ -715,8 +715,23 @@ CFA, forced unwind and cancellation remain unimplemented. This is a source
 checkpoint of a measured prerequisite subset, not full compiler acceptance.
 See docs/glibc-cancel-compiler-20261002.md and
 `/mnt/p6/build/glibc-cancel-compiler-root-review-20261002/final-root-proof.json`.
-The separate native EH routing packet is authorized for a sparse backend build
-and actual tests, with no predecessor/kernel/runtime/source-tree mutation.
+The separate native EH routing candidate now passes standalone 2,606 cases:
+32 predecessor routes, 336 frames and 410 typed returns at each O0/O2/O3, and
+336 delegate/catch-all cases. It uses separate machine handler blocks and a
+function-result-typed outer try, with MachineVerifier enabled. Patch
+`54282b5f77bde214a3ad9d93bbcc11d83b96d4a881128397f7cbcc4e91013efa`.
+Composition with the accepted caller-SP backend changes exactly two of 45
+ordered archive members; native controls pass O0 848/0 and O2/O3 864/0.
+All 80 ordinary escaping cases, 16 tag0 and 32 tag1 cases per mode preserve SP
+without a diagnostic reset; tag1 preserves its payload and bypasses language
+cleanup. The original compiler and loader failures remain unchanged. Actual
+traps still bypass EH and leak 16 bytes in fresh discarded instances; trap
+recovery is not accepted. Prior validation, MachineVerifier and strict missing
+tag-definition failures are retained. See docs/glibc-native-eh-routing-20261002.md
+and root compose-runtime-root-proof.json under
+`/mnt/p6/build/glibc-native-eh-routing-root-review-20261002`.
+General activation descriptors/CFA, genuine GNU forced unwind/cancellation and
+public NPTL lifecycle remain pending. No Nightly/JIT/GPU acceptance follows.
 Root source evidence also identifies the cancellation restart boundary:
 GNU SIGCANCEL uses SA_RESTART and the kernel can restart blocked operations
 before returning to the worker. A queued unwind alone cannot close that gap.

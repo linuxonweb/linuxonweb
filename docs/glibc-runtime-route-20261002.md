@@ -457,7 +457,7 @@ wording in the immutable reports. Root evidence:
 `/mnt/p6/build/glibc-root-checkpoint2-review-20261002/proof.json`.
 
 The actual GNU legacy converter and memory providers are now separately frozen
-and independently reviewed:47,053 entries and32 exact repository paths, root
+and independently reviewed:47,053 entries and 32 exact repository paths, root
 proof `/mnt/p6/build/glibc-root-checkpoint3-review-20261002/proof.json`.
 Legacy104-byte kernel input converts through GNU bodies into public128-byte
 version0 data with24,612/0 synthetic checks in each mode. The six GNU units and
@@ -594,9 +594,24 @@ covers zero/static/dynamic/nested/indirect/recursive controls. Patch
 compiler `1147a637f9144f77c35398fc0cfd77a06fb4fec21f91706361c34395d1b8848b`.
 Proof: `/mnt/p6/build/glibc-cancel-compiler-root-review-20261002/final-root-proof.json`.
 
-General unwind is still incomplete:80 escaping-SP leaks per mode are retained,
-and diagnostic tests reset SP between cases. The original LTO backend cannot
-lower the marker. General descriptors/CFA, tag1 routing, forced unwind, genuine
-GNU cancellation, kernel restart policy and public NPTL lifecycle remain pending.
-The next separate native EH backend packet tests escaping-frame SP restoration
-and tag1 bypass of language cleanup without JavaScript or assembly SP resets.
+The original prerequisite's 80 escaping-SP leaks per mode and diagnostic resets
+remain retained; its original LTO backend cannot lower the marker. The separate
+[native EH routing candidate](glibc-native-eh-routing-20261002.md) now passes 2,606
+standalone cases with MachineVerifier enabled, including actual delegated
+caller escapes, typed returns and retained SjLj cleanup. Its native outer try
+uses the function result signature and restores actual pre-prologue SP; typed
+tag1 catches bypass language catch-all cleanup while retaining exact identity.
+Patch `54282b5f77bde214a3ad9d93bbcc11d83b96d4a881128397f7cbcc4e91013efa`.
+
+Composition with the accepted caller-SP backend changes exactly two of 45
+ordered archive members and passes O0 848/0, O2/O3 864/0. Each mode now preserves
+SP for all 80 ordinary escaping cases, 16 tag0 and 32 tag1 cases without a JS or
+assembly SP reset. Native traps still bypass EH and leak 16 bytes in fresh
+discarded instances; recovery is not accepted. Initial validation, machine
+block ordering and missing fixture-tag link failures remain preserved.
+Root proofs: `compose-archive-root-proof.json` and `compose-runtime-root-proof.json`
+under `/mnt/p6/build/glibc-native-eh-routing-root-review-20261002`.
+General descriptors/CFA, genuine forced unwind/cancellation, post-restoration
+kernel restart policy and public NPTL lifecycle remain pending. This compiler
+candidate does not establish a complete GNU sysroot, Nightly build, JIT, GPU
+or deployment acceptance.
