@@ -8,11 +8,13 @@ for argument in "$@"; do
   esac
 done
 if (( guest_target )); then
+  # Native Wasm C declarations need explicit visibility for libclang bindgen.
+  export BINDGEN_EXTRA_CLANG_ARGS="${BINDGEN_EXTRA_CLANG_ARGS:-} -fvisibility=default"
   case " ${CXXFLAGS_wasm32_unknown_linux_musl:-} " in
     *" -Xclang -fc++-abi=webassembly "*) ;;
     *) echo 'Missing target-scoped native Wasm C++ ABI flags' >&2; exit 2 ;;
   esac
 fi
-printf 'guest_cxxflags=%q host_cxxflags=%q\n' "${CXXFLAGS_wasm32_unknown_linux_musl:-}" "${CXXFLAGS_x86_64_unknown_linux_gnu:-}" >> /mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/cargo-scoped-flags.log
+printf 'guest_cxxflags=%q host_cxxflags=%q bindgen_extra=%q\n' "${CXXFLAGS_wasm32_unknown_linux_musl:-}" "${CXXFLAGS_x86_64_unknown_linux_gnu:-}" "${BINDGEN_EXTRA_CLANG_ARGS:-}" >> /mnt/p6/build/firefox-nightly-musl-recovery-20261002/logs/cargo-scoped-flags.log
 unset CFLAGS CXXFLAGS
 exec /nix/store/mmjy07fhyvyin7hxyn1qswkq9zkky1sg-cargo-nightly-complete-2026-07-22/bin/cargo "$@"

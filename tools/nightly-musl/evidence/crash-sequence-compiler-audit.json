@@ -1,0 +1,20 @@
+{
+  "scope": "Current native Clang -O2 MOZ_REALLY_CRASH header with host-instantiated Wasm; abort deliberately returns to test compiler unreachable, not guest fatal-path acceptance",
+  "imports": [
+    {
+      "module": "env",
+      "name": "memory",
+      "kind": "memory"
+    },
+    {
+      "module": "env",
+      "name": "abort",
+      "kind": "function"
+    }
+  ],
+  "abortCalls": 1,
+  "trapped": true,
+  "message": "unreachable",
+  "memoryZeroAfter": 123,
+  "pass": true
+}

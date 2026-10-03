@@ -14,7 +14,8 @@ no complete browser, module-loading, guest TLS, release, or deployment result.
 
 Owned packet: `/mnt/p6/build/firefox-nightly-nss-adapter-audit-20261002`.
 All scratch and outputs use its disk-backed `tmp` directory. Total packet size
-when recorded was 16,317,623 bytes, within the 2 GiB allowance. The running
+when first recorded was 16,317,623 bytes; the vendored-header followup is
+24,811,799 bytes, within the 2 GiB allowance. The running
 Nightly source and object trees were read only; isolated compilation used
 separate output and a copied target JSON, without the owner's logging wrapper.
 No browser, deployment, git mutation, or additional agent was started.
@@ -23,8 +24,10 @@ Source inspected:
 `/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1`.
 Its acquisition is pinned by the current continuation to official build
 `20261002211853`, Hg `dfc77f7a6d716f1a20a2576597638d4fc21cd916`.
-`source-evidence-manifest.json` records the inspected source file SHA-256s and
-draft hashes. It does not prove the whole-tree Hg/Git mapping or active build
+`source-evidence-manifest.json` records the original inspected source SHA-256s
+and draft hashes; `source-evidence-manifest-followup.json` adds both header
+families, actual binding SHA and corrected probe reports, retaining the first
+manifest. These do not prove the whole-tree Hg/Git mapping or active build
 completion.
 
 ## Actual current loading path
@@ -56,41 +59,75 @@ checks, accepts an exception, or installs a blanket trusted leaf/root.
 
 ## Proven narrow bindgen repair
 
-The active generated `pkcs11-bindings` output lacked `C_GetFunctionList` and
+The pre-repair generated `pkcs11-bindings` output lacked `C_GetFunctionList` and
 the types reachable from it. Wasm libclang's default visibility is hidden for
 this declaration; vendored `bindgen/ir/function.rs:728` drops function cursors
 unless visibility is `CXVisibility_Default`. This removes the allowlisted
 function and its dependent PKCS#11 types.
 
-`clang-visibility-run1.json` records read-only parsing with the actual libclang:
+`clang-visibility-run1.json` records read-only parsing of current NSS headers
+with the actual libclang:
 adding only `-fvisibility=default` changes the getter's visibility 1→3 while
 keeping `CK_ULONG=4`, `CK_ATTRIBUTE=12`, `CK_FUNCTION_LIST=276`, alignment 4.
 
-`bindgen-run2/result.json` runs an owned copy of the already compiled build
-script against the current headers. Both arms generate successfully, but the
-default arm lacks all six required declarations; the explicit-visibility arm
-restores `C_GetFunctionList`, `CK_FUNCTION_LIST`, `CK_ATTRIBUTE`, `CK_SLOT_ID`,
-`CK_BBOOL`, and `CK_UTF8CHAR_PTR`, with ILP32 layout assertions. The generated
-fixed bindings SHA-256 is
-`a4309cac6aa3affe6090edacc71f802efb632704874d280a3c868d28c2ad2550`.
+The first isolated `bindgen-run2/result.json` copied only the crate wrapper,
+so it resolved the current NSS header family through an explicit include path.
+It illustrates the visibility issue, but its fixed SHA-256
+`a4309cac6aa3affe6090edacc71f802efb632704874d280a3c868d28c2ad2550`
+does **not** match actual crate bindings. The actual crate vendors its own
+current `pkcs11.h`, `pkcs11t.h`, and `pkcs11f.h` beside the wrapper; these are
+distinct current-159 header families, not evidence of Firefox128 mixing.
+
+The corrected `bindgen-vendored-run1/result.json` copies that complete header
+set and the actual compiled host build script, pinning every input hash. With
+the exact actual baseline arguments `--target=wasm32-unknown-unknown`, generation
+succeeds but omits all six required declarations; SHA-256 is
+`fa0f2f81f74f1e6ee1c917bf68764437564456cdea38779b34c8bbcc2e9e12f4`.
+Adding only `-fvisibility=default` restores `C_GetFunctionList`,
+`CK_FUNCTION_LIST`, `CK_ATTRIBUTE`, `CK_SLOT_ID`, `CK_BBOOL`, and
+`CK_UTF8CHAR_PTR`. Its complete bytes match the snapshotted actual run10
+bindings, SHA-256
+`94c1b8702a8b9e51466566c09225f8483f1501bc072825828798e2f1e8df5100`.
 
 The preferred repair is the owned Cargo environment adapter appending
 `-fvisibility=default` to `BINDGEN_EXTRA_CLANG_ARGS` only for the Wasm target.
 Keep host helper flags separate. No parser patch or x86 layout alias is needed.
-The build owner reported applying this adapter and starting run10; this packet
-does not claim that run's outcome. The initial isolated generation attempt
+The build owner's `status/pkcs11-actual-compilation-run10.json` independently
+records actual target `pkcs11_bindings` and `rsclientcerts` compilation with one
+and eleven native Wasm objects respectively, and the same binding/header
+hashes. That bounded result does not establish a complete browser or trust
+module runtime. The initial isolated generation attempt
 failed because its probe omitted `NO_NSPR_10_SUPPORT`; that failed output is
 retained under `bindgen-run1`.
 
-`layout-run2/result.json` passes 12 paired native Wasm C/Rust compile-time
-assertions: widths, sizes, alignments, three `CK_ATTRIBUTE` offsets and three
-`CK_FUNCTION_LIST` offsets. Version is offset 0, initialization pointer 4,
-getter pointer 16. Rust additionally verifies
-`CK_UNAVAILABLE_INFORMATION == u32::MAX`. The oversized generated literal is
-already intentionally allowed/truncated by `pkcs11-bindings/src/lib.rs:5`;
-it is not a compile blocker. Both objects have genuine Wasm magic, but were
-not linked or executed. `layout-run1` retains a probe-only Rust field-spelling
-failure (`type` instead of generated `type_`); its C assertions passed.
+`layout-actual-run2/result.json` compiles the exact actual bindings against the
+vendored C header family and separately the current NSS common ABI. Each of
+the three arms passes 24 common compile-time assertions: sizes/alignments for
+`CK_ULONG`, `CK_RV`, `CK_VERSION`, `CK_ATTRIBUTE` and `CK_FUNCTION_LIST`, plus
+fourteen field offsets. The function list is 276 bytes/alignment 4; version is
+offset 0, initialization pointer 4, finalization pointer 8, getter pointer 16.
+All three arms also verify `CK_UNAVAILABLE_INFORMATION == 0xffffffff`.
+The oversized generated Rust literal is intentionally allowed/truncated by
+`pkcs11-bindings/src/lib.rs:5`; it is not a compile blocker. All three produced
+genuine native Wasm objects, with dependency paths/hashes recorded, but were
+not linked or executed.
+
+Ten additional family-specific initializer assertions document a real NSS
+extension rather than asserting whole-struct identity. Vendored/actual Rust
+`CK_C_INITIALIZE_ARGS` has size 24 and `pReserved` at 20. NSS's structure has
+size 28, `LibraryParameters` at 20 and `pReserved` at 24
+(`security/nss/lib/util/pkcs11t.h:1742`); its comment explains the standard
+reserved field serves that role when library parameters are absent. The
+callback/flags prefix matches through offset 16. These complete structures
+must not be treated as interchangeable. Current static trust-anchors
+`C_Initialize` at `trust_anchors/src/pkcs11.rs:263` ignores `_pInitArgs`.
+
+Retained `layout-actual-run1` fails the attempted NSS whole-initializer equality
+while the actual Rust and vendored C arms pass; the corrected run explicitly
+checks each family. Earlier `layout-run2` remains NSS-family diagnostic
+evidence, not an exact actual-binding proof. `layout-run1` retains a probe-only
+Rust field-spelling failure (`type` instead of generated `type_`). None of
+these compile checks substitutes for final linked ABI/module/TLS acceptance.
 
 ## Exact default-root freshness comparison
 

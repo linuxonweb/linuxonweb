@@ -80,6 +80,21 @@ relative to current certdata, so its preservation alone cannot establish Nightly
 TLS acceptance. Fresh-profile initialization and existing user-trust preservation
 remain under audit. No complete Nightly binary or deployment yet.
 
+Run10 compiles actual native target pkcs11_bindings and rsclientcerts archives
+using the Cargo adapter's target-only bindgen default visibility. Corrected
+isolated probes use the crate's complete current vendored header family and
+match the actual bindings byte for byte. Seventy-two common ABI assertions,
+three sentinels and ten family-specific initializer assertions pass across
+Rust/vendored C/NSS C; NSS's extended initialization structure is explicitly
+not identical to the standard one. Root's eleven-check retained-hash review
+passes in nss-audit-review-run2.json; the earlier header-family mismatch and
+failed review remain retained. Trust-anchor target compilation and guest TLS
+acceptance remain pending. Run10 ends normally with exit2 after17m35s; remaining
+blockers are wgpu-core selecting unavailable Vulkan on native Wasm and an
+unsupported CallerPC return-address builtin. Check current process/status
+before editing or restarting. Compiler-only fatal-path evidence shows abort
+followed by unreachable; actual guest fatal-path acceptance is separate.
+
 Full-runtime Nightly packaging preparation is in
 tools/guest-rootfs/package-firefox-nightly.py and
 docs/firefox-nightly-package-20261002.md. Twenty synthetic fixture checks and
