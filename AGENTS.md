@@ -1,3 +1,29 @@
+# Latest continuation — /tmp relocation and limit, 2026-10-03
+
+User requested cleanup of RAM-backed /tmp, relocation of build artifacts to
+~/project/build, then a persistent 4 GiB tmpfs limit. Completed: 448 inactive
+build/test artifacts, 12,026,494,976 allocated bytes (11.2 GiB), copied to
+/mnt/p6/project/build/tmp-recovery-20261003/artifacts (~/project/build through
+the existing /home/a/project symlink). Every source/copy file hash and metadata
+matched before removal; source was rechecked for changes and active process
+references. Old /tmp paths are symlinks to the retained disk copies. Active
+services, sockets, mounts and recently changed unknown files were preserved.
+Manifest, scripts, fstab backup and acceptance summary are in that task root.
+All 448 links verified. /etc/fstab /tmp options now include size=4G; live remount
+and systemd daemon-reload completed. statvfs verifies exactly 4,294,967,296 bytes,
+about 2.0 GiB used, /tmp permissions 1777 root:root; generated tmp.mount has
+size=4G. User server PIDs 1591443/1441390 still present. No reboot performed.
+
+Run46 has now terminated/reaped143 at its 20-minute bound; PGID2104526 empty.
+No linker errors, but the three large automatic Binaryen -O2 optimizations
+did not finish; incomplete output binaries were removed by build cleanup.
+Do not treat Run46 as a successful full build. Next reduce simultaneous giant
+optimizations (e.g. the existing j2 option) while retaining bounded phases and
+the existing 32 GiB task cap / 20 GiB disk reserve. Current Nightly source and
+native objects remain on disk under the recovery task, outside /tmp. No
+Nightly browser/JIT/GPU/deployment acceptance yet; public v10 unchanged.
+Goal remains active, inline, JIT first then GPU. No subagents.
+
 # Latest continuation — native runtime lifecycle, 2026-10-03
 
 Actual real Linux/Wasm runtime regression passes20 TLS/lifecycle checks and
