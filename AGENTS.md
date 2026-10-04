@@ -1,3 +1,43 @@
+# Latest continuation — native environment semantics pass; heavier compute retry held, 2026-10-03
+
+User reiterates: test Firefox GPU only after the simple GPU benchmark passes.
+Ordinary baseline/JIT startup compatibility is a separate task. No Firefox GPU
+test or new Sites deployment occurred; public v10 remains unchanged.
+
+E=/mnt/p6/project/build/nightly-native-env-20261004. Actual native environment
+fixture passes 40 semantic checks plus the original early PR_SetEnv exit139
+negative control (41/0, guest exit0, actual host/browser/guest CPUs6, RAM1GiB).
+It executes the real compiled environment interposer, NSPR, musl and native C++
+runtime, including recursive calls, pointer ownership, errno, secure aliases
+and four synchronized pthread workers. Root E/root-actual-env-review.json binds
+actual results and physical cleanup. Outer harness remains FAILED because it
+forced Chrome descendant cleanup despite leader exit0; do not claim whole
+harness/baseline/JIT/GPU acceptance. Scoped semantics authorize source adoption.
+Exact source patch, six browser-only environment wrappers and minimal four
+helper imported/shared-memory/table flags are ADOPTED. Eight manifest-matched,
+distinct-inode Run58 raw7/Rust copies total738794194B. Natural production
+component compilation exits0; actual3732B object equals guest-tested object
+SHA006f277bb40baaedbf106255da5c7adba42e937583864e5e8a8787723a49d4c9.
+All seven actual forced linker previews pass the scoped flags. Three preparation
+jobs are terminal/reaped0 and exactPGIDs1018672/1026763/1028669 physicallyempty.
+Heavy original O2 remains held until the GPU measurement quiet slot is released.
+
+D=/mnt/p6/project/build/nightly-current-rust-gpu-compute-rounds16384-20261003.
+Second workload changes only the CPU/WGSL round count1024->16384; original
+0.752x comparison remains retained. Real hardware1 verifies all35 frames but
+FAILS strict outer cleanup; dependent software arms correctly did not run.
+No accepted heavier comparison or hardware speedup exists yet. Module274930B
+SHA0ccf42ca8b6944e73fefd88c7e101cc50f3734ca96787dce27fbc9945d490bc6,
+CPIO40764420B SHA34169b8283ce740874ea2c4c23ba2cf943913cae3a101f42d2fad7dd6b50cca6.
+Cleanup candidate waits for the exact owned process group, including zombies,
+for the existing4s natural/3s TERM/3s KILL graces. Resolved leader-exit promises
+previously skipped those waits. Forced cleanup still fails acceptance. Failed
+hardware1/source are preserved. Independent cleanup review passes; root exact
+launch pins and native physical cleanup pass in D/root-cleanup-retry-launch-review.json.
+Fresh retry order hardware2/software1/software2/hardware3 is authorized after
+quiet-slot release; inspect actual owner results before claiming completion.
+No production GPU executor or Firefox GPU changes.
+
 # Latest continuation — actual compute complete; Run58 startup/env and helper exec failures, 2026-10-03
 
 User requires the simple GPU benchmark to pass before Firefox GPU testing.

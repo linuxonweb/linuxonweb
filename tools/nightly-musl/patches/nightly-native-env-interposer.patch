@@ -1,0 +1,135 @@
+--- a/mozglue/interposers/env_interposer.cpp
++++ b/mozglue/interposers/env_interposer.cpp
+@@ -12,7 +12,40 @@
+ // environment (getenv(), putenv(), setenv(), unsetenv() and clearenv()). They
+ // all use the mutex below for synchronization to prevent races that caused
+ // startup crashes, see bug 1752703.
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++// Static native links resolve the actual musl entry points at link time.
++// musl secure_getenv calls getenv, and putenv without '=' calls unsetenv.
++// Those nested interposer entries must share the same recursive lock.
++static pthread_mutex_t gEnvLock;
++static pthread_once_t gEnvLockOnce = PTHREAD_ONCE_INIT;
++static void InitEnvLock() {
++  pthread_mutexattr_t attr;
++  MOZ_RELEASE_ASSERT(pthread_mutexattr_init(&attr) == 0);
++  MOZ_RELEASE_ASSERT(pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) == 0);
++  MOZ_RELEASE_ASSERT(pthread_mutex_init(&gEnvLock, &attr) == 0);
++  MOZ_RELEASE_ASSERT(pthread_mutexattr_destroy(&attr) == 0);
++}
++extern "C" {
++char* __real_secure_getenv(const char*);
++int __real_putenv(char*);
++int __real_setenv(const char*, const char*, int);
++int __real_unsetenv(const char*);
++int __real_clearenv(void);
++}
++#  define ENV_SYMBOL(name) __wrap_##name
++#  define REAL_ENV_SYMBOL(name) __real_##name
++#else
+ static pthread_mutex_t gEnvLock = PTHREAD_MUTEX_INITIALIZER;
++#  define ENV_SYMBOL(name) name
++#  define REAL_ENV_SYMBOL(name) GET_REAL_SYMBOL(name)
++#endif
++
++static void LockEnv() {
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++  MOZ_RELEASE_ASSERT(pthread_once(&gEnvLockOnce, InitEnvLock) == 0);
++#endif
++  pthread_mutex_lock(&gEnvLock);
++}
+ 
+ static char* internal_getenv(const char* aName) {
+   if (environ == nullptr || aName[0] == '\0') {
+@@ -33,65 +66,73 @@
+ extern "C" {
+ 
+ MFBT_API char* getenv(const char* name) {
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   char* result = internal_getenv(name);
+   pthread_mutex_unlock(&gEnvLock);
+ 
+   return result;
+ }
+ 
+-MFBT_API char* secure_getenv(const char* name) {
+-  static const auto real_secure_getenv = GET_REAL_SYMBOL(secure_getenv);
++MFBT_API char* ENV_SYMBOL(secure_getenv)(const char* name) {
++  static const auto real_secure_getenv = REAL_ENV_SYMBOL(secure_getenv);
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   char* result = real_secure_getenv(name);
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+-MFBT_API char* __secure_getenv(const char* name) {
++MFBT_API char* ENV_SYMBOL(__secure_getenv)(const char* name) {
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++  // musl exports secure_getenv; the compatibility alias uses that same check.
++  static const auto real___secure_getenv = __real_secure_getenv;
++#else
+   static const auto real___secure_getenv = GET_REAL_SYMBOL(__secure_getenv);
++#endif
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   char* result = real___secure_getenv(name);
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+-MFBT_API int putenv(char* string) {
+-  static const auto real_putenv = GET_REAL_SYMBOL(putenv);
++MFBT_API int ENV_SYMBOL(putenv)(char* string) {
++  static const auto real_putenv = REAL_ENV_SYMBOL(putenv);
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   int result = real_putenv(string);
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+-MFBT_API int setenv(const char* name, const char* value, int replace) {
+-  static const auto real_setenv = GET_REAL_SYMBOL(setenv);
++MFBT_API int ENV_SYMBOL(setenv)(const char* name, const char* value, int replace) {
++  static const auto real_setenv = REAL_ENV_SYMBOL(setenv);
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   int result = real_setenv(name, value, replace);
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+-MFBT_API int unsetenv(const char* name) {
+-  static const auto real_unsetenv = GET_REAL_SYMBOL(unsetenv);
++MFBT_API int ENV_SYMBOL(unsetenv)(const char* name) {
++  static const auto real_unsetenv = REAL_ENV_SYMBOL(unsetenv);
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   int result = real_unsetenv(name);
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+-MFBT_API int clearenv(void) {
+-  static const auto real_clearenv = GET_REAL_SYMBOL(clearenv);
++MFBT_API int ENV_SYMBOL(clearenv)(void) {
++  static const auto real_clearenv = REAL_ENV_SYMBOL(clearenv);
+ 
+-  pthread_mutex_lock(&gEnvLock);
++  LockEnv();
+   int result = real_clearenv();
+   pthread_mutex_unlock(&gEnvLock);
+   return result;
+ }
+ 
+ }  // extern "C"
++
++#undef ENV_SYMBOL
++#undef REAL_ENV_SYMBOL

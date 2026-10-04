@@ -1,0 +1,688 @@
+{
+  "scope": "actual native environment semantics correction; production source adoption and component compilation complete; program/baseline acceptance pending",
+  "guest": {
+    "guestSemanticsPass": true,
+    "positivePasses": 40,
+    "originalEarlyTrap139": true,
+    "aggregatePasses": 41,
+    "failures": 0,
+    "outerPass": false,
+    "ownerUnified": 76027,
+    "ownerReaped": true,
+    "ownerExit": 1,
+    "forcedOwnedChromeCleanup": true,
+    "physicalNodeAndChromeGroupsEmpty": true,
+    "serverClosed": true,
+    "cpu": {
+      "hostNproc": 6,
+      "browserHardwareConcurrency": 6,
+      "hostCores": 6,
+      "expectedHostCores": 6,
+      "requestedGuestCpus": 6
+    },
+    "guestRAMBytes": 1073741824,
+    "controlledLibcSecureStateRestored": true,
+    "kernelATSecureAcceptance": false,
+    "files": [
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-launch-plan.json",
+        "bytes": 8654,
+        "sha256": "f4f963f72f2acde7e324df2ad1b1925b94b72fb41776f0c5099da8674d77f39a"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-prelaunch.json",
+        "bytes": 7018,
+        "sha256": "f08c0ca26c37ac2f90b86d632c4cf906f24454d9e05ad4360cd82f2f445249ca"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/fixture-inputs.json",
+        "bytes": 12629,
+        "sha256": "57f7bca0aef4135ba60ad4306c72706be8ec1db7fb5ce2f7611a8a0287066d4f"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/compile-review.json",
+        "bytes": 5911,
+        "sha256": "69121198ccea3f459310e61bbcdeaf80b17dbb596d50bd872e2714f45a2428e7"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-env-review.json",
+        "bytes": 9030,
+        "sha256": "f891f9f717c5b4a1fc5a619105e52ee03eb357a25ba96d2e24b12796b6c194c6"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-env-fixture-review.json",
+        "bytes": 5350,
+        "sha256": "66d40f094328528c278fd8fbbea87bf423a811d1022463bb41a292fcf041f60b"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run/result.json",
+        "bytes": 17621,
+        "sha256": "1ef95004a41f39cabdc275703185daca4f01253f3a9deeea3d64ae79fa8999a7"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run/guest-console.txt",
+        "bytes": 3139,
+        "sha256": "52fcf461d401e4f4754eb7dc5c3710fcc4c938f2a84d72a094733027dfc9b6b9"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run/physical-cleanup.json",
+        "bytes": 493,
+        "sha256": "b28b88e8bd5805a96ec8c14abf5bc495353fc6e01c92fcbec711ea35eaeb54ec"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run-supervisor-status.json",
+        "bytes": 1934,
+        "sha256": "308308ec44b059a9cd21c6f9a3a7186f40fd0f3cba49ca33bd3c42eb7901e5b8"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run-supervisor.log",
+        "bytes": 277,
+        "sha256": "479c666fb17e017d316e161a7d93fa25e576ad9b48f0b14308fc97d8fca0ce12"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/guest-run/cpu-selection-attempt.json",
+        "bytes": 356,
+        "sha256": "ec3340f85b88478e4869e83983106aaf5f81c51c25b49a55e688330f1fdc7fe4"
+      }
+    ],
+    "baselineAcceptance": false,
+    "jitAcceptance": false,
+    "gpuAcceptance": false,
+    "releaseAcceptance": false,
+    "productionSourceUnchangedDuringGuest": true
+  },
+  "sourceReview": {
+    "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-env-review.json",
+    "bytes": 9030,
+    "sha256": "f891f9f717c5b4a1fc5a619105e52ee03eb357a25ba96d2e24b12796b6c194c6"
+  },
+  "fixtureReview": {
+    "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-env-fixture-review.json",
+    "bytes": 5350,
+    "sha256": "66d40f094328528c278fd8fbbea87bf423a811d1022463bb41a292fcf041f60b"
+  },
+  "rootActualReview": {
+    "path": "/mnt/p6/project/build/nightly-native-env-20261004/root-actual-env-review.json",
+    "bytes": 1297,
+    "sha256": "772f71c1184220c5f1a6708a812746034489eb36e465233befb99d24e610c1d4"
+  },
+  "compiledFixtureInputs": {
+    "pass": true,
+    "links": [
+      {
+        "arm": "native",
+        "linkStatus": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/status/fixture-link-native-final.json",
+          "bytes": 2967,
+          "sha256": "ea081b6f220d19ae832c7a59ae097abc44217a311590de679680a784267e0cce"
+        },
+        "driver": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/fixture-native-driver.log",
+          "bytes": 23256,
+          "sha256": "492245d4e5705185528ead229b5615d4da8cec130ded56cd64443f66f7de2eab"
+        },
+        "actualArgv": [
+          "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+          "-std=c++17",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fwasm-exceptions",
+          "-Xclang",
+          "-fc++-abi=webassembly",
+          "-pthread",
+          "-matomics",
+          "-mbulk-memory",
+          "-static",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/include",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nspr",
+          "/mnt/p6/project/build/nightly-native-env-20261004/env-test.cpp",
+          "/mnt/p6/project/build/nightly-native-env-20261004/objects/patched-env-retry1.o",
+          "/mnt/p6/project/build/nightly-native-env-20261004/objects/secure-state.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr0.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr1.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr2.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/linux.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/praton.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/ds/plhash.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/memory/mozalloc/Unified_cpp_memory_mozalloc0.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+          "-Wl,--wrap=secure_getenv,--wrap=__secure_getenv,--wrap=putenv,--wrap=setenv,--wrap=unsetenv,--wrap=clearenv",
+          "-Wl,--import-memory,--export-table,--growable-table,--shared-memory,--export=__stack_pointer,--fatal-warnings",
+          "-Wl,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=8388608",
+          "-o",
+          "/mnt/p6/project/build/nightly-native-env-20261004/env-native.wasm"
+        ],
+        "raw": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/env-native.wasm",
+          "bytes": 98975,
+          "sha256": "fc45f6740f50a39ace849828f500d12d3b73a0ef89fb53306a254d8289408dbf"
+        },
+        "final": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/env-native.fpcast.wasm",
+          "bytes": 102310,
+          "sha256": "6f7a0ff729d4a07df2af52bf52eaf589594d57a429567934f92351e78d9f5897"
+        },
+        "structural": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/inspect-native/result.json",
+          "bytes": 12800,
+          "sha256": "2a24ad37fd3ab3b89c394895a2893d5d6026f3261dffa829d92b61d0f9a7aa75"
+        }
+      },
+      {
+        "arm": "original",
+        "linkStatus": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/status/fixture-link-original-final.json",
+          "bytes": 2946,
+          "sha256": "f771037d6ff5b9695a738e1bb02ae54780a2183577e87770b1812eb8d9bf2a57"
+        },
+        "driver": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/fixture-original-driver.log",
+          "bytes": 23231,
+          "sha256": "340a52cb980fd01bbda3a0033fc82a657f80019805f343b55791060f83dbf5c3"
+        },
+        "actualArgv": [
+          "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+          "-std=c++17",
+          "-O2",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-fwasm-exceptions",
+          "-Xclang",
+          "-fc++-abi=webassembly",
+          "-pthread",
+          "-matomics",
+          "-mbulk-memory",
+          "-static",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/include",
+          "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nspr",
+          "/mnt/p6/project/build/nightly-native-env-20261004/env-test.cpp",
+          "/mnt/p6/project/build/nightly-native-env-20261004/objects/original-env.o",
+          "/mnt/p6/project/build/nightly-native-env-20261004/objects/secure-state.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr0.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr1.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr2.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/linux.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/praton.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/ds/plhash.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/memory/mozalloc/Unified_cpp_memory_mozalloc0.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+          "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozglue/misc/Printf.o",
+          "-Wl,--import-memory,--export-table,--growable-table,--shared-memory,--export=__stack_pointer,--fatal-warnings",
+          "-Wl,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=8388608",
+          "-o",
+          "/mnt/p6/project/build/nightly-native-env-20261004/env-original.wasm"
+        ],
+        "raw": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/env-original.wasm",
+          "bytes": 254218,
+          "sha256": "6d68f7553f1f011d8695ffcbcec812ef2ba66cb81a3ed3f501f90c420283aa5e"
+        },
+        "final": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/env-original.fpcast.wasm",
+          "bytes": 270602,
+          "sha256": "614b114633aa5283bfb2167d75fb2c089c9389488d3bdb1b80c1f775fbebdcb3"
+        },
+        "structural": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/inspect-original/result.json",
+          "bytes": 14764,
+          "sha256": "527db29d90df57af1eed15c1236456d8693713ee25f1d974d6910199fd171290"
+        }
+      }
+    ],
+    "inputs": [
+      {
+        "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+        "bytes": 11944,
+        "sha256": "7f2e34e5bc83eedffcf8d881493b85bc9162f3018c31ce2dfe1329b1da63b579"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/env-test.cpp",
+        "bytes": 5899,
+        "sha256": "f6e45ea5a3173a2bd36cb88d5e92f0c6ee93d0ce89d765fc87680029f777d20f"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/objects/patched-env-retry1.o",
+        "bytes": 3732,
+        "sha256": "006f277bb40baaedbf106255da5c7adba42e937583864e5e8a8787723a49d4c9"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/objects/secure-state.o",
+        "bytes": 397,
+        "sha256": "63549a1d240da77f78f9c82c9d9e72236ea84138185357cd902cb33ceb92a7bb"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr0.o",
+        "bytes": 83388,
+        "sha256": "cfd14328a43d4c6fda8b797ca785ee34510572e9d0c1cd551c76dd9fe670de05"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr1.o",
+        "bytes": 75033,
+        "sha256": "89dd64ecb7001609790879c720f93c80e1e320c9eb9871f43e35863996643e2c"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr2.o",
+        "bytes": 104449,
+        "sha256": "28bd80ecc2e9350e15d3be36ce343d600cb0ad06ec3e0d76dc0b07915e504cf2"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/linux.o",
+        "bytes": 475,
+        "sha256": "479ab4aa920f0598c59ca22477ed76298dba91b2deef22f2bbc4f92e3cc2c214"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/praton.o",
+        "bytes": 1641,
+        "sha256": "fb34ff4d9b2488c198321e9abdf494f656cdb952b9de0e2d60c2c2532bbf5845"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/ds/plhash.o",
+        "bytes": 4777,
+        "sha256": "8a2489a1974659755ce2b82364b85e9b25cdda25118e4db3a41561c8a00d0a0f"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/memory/mozalloc/Unified_cpp_memory_mozalloc0.o",
+        "bytes": 2116,
+        "sha256": "50ed4eba27198363aba8d04c1a1e0fe379d9e3f0aad6779cc295fb5d06765680"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mfbt/Unified_cpp_mfbt0.o",
+        "bytes": 53146,
+        "sha256": "417695da0f6321e3e14aceb4375d8276adef16696a26d9a6f01bb427c001ae9a"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/objects/original-env.o",
+        "bytes": 5920,
+        "sha256": "70ff9145bdf107339afa141823ec486804ad0bbf6df3d249c0bab4debc1fdb1e"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozglue/misc/Printf.o",
+        "bytes": 13523,
+        "sha256": "3408f063c8b2860bec81b497477ba3136ab8f90d2ea04472aa9b00941ab389ab"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "bytes": 47879,
+        "sha256": "be6ae83fcdd094466b034aa02bd1a1896f18f6e6c99450f434bbf0afedb2ace5"
+      },
+      {
+        "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+        "bytes": 1329424,
+        "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b"
+      },
+      {
+        "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/drmrcqyqqvyngx2jv0wp6hisphs738j1-source/src/internal/libc.h",
+        "bytes": 1201,
+        "sha256": "28c2656a8b7e8ef827113c0daeb55a270f77542291a2e3518064b57ac6e54f52"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/secure-state.c",
+        "bytes": 302,
+        "sha256": "703b27d64d5c44eb59323d501b58308fa0d568953b316730173c6d95b1331f0a"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/env_interposer.cpp",
+        "bytes": 4161,
+        "sha256": "abfcda1bda6cd151c156a00367f76764f20867eb8130c13ef08464c4224bece8"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/env_interposer.cpp.original",
+        "bytes": 2680,
+        "sha256": "90a43a2ce821d2534693e8f93dbb40784547e27c50eb98fb455a48900ffe56af"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++.a",
+        "bytes": 1533772,
+        "sha256": "5265c4a1fec02eeb62648d21479c9b06a1d5e5e3599fea4aea89534963f7463c"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++abi.a",
+        "bytes": 393478,
+        "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libunwind.a",
+        "bytes": 6164,
+        "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b"
+      }
+    ],
+    "allLinkLogsEmpty": true,
+    "candidateObject": {
+      "path": "/mnt/p6/project/build/nightly-native-env-20261004/objects/patched-env-retry1.o",
+      "bytes": 3732,
+      "sha256": "006f277bb40baaedbf106255da5c7adba42e937583864e5e8a8787723a49d4c9"
+    },
+    "sourceOnlyCorrection": true,
+    "baselineAcceptance": false,
+    "jitAcceptance": false,
+    "gpuAcceptance": false
+  },
+  "trackedInputs": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-env-interposer-port.py",
+      "bytes": 2375,
+      "sha256": "5ace7f88f94f8d3d0b4e7377f62e4962edc91a7baf510bcec83e93ddba317936"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-env-interposer.patch",
+      "bytes": 4573,
+      "sha256": "5dc4d7dc22772f18b8ba582cd2c98fa22045ef78e674ac290d73189b34100e43"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-env/env-test.cpp",
+      "bytes": 5899,
+      "sha256": "f6e45ea5a3173a2bd36cb88d5e92f0c6ee93d0ce89d765fc87680029f777d20f"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-env/secure-state.c",
+      "bytes": 302,
+      "sha256": "703b27d64d5c44eb59323d501b58308fa0d568953b316730173c6d95b1331f0a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 3259,
+      "sha256": "c5788f20bbbdb839ab3d51b86b7229fcba0bdefde3194b8ee1e81750d6073e31"
+    }
+  ],
+  "sourceAdoptionPending": false,
+  "browserAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false,
+  "observedTrapSourceBinding": {
+    "path": "/mnt/p6/project/build/nightly-baseline-run58-20261003/independent-env-trap-review.json",
+    "bytes": 14306,
+    "sha256": "788e047a3c0dbff5a08d142873664096bf2d60f959c9795215dc84d069df4f6e"
+  },
+  "productionAdoption": {
+    "exactReviewedSourceApplied": true,
+    "originalSourceAndDefsBackupsPreserved": true,
+    "naturalComponentCompilation": true,
+    "productionObjectEqualsGuestTestedObject": true,
+    "productionObject": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozglue/interposers/Unified_cpp_mozglue_interposers0.o",
+      "bytes": 3732,
+      "sha256": "006f277bb40baaedbf106255da5c7adba42e937583864e5e8a8787723a49d4c9"
+    },
+    "sevenActualLinkPreviewsPassed": true,
+    "browserPrograms": [
+      "firefox",
+      "plugin-container",
+      "xpcshell"
+    ],
+    "browserEnvironmentWraps": [
+      "secure_getenv",
+      "__secure_getenv",
+      "putenv",
+      "setenv",
+      "unsetenv",
+      "clearenv"
+    ],
+    "helperPrograms": [
+      "gfxtest",
+      "pingsender",
+      "certutil",
+      "pk12util"
+    ],
+    "helperOnlyAddedOptions": [
+      "--import-memory",
+      "--max-memory=4294967296",
+      "--shared-memory",
+      "--export-table"
+    ],
+    "helperExistingStackAndFixedTablePreserved": true,
+    "allPreparationOwnersReapedZero": true,
+    "preparationGroupsPhysicallyEmpty": [
+      1018672,
+      1026763,
+      1028669
+    ],
+    "linksExecuted": false,
+    "heavyOptimizerStarted": false,
+    "files": [
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/production-adoption-plan.json",
+        "bytes": 3505,
+        "sha256": "e40dd0ea4656482a707f0a2cae8691c10ebdd4e84b3ebea43f061e114be5d2f1"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/production-adoption-applied.json",
+        "bytes": 1701,
+        "sha256": "7680a0255bb2cb8faaee5bfc9e7b3977c544e4a36ebac8e5c1f8df79b73fe5ab"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-history-preserved.json",
+        "bytes": 5910,
+        "sha256": "a4e002483ebba085eb1c510b4acd662d8438059f2709e03b209cc855216a2c58"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/production-preparation-cleanup.json",
+        "bytes": 275,
+        "sha256": "cfe34ed1082b6c4a0977a20502efd1b74c9bf1e1e707e3c2bbd785b5fc19a4b9"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/seven-link-previews.json",
+        "bytes": 115932,
+        "sha256": "6f9c693ae52f4dbf1bac51e52c5bcc0baaaf14fba14f94b5b13d22523019f5e5"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/status/preserve-run58.json",
+        "bytes": 958,
+        "sha256": "c36079134243d640ece60cc809ad32e9e605101c8f10929952bd75e24fa167fd"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/status/production-env-component.json",
+        "bytes": 1136,
+        "sha256": "03c97f1021f26d6448e33e7c0817964a0e2f405415307f255b1febb5af6aef54"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/logs/production-env-component.log",
+        "bytes": 3594,
+        "sha256": "6b1d69487ed23f466c39ebc613db15714021109455d923021d1a3dd1f53b37e8"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/status/capture-seven-link-previews.json",
+        "bytes": 1122,
+        "sha256": "4b39759ad38cd3b60218fd900356bce9b171226add16b272d4f88e82da5721fb"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/logs/capture-seven-link-previews.log",
+        "bytes": 1183,
+        "sha256": "c950467b4eda2bad37d91a57e6403561f09f3f69f3c0abd13852d652f73361c5"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-env-accepted-run1/port.json",
+        "bytes": 1013,
+        "sha256": "e3ea05785bc04453c0bf8ca62be32a1c6b51057de36bcb5442e1ac23c0fbca9b"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-env-accepted-run1/original/mozglue/interposers/env_interposer.cpp",
+        "bytes": 2680,
+        "sha256": "90a43a2ce821d2534693e8f93dbb40784547e27c50eb98fb455a48900ffe56af"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-env-accepted-run1/tracked-defs.before",
+        "bytes": 2494,
+        "sha256": "65eb7bbf0843b81fdb49c47ad2d67b3384e6884b3386f04825164ea71d2882d9"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-env-accepted-run1/production-defs.before",
+        "bytes": 2494,
+        "sha256": "65eb7bbf0843b81fdb49c47ad2d67b3384e6884b3386f04825164ea71d2882d9"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/native-env-interposer-port.py",
+        "bytes": 2375,
+        "sha256": "5ace7f88f94f8d3d0b4e7377f62e4962edc91a7baf510bcec83e93ddba317936"
+      }
+    ],
+    "independentReview": {
+      "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-adoption-review.json",
+      "bytes": 10051,
+      "sha256": "d650e95bff8bb9428cc8ddbab5028349db815a36055a98416d9edf5717330933",
+      "streamingHistoryRehashDeferredDuringTimedArms": true
+    }
+  },
+  "run58History": {
+    "manifestMatchedEightInputs": true,
+    "independentCopies": true,
+    "totalBytes": 738794194,
+    "sourceManifest": {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run58-final-binaries.json",
+      "bytes": 14055,
+      "sha256": "5f52901f8f57f6f885d60e72465556b6498aba17d6f1beb4ddebaa4e61a468c6",
+      "device": 66310,
+      "inode": 21813440,
+      "mtimeNs": 1791087938400799648
+    },
+    "copies": [
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+          "bytes": 175835975,
+          "sha256": "ab62aaa8084d83b4c9c9bb217aa072d649c616a5ffd8e7ccf920583bdb4dce62",
+          "device": 66310,
+          "inode": 22862382,
+          "mtimeNs": 1791086838840888055
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/firefox",
+          "bytes": 175835975,
+          "sha256": "ab62aaa8084d83b4c9c9bb217aa072d649c616a5ffd8e7ccf920583bdb4dce62",
+          "device": 66310,
+          "inode": 29921036,
+          "mtimeNs": 1791093037962713425
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/plugin-container",
+          "bytes": 175761515,
+          "sha256": "a572ef09cabdd4cd80ad0b0df3bb18aa6a76a1327e74afc6facac42c3a543cd3",
+          "device": 66310,
+          "inode": 22861914,
+          "mtimeNs": 1791087364594916146
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/plugin-container",
+          "bytes": 175761515,
+          "sha256": "a572ef09cabdd4cd80ad0b0df3bb18aa6a76a1327e74afc6facac42c3a543cd3",
+          "device": 66310,
+          "inode": 29921037,
+          "mtimeNs": 1791093039280709509
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/xpcshell",
+          "bytes": 175840485,
+          "sha256": "f2a1606c1211f0ced878c13e7072435ef5041108213bc505cbcda282646a7797",
+          "device": 66310,
+          "inode": 22862415,
+          "mtimeNs": 1791087889056646880
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/xpcshell",
+          "bytes": 175840485,
+          "sha256": "f2a1606c1211f0ced878c13e7072435ef5041108213bc505cbcda282646a7797",
+          "device": 66310,
+          "inode": 29921038,
+          "mtimeNs": 1791093040602705605
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/gfxtest",
+          "bytes": 973901,
+          "sha256": "5859187031bfdc7fe7893d055e2750d2a6d0292b6fd834ee47a46ca5c5171ceb",
+          "device": 66310,
+          "inode": 22862383,
+          "mtimeNs": 1791066087368990499
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/gfxtest",
+          "bytes": 973901,
+          "sha256": "5859187031bfdc7fe7893d055e2750d2a6d0292b6fd834ee47a46ca5c5171ceb",
+          "device": 66310,
+          "inode": 29921039,
+          "mtimeNs": 1791093041451913330
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pingsender",
+          "bytes": 360703,
+          "sha256": "ddff4c6d5e8430952faf9872313bd9d26b908050e11ab2316b68be086a3d2106",
+          "device": 66310,
+          "inode": 22862389,
+          "mtimeNs": 1791082270510763163
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/pingsender",
+          "bytes": 360703,
+          "sha256": "ddff4c6d5e8430952faf9872313bd9d26b908050e11ab2316b68be086a3d2106",
+          "device": 66310,
+          "inode": 29921040,
+          "mtimeNs": 1791093041457869442
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/certutil",
+          "bytes": 2752855,
+          "sha256": "492abd8fb9ed7e076715faa48e50664919512c96af5508b9d4f63b0aba227933",
+          "device": 66310,
+          "inode": 22862386,
+          "mtimeNs": 1791082260479911050
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/certutil",
+          "bytes": 2752855,
+          "sha256": "492abd8fb9ed7e076715faa48e50664919512c96af5508b9d4f63b0aba227933",
+          "device": 66310,
+          "inode": 29921041,
+          "mtimeNs": 1791093041466470534
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/pk12util",
+          "bytes": 2655528,
+          "sha256": "42c4a2acb85ac06b588b2db157c3a7cbb8bf225e7d37cf7897876bb114e0042a",
+          "device": 66310,
+          "inode": 22862387,
+          "mtimeNs": 1791082268782788149
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/pk12util",
+          "bytes": 2655528,
+          "sha256": "42c4a2acb85ac06b588b2db157c3a7cbb8bf225e7d37cf7897876bb114e0042a",
+          "device": 66310,
+          "inode": 29921042,
+          "mtimeNs": 1791093041486868100
+        }
+      },
+      {
+        "original": {
+          "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/wasm32-unknown-linux-musl/release/libgkrust.a",
+          "bytes": 204613232,
+          "sha256": "2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc",
+          "device": 66310,
+          "inode": 23353472,
+          "mtimeNs": 1791073490165870148
+        },
+        "copy": {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run58-originals/libgkrust.a",
+          "bytes": 204613232,
+          "sha256": "2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc",
+          "device": 66310,
+          "inode": 29921043,
+          "mtimeNs": 1791093042046701368
+        }
+      }
+    ]
+  }
+}

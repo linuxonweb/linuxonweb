@@ -1,3 +1,42 @@
+# 2026-10-03 — Real environment semantics and a cleanup timing mistake
+
+The actual Linux/Wasm environment fixture passes **41/0**: 40 positive checks
+using the compiled native interposer and one unchanged original early
+PR_SetEnv crash control. Tests cover real musl recursive calls, caller-owned
+putenv buffers and mutation, copying setenv, removal, errno, clearenv, secure
+aliases and four pthread workers synchronized for each iteration. The selected
+object is **3,732 bytes** at
+`/mnt/p6/project/build/nightly-native-env-20261004/objects/patched-env-retry1.o`.
+The guest completes with exit0 and matching six host/browser/guest CPUs. The
+outer harness still fails because Chrome descendants required forced cleanup;
+scoped environment behavior passes, full browser startup/JIT/GPU does not.
+
+The first candidate incorrectly assumed musl exposes
+PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP. It does not. The corrected native path
+uses pthread_once and public recursive mutex attributes; the failed compile is
+preserved. Real concurrency tests also need an iteration barrier, rather than
+assuming independently started workers actually overlap. Production adoption
+must preserve manifest-matched independent copies of all seven Run58 raw
+executables and the Rust archive before source changes or relinking. Eight
+manifest-matched distinct-inode copies now total738794194 bytes. The reviewed
+source and scoped linker flags are applied. Natural component compilation
+passes and its actual production object exactly equals the guest-tested object;
+seven forced linker previews pass. Heavy optimizer work stays held during the
+GPU/software comparison.
+
+The heavier compute experiment changes only CPU/WGSL rounds1024->16384. Its
+first hardware arm verifies all35 frames, but fails cleanup and is excluded;
+software arms were stopped. Preserve the original smaller workload's **0.752x**
+hardware/software result regardless of a later larger-workload result.
+
+The cleanup harness used Promise.race with an already-resolved leader-exit
+promise. That made the nominal grace wait return immediately while descendants
+could still be exiting. The repair polls the exact owned process group with
+the existing finite4s/3s/3s windows, includes zombies, records drainage timing
+and keeps forced cleanup as failure. Review and fresh ABBA measurements must
+precede any performance claim. Firefox GPU testing stays paused until the
+simple benchmark passes correctness and measured acceleration.
+
 # 2026-10-03 — Actual compute comparison and two concrete startup failures
 
 The user gates Firefox GPU testing on a passing simple GPU benchmark. Preserve
