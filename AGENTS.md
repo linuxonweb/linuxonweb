@@ -1,3 +1,65 @@
+# Latest continuation — real NSPR lifecycle and fatal gate passes, 2026-10-03
+
+Fresh task E=/mnt/p6/project/build/nightly-native-static-loader-20261003.
+Exact candidate changes only nsprpub/pr/src/linking/prlink.c and
+memory/mozalloc/mozalloc_abort.cpp. Native Linux/Wasm initialization retains
+normal NSPR monitor/loadmap ownership using the existing null-handle strategy;
+registered static tables skip dynamic dlclose while actual dynamic requests
+remain honestly unsupported. Native abort emits a real unreachable trap and
+preserves the original fatal annotation. Original/patched four actual unified
+objects compile successfully; actual emitted code independently reviewed,
+non-Wasm preprocessed bodies identical. Exactly two existing .deps consumers.
+Root compile review passes81 checks, root-compile-review.json SHA
+3005a37e651dd3fd046f6c279b77ddc9e0127c4d96a5aa727aa8fbdeb4c51879.
+Six actual-Wasm fatal host controls also pass; they are not guest acceptance.
+
+Actual single Linux/Wasm guest retry2 PASSES25/0:21 static lifecycle checks,
+original initialization traps139, init-only unguarded unload gives19/2+exit1,
+and direct abort/mozalloc_abort terminate139. Actual host/browser/kernel CPUs6,
+RAM1GiB, real Chrome AS2TiB/core0 admitted. Unified36132 owner-reaped0,
+14.821827s/no stop; exact Node702650/Chrome702717 groups independently empty,
+server closed/browser exited0. PeakRSS1,862,672,384B/task76,713,334B.
+Evidence guest-run-retry2/{result.json,guest-console.txt},
+guest-run-retry2-supervisor-status.json, guest-fix-gate.json. Independent root
+raw/result/resource/physical cleanup review root-guest-acceptance.json SHA
+af245a7098eb4426b31b3421e8c30ef97755e38154ee2a4f7047e8f88b1d85d0.
+This is native loader/fatal acceptance, not Firefox baseline/JIT/GPU acceptance.
+
+Retain failed attempts:85236 reaped1 before guest (Chrome Unix socket path108
+bytes);19673 reaped-9 on actual owned-cache ENOENT during du accounting. Exact
+prior groups694438/694505 independently verified empty despite original status
+chromeGroupEmpty=false teardown race. Frozen attempt1/attempt2 wrappers/plans
+and logs retained. Scratch E/t yields socket106bytes+NUL107<=108. Supervisor
+counts full task including cache; at most3 retries accept only exact ENOENT
+under admitted owned cache/scratch with valid full-root total; other errors
+fail. Retry2 pinned wrapper25fde000b66c001dbdc3554fb23d5f30ea34396e4dd3c227c83cac3d7ef22f89,
+plan e68d1faef95a2f2a3232f03870031f4194f97683d5dfc0ae671f41275d103946.
+
+Reviewed production bytes are now APPLIED; original backups are in E/production-port.
+New recipe tools/nightly-musl/recipe/native-static-loader-port.py and patch
+replay exact source hashes/idempotently; actual second invocation passes with
+alreadyApplied=true. Actual bare .o targets were no-ops (dependency files are
+included only by target-objects/target/all/default); corrected ordinary two
+component target-objects completes unified72156 reaped0/2.0549s/groups empty.
+Actual production objects equal the guest-tested candidate bytes exactly.
+
+Run57 LIVE: unified75670, owned PID/PGID710076; ordinary fullj1/originalO2,
+7200s/AS64GiB/RSS48GiB/floor2GiB/task32GiB/reserve20GiB/core0/oom1000.
+Status R/status/build-run57-native-static-loader.json, log R/logs/
+build-run57-native-static-loader.log, R=/mnt/p6/build/firefox-nightly-musl-recovery-20261002.
+Owner /root/diagnose_native_firefox_startup owns polling/reaping. Do not change
+active source/recipe or start a duplicate build. H=/mnt/p6/project/build/
+nightly-native-static-rebuild-20261003 preserves all7 Run56 raw binaries+Rust
+as8 independent files/739,575,587B, actual hashes/distinct source inodes verified.
+H/run57-launch-plan.json SHA4a35076303a41638e687f8c4f3e35e825d77c666c47083e80c23b296f2bbc6e3;
+root-run57-launch-review.json rehashes17 launch pins and8 original copies.
+After actual final-link signature gates, fresh package and cold/warm baseline,
+continue fresh whole broad JIT, authorized Sites JIT release, then actual GPU
+integration/acceptance and second release. Simple Vulkan->wgpu benchmark
+already passes18.1778x with matched readbacks; user reiterates Firefox GPU
+only after this gate. Publicv10 unchanged; goal remains active. Keep owner
+active because fresh-agent/followup creation reached the agent thread limit.
+
 # Latest continuation — first fatal captured: NSPR dynamic loading, 2026-10-03
 
 Corrected first-abort diagnostic captured the original fatal stderr message:

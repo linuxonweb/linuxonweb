@@ -1,0 +1,58 @@
+--- a/nsprpub/pr/src/linking/prlink.c
++++ b/nsprpub/pr/src/linking/prlink.c
+@@ -127,7 +127,10 @@
+ 
+ #elif defined(XP_UNIX)
+ #ifdef HAVE_DLL
+-#if defined(USE_DLFCN) && !defined(NO_DLOPEN_NULL)
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++    /* Native Wasm is statically linked; retain the NO_DLOPEN_NULL strategy. */
++    h = NULL;
++#elif defined(USE_DLFCN) && !defined(NO_DLOPEN_NULL)
+     h = dlopen(0, RTLD_LAZY);
+     if (!h) {
+         char* error;
+@@ -633,7 +636,14 @@
+ #ifdef XP_UNIX
+ #ifdef HAVE_DLL
+ #ifdef USE_DLFCN
++#if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++    /* Registered static tables have no dynamic loader handle to release. */
++    if (!lib->staticTable) {
++        result = dlclose(lib->dlh);
++    }
++#else
+     result = dlclose(lib->dlh);
++#endif
+ #elif defined(USE_HPSHL)
+     result = shl_unload(lib->dlh);
+ #else
+--- a/memory/mozalloc/mozalloc_abort.cpp
++++ b/memory/mozalloc/mozalloc_abort.cpp
+@@ -77,12 +77,16 @@
+ // UndefinedBehaviorSanitizer runtime which also requires the same workaround
+ // as with ASan or TSan.
+ extern "C" void abort(void) {
+-#  ifdef MOZ_WIDGET_ANDROID
++#  if defined(__linux__) && defined(__wasm__) && !defined(__wasi__)
++  // Linear address zero may be writable. Terminate without re-entering MOZ_CRASH.
++  __builtin_trap();
++#  else
++#    ifdef MOZ_WIDGET_ANDROID
+   char msg[64] = {};
+   fillAbortMessage(msg, uintptr_t(__builtin_return_address(0)));
+-#  else
++#    else
+   const char* const msg = "Redirecting call to abort() to mozalloc_abort\n";
+-#  endif
++#    endif
+ 
+   mozalloc_abort(msg);
+ 
+@@ -91,5 +95,6 @@
+   // unreachable marker here to avoid a "'noreturn' function does return"
+   // warning.
+   MOZ_ASSUME_UNREACHABLE_MARKER();
++#  endif
+ }
+ #endif

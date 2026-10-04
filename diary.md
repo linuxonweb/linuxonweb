@@ -1,3 +1,47 @@
+# 2026-10-03 — NSPR static lifecycle and fatal termination pass in the guest
+
+The two-file candidate passes a real Linux/Wasm guest with **25/25 checks**:
+21 NSPR lifecycle checks and four negative/fatal controls. It retains actual
+initialization, symbol calls, reference counts, final unloading and cleanup;
+unsupported dynamic requests still fail honestly. Fixing initialization alone
+is insufficient: the retained partial control fails both final static unloads.
+Native Wasm `abort()` now emits a trap, preserving the original crash reason
+rather than recursing through `mozalloc_abort`. Normal non-Wasm preprocessed
+bodies remain identical. Evidence and independent review are under
+`/mnt/p6/project/build/nightly-native-static-loader-20261003`, especially
+`guest-run-retry2/guest-console.txt` and `root-guest-acceptance.json`.
+
+The actual run used six host/browser/kernel CPUs and 1 GiB guest RAM, finished
+in 14.82 seconds, and closed its server and both owned process groups. This
+proves the loader/fatal fix; Firefox startup, JIT and GPU remain unaccepted.
+The exact reviewed sources and idempotent recipe are applied. Both normal
+component rebuilds emitted bytes identical to the guest-tested objects. Run57
+is now the ordinary full build, unified 75670 / owned PGID 710076, with original
+automatic optimization and existing bounds. Until it completes, the completed
+Run56 raw Firefox is preserved as **176,096,386 bytes** at
+`/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run56-independent-originals/firefox`;
+its completed transformed module remains **189,713,492 bytes** at
+`/mnt/p6/project/build/nightly-native-package-run56-20261003/transform/firefox.fpcast.wasm`.
+These are Run56 results, not measurements of the pending corrected build.
+
+Requesting a bare `.o` make target reported up-to-date without compilation: this
+build includes dependency files only for its normal aggregate targets. Use
+`target-objects` and require actual fresh output evidence; the corrected two
+component targets completed in 2.05 seconds. Preserve immutable prior binaries
+before relinking instead of referring to mutable output paths as old evidence.
+
+Two launch mistakes were retained and corrected: a task temporary path made
+Chromium's Unix socket hit the 108-byte limit, and a strict disk reader treated
+normal cache deletion as a fatal error. Include the terminating NUL when
+checking socket paths; a shorter disk-backed scratch path fixed the first.
+For disk accounting, keep the full task total, permit bounded ENOENT churn
+only inside admitted owned cache/scratch paths, and reject other errors.
+A cleanup status also raced process teardown; retain the original status and
+add a fresh physical empty-group proof rather than rewriting old evidence.
+The first root review used a greedy disassembly regex, then incorrectly
+expected a literal aggregate marker instead of shell counters; both inspection
+errors were corrected without changing the tested source or fixtures.
+
 # 2026-10-03 — Recover the first fatal message before fixing startup
 
 A bounded task-only worker observer captured the first abort caller without
