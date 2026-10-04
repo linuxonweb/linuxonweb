@@ -1,8 +1,9 @@
-# Full Nightly PBL/JIT build transition — 2026-10-02
+# Full Nightly PBL/JIT build transition — updated 2026-10-03
 
-This packet is a plan, not an implementation or acceptance. It reads the live
-Nightly source/recipe and the selected JIT preparation without changing them.
-No build, browser, guest, Git operation, promotion or deployment was launched.
+This packet specifies the next full PBL/JIT build; it is not JIT acceptance.
+The baseline owner is running Run57, unified session 75670/owned PGID 710076,
+after the actual native loader/fatal gate passed 25/0. Reinspect that exact handle before
+transitioning. No full PBL/JIT browser build or deployment has started.
 Planning evidence lives in
 `/mnt/p6/build/firefox-nightly-full-jit-build-plan-20261002`, with disk-backed
 TMPDIR/TMP/TEMP, a 2 GiB planning cap and a 20 GiB free-space reserve.
@@ -20,9 +21,11 @@ The pinned source is Nightly159.0a1, official reference BuildID20261002211853,
 Hg dfc77f7a6d716f1a20a2576597638d4fc21cd916, Git mirror
 bf9757d91e2e53b8ab836f2a08bf4c0275fdcd23. Pin the completed baseline's actual
 local BuildID separately. The acquisition proof establishes the reviewed overlay
-and canonical source pairs, not whole-tree Hg/Git equality. Run11 ended with
-exit2; the owner subsequently started run12. Neither observation is completion.
-Reinspect the owner's status/process group before beginning the transition.
+and canonical source pairs, not whole-tree Hg/Git equality. The accepted
+source must retain the cc-rs native C++ runtime selection, its matching Cargo
+checksum, the NSS disabled-FIPS signature correction, and the NSPR static
+loader/native fatal-trap corrections. The latter passed the actual guest
+lifecycle/fatal unit gate; Run57 browser startup is still pending.
 
 1. **Freeze the accepted baseline and choose storage.** Retain hashes of the
    accepted recipe, source inventory, target JSON, generated configuration,
@@ -35,9 +38,13 @@ Reinspect the owner's status/process group before beginning the transition.
    are insufficient.
 
    Use `/mnt/p6/build/firefox-nightly-musl-jit-full-20261002` for the next full
-   build, with the established 20 GiB task cap, 20 GiB free reserve, j4 and
-   bounded 20-minute build phases. Count its source, objects, caches, temporary
-   files, post-link outputs and copied artifacts together. This is a separate
+   build, with the authorized 32 GiB task cap and 20 GiB free reserve. Use j4
+   for the object-only graph, then j1 for the ordinary full build and original
+   automatic Binaryen `-O2`. Both use finite 7200-second phases, inherited
+   64 GiB address space, 48 GiB group RSS, 2 GiB available-RAM floor, core0
+   and oom_score_adj1000. Preflight still requires 4 GiB available RAM and
+   available RAM plus free swap at least 66 GiB. Count source, objects, caches,
+   temporary files, post-link outputs and copied artifacts together. This is a separate
    task boundary, not permission to enlarge the original recovery task or the
    planning packet. The next owner must record the policy before allocating.
 
@@ -55,15 +62,12 @@ Reinspect the owner's status/process group before beginning the transition.
    | Metadata task | 16,728,064 | 0.016 |
    | Available disk | 83,663,855,616 | 77.918 |
 
-   A second source/object/cache set at these *incomplete* sizes consumes about
-   9.61 GiB. Putting it inside the original task would leave only about
-   0.75 GiB under its cap before completion, link/fpcast and package overhead:
-   do not choose that layout. A separate 20 GiB task starts with about
-   10.39 GiB headroom at the same sizes, but eventual C++ objects and linked
-   module size are unknown. With source and observed cache alone, all remaining
-   objects/logs/post-link temporaries must fit about 15.02 GiB. Recompute from
-   the completed baseline before copying; a full copy's actual size is the
-   lower planning reference, not a guarantee the PBL build fits.
+   Those observations describe an unfinished older build, not the eventual
+   no-debug/PBL footprint. Recompute from the completed accepted baseline and
+   account for source, fresh Rust/C++ outputs, caches, link/optimization/fpcast
+   temporaries and complete packaging under the current 32 GiB boundary. Do not
+   delete or overwrite the baseline to make room. The historical 20 GiB cap
+   does not control the selected new build; the 20 GiB free reserve still does.
 
    ext4 was observed. Do not assume reflinks work. A plain independent source
    copy costs the measured source allocation and is preferred. A verified
@@ -83,10 +87,21 @@ Reinspect the owner's status/process group before beginning the transition.
    copy, into a fresh output. The broader preparation and native diagnostic
    compile now pass; see `docs/firefox-nightly-jit-broad-20261003.md`.
    Compare its baseline input hashes to selected
-   `/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/overlay-run4/manifest.json`;
+   `/mnt/p6/build/firefox-nightly-jit-musl-prep-20261002/overlay-broad-run1/manifest.json`;
    review changed anchors rather than blindly copying an obsolete full file.
    Replay the 1,969-assertion broad host preparation against the selected new
    packet. Retain the 972-assertion integer control and its separate overlay.
+
+   Copy the six accepted native archives independently, preserving their
+   relative task paths; no mutable hardlinks or CMake build trees. The current
+   archive inventory is in `/mnt/p6/project/build/nightly-jit-transition-review-20261003/README.txt`.
+   Retain `CXXSTDLIB_wasm32_unknown_linux_musl=c++`; rebase
+   `WASM_MUSL_CXX_RUNTIME_LIBDIR` to the new task's native-unwind archive root.
+   Verify actual Cargo native helper links and archive member hashes against
+   these libraries, with no legacy C++ ABI runtime. The explicit-source replay
+   script `tools/nightly-musl/recipe/native-static-loader-port.py` admits the
+   accepted patched bytes idempotently; preserve its patch and original backup
+   provenance. Do not replay an obsolete whole-file overlay over these fixes.
 
    Copy the final accepted recipe, then rebase *every* recovery-root reference
    in the new recipe/source `.mozconfig`: environment, run-phase root/log/status,
@@ -151,7 +166,11 @@ Reinspect the owner's status/process group before beginning the transition.
    python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py pre-export pbl-run1
    python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py export pbl-run1
    python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py mfbt pbl-run1
-   NIGHTLY_JOBS=4 python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py build pbl-run1
+   export NIGHTLY_BUILD_TIMEOUT_SECONDS=7200 NIGHTLY_ADDRESS_SPACE_GIB=64 NIGHTLY_RESIDENT_MEMORY_GIB=48
+   NIGHTLY_OBJECTS_ONLY=1 NIGHTLY_JOBS=4 python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py build pbl-objects-run1
+   # After object-stage owner reap/group-empty proof:
+   unset NIGHTLY_OBJECTS_ONLY
+   NIGHTLY_JOBS=1 python3 -B /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/recipe/run-phase.py build pbl-full-run1
    ```
 
    Inspect each result before the next phase; continuation builds receive fresh
@@ -165,24 +184,21 @@ Reinspect the owner's status/process group before beginning the transition.
 
    Capture actual expanded compiler and final linker argv while response files
    still exist: PblJit, PBL, Jit's real unified unit, XPC's real unified unit,
-   one guest Cargo C++ helper and one host shader tool. Require target SjLj and
-   WebAssembly C++ ABI flags and their absence on host tools. Record final
+   one guest Cargo C++ helper and one host shader tool. Require native Wasm
+   EH on exception-enabled target units and WebAssembly C++ ABI selection;
+   host tools must retain their host configuration. Record final
    archive membership, target pointer/Value/tag assertions and source/input
    hashes. Build the full browser/runtime; the old128 incremental
    `tools/build-firefox-pbl-jit.py` is reference logic only.
 
    Safe reuse: immutable compiler/sysroot/Nix inputs and verified downloaded
    package bytes; copy any writable download cache into the new task. Start
-   object/backend/generated-header/dependency/Cargo target state fresh. Optional
-   Rust artifact seeding is an optimization after an audit, not required for
-   progress: independently copy candidates, compare rustc/target JSON, Cargo.lock,
-   complete vendored source/checksums, features, cfg/rustflags, build-script
-   inputs/environment and path fingerprints, then let Cargo recompute freshness.
-   Reject Mozilla-config/bindgen/C++ helper/build-script output from mismatched
-   source paths or PBL configuration. Never force freshness or substitute copied
-   archive members. The measured target/host Rust trees total3.857 GiB; relocation
-   may invalidate most of them, and stale-plus-new copies can increase peak use.
-   Read-only downloads offer simpler reuse. No Firefox128 object is eligible.
+   object/backend/generated-header/dependency/Cargo target state fresh. Do not
+   seed baseline or diagnostic Rust archives, compiled Cargo trees or object
+   members. Accepted runtime primitive archives are the explicit six-library
+   exception above; browser/Rust generated outputs are rebuilt for this source
+   and PBL configuration. Reusing verified download bytes does not admit old
+   build-script outputs. No Firefox128 object is eligible.
 
 4. **Derive the actual linked Wasm contract, then fpcast and package.**
    Use tools/nightly-jit-prep/inspect-wasm.py on the actual raw Firefox and its
@@ -193,13 +209,24 @@ Reinspect the owner's status/process group before beginning the transition.
    Keep raw linked Firefox and complete dist/bin immutable. Inventory imports,
    defined/exported memory/table/globals, limits, element segment offsets,
    target features, type/call_indirect signatures and stack/TLS exports from
-   this binary. No current Nightly table minimum, stack initializer, memory
-   limit or callback ordinal has been measured;177851 and16777216 belong to
-   historical128 evidence and must not become predicates.
+   this binary. The accepted native program contract selects an 8 MiB stack
+   matching the Rust target, imported shared memory up to 4 GiB, and a growable
+   table. Verify the actual newly linked module; old Firefox128 table counts,
+   callback ordinals and stack constants must not become predicates.
+
+   Capture exact actual driver/LLD rows for all naturally affected programs
+   and NSS helpers. Ordinary Mach logs do not prove absence of signature
+   warnings: replay exact current link inputs to diagnostic outputs, reject
+   every function-signature mismatch, and retain complete logs. The accepted
+   baseline replay has five known inert ELF `-z` warning pairs; the separate
+   fatal-warning control removes only those exact pairs and adds
+   `--fatal-warnings`, preserving every input and ABI option. Audit current
+   native Rust runtime ownership and NSS fallback signatures too.
 
    Confirm the fresh raw browser has no `.debug_*` custom sections; retain raw
-   bytes and a separately named packaging copy. The prior debug-bearing
-   baseline must be stripped only in that separate packaging copy. Apply
+   bytes and a separately named packaging copy. The accepted baseline and new
+   full graph must already omit debug information; do not substitute post-build
+   stripping for that requirement. Apply
    the current Binaryen23-slot transform, with complete command/log hashes:
 
    ```bash
