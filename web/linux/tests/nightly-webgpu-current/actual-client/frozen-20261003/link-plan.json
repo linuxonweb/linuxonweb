@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+    "-pthread",
+    "-matomics",
+    "-mbulk-memory",
+    "-fwasm-exceptions",
+    "-static",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.o",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/Unified_cpp_xpcom_string0.o",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libc++.a",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libc++abi.a",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libunwind.a",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libgkrust.a",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/nsDebugImpl.o",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libnightly-native-runtime.a",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/Unified_cpp_crashreporter0.o",
+    "-Wl,--wrap=exit,--wrap=__pthread_tsd_run_dtors",
+    "-Wl,--gc-sections,--import-memory,--export-table,--shared-memory",
+    "-Wl,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=8388608,--error-limit=40",
+    "-o",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-raw.wasm",
+    "-Wl,--fatal-warnings"
+  ],
+  "dependencies": 937,
+  "nativeRustCurrent": true,
+  "fullFirefoxAcceptance": false
+}

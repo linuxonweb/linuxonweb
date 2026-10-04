@@ -1,3 +1,54 @@
+# Latest continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
+
+Run57 ordinary fullj1/originalO2 COMPLETED: unified75670 owner-reaped0,
+child0,1602.4056s/no stop, exactPGID710076 empty. R=/mnt/p6/build/
+firefox-nightly-musl-recovery-20261002. RawFirefox175835746B SHA
+e40ba4bc22b009694c2547d0c381b2152ccad6f67d493e9f193de2b76ceec8f9
+at R/obj-nightly/dist/bin/firefox; seven raw outputs validate successfully.
+All five actual directLLD exact/fatal gates pass with zero signature mismatches;
+only recorded five inert unsupported-z warnings in exact rows, fatal logs empty.
+Actual BuildID remains20261003042618; source159.0a1 and new raw/source hashes
+must be bound independently. Current native Rust unchanged204613232B/7136
+native members SHA2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc.
+Inherited7200s/AS64GiB/RSS48GiB/floor2GiB/task32GiB/reserve20GiB/core0/oom1000
+retained. Measured task22339923968B/free45514567680B/peakAS8273088512B.
+Root H/root-run57-terminal-raw-review.json independently rehashes actualraw7,
+terminal/source/currentRust; H=/mnt/p6/project/build/nightly-native-static-rebuild-20261003.
+
+Owner /root/diagnose_native_firefox_startup continues fresh serial transforms,
+package/overlay then cold/warm baseline. P=/mnt/p6/project/build/
+nightly-native-package-run57-20261003/transform; frozen raw/direct handoff
+run57-raw-direct-link-handoff.json21685B SHA
+f9454cf32f2f194fad99ae7039f2c4dbf81900fa7c0f0cb30191ad4b724e2036.
+Owner unified16397 now serial transforms; only owner polls/reaps this handle.
+Task-copy processing roots rebased narrowly; root-reviewed preparation report
+P/root-preparation-rebase-review.json. Do not reuse Run56 direct/package
+acceptance for Run57. No baseline/browser/JIT/GPU/deploy acceptance yet.
+
+Actual-current native Rust GPU smoke T=/mnt/p6/project/build/
+nightly-current-rust-gpu-smoke-20261003 now passes hardware2/software1/WebGL1.
+No Firefox executable launched. Actual wgpu_client_* serializes all12requests;
+actual receive_server_message delivers four checked FFI callbacks, sixteen
+words checked inside map callback, five hostdispatches, ownerclose0/resources0.
+Hardware API NVIDIA/maxwell, software API SwiftShader+RustCpu, WebGL genuine
+RustGl/NVIDIAANGLE/WebGL2. Each actualguest CPU6/RAM1GiB/ChromeAS2TiB/core0,
+all three owner handles reaped0, groups empty/servers closed. Finalmodule
+256891B SHA b5d45d6ae90e90591ca4aa025ece86a38c8b7d10b68c65d5c8d2612dfdf2d29f;
+all155 indirectentries23i64->i64, nativecompile/fatal-link/WABT/fpcast pass.
+Root actual evidence review T/root-actual-guest-review.json11902B SHA
+1a09cb00fb3dbeade6c598715c216e67b6bd4656f24b0550fb4ae381d58006dd.
+Tracked source/docs in web/linux/tests/nightly-webgpu-current/actual-client;
+compact packet docs/evidence/nightly-actual-rust-gpu-client-20261003.json.
+Retain initial generic-C++ABI linker failure and empty privacy-name test
+failure; fixed native ABI flag/metadata predicate only. No Firefox DOM/IPC,
+indexed map ownership, races, rendering, currentclientcompute or FPS claim.
+Simple Vulkan->wgpu benchmark ALREADY passes18.1778x matchedreadbacks; only
+test Firefox GPU after that gate as user reiterated. Publicv10 unchanged.
+Next baseline acceptance, fresh whole broadJIT, first authorized Sitesrelease,
+then GPUintegration/fullacceptance/secondrelease. Fresh agent spawn/followup
+still refused by threadlimit; keep existing build owner active. Historical
+LIVE entries below are superseded by actual terminal evidence above.
+
 # Latest continuation — real NSPR lifecycle and fatal gate passes, 2026-10-03
 
 Fresh task E=/mnt/p6/project/build/nightly-native-static-loader-20261003.

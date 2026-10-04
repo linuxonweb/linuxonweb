@@ -1,0 +1,32 @@
+--- reviewed-original
++++ task-copy
+@@ -5,13 +5,13 @@
+ import {createServer} from 'node:http';
+ import path from 'node:path';
+ import {createHash} from 'node:crypto';
+-import {prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence} from '../../../../../tools/guest-rootfs/firefox-browser-affinity.mjs';
+-import {ownedBrowserEndpoint, ownedPageEndpoint} from '../../../../../tools/guest-rootfs/check-firefox-nightly-benchmark.mjs';
++import {prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence} from '/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-browser-affinity.mjs';
++import {ownedBrowserEndpoint, ownedPageEndpoint} from '/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/check-firefox-nightly-benchmark.mjs';
+ 
+-export const TASK='/mnt/p6/project/build/nightly-current-native-gpu-transport-20261003';
++export const TASK='/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003';
+ export const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+-const repo=path.resolve(import.meta.dirname,'../../../../..');
++const repo="/mnt/p6/project/linux/linuxonweb";
+ export async function diskCheck(location) {
+   const actual=await fs.realpath(location), s=await fs.statfs(actual);
+   if(!(actual===TASK||actual.startsWith(TASK+'/'))||[0x01021994,0x858458f6].includes(s.type)||s.bavail*s.bsize<20*1024**3) throw Error('disk-backed task and 20GiB reserve required: '+location);
+@@ -62,9 +62,9 @@
+   let exitInfo,spawnError,browser,pageSocket,guardRunning=false,guardError,peakRssKiB=0;
+   const exited=new Promise(resolve=>{child.once('exit',(code,signal)=>{exitInfo={code,signal};resolve();});child.once('error',error=>{spawnError=String(error);resolve();});});
+   const state=()=>{let alive=false,ownedProfileArgument=false;try{const raw=readFileSync('/proc/'+child.pid+'/cmdline','utf8'), argv=raw.split('\0').filter(Boolean),tokens=argv.length===1?argv[0].split(' '):argv;ownedProfileArgument=tokens.includes('--user-data-dir='+profile)&&tokens.includes('--remote-debugging-port=0');alive=!exitInfo&&!spawnError&&ownedProfileArgument;}catch{}return {pid:child.pid,alive,ownedProfileArgument,exitCode:child.exitCode,signalCode:child.signalCode,spawnError};};
+-  const report={schema:1,mode,out,origin,browserPid:child.pid,scope:'independent-browser-diagnostic',pass:false,guestAcceptance:false,firefoxGpuAcceptance:false,releaseAcceptance:false,guards:{timeoutMs,coreBytes:0,addressSpaceBytes:2*1024**4,rssBytes:12*1024**3,availableRamFloorBytes:4*1024**3,taskDiskCapBytes:4*1024**3,diskReserveBytes:20*1024**3}};
++  const report={schema:1,mode,out,origin,browserPid:child.pid,scope:'independent-browser-diagnostic',pass:false,guestAcceptance:false,firefoxGpuAcceptance:false,releaseAcceptance:false,guards:{timeoutMs,coreBytes:0,addressSpaceBytes:2*1024**4,rssBytes:12*1024**3,availableRamFloorBytes:4*1024**3,taskDiskCapBytes:1*1024**3,diskReserveBytes:20*1024**3}};
+   const terminate=signal=>{try{process.kill(-child.pid,signal);}catch(e){if(e.code!=='ESRCH')throw e;}};
+-  const guard=setInterval(async()=>{if(guardRunning)return;guardRunning=true;try{const g=await members(child.pid),rss=g.reduce((s,p)=>s+p.rssKiB,0);peakRssKiB=Math.max(peakRssKiB,rss);const available=Number(/^MemAvailable:\s*(\d+)/m.exec(await fs.readFile('/proc/meminfo','utf8'))?.[1])*1024;await diskCheck(out);const taskBytes=Number(execFileSync('du',['-sb',TASK],{encoding:'utf8'}).split(/\s/)[0]);if(Date.now()-spawnedAt>timeoutMs||rss*1024>12*1024**3||available<4*1024**3||taskBytes>4*1024**3)throw Error('browser resource/time guard');}catch(e){guardError=String(e);terminate('SIGTERM');}finally{guardRunning=false;}},2000);
++  const guard=setInterval(async()=>{if(guardRunning)return;guardRunning=true;try{const g=await members(child.pid),rss=g.reduce((s,p)=>s+p.rssKiB,0);peakRssKiB=Math.max(peakRssKiB,rss);const available=Number(/^MemAvailable:\s*(\d+)/m.exec(await fs.readFile('/proc/meminfo','utf8'))?.[1])*1024;await diskCheck(out);const taskBytes=Number(execFileSync('du',['-sb',TASK],{encoding:'utf8'}).split(/\s/)[0]);if(Date.now()-spawnedAt>timeoutMs||rss*1024>12*1024**3||available<4*1024**3||taskBytes>1*1024**3)throw Error('browser resource/time guard');}catch(e){guardError=String(e);terminate('SIGTERM');}finally{guardRunning=false;}},2000);
+   try {
+     let text,stat,version;const deadline=Date.now()+20000;
+     for(;;){if(exitInfo||spawnError)throw Error('owned browser startup failure');try{text=await fs.readFile(profile+'/DevToolsActivePort','utf8');stat=await fs.lstat(profile+'/DevToolsActivePort');const port=Number(text.split('\n')[0]);version=await(await fetch('http://127.0.0.1:'+port+'/json/version',{signal:AbortSignal.timeout(3000)})).json();break;}catch(e){if(Date.now()>deadline)throw Error('owned endpoint startup deadline: '+e);await sleep(100);}}

@@ -1,0 +1,403 @@
+{
+  "schema": 1,
+  "pass": true,
+  "scope": "actual current Nightly Rust client standalone Linux/Wasm copy/map and FFI callbacks",
+  "firefoxGpuAcceptance": false,
+  "jitAcceptance": false,
+  "releaseAcceptance": false,
+  "performanceAcceptance": false,
+  "task": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003",
+  "reviewer": {
+    "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/nightly-webgpu-current/actual-client/review.py",
+    "bytes": 9313,
+    "sha256": "72994dfc485be4f0c3349caf10d8ae2952718ca410e5e986027915b142850114"
+  },
+  "module": {
+    "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.wasm",
+    "bytes": 256891,
+    "sha256": "b5d45d6ae90e90591ca4aa025ece86a38c8b7d10b68c65d5c8d2612dfdf2d29f"
+  },
+  "package": {
+    "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/package/package.json",
+    "bytes": 26386,
+    "sha256": "1d3744d10dca8355c40f53ea041020c23e11039db2b45db2424196cec3b27012"
+  },
+  "archive": {
+    "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/package/initramfs.cpio",
+    "bytes": 40746380,
+    "sha256": "0f90506ea1df83bd1a0298eab6d6c0efad8289aa4b00a81c136013631cf431a7"
+  },
+  "inputs": [
+    {
+      "source": "/mnt/p6/project/build/nightly-baseline-guest-20261003/run56-native-runtime-archive-audit/libgkrust.a",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libgkrust.a",
+      "bytes": 204613232,
+      "sha256": "2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/xpcom/string/Unified_cpp_xpcom_string0.o",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/Unified_cpp_xpcom_string0.o",
+      "bytes": 257037,
+      "sha256": "4fba97c88793df1bfddf42d6ccf0fe70a4cb0d8236469ddb7d881ea0f1122df7"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/xpcom/base/nsDebugImpl.o",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/nsDebugImpl.o",
+      "bytes": 72301,
+      "sha256": "7924288c5df5c7cbd1f0ba1e6ff61a44b9d2664afe48a1d486f80eda5537b904"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/toolkit/crashreporter/Unified_cpp_crashreporter0.o",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/Unified_cpp_crashreporter0.o",
+      "bytes": 11062,
+      "sha256": "06a92286ed93db6cc3aa7a1a5de285fca5ae1b8affc8a6c4215476880242d8b8"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++.a",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libc++.a",
+      "bytes": 1533772,
+      "sha256": "5265c4a1fec02eeb62648d21479c9b06a1d5e5e3599fea4aea89534963f7463c"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libc++abi.a",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libc++abi.a",
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib/libunwind.a",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libunwind.a",
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b"
+    },
+    {
+      "source": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/inputs/libnightly-native-runtime.a",
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725"
+    }
+  ],
+  "nativePhases": [
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/compile3.json",
+      "bytes": 1386,
+      "sha256": "fa3f16d84e771bdaed197208be312a7598862ab166b34cf93594a7d96460b995"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/link3.json",
+      "bytes": 1699,
+      "sha256": "359bddc936f14a2e0f4b635e8501134c4d56f8de564628c7fc62252b5bbf431b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/raw-validate2.json",
+      "bytes": 408,
+      "sha256": "a54bb4fb8be4b502e1a187728f1f9bc2337b8a93d4ef82bca1e7cae3ee53861d"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/fpcast2.json",
+      "bytes": 586,
+      "sha256": "f8081fbfa9917f415076f21c1cce1a3a127cd0d5cb3e4cb976e6e0eea8f0b2a0"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/final-validate2.json",
+      "bytes": 405,
+      "sha256": "a62ee853958936bc57a51592e748ba31393e3b866357d22e340cdc1a3f778b37"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/abi3.json",
+      "bytes": 615,
+      "sha256": "7fc5c00ccc4fc00b4ad12f21a834d1987b3b2137c94890b1a9c25cac6e43154d"
+    }
+  ],
+  "arms": [
+    {
+      "arm": "hardware2",
+      "backend": "BrowserWebGpu",
+      "adapter": {
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "",
+        "name": "",
+        "vendor": 0
+      },
+      "apiIdentity": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": ""
+      },
+      "cpus": 6,
+      "cleanup": {
+        "kind": "cleanup",
+        "id": 1,
+        "count": 0,
+        "stats": {
+          "opened": 1,
+          "closed": 1,
+          "dispatches": 5,
+          "maps": 1,
+          "completedQueue": 1,
+          "resourcesBefore": [
+            4
+          ],
+          "resourcesAfter": [
+            0
+          ],
+          "rejected": 0,
+          "abandoned": 0
+        },
+        "liveSessions": 0
+      },
+      "seconds": 10.638780495999526,
+      "peakRSSBytes": 1908998144,
+      "evidence": [
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware2/result.json",
+          "bytes": 324379,
+          "sha256": "19c4b9cdd57b644e9c1a06f26f2f1099ff989f3c844c1d0966b873bd1aa64d26"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware2/guest.json",
+          "bytes": 35469,
+          "sha256": "16879b1a989317a43183e56001075cde245d3fc078ecd81fb40ecad083a04a83"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware2/guest-log.txt",
+          "bytes": 497,
+          "sha256": "558e65958398b667630fae626105751f872946f0de8a73f1c39edbbf0f0b7939"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware2/native-cpu.json",
+          "bytes": 420,
+          "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware2-supervisor-status.json",
+          "bytes": 1892,
+          "sha256": "1080d4edb7a45d1283e445ac744383ea657b2c112ae9f6bc70fd3daf21fc313c"
+        }
+      ]
+    },
+    {
+      "arm": "software1",
+      "backend": "BrowserWebGpu",
+      "adapter": {
+        "device": 0,
+        "deviceType": "Cpu",
+        "driver": "",
+        "driverInfo": "",
+        "name": "",
+        "vendor": 0
+      },
+      "apiIdentity": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": ""
+      },
+      "cpus": 6,
+      "cleanup": {
+        "kind": "cleanup",
+        "id": 1,
+        "count": 0,
+        "stats": {
+          "opened": 1,
+          "closed": 1,
+          "dispatches": 5,
+          "maps": 1,
+          "completedQueue": 1,
+          "resourcesBefore": [
+            4
+          ],
+          "resourcesAfter": [
+            0
+          ],
+          "rejected": 0,
+          "abandoned": 0
+        },
+        "liveSessions": 0
+      },
+      "seconds": 10.10770458299885,
+      "peakRSSBytes": 1857806336,
+      "evidence": [
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-software1/result.json",
+          "bytes": 328494,
+          "sha256": "44ce510fc6306c49cc3be24373f5b6554140ef0514720f454e1aac94ee5177a9"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-software1/guest.json",
+          "bytes": 35461,
+          "sha256": "99bb04505c14b0c8e5718f22ca2cd61b75ea7a00bda53ae1d9c0fd3a241beda9"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-software1/guest-log.txt",
+          "bytes": 497,
+          "sha256": "7db1caebd9c30debf483570b4655353cb622874115463ca36ae668d5d0815ef0"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-software1/native-cpu.json",
+          "bytes": 420,
+          "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-software1-supervisor-status.json",
+          "bytes": 1891,
+          "sha256": "ceb4b49a2ce04267c8e1c493f297003061d6ed0b5d04168072615ce195fb64fc"
+        }
+      ]
+    },
+    {
+      "arm": "webgl1",
+      "backend": "Gl",
+      "adapter": {
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+        "vendor": 4318
+      },
+      "apiIdentity": null,
+      "cpus": 6,
+      "cleanup": {
+        "kind": "cleanup",
+        "id": 1,
+        "count": 0,
+        "stats": {
+          "opened": 1,
+          "closed": 1,
+          "dispatches": 5,
+          "maps": 1,
+          "completedQueue": 1,
+          "resourcesBefore": [
+            5
+          ],
+          "resourcesAfter": [
+            0
+          ],
+          "rejected": 0,
+          "abandoned": 0
+        },
+        "liveSessions": 0
+      },
+      "seconds": 10.750826005001727,
+      "peakRSSBytes": 1902379008,
+      "evidence": [
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-webgl1/result.json",
+          "bytes": 325483,
+          "sha256": "b0b4e56cdd8dc7a5f7187481c6cca14c8b3e54c89cbe39153046c30fab15ef49"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-webgl1/guest.json",
+          "bytes": 36130,
+          "sha256": "1b5a5f61f737f40e30499ea80752d8985ef6c0dfcda048466e1eb696696ff865"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-webgl1/guest-log.txt",
+          "bytes": 570,
+          "sha256": "829664cb954cf888aa0106912cea43511cc24c5be00147dd98b38e94739998da"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-webgl1/native-cpu.json",
+          "bytes": 420,
+          "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-webgl1-supervisor-status.json",
+          "bytes": 1889,
+          "sha256": "5da031240d694b23800baed3d817a61bf57f4a4b875175843b909cf09cb0eaef"
+        }
+      ]
+    }
+  ],
+  "limits": "No Firefox DOM/IPC shared mapping, rendering, device-loss/cancel races, compute execution or FPS claim.",
+  "repositorySourceCopies": [
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.cpp",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/guest.cpp",
+      "bytes": 9405,
+      "sha256": "4a91b94159f796221a5947a3cb601bf419684cc86ee61a4c8293500b3e7c9f1c"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.html",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/guest.html",
+      "bytes": 3956,
+      "sha256": "02ddb89b2c1c1ae04d5b3254c80027ad33e0ec2af68e153fa88e7f0e9a86c71a"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/owner.mjs",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/owner.mjs",
+      "bytes": 5159,
+      "sha256": "2561502c4affa080639cd991a6f13850910b4c0dca6678a2a25ad406def38d18"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/run-guest.mjs",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/run-guest.mjs",
+      "bytes": 4314,
+      "sha256": "d6ee46dcfeb3428c8f944d1d645233788790841d03715c07b06922fcaa0dc30e"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/browser-session.mjs",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/browser-session.mjs",
+      "bytes": 11829,
+      "sha256": "8d606d31ca9bf90b74c2f8a8f4fbf32286b65c45cd289de269197109adde7e6a"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/run-bounded.py",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/run-bounded.py",
+      "bytes": 2296,
+      "sha256": "4e0575f4a0d7ebe694897c40ef8798116d1a44eff96faf296ccf41c17ad6dae9"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/run-guest-bounded.py",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/run-guest-bounded.py",
+      "bytes": 11550,
+      "sha256": "5c849afccf4358877b49c321adb63136c5a9d12c98d376b05e628b0547104e0d"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/refresh-package.py",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/refresh-package.py",
+      "bytes": 2706,
+      "sha256": "0097c1810aaf1da224e76110c9171cc2223cb444cebca6eec92b4d4ab780d3bd"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/compile-plan-native.json",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/compile-plan-native.json",
+      "bytes": 1252,
+      "sha256": "ae8e0c1b6b1bbd28be990f341b8d8b9ad89e1d5409edc88b37042282f2a0a0b3"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/link-plan.json",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/link-plan.json",
+      "bytes": 1519,
+      "sha256": "1984d7f6de448a3c628e6021b5cae1c8865e75c59537aebd29f5b46f1818f92c"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/browser-session.diff",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/browser-session.diff",
+      "bytes": 4900,
+      "sha256": "2ba75135fc066c9d336e3f6ad21ea68e15ccd2d123316d9f953a6b357033db88"
+    },
+    {
+      "taskPath": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-supervisor.diff",
+      "repositoryPath": "web/linux/tests/nightly-webgpu-current/actual-client/frozen-20261003/guest-supervisor.diff",
+      "bytes": 3312,
+      "sha256": "1b33b0162bd61c40250c76f302c64ddd544d466a562f7dc779bd1e1facb9ded3"
+    }
+  ],
+  "retainedFailures": [
+    {
+      "name": "generic C++ ABI destructor mismatch",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/link1.log",
+      "bytes": 492,
+      "sha256": "f7b2125fc19ed0c4f92159258d13508561c7eb49f421e8354a169b46fd4b809e"
+    },
+    {
+      "name": "privacy-reduced empty adapter name rejected",
+      "path": "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest-run-hardware1/guest-log.txt",
+      "bytes": 412,
+      "sha256": "9cb39ea780238b57b29599774060925c899a6687bbabd5a56ebdd30b64de35a2"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+    "-mbulk-memory",
+    "-matomics",
+    "-pthread",
+    "-O2",
+    "-std=c++20",
+    "-fwasm-exceptions",
+    "-fno-rtti",
+    "-DMOZILLA_INTERNAL_API",
+    "-isystem",
+    "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/wasm32-linux-musl/c++/v1",
+    "-isystem",
+    "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/c++/v1",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include",
+    "-I/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/include/nspr",
+    "-include",
+    "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/mozilla-config.h",
+    "-c",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.cpp",
+    "-o",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.o",
+    "-MD",
+    "-MF",
+    "/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003/guest.d",
+    "-Xclang",
+    "-fc++-abi=webassembly"
+  ],
+  "reason": "match actual accepted native WebAssembly C++ ABI; generic constructor/destructor mismatch rejected by fatal-warnings"
+}

@@ -1,3 +1,44 @@
+# 2026-10-03 — Run57 rebuild completed; actual Rust GPU client passes three backends
+
+Run57 completed the ordinary original-O2 build successfully in **1,602.41 seconds**.
+Its owner reaped exit 0 and exact PGID 710076 is empty. The current raw Firefox
+is **175,835,746 bytes (175.84 MB)** at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`,
+SHA256 `e40ba4bc22b009694c2547d0c381b2152ccad6f67d493e9f193de2b76ceec8f9`.
+All seven raw executables pass Wasm validation; all three browser and two NSS
+direct links pass signature checks and separate fatal-warning controls.
+Current BuildID remains **20261003042618** after this incremental rebuild;
+bind actual source and binary hashes rather than inventing a new stamp.
+Fresh transforms/package and cold/warm baseline remain pending. The preserved
+Run56 transformed module below is still historical, not the Run57 package.
+
+The separate actual Nightly Rust GPU client passed hardware WebGPU, host
+SwiftShader WebGPU and genuine Rust WebGL copy/map runs. Each actual guest
+verifies 16 copied words inside the FFI map callback, four single callbacks,
+twelve Rust-generated messages, five dispatches and zero owners at teardown.
+CPU admission matches six real host/browser/requested/kernel CPUs. No Firefox
+executable ran in these tests. This is transport/client acceptance, not Firefox
+DOM/IPC/rendering or FPS acceptance. The simple Vulkan → wgpu rendering benchmark
+already passed **18.1778×** versus host SwiftShader; Firefox GPU testing remains
+ordered after that prerequisite. Reviewed source and evidence are in
+`web/linux/tests/nightly-webgpu-current/actual-client` and
+`docs/evidence/nightly-actual-rust-gpu-client-20261003.json`.
+Task binaries and raw logs stay under
+`/mnt/p6/project/build/nightly-current-rust-gpu-smoke-20261003`.
+
+The initial planner command omitted `-Xclang -fc++-abi=webassembly`; fatal
+linking caught the real `nsTSubstring` destructor signature mismatch. Use the
+same native C++ ABI as the accepted browser objects. The first hardware guest
+incorrectly required a nonempty adapter name; WebGPU privacy returns empty
+strings legitimately. Keep exact IDs, limits, callback ownership and hardware
+identity checks while permitting privacy-reduced metadata. Publish mapped
+bytes before callback success; copy borrowed strings before callback return.
+The read-only review first expected a bare linker flag instead of the actual
+`-Wl,--fatal-warnings`, then normalized CRLF when comparing raw log bytes.
+Both review mistakes were corrected without rebuilding or changing guest runs.
+Fresh subagent creation still hits the agent thread limit; the existing owner
+continues full-build/package/baseline work, and root reviewed the GPU runs.
+
 # 2026-10-03 — NSPR static lifecycle and fatal termination pass in the guest
 
 The two-file candidate passes a real Linux/Wasm guest with **25/25 checks**:
