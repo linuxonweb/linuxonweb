@@ -1,4 +1,40 @@
-# Latest continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
+# Latest continuation — Run58 ordinary relink terminal, 2026-10-03
+
+Run58-native-main-stack-relink is TERMINAL success: sole owner
+diagnose_native_firefox_startup reaped unified94827 exit0/actualchild0,
+elapsed1594.1393s/no stop; exactPGID850747 empty. Original ordinary O2 retained.
+R=/mnt/p6/build/firefox-nightly-musl-recovery-20261002;
+J=/mnt/p6/project/build/nightly-native-stack-20261003.
+R/status/build-run58-{owner-terminal,final-binaries,final-raw-validation}.json
+bind actual raw7. Firefox175835975B SHA
+ab62aaa8084d83b4c9c9bb217aa072d649c616a5ffd8e7ccf920583bdb4dce62 at
+R/obj-nightly/dist/bin/firefox. Three browser programs genuinely refreshed;
+four helper binaries/nativeRust unchanged. All7 WABT validators reaped0/groups
+empty; independent J/root-run58-terminal-raw-review.json streams actual hashes,
+native no-DWARF sections/poststart mtimes and physical group absence.
+Direct5 warning/fatal gates are in progress at
+/mnt/p6/project/build/nightly-native-package-run58-20261003/transform (P58).
+Initial missing-build-env capture correctly rejected unresolved -lepoxy before
+replay; excluded-no-build-env attempt retained, exact sourced environment fixes
+capture without changing selected libraries. Then fresh serial7fpcast/package,
+root streamed package review, ordinary cold/warm baseline, fresh whole broad JIT.
+No full Firefox baseline/JIT/FirefoxGPU/release acceptance. Public Sites v10
+unchanged. Sole build owner retains all own unified handles; no duplicate builds.
+
+Standalone actual Rust-client compute compiled/prelaunch handoff reviewed:
+C=/mnt/p6/project/build/nightly-current-rust-gpu-compute-20261003;
+C/root-prelaunch-review.json verifies1086 files, eight nativephase groups empty,
+only CPIO changedrecord bin/current-gpu-native equals actual final module.
+No browser arms yet. ABBA hardware1/software1/software2/hardware2 requires
+quiet CPU window after optimizer AND heavy postlink terminal, coordinated with
+Run58 owner before baseline browser; actual fresh CPU/backend/source/cleanup
+bindings required. Earlier Vulkan→wgpu simple benchmark18.1778× remains a
+separate accepted result. Latest user gates Firefox GPU testing on simple
+benchmark pass; no Firefox GPU test in this baseline phase. NSS CLI-only
+fresh SQL/trust/PKCS12 gate is task-local preparation by harden_native_gpu_admission,
+using fresh Run58 helper pins; no launch before coordinated handoff.
+
+# Previous continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
 
 Native main-stack adapter real guest PASSES55/0, unified29199 owner-reaped0,
 14.7689s/no guardstop; physical Node828596/Chrome828676 groups empty/serverclosed.

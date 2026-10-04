@@ -1,3 +1,32 @@
+# 2026-10-03 — Run58 ordinary relink completes; guest acceptance still pending
+
+Run58 completed the real ordinary linker and original Binaryen O2 for all
+three browser programs in **1,594.14 seconds**. The owner reaped exit 0;
+exact process group 850747 is empty. The raw Firefox executable is
+**175,835,975 bytes (175.84 MB)** at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`,
+SHA256 `ab62aaa8084d83b4c9c9bb217aa072d649c616a5ffd8e7ccf920583bdb4dce62`.
+The three refreshed browser binaries contain no DWARF sections and all seven
+raw executables pass Wasm validation. Four helper binaries and the native
+Rust archive retain their Run57 bytes. Root independently checked the actual
+hashes, section names, post-start browser mtimes and empty process groups in
+`/mnt/p6/project/build/nightly-native-stack-20261003/root-run58-terminal-raw-review.json`.
+Direct linker checks, fresh transforms/package and actual cold/warm startup
+follow; this build result does not establish Firefox startup, JIT or GPU.
+
+The first direct-command capture omitted the sourced build environment and
+correctly rejected unresolved `-lepoxy` before replay. Preserve that attempt;
+capture commands with the actual selected environment rather than adjusting
+library inputs to make an incomplete environment appear valid.
+
+The standalone actual Nightly Rust-client compute benchmark is compiled and
+packaged, with 174 uniform indirect-call targets. Root verified 1,086 bound
+files and the single changed initramfs executable. Its hardware/software ABBA
+runs remain held until heavy optimization and postlink work finish; running a
+CPU software renderer beside the optimizer would bias the comparison. Keep
+the earlier **18.1778×** Vulkan-to-wgpu versus host SwiftShader result separate.
+Firefox GPU testing remains ordered after the simple benchmark gate.
+
 # 2026-10-03 — Native main-thread stack query regression passes
 
 The observed Run57 startup trap belongs to the selected musl implementation
