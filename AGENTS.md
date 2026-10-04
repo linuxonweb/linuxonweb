@@ -1,4 +1,46 @@
-# Latest continuation — no-debug full build and raw validation passed, 2026-10-03
+# Latest continuation — native C++ ABI correction and Run56, 2026-10-03
+
+Run56-native-cxx is LIVE, owned by `/root/diagnose_native_firefox_startup`:
+actual PID/PGID520663, unified65279, ordinary full build j1/7200 seconds,
+AS64GiB/RSS48GiB/available-RAM floor2GiB/core0/oom1000,
+task32GiB/reserve20GiB. Actual inherited AS/core/oom were verified. Status/log:
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run56-native-cxx.json`
+and `logs/build-run56-native-cxx.log`. Poll the owner and exact group/handle
+before modifying build inputs or starting another build. Original automatic
+Binaryen O2 remains selected; no archive member filtering or lock bypass.
+
+Actual Run55 guest startup exits139 at exported `_start`, function7/0xf94d1.
+The exact served module, disassembly and Data-section-bound linker map identify
+RLBox's shared_timed_mutex static initializer. Cargo bundled legacy sysroot
+libc++ constructor objects `(i32)->void` into libgkrust while native C++ objects
+expect `(i32)->i32`. wasm-ld returned0 with signature mismatch warnings and
+generated trap stubs later inlined into `_start`. Raw5/Rust freshness, native
+Wasm counts and no-DWARF checks remain compilation facts, not C++ ABI coherence.
+
+Scoped reviewed commit `aa0abf5ed6cc0cdbd8e18549642b8ac429f27a84` adds bounded
+startup diagnostics and the narrow tracked cc-rs runtime-library override.
+Real standalone guest shared_timed_mutex checks pass20/0; selecting legacy
+libc++/libc++abi with the same native unwinder reproduces139 before main.
+Both arms use actual host/browser/guest CPUs6 and cleanly reap owned groups.
+The separate disabled-FIPS NSS fallback now accepts its declared native PRBool
+argument and retains CKR_DEVICE_ERROR. Actual objects/caller controls prove
+new `(i32)->i32`, original `()->i32`, error48 for0/1/-1, original trap, and
+unchanged non-Wasm/enabled branches. Root reviewed both corrections before
+Run56. Reject ALL function signature mismatch diagnostics during future
+program-link acceptance; audit actual rebuilt Rust runtime member ownership
+before any new Firefox guest startup.
+
+Evidence in `/mnt/p6/project/build/nightly-baseline-guest-20261003`:
+`native-cargo-cxx-runtime-review.json`, `native-nss-signature-review.json`,
+`native-cxx-run56-launch-plan.json`, and
+`run55-before-native-runtime-rebuild/manifest.json`. Independent copies of all
+five raw executables and the original Rust archive retain exact Run55 hashes.
+Repository cause packet: `docs/evidence/firefox-nightly-startup-trace-20261003.json`.
+The simple guest Vulkan gate remains18.18x passed; actual Firefox GPU, baseline,
+fresh broad JIT, TLS and release acceptance remain false. Public Sitesv10 stays
+unchanged; JIT release first, GPU release later.
+
+# Previous continuation — no-debug full build and raw validation passed, 2026-10-03
 
 The user-required simple guest Vulkan hardware/software gate has passed through
 the genuine public Vulkan loader -> guest ICD/hostcall -> browser-host Rust wgpu

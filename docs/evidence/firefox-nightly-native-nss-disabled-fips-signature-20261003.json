@@ -1,0 +1,106 @@
+{
+  "claim": "Native Linux/Wasm disabled-FIPS fallback matches real declared PRBool argument, retains CKR_DEVICE_ERROR; original compiled source traps through true-header caller",
+  "source": {
+    "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/security/nss/lib/softoken/fipstest.c",
+    "bytes": 33221,
+    "sha256": "2e3fb96b69eb5ac18c09e14428ec45cb10bd382e4d9591253fec020ff28916d0"
+  },
+  "port": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-port.json",
+    "bytes": 923,
+    "sha256": "cc4517a4a3d0c20b909453bed4b8fa6a223e2d470974ca6221233fd6168f4502"
+  },
+  "adapter": {
+    "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-nss-disabled-fips-signature-port.py",
+    "bytes": 1813,
+    "sha256": "d77f055f7f4661d7adde00a3a2775ed61cdd44eac7cdd249348599437cc3dc7d"
+  },
+  "patch": {
+    "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-nss-disabled-fips-signature.patch",
+    "bytes": 470,
+    "sha256": "ff16942ed8e726b95675c5bf04b402f19e82f218b0fcd7244e96d21a5c8a3cab"
+  },
+  "originalSource": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original-fipstest.c",
+    "bytes": 32994,
+    "sha256": "614bffa69574ebae76fe5355826ac437589b92ea810ed08d24fd598633cb75ab"
+  },
+  "actualCompileCommand": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/actual-command.json",
+    "bytes": 3342,
+    "sha256": "b6338d638f4ccb7d408dfea38b315159aa13bb4f7b94063c49a9d89c185498e4"
+  },
+  "commands": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/commands.json",
+    "bytes": 13043,
+    "sha256": "ed3570d12e4cf82cc7c7330249201b412ba276cb8478cbec953740ffe864aa33"
+  },
+  "nativeObject": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/native-fipstest.o",
+    "bytes": 339,
+    "sha256": "b86ee291261b8b37ab8b250e524df60ef86f359e9960ae364d2b616f66243f82"
+  },
+  "originalObject": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original-fipstest.o",
+    "bytes": 338,
+    "sha256": "281305207b34fd9ae0d9a38876b4ade596f703f83df90848c893835f83e6fe00"
+  },
+  "actualHeaderCaller": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/caller.c",
+    "bytes": 88,
+    "sha256": "c9152ca754c664b2fd398a7c07d6f544b4d589e85f26c8a84d100f497e5da680"
+  },
+  "nativeObjectDetails": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/native-object.log",
+    "bytes": 666,
+    "sha256": "c3c4d594002bc71b46659bcb869b159efcdae0d74ff908e9fda59e728479cb91"
+  },
+  "originalObjectDetails": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original-object.log",
+    "bytes": 665,
+    "sha256": "3dcf3bed5b10b7bfb201dfade99c1d97acfc6b7bcbd182c4d07fc6c1595ff5d8"
+  },
+  "nativeLink": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/native-link.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "originalNegativeLink": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original-link.log",
+    "bytes": 322,
+    "sha256": "a799e68f8ee605daf35e467d14a0bb4a5729e25cfc19e93f3e274e38398f51bb"
+  },
+  "nativeModule": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/native.wasm",
+    "bytes": 372,
+    "sha256": "b4cc52b955067c1d02c88a6fa865ba3021968a28e22360508132dd766dd948c1"
+  },
+  "originalNegativeModule": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original.wasm",
+    "bytes": 392,
+    "sha256": "1d9f7d49dd7bc11bccf72d2389d9fe52e09c44b0daa79f887f5b5293e267eca4"
+  },
+  "nativeValidation": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/native-validate.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "originalValidation": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/original-validate.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "execution": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/execution.json",
+    "bytes": 631,
+    "sha256": "4955bd1667991b8e55924c83f036f5383dd88239981b05df96ff3de459a96756"
+  },
+  "otherPlatformControl": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-nss-signature-preflight/other-platform-control.json",
+    "bytes": 102,
+    "sha256": "69314cae12d4bd1308c3d63bef6b868a4d48336d804c4bf3db4ca46a786fb6f3"
+  },
+  "tlsAcceptance": false,
+  "fipsAcceptance": false,
+  "browserAcceptance": false
+}

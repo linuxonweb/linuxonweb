@@ -1,0 +1,21 @@
+--- a/security/nss/lib/softoken/fipstest.c
++++ b/security/nss/lib/softoken/fipstest.c
+@@ -790,9 +790,18 @@
+ }
+ #else
+ #include "pkcs11t.h"
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++#include "prtypes.h"
++CK_RV
++sftk_FIPSEntryOK(PRBool rerun)
++#else
+ CK_RV
+ sftk_FIPSEntryOK()
++#endif
+ {
++#if defined(__wasm__) && defined(__linux__) && !defined(__wasi__)
++    (void)rerun;
++#endif
+     return CKR_DEVICE_ERROR;
+ }
+ #endif /* NSS_FIPS_DISABLED */
