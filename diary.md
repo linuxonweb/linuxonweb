@@ -1,3 +1,26 @@
+# 2026-10-03 — Run58 final runtime package passes independent review
+
+The transformed Firefox binary is **189,453,198 bytes (189.45 MB)** at
+`/mnt/p6/project/build/nightly-native-package-run58-20261003/transform/firefox.fpcast.wasm`,
+SHA256 `50beabf9da029b8cb15cb2fba2933d73ca749cbe465a7ea0668a6ccaffc302b3`.
+The default-page runtime archive is **281,631,147 bytes (281.63 MB)** at
+`/mnt/p6/project/build/nightly-native-package-run58-20261003/overlay/candidate-run58/initramfs-firefox.cpio.gz`.
+This archive includes the Linux guest and Firefox runtime resources.
+Five real linker warning/fatal controls, seven transformed modules and 143 ABI
+checks pass. Root streamed the original guest archive, full package and overlay,
+checking all eight installed executable records and preserved guest files.
+All 31 static phase processes are terminal and reaped; actual guest startup,
+JIT and Firefox GPU acceptance remain pending. The current-client compute
+hardware/software runs are admitted before the ordinary baseline test.
+
+Two review mistakes were corrected without weakening actual input checks.
+An unused default linker search directory need not exist when every selected
+library resolves to a pinned real file. Historical source descriptors must be
+compared with their retained original copy, rather than a newer mutable source
+file. The updated stack adapter changed three defs.mk lines; the original
+frozen defs and accepted current source remain separately verified. Preserve
+failed review attempts and identify the exact assumption that was wrong.
+
 # 2026-10-03 — Run58 ordinary relink completes; guest acceptance still pending
 
 Run58 completed the real ordinary linker and original Binaryen O2 for all

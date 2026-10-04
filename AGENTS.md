@@ -1,3 +1,30 @@
+# Latest continuation — Run58 final package independently reviewed, 2026-10-03
+
+Run58 static package is COMPLETE: five direct warning/fatal controls, seven
+fresh fpcast/WABT modules, 143 ABI predicates, all31 bounded phases reaped0
+and physical groups empty. P58=/mnt/p6/project/build/nightly-native-package-run58-20261003/transform.
+Final handoff P58/status/final-package-handoff-run58.json SHA
+44e22910faec9f7915ddfb46bbc0a9f99d16f5d3488c59c0c415001293f42698.
+Root streaming source/full/overlay review P58/root-final-package-review-run58.json
+SHA160f8961fd2a4111fef3e1d77d38a479245565275fd7a49bd37469f22bd9bcdf
+passes actual eight installed executable hashes/modes, preserved outside-Firefox
+records and default-page/preferences. Firefox transformed189453198B SHA
+50beabf9da029b8cb15cb2fba2933d73ca749cbe465a7ea0668a6ccaffc302b3
+at P58/firefox.fpcast.wasm. Overlay281631147B SHA
+698b8cb38cf852e99f664fbf12e8f35c849bad9e3931a49e2b84144e7801117a.
+No full guest baseline/JIT/FirefoxGPU/release acceptance; public v10 unchanged.
+
+Actual current-client compute owner plan_actual_current_gpu_client is authorized
+for four sequential hardware1/software1/software2/hardware2 guest arms after
+fresh quiet-window admission. Ordinary baseline owner diagnose_native_firefox_startup
+holds browser until all compute arms terminal/reaped/empty. G58=/mnt/p6/project/build/nightly-baseline-run58-20261003;
+root-baseline-launch-review-run58.json verifies26 real boundfiles/exact rebase,
+unchanged resource/CPU/ownership policy. Baseline launch authorized conditionally
+on compute cleanup and fresh resource/CPU admission. No Firefox GPU testing.
+NSS CLI-only candidate-run58 prepared using fresh Run58 helper evidence; no
+launch yet. Agents own their exact unified handles. Older LIVE entries below
+are historical observations, superseded by concrete later terminal records.
+
 # Latest continuation — Run58 ordinary relink terminal, 2026-10-03
 
 Run58-native-main-stack-relink is TERMINAL success: sole owner
