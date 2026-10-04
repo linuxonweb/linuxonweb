@@ -1,4 +1,49 @@
-# Latest continuation — native C++ ABI correction and Run56, 2026-10-03
+# Latest continuation — corrected Run56 raw acceptance, 2026-10-03
+
+Run56-native-cxx is TERMINAL: actual child0, unified65279 owner-reaped0,
+exact PGID520663 empty, elapsed1805.69094s, no guard stop. Original full j1
+build and automatic Binaryen O2 finished. Raw Firefox176,096,386B/167.94MiB,
+SHA b4c5280318add68ddad1072bc3e954b24946e6bceb932b605c10022e6fde398d,
+at recovery obj-nightly/dist/bin/firefox. All7 required raw executables
+validate as native Wasm without debug sections; pingsender/gfxtest retain
+unchanged prior outputs, while certutil/pk12util naturally relinked with the
+fresh correctly typed NSS object. Actual graph3012/3012 is no-debug.
+New Rust archive204,613,232B/7136native members, SHA
+2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc:
+zero legacy-only runtime members and native shared-mutex constructor ABI.
+
+Ordinary build-log warning silence is insufficient: even bad Run55 had zero
+recorded signature warnings. Exact direct LLD replays for firefox,
+plugin-container, xpcshell, certutil and pk12util now each pass with zero
+signature mismatches, only five known unsupported ELF -z warnings. Separately
+recorded fatal-warning controls remove only those five inert pairs and pass
+with empty logs. All ten owners reaped0/groups empty, and root independently
+rehashed2709unique current input/linker files and checked exact argv diffs.
+No actual recipe flags were changed by those diagnostic controls.
+
+Current active owner `/root/diagnose_native_firefox_startup` next prepares
+fresh serial fpcast/package/overlay in
+`/mnt/p6/project/build/nightly-native-package-run56-20261003` using the reviewed
+wrapper: AS16GiB/RSS12GiB/floor4GiB/core0/oom1000/900s, transform4GiB,
+package2GiB/overlay2GiB, reserve20GiB, Binaryen one core. Preserve old Run55
+outputs/reports. No guest launch before exact transformed-package handoff
+review. Poll any new owned live handle/group before modifying that phase.
+
+Raw handoff transform/run56-raw-direct-link-handoff.json SHA
+17f0ee19bf3ad09e29aab7a42dc11736f549321e1ead692d8ce89493c66a627a.
+Root reviews in `/mnt/p6/project/build/nightly-baseline-guest-20261003`:
+root-final-raw-review-run56.json, root-direct-link-review-run56.json,
+root-raw-handoff-review-run56.json. Fresh source identity pins both corrections,
+recipe and runtime ownership; actual local BuildID20261003042618 unchanged.
+Diary size/path and warning lesson committed0a3ec59.
+No Nightly baseline guest, fresh broad JIT, TLS, Firefox GPU or release
+acceptance yet. Simple Vulkan->Rust wgpu benchmark already passes18.18x over
+host SwiftShader with matched readbacks; user requires that gate before Firefox
+GPU testing. Public Sitesv10 unchanged; authorized JIT release precedes GPU
+release. Fresh agent creation/followup hits thread limit; keep current owner
+active, with root handling independent reviews.
+
+# Previous continuation — native C++ ABI correction and Run56, 2026-10-03
 
 Run56-native-cxx is LIVE, owned by `/root/diagnose_native_firefox_startup`:
 actual PID/PGID520663, unified65279, ordinary full build j1/7200 seconds,
