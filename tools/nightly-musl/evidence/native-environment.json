@@ -524,6 +524,43 @@
       "bytes": 10051,
       "sha256": "d650e95bff8bb9428cc8ddbab5028349db815a36055a98416d9edf5717330933",
       "streamingHistoryRehashDeferredDuringTimedArms": true
+    },
+    "postQuietWindowReviews": [
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/read-only-run58-history-hash-review.json",
+        "bytes": 7833,
+        "sha256": "c8ffbb192c1f90cc1884471e33db374c3e740f5e143f771cb8c518d9935b6974"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-env-20261004/root-run59-launch-review.json",
+        "bytes": 1080,
+        "sha256": "739a551c8f9a4f1ef7056cc6db9495a92447a97a19442a14bfc5f8da34aae72b"
+      }
+    ],
+    "fullBuildLaunch": {
+      "run": "run59-native-environment-helpers",
+      "unified": 29743,
+      "ownedPGID": 1043801,
+      "terminal": false,
+      "originalBinaryenO2": true,
+      "files": [
+        {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run59-relink-launch-plan.json",
+          "bytes": 6707,
+          "sha256": "d6910951807fc8ae1072879071367bc4cd0c8acb94e8f46c9931868d1e4a69b8"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run59-link-dependency-invalidation.json",
+          "bytes": 7191,
+          "sha256": "dce8fe9fc0af7834f9967f70ecbcd4af4dd03c37b13cde229ceae849b5b9c0bf"
+        },
+        {
+          "path": "/mnt/p6/project/build/nightly-native-env-20261004/run59-first-live.json",
+          "bytes": 11743,
+          "sha256": "9d66c636040a0f04a4b65a5415b8283b29def7ec612fdcd6a1ed10ee19c22b9a"
+        }
+      ],
+      "acceptance": false
     }
   },
   "run58History": {

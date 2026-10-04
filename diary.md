@@ -1,3 +1,44 @@
+# 2026-10-03 — Standalone compute acceleration passes at the larger intensity
+
+The fixed four-arm H2/S1/S2/H3 comparison passes **140 frames and 286,720
+verified words with zero errors**. NVIDIA completes **117.64 operations/s**
+versus SwiftShader **29.29 operations/s**, a **4.017x** ratio at16,384 rounds.
+All actual host/browser/guest CPU counts match six. Shader, asynchronous
+pipeline, map and work-done callbacks complete; all eight owned process groups
+exit naturally and are physically empty. The corrected cleanup wait records
+214–304ms drainage, including observed zombies, without signals. Root checked
+all140 raw samples, exact result/supervisor hashes, backend identities, CPU
+selection, pooled arithmetic and physical cleanup independently.
+
+This is a second intensity point, not a replacement for the original1,024-round
+**0.752x** result. It measures complete upload/compute/copy/map/transport work,
+excluding CPU verification and pipeline compilation; it does not measure
+presentation FPS or isolated kernel time. Small workloads can be dominated
+by transport/readback even when increased arithmetic benefits from the GPU.
+Keep that distinction visible and preserve the separate earlier Vulkan result.
+No Firefox GPU test has run; full Nightly startup/JIT/release are still pending.
+Before Firefox GPU, the current native ABI also needs a standalone Vulkan
+clear/triangle/render-readback gate with genuine Rust wgpu. Compute acceptance
+does not prove texture/render commands or Firefox IPC map publication. Keep
+WebGPU default and genuine WebGL fallback limited to supported render features;
+WebGL does not provide this compute workload.
+
+Native environment/helper compatibility changes are committed as14367d2.
+Eight retained Run58 outputs independently rehash against the accepted manifest.
+After the measurement quiet slot ended, the owner launched Run59's ordinary
+originalO2 seven-program relink, j1 with the existing finite resource bounds.
+Only seven exact linker-list mtimes changed after preserving original bytes
+and timestamps; no object or Rust archive was seeded. Existing Run58 Firefox
+size/path below remains the last completed build until Run59 finishes.
+
+The future fresh JIT build also needs a measured disk budget. The11.53GB Rust
+tree contains the current production archive as well as old debug data;
+deleting the whole tree would remove accepted inputs. Metadata identifies
+4.11GB of old debug dependency files for audit, while6.07GB incremental storage
+is mixed and unclassified. Preserve current archives and history, check real
+live references and linker dependencies, and classify generated caches before
+reclaiming space. No disk cleanup occurred during the active optimizer.
+
 # 2026-10-03 — Real environment semantics and a cleanup timing mistake
 
 The actual Linux/Wasm environment fixture passes **41/0**: 40 positive checks

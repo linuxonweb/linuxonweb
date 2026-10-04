@@ -1,3 +1,47 @@
+# Latest continuation — standalone compute acceleration passes; Run59 relink live, 2026-10-03
+
+Simple benchmark before Firefox GPU remains the user's required order. Actual
+current-client compute at16384rounds now PASSES all four H2/S1/S2/H3 arms:
+140frames/286720verifiedwords/zeroerrors, actual host/browser/guest CPUs6,
+all callbacks/readbacks and backend identities verified. Pooled NVIDIA
+117.64359871768477ops/s versus SwiftShader29.286007145785742ops/s gives
+4.017058321814064x end-to-end upload/compute/copy/map/transport throughput.
+This is not presentation FPS or GPU-kernel timing. Original1024round0.752x
+and earlier separate Vulkan18.1778x results are preserved. Failed heavier H1
+is excluded with its result/supervisor/receipt pinned. Exact owned groups drain
+naturally in214–304ms including zombies; no forced cleanup. Root independently
+verifies all140samples, backend/CPU, eight result/supervisor pins, arithmetic
+and physical8groups in D/root-actual-compute-review.json (D below).
+No Firefox GPU execution or full Nightly/JIT/release acceptance; publicv10
+unchanged. No further compute arms or workload changes are authorized. Before
+Firefox GPU, require a small current-ABI Vulkan clear/triangle/render-readback
+gate using actual Rust wgpu on hardware/software; current Nightly Vulkan
+selection remains disabled. Compute does not accept texture/render, Firefox
+IPC map publication or presentation. WebGPU is preferred; supported render
+profiles may use genuine WebGL fallback, which has no compute support.
+
+Run59-native-environment-helpers LIVE: sole owner diagnose_native_firefox_startup,
+unified29743, exact PID/PGID1043801, original ordinary BinaryenO2/j1/7200s,
+AS64GiB/RSS48GiB/hostavailablefloor2GiB/core0/oom1000/task32GiB/reserve20GiB.
+Actual first optimizer1045012 runs original wasm-opt-O2 in that owned group;
+E/run59-first-live.json records inherited64GiB AS/core0/oom1000 on real children.
+Actual source/adapters and guest-equal environment object are adopted. Exact
+seven .list bytes/original timestamps backed up, only natural relink mtimes
+changed. Poll exact owner handle/group before edits or duplicate builds.
+Independent eight Run58 retained copy rehash passes738794194B/stable stats;
+E/read-only-run58-history-hash-review.json binds actual manifest identities.
+Root E/root-run59-launch-review.json verifies15smallsource/list pins and GPU
+quiet-slot release. Next raw7 freshness/native/noDWARF/WABT and all7 actual
+loader contract, direct5 complete warning/fatal gates, fresh serial fpcast/
+package, actual NSS CLI and ordinary cold/warm baseline, then fresh whole
+broad JIT build. Firefox GPU integration/testing follows successful groundwork.
+Fresh JIT root remains absent. Read-only disk estimate gives35.58GB free,
+14.11GB above20GiB reserve; source5.19GB/obj14.44GB. Rust tree11.53GB includes
+the current production archive, so do not remove it wholesale. Metadata marks
+4.11GB old debug deps as audit candidates; incremental6.07GB remains mixed/
+unclassified. Recheck after Run59 terminal and audit actual ownership/dependencies
+before reclaiming anything or admitting the fresh whole build. No deletion done.
+
 # Latest continuation — native environment semantics pass; heavier compute retry held, 2026-10-03
 
 User reiterates: test Firefox GPU only after the simple GPU benchmark passes.
