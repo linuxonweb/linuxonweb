@@ -1,3 +1,44 @@
+# 2026-10-03 — Run56 transformed runtime package
+
+The fresh transformed Firefox executable is **189,713,492 bytes (180.92 MiB)**
+at `/mnt/p6/project/build/nightly-native-package-run56-20261003/transform/firefox.fpcast.wasm`.
+SHA256: `1b1d0d9d26ad9abe262f50cc96d28d17567cb1b3ec7536e01d262a9b76a20d93`.
+All seven transformed executables pass actual Wasm validation and 143 ABI
+predicates. The exact linker replays for all three browser programs and both
+NSS utilities pass without signature mismatches; separate fatal-warning
+controls also pass after removing only the five inert ELF warning pairs.
+
+The compressed default-page runtime archive is **281,714,694 bytes** at
+`/mnt/p6/project/build/nightly-native-package-run56-20261003/overlay/candidate-run56/initramfs-firefox.cpio.gz`.
+SHA256: `ea5ca129fc98668dcc7f9d5d93d3902547b63ba1d671a9d4aba01be8f043003f`.
+This archive includes Firefox, its helper programs, Linux userspace and the
+default page; its size is not the Firefox executable size. Independent review
+rehashed 114 files, checked 31 successful bounded processing phases, and
+streamed the actual archive to verify all eight installed executable records.
+The report is
+`/mnt/p6/project/build/nightly-baseline-guest-20261003/root-final-package-review-run56.json`.
+Static package acceptance permits baseline guest testing; it does not establish
+Firefox startup, JIT, GPU or release acceptance.
+
+The actual cold baseline subsequently failed its 420-second default-page
+deadline. Its log repeatedly reports `Redirecting call to abort() to
+mozalloc_abort`; the original fatal cause is still unknown. The warm case did
+not run. The owner reaped the test, closed its server, and verified both owned
+process groups empty; independent review confirmed those groups were empty.
+CPU admission matched six host/browser/guest CPUs and 4096 MiB guest RAM.
+Keep this failure distinct from the previously proven constructor ABI trap.
+
+A retained first inspection attempt failed because its owned-task admission
+still named the old output root. Rebase only the exact task-root literals in
+task-local tools, preserve the failed attempt, and verify the byte-level delta
+before retrying. Do not weaken ownership checks to admit a fresh package.
+
+The simple guest Vulkan → host Rust wgpu benchmark has already passed, with
+matched readbacks and **18.1778×** speedup over host SwiftShader. This satisfies
+the user's prerequisite for subsequent Firefox GPU testing. The result measures
+completed offscreen rendering; it does not establish Firefox GPU integration
+or presentation FPS.
+
 # 2026-10-03 — Run56 native C++ runtime rebuild
 
 The corrected ordinary full build, Run56, completed in **1805.69 seconds**.

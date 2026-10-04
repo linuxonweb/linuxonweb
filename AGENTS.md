@@ -1,4 +1,52 @@
-# Latest continuation — corrected Run56 raw acceptance, 2026-10-03
+# Latest continuation — Run56 package accepted, baseline abort recursion, 2026-10-03
+
+Fresh Run56 static package is accepted, but the actual baseline guest FAILS.
+Seven fresh fpcast modules/validators and143 ABI predicates pass; all31
+processing phases reaped0/groups empty. Root independently rehashed114 files
+and streamed the actual default-page archive to verify all8 installed program
+records. Task root `/mnt/p6/project/build/nightly-native-package-run56-20261003`:
+transform/firefox.fpcast.wasm189,713,492B, SHA
+1b1d0d9d26ad9abe262f50cc96d28d17567cb1b3ec7536e01d262a9b76a20d93;
+overlay/candidate-run56/initramfs-firefox.cpio.gz281,714,694B, SHA
+ea5ca129fc98668dcc7f9d5d93d3902547b63ba1d671a9d4aba01be8f043003f.
+Final handoff transform/status/final-package-handoff-run56.json SHA
+55e50f65c1f08ab5d136c14bc387d50fc346ad8acf23f39d07dfebb8c3b14258.
+Root review in baseline task root: root-final-package-review-run56.json SHA
+7b18f43984709c91c04e4354a3f1b10b69ad91e561beacd724afee1f065c0633.
+
+Actual ordinary cold1/warm1 runner unified52842 is TERMINAL/owner-reaped1,
+445.665s/no guard stop. Exact Node PGID614386 and Chrome PGID614549 empty;
+browser exited0/server closed, runner forced descendant termination. Actual
+host/browser/requested/kernel CPUs6 and guest RAM4096MiB were admitted,
+including actual Chrome AS2TiB/core0 before guest navigation. Firefox launch
+observed12.8s, but automatic default-page420s deadline expired; warm was not
+executed. Retained failure guest log repeats 'Redirecting call to abort() to
+mozalloc_abort' about2500 times, without an exit139 marker. Original fatal
+cause is not yet known; do not infer it from the recursion or invent GPU blame.
+Evidence `/mnt/p6/project/build/nightly-baseline-guest-20261003` (B):
+cold-warm-real-run56/{result.json,failure-guest-logs.txt} and
+cold-warm-real-run56-supervisor-status.json. B allocation3,337,413,789B/4GiB.
+
+Current owner `/root/diagnose_native_firefox_startup` is investigating actual
+abort/mozalloc_abort ownership and a minimal bounded diagnostic that preserves
+the first fatal reason/stack. No source mutation, retry or optimizer rerun
+until a concrete diagnostic is reviewed. Preserve all prior evidence. Root
+handles independent review because new-agent/followup creation hits thread
+limit; keep the current owner available. Poll exact new handles before changes.
+
+User reiterates only test Firefox GPU after simple GPU benchmark passes.
+Genuine guest Vulkan->host Rust wgpu benchmark already passes18.1778x over
+host SwiftShader with matched readbacks; this prerequisite is satisfied.
+It is completed offscreen rendering, not presentation FPS or Firefox GPU
+acceptance. Baseline page autoattempts its WebGL/WebGPU demos, but no separate
+Firefox GPU acceptance workload or successful rendering is claimed. No Nightly
+baseline/JIT/TLS/Firefox GPU/deploy acceptance; public Sitesv10 unchanged.
+After baseline is accepted, execute fresh whole broad-PBL/JIT plan using the
+accepted corrected native runtime, then authorized Sites JIT release; actual
+Firefox GPU integration and acceptance precede the second authorized release.
+Diary now includes raw/transformed/package sizes and ownership lessons.
+
+# Previous continuation — corrected Run56 raw acceptance, 2026-10-03
 
 Run56-native-cxx is TERMINAL: actual child0, unified65279 owner-reaped0,
 exact PGID520663 empty, elapsed1805.69094s, no guard stop. Original full j1
