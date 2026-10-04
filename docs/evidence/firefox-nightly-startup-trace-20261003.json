@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "scope": "native159-startup-trap-diagnostic-only",
+  "pass": false,
+  "baselineAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "tlsAcceptance": false,
+  "releaseAcceptance": false,
+  "actualGuestFirefoxExitStatus": 139,
+  "primaryError": "Error: diagnostic fatal runtime log [\"firefox exited with status 139\"]\n    at assert (file:///mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs:42:56)\n    at file:///mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs:388:9\n    at async until (file:///mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs:255:254)\n    at async runIsolatedNightlyGuest (file:///mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs:377:7)\n    at async file:///mnt/p6/project/build/nightly-baseline-guest-20261003/run-startup-diagnostic.mjs:6:1",
+  "trace": {
+    "at": 1791070747705,
+    "method": "Runtime.consoleAPICalled",
+    "sessionId": "F42A542BE202DDA9E376D689AC2DD903",
+    "targetId": "5E73FEDB4FE86B51AE84724D0CDE4ADD",
+    "params": {
+      "type": "error",
+      "executionContextId": 1,
+      "timestamp": 1791070747701.494,
+      "args": [
+        {
+          "type": "string",
+          "value": "[FIREFOX_ABORT_TRACE] RuntimeError.stack\nRuntimeError: unreachable\n    at wasm://wasm/2d033b6e:wasm-function[7]:0xf94d1\n    at call_start (http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1:251:13)\n    at call (http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1:599:25)\n    at vmlinux.o.task_entry_inner (wasm://wasm/vmlinux.o-017f685a:wasm-function[174]:0x2515c)\n    at vmlinux.o.task_entry (wasm://wasm/vmlinux.o-017f685a:wasm-function[173]:0x24f69)\n    at start (http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1:888:65)\n    at message.port.onmessage (http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1:904:13)"
+        }
+      ],
+      "stackTrace": {
+        "callFrames": [
+          {
+            "functionName": "call",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1",
+            "lineNumber": 631,
+            "columnNumber": 40
+          },
+          {
+            "functionName": "$task_entry_inner",
+            "scriptId": "13",
+            "url": "wasm://wasm/vmlinux.o-017f685a",
+            "lineNumber": 0,
+            "columnNumber": 151900
+          },
+          {
+            "functionName": "$task_entry",
+            "scriptId": "13",
+            "url": "wasm://wasm/vmlinux.o-017f685a",
+            "lineNumber": 0,
+            "columnNumber": 151401
+          },
+          {
+            "functionName": "start",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1",
+            "lineNumber": 887,
+            "columnNumber": 64
+          },
+          {
+            "functionName": "message.port.onmessage",
+            "scriptId": "3",
+            "url": "http://127.0.0.1:35259/linux/dist/worker.js?firefox_abort_trace=1",
+            "lineNumber": 903,
+            "columnNumber": 12
+          }
+        ]
+      }
+    }
+  },
+  "moduleIdentityPendingTargetedInspection": false,
+  "primaryFailureCapture": {
+    "enabled": true,
+    "filename": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/startup-cdp-events.jsonl",
+    "limits": {
+      "durationMs": 180000,
+      "commandMs": 10000,
+      "sessions": 512,
+      "events": 2048,
+      "bytes": 8388608,
+      "recordBytes": 65536,
+      "string": 8192,
+      "args": 16,
+      "frames": 64,
+      "stackDepth": 4
+    },
+    "startedAt": 1791070734099,
+    "events": 379,
+    "bytes": 458173,
+    "dropped": 0,
+    "failure": null,
+    "baselineAcceptance": false,
+    "jitAcceptance": false,
+    "gpuAcceptance": false,
+    "tlsAcceptance": false,
+    "releaseAcceptance": false
+  },
+  "primaryAdmittedSessions": 131,
+  "finalCapture": {
+    "enabled": true,
+    "filename": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/startup-cdp-events.jsonl",
+    "limits": {
+      "durationMs": 180000,
+      "commandMs": 10000,
+      "sessions": 512,
+      "events": 2048,
+      "bytes": 8388608,
+      "recordBytes": 65536,
+      "string": 8192,
+      "args": 16,
+      "frames": 64,
+      "stackDepth": 4
+    },
+    "startedAt": 1791070734099,
+    "events": 456,
+    "bytes": 475418,
+    "dropped": 0,
+    "failure": "CDP response worker session mismatch",
+    "baselineAcceptance": false,
+    "jitAcceptance": false,
+    "gpuAcceptance": false,
+    "tlsAcceptance": false,
+    "releaseAcceptance": false
+  },
+  "finalSessions": {
+    "admitted": 132,
+    "enabled": 131,
+    "resumed": 131,
+    "detached": 132
+  },
+  "captureLimitation": "After primary fatal139 snapshot, a late132ndworker setup was rejected for CDP response session mismatch during cleanup. All132workers detached; no broader session acceptance.",
+  "cpu": {
+    "hostNproc": 6,
+    "browserHardwareConcurrency": 6,
+    "hostCores": 6,
+    "expectedHostCores": 6,
+    "requestedGuestCpus": 6,
+    "hostNprocObserved": 6,
+    "browserHardwareConcurrencyAtBoot": 6,
+    "selectedGuestCpus": 6,
+    "guestBootCpus": 6,
+    "smpLines": [
+      "smp: Brought up 1 node, 6 CPUs"
+    ],
+    "checks": {
+      "hostAllocationStable": true,
+      "hostCpuSelection": true,
+      "guestCpuCountMatchesHost": true
+    }
+  },
+  "machine": {
+    "resolution": "1280x720",
+    "cpus": 6,
+    "ram": 4096,
+    "backend": "canvas2d"
+  },
+  "chromeAdmission": {
+    "pid": 459368,
+    "ppid": 459207,
+    "pgid": 459368,
+    "session": 459368,
+    "starttime": 1668795,
+    "exe": "/home/a/.local/archpkg/pacman/usr/lib/chromium/chromium",
+    "limits": {
+      "addressSpaceBytes": 2199023255552,
+      "coreBytes": 0,
+      "oomScoreAdjObserved": 0
+    }
+  },
+  "guards": {
+    "addressSpaceBytes": 2199023255552,
+    "coreBytes": 0,
+    "groupRssBytes": 12884901888,
+    "availableFloorBytes": 4294967296,
+    "timeoutSeconds": 540,
+    "taskCapBytes": 4294967296,
+    "freeReserveBytes": 21474836480
+  },
+  "observedResources": {
+    "peakGroupRSSBytes": 5670531072,
+    "peakProcessAS": {
+      "pid": 459468,
+      "ownedPGID": 459368,
+      "bytes": 1710701408256
+    },
+    "minimumAvailableBytes": 34533093376,
+    "elapsedSeconds": 26.45105987000352,
+    "stopReason": null,
+    "taskBytes": 1220145976
+  },
+  "cleanup": {
+    "childExit": 1,
+    "ownerReaped": true,
+    "nodeGroupEmpty": true,
+    "chromeGroupEmpty": true,
+    "remainingNodeGroup": [],
+    "remainingChromeGroup": []
+  },
+  "browserCleanup": {
+    "ownedGroupEmpty": true,
+    "browserExit": {
+      "code": 0,
+      "signal": null
+    },
+    "serverClosed": true
+  },
+  "inputsUnchanged": true,
+  "changedInputs": [],
+  "sources": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-nightly-baseline.mjs",
+      "bytes": 56771,
+      "sha256": "9413a610788ae95a85d96849495d054356c704dbd644334b6c1eabb0b2891160"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/firefox-startup-diagnostics.mjs",
+      "bytes": 8828,
+      "sha256": "a062d1b1b2b0e3ea2f82642321287f833dfad0ad76edc718223b2ac6e01249cb"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/guest-rootfs/test-firefox-startup-diagnostics.mjs",
+      "bytes": 15364,
+      "sha256": "14fb338c057850f9a2304f3cf3717c4863a0d5c4398c83f586f11437a3fccd98"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/result.json",
+      "bytes": 252799,
+      "sha256": "f0518f8bcf8db11b848f37241a4270c66e8b049db7fef6d1509a35e0631881dc"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/startup-cdp-events.jsonl",
+      "bytes": 475418,
+      "sha256": "6ac94968f59ceba07c6d8141e195443704a39fa2151458a4c1dfbce5b6b486b6"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/diagnostic-failure.json",
+      "bytes": 48111,
+      "sha256": "6b50ff0e5e011eff986ec5aef35753fe3b7c2decff154ae3ed951f92b077efbb"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/diagnostic-cold-startup-guest-logs.txt",
+      "bytes": 5444,
+      "sha256": "0fa5f4070b762be5423afc293cb42f532f42eb1c679d9e61f5c34e6d2eb3ddba"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3/diagnostic-cold-cpu.json",
+      "bytes": 420,
+      "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry3-supervisor-status.json",
+      "bytes": 2415,
+      "sha256": "293012ee00c40573c447d288e43f4e00be278ae90bedcddee85c05a18a20ad00"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-diagnostic-root-prelaunch-review.json",
+      "bytes": 1555,
+      "sha256": "128508071cd425f6f90ea99ecd01507446969f4770f5b731f7cbb46d10d332ef"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-diagnostic-prelaunch-session512.json",
+      "bytes": 3811,
+      "sha256": "3ef59c796372d5e82ff9be90b002a24bca6ebce97bb50f3b1112b658d1727fdd"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/run-startup-diagnostic-bounded.py",
+      "bytes": 11572,
+      "sha256": "9deda4a2cd5334fe83145ddd40a8bd835ebfe611340efed894e72f9018799ef6"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-diagnostic-supervisor-probe-transient-du-final.json",
+      "bytes": 857,
+      "sha256": "ff55e0d92ec797840ac8a53d5b4af4e2d4ecc433983cedfb06c019a7831b3f74"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-diagnostic-transient-du-controls-final.json",
+      "bytes": 172,
+      "sha256": "4c9b7d26778d8210910ff9667f3e2bae517486cd4669045e5a52762430e50a41"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-diagnostic-host-controls-session512/result.json",
+      "bytes": 5616,
+      "sha256": "07356de7a5f5ddfb6b09716a03714b71bdae25331a3fbfea52891574eb74ee15"
+    }
+  ],
+  "excludedAttempts": [
+    {
+      "out": "startup-trace-real-run55",
+      "cause": "Chrome AF_UNIX scratch path too long; before guest navigation"
+    },
+    {
+      "out": "startup-trace-real-run55-retry1",
+      "cause": "lifetime128worker cap before Firefox launch; no139"
+    },
+    {
+      "out": "startup-trace-real-run55-retry2",
+      "cause": "supervisor transient Chrome scratch ENOENT before Linux/Firefox; exactgroups empty",
+      "interruption": {
+        "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trace-real-run55-retry2-interruption.json",
+        "bytes": 890,
+        "sha256": "17605284ad6d675c9f6e0db9197d9c190449428457d49a8e7449e8a8f221a60c"
+      }
+    }
+  ],
+  "scopeNotes": [
+    "No runtime/source/package/build mutation.",
+    "No debugger pause-on-exceptions, remote object inspection, or normal HALT trap claim.",
+    "Baseline/JIT/NSS/FirefoxGPU/Sites acceptance remains false; publicv10 unchanged."
+  ],
+  "cause": {
+    "classification": "static C++ runtime constructor ABI mismatch",
+    "moduleIdentifier": "2d033b6e",
+    "exportedStartFunction": 7,
+    "trapOffset": "0xf94d1",
+    "guardAddress": 56992048,
+    "owner": "guard variable for rlbox::rlbox_sandbox<rlbox::rlbox_noop_sandbox>::sandbox_list_lock",
+    "object": "parser/htmlparser/Unified_cpp_parser_htmlparser0.o",
+    "source": "third_party/rlbox/include/rlbox_sandbox.hpp:101",
+    "sourceMacro": "RLBOX_SHARED_LOCK(name) std::shared_timed_mutex name",
+    "expectedConstructorSignature": "(i32)->i32",
+    "selectedLegacyConstructorSignature": "(i32)->void",
+    "linkerResult": "exit0 with signature mismatch warning; synthesized unreachable stub inlined into _start",
+    "selectedLegacyRuntimeOwner": "libgkrust.a(shared_mutex.cpp.o)",
+    "selectionPath": "cc-rs wasm32 Linux branch: WASM_MUSL_SYSROOT/lib instead of native runtime directory",
+    "finalFirefoxSHA256": "12afe0d5be898fbf9448e485b853e86f0f1dc035b67ca5cad27fa27c6906e867",
+    "replayRawFinalDataBinding": {
+      "replay": {
+        "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/startup-trap-targeted-inspection/diagnostic-preoptimizer.wasm",
+        "bytes": 280454765,
+        "sha256": "d91422b74fb85fd5bf3ccef01784201d4720a2d4e486f4f939facc07c6e10cb0",
+        "dataSections": [
+          {
+            "payloadBytes": 48076440,
+            "sha256": "5ac8396f413c19bdfcd73847352fecb0f240f1e8f57bea0db29461f1aa8bf6cf"
+          }
+        ]
+      },
+      "raw": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox",
+        "bytes": 175262059,
+        "sha256": "973b387bc6784538fcca077c191aacb72fb7e58caea07962ed8423835ff87a64",
+        "dataSections": [
+          {
+            "payloadBytes": 48076440,
+            "sha256": "5ac8396f413c19bdfcd73847352fecb0f240f1e8f57bea0db29461f1aa8bf6cf"
+          }
+        ]
+      },
+      "final": {
+        "path": "/mnt/p6/project/build/nightly-native-package-transform-20261003/firefox.fpcast.wasm",
+        "bytes": 188796635,
+        "sha256": "12afe0d5be898fbf9448e485b853e86f0f1dc035b67ca5cad27fa27c6906e867",
+        "dataSections": [
+          {
+            "payloadBytes": 48076440,
+            "sha256": "5ac8396f413c19bdfcd73847352fecb0f240f1e8f57bea0db29461f1aa8bf6cf"
+          }
+        ]
+      }
+    },
+    "standaloneNativeResult": "20 pass, 0 fail, exit0",
+    "standaloneLegacyResult": "exit139 before main",
+    "freshRustRebuild": false
+  },
+  "causeReviewPacket": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/native-cargo-cxx-runtime-review.json",
+    "sha256": "2d5a9ac878ad9da526f4ebf7cb768e6799294666bddf4ac0e65490811c7dca86"
+  },
+  "originalPreCauseHandoff": {
+    "path": "/mnt/p6/project/build/nightly-baseline-guest-20261003/actual-startup-trace-run55-handoff-pre-cause.json",
+    "sha256": "438d60a35afd091015ee27f78b8b23208ff0880217c9e653c79c6dfc6da8113e"
+  }
+}

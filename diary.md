@@ -53,3 +53,21 @@ polled peak virtual size was 7.70 GiB. The full phase later recorded a 26.67 GiB
 per-process peak during resource generation, so 7.70 GiB must not be reported
 as the whole-build peak. The size reduction is measured; this is not a
 controlled causal measurement of optimizer memory improvement.
+
+Actual baseline startup later exposed another acceptance gap: native Wasm magic,
+freshness, and absence of DWARF do not establish C++ ABI coherence. The Run55
+Rust archive bundled legacy sysroot libc++ objects whose constructors return
+void, while current native C++ objects expect constructors to return a pointer.
+wasm-ld returned zero with signature mismatch warnings and generated trapping
+stubs. Optimization inlined the shared_timed_mutex constructor trap into
+`_start`, causing the real guest Firefox exit139 before normal startup.
+
+The retained worker stack, exact served executable hash, targeted function
+disassembly and a bounded linker-map replay identify RLBox's sandbox_list_lock
+static initializer. Data-section hashes match across replay, raw and packaged
+modules, binding the map's guard address to the actual trap. Retain a compact
+linker map even without DWARF, and reject constructor/destructor signature
+mismatches during program-link acceptance. A separate disabled-FIPS NSS
+signature mismatch must also be corrected before adopting `--fatal-warnings`.
+Changing runtime library selection must produce a fresh Rust static library;
+archive member filtering or a static-initializer bypass would hide the cause.

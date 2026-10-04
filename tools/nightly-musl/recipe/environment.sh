@@ -41,3 +41,7 @@ export MOZ_SOURCE_REPO=https://hg.mozilla.org/mozilla-central
 export MOZ_SOURCE_CHANGESET=dfc77f7a6d716f1a20a2576597638d4fc21cd916
 
 export WASM_MUSL_SYSROOT=/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot
+
+# cc-rs must bundle the same native C++ ABI runtime selected by Clang.
+export WASM_MUSL_CXX_RUNTIME_LIBDIR=/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-unwind/runtimes-build/lib
+export CXXSTDLIB_wasm32_unknown_linux_musl=c++

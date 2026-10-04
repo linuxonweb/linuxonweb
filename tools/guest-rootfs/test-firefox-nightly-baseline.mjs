@@ -10,6 +10,7 @@ import { saveHostCpuPhaseEvidence, guestCpuPrebootStateExpression, selectHostCpu
 
 import { prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
 import { ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
+import { createStartupDiagnostics, routeOwnedCdpResponse, STARTUP_DIAGNOSTIC_LIMITS } from './firefox-startup-diagnostics.mjs';
 
 const TASK = '/mnt/p6/build/firefox-nightly-baseline-gate-20261002';
 export const CURRENT_TASK = '/mnt/p6/project/build/nightly-baseline-guest-20261003';
@@ -39,7 +40,8 @@ export function ownedChromiumArguments(raw, profile, owned) {
   return profiles.length === 1 && profiles[0] === '--user-data-dir=' + profile && ports.length === 1 && ports[0] === '--remote-debugging-port=0';
 }
 const assert = (value, message) => { if (!value) throw Error(message); };
-const fatal = logs => logs.split('\n').filter(line => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError:|indirect call (?:type mismatch|to null)/i.test(line));
+export const fatalStartupLines = logs => logs.split('\n').filter(line => /MOZ_CRASH|Assertion failure|panicked|Hit MOZ_|Segmentation fault|RuntimeError:|indirect call (?:type mismatch|to null)|^firefox exited with status [1-9][0-9]*\s*$/i.test(line));
+const fatal = fatalStartupLines;
 
 async function ownedBuildProcesses(snapshot) {
   const root = '/mnt/p6/build/firefox-nightly-musl-recovery-20261002', found = [];
@@ -107,12 +109,13 @@ export async function pinHtmlRuntimeDependencies(html, read) {
 function options(argv) {
   const result = {};
   for (let i = 0; i < argv.length; i += 2) { assert(argv[i]?.startsWith('--') && argv[i + 1] && !argv[i + 1].startsWith('--'), 'expected --key VALUE'); assert(!result[argv[i].slice(2)], 'duplicate option'); result[argv[i].slice(2)] = argv[i + 1]; }
-  const allowed = ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256', 'baseline', 'baseline-archive-sha256', 'baseline-manifest-sha256', 'chromium', 'task-root'];
+  const allowed = ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256', 'baseline', 'baseline-archive-sha256', 'baseline-manifest-sha256', 'chromium', 'task-root', 'startup-diagnostics'];
   for (const key of Object.keys(result)) assert(allowed.includes(key), 'unknown option ' + key);
   for (const key of ['out', 'candidate', 'overlay-report-sha256', 'nightly-package', 'nightly-report-sha256']) assert(result[key], 'missing --' + key);
   for (const key of ['overlay-report-sha256', 'nightly-report-sha256', ...(result.baseline ? ['baseline-archive-sha256', 'baseline-manifest-sha256'] : [])]) assert(digest(result[key]), 'invalid --' + key);
   assert(result.baseline || !(result['baseline-archive-sha256'] || result['baseline-manifest-sha256']), 'baseline hashes require --baseline');
   assert(!result['task-root'] || result['task-root'] === CURRENT_TASK, 'unreviewed task root');
+  assert(!result['startup-diagnostics'] || (result['startup-diagnostics'] === '1' && result['task-root'] === CURRENT_TASK && !result.baseline), 'startup diagnostics require value1/current task/candidate only');
   return result;
 }
 
@@ -170,7 +173,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     assert(inputs[p] === candidateManifest.assets[key].sha256 && (await fs.stat(p)).size === candidateManifest.assets[key].bytes, 'actual QA system asset mismatch ' + key);
   }
   await read(fileURLToPath(import.meta.url));
-  for (const name of ['firefox-host-cpus.mjs', 'firefox-browser-affinity.mjs', 'check-firefox-nightly-benchmark.mjs']) await read(REPO + '/tools/guest-rootfs/' + name);
+  for (const name of ['firefox-host-cpus.mjs', 'firefox-browser-affinity.mjs', 'check-firefox-nightly-benchmark.mjs', 'firefox-startup-diagnostics.mjs']) await read(REPO + '/tools/guest-rootfs/' + name);
   const serverPath = REPO + '/web/desktop/dev-server.mjs';
   let serverSource = (await read(serverPath)).toString();
   await hooks.admit?.({ opt, out, full, overlay, inputs, read, baselineManifest });
@@ -187,7 +190,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   assert(Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]) < taskAllowanceBytes, 'task allowance already exhausted');
   await fs.mkdir(out); await fs.writeFile(out + '/inputs-before.json', JSON.stringify(inputs, null, 2) + '\n');
   await fs.writeFile(out + '/owned-build-preflight.json', JSON.stringify({ activeBuilds, checkedAt: new Date().toISOString() }, null, 2) + '\n'); await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
-  for (const name of ['firefox-host-cpus.mjs','firefox-browser-affinity.mjs','check-firefox-nightly-benchmark.mjs']) await fs.copyFile(REPO + '/tools/guest-rootfs/' + name, out + '/' + name);
+  for (const name of ['firefox-host-cpus.mjs','firefox-browser-affinity.mjs','check-firefox-nightly-benchmark.mjs','firefox-startup-diagnostics.mjs']) await fs.copyFile(REPO + '/tools/guest-rootfs/' + name, out + '/' + name);
   await fs.writeFile(out + '/server.mjs', serverSource);
   await fs.mkdir(out + '/profile');
   const affinityPlan = await prepareBrowserAffinity(out);
@@ -205,10 +208,10 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
   const fd = openSync(out + '/browser.log', 'wx');
   const spawnedAt = Date.now();
   const child = spawn(launchCommand[0], launchCommand.slice(1), { detached: true, env: { ...process.env, XDG_CACHE_HOME: out + '/xdg-cache' }, stdio: ['ignore', fd, fd] }); closeSync(fd);
-  let exitInfo, spawnError, ws, next = 0;
+  let exitInfo, spawnError, ws, next = 0, diagnostics, diagnosticCleanup = false;
   const exited = new Promise(resolve => { child.once('exit', (code, signal) => { exitInfo = { code, signal }; resolve(); }); child.once('error', e => { spawnError = String(e); resolve(); }); });
   const pending = new Map(), errors = [];
-  const report = { schema: 1, pass: false, scope: hooks.scope || (baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm'), task: TASK, taskAllowanceBytes, identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
+  const report = { schema: 1, pass: false, scope: opt['startup-diagnostics'] ? 'native159-startup-diagnostic-only' : hooks.scope || (baseline ? 'saved-homepage-update-warm' : 'default-homepage-cold-warm'), ...(opt['startup-diagnostics'] ? { baselineAcceptance: false } : {}), task: TASK, taskAllowanceBytes, identity, origin, affinityPlan, browserPid: child.pid, phases: [], gpuAcceptance: false, jitAcceptance: false, tlsAcceptance: false, releaseAcceptance: false, limitations: ['This is baseline browser acceptance only; JIT, GPU rendering, fresh NSS trust and positive/negative TLS remain separate mandatory gates.', 'Guest UA authenticates the expected major only; exact version/source/local BuildID are pinned compiled package stamps. Exposed navigator.buildID may be reduced.', 'Startup observation times are readiness observations, not comparative benchmarks.'] };
   const childState = () => {
     let alive = false, ownedProfileArgument = false;
     if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) {
@@ -236,10 +239,10 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     }
     return members;
   }
-  function call(method, params = {}) { return new Promise((resolve, reject) => {
+  function call(method, params = {}, sessionId) { return new Promise((resolve, reject) => {
     if (!report.endpointOwnership?.verified || !childState().alive) { reject(Error('CDP requires verified live owned browser')); return; }
-    const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, 60000);
-    pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params }));
+    const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, diagnostics ? STARTUP_DIAGNOSTIC_LIMITS.commandMs : 60000);
+    pending.set(id, { resolve, reject, timer, sessionId }); ws.send(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }));
   }); }
   async function ev(expression) { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; }
   let lastStorageCheck = 0;
@@ -249,7 +252,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     const usage = Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]), disk = await fs.statfs(TASK);
     assert(usage < taskAllowanceBytes, 'task allowance exhausted'); assert(disk.bavail * disk.bsize >= 20 * 1024 ** 3, '20 GiB free reserve exhausted');
   }
-  async function until(fn, ms, label) { const end = Date.now() + ms; for (;;) { assert(!exitInfo && !spawnError, 'owned browser exited: ' + JSON.stringify(exitInfo || spawnError)); await storageCheck(); if (await fn()) return; assert(Date.now() < end, label + ' deadline'); await sleep(400); } }
+  async function until(fn, ms, label) { const end = Date.now() + ms; for (;;) { assert(!exitInfo && !spawnError, 'owned browser exited: ' + JSON.stringify(exitInfo || spawnError)); if (!diagnosticCleanup) diagnostics?.check(); await storageCheck(); if (await fn()) return; assert(Date.now() < end, label + ' deadline'); await sleep(400); } }
   const logs = () => ev(`(async()=>(await import('./main.js')).guestLogs.history.page(undefined,5000).map(l=>l.text).join(String.fromCharCode(10)))()`);
   const state = () => ev(`(async()=>({system:await(await import('./boot-assets.mjs')).systemUsage(),browserHardwareConcurrency:navigator.hardwareConcurrency,selectedGuestCpus:Number(document.querySelector('#cpu-cores').value),isolated:crossOriginIsolated,images:performance.getEntriesByType('resource').filter(e=>/vmlinux\\.wasm|initramfs.*(?:gz|cpio)/.test(e.name)).map(e=>({name:e.name,transferSize:e.transferSize}))}))()`);
   async function shot(label) { const r = await call('Page.captureScreenshot', { format: 'png' }); await fs.writeFile(out + '/' + label + '.png', Buffer.from(r.data, 'base64')); }
@@ -279,7 +282,17 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     let pageLogs = startupLogs;
     if (!baseline) {
       let browser, settled;
-      await until(async () => { pageLogs = await logs(); const b = consolePayloads(pageLogs, 'GPUCHECK browser=').at(-1); if (b) browser = JSON.parse(b); settled = consolePayloads(pageLogs, 'GPUCHECK ').findLast(l => /^webgl=(?!pending)\S+ webgpu=(?!pending)\S+ \{/.test(l)); return Boolean(browser && settled); }, 420000, 'automatic default GPU page');
+      await until(async () => {
+        pageLogs = await logs();
+        phaseReport.fatalLines = fatal(pageLogs);
+        if (phaseReport.fatalLines.length) {
+          await fs.writeFile(out + '/' + label + '-failure-guest-logs.txt', pageLogs + '\n');
+          assert(false, label + ' fatal runtime log ' + JSON.stringify(phaseReport.fatalLines));
+        }
+        const b = consolePayloads(pageLogs, 'GPUCHECK browser=').at(-1); if (b) browser = JSON.parse(b);
+        settled = consolePayloads(pageLogs, 'GPUCHECK ').findLast(l => /^webgl=(?!pending)\S+ webgpu=(?!pending)\S+ \{/.test(l));
+        return Boolean(browser && settled);
+      }, 420000, 'automatic default GPU page');
       const match = /^webgl=(\S+) webgpu=(\S+) (\{.*\})$/.exec(settled);
       phaseReport.defaultPage = { openedAutomatically: true, browser, webgl: match[1], webgpu: match[2], info: JSON.parse(match[3]), gpuRenderingRequired: false };
       phaseReport.browserIdentity = reportedIdentity(browser.userAgent, browser.buildID, full.identity);
@@ -338,14 +351,45 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     report.endpointOwnership.pageTarget = target;
     await fs.writeFile(out + '/endpoint-ownership.json', JSON.stringify(report.endpointOwnership,null,2) + '\n');
     ws = new WebSocket(pageWebSocketURL);
-    ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id) { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.timer); m.error ? p.reject(Error(JSON.stringify(m.error))) : p.resolve(m.result); } } else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params); };
+    ws.onmessage = e => {
+      const m = JSON.parse(e.data);
+      if (m.id) {
+        routeOwnedCdpResponse(m, pending);
+      } else if (diagnostics) diagnostics.handle(m);
+      else if (m.method === 'Runtime.exceptionThrown') errors.push(m.params);
+    };
     await new Promise((resolve, reject) => { const timer=setTimeout(()=>reject(Error('owned socket startup deadline')),5000); ws.onopen=()=>{clearTimeout(timer);resolve();}; ws.onerror=()=>{clearTimeout(timer);reject(Error('owned socket startup error'));}; }); await call('Page.enable'); await call('Runtime.enable'); await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
+    if (opt['startup-diagnostics']) {
+      diagnostics = createStartupDiagnostics({ filename: out + '/startup-cdp-events.jsonl', origin, pageTargetId: target.id, call, alive: () => childState().alive });
+      await diagnostics.start();
+    }
     await call('Page.navigate', { url: origin + '/linux/boot-manifest.json' }); await until(() => ev("document.readyState==='complete'&&location.pathname.endsWith('boot-manifest.json')"), 10000, 'seed document');
     report.browserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, await ev('navigator.hardwareConcurrency'), out);
     report.cpu = hooks.selectCpus ? hooks.selectCpus(report.browserAffinity.browserHardwareConcurrency, report.browserAffinity.hostNproc) : selectHostCpus(report.browserAffinity.hostNproc, report.browserAffinity.browserHardwareConcurrency);
     await ev(`(async()=>{localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${report.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await dir('admin/Downloads');await put('admin/nightly-baseline-marker.txt',${JSON.stringify('nightly-baseline-preserved-v1\n')});await put('admin/nightly-baseline-probe.html',${JSON.stringify(probeHTML)});await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(prefs)});await h.destroy();return true;})()`);
     await hooks.seed?.({ ev, report, out, full });
-    const url = origin + '/linux/index.html?firefox=1&renderer=canvas2d';
+    const url = origin + '/linux/index.html?firefox=1&renderer=canvas2d' + (diagnostics ? '&firefox_abort_trace=1' : '');
+    if (diagnostics) {
+      await saveHostCpuPhaseEvidence(report.cpu, await ev(guestCpuPrebootStateExpression), out, 'diagnostic-preboot');
+      const start = Date.now(); let savedBoot = false;
+      const phaseReport = { label: 'diagnostic-cold', pass: false, baselineAcceptance: false }; report.phases.push(phaseReport);
+      await call('Page.navigate', { url });
+      await until(async () => {
+        let guestLogs;
+        try { guestLogs = await logs(); } catch (error) { if (/context|Cannot|Failed to fetch/.test(String(error))) return false; throw error; }
+        await fs.writeFile(out + '/diagnostic-guest-logs.txt', guestLogs + '\n');
+        if (!savedBoot && guestLogs.includes('starting /bin/firefox as admin')) {
+          phaseReport.cpu = await saveGuestCpuEvidence(report.cpu, guestLogs, await state(), out, 'diagnostic-cold');
+          phaseReport.launchObservedMs = Date.now() - start; savedBoot = true;
+        }
+        phaseReport.fatalLines = fatal(guestLogs);
+        report.startupDiagnostics = diagnostics.summary();
+        await fs.writeFile(out + '/diagnostic-progress.json', JSON.stringify({ phaseReport, startupDiagnostics: report.startupDiagnostics }, null, 2) + '\n');
+        assert(!phaseReport.fatalLines.length, 'diagnostic fatal runtime log ' + JSON.stringify(phaseReport.fatalLines));
+        return false;
+      }, STARTUP_DIAGNOSTIC_LIMITS.durationMs, 'startup diagnostic observation');
+      throw Error('startup diagnostic observation completed without baseline acceptance');
+    }
     if (baseline) { service.setVariant('baseline'); await phase('baseline', () => call('Page.navigate', { url })); service.setVariant('candidate'); await phase('update', () => ev("(()=>{document.querySelector('[data-storage=update]').click();return true;})()")); }
     else await phase('cold', () => call('Page.navigate', { url }));
     await phase('warm', () => call('Page.reload', { ignoreCache: true }));
@@ -356,10 +400,12 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     report.finalCpu = await saveHostCpuPhaseEvidence(report.phases.at(-1).cpu, await state(), out, 'end');
     report.finalBrowserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, (await state()).browserHardwareConcurrency, out, 'browser-final');
     assert(errors.length === 0, 'outer browser exceptions'); report.pass = true;
-  } catch (error) { report.error = String(error.stack || error); try { await fs.writeFile(out + '/failure-guest-logs.txt', await logs()); await shot('failure'); } catch {} }
+  } catch (error) { report.error = String(error.stack || error); if (diagnostics) { report.startupDiagnostics = diagnostics.summary(); await fs.writeFile(out + '/diagnostic-failure.json', JSON.stringify({ error: report.error, startupDiagnostics: report.startupDiagnostics }, null, 2) + '\n'); } try { await fs.writeFile(out + '/failure-guest-logs.txt', await logs()); await shot('failure'); } catch {} }
   finally {
+    diagnosticCleanup = true;
     if (ws?.readyState === 1) { try { await call('Page.navigate', { url: 'about:blank' }); await call('Browser.close'); } catch {} }
-    for (const p of pending.values()) clearTimeout(p.timer); ws?.close(); await Promise.race([exited, sleep(5000)]);
+    for (const p of pending.values()) { clearTimeout(p.timer); p.reject(Error('owned CDP connection closing')); } pending.clear();
+    ws?.close(); await diagnostics?.settle(); diagnostics?.close(); if (diagnostics) report.startupDiagnostics = diagnostics.summary(); await Promise.race([exited, sleep(5000)]);
     report.cleanupMembersBefore = await groupMembers();
     const groupOwned = report.ownedInitialGroup?.some(m => m.pid === child.pid && m.session === child.pid);
     if (report.cleanupMembersBefore.length && groupOwned) {
@@ -376,6 +422,13 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
     if (!report.ownedGroupEmpty || report.cleanupError) report.pass = false;
     for (const socket of service.sockets) socket.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
     report.browserExit = exitInfo; report.spawnError = spawnError; report.serverClosed = !server.listening; report.errors = errors; report.requests = service.requests; report.inputs = inputs;
+    if (diagnostics) {
+      report.changedInputs = [];
+      for (const [p, expected] of Object.entries(inputs)) {
+        try { if (sha(await fs.readFile(p)) !== expected) report.changedInputs.push(p); } catch { report.changedInputs.push(p); }
+      }
+      report.inputsUnchanged = report.changedInputs.length === 0;
+    }
     report.storageBytes = Number(execFileSync('du', ['-sb', TASK], { encoding: 'utf8' }).split(/\s/)[0]);
     if (exitInfo?.code !== 0 || !report.serverClosed || report.storageBytes > taskAllowanceBytes) report.pass = false;
     await fs.writeFile(out + '/result.json', JSON.stringify(report, null, 2) + '\n');
@@ -385,7 +438,7 @@ export async function runIsolatedNightlyGuest(argv, hooks = {}) {
 }
 
 async function selfTest(out) {
-  assert(path.resolve(out).startsWith(TASK + '/'), 'self-test output outside task'); await fs.mkdir(out);
+  assert([TASK, CURRENT_TASK].some(task => path.resolve(out).startsWith(task + '/')), 'self-test output outside task'); await fs.mkdir(out);
   const checks = [], check = (name, fn) => { fn(); checks.push({ name, pass: true }); }, reject = fn => { let failed = false; try { fn(); } catch { failed = true; } assert(failed, 'expected rejection'); };
   const h = 'a'.repeat(64), identity = { version: '159.0a1', localBuildID: '20261003042618', hgRevision: 'b'.repeat(40) };
   const full = { passPackage: true, candidateOnly: true, guestAcceptance: false, identity, stamps: Object.fromEntries(['application.ini', 'platform.ini'].map(n => [n, { version: identity.version, buildID: identity.localBuildID, sourceStamp: identity.hgRevision }])), ...Object.fromEntries(['sourceSha256', 'sourceManifestSha256', 'sourceIdentitySHA256', 'buildEvidenceSHA256', 'runtimeInventorySHA256', 'rawBinarySHA256', 'finalBinarySHA256', 'archiveSha256'].map(k => [k, h])), allOutsideRuntimeRecordsIdentical: true, tailPreserved: true, version: 'full', bytes: 12 };
@@ -466,7 +519,7 @@ async function selfTest(out) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-if (process.argv[2] === '--help') console.log('Run: node test-firefox-nightly-baseline.mjs --out TASK/NEW --candidate GPU_OVERLAY_DIR --overlay-report-sha256 SHA --nightly-package FULL_PACKAGE_DIR --nightly-report-sha256 SHA [--baseline DIR --baseline-archive-sha256 SHA --baseline-manifest-sha256 SHA] [--chromium PATH] [--task-root ' + CURRENT_TASK + ']\nContract tests only: node test-firefox-nightly-baseline.mjs --self-test TASK/NEW\nTMPDIR/TMP/TEMP must be disk-backed inside the selected task. Legacy task ' + TASK + ' retains 2 GiB; the authorized current task allows 4 GiB.');
+if (process.argv[2] === '--help') console.log('Run: node test-firefox-nightly-baseline.mjs --out TASK/NEW --candidate GPU_OVERLAY_DIR --overlay-report-sha256 SHA --nightly-package FULL_PACKAGE_DIR --nightly-report-sha256 SHA [--baseline DIR --baseline-archive-sha256 SHA --baseline-manifest-sha256 SHA] [--chromium PATH] [--task-root ' + CURRENT_TASK + '] [--startup-diagnostics 1]\nStartup diagnostics: current task/candidate only, one cold startup, bounded180seconds, persistent page/owned worker console and exception capture; no baseline/JIT/GPU/TLS/release acceptance.\nContract tests only: node test-firefox-nightly-baseline.mjs --self-test TASK/NEW\nTMPDIR/TMP/TEMP must be disk-backed inside the selected task. Legacy task ' + TASK + ' retains 2 GiB; the authorized current task allows 4 GiB.');
 else if (process.argv[2] === '--self-test') { assert(process.argv.length === 4, '--self-test OUT required'); await selfTest(path.resolve(process.argv[3])); }
 else await runIsolatedNightlyGuest(process.argv.slice(2));
 }
