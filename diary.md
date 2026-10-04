@@ -1,3 +1,38 @@
+# 2026-10-03 — Run56 native C++ runtime rebuild
+
+The corrected ordinary full build, Run56, completed in **1805.69 seconds**.
+Its owner reaped unified session 65279 with exit 0 and verified exact PGID
+520663 empty. The current raw Firefox binary is **176,096,386 bytes
+(167.94 MiB)** at:
+
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`
+
+SHA256: `b4c5280318add68ddad1072bc3e954b24946e6bceb932b605c10022e6fde398d`.
+The three large programs completed the original automatic Binaryen `-O2`.
+All five final inspected executables have native Wasm magic and no `.debug_*`
+sections. pingsender and gfxtest retained their unchanged prior output bytes;
+their existence is not evidence of recompilation during Run56. Actual sizes,
+hashes and sections are in
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run56-final-binaries.json`.
+This records completed build output, before fresh ABI transformation,
+packaging and guest startup acceptance. JIT, Firefox GPU and deployment remain
+unaccepted.
+
+The fresh Rust archive is **204,613,232 bytes**, with **7,136 native members**.
+Content comparisons found zero legacy-only runtime members; the selected
+shared-mutex constructor now has the expected `(i32) -> i32` signature.
+This fixes the proven archive ownership defect, but does not itself establish
+whole-program ABI coherence or successful Firefox startup.
+
+Another mistake was relying on silence in the ordinary build log: the Run55
+log recorded zero signature mismatch warnings despite the direct linker replay
+proving mismatches and synthetic traps. Mach's normal warning reporting is
+insufficient for this acceptance gate. Capture raw output from exact current
+linker rows for all browser programs and NSS utilities. Retain known unsupported
+ELF `-z` warnings separately; any signature mismatch or unexpected warning must
+fail acceptance. A separate `--fatal-warnings` control may omit only those
+explicitly reviewed inert flags while preserving the exact original replay.
+
 # 2026-10-03 — Nightly 159 native Linux/Wasm no-debug rebuild
 
 The actual ordinary full build, Run55, succeeded in 1672.26 seconds. Its owner
