@@ -1,0 +1,575 @@
+{
+  "schema": 1,
+  "claim": "Actual native NSPR static lifecycle and fatal termination regression passed; exact reviewed source applied and natural two production objects byte-identical to guest tested objects. Full browser rebuild/acceptance separate.",
+  "actualGuest": {
+    "scope": "Actual native Linux/Wasm NSPR lifecycle and fatal termination unit gate; no Firefox/GPU/JIT acceptance",
+    "pass": true,
+    "passes": 25,
+    "failures": 0,
+    "actualCPUs": {
+      "hostNproc": 6,
+      "browserHardwareConcurrency": 6,
+      "hostCores": 6,
+      "expectedHostCores": 6,
+      "requestedGuestCpus": 6
+    },
+    "guestConfiguration": {
+      "memoryKiB": [
+        1048576
+      ],
+      "cpus": [
+        6
+      ],
+      "verified": true
+    },
+    "independentPostReapGroups": {
+      "702650": [],
+      "702717": []
+    },
+    "files": [
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/compile-review.json",
+        "bytes": 29884,
+        "sha256": "167e039a02a1e3170dd0237654af80b62d8017fbcf377c9e9d068b345b4c8098"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/fatal-host-controls.json",
+        "bytes": 4519,
+        "sha256": "e9f828f2dcfd3513a828f47985db5d99e6aa8ac949417f7723a1fdc6b6df9d81"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/non-wasm-controls.json",
+        "bytes": 372,
+        "sha256": "0b32f1fe2c05e4feb4519fcedc33a0612e2aa12d7b94389126dc5691b791d615"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/fixture-validation.json",
+        "bytes": 1256,
+        "sha256": "93d2655431b41630b09696a68fbb2ddfcc2232811432cb06c303b152462bf7f2"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-launch-plan-retry2.json",
+        "bytes": 5513,
+        "sha256": "e68d1faef95a2f2a3232f03870031f4194f97683d5dfc0ae671f41275d103946"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/root-compile-review.json",
+        "bytes": 488,
+        "sha256": "3005a37e651dd3fd046f6c279b77ddc9e0127c4d96a5aa727aa8fbdeb4c51879"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/root-guest-launch-review.json",
+        "bytes": 699,
+        "sha256": "dc483f2b4d07d1ff11371e44ca835f7359a801e7886a083241e534f870fc16ba"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/result.json",
+        "bytes": 18207,
+        "sha256": "4fafd19de8d28ebc9348b2dc2375f0f94e4f533cbc5812bc67c225f01ebf8918"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/guest-console.txt",
+        "bytes": 3744,
+        "sha256": "70c37ce15d52a015a0db2b9f3dc230fed55d8d5830e5ba2d859bc2ac0ce83662"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/requested.json",
+        "bytes": 182195,
+        "sha256": "6aef4af2bc00d64a1a0b930087b5e135ad2c3cff7138237e1394803ece8e0c48"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2-supervisor-status.json",
+        "bytes": 1962,
+        "sha256": "4fe9bf056019ec6f61387040670267269bfb46c60e4c9e9786655b97aa250a2d"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/unwind-final-cpu-phase.json",
+        "bytes": 304,
+        "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+      }
+    ],
+    "patch": {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-static-loader.patch",
+      "bytes": 1767,
+      "sha256": "9b7d2f3cf4093e28b5a9e2912ee273c4aeca8e8162003690c6e0c148ef15c6eb"
+    },
+    "baselineAcceptance": false,
+    "gpuAcceptance": false
+  },
+  "fatalHostControls": {
+    "pass": true,
+    "cases": 6,
+    "scope": "actual compiled mozalloc object and actual MOZ_CRASH header; bounded host fixture stdio imports only; guest acceptance false",
+    "guestAcceptance": false,
+    "rows": [
+      {
+        "arm": "patched",
+        "name": "run_abort",
+        "errorType": "RuntimeError",
+        "error": "unreachable",
+        "annotation": "",
+        "writes": 0,
+        "observed": []
+      },
+      {
+        "arm": "patched",
+        "name": "run_mozalloc",
+        "errorType": "RuntimeError",
+        "error": "unreachable",
+        "annotation": "original mozalloc reason",
+        "writes": 1,
+        "observed": [
+          "original mozalloc reason"
+        ]
+      },
+      {
+        "arm": "patched",
+        "name": "run_crash",
+        "errorType": "RuntimeError",
+        "error": "unreachable",
+        "annotation": "MOZ_CRASH(original MOZ_CRASH reason)",
+        "writes": 0,
+        "observed": []
+      },
+      {
+        "arm": "original",
+        "name": "run_abort",
+        "errorType": "RangeError",
+        "error": "Maximum call stack size exceeded",
+        "annotation": "Redirecting call to abort() to mozalloc_abort\n",
+        "writes": 8963,
+        "observed": [
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n"
+        ]
+      },
+      {
+        "arm": "original",
+        "name": "run_mozalloc",
+        "errorType": "RangeError",
+        "error": "Maximum call stack size exceeded",
+        "annotation": "Redirecting call to abort() to mozalloc_abort\n",
+        "writes": 8964,
+        "observed": [
+          "original mozalloc reason",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n"
+        ]
+      },
+      {
+        "arm": "original",
+        "name": "run_crash",
+        "errorType": "RangeError",
+        "error": "Maximum call stack size exceeded",
+        "annotation": "Redirecting call to abort() to mozalloc_abort\n",
+        "writes": 8963,
+        "observed": [
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n",
+          "Redirecting call to abort() to mozalloc_abort\n"
+        ]
+      }
+    ]
+  },
+  "productionPort": {
+    "before": {
+      "nsprpub/pr/src/linking/prlink.c": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/src/linking/prlink.c",
+        "bytes": 26276,
+        "sha256": "7782dc5b77502b553b5951bd9e9846353293caefbbe1ac0222b99e53bf25e56e"
+      },
+      "memory/mozalloc/mozalloc_abort.cpp": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/memory/mozalloc/mozalloc_abort.cpp",
+        "bytes": 3218,
+        "sha256": "2a8710438dbde0a678951758a0350302901922f458ee9e98a541ccaa4c16e95e"
+      }
+    },
+    "after": {
+      "nsprpub/pr/src/linking/prlink.c": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/src/linking/prlink.c",
+        "bytes": 26665,
+        "sha256": "1c49f69b582aff62a6b3f2c69b37c8ca29fecfce162716df7d22b0d3801f5677"
+      },
+      "memory/mozalloc/mozalloc_abort.cpp": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/memory/mozalloc/mozalloc_abort.cpp",
+        "bytes": 3412,
+        "sha256": "9bdc66779ab0186742703be06543bfede91e5bc41d14e08864ea412e1c28f620"
+      }
+    },
+    "patch": {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-static-loader.patch",
+      "bytes": 1767,
+      "sha256": "9b7d2f3cf4093e28b5a9e2912ee273c4aeca8e8162003690c6e0c148ef15c6eb"
+    },
+    "alreadyApplied": false,
+    "nativeStaticLoader": true,
+    "dynamicFailurePreserved": true,
+    "nativeAbortUsesRealTrap": true,
+    "browserAcceptance": false,
+    "gpuAcceptance": false
+  },
+  "idempotentReplay": {
+    "before": {
+      "nsprpub/pr/src/linking/prlink.c": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/src/linking/prlink.c",
+        "bytes": 26665,
+        "sha256": "1c49f69b582aff62a6b3f2c69b37c8ca29fecfce162716df7d22b0d3801f5677"
+      },
+      "memory/mozalloc/mozalloc_abort.cpp": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/memory/mozalloc/mozalloc_abort.cpp",
+        "bytes": 3412,
+        "sha256": "9bdc66779ab0186742703be06543bfede91e5bc41d14e08864ea412e1c28f620"
+      }
+    },
+    "after": {
+      "nsprpub/pr/src/linking/prlink.c": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/src/linking/prlink.c",
+        "bytes": 26665,
+        "sha256": "1c49f69b582aff62a6b3f2c69b37c8ca29fecfce162716df7d22b0d3801f5677"
+      },
+      "memory/mozalloc/mozalloc_abort.cpp": {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/memory/mozalloc/mozalloc_abort.cpp",
+        "bytes": 3412,
+        "sha256": "9bdc66779ab0186742703be06543bfede91e5bc41d14e08864ea412e1c28f620"
+      }
+    },
+    "patch": {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-static-loader.patch",
+      "bytes": 1767,
+      "sha256": "9b7d2f3cf4093e28b5a9e2912ee273c4aeca8e8162003690c6e0c148ef15c6eb"
+    },
+    "alreadyApplied": true,
+    "nativeStaticLoader": true,
+    "dynamicFailurePreserved": true,
+    "nativeAbortUsesRealTrap": true,
+    "browserAcceptance": false,
+    "gpuAcceptance": false
+  },
+  "naturalProductionObjects": {
+    "nspr": "cfd14328a43d4c6fda8b797ca785ee34510572e9d0c1cd551c76dd9fe670de05",
+    "mozalloc": "50ed4eba27198363aba8d04c1a1e0fe379d9e3f0aad6779cc295fb5d06765680",
+    "equalGuestTested": true,
+    "ownerReaped": true,
+    "groupEmpty": true
+  },
+  "rawGuestMarkers": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\nConsole: switching to colour frame buffer device 80x30\nfb0: wasm framebuffer 640x480-32 at 7b4a6d40\nFreeing initrd memory: 39808K\nThis architecture does not have kernel memory protection.\nRun /init as init process\nnetwork: no eth0 (host did not attach virtio-net)\ndisplay: starting Xfbdev as admin at 640x480x32\n_XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.\nLinuxInit: VT_ACTIVATE skipped (Operation not permitted)\nLinuxInit: VT_WAITACTIVE skipped (Operation not permitted)\nLinuxInit: KDSETMODE skipped (Operation not permitted)\nUsing evdev pointer /dev/input/event0\nGUEST_NSPR START\nGUEST_NSPR PASS real NSPR initialization\nGUEST_NSPR PASS register static table\nGUEST_NSPR PASS resolve and call registered function\nGUEST_NSPR PASS absent symbol fails honestly\nGUEST_NSPR PASS duplicate registration retains same owned library\nGUEST_NSPR PASS load registered name retains static library\nGUEST_NSPR PASS global lookup obtains function and reference\nGUEST_NSPR PASS release duplicate reference\nGUEST_NSPR PASS first release retains static table\nGUEST_NSPR PASS release named load reference\nGUEST_NSPR PASS second release retains static table\nGUEST_NSPR PASS release lookup reference\nGUEST_NSPR PASS third release retains original reference\nGUEST_NSPR PASS final static unload succeeds without dynamic dlclose\nGUEST_NSPR PASS final unload removes symbol from loadmap\nGUEST_NSPR PASS re-register and call after complete unload\nGUEST_NSPR PASS unsupported dynamic load fails honestly\nGUEST_NSPR PASS dynamic load failure preserves registered static table\nGUEST_NSPR PASS null unload remains rejected\nGUEST_NSPR PASS reloaded static library final unload\nGUEST_NSPR PASS real NSPR cleanup\nGUEST_NSPR_UNIT_RESULT pass=21 fail=0\nSegmentation fault\nGUEST_NSPR START\nfailed to initialize shared libraries [Dynamic loading not supported]\nGUEST_NSPR PASS original initialization traps\nGUEST_NSPR_NEGATIVE START\nGUEST_NSPR_NEGATIVE PASS real NSPR initialization\nGUEST_NSPR_NEGATIVE PASS register static table\nGUEST_NSPR_NEGATIVE PASS resolve and call registered function\nGUEST_NSPR_NEGATIVE PASS absent symbol fails honestly\nGUEST_NSPR_NEGATIVE PASS duplicate registration retains same owned library\nGUEST_NSPR_NEGATIVE PASS load registered name retains static library\nGUEST_NSPR_NEGATIVE PASS global lookup obtains function and reference\nGUEST_NSPR_NEGATIVE PASS release duplicate reference\nGUEST_NSPR_NEGATIVE PASS first release retains static table\nGUEST_NSPR_NEGATIVE PASS release named load reference\nGUEST_NSPR_NEGATIVE PASS second release retains static table\nGUEST_NSPR_NEGATIVE PASS release lookup reference\nGUEST_NSPR_NEGATIVE PASS third release retains original reference\nGUEST_NSPR_NEGATIVE FAIL final static unload succeeds without dynamic dlclose\nGUEST_NSPR_NEGATIVE PASS final unload removes symbol from loadmap\nGUEST_NSPR_NEGATIVE PASS re-register and call after complete unload\nGUEST_NSPR_NEGATIVE PASS unsupported dynamic load fails honestly\nGUEST_NSPR_NEGATIVE PASS dynamic load failure preserves registered static table\nGUEST_NSPR_NEGATIVE PASS null unload remains rejected\nGUEST_NSPR_NEGATIVE FAIL reloaded static library final unload\nGUEST_NSPR_NEGATIVE PASS real NSPR cleanup\nGUEST_NSPR_NEGATIVE_RESULT pass=19 fail=2\nGUEST_NSPR PASS unguarded static unload fails\nSegmentation fault\nGUEST_NSPR PASS direct abort terminates with real trap\nguest original fatal reason\nSegmentation fault\nGUEST_NSPR PASS mozalloc_abort terminates with real trap\nGUEST_NSPR_RESULT pass=25 fail=0\nGUEST_UNWIND_EXIT status=0\nstarting /bin/aurora-wm --compositor=no as admin\n",
+  "pins": [
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-fix-gate.json",
+      "bytes": 3507,
+      "sha256": "d57dfe4c6816e05c9f1372e405f0fb60db28ce1c42f8266255cae01431c4ba5b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/compile-review.json",
+      "bytes": 29884,
+      "sha256": "167e039a02a1e3170dd0237654af80b62d8017fbcf377c9e9d068b345b4c8098"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/root-compile-review.json",
+      "bytes": 488,
+      "sha256": "3005a37e651dd3fd046f6c279b77ddc9e0127c4d96a5aa727aa8fbdeb4c51879"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/root-guest-acceptance.json",
+      "bytes": 1875,
+      "sha256": "af245a7098eb4426b31b3421e8c30ef97755e38154ee2a4f7047e8f88b1d85d0"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/non-wasm-controls.json",
+      "bytes": 372,
+      "sha256": "0b32f1fe2c05e4feb4519fcedc33a0612e2aa12d7b94389126dc5691b791d615"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/fatal-host-controls.json",
+      "bytes": 4519,
+      "sha256": "e9f828f2dcfd3513a828f47985db5d99e6aa8ac949417f7723a1fdc6b6df9d81"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/fixture-validation.json",
+      "bytes": 1256,
+      "sha256": "93d2655431b41630b09696a68fbb2ddfcc2232811432cb06c303b152462bf7f2"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/nspr-static-test.cpp",
+      "bytes": 3122,
+      "sha256": "7a3355af9fb478c3672eb788e6210d25247775f10f84ed58c18b34fc046be9a7"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/fatal-test.cpp",
+      "bytes": 583,
+      "sha256": "b0d193d8f11f45b7d225a29f735d88dedff8f78332420e0829aac3830abdbcd5"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/test-fatal.mjs",
+      "bytes": 1773,
+      "sha256": "317a6ad52ac93f452bb96ffe8ff2529e3819140929b53096f774b43fbd5f1bdf"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-init.sh",
+      "bytes": 8388,
+      "sha256": "96710a986ee7d1d9cca3fa75691cf2c448122ea1fbd338d763baa6338389a5fd"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/final-fixture-commands.json",
+      "bytes": 9086,
+      "sha256": "a6c59eeb515a774c027b153b5e7ab4bfc1eb96de64d53a3d9e7f30bbe839100e"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-launch-plan-retry2.json",
+      "bytes": 5513,
+      "sha256": "e68d1faef95a2f2a3232f03870031f4194f97683d5dfc0ae671f41275d103946"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-retry2-cache.diff",
+      "bytes": 5011,
+      "sha256": "f57eeb445c8cc99aaf1093772202bcb0073887d95282dd053258ec9e64fcbe40"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/result.json",
+      "bytes": 18207,
+      "sha256": "4fafd19de8d28ebc9348b2dc2375f0f94e4f533cbc5812bc67c225f01ebf8918"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/guest-console.txt",
+      "bytes": 3744,
+      "sha256": "70c37ce15d52a015a0db2b9f3dc230fed55d8d5830e5ba2d859bc2ac0ce83662"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2-supervisor-status.json",
+      "bytes": 1962,
+      "sha256": "4fe9bf056019ec6f61387040670267269bfb46c60e4c9e9786655b97aa250a2d"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/requested.json",
+      "bytes": 182195,
+      "sha256": "6aef4af2bc00d64a1a0b930087b5e135ad2c3cff7138237e1394803ece8e0c48"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-run-retry2/unwind-final-cpu-phase.json",
+      "bytes": 304,
+      "sha256": "a96f172a4a910bb75af3dc68c4031c5a6d6270eb7b6033eb5446daa506ed3ed2"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/production-port/port.json",
+      "bytes": 1571,
+      "sha256": "b7745e3f567047f7c3a77ef9995dd0c4241e8e223eea6506f5fa8613e6b8b8c1"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/production-port-repeat/port.json",
+      "bytes": 1570,
+      "sha256": "944e92516c1d139789aca8bc0c374ae38b8f91c94fc968226d26c9a20e4c7068"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/status/native-two-target-objects-rebuild.json",
+      "bytes": 1321,
+      "sha256": "7a1812d9b27e49e8a83b649f7f6701293ae23f4948e2b1dbf419d0baf1bfca65"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/logs/native-two-target-objects-rebuild.log",
+      "bytes": 11122,
+      "sha256": "1df4ff9de98b5789b3b19473b6fdac669a47ebbb8d575a2887796d502778c88b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/production-port/original-objects.json",
+      "bytes": 764,
+      "sha256": "cff08cefb734d17e2fe80de01b165aa2345eefaa7ab1520b235c3ca4d204f35b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run56-independent-originals/manifest.json",
+      "bytes": 5540,
+      "sha256": "1e4fc5249c6bbae008756f1898e8ad3c77e59ef008d27a4711520f0be7e4c2a5"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run57-launch-plan.json",
+      "bytes": 4978,
+      "sha256": "4a35076303a41638e687f8c4f3e35e825d77c666c47083e80c23b296f2bbc6e3"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run57-live-owner-snapshot.json",
+      "bytes": 5194,
+      "sha256": "113ba0670d1f9be72291674f98aab7e1f414f8e5ec6d52e447af04e4080043c8"
+    }
+  ],
+  "launch": {
+    "argv": [
+      "python3",
+      "-B",
+      "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "build",
+      "run57-native-static-loader"
+    ],
+    "environment": {
+      "NIGHTLY_JOBS": "1",
+      "NIGHTLY_BUILD_TIMEOUT_SECONDS": "7200",
+      "NIGHTLY_ADDRESS_SPACE_GIB": "64",
+      "NIGHTLY_RESIDENT_MEMORY_GIB": "48"
+    },
+    "limits": {
+      "ASGiB": 64,
+      "RSSGiB": 48,
+      "availableFloorGiB": 2,
+      "core": 0,
+      "oom": 1000,
+      "timeSeconds": 7200,
+      "buildTaskGiB": 32,
+      "reserveGiB": 20
+    },
+    "sources": [
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+        "bytes": 10690,
+        "sha256": "746f0c1a1dd01c69597db59d9be009cd583d6c39858221714fa7f6eceb77a59d"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+        "bytes": 47879,
+        "sha256": "be6ae83fcdd094466b034aa02bd1a1896f18f6e6c99450f434bbf0afedb2ace5"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/storage-policy.json",
+        "bytes": 511,
+        "sha256": "cd5e29fcfc4b18262754c52004fc0a28d2a5016f7e6a37ad339de1043a20b806"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/nsprpub/pr/src/linking/prlink.c",
+        "bytes": 26665,
+        "sha256": "1c49f69b582aff62a6b3f2c69b37c8ca29fecfce162716df7d22b0d3801f5677"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/memory/mozalloc/mozalloc_abort.cpp",
+        "bytes": 3412,
+        "sha256": "9bdc66779ab0186742703be06543bfede91e5bc41d14e08864ea412e1c28f620"
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/native-static-loader-port.py",
+        "bytes": 3156,
+        "sha256": "a3a406b9b78bb49d6c6a3bdbddaa715fb6325899e5dd4a3cbbd5a0502924b88b"
+      },
+      {
+        "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/patches/nightly-native-static-loader.patch",
+        "bytes": 1767,
+        "sha256": "9b7d2f3cf4093e28b5a9e2912ee273c4aeca8e8162003690c6e0c148ef15c6eb"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/production-port/port.json",
+        "bytes": 1571,
+        "sha256": "b7745e3f567047f7c3a77ef9995dd0c4241e8e223eea6506f5fa8613e6b8b8c1"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/production-port-repeat/port.json",
+        "bytes": 1570,
+        "sha256": "944e92516c1d139789aca8bc0c374ae38b8f91c94fc968226d26c9a20e4c7068"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/guest-fix-gate.json",
+        "bytes": 3507,
+        "sha256": "d57dfe4c6816e05c9f1372e405f0fb60db28ce1c42f8266255cae01431c4ba5b"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/root-guest-acceptance.json",
+        "bytes": 1875,
+        "sha256": "af245a7098eb4426b31b3421e8c30ef97755e38154ee2a4f7047e8f88b1d85d0"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-loader-20261003/status/native-two-target-objects-rebuild.json",
+        "bytes": 1321,
+        "sha256": "7a1812d9b27e49e8a83b649f7f6701293ae23f4948e2b1dbf419d0baf1bfca65"
+      },
+      {
+        "path": "/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run56-independent-originals/manifest.json",
+        "bytes": 5540,
+        "sha256": "1e4fc5249c6bbae008756f1898e8ad3c77e59ef008d27a4711520f0be7e4c2a5"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/config/external/nspr/pr/Unified_c_external_nspr_pr0.o",
+        "bytes": 83388,
+        "sha256": "cfd14328a43d4c6fda8b797ca785ee34510572e9d0c1cd551c76dd9fe670de05"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/memory/mozalloc/Unified_cpp_memory_mozalloc0.o",
+        "bytes": 2116,
+        "sha256": "50ed4eba27198363aba8d04c1a1e0fe379d9e3f0aad6779cc295fb5d06765680"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/native-static-loader-port.py",
+        "bytes": 3156,
+        "sha256": "a3a406b9b78bb49d6c6a3bdbddaa715fb6325899e5dd4a3cbbd5a0502924b88b"
+      },
+      {
+        "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/patches/nightly-native-static-loader.patch",
+        "bytes": 1767,
+        "sha256": "9b7d2f3cf4093e28b5a9e2912ee273c4aeca8e8162003690c6e0c148ef15c6eb"
+      }
+    ],
+    "requirements": [
+      "Keep original automatic Binaryen O2 and j1 graph",
+      "Natural2 target-objects reaped0 and equal actual guest-tested object hashes",
+      "Freeze/audit raw outputs, zeroALL signature mismatch via actual direct LLD full-warning+separatefatal control after terminal",
+      "Account for natural certutil/pk12util helper relinks and source freshness",
+      "Independent Run56 raw7+Rust immutable original copies retained",
+      "No baseline/JIT/GPU acceptance implied"
+    ],
+    "baselineAcceptance": false,
+    "gpuAcceptance": false
+  },
+  "run57AtObservation": {
+    "state": "running",
+    "unifiedHandle": 75670,
+    "ownedPGID": 710076,
+    "snapshot": {
+      "path": "/mnt/p6/project/build/nightly-native-static-rebuild-20261003/run57-live-owner-snapshot.json",
+      "bytes": 5194,
+      "sha256": "113ba0670d1f9be72291674f98aab7e1f414f8e5ec6d52e447af04e4080043c8"
+    }
+  },
+  "observations": [
+    "Initial bare .o make target omitted dependency includes; corrected natural target-objects compiled exactly two reviewed objects",
+    "First guest attempt excluded before navigation: Chrome AF_UNIX scratch path too long; exact scratch shortened",
+    "Second guest attempt excluded on exact transient owned-cache ENOENT in du; retain all-task total and bounded three-retry exact allowlist",
+    "Assertions architecture and NSPR sign-compare compiler warnings retained; no actual program-warning claim from compile or ordinary log silence"
+  ],
+  "baselineAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false
+}
