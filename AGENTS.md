@@ -1,5 +1,33 @@
 # Latest continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
 
+Native main-stack adapter real guest PASSES55/0, unified29199 owner-reaped0,
+14.7689s/no guardstop; physical Node828596/Chrome828676 groups empty/serverclosed.
+ActualCPU6/RAM1GiB. J=/mnt/p6/project/build/nightly-native-stack-20261003:
+27 checks each actual8MiB/2MiB linker stacks plus originalmain query139 control.
+Main/worker crossqueries, real worker attr bytes, frame bounds/cancel/cleanup
+pass. Adapter uses pinned musl fields and linker __stack_low/high, delegates
+createdthreads to real libc, preserves detach/guard without TCB writes.
+J/native-stack.o853B SHA46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda.
+Root J/root-guest-stack-review.json PASS66 SHA
+e855511cb7365d9df71d6f013e592ee7a0e24627bc4ff9f129c04f1838f9d197,
+actual input pins/raw55/0/CPIO executed binaries/CPU/physical cleanup checked.
+This is native adapter acceptance only; Firefox full baseline, broad JIT and
+both Sites releases remain pending. Independent original Run57 raw7+Rust
+copies738,793,507B are under J/run57-originals (distinct inodes/hash matched).
+Production archive1,016B SHA9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f;
+selected libc/header pins bound. Root J/root-native-stack-adoption-review.json
+checks40 evidence file hashes/eight independent copies/exact3-line defs delta.
+Run58 first full graph completed0/45.5157s, ownedPGID845134 empty/unified62428
+reaped0, but did NOT relink: defs.mk is not a declared final-link dependency.
+This no-op is not new-browser acceptance. Preserved three actual .list inputs
+then changed only mtimes to trigger the ordinary driver and originalO2.
+Run58-native-main-stack-relink LIVE unified94827/ownedPGID850747, j1/7200s,
+AS64GiB/RSS48GiB/floor2GiB/task32GiB/reserve20GiB/core0/oom1000.
+Sole owner diagnose_native_firefox_startup must poll/reap before source edits.
+After actual fresh links: direct5 warning/fatal gates, fresh7fpcast/package,
+ordinary cold/warm baseline; then fresh whole broad JIT. No Firefox GPU test
+in this baseline phase. Future JIT transfer includes seven native archives.
+
 User reiterates: only test Firefox GPU after the simple GPU benchmark passes.
 The actual guest Vulkan→wgpu benchmark passed18.1778× against host SwiftShader;
 standalone current Rust-client tests also passed. Neither is Firefox GPU
@@ -14,8 +42,10 @@ G/startup-real-run57/startup-cdp-events.jsonl477584B/458events/0dropped,
 no diagnostic failure. Root G/root-startup-run57-failure-review.json PASS80
 SHA24e6c7e0fdcb08a2d3040ecb3cfd0bee32f692d531faf7dbc4258675cbfa967b:
 all admitted input hashes/actualCPU/owned worker stack/physicalcleanup verified.
-Owner maps targeted functions to current linked symbols; source cause not yet
-established. No source fix/rebuild/new package or acceptance inferred from trap.
+Unique retained preoptimizer body match409129 identifies pthread_getattr_np;
+actual selected musl source traps on main t->stack==NULL. Offset52 is stack
+pointer,56 size,60 guard. Adapter guest proof above establishes the correction;
+no full Firefox startup acceptance is inferred from it.
 
 Run57 ordinary cold baseline FAILED and terminal: unified86964 owner-reaped1,
 child1/no guardstop/25.9857s; Node785388/Chrome785557 groups empty/serverclosed.

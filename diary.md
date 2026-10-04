@@ -1,3 +1,39 @@
+# 2026-10-03 — Native main-thread stack query regression passes
+
+The observed Run57 startup trap belongs to the selected musl implementation
+of `pthread_getattr_np`. Its main-thread `t->stack == NULL` branch deliberately
+calls `a_crash`; main TLS initialization does not fill those stack fields.
+The native adapter uses the executable's real linker `__stack_low` and
+`__stack_high`, preserves actual detach/guard fields, and delegates queries
+for created threads to libc. It leaves the thread control block unchanged.
+
+A real Linux/Wasm guest passes **55/0** checks: both 8 MiB and 2 MiB linker
+stacks, live frame containment, main/worker cross-queries, exact original
+worker attribute bytes, cancellation and cleanup. Calling unmodified libc on
+the main thread reproduces **exit 139**. All real CPU counts match six; owned
+process groups are empty. This proves the adapter, not Firefox startup or JIT.
+The tested adapter is `/mnt/p6/project/build/nightly-native-stack-20261003/native-stack.o`
+(**853 bytes**, SHA256 `46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda`).
+The independent review is `root-guest-stack-review.json` in that task root.
+The production archive is **1,016 bytes** at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/libnightly-native-stack.a`,
+SHA256 `9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f`.
+Firefox still needs the normal relink, fresh packaging and guest baseline.
+Run58's first ordinary make completed in 45.5 seconds but emitted no final
+links: `defs.mk` was absent from the executable dependency list. Record this
+as a no-op. Preserve the three real browser `.list` files and touch only their
+mtimes to invoke the normal linker and optimizer; a successful make exit alone
+does not prove the changed linker settings reached the executable.
+
+Read the pinned structure layout before labeling optimized field loads:
+offset 52 is the stack pointer, 56 is stack size, and 60 is guard size. The
+first interpretation mislabeled offset 52 as stack size. Two adapter compile
+failures also exposed musl's private feature macros and header include order;
+retain those failed commands and use the actual matching private headers.
+Derive stack bounds from the linker rather than assuming Firefox's 8 MiB
+setting applies to every executable. A worker querying the main thread must
+not validate the worker's frame against the main stack.
+
 # 2026-10-03 — Run57 rebuild completed; actual Rust GPU client passes three backends
 
 The fresh Run57 transformed Firefox is now **189,452,969 bytes** at

@@ -1,9 +1,11 @@
 # Full Nightly PBL/JIT build transition — updated 2026-10-03
 
 This packet specifies the next full PBL/JIT build; it is not JIT acceptance.
-The baseline owner is running Run57, unified session 75670/owned PGID 710076,
-after the actual native loader/fatal gate passed 25/0. Reinspect that exact handle before
-transitioning. No full PBL/JIT browser build or deployment has started.
+Run57 built and packaged, but its real startup trapped in the selected musl
+main-thread stack query. The native stack adapter then passed 55 real guest
+checks. The baseline owner is running Run58's ordinary relink, unified session
+94827/owned PGID 850747. Reinspect that exact handle before transitioning.
+No full PBL/JIT browser build or deployment has started.
 Planning evidence lives in
 `/mnt/p6/build/firefox-nightly-full-jit-build-plan-20261002`, with disk-backed
 TMPDIR/TMP/TEMP, a 2 GiB planning cap and a 20 GiB free-space reserve.
@@ -24,8 +26,9 @@ local BuildID separately. The acquisition proof establishes the reviewed overlay
 and canonical source pairs, not whole-tree Hg/Git equality. The accepted
 source must retain the cc-rs native C++ runtime selection, its matching Cargo
 checksum, the NSS disabled-FIPS signature correction, and the NSPR static
-loader/native fatal-trap corrections. The latter passed the actual guest
-lifecycle/fatal unit gate; Run57 browser startup is still pending.
+loader/native fatal-trap corrections and the native main-stack query adapter.
+These passed their actual guest unit gates; the rebuilt Firefox's complete
+baseline startup remains pending.
 
 1. **Freeze the accepted baseline and choose storage.** Retain hashes of the
    accepted recipe, source inventory, target JSON, generated configuration,
@@ -92,9 +95,17 @@ lifecycle/fatal unit gate; Run57 browser startup is still pending.
    Replay the 1,969-assertion broad host preparation against the selected new
    packet. Retain the 972-assertion integer control and its separate overlay.
 
-   Copy the six accepted native archives independently, preserving their
+   Copy the seven accepted native archives independently, preserving their
    relative task paths; no mutable hardlinks or CMake build trees. The current
    archive inventory is in `/mnt/p6/project/build/nightly-jit-transition-review-20261003/README.txt`.
+   The seventh is `native-stack-accepted-run1/libnightly-native-stack.a`
+   (1,016 bytes, SHA256
+   `9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f`).
+   Preserve its selected libc/private-header pins and rebase its path in the
+   copied browser-only `defs.mk` contract, including `--wrap=pthread_getattr_np`.
+   Its 853-byte object is the exact guest-tested adapter; no libc TCB writes or
+   substitute browser objects belong in the transfer. See
+   `docs/firefox-nightly-native-main-stack-20261003.md`.
    Retain `CXXSTDLIB_wasm32_unknown_linux_musl=c++`; rebase
    `WASM_MUSL_CXX_RUNTIME_LIBDIR` to the new task's native-unwind archive root.
    Verify actual Cargo native helper links and archive member hashes against
@@ -195,7 +206,7 @@ lifecycle/fatal unit gate; Run57 browser startup is still pending.
    package bytes; copy any writable download cache into the new task. Start
    object/backend/generated-header/dependency/Cargo target state fresh. Do not
    seed baseline or diagnostic Rust archives, compiled Cargo trees or object
-   members. Accepted runtime primitive archives are the explicit six-library
+   members. Accepted runtime primitive archives are the explicit seven-library
    exception above; browser/Rust generated outputs are rebuilt for this source
    and PBL configuration. Reusing verified download bytes does not admit old
    build-script outputs. No Firefox128 object is eligible.

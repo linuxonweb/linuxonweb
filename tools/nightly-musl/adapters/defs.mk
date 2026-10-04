@@ -17,6 +17,9 @@ override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=shm_open -Wl$(NIGHTLY_WASM_CO
 # Real static TLS destructor lifecycle, without replacing LLVM Wasm exceptions.
 OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a
 override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=exit -Wl$(NIGHTLY_WASM_COMMA)--wrap=__pthread_tsd_run_dtors
+# Derive main-thread stack attributes from the real linker boundaries.
+OS_LIBS += /mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/libnightly-native-stack.a
+override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--wrap=pthread_getattr_np
 # Match the native Rust target's shared process memory and 8 MiB stack.
 # Export the table for guest callbacks/JIT and keep its static indices growable.
 override LDFLAGS += -Wl$(NIGHTLY_WASM_COMMA)--import-memory -Wl$(NIGHTLY_WASM_COMMA)--max-memory=4294967296 -Wl$(NIGHTLY_WASM_COMMA)--shared-memory

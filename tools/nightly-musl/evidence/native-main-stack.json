@@ -1,0 +1,252 @@
+{
+  "claim": "Actual selected-libc main-stack trap; real guest55/0; exact production adapter object matches; browser startup remains pending",
+  "cause": {
+    "finalFunction": 217188,
+    "offset": "0x7dbb981",
+    "bodySHA256": "e460f1cfb525702ba95582edc4e3c451d74f0707d0a3354f15bf429587985043",
+    "preoptimizerName": "pthread_getattr_np",
+    "preoptimizerFunction": 409129,
+    "trigger": "main pthread t->stack pointer is zero; selected libc deliberately a_crash() in that branch",
+    "correctedOffset52": "stack pointer, not stack size",
+    "fix": "read actual __stack_low/high linker bounds, preserve detach/guard, self-frame validation; created threads delegate unchanged real API"
+  },
+  "guest": {
+    "passes": 55,
+    "failures": 0,
+    "positiveArms": [
+      {
+        "passes": 27,
+        "low": 0,
+        "high": 8388608
+      },
+      {
+        "passes": 27,
+        "low": 0,
+        "high": 2097152
+      }
+    ],
+    "originalMainExit": 139,
+    "cpu": 6,
+    "ramKiB": 1048576,
+    "workerCancellation": "deferred self-cancel, cleanup handler and key destructor exactly once",
+    "ownedGroupsEmpty": true,
+    "serverClosed": true
+  },
+  "production": {
+    "scopePrograms": [
+      "firefox",
+      "plugin-container",
+      "xpcshell"
+    ],
+    "objectBytes": 853,
+    "objectSHA256": "46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda",
+    "nativeLibcUnmodified": true,
+    "CargoInputsUnmodified": true
+  },
+  "files": [
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/native-stack.c",
+      "bytes": 1301,
+      "sha256": "7d1d0d85dacd408c3b94278be44d1ac00baf0d81a8c3b2ffa936416e1f0590d5"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/native-stack.o",
+      "bytes": 853,
+      "sha256": "46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/stack-test.c",
+      "bytes": 4324,
+      "sha256": "9fe73ecb09b4e2fa764495eba4a6b48ba0a21802ec761435594be69e924bd5af"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/stack-test-8.wasm",
+      "bytes": 39820,
+      "sha256": "a1a9d922676a844b6a994ebbee0c51eb5d293ba9338741cacc5054a833a27444"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/stack-test-2.wasm",
+      "bytes": 39820,
+      "sha256": "c4e3b886c41cc2c230d600d8f00299de8c0fe7edd6dea51829d21720323ea66b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/original-pthread_getattr_np.c",
+      "bytes": 659,
+      "sha256": "39f66d1736e033a822660e98e2bd0a988d9322a4a292477ca8e18f08fd90a2d6"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/private-header-pins.json",
+      "bytes": 1035,
+      "sha256": "75cf2fe5b7a5c7294fd5cc6cc65f1799e5e930fed6b7a6238231b58c91406ab6"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/probe-commands.json",
+      "bytes": 1619,
+      "sha256": "ded81a16b52b5a1685d93959f8c18f5d59d8cb2912a09646d2e2ed728c39cc53"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/fixture-commands.json",
+      "bytes": 1575,
+      "sha256": "e82937845ba1febfc877ba4ffa2ca0ea2e58a4b4c3642295d472d5739704de35"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-init.sh",
+      "bytes": 7961,
+      "sha256": "d6a6338af819093a5871b0c864debb49c346af0a2eaee08cbad988e537c7c3a0"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-build/build.json",
+      "bytes": 1314,
+      "sha256": "4d5ae8a1ad9f2bcb0046788d8a3800a77c7306dfdd80a0b04b9a24e9a9111f81"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-build/initramfs.cpio",
+      "bytes": 40576140,
+      "sha256": "6fbd6dfc936e6bdf54a32da60489e361dc3edbdd49113b7d7aff7da66414e30b"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-run/result.json",
+      "bytes": 18424,
+      "sha256": "0f47ffa67feac4119ab5e0012a8853ea7bd2adfb45a41930cbd11f17c59513e4"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-run/guest-console.txt",
+      "bytes": 3312,
+      "sha256": "df87c257e577df5bbb81c2400561a4674d22455db1f207ca21f0eaa3f407fac6"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-run-supervisor-status.json",
+      "bytes": 1931,
+      "sha256": "c2d69fceac486e6520bfaba41a5e5964328975982172b172d57cc6f43465066d"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/guest-launch-plan.json",
+      "bytes": 5047,
+      "sha256": "672430d80ae4b99bee14faa35734945b43f726f6622e8fc59524ba94599700f8"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/stack-guest-supervisor-probe.json",
+      "bytes": 857,
+      "sha256": "3f06d2a62d3d7c0075abc813413d9e1620cfbd81336f6301f85ed36960ffb929"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/root-guest-stack-review.json",
+      "bytes": 8435,
+      "sha256": "e855511cb7365d9df71d6f013e592ee7a0e24627bc4ff9f129c04f1838f9d197"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-native-stack-20261003/run57-history-preserved.json",
+      "bytes": 4440,
+      "sha256": "7179853f1fab3f936834ba0783b53601657badc9242a6b0a55d687fb261b1559"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-run57-20261003/target-name-analysis-with-pre.json",
+      "bytes": 3039,
+      "sha256": "69bdb82f2f1ae5e98a373222eb23bbc1a0fdb323e76eba97c5f9ea83573b295e"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-run57-20261003/target-pre-pattern-matches.json",
+      "bytes": 459,
+      "sha256": "4826107a68e398d0a61582afe98b7f02b87c498952a8c3787ffcd58cdf5269d9"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-run57-20261003/root-trap-bodies-run57/report.json",
+      "bytes": 2218,
+      "sha256": "56925fc34f885d46b5ae8f1f6cb0a8bd042b12bcd4bf032bfb74425873a3d033"
+    },
+    {
+      "path": "/mnt/p6/project/build/nightly-baseline-run57-20261003/root-startup-run57-failure-review.json",
+      "bytes": 16994,
+      "sha256": "24e6c7e0fdcb08a2d3040ecb3cfd0bee32f692d531faf7dbc4258675cbfa967b"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/stack.c",
+      "bytes": 1301,
+      "sha256": "7d1d0d85dacd408c3b94278be44d1ac00baf0d81a8c3b2ffa936416e1f0590d5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/stack.o",
+      "bytes": 853,
+      "sha256": "46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/libnightly-native-stack.a",
+      "bytes": 1016,
+      "sha256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/build.json",
+      "bytes": 3781,
+      "sha256": "0ce6d4a848c5576e26e62b50a8f973fdebb759f3cbcc4262759a83bce993d19a"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/native-stack-accepted-run1/defs.mk.before",
+      "bytes": 2236,
+      "sha256": "960e7fd7ce748b1b9165ab0f4fe67a133c169e60b4f9055b732d2eb2329471ca"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/native-stack/stack.c",
+      "bytes": 1301,
+      "sha256": "7d1d0d85dacd408c3b94278be44d1ac00baf0d81a8c3b2ffa936416e1f0590d5"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/probes/native-stack/stack-test.c",
+      "bytes": 4324,
+      "sha256": "9fe73ecb09b4e2fa764495eba4a6b48ba0a21802ec761435594be69e924bd5af"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/recipe/build-native-stack.py",
+      "bytes": 3565,
+      "sha256": "55335c9d3b67a7cc7eb331b89aa130bb2d02966b45090845fa05ed0fa64ab897"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/adapters/defs.mk",
+      "bytes": 2494,
+      "sha256": "65eb7bbf0843b81fdb49c47ad2d67b3384e6884b3386f04825164ea71d2882d9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/build-native-stack.py",
+      "bytes": 3565,
+      "sha256": "55335c9d3b67a7cc7eb331b89aa130bb2d02966b45090845fa05ed0fa64ab897"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/environment.sh",
+      "bytes": 47879,
+      "sha256": "be6ae83fcdd094466b034aa02bd1a1896f18f6e6c99450f434bbf0afedb2ace5"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/run-phase.py",
+      "bytes": 10690,
+      "sha256": "746f0c1a1dd01c69597db59d9be009cd583d6c39858221714fa7f6eceb77a59d"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/recipe/object_goals.py",
+      "bytes": 2916,
+      "sha256": "068ca3c07c443a973d5ff8d421e1ec0c1deb01a960de78bf1b47cc32a81eb087"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/source/firefox-159.0a1/defs.mk",
+      "bytes": 2494,
+      "sha256": "65eb7bbf0843b81fdb49c47ad2d67b3384e6884b3386f04825164ea71d2882d9"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/storage-policy.json",
+      "bytes": 511,
+      "sha256": "cd5e29fcfc4b18262754c52004fc0a28d2a5016f7e6a37ad339de1043a20b806"
+    },
+    {
+      "path": "/mnt/p6/build/firefox-nightly-musl-recovery-20261002/status/build-run57-final-binaries.json",
+      "bytes": 12252,
+      "sha256": "cfe47f532a1cec91784ced7f6cb3517dcede8fe28e42163017ef9f5d0bee5251"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+      "bytes": 1329424,
+      "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b"
+    }
+  ],
+  "baselineAcceptance": false,
+  "jitAcceptance": false,
+  "gpuAcceptance": false,
+  "releaseAcceptance": false
+}
