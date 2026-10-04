@@ -1,5 +1,22 @@
 # Latest continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
 
+User reiterates: only test Firefox GPU after the simple GPU benchmark passes.
+The actual guest Vulkan→wgpu benchmark passed18.1778× against host SwiftShader;
+standalone current Rust-client tests also passed. Neither is Firefox GPU
+acceptance. Current Firefox tests diagnose baseline startup, not GPU.
+
+Run57 unchanged-package CDP diagnostic now TERMINAL: unified32903 owner-reaped1,
+child1/no guardstop/25.5513s; physical Node799017/Chrome799185 groups empty,
+serverclosed; actualCPU6/RAM4096. First actual RuntimeError unreachable in module
+2d2b4aa6: function217188@0x7dbb981 →143177@0x4bed8f2 →143308@0x4c1e312
+→154395@0x5248fa3 →346991@0x86457dc →_start7@0x1021c5.
+G/startup-real-run57/startup-cdp-events.jsonl477584B/458events/0dropped,
+no diagnostic failure. Root G/root-startup-run57-failure-review.json PASS80
+SHA24e6c7e0fdcb08a2d3040ecb3cfd0bee32f692d531faf7dbc4258675cbfa967b:
+all admitted input hashes/actualCPU/owned worker stack/physicalcleanup verified.
+Owner maps targeted functions to current linked symbols; source cause not yet
+established. No source fix/rebuild/new package or acceptance inferred from trap.
+
 Run57 ordinary cold baseline FAILED and terminal: unified86964 owner-reaped1,
 child1/no guardstop/25.9857s; Node785388/Chrome785557 groups empty/serverclosed.
 Actualhost/browser/requested/kernelCPUs6/RAM4096/canvas2d. Cold fatal line
@@ -8,8 +25,8 @@ library initialization or mozalloc redirect recursion message; first new
 runtime cause unprinted. G/cold-warm-real-run57/{result.json,
 failure-guest-logs.txt,cold-failure-guest-logs.txt}, supervisorstatus retained.
 PeakgroupRSS6235570176B/task294015247B/minavailable34321334272B.
-Owner prepares unchanged-package opt-in persistent-worker CDP stack capture
-under existing bounded180s/512workers/2048events/8MiB diagnostic limits.
+Owner completed unchanged-package opt-in persistent-worker CDP stack capture
+under existing bounded180s/512workers/2048events/8MiB diagnostic limits, above.
 No source/binary/package edits or claimed baseline acceptance. Retain excluded
 pre-spawn stdout/log path collision: distinct orchestration stdout fixed it
 without changing argv/supervisor or launching duplicate guest processes.

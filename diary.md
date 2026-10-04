@@ -11,7 +11,13 @@ bodies, the page/default URL, exact overlay changes and preserved init/home.
 The actual ordinary cold baseline subsequently failed in **25.99 seconds**:
 Firefox exited with **status 139**, and the warm case did not run. The previous
 NSPR initialization error and abort-recursion messages are absent. The new
-first runtime cause is not yet captured. Actual CPU counts match six and
+first runtime cause was subsequently captured as a Wasm `unreachable` trap.
+The unchanged-package diagnostic failed in **25.55 seconds**, with an exact
+stack beginning at function **217188**, module **2d2b4aa6**, offset **0x7dbb981**.
+All input hashes remained unchanged; 458 synchronous events fit within the
+capture limits, none were dropped, and both owned groups are physically empty.
+The build owner is mapping the stack to linked symbols before choosing a fix.
+Actual CPU counts match six and
 guest RAM is 4096 MiB; the owner reaped exit 1, closed the server, and both
 owned groups are empty. Startup, JIT, Firefox GPU and deployment remain
 unaccepted. The first preflight correctly
