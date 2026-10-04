@@ -1,4 +1,52 @@
-# Latest continuation — Run56 package accepted, baseline abort recursion, 2026-10-03
+# Latest continuation — first fatal captured: NSPR dynamic loading, 2026-10-03
+
+Corrected first-abort diagnostic captured the original fatal stderr message:
+"failed to initialize shared libraries [Dynamic loading not supported]".
+Current source contains that exact message only in nsprpub/pr/src/linking/
+prlink.c:138: _PR_InitLinker calls dlopen(0,RTLD_LAZY), then aborts on failure.
+The synchronous capture precedes recursion and retains the actual Firefox
+module2d3b3152 caller frames1507/1605/26881/154397/347000/_start7. It is not
+Firefox startup/JIT/GPU acceptance. Actual selected mozalloc object independently
+shows mozalloc_abort writing32 to linear0 then calling abort, which calls
+mozalloc_abort again; native Wasm needs a real trap for fatal termination.
+
+Diagnostic task D=`/mnt/p6/project/build/nightly-first-abort-20261003`.
+First attempt unified51739 reaped1/192.431s/no stop, groups643157/643332 empty:
+hook missed the fatal because it assumed i386 write4/writev146. Actual selected
+libc archive members independently extracted/checked show write64/writev66 and
+linux.syscall7i32->i32. Preserve attempt1-sourcefreeze/manifest.json and logs.
+Only two task-local first-observer syscall-number lines changed for retry;
+production worker and Firefox package/modules remained unchanged. Actual44
+host controls pass, including real Wasm caller/forwarded arguments/result,
+wrong-number negatives, bounded rings, split write/writev and invalid pointers.
+Root launch reviews rehashed25/32 actual files and verify exact source deltas.
+
+Corrected retry2 unified28996 is TERMINAL/owner-reaped1, elapsed192.40873s,
+no guard stop, exact Node653284/Chrome653453 groups empty/PIDs absent. Actual
+host/browser/guest CPUs6/RAM4096; earlier shell nproc8 did not determine actual
+admission. Chrome AS2TiB/core0 verified before guest navigation. D allocation
+785,376,950B/1GiB. Evidence trace2/{first-abort-capture.json,result.json},
+trace2-supervisor-status.json. Frozen launch-plan-retry2.json SHA
+babc75b6152e972c541717ebf9694ff55ae6d9c0e3a34cc6627e3e9cf9080d9a;
+root-launch-review-retry2.json SHA
+76a2bc250e08f0a1386f7c7dfba66d8f538e7e4b94a48d9d09bed95f00862569.
+
+Current owner `/root/diagnose_native_firefox_startup` next prepares scoped native
+NSPR static-loader/lifecycle and proper native Wasm fatal-trap fixes against
+task copies. Inspect existing NO_DLOPEN_NULL/static strategies; initialization
+must still create normal linker ownership/monitor state. Selecting only
+NO_DLOPEN_NULL may leave static PR_UnloadLibrary calling dlclose(NULL), so require
+actual static registration/lookup/refcount/unload and missing-symbol/dynamic
+load negative controls. Preserve normal Linux behavior and honest unsupported
+dynamic requests. No dummy initialization, no broad XPCOM bypass. Review exact
+patch/affected-object scope before live source mutation/full rebuild. Current
+source and accepted Run56 package remain unchanged. Poll new owned handles
+before mutation; keep owner active because fresh agent creation hits thread
+limit. Goal stays active: baseline, then whole broad JIT acceptance/Sites release,
+then actual Firefox GPU acceptance/second Sites release. Simple Vulkan->wgpu
+benchmark already satisfies prerequisite; publicv10 unchanged.
+
+# Previous continuation — Run56 package accepted, baseline abort recursion, 2026-10-03
 
 Fresh Run56 static package is accepted, but the actual baseline guest FAILS.
 Seven fresh fpcast modules/validators and143 ABI predicates pass; all31

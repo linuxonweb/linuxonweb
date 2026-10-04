@@ -1,3 +1,31 @@
+# 2026-10-03 — Recover the first fatal message before fixing startup
+
+A bounded task-only worker observer captured the first abort caller without
+changing the Firefox executable or package. Its preceding stderr message was
+`failed to initialize shared libraries [Dynamic loading not supported]`.
+The exact message occurs in NSPR's `_PR_InitLinker`, where `dlopen(0, RTLD_LAZY)`
+fails. The capture and caller stack are retained at
+`/mnt/p6/project/build/nightly-first-abort-20261003/trace2/first-abort-capture.json`.
+This identifies the next startup fix; it does not establish startup acceptance.
+
+The first diagnostic had a concrete mistake: it watched Linux i386 syscall
+numbers 4 and 146. The selected Wasm musl libc actually emits 64 and 66, using
+the seven-i32 Linux import ABI. Synthetic forwarding tests passed with the
+wrong numbers because their fixture repeated that assumption. Bind diagnostic
+fixtures to the actual selected headers, archive members and emitted code.
+The corrected controls independently verify those members, reject the old
+numbers, and retain normal syscall arguments and return values. Preserve the
+failed diagnostic and its source copies rather than replacing its evidence.
+
+The fatal path has a separate proven defect: native Wasm falls through to a
+null-memory store and `abort()`, while Mozilla overrides `abort()` to call
+`mozalloc_abort`. Linear address zero is writable, so the actual compiled
+functions recurse instead of promptly trapping. Recover the first message and
+stack before that recursion; distinguish the original failure from the broken
+fatal termination mechanism. NSPR's existing static-loader strategy also needs
+its actual unload lifecycle checked: a null executable handle must not lead to
+`dlclose(NULL)` for a registered static library.
+
 # 2026-10-03 — Run56 transformed runtime package
 
 The fresh transformed Firefox executable is **189,713,492 bytes (180.92 MiB)**
