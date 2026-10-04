@@ -1,5 +1,23 @@
 # 2026-10-03 — Run57 rebuild completed; actual Rust GPU client passes three backends
 
+The fresh Run57 transformed Firefox is now **189,452,969 bytes** at
+`/mnt/p6/project/build/nightly-native-package-run57-20261003/transform/firefox.fpcast.wasm`,
+SHA256 `2f6994ce78f7239c0eb5f5b3e8a35507f241d5b88b7a00139950aa42f661b4a8`.
+The compressed default-page runtime archive is **281,631,172 bytes** at
+`/mnt/p6/project/build/nightly-native-package-run57-20261003/overlay/candidate-run57/initramfs-firefox.cpio.gz`.
+All seven transformed modules/143 ABI predicates/31 successful bounded phases
+pass. Root streamed both archives to verify all eight installed executable
+bodies, the page/default URL, exact overlay changes and preserved init/home.
+The actual ordinary cold baseline subsequently failed in **25.99 seconds**:
+Firefox exited with **status 139**, and the warm case did not run. The previous
+NSPR initialization error and abort-recursion messages are absent. The new
+first runtime cause is not yet captured. Actual CPU counts match six and
+guest RAM is 4096 MiB; the owner reaped exit 1, closed the server, and both
+owned groups are empty. Startup, JIT, Firefox GPU and deployment remain
+unaccepted. The first preflight correctly
+rejected missing admitted scratch directories; create only those directories
+and retain the failed phase before retrying, without loosening admission.
+
 Run57 completed the ordinary original-O2 build successfully in **1,602.41 seconds**.
 Its owner reaped exit 0 and exact PGID 710076 is empty. The current raw Firefox
 is **175,835,746 bytes (175.84 MB)** at
@@ -9,8 +27,8 @@ All seven raw executables pass Wasm validation; all three browser and two NSS
 direct links pass signature checks and separate fatal-warning controls.
 Current BuildID remains **20261003042618** after this incremental rebuild;
 bind actual source and binary hashes rather than inventing a new stamp.
-Fresh transforms/package and cold/warm baseline remain pending. The preserved
-Run56 transformed module below is still historical, not the Run57 package.
+Fresh transforms/package pass; cold baseline failed as recorded above. The
+preserved Run56 transformed module below is historical, not the Run57 package.
 
 The separate actual Nightly Rust GPU client passed hardware WebGPU, host
 SwiftShader WebGPU and genuine Rust WebGL copy/map runs. Each actual guest

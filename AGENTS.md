@@ -1,5 +1,43 @@
 # Latest continuation — Run57 terminal success and actual Rust GPU client, 2026-10-03
 
+Run57 ordinary cold baseline FAILED and terminal: unified86964 owner-reaped1,
+child1/no guardstop/25.9857s; Node785388/Chrome785557 groups empty/serverclosed.
+Actualhost/browser/requested/kernelCPUs6/RAM4096/canvas2d. Cold fatal line
+"firefox exited with status 139"; warm did not run. No previous NSPR shared-
+library initialization or mozalloc redirect recursion message; first new
+runtime cause unprinted. G/cold-warm-real-run57/{result.json,
+failure-guest-logs.txt,cold-failure-guest-logs.txt}, supervisorstatus retained.
+PeakgroupRSS6235570176B/task294015247B/minavailable34321334272B.
+Owner prepares unchanged-package opt-in persistent-worker CDP stack capture
+under existing bounded180s/512workers/2048events/8MiB diagnostic limits.
+No source/binary/package edits or claimed baseline acceptance. Retain excluded
+pre-spawn stdout/log path collision: distinct orchestration stdout fixed it
+without changing argv/supervisor or launching duplicate guest processes.
+
+Run57 fresh static package/overlay now PASSES: all7 transformed/143ABI,
+31 successful bounded phases reaped0/emptygroups. Firefox final189452969B
+SHA2f6994ce78f7239c0eb5f5b3e8a35507f241d5b88b7a00139950aa42f661b4a8
+at P/firefox.fpcast.wasm. Overlay281631172B SHA
+ee31328fb6bce0fbe2fc4cc13a7cd3cc5147f0b2edc327c285c1cf533739ed6b
+at P.parent/overlay/candidate-run57/initramfs-firefox.cpio.gz.
+P/status/final-package-handoff-run57.json40248B SHA
+c9591a676f115ab25edbf14883efe94d6d9b9e7a6d71f07821e54d552430f5b7.
+Root P/root-final-package-review-run57.json4981B SHA
+95096ef1f3246824b871c810774ee33cf01f29daf5f91037291dae194a98275c:
+rehash current/frozen pins/phases/ABI, stream actualfull+overlayCPIO8exe,
+exactaddedpaths/singleprefs/order/tail/defaultpage/init+home preservation.
+Excluded missing-scratch preflight failure retained; retry changed only phase
+name after creating exact admitted disk scratch directories. No guard loosened.
+G=/mnt/p6/project/build/nightly-baseline-run57-20261003 is fresh strict4GiB/
+20GiBreserve task. Existing near-full B preserved. Root G/root-baseline-run57-
+launch-review.json1465B SHA2f82432e591170665d7c9d69907a05f7a90f2956590f86edfd4485fac6be775f
+passes exact runner/helper/seed/task/root/report rebases, actual inherited
+probe and original AS2TiB/core0/RSS12/floor4/time1800/task4/reserve20 guards.
+Launch plan b06a5ba87f5f5f280291b1e991bdfe956f1a074c1d164a509c802a83e789b256.
+Ordinary cold1 failed as above; only owner polls/reaps diagnostic handles.
+Prelaunch hostnproc8 is historical only; actual fresh CPU
+admission remains authoritative. No baseline/JIT/FirefoxGPU/release acceptance.
+
 Run57 ordinary fullj1/originalO2 COMPLETED: unified75670 owner-reaped0,
 child0,1602.4056s/no stop, exactPGID710076 empty. R=/mnt/p6/build/
 firefox-nightly-musl-recovery-20261002. RawFirefox175835746B SHA
@@ -20,7 +58,7 @@ package/overlay then cold/warm baseline. P=/mnt/p6/project/build/
 nightly-native-package-run57-20261003/transform; frozen raw/direct handoff
 run57-raw-direct-link-handoff.json21685B SHA
 f9454cf32f2f194fad99ae7039f2c4dbf81900fa7c0f0cb30191ad4b724e2036.
-Owner unified16397 now serial transforms; only owner polls/reaps this handle.
+Owner unified16397 transforms now reaped0; all phase groups empty.
 Task-copy processing roots rebased narrowly; root-reviewed preparation report
 P/root-preparation-rebase-review.json. Do not reuse Run56 direct/package
 acceptance for Run57. No baseline/browser/JIT/GPU/deploy acceptance yet.
