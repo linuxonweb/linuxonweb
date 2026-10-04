@@ -1,3 +1,61 @@
+# 2026-10-03 — Run59 ordinary no-debug rebuild completes
+
+The original automatic Binaryen O2 build completed in1,615.49 seconds with
+exit0; its owner reaped it and the exact process group1043801 is empty.
+All seven executables naturally relinked, including the four helpers. The
+fresh Firefox raw binary is **175,836,723 bytes (167.69 MiB)** at
+`/mnt/p6/build/firefox-nightly-musl-recovery-20261002/obj-nightly/dist/bin/firefox`,
+SHA256 `fbf593340e4d8205c963938fa5f08b4facaad5cbe72840a67b4b4037cef84cf8`.
+This is the completed ordinary PBL-disabled build, before the packaging
+fpcast transformation. Its application BuildID stamp remains20261003042618.
+Root independently streamed the actual seven modules and204,613,232-byte
+Rust archive, verified fresh hashes/mtimes, parsed Wasm sections and confirmed
+no debug sections. Actual seven-module WABT and loader checks subsequently
+passed, including shared imported memory for all four helpers. These are
+static gates; startup, NSS, broad JIT, Firefox GPU and deployment remain pending.
+The separate fpcast output is now **189,453,778 bytes (180.68 MiB)** at
+`/mnt/p6/project/build/nightly-native-package-run59-20261004/transform/firefox.fpcast.wasm`,
+SHA256 `b405d3ea8fc19ed4a81fd16246f0530aed991109d699f6b8cae40a07ad270764`.
+Its actual transform, Wasm validation and uniform ABI inspection passed;
+all-seven packaging and guest acceptance remain pending. The first inspector
+attempt failed because I omitted creating its assigned disk-backed scratch
+directory. Preserve that failure, create the admitted strict scratch directory
+before invocation, and bind a fresh successful retry without relaxing gates.
+
+The user's existing HTTPS proxy was live but returned502 because its backend
+had stopped. A small supervised loopback8001 preview now restores both LAN
+links through192.168.1.5:1111. It serves shippedFirefox128.14.0ESR and the
+previously accepted standalone Vulkan triangle fixture, using45 explicit
+frozen route overrides without copying large artifacts. Seventeen HTTP,
+header and range checks pass. Keep the served version visible: neither the
+fresh Nightly nor the new current-ABI GPU candidate is served yet. Under the
+preview's8GiB address-space bound Node needed `--disable-wasm-trap-handler`
+for its own HTTP parser; the initial failed attempt is preserved and reaped.
+HTTP reachability proves delivery, not a new browser/GPU acceptance run.
+
+# 2026-10-03 — Check absent Wasm sections before requesting them
+
+The Run59 package preparation checker initially requested a `Memory` section
+from every executable. A correct imported-memory module has no defined-memory
+section, and the actual WABT command returns exit1 with `Section not found:
+Memory`. That would have rejected a valid package before execution. The real
+102,310-byte native environment fixture reproduced the failure. The corrected
+checker first reads section headers, skips only an absent `Memory` section,
+and still requires the actual shared `env.memory` import, maximum4GiB and
+exported callback table. A present memory definition remains a failure. The
+final package handoff now also pins this checker itself. Independent review
+passes44 small pins and the exact source diff chains; none of the33 future
+package phases has run yet. Preparation approval is not package acceptance.
+
+Run59 has finished the original automatic O2 stages for Firefox and
+plugin-container; xpcshell is still optimizing at the owner's06:32:40UTC
+observation. This is not a completed seven-executable build. Keep the recorded
+Run58 sizes below until fresh Run59 outputs pass the terminal/package gates.
+The standalone current-ABI Vulkan plan is isolated from Firefox. Its retained
+source list has22 rows but21 unique files because one header appears twice;
+the new C++ entry makes22 unique compilation inputs. Count canonical inputs,
+and identify the reused public loader archive honestly.
+
 # 2026-10-03 — Standalone compute acceleration passes at the larger intensity
 
 The fixed four-arm H2/S1/S2/H3 comparison passes **140 frames and 286,720

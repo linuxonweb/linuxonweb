@@ -106,6 +106,17 @@ baseline startup remains pending.
    Its 853-byte object is the exact guest-tested adapter; no libc TCB writes or
    substitute browser objects belong in the transfer. See
    `docs/firefox-nightly-native-main-stack-20261003.md`.
+   The accepted source must also carry the native static environment
+   interposer and six browser-only linker wrappers from Run59. Preserve
+   `tools/nightly-musl/recipe/native-env-interposer-port.py`, its exact patch
+   and original-source provenance; rebase writable paths before any replay.
+   Recompile this source naturally in the fresh graph rather than seeding its
+   tested 3,732-byte object. Keep the four helper programs' imported shared
+   `env.memory`, maximum4GiB and exported table flags, while preserving their
+   original fixed-table/stack policy. Require actual raw and transformed
+   loader-contract checks for all seven new programs; browser validation alone
+   does not prove that NSS helpers can execute. Run59's ordinary raw/link
+   success is still separate from the required startup/NSS baseline acceptance.
    Retain `CXXSTDLIB_wasm32_unknown_linux_musl=c++`; rebase
    `WASM_MUSL_CXX_RUNTIME_LIBDIR` to the new task's native-unwind archive root.
    Verify actual Cargo native helper links and archive member hashes against

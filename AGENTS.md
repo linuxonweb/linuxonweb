@@ -1,3 +1,77 @@
+# Latest continuation — Run59 terminal raw7 and loader gates pass, 2026-10-03
+
+Run59 ordinary originalO2 is terminal SUCCESS: sole owner
+diagnose_native_firefox_startup/unified29743 reaped0/actualchild0,
+elapsed1615.492142s/exactPGID1043801 physicallyempty/no stop. All seven
+programs naturally relinked; no extra helper targets required. Final supervisor
+SHA1d050d7452b9c4ae6e9f02bb26803abad58d83bcb1bc989988389fea5d749818;
+task22,357,377,024B/free35,674,349,568B within unchanged bounds.
+R/status/build-run59-final-binaries.json SHA57a54739c32fe6a4df537b4be407a1bab898f84839954aaf09fa7cdd369f8ccb.
+Fresh rawFirefox175836723B SHAfbf593340e4d8205c963938fa5f08b4facaad5cbe72840a67b4b4037cef84cf8
+at R/obj-nightly/dist/bin/firefox; application BuildID stamp20261003042618.
+Root E/root-run59-terminal-raw-review.json14318B SHAf2c88169541398bee6137d85c0a80b1a3b84cdc2efbd108c8624d1fd082768ea
+independently streams actual raw7/Rust, verifies fresh hashes/mtimes/native
+sections/noDWARF/small source-gate pins and physical exactgroupempty.
+Native Rust unchanged204613232B/2ec67aadb6a229fa55a174d7188b34e955dc2f9ce57bb58e4eb81865326475bc.
+
+Actual raw7 WABT and loader contracts PASS; outer40849 reaped0/all8owned
+phasechildren0/reaped/empty/no stop. Rawvalidation SHAac2ca627b245961aa2fe99ab7901cdccac57b69ef7eb93fba7754684ad4959e8,
+P59/raw-loader-contracts.json SHA40ede7f5cf14ad18ad672c6ec9a4924c4043b9f54633015cfd18f29818e95810.
+Direct preparation first failed unresolved-lepoxy because recipe environment
+was not sourced; preserve excluded unsourced report, use sourced actual rows.
+Direct full-warning/fatal controls,3012object coherence, serialfpcast/package,
+NSSCLI/ordinarycoldwarm remain pending. No startup/broadJIT/FirefoxGPU/release
+acceptance. Sites publicv10 unchanged; fresh whole broadJIT follows baseline.
+GPU native-only prep and user dev-preview restoration are isolated; no Firefox
+GPU tests before simple current-ABI Vulkan-wgpu clear/triangle benchmark passes.
+User preview is now live through preserved HTTPSproxy705/:1111: Firefox
+https://192.168.1.5:1111/linux/index.html?firefox=1 serves shipped128.14.0ESR;
+https://192.168.1.5:1111/linux/tests/guest-vulkan-wgpu/guest.html?backend=webgpu
+serves frozen previously accepted simpletriangle with manual Run. No Run59
+candidate served. Owned persistent loopback8001 Node1095196/supervisorPGID1095195,
+45 explicit frozen routes; task /mnt/p6/project/build/nightly-dev-preview-20261004.
+preview-check.json15050B SHAe40a0aa2ae19f334fbd431e40193dea4708bfec7feaf4d1b5471975f6c70e927
+records17HTTPS GET/HEAD/range checks/MIME/COOPCOEP, no browser/guest execution.
+LAN connectivity verified; outsideLAN/clientTLS trust unverified. Preserve
+this owned preview and userproxies705/706 during task cleanup. New fresh
+build_gpu_boot_menu agent has only necessary context and owns topbarMore-menu
+UI shortcut task; no native/benchmark source changes or FirefoxGPUtest scope.
+Older LIVE entries below are historical observations.
+
+# Latest continuation — Run59 xpcshell optimizer; package preparation reviewed, 2026-10-03
+
+Sole native owner diagnose_native_firefox_startup confirms unified29743 and
+exactPGID1043801 LIVE at2026-10-04 06:32:40UTC. Firefox and plugin-container
+originalO2 stages finished; current xpcshell optimizer1069893 remains in that
+group. RSS5,861,924,864B/availableRAM33,055,150,080B/task22,461,132,800B/
+free35,570,577,408B; no stop. Existing bounds remain unchanged. Poll owner
+handle/group before duplicate builds or input edits. All7 raw/helper freshness,
+ordinary terminal/reap/empty, postlink/guest gates remain pending.
+
+P59=/mnt/p6/project/build/nightly-native-package-run59-20261004/transform.
+Independent read-only-preparation-review.json6669B SHA26300e212756a2ba33650fd3f9bc7cfd55ce6256407bd01c1d2d6e16a68c52f7
+passes44 stablepins/15 exactdiffchains/16syntaxparses and guest/production
+environment-object equality. Actual WABT absentMemory exit1 reproduced on
+the tiny immutable env fixture. Header-aware checker skips only absentMemory;
+mandatory Import/Table/Export and all real loader semantics remain enforced.
+Final freezer now pins that checker. All33 planned phases remain unexecuted;
+this is preparation approval only. No browser/JIT/GPU/release acceptance.
+
+User requires simple Vulkan-to-genuine-Rust-wgpu benchmark correctness and
+measured acceleration before Firefox GPU tests. Existing compute results below
+remain separate. Isolated current-native Vulkan prep is authorized under its
+256MiB taskcap/20GiBreserve/AS16GiB/RSS12GiB/floor4GiB/core0/serial120s phases,
+with actual nativeCXX/EH/TLS/8MiBstack/sharedmemory/23slot validation. No browser
+benchmark launch is admitted yet, no production/R edits. E_vk=
+/mnt/p6/project/build/nightly-current-native-vulkan-prep-20261004; reviewed plan
+20811B SHA858515a5c96f0dc6d483f0a72d176f1e2dbbe271909b360eafd09ebbced3dc13.
+There are21 unique retained compilation files plus new C++entry,22unique total;
+retained public loader and hostRust are reused honestly. Require actual final
+TLS exit marker, untimed clear and every-frame independent triangle reference.
+Current Nightly VulkanHAL remains disabled and separate from this benchmark.
+Fresh whole broadJIT/NSS/startup and authorized Sites releases remain pending;
+publicv10 unchanged. Root owns docs/index; agents own scoped task work.
+
 # Latest continuation — standalone compute acceleration passes; Run59 relink live, 2026-10-03
 
 Simple benchmark before Firefox GPU remains the user's required order. Actual
