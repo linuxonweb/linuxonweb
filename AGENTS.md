@@ -1,3 +1,51 @@
+# Latest continuation — actual compute complete; Run58 startup/env and helper exec failures, 2026-10-03
+
+User requires the simple GPU benchmark to pass before Firefox GPU testing.
+Keep baseline/JIT startup diagnostics separate; no Firefox GPU test has run.
+
+Actual current Rust-client compute ABBA COMPLETE: hardware2/software1/software2/
+hardware3 all terminal/reaped0/physicalgroups empty. C=/mnt/p6/project/build/nightly-current-rust-gpu-compute-20261003.
+140frames/286720verifiedwords/zeroerrors, actualshader/pipeline/map/workdone,
+allactualCPU6. Pooled NVIDIA101.609666ops/s vsSwiftShader135.151877ops/s,
+ratio0.7518183896561359: NO GPU speedup in this transport/readback workload.
+C/root-actual-compute-review.json independently verifies eight result/supervisor
+pins/all140samples/backend/CPU/callbackcleanup/physical9groups and rate arithmetic.
+Repo docs/firefox-nightly-actual-client-compute-20261003.md plus evidence
+actual-current-rust-client-compute-20261003.json retain actual result/limits/
+excluded socketfailure/checkerfavicon correction. Earlier Vulkan18.1778x is
+separate. No FirefoxGPU/release acceptance. Public v10 unchanged.
+
+Run58 ordinary cold baseline FAILED139; warm did notrun. G58=/mnt/p6/project/build/nightly-baseline-run58-20261003.
+Owner diagnose_native_firefox_startup reaped unified28598 child1/no stop/25.4535s,
+Node930572/Chrome930741 physicallyempty/serverclosed. ActualCPU6/RAM4096.
+First diagnostic unified8235 failed diskguard on disappearing ownedprofilefile,
+physicallyreaped/empty; preserved. Narrow finite-ownedprofile ENOENT correction
+reviewed. Retry2 unified49346 child1/no guardstop/25.7278s; Node946713/
+Chrome946876 physicallyempty/serverclosed. Capture476965B/456events0dropped
+SHA211b9d5401659ee641b780800025177402ce13210c0703e13617f1b70df792c7.
+Actualnewstack158256@0x5585073->1526->154306->154395->346991->_start.
+Independent source/body mapping identifies PR_SetEnv->putenv ELF environment
+interposer; actualdlsymcallee returns0, missing-real-symbol crash. Source
+InterposerHelper.h60-64/env_interposer.cpp64; namedpre264246/264247.
+Next real native environment semantics regression and scoped static wrappers,
+including recursive musl nested calls, before productionadoption/ordinaryO2.
+No broad-JIT fullbuild or new baseline acceptance yet.
+
+NSS CLI-only guest-run2 capture-fixed actualall17exit2: stderr Exec format error,
+before NSS initialization. N=/mnt/p6/project/build/nightly-native-nss-cli-20261003.
+Unified61161 reaped1/22.30s/no stop; Node943266/Chrome943348 physicallyempty,
+serverclosed/actualCPU6. All17stdout/stderr retained with failedchecker.
+Actualall4helpers define memory; servedworker compile_end rejects definedmemory
+and requires i32shared env.memory import withmaximum (-8 ENOEXEC). Focused
+N/loader-contract-review/report.json binds actualmodule/servedsource/CPIO.
+Minimal helper4 import/shared/max4GiB/exporttable correction authorized for sole
+buildowner; existinghelperstack/fixedtable and browser-only wrappers preserved.
+No NSSlibraryfailure or acceptance claimed. Combine reviewed helper correction
+with accepted nativeenv fix in one ordinary build; preserve Run58 outputs first.
+Fresh-agent spawn remains rejected by platform threadlimit; existing same-model
+agents continue narrow tasks. Rootowns AGENTS/diary/index. Old LIVE entries below
+are historical and superseded by later concrete terminal records.
+
 # Latest continuation — Run58 final package independently reviewed, 2026-10-03
 
 Run58 static package is COMPLETE: five direct warning/fatal controls, seven

@@ -1,3 +1,51 @@
+# 2026-10-03 — Actual compute comparison and two concrete startup failures
+
+The user gates Firefox GPU testing on a passing simple GPU benchmark. Preserve
+that gate; baseline/JIT startup diagnostics remain a separate task.
+
+The actual current Nightly Rust-client compute benchmark passes all four
+hardware/software arms: **140 frames, 286,720 verified words, zero errors**,
+with shader, asynchronous pipeline, map and work-done callbacks. All observed
+host/browser/guest CPU counts are six and owned processes are empty. Pooled
+throughput is **101.61 operations/s NVIDIA versus 135.15 SwiftShader (0.752x)**.
+This small end-to-end workload provides no hardware speedup. Preserve it rather
+than replacing it with a larger favorable workload or presenting the earlier
+18.1778x Vulkan render/readback result as this measurement. Timing includes
+transport/upload/copy/readback and excludes CPU verification and compilation.
+Documentation and evidence are in docs/firefox-nightly-actual-client-compute-20261003.md
+and tools/nightly-musl/evidence/actual-current-rust-client-compute-20261003.json.
+The guest binary/size/path remains pinned in the external task's final handoff;
+the Firefox binary sizes/path are recorded in the preceding Run58 entry.
+
+The first compute launch failed before GPU work because I missed Chromium's
+108-byte singleton socket limit. The environment used a longer temporary path
+than the admitted scratch path. A unique short alias to the same owned disk
+scratch gives an 80-byte socket path; code/timing/backend checks are unchanged.
+The result checker initially rejected the optional favicon request. The narrow
+fix permits only its exact unsupported-route record and still requires every
+runtime asset and rejects every other request error.
+
+Run58 ordinary Firefox cold startup still exits139 (25.45 seconds); warm never
+ran. The unchanged-package diagnostic captured the next trap. Independent
+body/source mapping identifies PR_SetEnv calling the ELF putenv interposer,
+whose RTLD_NEXT symbol lookup returns null in the static Wasm runtime. Replace
+that resolution with a scoped actual musl call, preserving ownership and
+locking. Musl secure_getenv calls getenv, and putenv without '=' calls unsetenv;
+wrappers must handle recursive calls without deadlocking. Real native guest
+semantics tests must precede production adoption and another ordinary O2 build.
+
+NSS CLI logging also contained a shell-variable mistake: emit_file overwrote
+run's global id and hid stderr. Separate command/file variable names preserve
+both streams. The retry's actual stderr shows Exec format error before NSS
+execution. All four validated helper modules define memory, while the guest
+loader requires imported shared env.memory with a maximum. Wasm validation and
+uniform function signatures alone do not establish guest executability. Check
+every installed helper against the actual loader contract, not only Firefox.
+Preserve this failure and fix helper memory/table linkage without changing NSS
+logic. A diagnostic diskguard also hit an owned temporary profile-file race;
+allow only bounded ENOENT retries inside proven owned paths, retaining every
+other accounting error. Full Firefox startup/JIT/GPU/release remain unaccepted.
+
 # 2026-10-03 — Run58 final runtime package passes independent review
 
 The transformed Firefox binary is **189,453,198 bytes (189.45 MB)** at
