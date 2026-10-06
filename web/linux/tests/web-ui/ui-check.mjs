@@ -25,7 +25,7 @@ await call('Page.enable');
 async function load(w, h, resolution, mobile = false) {
   await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile });
   await call('Page.navigate', { url: app }); await sleep(300);
-  await ev(`localStorage.setItem('linuxonweb.machine-settings.v1', JSON.stringify({resolution:'${resolution}',cpus:1,ram:1024,backend:'canvas2d'}))`);
+  await ev(`localStorage.setItem('linuxonweb.machine-settings.v1', JSON.stringify({resolution:'${resolution}',cpus:1,ram:1024,backend:'canvas2d',presentationVersion:2}))`);
   await call('Page.navigate', { url: app }); await sleep(1200);
 }
 const measure = () => ev(`(()=>{const r=e=>{const b=document.querySelector(e).getBoundingClientRect();return {left:b.left,top:b.top,width:b.width,height:b.height}};

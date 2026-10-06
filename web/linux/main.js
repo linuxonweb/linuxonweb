@@ -27,7 +27,7 @@ import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
 import { appendDesktopExtras } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
-import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange } from './machine-settings.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord } from './machine-settings.mjs';
 import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
@@ -93,6 +93,8 @@ export const guestLogs = createLogViewer({
   toggle: document.getElementById("logs-toggle"),
   parent: document.querySelector(".workspace"),
 });
+// ?debug=1 shows the guest log panel from page load.
+if (new URLSearchParams(location.search).get("debug") === "1") guestLogs.open();
 const settingsToggle = document.getElementById("settings-toggle");
 const settingsPanel = document.getElementById("settings-panel");
 const resolutionSelect = document.getElementById("resolution");
@@ -429,7 +431,7 @@ function setStatus(message, state = "idle") {
 const hostCores = Math.min(64, Math.max(1, navigator.hardwareConcurrency || 2));
 cpuInput.max = String(hostCores);
 cpuInput.value = String(Math.min(2, hostCores));
-const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'canvas2d' };
+const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'auto' };
 function validConfiguration(value) {
   return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
     && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
@@ -450,7 +452,7 @@ function showConfiguration(value) {
   resolutionSelect.value = value.resolution;
   cpuInput.value = String(value.cpus);
   ramSelect.value = String(value.ram);
-  graphicsSelect.value = value.backend || 'canvas2d';
+  graphicsSelect.value = value.backend || 'auto';
   updateCpuLabel();
   updateSettingsState();
 }
@@ -603,7 +605,7 @@ restartContinue.addEventListener("click", async () => {
   let previous;
   try {
     previous = localStorage.getItem(settingsKey);
-    localStorage.setItem(settingsKey, JSON.stringify(next));
+    localStorage.setItem(settingsKey, JSON.stringify(settingsRecord(next)));
     if (activeMachine && !displayOnly) sessionStorage.setItem(resumeKey, currentMode);
   } catch {
     try { if (previous === null) localStorage.removeItem(settingsKey); else if (previous !== undefined) localStorage.setItem(settingsKey, previous); } catch { /* Storage is unavailable. */ }
@@ -902,7 +904,7 @@ async function boot(mode) {
     activeConfiguration = { ...activeConfiguration, ram };
     // Save the choice like applied settings so later boots and restarts keep it.
     ramChosen = true;
-    try { localStorage.setItem(settingsKey, JSON.stringify(activeConfiguration)); } catch { /* This boot still uses the choice. */ }
+    try { localStorage.setItem(settingsKey, JSON.stringify(settingsRecord(activeConfiguration))); } catch { /* This boot still uses the choice. */ }
   }
   currentMode = mode;
   displayStage.hidden = mode === 'console';
