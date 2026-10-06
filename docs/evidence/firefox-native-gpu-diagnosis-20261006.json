@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "scope": "Failed real current159 native WebGL primitive; pending general Firefox hardware integration",
+  "pass": false,
+  "branch": "gpt-6-firefox-hardware-acceleration-20261006",
+  "stableSharedServiceCommit": "cd23d74",
+  "archiveSha256": "b14eeea04e711abb4bb954c612ce3a69f4b9d2fae16c223b9044f6fe6fd74150",
+  "nativeBuildReportSha256": "f4edfb3ac3bc91a2bc4d404db1bbc3581660cd62a264369baa5c5da0a8591ed5",
+  "nativeContextCreated": true,
+  "nativeUserAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:159.0) Gecko/20100101 Firefox/159.0",
+  "cpuEquality": {
+    "hostNproc": 6,
+    "browserHardwareConcurrency": 6,
+    "hostCores": 6,
+    "expectedHostCores": 6,
+    "requestedGuestCpus": 6,
+    "hostNprocObserved": 6,
+    "browserHardwareConcurrencyAtBoot": 6,
+    "selectedGuestCpus": 6,
+    "guestBootCpus": 6,
+    "smpLines": [
+      "smp: Brought up 1 node, 6 CPUs"
+    ],
+    "checks": {
+      "hostAllocationStable": true,
+      "hostCpuSelection": true,
+      "guestCpuCountMatchesHost": true
+    }
+  },
+  "actualNativeRendererLog": "zink Vulkan 1.1(EXPERIMENTAL bounded SPIR-V graphics; NOT conformant (Driver Unknown))",
+  "apiIdentity": {
+    "vendor": "Mozilla",
+    "renderer": "Generic Renderer",
+    "version": "WebGL 1.0",
+    "shadingLanguage": "WebGL GLSL ES 1.0",
+    "unmaskedVendor": "Mesa",
+    "unmaskedRenderer": "Generic Renderer"
+  },
+  "pixels": {
+    "checks": 14848,
+    "failures": 7424,
+    "redPixels": 0,
+    "bluePixels": 0,
+    "unexpectedPixels": 4096,
+    "checksum": 946445765
+  },
+  "glError": 1287,
+  "actualPipelineResult": "Two VK_ERROR_FEATURE_NOT_PRESENT errors; exact rejecting state Unknown until trace retry",
+  "commonRustBytes": true,
+  "closedNativeRustSessionRetained": false,
+  "perContextAttribution": "Unknown",
+  "nativeResourceCleanup": "Unknown",
+  "rootRuntimeHandleReaped": true,
+  "ownerForcedTermination": true,
+  "ownerSnapshotGroupEmpty": false,
+  "rootPostReapGroupEmpty": true,
+  "browserExit": {
+    "code": 0,
+    "signal": null
+  },
+  "serverClosed": true,
+  "protectedServices": [
+    {
+      "pid": 705,
+      "sameIdentity": true
+    },
+    {
+      "pid": 706,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1095195,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1095196,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1183734,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1183743,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1183764,
+      "sameIdentity": true
+    },
+    {
+      "pid": 4150936,
+      "sameIdentity": true
+    },
+    {
+      "pid": 4150944,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1000,
+      "sameIdentity": true
+    },
+    {
+      "pid": 2631,
+      "sameIdentity": true
+    },
+    {
+      "pid": 1791291,
+      "sameIdentity": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/result.json",
+      "bytes": 1738152,
+      "sha256": "0f2fb91b6d8be4dc93923e34e336455ed311a833d6d206f1f0b4bc511427c42e"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/native-probe.json",
+      "bytes": 884,
+      "sha256": "ef714289e3331eb247618088ab91d0c18211f6632d0e3b4a001bde7439e570f3"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/native-context-log.txt",
+      "bytes": 13899,
+      "sha256": "ccc86112dcea438e344d747fe79677e9cdaf348319999e71e484c02513ed5838"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/cpu.json",
+      "bytes": 420,
+      "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/memory-choice-click.json",
+      "bytes": 603,
+      "sha256": "2ad799672fe87dd903ede7e2d8f5df080a8c31de97082372baa0b80918df68d3"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2/run/root-post-reap-groups.json",
+      "bytes": 200,
+      "sha256": "d54ac456fbdebf014931cf2d42e9c09ece36239df8618dc49b5e7e888e1b12ca"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-oct06/firefox-native2-independent-review.json",
+      "bytes": 14268,
+      "sha256": "52fbf94a84b7f1874de03c16ff9286ea09d5df57f68181a1bacf4c76f4694803"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native2-terminal-summary.json",
+      "bytes": 4104,
+      "sha256": "7b3ee100d952808e3b721af34954504aac5dbe8477ece3c1ec14ca2a6df49ea6"
+    }
+  ],
+  "ordinaryInitPreserved": true,
+  "existingUserProfileUsed": false,
+  "firefoxHardwareAcceptance": false,
+  "webRenderAcceptance": false,
+  "webGlAcceptance": false,
+  "webGpuAcceptance": false,
+  "concurrencyAcceptance": false,
+  "releaseAcceptance": false,
+  "jitTestingResumed": false,
+  "latestTraceRun": {
+    "arm": "native3",
+    "terminal": true,
+    "contextCreated": true,
+    "rawApiZinkIdentityVerified": true,
+    "pass": false,
+    "states": [
+      {
+        "topology": "triangle-fan",
+        "vulkanTopology": 5,
+        "writeMask": 7,
+        "result": -8
+      },
+      {
+        "topology": "triangle-list",
+        "vulkanTopology": 3,
+        "writeMask": 7,
+        "result": -8
+      }
+    ],
+    "nativeBridgeCurrentlyRequires": {
+      "vulkanTopology": 3,
+      "writeMask": 15
+    },
+    "missingSemantics": [
+      "RGB-only color writes",
+      "triangle-fan lowering"
+    ],
+    "cleanup": "forced owner snapshot had remnants; later exact group scan empty",
+    "sourceSeal": {
+      "path": "/mnt/p3/codex-build/gpu-service-oct06/native3-source-seal/manifest.json",
+      "bytes": 6402,
+      "sha256": "1b34a2e3088789ca9574dd7723516ee0c1f53935b26e71761734fbf4dba8a0da"
+    },
+    "evidence": [
+      {
+        "path": "/mnt/p3/codex-build/gpu-service-root-oct06/firefox-native3-terminal-summary.json",
+        "bytes": 5411,
+        "sha256": "703c62dce64e4d5e34a32213c9e76852b8ddfc3a3f340123cac8996758272c0c"
+      },
+      {
+        "path": "/mnt/p3/codex-build/gpu-service-oct06/firefox-native3-independent-review.json",
+        "bytes": 17945,
+        "sha256": "862f8f4b48e353ba5280a628604a1abab25b39521c471f8aa78121e729a607c9"
+      }
+    ],
+    "webRenderAcceptance": false,
+    "webGlAcceptance": false,
+    "webGpuAcceptance": false,
+    "releaseAcceptance": false
+  }
+}

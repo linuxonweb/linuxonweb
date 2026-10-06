@@ -46,6 +46,7 @@ struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_
     uint64_t views[UNIFORM_SET_BINDINGS], samplers[UNIFORM_SET_BINDINGS]; };
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare;
+    VkPrimitiveTopology topology; unsigned vertex_index, vertex_flat;
     unsigned dynamic_viewport; /* B2d: viewport+scissor come from vkCmdSetViewport/Scissor at draw time */
     VkCullModeFlags cull_mode; VkFrontFace front_face; /* B2g (Zink only): NONE/FRONT/BACK, CCW/CW */ };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;

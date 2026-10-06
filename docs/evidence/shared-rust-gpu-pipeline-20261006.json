@@ -1,0 +1,279 @@
+{
+  "schema": 1,
+  "scope": "bounded general Linux public Vulkan pipeline rendering through genuine shared Rust wgpu; Firefox acceleration is pending",
+  "primitiveProfilePass": true,
+  "firefoxGpuAcceptance": false,
+  "concurrencyAcceptance": false,
+  "webRenderAcceptance": false,
+  "webGpuAcceptance": false,
+  "releaseAcceptance": false,
+  "runs": {
+    "gpwg2": {
+      "pass": true,
+      "rootOwnedHandleReaped": 40570,
+      "exit": 0,
+      "backend": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "apiAdapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": "",
+        "isFallbackAdapter": false
+      },
+      "checks": {
+        "execution": true,
+        "configuration": true,
+        "completedRounds": true,
+        "pixelCoverage": true,
+        "fanGeometry": true,
+        "indexedOffsets": true,
+        "exactPerRound": true,
+        "genuineRustOperations": true,
+        "cleanup": true,
+        "nativeExit": true,
+        "noGuestFailures": true,
+        "negotiatedSemantics": true,
+        "backend": true,
+        "ownedLifecycle": true,
+        "noExceptions": true,
+        "servedCandidate": true,
+        "servedSources": true,
+        "candidateSourcesUnchanged": true,
+        "protectedServices": true,
+        "cpu": true
+      },
+      "nativeChecks": 353698,
+      "completedRounds": 24,
+      "rustCounts": {
+        "graphicsPasses": 24,
+        "graphicsDraws": 33,
+        "graphicsReadbacks": 72
+      },
+      "nativeCleanup": {
+        "draws": 33,
+        "nativeObjects": 0,
+        "passes": 24,
+        "readbacks": 72,
+        "resources": 0,
+        "state": "closed",
+        "allocatedBytes": 0,
+        "recordingDraws": 0
+      },
+      "cpu": {
+        "hostNproc": 6,
+        "browserHardwareConcurrency": 6,
+        "hostCores": 6,
+        "expectedHostCores": 6,
+        "requestedGuestCpus": 6,
+        "hostNprocObserved": 6,
+        "browserHardwareConcurrencyAtBoot": 6,
+        "selectedGuestCpus": 6,
+        "guestBootCpus": 6,
+        "smpLines": [
+          "smp: Brought up 1 node, 6 CPUs"
+        ],
+        "checks": {
+          "hostAllocationStable": true,
+          "hostCpuSelection": true,
+          "guestCpuCountMatchesHost": true
+        }
+      },
+      "naturalGroupDrain": {
+        "pass": true,
+        "leaderReaped": true,
+        "group": [],
+        "probes": 12,
+        "startedAt": 1791281837481,
+        "deadlineAt": 1791281841481,
+        "elapsedMs": 840
+      },
+      "protectedServicesPass": true,
+      "pins": [
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/result.json",
+          "bytes": 717412,
+          "sha256": "443b9502952c984aba5395db4438da316c2b960c83ac92ae63211d3e5b5b901c"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/validation.json",
+          "bytes": 1137,
+          "sha256": "232e1e71dd440e3f35bbc670e25cb5a430027ac221a85698278348ce0fedcaa8"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/guest.json",
+          "bytes": 20377,
+          "sha256": "031b061ec187e6e7630538985159081b4c5dd195eed4605a16398f4e4a0cee29"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/guest-log.txt",
+          "bytes": 8231,
+          "sha256": "8803a12690a5de01e3a327c726dda6c7936c0a6c72a8e64623ef58b280542a91"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/pipeline-cpu.json",
+          "bytes": 420,
+          "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/owned-process.json",
+          "bytes": 69,
+          "sha256": "89db3fb3ab866a4e5e9a4ca35f0dadb6fab8a22582f4efd8af5b8b2145736139"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpwg2/run/root-post-reap-groups.json",
+          "bytes": 158,
+          "sha256": "c78ec2e624af20e919fdd1d6607a1da4cd96c42ddfeb654fed85101db2962715"
+        }
+      ]
+    },
+    "gpgl1": {
+      "pass": true,
+      "rootOwnedHandleReaped": 67832,
+      "exit": 0,
+      "backend": {
+        "backend": "Gl",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "forceFallbackAdapter": false,
+        "integerViewport": true,
+        "maxVertexStride": 252,
+        "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+        "requestedBackend": "Backends(GL)",
+        "vendor": 4318
+      },
+      "apiAdapter": null,
+      "checks": {
+        "execution": true,
+        "configuration": true,
+        "completedRounds": true,
+        "pixelCoverage": true,
+        "fanGeometry": true,
+        "indexedOffsets": true,
+        "exactPerRound": true,
+        "genuineRustOperations": true,
+        "cleanup": true,
+        "nativeExit": true,
+        "noGuestFailures": true,
+        "negotiatedSemantics": true,
+        "backend": true,
+        "ownedLifecycle": true,
+        "noExceptions": true,
+        "servedCandidate": true,
+        "servedSources": true,
+        "candidateSourcesUnchanged": true,
+        "protectedServices": true,
+        "cpu": true
+      },
+      "nativeChecks": 353698,
+      "completedRounds": 24,
+      "rustCounts": {
+        "graphicsPasses": 24,
+        "graphicsDraws": 33,
+        "graphicsReadbacks": 72
+      },
+      "nativeCleanup": {
+        "draws": 33,
+        "nativeObjects": 0,
+        "passes": 24,
+        "readbacks": 72,
+        "resources": 0,
+        "state": "closed",
+        "allocatedBytes": 0,
+        "recordingDraws": 0
+      },
+      "cpu": {
+        "hostNproc": 6,
+        "browserHardwareConcurrency": 6,
+        "hostCores": 6,
+        "expectedHostCores": 6,
+        "requestedGuestCpus": 6,
+        "hostNprocObserved": 6,
+        "browserHardwareConcurrencyAtBoot": 6,
+        "selectedGuestCpus": 6,
+        "guestBootCpus": 6,
+        "smpLines": [
+          "smp: Brought up 1 node, 6 CPUs"
+        ],
+        "checks": {
+          "hostAllocationStable": true,
+          "hostCpuSelection": true,
+          "guestCpuCountMatchesHost": true
+        }
+      },
+      "naturalGroupDrain": {
+        "pass": true,
+        "leaderReaped": true,
+        "group": [],
+        "probes": 15,
+        "startedAt": 1791281900411,
+        "deadlineAt": 1791281904411,
+        "elapsedMs": 1040
+      },
+      "protectedServicesPass": true,
+      "pins": [
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/result.json",
+          "bytes": 712153,
+          "sha256": "cdf521f5adb8fdd58149dff435913a1036c4482b3d9e5a2e52827c60bc83e8fd"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/validation.json",
+          "bytes": 1221,
+          "sha256": "bd8465a32eda56d263989bf4f9c4fa8689d8456f432f787a5937b7ed948f91d3"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/guest.json",
+          "bytes": 20713,
+          "sha256": "03d6434f455f7914fd9236b25c4d56ef57de9ed6bf8eaba8f7c40c24d6e18734"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/guest-log.txt",
+          "bytes": 8396,
+          "sha256": "81f040ebe3a9169f25882370d6a3b4d8f10efcc3ac8da1d1be12055ee90747d6"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/pipeline-cpu.json",
+          "bytes": 420,
+          "sha256": "d1e9bb77e2ca6ce1253f5dcc59b146bd1a21acd51722ba99b86b6990f1f58daa"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/owned-process.json",
+          "bytes": 69,
+          "sha256": "544329d473df0dc4e76082fab1c475a490300384217bf7977c2f21a2a621c923"
+        },
+        {
+          "path": "/mnt/p3/codex-build/gpgl1/run/root-post-reap-groups.json",
+          "bytes": 158,
+          "sha256": "01914c2e2d2e5a82a3570051fc8ae68b060998b6e1603fb43a2895303263cbb7"
+        }
+      ]
+    }
+  },
+  "retainedFailure": "/mnt/p3/codex-build/gpwg1/run/result.json",
+  "candidatePackage": "/mnt/p3/codex-build/firefox-gpu-oct06/pipeline-phase1/package2/package.json",
+  "implementation": "actual masks, bounded fan/list gathering, first-provoking flat semantics, indexed offsets, culling and rejected-draw preservation",
+  "limits": [
+    "No gathered VertexIndex, uint8 indices or primitive restart support",
+    "These tests do not establish general Vulkan/OpenGL conformance or concurrent application support",
+    "Firefox must be relinked with the accepted ICD before a new native test"
+  ],
+  "independentReviews": {
+    "webgpu": "/mnt/p3/codex-build/gpu-service-oct06/pipeline-gpwg2-independent-terminal-review-v2.json",
+    "webgl": "/mnt/p3/codex-build/gpu-service-oct06/pipeline-gpgl1-independent-terminal-review.json",
+    "package": "/mnt/p3/codex-build/gpu-service-oct06/pipeline-package2-independent-review.json"
+  },
+  "rootAdmission": "/mnt/p3/codex-build/gpu-service-root-oct06/pipeline-two-backend-root-admission.json"
+}

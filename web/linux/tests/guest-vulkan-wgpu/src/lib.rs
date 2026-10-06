@@ -245,9 +245,18 @@ impl Renderer {
     pub fn stats(&self) -> String {
         json!({"resources":self.resources.len(),"nativeObjects":self.resources.len(),"passes":self.passes,"draws":self.draws,"readbacks":self.readbacks,"state":if self.closed{"closed"}else{"active"}}).to_string()
     }
+    pub fn pipeline_capabilities(&self) -> String {
+        json!({"pipelineStateProfile":1,"colorWriteMaskBits":15,"triangleProvokingVertex":if self.needs_poll {"last"}else{"first"}}).to_string()
+    }
     pub async fn create_pipeline(&mut self, descriptor: String) -> Result<u32, JsValue> {
         self.available()?;
         let d = parse(&descriptor)?;
+        // Fan assembly is lowered by the bounded guest ICD, never ignored here.
+        if d.get("topology").is_some_and(|v| v.as_str() != Some("triangle-list")) {
+            return Err(err("unsupported primitive topology"));
+        }
+        let mask = if d.get("colorWriteMask").is_some() { uint(&d, "colorWriteMask")? } else { 15 };
+        let color_writes = wgpu::ColorWrites::from_bits(mask).ok_or_else(|| err("unsupported color write mask"))?;
         let mut attributes: Vec<Vec<wgpu::VertexAttribute>> = vec![];
         let layouts = d["vertexBuffers"]
             .as_array()
@@ -405,7 +414,7 @@ impl Renderer {
                     targets: &[Some(wgpu::ColorTargetState {
                         format: wgpu::TextureFormat::Rgba8Unorm,
                         blend: None,
-                        write_mask: wgpu::ColorWrites::ALL,
+                        write_mask: color_writes,
                     })],
                     compilation_options: Default::default(),
                 }),

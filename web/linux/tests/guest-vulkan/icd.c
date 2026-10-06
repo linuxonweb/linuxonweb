@@ -28,7 +28,7 @@ struct VkInstance_T {
     struct gpu_session session;
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, sampled_target_supported, depth_supported, webgl_backend, failed;
+    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, sampled_target_supported, depth_supported, pipeline_state_supported, host_last_provoking, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
     uint32_t instance_extensions_enabled; /* Bit per instance_extension_table index. */
     /* B2a (GUEST_VK_ZINK builds): features enabled at vkCreateDevice. */
@@ -171,6 +171,11 @@ static int hello(VkInstance instance) {
     /* Opt-in A5 depth-attachment profile, layered on the texture profile. */
     instance->depth_supported = instance->texture_supported && strstr(data, "\"depthProfile\":1") &&
         strstr(data, "\"maxDepthDimension\":128");
+    /* New semantics are opt-in; historical services must remain fail-closed. */
+    instance->pipeline_state_supported = instance->graphics_supported &&
+        strstr(data, "\"pipelineStateProfile\":1") && strstr(data, "\"colorWriteMaskBits\":15") &&
+        (strstr(data, "\"triangleProvokingVertex\":\"first\"") || strstr(data, "\"triangleProvokingVertex\":\"last\""));
+    instance->host_last_provoking=instance->pipeline_state_supported && strstr(data, "\"triangleProvokingVertex\":\"last\"");
     return 0;
 }
 static void transfer_cleanup(void);

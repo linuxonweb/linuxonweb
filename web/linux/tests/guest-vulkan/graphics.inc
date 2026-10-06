@@ -142,6 +142,46 @@ static int graphics_viewport(const VkPipelineViewportStateCreateInfo *i,struct g
         (!live->webgl_backend||(v.x==(float)(unsigned)v.x&&v.y==(float)(unsigned)v.y&&
          v.width==(float)(unsigned)v.width&&v.height==(float)(unsigned)v.height));
 }
+/* Gathering changes shader vertex IDs. Scan validated instruction boundaries,
+ * and reject ID-dependent shaders rather than silently changing their outputs.
+ * SPIR-V BuiltIn VertexId=5 / VertexIndex=42 (OpDecorate or OpMemberDecorate). */
+static int graphics_shader_vertex_index(const struct resource *shader) {
+    const uint32_t *w=(const uint32_t *)shader->bytes;size_t words=shader->size/4;
+    for(size_t at=5;at<words;) {
+        unsigned n=w[at]>>16,op=w[at]&65535u;
+        if(!n||n>words-at)return 1;
+        if(op==71&&n>=4&&w[at+2]==11&&(w[at+3]==5||w[at+3]==42))return 1;
+        if(op==72&&n>=5&&w[at+3]==11&&(w[at+4]==5||w[at+4]==42))return 1;
+        at+=n;
+    }
+    return 0;
+}
+/* Direct Flat decorations on Output variables and members of their structs.
+ * Unknown/group decorations conservatively require gathering; known Input
+ * decorations do not change output provoking semantics. */
+static int graphics_shader_flat_output(const struct resource *shader) {
+    const uint32_t *w=(const uint32_t *)shader->bytes;size_t words=shader->size/4;
+    for(size_t at=5;at<words;) {
+        unsigned n=w[at]>>16,op=w[at]&65535u;if(!n||n>words-at)return 1;
+        unsigned member=op==72&&n>=4&&w[at+3]==14;
+        if((op==71&&n>=3&&w[at+2]==14)||member) {
+            uint32_t target=w[at+1];int known_input=0;
+            for(size_t v=5;v<words;) {
+                unsigned vn=w[v]>>16,vop=w[v]&65535u;if(!vn||vn>words-v)return 1;
+                if(vop==59&&vn>=4) {
+                    if(!member&&w[v+2]==target){if(w[v+3]==3)return 1;if(w[v+3]==1)known_input=1;}
+                    if(member)for(size_t p=5;p<words;) {
+                        unsigned pn=w[p]>>16,pop=w[p]&65535u;if(!pn||pn>words-p)return 1;
+                        if(pop==32&&pn>=4&&w[p+1]==w[v+1]&&w[p+3]==target) {
+                            if(w[v+3]==3)return 1;if(w[v+3]==1)known_input=1;
+                        }p+=pn;
+                    }
+                }v+=vn;
+            }
+            if(!known_input)return 1;
+        }at+=n;
+    }return 0;
+}
 static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPipelineCache cache,uint32_t count,const VkGraphicsPipelineCreateInfo *i,const VkAllocationCallbacks *a,VkPipeline *out) {
     if(!out||count!=1)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
@@ -187,7 +227,11 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     const VkPipelineMultisampleStateCreateInfo *samples=i->pMultisampleState;
     const VkPipelineColorBlendStateCreateInfo *blend=i->pColorBlendState;
     if(!assembly||assembly->sType!=VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO||assembly->pNext||assembly->flags||
-       assembly->topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST||assembly->primitiveRestartEnable||
+       (assembly->topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+#ifdef GUEST_VK_ZINK
+        &&!(live->pipeline_state_supported&&assembly->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+#endif
+       )||assembly->primitiveRestartEnable||
        !raster||raster->sType!=VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO||raster->pNext||raster->flags||
        raster->depthClampEnable||raster->rasterizerDiscardEnable||raster->polygonMode!=VK_POLYGON_MODE_FILL||
 #ifdef GUEST_VK_ZINK
@@ -200,7 +244,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
        samples->rasterizationSamples!=VK_SAMPLE_COUNT_1_BIT||samples->sampleShadingEnable||samples->pSampleMask||samples->alphaToCoverageEnable||samples->alphaToOneEnable||
        !blend||blend->sType!=VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO||blend->pNext||blend->flags||blend->logicOpEnable||
        blend->attachmentCount!=1||!blend->pAttachments||blend->pAttachments[0].blendEnable||
-       blend->pAttachments[0].colorWriteMask!=(VK_COLOR_COMPONENT_R_BIT|VK_COLOR_COMPONENT_G_BIT|VK_COLOR_COMPONENT_B_BIT|VK_COLOR_COMPONENT_A_BIT))return VK_ERROR_FEATURE_NOT_PRESENT;
+       (blend->pAttachments[0].colorWriteMask&~15u)||
+       (!live->pipeline_state_supported&&blend->pAttachments[0].colorWriteMask!=15u))return VK_ERROR_FEATURE_NOT_PRESENT;
+    p.topology=assembly->topology;
     const VkPipelineShaderStageCreateInfo *vertex=NULL,*fragment=NULL;struct resource *vs=NULL,*fs=NULL;
     for(unsigned n=0;n<2;n++) {
         const VkPipelineShaderStageCreateInfo *s=&i->pStages[n];struct resource *shader=resource_get(RID(s->module),R_SHADER);
@@ -211,6 +257,9 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
         else return VK_ERROR_INITIALIZATION_FAILED;
     }
     if(!vertex||!fragment)return VK_ERROR_INITIALIZATION_FAILED;
+    p.vertex_index=graphics_shader_vertex_index(vs);p.vertex_flat=graphics_shader_flat_output(vs);
+    if((p.topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||(live->host_last_provoking&&p.vertex_flat))&&
+       (p.vertex_index||!p.binding_count))return VK_ERROR_FEATURE_NOT_PRESENT;
     struct graphics_json j={0};
     graphics_json_append(&j,"{\"vertex\":{\"shader\":%u,\"entryPoint\":",vs->host);graphics_json_name(&j,vertex->pName);
     graphics_json_append(&j,"},\"fragment\":{\"shader\":%u,\"entryPoint\":",fs->host);graphics_json_name(&j,fragment->pName);
@@ -222,6 +271,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
         graphics_json_append(&j,"]}");
     }
     graphics_json_append(&j,"]");
+    if(live->pipeline_state_supported)graphics_json_append(&j,",\"colorWriteMask\":%u",(unsigned)blend->pAttachments[0].colorWriteMask);
 #ifdef GUEST_VK_ZINK
     /* B2g: face culling (emitted only when not the NONE/CCW default). */
     p.cull_mode=raster->cullMode;p.front_face=raster->frontFace;

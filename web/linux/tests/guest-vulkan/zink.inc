@@ -75,44 +75,69 @@ static uint32_t zink_attribute_span(const struct graphics_binding *layout) {
         uint32_t end=a->offset+graphics_format_components(a->format)*4;if(end>span)span=end;}
     return span;
 }
+#include "primitive-assembly.h"
 static uint32_t zink_index_piece(const struct graphics_pipeline *p,uint32_t count) {
     uint32_t stride=0;
     for(unsigned n=0;n<p->binding_count;n++)if(p->bindings[n].stride>stride)stride=p->bindings[n].stride;
-    if(!stride||(uint64_t)count*stride<=ZINK_RING_CHUNK)return count;
+    if(!stride)return count>65535u?65535u:count;
+    if((uint64_t)count*stride<=ZINK_RING_CHUNK)return count;
     return ZINK_RING_CHUNK/stride/3*3;
 }
-static int zink_gather_indexed(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t start,uint32_t count,struct graphics_json *j) {
+/* Validate all source indices/attributes and all piece allocations before
+ * creating ring resources. Nothing has been uploaded or rendered at this point. */
+static int zink_source_vertex(const struct graphics_draw_record *r,uint32_t ordinal,int64_t *vertex) {
+    if(!r->index_size){*vertex=(int64_t)r->first+ordinal;return 1;}
     struct resource *ib=resource_get(r->index_buffer,R_BUFFER),*im=ib?resource_get(ib->memory,R_MEMORY):NULL;
-    const unsigned size=r->index_size;
-    if(!count||count%3||(size!=2&&size!=4)||!ib||!im||!im->bytes||r->index_offset>ib->size||
-       ((uint64_t)r->first+r->count)*size>ib->size-r->index_offset||start+count>r->count) {
-        ZINK_TRACE("draw_indexed REJECT index buffer first=%u count=%u size=%u\n",r->first,r->count,size);return 0;
+    unsigned size=r->index_size;
+    if((size!=2&&size!=4)||!ib||!ib->generic||!(ib->usage&VK_BUFFER_USAGE_INDEX_BUFFER_BIT)||!im||!im->bytes||
+       r->index_offset>ib->size||((uint64_t)r->first+r->count)*size>ib->size-r->index_offset||ordinal>=r->count)return 0;
+    const unsigned char *src=im->bytes+ib->offset+r->index_offset+((size_t)r->first+ordinal)*size;
+    uint32_t index;if(size==2){uint16_t v;memcpy(&v,src,2);index=v;}else memcpy(&index,src,4);
+    *vertex=(int64_t)index+r->vertex_offset;return *vertex>=0;
+}
+static int zink_gather_preflight(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t total,uint32_t piece) {
+    if(!total||!piece||total%3||piece%3||p->vertex_index)return 0;
+    unsigned chunk=zink_rings[0].chunk;uint32_t used=zink_rings[0].used[chunk];
+    for(unsigned n=0;n<p->binding_count;n++) {
+        const struct graphics_binding *l=&p->bindings[n];const struct graphics_vertex_ref *ref=&r->vertices[l->binding];
+        struct resource *b=resource_get(ref->buffer,R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
+        uint32_t span=zink_attribute_span(l);
+        if(!b||!(b->vertex||(b->generic&&(b->usage&VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)))||!m||!m->bytes||
+           ref->offset>=b->size||!span||(l->stride&&span>l->stride))return 0;
+        uint64_t remaining=b->size-ref->offset;
+        for(uint32_t k=0;k<r->count;k++){int64_t vertex;
+            if(!zink_source_vertex(r,k,&vertex)||(uint64_t)vertex*l->stride+span>remaining)return 0;}
     }
-    const unsigned char *indices=im->bytes+ib->offset+r->index_offset+((size_t)r->first+start)*size;
+    /* Match allocator ordering: each piece, then its sorted vertex bindings. */
+    for(uint32_t start=0;start<total;start+=piece) {
+        uint32_t count=total-start<piece?total-start:piece;
+        for(unsigned n=0;n<p->binding_count;n++) {
+            const struct graphics_binding *l=&p->bindings[n];uint64_t bytes=((uint64_t)(count-1)*l->stride+zink_attribute_span(l)+3)&~3ull;
+            if(!bytes||bytes>ZINK_RING_CHUNK)return 0;
+            if(used+bytes>ZINK_RING_CHUNK){if(++chunk>=ZINK_RING_CHUNKS)return 0;used=0;}
+            used+=(uint32_t)bytes;
+        }
+    }
+    return 1;
+}
+static int zink_gather_indexed(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t start,uint32_t count,struct graphics_json *j) {
+    const int fan=p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+    const uint32_t total=guest_primitive_count(fan,r->count);
+    if(!count||count%3||start>total||count>total-start)return 0;
     for(unsigned n=0;n<p->binding_count;n++) {
         const struct graphics_binding *layout=&p->bindings[n];const struct graphics_vertex_ref *binding=&r->vertices[layout->binding];
         struct resource *b=resource_get(binding->buffer,R_BUFFER),*m=b?resource_get(b->memory,R_MEMORY):NULL;
         const uint32_t span=zink_attribute_span(layout),stride=layout->stride;
-        if(!b||!b->generic||!(b->usage&VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)||!m||!m->bytes||binding->offset>=b->size||!span||(stride&&span>stride)) {
-            ZINK_TRACE("draw_indexed REJECT vertex binding %u span=%u stride=%u\n",layout->binding,span,stride);return 0;
-        }
+        if(!b||!m||!m->bytes||binding->offset>=b->size)return 0;
         const unsigned char *src=m->bytes+b->offset+binding->offset;const uint64_t remaining=b->size-binding->offset;
-        uint32_t host=0,offset=0,bytes;
-        if(!stride) {
-            bytes=(span+3)&~3u;
-            if(span>remaining||!zink_ring_stage(0,src,span,bytes,&host,&offset))return 0;
-        } else {
-            bytes=(uint32_t)(((uint64_t)(count-1)*stride+span+3)&~3ull);
-            unsigned char *dst=bytes<=ZINK_RING_CHUNK?zink_ring_alloc(0,bytes,&host,&offset):NULL;
-            if(!dst){ZINK_TRACE("draw_indexed REJECT gather %u bytes\n",bytes);return 0;}
-            for(uint32_t k=0;k<count;k++) {
-                uint32_t index;if(size==2){uint16_t v;memcpy(&v,indices+(size_t)k*2,2);index=v;}else memcpy(&index,indices+(size_t)k*4,4);
-                int64_t vertex=(int64_t)index+r->vertex_offset;
-                if(vertex<0||(uint64_t)vertex*stride+span>remaining) {
-                    ZINK_TRACE("draw_indexed REJECT index %u (+%d) beyond %llu bytes\n",index,r->vertex_offset,(unsigned long long)remaining);return 0;
-                }
-                memcpy(dst+(size_t)k*stride,src+(size_t)vertex*stride,span);
-            }
+        uint32_t host=0,offset=0,bytes=(uint32_t)(((uint64_t)(count-1)*stride+span+3)&~3ull);
+        unsigned char *dst=bytes<=ZINK_RING_CHUNK?zink_ring_alloc(0,bytes,&host,&offset):NULL;
+        if(!dst)return 0;
+        memset(dst,0,bytes);
+        for(uint32_t k=0;k<count;k++) {int64_t vertex;
+            const uint32_t ordinal=guest_primitive_ordinal(fan,live->host_last_provoking,start+k);
+            if(!zink_source_vertex(r,ordinal,&vertex)||(uint64_t)vertex*stride+span>remaining)return 0;
+            memcpy(dst+(size_t)k*stride,src+(size_t)vertex*stride,span);
         }
         graphics_json_append(j,"%s{\"buffer\":%u,\"offset\":%u,\"size\":%u}",n?",":"",host,offset,bytes);
     }

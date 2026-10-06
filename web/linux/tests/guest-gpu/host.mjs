@@ -197,7 +197,8 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
             ...(allowGraphics ? {graphicsProfile:1,maxVertexBuffer:65536,maxGraphicsDraws:256,maxVertexStride:graphicsRenderer.limits.maxStride,integerViewport:graphicsRenderer.integerViewport??report.backend==='webgl2'} : {}),
             ...(allowUniforms ? {uniformProfile:1,maxUniformRange:16384,uniformOffsetAlignment:256,maxUniformBuffer:65536} : {}),
             ...(allowTextures ? {...(graphicsRenderer?.supportsSampledTargets ? {sampledColorTargets:1}:{}),textureProfile:1,maxSampledTextures:4,maxTextureDimension:128,maxSamplers:8} : {}),
-            ...(allowDepth ? {depthProfile:1,depthFormats:['d32-sfloat','d16-unorm'],maxDepthDimension:128} : {}), adapter: report.adapter })); break;
+            ...(allowDepth ? {depthProfile:1,depthFormats:['d32-sfloat','d16-unorm'],maxDepthDimension:128} : {}),
+            ...(graphicsBackendFactory&&graphicsRenderer?.pipelineStateProfile===1&&['first','last'].includes(graphicsRenderer.triangleProvokingVertex) ? {pipelineStateProfile:1,colorWriteMaskBits:15,triangleProvokingVertex:graphicsRenderer.triangleProvokingVertex} : {}), adapter: report.adapter })); break;
           case OP.SHADER: {
             if (!length || length > 65536) fail('invalid shader size');
             const shader = await checked(() => device.createShaderModule({ code: decoder.decode(payload) }));
@@ -335,6 +336,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           case OP.GRAPHICS_PIPELINE: {
             if (!allowGraphics) fail('graphics not negotiated');
             const descriptor = record(parseGraphics(payload), ['vertex','fragment','vertexBuffers','colorFormat','topology','frontFace','cullMode','sampleCount',
+              ...(graphicsBackendFactory&&graphicsRenderer?.pipelineStateProfile===1&&['first','last'].includes(graphicsRenderer.triangleProvokingVertex) ? ['colorWriteMask'] : []),
               ...(allowUniforms ? ['uniforms'] : []), ...(allowTextures ? ['textures'] : []), ...(allowDepth ? ['depth'] : [])], 'graphics pipeline');
             const vertex = shaderReference(descriptor.vertex, 'vertex'), fragment = shaderReference(descriptor.fragment, 'fragment');
             // Charge copies retained by the pipeline even after shader IDs are destroyed.
