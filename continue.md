@@ -1,3 +1,35 @@
+# STOPPED AT USER LIMIT: attempt 9 terminal, next-agent handoff, 2026-10-06 (claude-opus-5-5)
+
+The user resumed the paused final attempt 9 ("continue to make gpu works for firefox", single thread, branch `claude-opus-5-5-firefox-gpu-desktop-freeze-20261006`). **Attempt 9 has now built, packaged and run, and Firefox GPU still does not work.** Under the user's nine-attempt limit, goal work is stopped. **Attempt 10 requires fresh explicit user authorization.** Ledger: `/mnt/p3/codex-build/gpu-service-root-oct06/user-stop-limit.json` (attempt 9 `terminal-failed-limit-reached`). dev3000 (fxdev7, PIDs 4007679/4007680) still serves archive 340640ab and was never touched; 3001–3003, 8001 and cloudflared are preserved.
+
+User instruction for the next rebuild (2026-10-06): **"when recompile firefox, do not use wasm optimizer for fast testing"**. Package `*.preoptimizer.wasm` and skip wasm-opt. Release builds still need it. If the unoptimised binary traps on indirect-call signature mismatches (wasm-opt also applied `--fpcast-emu`), report that rather than silently re-enabling it.
+
+## Attempt 9: what was done (all under `/mnt/p3/codex-build/opus-ffgpu/a9/`)
+- Source: `src/guest-vulkan` (from plan2) + `src/guest-gpu` (attempt9 transport: mutex, op bound 29 readback). Diff vs plan2 is in `a9-guest-vulkan.patch`. It contains four fixes for the r1 failures:
+  1. Implemented `vkCmdClearAttachments` (zink-stubs.inc). Full-area only; the pass is folded or split. Partial rects are traced and ignored.
+  2. Lenient submit validation: LOAD of an uninitialised/UNDEFINED image becomes DONT_CARE instead of REJECT (transfer.inc).
+  3. Zink D32_SFLOAT is canonicalised onto host packed depth24plus-stencil8. Extent is 512 instead of 128, so Firefox 320x240 FBOs become complete (depth_code, icd.c format query, pass compatibility, discard-stencil JSON).
+  4. Transport op 29 readback is accepted.
+- Build: `build.sh` → `obj/*.fpcast.wasm`. Exit 0, wasm-validate passes, ABI imports equal relink2. firefox bc50bf78…, plugin-container d73c5a64…. Report: `report.json`. Package: `package/` (archive e2478227…, `--vk-trace`, 12904 untouched records verified).
+- Runtime: isolated port 3010 server (`serve/`, stopped after the run); driver `../drive.mjs`; 8 CPUs measured.
+  - r1 was a harness failure before guest start (missing Chromium scratch dir).
+  - **r2** (`r2/`, 300s headed NVIDIA Vulkan): desktop boots and stays responsive (frames, clock and cursor change). **Firefox never shows a window**; guest log goes silent after ~100s. This matches the user's "firefox freezes when launch".
+
+## New root cause found in r2 (not fixed)
+`GUEST_VK_TRACE queue_submit batches=2` → (another thread) `begin_rendering load=2` → `submit_validate REJECT command=0/2 kind=0 state=2` → `ZINK: vkQueueSubmit failed (VK_ERROR_INITIALIZATION_FAILED)` → WebGL creation failed.
+
+In Zink mode the ICD keeps the current command buffer in **one process-global pointer** (`transfer.inc` ~line 113: `static struct VkCommandBuffer_T *cur_cb; #define command (*cur_cb)`, set by `SELECT_CB` on every entry point) with **no locking**. Zink's flush thread submits while the main thread records into another buffer, so `execute_submit` sees the recording buffer (state 2) and rejects. Resource tables are shared unlocked too.
+
+Proposed attempt-10 fix (not implemented, needs authorization):
+- make `cur_cb` `_Thread_local`;
+- take one ICD mutex around `queue_submit`/`execute_submit` and resource/pool create/destroy/free;
+- relink without wasm-opt;
+- rerun the same r2 driver against an isolated port.
+
+Why Firefox hangs after the failed submit (rather than falling back) is **Unknown**; no hang stack was captured.
+
+---
+
 # PAUSED — next-agent handoff, 2026-10-06
 
 The user explicitly said **“pause now and write summoary for next agent in continue”**. Goal status is **paused**. Both task agents stopped; neither owns a live finite job or browser. No repair, build, test, publication or dev restart may continue until the user explicitly resumes. This handoff supersedes all older active/live/preparation instructions below.

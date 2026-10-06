@@ -5,10 +5,11 @@ The checkpoint is6301a15; current branch is
 `gpt-6-firefox-hardware-acceleration-20261006`. Read `continue.md` for current
 evidence. Keep requested persistent preview/proxy services running.
 
-The user explicitly paused all work on2026-10-06. Goal status is paused;
-read the top pause handoff in continue.md. Attempt9 sources are incomplete
-and unbuilt, no finite/browser job is live. Preserve devfxdev7/proxies.
-Resume only on explicit user request; the nine-attempt limit remains in force.
+Attempt 9 was resumed by the user and is terminal (2026-10-06, a9 r2:
+Firefox shows no window; Zink submit races on the ICD's unlocked global
+cur_cb). The nine-attempt limit is reached, so attempt 10 needs fresh user
+authorization. Future Firefox test relinks skip wasm-opt per the user. Read the
+top of continue.md. Preserve dev fxdev7/proxies.
 
 The user imposed a further stop limit on 2026-10-06: stop before the tenth
 additional implementation/build/test attempt if Firefox hardware acceleration
