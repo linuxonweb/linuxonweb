@@ -121,8 +121,8 @@ static int zink_gather_preflight(const struct graphics_draw_record *r,const stru
     return 1;
 }
 static int zink_gather_indexed(const struct graphics_draw_record *r,const struct graphics_pipeline *p,uint32_t start,uint32_t count,struct graphics_json *j) {
-    const int fan=p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-    const uint32_t total=guest_primitive_count(fan,r->count);
+    const int mode=p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN?1:p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP?2:0;
+    const uint32_t total=guest_primitive_count(mode,r->count);
     if(!count||count%3||start>total||count>total-start)return 0;
     for(unsigned n=0;n<p->binding_count;n++) {
         const struct graphics_binding *layout=&p->bindings[n];const struct graphics_vertex_ref *binding=&r->vertices[layout->binding];
@@ -135,7 +135,7 @@ static int zink_gather_indexed(const struct graphics_draw_record *r,const struct
         if(!dst)return 0;
         memset(dst,0,bytes);
         for(uint32_t k=0;k<count;k++) {int64_t vertex;
-            const uint32_t ordinal=guest_primitive_ordinal(fan,live->host_last_provoking,start+k);
+            const uint32_t ordinal=guest_primitive_ordinal(mode,live->host_last_provoking,start+k);
             if(!zink_source_vertex(r,ordinal,&vertex)||(uint64_t)vertex*stride+span>remaining)return 0;
             memcpy(dst+(size_t)k*stride,src+(size_t)vertex*stride,span);
         }
@@ -264,7 +264,12 @@ static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const 
     if(c->sType!=VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO||c->pNext||!i||!i->graphics_target||
        c->imageLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||c->resolveMode!=VK_RESOLVE_MODE_NONE||
        (c->loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||c->storeOp!=VK_ATTACHMENT_STORE_OP_STORE||
-       r->renderArea.offset.x||r->renderArea.offset.y||r->renderArea.extent.width!=i->width||r->renderArea.extent.height!=i->height){invalid_command(cb);return;}
+       r->renderArea.offset.x||r->renderArea.offset.y||r->renderArea.extent.width!=i->width||r->renderArea.extent.height!=i->height){
+        ZINK_TRACE("begin_rendering REJECT view=%llu image=%llu target=%u attachmentSType=%u pNext=%u layout=%u resolve=%u load=%u store=%u area=%d,%d %ux%u imageExtent=%ux%u\n",
+            (unsigned long long)(v?v->id:0),(unsigned long long)(i?i->id:0),i?i->graphics_target:0,(unsigned)c->sType,c->pNext?1u:0u,(unsigned)c->imageLayout,(unsigned)c->resolveMode,
+            (unsigned)c->loadOp,(unsigned)c->storeOp,r->renderArea.offset.x,r->renderArea.offset.y,r->renderArea.extent.width,r->renderArea.extent.height,
+            i?i->width:0,i?i->height:0);
+        invalid_command(cb);return;}
     ZINK_TRACE("begin_rendering load=%d %ux%u clear=%g,%g,%g,%g depth=%d\n",(int)c->loadOp,i->width,i->height,
         c->clearValue.color.float32[0],c->clearValue.color.float32[1],c->clearValue.color.float32[2],c->clearValue.color.float32[3],
         r->pDepthAttachment&&r->pDepthAttachment->imageView?1:0);

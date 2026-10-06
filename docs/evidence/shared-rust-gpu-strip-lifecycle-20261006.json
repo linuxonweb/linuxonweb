@@ -1,0 +1,181 @@
+{
+  "schema": 3,
+  "rootReviewed": true,
+  "runtimeAcceptance": true,
+  "scope": "bounded general Linux public Vulkan triangle strips, retained original24 fan/list and PID-bound normal libc-exit cleanup through genuine shared Rust wgpu",
+  "candidateIcd": {
+    "path": "/mnt/p3/codex-build/firefox-gpu-oct06/strip-fixture-build2/guest-icd.o",
+    "bytes": 3634542,
+    "sha256": "efe9bc5ead2cc52b2f8926eb58b50389798098b5f59621977c1cf8dd74f9462d"
+  },
+  "frozenNativeSourceClosure": {
+    "path": "/mnt/p3/codex-build/firefox-gpu-oct06/strip-repair-source2/source-closure.json",
+    "bytes": 11952,
+    "sha256": "d6c93e4781bf280df4c45bba5ceabc824206e5fb25f30bece220d0f4f0ec8bf6"
+  },
+  "stripPackage": {
+    "path": "/mnt/p3/codex-build/firefox-gpu-oct06/strip-packages1/strip/package.json",
+    "bytes": 5827,
+    "sha256": "6ecc2cfc50b6f4dc5a8717e4288d3a9add4179405def3447c1fb8d456ed79fdd"
+  },
+  "original24Package": {
+    "path": "/mnt/p3/codex-build/firefox-gpu-oct06/strip-packages1/regression/package.json",
+    "bytes": 5863,
+    "sha256": "e6ca7c0372811c6f2fb7b5f7a9a7d28f16c6b6fbbe3460402f94ed2b7535186e"
+  },
+  "actualRuns": [
+    {
+      "kind": "strip",
+      "backend": "BrowserWebGpu",
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/gswg1/root-terminal-review.json",
+        "bytes": 1436,
+        "sha256": "22e1f3f7586b1f46cd56556498beaa317fc18bef39c1687dc816866fc69f532e"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/gswg1/owner-terminal.json",
+        "bytes": 4024,
+        "sha256": "4104814be570d3d73105fc05f84a1eb4ba804a9f4290f0afa79a73f8a0792099"
+      },
+      "result": {
+        "path": "/mnt/p3/codex-build/gswg1/run/result.json",
+        "bytes": 723189,
+        "sha256": "9813d0a7169ac65623ac591dc7a60e4183af6272b0531280ee2d375638dbc37d"
+      },
+      "validation": {
+        "path": "/mnt/p3/codex-build/gswg1/run/validation.json",
+        "bytes": 1179,
+        "sha256": "51eb4e3f95a23411f1e90fd18f294c5d2f60b5a0d2086af8b1c01bfd51d2309b"
+      },
+      "nativeChecks": 352526,
+      "rounds": 24,
+      "realRust": {
+        "passes": 24,
+        "draws": 33,
+        "readbacks": 72,
+        "closedResourcesZero": true
+      },
+      "measuredRuntimeCpuEquality": 6,
+      "protectedServiceCount": 12,
+      "naturalEmptyBrowserGroup": true
+    },
+    {
+      "kind": "strip",
+      "backend": "Gl",
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/gsgl1/root-terminal-review.json",
+        "bytes": 1399,
+        "sha256": "831a0a9be7ab85d6318323d29505f31654e452aabb6d9508248f074d8e893e4e"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/gsgl1/owner-terminal.json",
+        "bytes": 4240,
+        "sha256": "41e8281b894ce806c8fec779af7bce874142f3c053eba2065b898cafd588556f"
+      },
+      "result": {
+        "path": "/mnt/p3/codex-build/gsgl1/run/result.json",
+        "bytes": 723399,
+        "sha256": "f9fae9512359c7a21729ce0848014d4843fae388b51781ebb6822aa9f4116751"
+      },
+      "validation": {
+        "path": "/mnt/p3/codex-build/gsgl1/run/validation.json",
+        "bytes": 1263,
+        "sha256": "82c96e833f51c73b1188f517e442b278839058a3eb6b9f89c3625dcdbd4da316"
+      },
+      "nativeChecks": 352526,
+      "rounds": 24,
+      "realRust": {
+        "passes": 24,
+        "draws": 33,
+        "readbacks": 72,
+        "closedResourcesZero": true
+      },
+      "measuredRuntimeCpuEquality": 6,
+      "protectedServiceCount": 12,
+      "naturalEmptyBrowserGroup": true
+    },
+    {
+      "kind": "original24",
+      "backend": "BrowserWebGpu",
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/grwg1/root-terminal-review.json",
+        "bytes": 1450,
+        "sha256": "3922922ec672478a9dd09e81194e240b82442aa50b5584b2cc20d01d9b159aa5"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/grwg1/owner-terminal.json",
+        "bytes": 4242,
+        "sha256": "d571ff4f5a646b2842378a963421a673e05353cc8fa8418f2fc42b85a171463d"
+      },
+      "result": {
+        "path": "/mnt/p3/codex-build/grwg1/run/result.json",
+        "bytes": 709795,
+        "sha256": "57b90618c502aebca3da4acfd7be5a66fc3200e3f2a1313c4459f4405ea433d4"
+      },
+      "validation": {
+        "path": "/mnt/p3/codex-build/grwg1/run/validation.json",
+        "bytes": 1137,
+        "sha256": "232e1e71dd440e3f35bbc670e25cb5a430027ac221a85698278348ce0fedcaa8"
+      },
+      "nativeChecks": 353698,
+      "rounds": 24,
+      "realRust": {
+        "passes": 24,
+        "draws": 33,
+        "readbacks": 72,
+        "closedResourcesZero": true
+      },
+      "measuredRuntimeCpuEquality": 6,
+      "protectedServiceCount": 12,
+      "naturalEmptyBrowserGroup": true
+    },
+    {
+      "kind": "original24",
+      "backend": "Gl",
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/grgl1/root-terminal-review.json",
+        "bytes": 1413,
+        "sha256": "ecf899cd5375507e8deefcd4e8f9dae5bbb82013b19cb594bcc06f0867c62f0d"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/grgl1/owner-terminal.json",
+        "bytes": 4241,
+        "sha256": "44e28e991309eb4bca6bcf958bb608129886fad2a8a859b57ca1a81ab7e957af"
+      },
+      "result": {
+        "path": "/mnt/p3/codex-build/grgl1/run/result.json",
+        "bytes": 712742,
+        "sha256": "f2ada78366a81722b4fbef9224aeda9c0758f2ecff3951302961a88eb2ed09e1"
+      },
+      "validation": {
+        "path": "/mnt/p3/codex-build/grgl1/run/validation.json",
+        "bytes": 1221,
+        "sha256": "bd8465a32eda56d263989bf4f9c4fa8689d8456f432f787a5937b7ed948f91d3"
+      },
+      "nativeChecks": 353698,
+      "rounds": 24,
+      "realRust": {
+        "passes": 24,
+        "draws": 33,
+        "readbacks": 72,
+        "closedResourcesZero": true
+      },
+      "measuredRuntimeCpuEquality": 6,
+      "protectedServiceCount": 12,
+      "naturalEmptyBrowserGroup": true
+    }
+  ],
+  "normalExitCoverage": "normal libc exit with getpid ownership; explicit destroy and fork guards; _exit/SIGKILL unsupported",
+  "rustRuntimeUnchangedFromAcceptedPipeline1": true,
+  "cpuAdmission": "counts above are actual per-run observations; remeasure actual owner/browser/guest for every future run",
+  "limits": {
+    "firefoxGpuAcceptance": false,
+    "visiblePresentationAcceptance": false,
+    "original320CubeAcceptance": false,
+    "largerColorTargetAcceptance": false,
+    "concurrencyAcceptance": false,
+    "releaseAcceptance": false,
+    "publicRuntimeAdopted": false
+  },
+  "next": "fast-development current159 relink with exact new ICD and mandatory fpcast23/ABI validation, then actual Firefox presentation and original page tests"
+}

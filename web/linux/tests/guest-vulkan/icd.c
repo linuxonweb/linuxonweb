@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #ifdef GUEST_VK_ZINK
 #include "zink-ext.h"
 #endif
@@ -26,6 +27,7 @@ struct VkDevice_T { VK_LOADER_DATA loader; struct VkQueue_T queue; };
 struct VkInstance_T {
     VK_LOADER_DATA loader;
     struct gpu_session session;
+    pid_t process_pid; /* Native creator identity; never close a fork parent's session. */
     struct VkPhysicalDevice_T physical;
     VkDevice device;
     int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, sampled_target_supported, depth_supported, pipeline_state_supported, host_last_provoking, webgl_backend, failed;
@@ -43,6 +45,13 @@ _Static_assert(sizeof(VkInstance) == 4, "wasm32 dispatch handle");
 _Static_assert(sizeof(VkBuffer) == 8, "wasm32 nondispatch handle");
 #endif
 static VkInstance live;
+static int exit_cleanup_registered;
+static VKAPI_ATTR void VKAPI_CALL destroy_instance(VkInstance instance,const VkAllocationCallbacks *allocator);
+static void instance_process_exit(void) {
+    /* Normal libc exit only. _exit/SIGKILL do not run this hook. A thread
+     * detaching does not own the process lifetime and must not close it. */
+    if(live&&live->process_pid==getpid())destroy_instance(live,NULL);
+}
 static struct guest_vk_audit audit = {.close_status = -1};
 struct guest_vk_audit guest_vk_get_audit(void) { return audit; }
 static int physical_valid(VkPhysicalDevice p) { return live && p == &live->physical; }
@@ -205,11 +214,18 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_instance(const VkInstanceCreateInfo
     VkInstance instance = calloc(1, sizeof(*instance));
     if (!instance) return VK_ERROR_OUT_OF_HOST_MEMORY;
     instance->session.fd = -1;
+    /* Register before opening a host session: registration failure cannot
+     * strand a connection. Later failed creations leave the callback inert. */
+    if(!exit_cleanup_registered) {
+        if(atexit(instance_process_exit)){free(instance);return VK_ERROR_INITIALIZATION_FAILED;}
+        exit_cleanup_registered=1;
+    }
     set_loader_magic_value(instance); set_loader_magic_value(&instance->physical);
     if (gpu_accept(&instance->session, 4050) || hello(instance)) {
         gpu_close(&instance->session); free(instance); return VK_ERROR_INITIALIZATION_FAILED;
     }
     instance->instance_extensions_enabled = enabled_instance_extensions;
+    instance->process_pid=getpid();
     live = instance; audit.instances_created++; audit.live_instances++;
     *out = instance;
     return VK_SUCCESS;

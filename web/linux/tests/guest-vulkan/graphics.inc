@@ -229,7 +229,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     if(!assembly||assembly->sType!=VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO||assembly->pNext||assembly->flags||
        (assembly->topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 #ifdef GUEST_VK_ZINK
-        &&!(live->pipeline_state_supported&&assembly->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+        &&!(live->pipeline_state_supported&&(assembly->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||assembly->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP))
 #endif
        )||assembly->primitiveRestartEnable||
        !raster||raster->sType!=VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO||raster->pNext||raster->flags||
@@ -258,7 +258,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_graphics_pipelines(VkDevice d,VkPip
     }
     if(!vertex||!fragment)return VK_ERROR_INITIALIZATION_FAILED;
     p.vertex_index=graphics_shader_vertex_index(vs);p.vertex_flat=graphics_shader_flat_output(vs);
-    if((p.topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||(live->host_last_provoking&&p.vertex_flat))&&
+    if((p.topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||p.topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP||(live->host_last_provoking&&p.vertex_flat))&&
        (p.vertex_index||!p.binding_count))return VK_ERROR_FEATURE_NOT_PRESENT;
     struct graphics_json j={0};
     graphics_json_append(&j,"{\"vertex\":{\"shader\":%u,\"entryPoint\":",vs->host);graphics_json_name(&j,vertex->pName);

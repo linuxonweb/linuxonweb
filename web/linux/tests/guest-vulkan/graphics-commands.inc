@@ -115,7 +115,7 @@ static struct recorded *draw_graphics_record(VkCommandBuffer cb,uint32_t count,u
     /* A3: every non-empty set of the pipeline layout must be bound first. */
     struct resource *pipeline=resource_get(command.graphics.pipeline,R_GRAPHICS_PIPELINE);
     if(!pipeline){invalid_command(cb);return NULL;}
-    if(pipeline->graphics.pipeline.topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN&&count%3){invalid_command(cb);return NULL;}
+    if(pipeline->graphics.pipeline.topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST&&count%3){invalid_command(cb);return NULL;}
     const struct uniform_pipeline_layout *u=&pipeline->graphics.pipeline.uniforms;
     for(unsigned s=0;s<u->set_count;s++)if(u->sets[s].count&&!command.graphics.sets[s]){invalid_command(cb);return NULL;}
     /* B2d: a dynamic viewport/scissor pipeline needs both set before the draw. */
@@ -202,13 +202,13 @@ static int graphics_prepare_draw(const struct graphics_draw_record *r,const stru
        v.minDepth>=0&&v.maxDepth<=1&&v.minDepth<=v.maxDepth)||s.offset.x<0||s.offset.y<0||
        (unsigned)s.offset.x>image->width||(unsigned)s.offset.y>image->height||
        s.extent.width>image->width-(unsigned)s.offset.x||s.extent.height>image->height-(unsigned)s.offset.y||
-       r->count<3||r->count>65536||(p->topology!=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN&&r->count%3)||r->first>65536)return 0;
+       r->count<3||r->count>65536||(p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST&&r->count%3)||r->first>65536)return 0;
     graphics_json_append(j,"%s{\"pipeline\":%u,\"vertexBuffers\":[",draw_index?",":"",pipeline->host);
 #ifdef GUEST_VK_ZINK
     /* B2g: indexed draws are expanded into gathered vertex streams, split
      * into pieces of `piece` indices that each fit one ring chunk. */
-    const int gathered=r->index_size||p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||(live->host_last_provoking&&p->vertex_flat);
-    const uint32_t total=p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN?3u*(r->count-2u):r->count;
+    const int gathered=r->index_size||p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN||p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP||(live->host_last_provoking&&p->vertex_flat);
+    const uint32_t total=p->topology==VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST?r->count:3u*(r->count-2u);
     const uint32_t piece=gathered?zink_index_piece(p,total):total;
     if(gathered&&(!zink_gather_preflight(r,p,total,piece)||!zink_gather_indexed(r,p,0,piece,j)))return 0;
     for(unsigned n=0;n<p->binding_count&&!gathered;n++) {
