@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "package": "linuxonweb.gpu-runtime.v1",
+  "renderer": "Rust wgpu 30.0.1",
+  "bindgen": "0.2.129",
+  "buildReceipt": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-resources-final/build.json",
+  "buildReceiptSha256": "d3547fa4b973976e22ce17710b61411d63a8f9a8caa21268864ace4f8ecae0fa",
+  "sourceInputs": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/Cargo.toml",
+      "bytes": 507,
+      "sha256": "af8739130287d2f454cea3d2b0d926ce871590b4b4f2e961980b664780163348"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/Cargo.lock",
+      "bytes": 26835,
+      "sha256": "bfb4c8cfebaa528f2da21d90255fec2d2ac6be0fcfa63f11f7fcf2b9ffc726cf"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/src/lib.rs",
+      "bytes": 39700,
+      "sha256": "ab862e8348c196b1161b4603f5bc0c386a2a0d02f2b32be03f178ab43519d077"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "guest_vulkan_wgpu_host.js",
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-resources-final/guest_vulkan_wgpu_host.js",
+      "bytes": 121321,
+      "sha256": "f7dbe44f135cd8f596860696901413e36f9eeea3fbc61038d6602a936dcc3f9d"
+    },
+    {
+      "file": "guest_vulkan_wgpu_host_bg.wasm",
+      "path": "/mnt/p6/project/build/guest-vulkan-wgpu-20261003/host-build-resources-final/guest_vulkan_wgpu_host_bg.wasm",
+      "bytes": 4161388,
+      "sha256": "4341087d9b0fea428966ce9f27a4e9328cc0ef5cdc632bbc31cd57ccf1afe5de"
+    }
+  ],
+  "profile": {
+    "optLevel": 2,
+    "strip": "debuginfo"
+  },
+  "noDwarf": true,
+  "binaryenOptimization": false,
+  "unmodifiedExistingBuild": true,
+  "newRustBuild": false,
+  "promotionSources": [
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-wgpu/bridge.mjs",
+      "bytes": 8408,
+      "sha256": "ee9e68993b5ba3d0fc3683b3ad4425626bec152cd80cdc1079a5bfa1bafecbd4"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-vulkan-graphics/renderer.mjs",
+      "bytes": 55897,
+      "sha256": "a985c76c8599144e6f2fa89cb7ddcb6f68169f37cc3505c404dc1fda2fee95d3"
+    }
+  ],
+  "promotionDelta": "Bridge import paths only; graphics validator bytes unchanged. General host ownership and guest libraries remain integration work.",
+  "notices": {
+    "file": "THIRD-PARTY-NOTICES.txt",
+    "bytes": 1072457,
+    "sha256": "e8a60ca83862b3cc3b4941ea081729152c4a5691d983695aceba1bd1dc375604"
+  },
+  "acceptedEvidence": "docs/evidence/guest-zink-wgpu-resources-20261003.json",
+  "freshRuntimeAcceptance": false,
+  "firefoxGpuAcceptance": false,
+  "releaseAcceptance": false
+}

@@ -1,13 +1,15 @@
 # Project instructions
 
-The user resumed the goal on 2026-10-05 UTC and added Firefox restart-tab and
-Bing HTTPS repairs. Read `continue.md` for prior evidence; its pause note is
-historical. Keep requested persistent preview/proxy services running.
+The user requested GPU-first work on 2026-10-06 after stopping JIT repair.
+The checkpoint is6301a15; current branch is
+`gpt-6-firefox-hardware-acceleration-20261006`. Read `continue.md` for current
+evidence. Keep requested persistent preview/proxy services running.
 
 ## Goal and order
-- Make current Firefox Nightly launch and verify real JavaScript JIT.
-- After JIT passes, redeploy to the existing ChatGPT Sites project.
-- Then build general Linux Vulkan/OpenGL support through shared host Rust wgpu,
+- Current priority: diagnose and enable actual current Firefox hardware GPU.
+  JIT repair/testing remains stopped under the user's two-cycle limit; this GPU
+  request does not resume JIT tests. Earlier JIT-first order is historical.
+- Build general Linux Vulkan/OpenGL support through shared host Rust wgpu,
   validate standalone and concurrent apps, then Firefox WebRender/WebGL/WebGPU
   and deploy again. Do not describe prepared code as working JIT/GPU.
 - Use musl, release builds without debug information, and the original optimizer.

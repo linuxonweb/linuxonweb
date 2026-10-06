@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "scope": "Native Mesa primitive through current common Rust service; current Firefox acceptance false",
+  "checkpoint": "6301a15",
+  "branch": "gpt-6-firefox-hardware-acceleration-20261006",
+  "archiveSha256": "a4d7447a21c53e8887b8dfcbfbd34f9340ce3bf5b267f5706d4f0b56ec97e330",
+  "rustGeneratedJsSha256": "f7dbe44f135cd8f596860696901413e36f9eeea3fbc61038d6602a936dcc3f9d",
+  "rustWasmSha256": "4341087d9b0fea428966ce9f27a4e9328cc0ef5cdc632bbc31cd57ccf1afe5de",
+  "arms": [
+    {
+      "name": "hardware2",
+      "resultSha256": "b9e3be4dc08ea86136a25741b3ccc8816f21c5dbb31b65bc574593299770400d",
+      "resultPath": "/mnt/p3/codex-build/gpu-service-root-oct06/hardware2/run/result.json",
+      "pass": true,
+      "apiAdapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": "",
+        "isFallbackAdapter": false
+      },
+      "actualCpuCount": 6,
+      "cleanup": {
+        "groupEmpty": true,
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      },
+      "rustAdapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "pixelChecks": 98304,
+      "frames": 6
+    },
+    {
+      "name": "software2",
+      "resultSha256": "47fcc4402bfd93c36634e01c394f4d9c521150664e99ebacc0634feeb39213f9",
+      "resultPath": "/mnt/p3/codex-build/gpu-service-root-oct06/software2/run/result.json",
+      "pass": true,
+      "apiAdapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      "actualCpuCount": 6,
+      "cleanup": {
+        "groupEmpty": true,
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      },
+      "rustAdapter": {
+        "backend": "BrowserWebGpu",
+        "device": 0,
+        "deviceType": "Cpu",
+        "driver": "",
+        "driverInfo": "",
+        "forceFallbackAdapter": false,
+        "integerViewport": false,
+        "maxVertexStride": 2048,
+        "name": "",
+        "requestedBackend": "Backends(BROWSER_WEBGPU)",
+        "vendor": 0
+      },
+      "pixelChecks": 98304,
+      "frames": 6
+    },
+    {
+      "name": "webgl1",
+      "resultSha256": "712dadc7bde3d45cd39afe558bc46bbcbcbc6a66439c0cf7f05a23d4bff1103e",
+      "resultPath": "/mnt/p3/codex-build/gpu-service-root-oct06/webgl1/run/result.json",
+      "pass": true,
+      "apiAdapter": null,
+      "actualCpuCount": 6,
+      "cleanup": {
+        "groupEmpty": true,
+        "browserExit": {
+          "code": 0,
+          "signal": null
+        },
+        "serverClosed": true
+      },
+      "rustAdapter": {
+        "backend": "Gl",
+        "device": 0,
+        "deviceType": "Other",
+        "driver": "",
+        "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "forceFallbackAdapter": false,
+        "integerViewport": true,
+        "maxVertexStride": 252,
+        "name": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+        "requestedBackend": "Backends(GL)",
+        "vendor": 4318
+      },
+      "pixelChecks": 98304,
+      "frames": 6
+    }
+  ],
+  "independentReview": {
+    "path": "/mnt/p3/codex-build/gpu-service-oct06/actual-three-arm-independent-review.json",
+    "sha256": "dd8d42b138fe95453d9fdbf946621a860a303b3824240f21d9bb3226fe76f5a6"
+  },
+  "correctedCheckerReview": {
+    "path": "/mnt/p3/codex-build/gpu-service-oct06/checker-hardening-receipt.json",
+    "sha256": "7db2d6c8ac7ef6bf5177a68577799db5bc7e673bd527e0333aeba13f1a1c0b40",
+    "actualReportsPass": 3,
+    "negativeControlsRejected": 96,
+    "predicates": 24
+  },
+  "retainedInitialFailures": [
+    "hardware1 monitor ENOENT in deleted owned browser cache",
+    "software1 monitor ENOENT in deleted owned Chromium scratch"
+  ],
+  "firefoxGpuAcceptance": false,
+  "concurrencyAcceptance": false,
+  "performanceAcceptance": false,
+  "releaseAcceptance": false
+}

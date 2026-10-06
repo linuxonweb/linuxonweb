@@ -26,6 +26,8 @@ import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
 import { appendDesktopExtras } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
+import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
+import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
@@ -163,6 +165,33 @@ let selectedGpuTest = gpuTestSelection(new URL(location.href));
 let gpuTestReport = null;
 export function guestGpuTest() { return gpuTestReport; }
 let activeMachine = null;
+
+// Read-only evidence for an explicit common Rust diagnostic. This reads no
+// persistent home and exposes bounded copies rather than the running machine.
+export function guestGpuDiagnostics() {
+  if (new URLSearchParams(location.search).get('gpuruntime') !== 'rust') return null;
+  const history = guestLogs.history;
+  const events = activeMachine?.gpuHostcall?.events ?? [];
+  const hub = activeMachine?.gpuHostcall?.hub;
+  const words = hub ? new Int32Array(hub) : null;
+  return {
+    running: activeMachine !== null,
+    configuration: activeConfiguration ? { ...activeConfiguration } : null,
+    logs: history.page(history.nextId, 10000).map(row => ({ ...row })),
+    logEvidenceDropped: history.firstId > 0,
+    logFirstId: history.firstId,
+    logNextId: history.nextId,
+    gpuEventCapacity: 256,
+    gpuEventsMayBeTruncated: events.length >= 256,
+    gpuEventsCapacityReached: events.length >= 256,
+    gpuEvents: events.slice(0, 256).map(event => ({ ...event })),
+    gpuHostcallState: words ? {
+      stallMs: Atomics.load(words, H_STALL_MS), startupMs: Atomics.load(words, H_STARTUP_MS),
+      ownerState: Atomics.load(words, H_OWNER_STATE), deadReason: Atomics.load(words, H_DEAD_REASON),
+      heartbeat: Atomics.load(words, H_HEARTBEAT), calls: Atomics.load(words, H_CALLS),
+    } : null,
+  };
+}
 let clipboardVsock = null;
 let clipboardInput = null;
 installClipboardButton({
@@ -974,7 +1003,7 @@ async function boot(mode) {
       framebuffer: { canvas, width: FB_W, height: FB_H, bpp: 32, backend: activeConfiguration.backend },
       // Guest Vulkan uses the gpu_hostcall channel by default (dist/guest-gpu-vk.js).
       gpuHostcall: {
-        ownerConfig: { vk: { backend: gpuBackend } },
+        ...guestGpuHostcallOptions(location.search, gpuBackend),
         log: (event) => { if (event.kind === "owner-log" || event.kind === "owner-error") hostLog(`gpu-owner: ${event.message}`); },
       },
     });

@@ -161,11 +161,12 @@ async function openSession(flags, log) {
         throw new Fault(EINVAL);
     hostModule ??= Promise.all([import("../tests/guest-gpu/host.mjs"), import("../gputest.mjs")]);
     const [{ serveGPU }, { GPUTEST_TRANSLATORS }] = await hostModule;
-    const backend = flags & VK_OPEN_FLAG_FORCE_WEBGL ? "webgl" : flags & VK_OPEN_FLAG_FORCE_WEBGPU ? "webgpu" : config.backend;
+    const requestedBackend = flags & VK_OPEN_FLAG_FORCE_WEBGL ? "webgl" : flags & VK_OPEN_FLAG_FORCE_WEBGPU ? "webgpu" : null;
+    const backend = config.backend === "wgpu" ? "wgpu" : requestedBackend ?? config.backend;
     const gpu = backend === "webgl" || backend === "wgpu" ? null : globalThis.navigator?.gpu;
     const wgpuFactory = backend === "wgpu" ? async () => {
-        const { createWgpuRenderer } = await import("../tests/guest-vulkan-wgpu/bridge.mjs");
-        const renderer = await createWgpuRenderer({backend: config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter, allowResources:config.allowResources});
+        const { createWgpuRenderer } = await import("../gpu-runtime/v1/bridge.mjs");
+        const renderer = await createWgpuRenderer({backend: requestedBackend ?? config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter, allowResources:config.allowResources});
         return { renderer, backend: "wgpu", adapter: renderer.adapter };
     } : undefined;
     const id = nextSession++;
