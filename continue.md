@@ -40,6 +40,8 @@ The first authorized phase2 execution `pipeline-phase2-relink1` is terminal/reap
 
 Relink2 is now executing under diagnosis-owned handle71016, ownerPID3074075/start22916789/PGID=SID3074075, uid1000. Independent narrow repair review SHA354ab03d682fe6659360337c4a3d5439b3495ae8066dac9a4abfcfae89ec02bd passes; source checkpoint9267c7b. Its actual3200-input admission and original driver trace pass. Fresh Firefox raw link passes15.457s, raw validation35.853s, then original in-place O2 PID3077583/start22924421/PGID=SID3077583 was verified live by root. Remeasure/status-check on continuation; this note is historical observation, not proof of current liveness. Output `/mnt/p3/codex-build/firefox-gpu-oct06/pipeline-phase2-relink2/`; total4800s/O21800/RSS12GiB/disk8GiB/reserve20GiB/4workers. Build quota measured8; guest/browser equality requires fresh later runtime measurement. Diagnosis alone polls/reaps handle; auditor prepares19-check final ABI/package review. After terminal native pass + independent ABI, diagnosis is authorized to stream fresh `native-pipeline-package1` with unchanged current159 packager and --vk-trace, leaving genuine old gfxtest unchanged. Browser remains unauthorized until independent/root package review; next intended headed native4 has actual root memory-image gate and original600s deadline. No native Firefox GPU acceptance yet.
 
+Firefox phase2 final is now validated after original O2 (861.746s) and fpcast23 (45.056s):208425654 bytes SHA db3ee505f6937ef598b682e9f0995b4754fa06caeb26dfe8bdd11bca7967a069. This is a partial build milestone, not Firefox GPU acceptance. Plugin-container raw link/validation pass; root freshly verifies its original O2 PID3120239/start23021469/PGID=SID3120239 live with no report error. Whole-job terminal/native ABI/package/runtime remain pending. Private larger-colour/ranged-readback draft stays outside the repo and all3200 frozen build inputs;95 synthetic offline protocol/header/reassembly controls pass, with genuine GPU and original320x240 packed-depth/presentation still unverified.
+
 Use the actual current dev archive `/mnt/p6/build/browser-bugs-20261005/startup-tab-candidate-1/initramfs-firefox.cpio.gz`, SHA256 `c0eaffe22a66bb97f94ff53dcb645e402eb50dea98b0976b66000ea615d4ac9f`, for new159 packaging. The checked-in repo boot-manifest/archive is stale. Dev remains the reviewed testing build at localhost3000, with manual Update choice; public Sites remainsv10. Persistent previews/proxies/cloudflared/Xorg/home/settings remain preserved. New large artifacts use verified disk-backed spacious p3 because p6 approaches its20GiB reserve.
 
 ---
@@ -47,6 +49,7 @@ Use the actual current dev archive `/mnt/p6/build/browser-bugs-20261005/startup-
 # Latest handoff: user-requested two-cycle stop, 2026-10-06
 
 The user asked for at most two more JIT repair/test cycles and, if JIT still did not work, to stop and write this handoff. Both authorized cycles are finished: headed run45 and run46 failed before the JIT suite. **Repair and runtime testing are stopped. Full JIT acceptance is false.** Do not launch another cycle unless the user resumes the work. The older entries below are preserved history; this section governs the current state.
+
 
 ## What was implemented
 
