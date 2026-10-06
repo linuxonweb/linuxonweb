@@ -35,6 +35,18 @@ try {
   await home.unlink(admin, 'renamed');
   assert(await home.lookup(admin, 'renamed') === undefined, 'unlink removes the directory entry');
   assert(decoder.decode(await home.read(saved, opened, 0n, 100)) === 'saved after reload', 'open unlinked inode remains readable');
+  const observer = await openPersistentHome({ name: dbName, readOnly: true });
+  try {
+    assert(decoder.decode(await home.read(saved, opened, 0n, 100)) === 'saved after reload', 'observer opening preserves another connection\'s open unlinked inode');
+    const observedHandle = await observer.open(saved, 0);
+    assert(decoder.decode(await observer.read(saved, observedHandle, 0n, 100)) === 'saved after reload', 'observer reads the actual committed unlinked bytes');
+    await observer.release(saved, observedHandle);
+    assert(decoder.decode(await home.read(saved, opened, 0n, 100)) === 'saved after reload', 'observer release preserves the guest\'s open inode');
+    try { await observer.write(saved, {}, 0n, encoder.encode('changed')); throw new Error('expected EROFS'); } catch (error) { assert(error.errno === 30, 'observer rejects writes'); }
+    try { await observer.open(saved, 2); throw new Error('expected EROFS'); } catch (error) { assert(error.errno === 30, 'observer rejects writable handles'); }
+    try { await observer.create(admin, 'observer-file', 2, context); throw new Error('expected EROFS'); } catch (error) { assert(error.errno === 30, 'observer rejects file creation'); }
+  } finally { await observer.destroy(); }
+  assert(decoder.decode(await home.read(saved, opened, 0n, 100)) === 'saved after reload', 'observer close preserves guest bytes');
   await home.release(saved, opened);
   try { await home.getattr(saved); throw new Error('expected ENOENT'); } catch (error) { assert(error.errno === 2, 'final close reclaims unlinked inode'); }
   const source = await home.create(admin, 'source', 2, context), target = await home.create(admin, 'target', 2, context);

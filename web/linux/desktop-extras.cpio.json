@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "bytes": 23837184,
+  "sha256": "5fc74068466fc9f9076795527bfd400b26fa2923cdeceedfb448fb8decc02975",
+  "members": [
+    {
+      "path": "/bin/clipboard-bridge",
+      "bytes": 831698,
+      "sha256": "c37d74229d996e37adc896388883b3104d5b93e21fc9f3054eb73ff7eede3b45"
+    },
+    {
+      "path": "/bin/xclip",
+      "bytes": 837337,
+      "sha256": "b5d7507b47e761b6c282d8c48fa5b6eda02bf4f6f41af84b9fae9e691f96848b"
+    },
+    {
+      "path": "/bin/glgears",
+      "bytes": 20818186,
+      "sha256": "d7548a09ec749b8014bb7f5f19a248883985037d753f1e1a190e93c8c8149f4c"
+    },
+    {
+      "path": "/bin/vkgears",
+      "bytes": 1329706,
+      "sha256": "0156282db3120eddc7d135137479803234c99e1deccd66f6098df9de0fa01c77"
+    }
+  ]
+}

@@ -1,0 +1,684 @@
+# Latest handoff: user-requested two-cycle stop, 2026-10-06
+
+The user asked for at most two more JIT repair/test cycles and, if JIT still did not work, to stop and write this handoff. Both authorized cycles are finished: headed run45 and run46 failed before the JIT suite. **Repair and runtime testing are stopped. Full JIT acceptance is false.** Do not launch another cycle unless the user resumes the work. The older entries below are preserved history; this section governs the current state.
+
+## What was implemented
+
+1. **Natural GC readiness within the original scope deadline.** `/mnt/p6/build/gc-scope-readiness-oct06/`, Git `79160085ee21ec8279bde6acf383b7b7f2b52956`. Only `guest-content.sys.mjs` and `guest-entry.sys.mjs` changed. Entry sends its existing parent query deadline; content waits for natural `NotActive` in the same testing sandbox, then calls the original privileged driver synchronously. Window/process identity and a bounded polling loop remain mandatory. The original driver's inactive-GC assertion remains intact; no forced GC, failed-scope retry, skipped workload or extra runtime time. Actual host VM controls: 53 passed. These use stubbed Firefox/GC APIs and do not prove guest GC or JIT success.
+2. **Preserve failed scope evidence.** `/mnt/p6/build/complete-jit-owner-main-oct05/capture-scopes.mjs` and `runner.mjs` now retain the actual failed scope, primary error, raw bytes and explicit skipped outcomes. Successful sessions still require all original scopes and matching actual results; skipped files are not fabricated. Actual host controls: 29 passed. This fixes run44's capture masking, not its underlying GC failure.
+3. **Explicit reviewed module selection.** `scope-readiness-rebind.py`, `owner.py` and `check-result.py` authenticate the exact reviewed original/candidate bytes, opt in explicitly and replace only the two companion modules/session hashes. The selected checker code and original privileged driver are byte-identical to FJI5. Using the reviewed checker directory lets its original installed-source predicates verify the actual new companions. Actual staging/provenance controls: 175 passed. First repair seal: Git `3f7fbdfc283747a8427351ac68a55c264a304f16`, 535 pins, SHA256 `ad6a35e577e1dc5f7aaf2c6c83dafb7906da9c64e3ade9fe0a01080b46f58e0e`.
+4. **Console focus before native bootstrap submission.** The second repair adds default-false `nativeBootstrapFocusReviewRequested`, requiring native bootstrap mode. It reuses the original actual-window/visible-input-point/physical-click/full-nonce/focus path before trusted Enter. Fresh per-attempt request files prevent stale reviews. Original native ACK/PID/start/FD verification still authorizes the permit; no helper or screenshot grants JIT acceptance. Actual host controls: 32 new gate, 6 staging, 36 native default and 135 legacy window checks passed (209 total), plus syntax/diff checks. Run46 failed before any image request, so this repair has no live acceptance.
+
+Current isolated owner Git: **`ed93a665b4b36939afb0a7afb19f161e01e5465d`**.
+Current seal: **547 actual rehashed pins**, SHA256 **`9cbaaf1ccccdc45a159e4c0b2944eae2c4a93fb537645f6194eaa6e77514fe23`**.
+Owner root: `/mnt/p6/build/complete-jit-owner-main-oct05/`.
+Source diff: `t/final-focus-source.patch`; controls/terminal: `t/final-focus-controls-receipt.json`, `t/final-focus-terminal.json`.
+Root independently read the focus implementation/tests and verified the original visual body and native ACK/permit body are byte-identical to the reviewed parent. Current closure: `/mnt/p6/build/headed-jit-root-oct05/focus-owner-root-closure-oct06.json`; source review: `final-focus-root-source-review.json`.
+
+## Actual headed results
+
+| Cycle | Evidence | Result |
+| --- | --- | --- |
+| First: run45 | `runs/enabled-headed-run45/`; root handle56020 reaped exit1 | Native acquisition never obtained ACK. Actual retained input image shows only the main Firefox address bar; later image shows the bootstrap tail in that bar and an empty Browser Console. Helper fell back after its original20s. Exact CDP request2030 SHA `e1d0a22be607fb61a31fcc845aa005597bef22ff0e32d1d14ef64a5833c00e5a` is the read of `fji14-parent-exec.json` during entry-ACK polling. Producer160.225s, original supervisor deadline failed; owner184.494s including cleanup. Original broad subset has zero passing rows and zero captured native observer events. GC readiness was never reached. |
+| Second/final: run46 | `runs/enabled-headed-run46/`; root handle69325 reaped exit1 | Earlier CDP request195 SHA `ae75f234dc672b41d1e1df045d0127848825e237e804404d1247b29c11194a59` timed out. Root reconstructed the exact `logExpression`: ordinary Firefox startup log polling. `startup.txt`, `cpu.json`, direct native observer capture and all image requests are absent. Producer34.854s; owner58.894s. Captured broad results: none. Native observer activity, guest CPU equality, GC readiness and focus repair runtime status: Unknown. |
+
+Fresh admission measured **6 effective host CPUs** for each run. Run45 actual host/browser/guest CPU equality passed. Run46 requested6 and owned host family samples report6; browser API/guest equality was not retained and remains Unknown.
+
+Exact owned groups are empty and display endpoints are gone for both runs. All nine protected service PID/start/PGID/SID identities pass fresh terminal checks. Root journals are retained; maximum poll call gaps were19.082s (45) and20.125s (46), not a claim of uninterrupted5s polling. No browser/test jobs remain owned by root.
+
+Root receipts under `/mnt/p6/build/headed-jit-root-oct05/`:
+- `main-run45-terminal-summary.json`, `main-run45-broad-subset-review.json`, `main-run45-tool-polls.json`.
+- `main-run46-terminal-summary.json`, `main-run46-tool-polls.json`, `audit-run46-early-terminal.py`.
+- `scope-readiness-owner-root-closure-oct06.json`, `focus-owner-root-closure-oct06.json`.
+Some terminal receipts are root-owned; use a bounded read with sudo if needed, without changing ownership.
+
+## Diagnosis and preserved failures
+
+Run44's retained session proves the primary failure was incremental scope `Error: requires initially inactive GC`, after all50 broad rows/1113 observer events and gc-debug-coverage passed. Missing later scope files caused the old unconditional capture path to mask that failure as retention cap/path. Run44 session/error bytes and failed/frozen evidence are preserved. The new capture/readiness code was not runtime validated by45/46.
+
+Independent run45 diagnosis: `/mnt/p6/build/jit-cycle-two-acquisition-diagnosis-oct06/diagnosis-receipt.json`, SHA256 `0309b7f67728bd5e19e120970ca511117a94e6cdc764c260ac518f44923fbfed`. It establishes misplaced typing from actual screenshots and the exact failed expression. Why the helper missed readiness and why the renderer/storage evaluation later stalled remain Unknown. Run46 confirms an earlier log-evaluation stall, not an NSS/JIT/GC library failure.
+
+Host preparation mistakes are retained: stage controls1 expected a list instead of the actual named-clock dictionary; controls2 exited137 under a CPU30 bound. Controls3 passed with CPU90/script wall110/outer115 bounds; these are host check limits only. The exact cause of controls2's SIGKILL was not independently retained; do not treat the limit explanation as measured CPU usage. Runtime clocks stayed150/30/170/10.
+
+A source sealing job's tool handle98951 could not be polled from root (`Unknown process id`). The original agent retained ownership and actually reaped it exit0 in a narrow cleanup continuation after its five work batches; do not claim root reaped an inaccessible handle. Other implementation handle75907 was actually reaped by its owner. No invented agent/test results. Astra was not used for implementation/testing; previous Astra advice only remains historical.
+
+Old seals remain at owner `t/readiness-capture-parent-78ab3d63/seal.json` and `t/final-focus-parent-3f7fbdfc/seal.json`. Failed run43 remains safely relocated on p3 with the original symlink. Do not delete failed evidence or mutate test inputs in flight.
+
+## Next agent, only after user resumes
+
+Investigate the acquisition/renderer/host storage stalls before another expensive headed cycle. Start from exact request195 startup-log polling and2030 receipt-read expressions, owned CDP timeout handling, and fresh finite diagnostic state collection. Do not infer causality from a timeout alone or merely lengthen deadlines. Then test the prepared focus and GC readiness changes through the unchanged original50 broad cases,4 privileged scopes,11 interrupt recoveries and same native binary. Ordinary startup, disabled JIT, mutation/native guards, NSS/TLS and performance remain separate required gates.
+
+Native binary remains SHA256 `815b3813d1ce3b7706973f93df2d2f147962d673bd0d3e35903919963e0c090b`; no Firefox rebuild or optimizer change occurred. Deferred diagnostic package remains Git20015f13e with archive SHA256 `deaabb89055fdf0ed4919fab644dee0cc354f1fc5824f64aabbe82e9ea38cae0`. Do not ship this diagnostic init as ordinary production acceptance.
+
+Earlier restart fix runtime evidence and Bing rendering remain preserved; certificate/TLS authentication is still pending. No additional Sites publication was attempted in these two cycles. Public Sites remainsv10 at https://linuxonweb.exact-coot-7512.chatgpt.site; retry23 upload failure and original rollback are retained. Dev still serves the previously reviewed testing package at http://localhost:3000/linux/index.html?firefox=1 with manual Update choice. Home/settings/clipboard/layout, old8001, user Chrome/Xorg, proxies and cloudflared are preserved. General/Firefox GPU acceptance remains pending.
+
+---
+
+# Continuation handoff
+
+## Historical pause, revoked by the user
+
+The user explicitly said: **“ok pause goal now, and write document continue.md
+to summary for next agent continue work.”** The active goal `make jit works as
+goal, then gpu` has been set to **paused**. The user resumed on2026-10-05 and authorized headed JIT tests and a current
+testing Sites publication. This earlier pause is historical; work is active. The user later
+authorized disk cleanup separately. Current resumed instructions govern JIT/GPU work.
+
+This handoff reflects the worktree and actual terminal receipts on 2026-10-05
+UTC (2026-10-04 local time). Its original task handles were terminal. Subsequent
+work and any live ownership are recorded in AGENTS.md and diary.md; this historical
+handoff cannot establish current process state. Keep the requested existing
+preview and proxy services running. No new Sites version has been deployed.
+
+## User requirements and working rules
+
+Read `AGENTS.md` first; its current instructions replace historical versions.
+The goal order is current Firefox Nightly startup and real JIT acceptance,
+first deployment to the existing ChatGPT Site, general Linux GPU support,
+Firefox GPU acceptance, then another deployment.
+
+- Use musl, release builds without debug information and the original optimizer.
+- Use fresh subagents with the same inherited model and thinking level,
+  `fork_turns: "none"`, necessary context only. Delegate most commands,
+  implementation, tests and deployment; keep fewer than three task agents active.
+- Use persistent disk under `/mnt/p6/build/<task>`, short task-owned scratch,
+  and explicit finite resource/deadline limits. Never put builds/profiles/caches
+  in `/tmp`, `/dev/shm` or tmpfs. `/tmp` is a 4 GB tmpfs.
+- Match actual effective host quota, outer browser, guest and inner Firefox CPU
+  counts for each runtime. Recent admitted count was six; remeasure.
+- Only the owner polls/reaps its handles. Check exact PID/start ticks and owned
+  groups before cleanup. An observation timeout alone is not a stopped job.
+- Preserve home, clipboard, settings, layout, current sources and live services.
+  Keep failed evidence and distinguish static checks, mocks and actual runtime.
+- Write important progress, mistakes and experience in ignored `diary.md`.
+  Keep `AGENTS.md` at most1,000 lines under the current user rule. No unrelated staging or commits were done.
+
+The user separately authorized unused-build cleanup, including `~/project`,
+and then explicitly required preserving Firefox and JIT build outputs. All such
+compiled outputs were kept; confirmed disposable cache cleanup is complete.
+
+## Current outcome
+
+**Firefox Nightly 159.0a1 launches. Full JIT acceptance remains unproven.**
+
+| Area | Actual status |
+|---|---|
+| Static native package, ABI/loader/raw Wasm validation | Passed for the current package |
+| Ordinary cold/warm startup | Passed; home/downloads and warm caching preserved |
+| Original broad enabled JIT | Passed all 50 checks and four privileged scopes; no diagnostic worker attachment |
+| Original disabled mutation | Passed 75 cases / 8,408 assertions |
+| Original enabled mutation | Semantics passed; original native-proof checker failed four guard families |
+| Supplemental native guards | Four diagnostic native supplements and disabled control passed; ordinary candidate acceptance pending |
+| Native NSS/TLS | No authentication cases verified by the current TLS harness |
+| Original performance / v10 comparison | Not run for final acceptance |
+| General GPU | Standalone Vulkan-to-Rust-wgpu benchmark passed earlier; shared production implementation pending |
+| Firefox GPU / Sites releases | Pending; public Site still v10 |
+
+Earlier intermittent broad-JIT stalls remain unexplained. Do not convert one
+passing broad run or mutation semantics into full JIT/release acceptance.
+
+## Current build and package
+
+Use these shorthand roots:
+
+```text
+J = /mnt/p6/build/firefox-nightly-musl-jit-full-20261002
+N = /mnt/p6/build/firefox-atomic-observer-package-20261004
+L = /mnt/p6/build/firefox-atomic-observer-tls-20261004
+S = /mnt/p6/build/fst1
+```
+
+Nightly version `159.0a1`, application BuildID `20261004075010`, source revision
+`dfc77f7a6d716f1a20a2576597638d4fc21cd916`.
+
+| Artifact | Bytes | SHA256 |
+|---|---:|---|
+| J raw Firefox | 176528080 | `bcbefe4f89cfebd9a9267987cb347e4cd46824bb337bf0a3a6bda7557d8c456a` |
+| N/transform/firefox.fpcast.wasm | 190150217 | `815b3813d1ce3b7706973f93df2d2f147962d673bd0d3e35903919963e0c090b` |
+| Native Rust archive | 204613232 | `3fd149d128aa9d6bc7e20e0e77a423ad9a55bc97e012a0b740b1b2d1906a6621` |
+| N/package/candidate-full-jit-run1/initramfs-firefox.cpio.gz | 287920612 | `02882f6ff57a00495c9117ed732f9aa249d404aaf7bf4694792ce55b964cc653` |
+| N/overlay/candidate-full-jit-run1/initramfs-firefox.cpio.gz | 282570462 | `013635ec1bb3b7600109bae07aa30769f71176af6ed651d8969ce9d748451ccb` |
+| N/overlay/broad-autoconfig-run1/initramfs-firefox.cpio.gz | 282571352 | `8ba52b2d3c953c5a3a0405c9ea1b4a255765e8c7931308503e651af382f2fd6f` |
+
+The ordinary overlay and diagnostic AutoConfig overlay are different. Tests
+requiring AutoConfig use diagnostic `8ba52...`; do not replace it with ordinary
+`013635...`. Earlier independent streaming compared them: only `init` changed
+and two AutoConfig files were added; other encoded records/order/tail and native
+Firefox remained identical. Neither diagnostic preparation nor static package
+checks establish runtime acceptance.
+
+Selected J source `js/src/vm/PblJit.cpp` SHA256:
+`4222b9069e561d18a0e037f2747275d9131cc05fa89419fcba84ac21231ff583`.
+
+Frozen test UI:
+`/mnt/p6/project/build/nightly-full-jit-startup-20261004/frozen-four-web-assets-20261004/`.
+Do not mutate in-flight or frozen inputs. Production UI edits require their own
+explicit frozen bindings before release.
+
+## Actual JIT evidence and latest failure
+
+Accepted broad run:
+`/mnt/p6/build/fji1/enabled-stall-late-diagnostic-run1/`.
+Owner handle `9124` reaped zero, 133.835 seconds. Native install/infinite-loop
+interrupt/recovery evidence joined the same function/thread/TLS/epoch. All 50
+original checks and four privileged scopes passed; diagnostic attachment/pause
+counts were zero. Root actual review SHA:
+`8019cd4683c81c8dac28598eddf21fcd73d24668c69fd55485e5ca5b7b1d62fe`.
+
+Original mutation evidence is under `/mnt/p6/build/fjm1/`, with frozen originals
+under `/mnt/p6/build/current-nightly-mutation-launch-20261004/`. Preserve the
+original HTML, 75 cases, 8,408 assertions and the original enabled-checker failure.
+Missing native families: dense-index, property-read, property-write, math-callee.
+
+The supplemental guard preparation is `/mnt/p6/build/jgp2/`. Its receipt SHA:
+`f7d0a93330f23a04c31210feaf7cb5bf71e52e270eaeb80ce3ac1f1f73de206b`.
+It preserves whole original case bodies, assertions, sites and strict native
+install → post-prime Normal → mutation → same-install fallback identity joins.
+Twelve verified ordinary calls replace two; the actual threshold stays ten.
+
+Why this mattered: `Jit.cpp` increments warmup once per function entry.
+`PortableBaselineInterpret.cpp` requires warmup greater than ten. Loop iterations
+do not substitute for entries when baseline interpreter is disabled. Earlier
+`jgs1` had six total entries, passed four semantic assertions, and emitted zero
+native observations. This was a test warmup error, not guard acceptance.
+
+`jgs2` failed after 45.169 seconds because the supervisor treated disappearing
+files in its exact owned `TASK/shared-cache` as a disk error, forcing cleanup.
+Root reviewed a two-line correction adding that cache to the existing narrow
+ENOENT handling. Fifteen containment controls passed; outside paths, symlink
+escapes, identity changes and non-ENOENT errors remain fatal. Limits, accounting
+and the three `du` attempts were unchanged.
+
+The exact corrected supervisor SHA is:
+`263d09009e75ff4ec1b7f4b6350cd514990f87785f87a760e8c5e47c55b1b545`.
+Patch: `/mnt/p6/build/jgs2/shared-cache-supervisor.patch`.
+
+Latest actual retry was `/mnt/p6/build/jgs3/enabled-array-out-of-bounds-run1/`.
+Handle `76840` reaped one; total supervisor elapsed 163.06 seconds. The original
+150-second producer deadline expired waiting for `NJS_RUNNER_DONE`.
+
+- No disk-cache ENOENT recurrence, no supervisor stop reason, no forced cleanup.
+- Host/browser/guest cold CPU equality passed at six; Firefox New Tab appeared.
+- Native options showed PBL enabled and threshold ten, but zero native JIT events,
+  zero workload markers and no semantic/guard result.
+- Host PGIDs `3644100` / `3644104` physically empty; PIDs `3644102`, `3644104`,
+  `3644304` absent. Browser exited zero and server closed naturally.
+- Guest natural exit is **Unknown**; host cleanup does not prove it.
+- The other four predetermined arms were not launched. No retry is live.
+
+Terminal receipt SHA, independently rehashed by root:
+`ffea1f09508c02b692de041bd961a6edcf36867d6962a084236e0b6189e65837`.
+
+Read-only comparison found identical cfg, selector, parent/guest entries, actor,
+active label, served manifest and archive between working semantic `jgs1` and
+failed `jgs3`. The first START marker follows observer delivery, awaited IOUtils
+active-label read and resource-handler setup. Its absence cannot distinguish
+which earlier stage stalled. Do not blame twelve-call priming without invocation
+evidence or rerun unchanged blindly; instrument/localize that startup chain.
+
+Original guard limits remain 150 s outer, 30 s scope, 170 s supervisor, 10 s natural
+cleanup, RSS 12 GiB, task disk 4 GiB, disk reserve 20 GiB, host available floor
+4 GiB, AS 2 TiB, core zero, OOM score 1000, logs 2 MiB, observations 4096.
+The five-arm order is enabled OOB, shape, accessor, math, disabled control, fresh
+process/profile per arm. Stop on first failure. CacheStorage is per profile;
+retain aggregate planning without double-counting prior profile use.
+
+## Ordinary startup and TLS harness
+
+Ordinary cold/warm passed at `S/cold-warm-mmap-run1/`, owner `74380`, 136.998 s.
+Cold 17.285 s / warm 16.352 s startup observations, CPU six, home/downloads
+preserved and warm boot image transfers zero. These are not performance results.
+
+TLS run2 timed out waiting for results after unverified Browser Console keyboard
+injection. UI and entry generation passed, but execution was unknown; zero
+authentication cases. Do not repeat the earlier mistaken claim that UI/entry
+generation failed or that NSS itself failed.
+
+Test-only TLS AutoConfig repair was adopted into `L/tls-adapter/`. Its run3,
+`S/tls-cold-warm-autoconfig-run3/`, failed the original 420000 ms parent-readiness
+gate after 447.865 s total. Firefox GPU-check UI appeared, but no AutoConfig
+READY/error/import/entry or TLS case proof. Warm did not run.
+
+Handle `53043` reaped one; natural cleanup, fixture/browser exit zero, server
+closed, no signals; PGIDs `3561586` / `3561676` and exact owned PIDs empty/absent.
+Full receipt `S/tls-cold-warm-autoconfig-run3-owner-terminal-handoff.json` SHA:
+`84ffa7677f5feab7905a252c28bfe5c517302aa64f715edfb928c36b4957359a`.
+All 161 admitted inputs, native/trust archives and 51 compiled-source pins were
+reverified unchanged. Authentication cases verified: **zero**.
+
+A narrow **unadopted** file-handshake candidate is ready at:
+`/mnt/p6/build/tls-dump-diagnosis-20261005/`.
+
+- `preparation.json` SHA `f13f1176fd6f8fcabfe76e837e6a76674c58c04398f76ade29df0878ccd3ac6f`.
+- `candidate/run-guest.mjs` SHA `5d8f0a3fdbf0a71653d5c46e3dd5d72ae123fe27cbea446a2949e321ecf790ed`.
+- `candidate/autoconfig-readiness.mjs` SHA `c499dfb4c99faa90f2ec4171ff2256982794ad6692580809f58f782c88edc9e9`.
+- `candidate/njs-autoconfig.cfg` SHA `94b2cea9a0c57e357af1d184842d6e3404a4923d9c790f30b98668dac5c302ee`.
+
+Root read the exact diff but did **not** adopt it. It polls actual ready/error
+files, validates version/buildID/parent/profile/PID, consumes accepted readiness,
+rejects stale warm evidence and ties import acknowledgement to that PID. It keeps
+existing UI requirements, nonce/security checks and all deadlines. The cfg adds
+stage markers and prevents a second identity exception from masking the original
+failure. Sixteen readiness and five catch controls plus syntax passed offline.
+
+Do not call the cause proven: compiled dump default is true and stdout is flushed.
+The accepted broad harness redirects stdout, explaining missing guest-log START;
+that does not prove a TLS channel mismatch. Run3 config execution and existence
+of its readiness file remain unknown. Direct-file polling improves observability
+but may not fix the underlying initialization stall.
+
+TLS original bounds: 1800 s session/fixture lifetime, 1820 s supervisor, RSS
+12 GiB, task 4 GiB, reserve 20 GiB, available floor 4 GiB, AS 2 TiB, core zero.
+Keep short scratch `S/t`; long old scratch paths exceeded Unix socket limits.
+Fixtures/private keys remain task-only; never ship them. Release seeds are CA-only.
+Broader NSS/trust/update/missing-database/persistence gates remain pending.
+
+## Completed cleanup; Firefox/JIT outputs preserved
+
+At the original pause no deletion had occurred. The user subsequently authorized
+cleanup only, added `~/project`, and explicitly said to keep Firefox and JIT build
+outputs. That historical pause was revoked; the JIT/GPU goal is active.
+
+`/home/a/project` is a symlink to `/mnt/p6/project`; do not count the aliases twice.
+Cleanup task: `/mnt/p6/build/project-build-cleanup-20261005/`.
+
+A prior-owner receipt records removal of 5896 disposable Chromium HTTP/GPU/Dawn
+cache directories, 2994753536 allocated bytes. The fresh owner independently
+confirmed all leaves absent and parent profiles retained; it did not repeat or
+claim ownership of those deletions. `deletion-receipt.json` SHA:
+`43e1b6a8901bb66f15205eb33bc2bfab3b887a8b626361a04f24be9a50dc4ab1`.
+The old inspection inventory hash became stale because the deletion script
+refreshed process snapshots before mutation; do not rerun it with stale pins.
+
+The fresh cleanup owner removed another 321 exact unused cache leaves,
+273276928 allocated bytes, after a privileged 357-PID scan with no omissions,
+active profile/fd/map/argument references or served-route matches.
+**Total: 6217 cache directories / 3268030464 allocated bytes (3.27 GB).**
+Current-owner observed free-space increase was 273022976 bytes; receipt writes
+and concurrent filesystem activity mean this differs slightly from allocated
+bytes. Final available space was approximately 64.0 GB.
+
+Consolidated report: `cleanup-run1/summary.json`, SHA
+`896d9c350dede1e037e8a4e702e5fa81a0e50e03d9d49c6dc3ac51956a207122`.
+Exact additional deleted paths: `cleanup-run1/extra/removed.jsonl`.
+Root independently read and hashed the prior deletion and consolidated receipts;
+privileged receipts may require `sudo -n` for reading.
+
+All Firefox/JIT compiled outputs, object trees, libraries, Wasm modules, packages
+and predecessor artifacts were preserved, along with profile/session/IndexedDB/
+NSS data, source, accepted/failed evidence and live services. No build/test/job
+for JIT/GPU was started. Old Firefox128 16.59 GB object/backups cleanup was
+historical; it was not performed or counted again here.
+
+Remaining usage: `/mnt/p6/build` about 234.77 GB; resolved `~/project` 196.38 GB;
+`/mnt/p6/project/build` 51.54 GB. `linux/.cache` is about 89.30 GB, predominantly
+protected compiler/package staging (GTK/X11 28.48 GB, libc++ ABI 7.85 GB and
+Firefox repack/verification trees). `linux/.tmp-firefox-build` about 24.90 GB was
+also retained. Do not delete these by age or directory name.
+
+Two old runtime-graphics Service Worker CacheStorage leaves total 318062592
+allocated bytes. Stored cache purpose/future semantic dependencies were not
+verified; they were left intact. No broad browser storage/profile deletion was
+done. Future cleanup must honor the latest preserve-Firefox/JIT instruction and
+freshly revalidate active processes, served routes and dependencies.
+
+## Services, release and GPU continuation
+
+Keep requested dev URL:
+`http://localhost:3000/linux/index.html?firefox=1`.
+Persistent task `/mnt/p6/project/build/nightly159-dev-preview-run60-20261005/`,
+Node PID `4150944`, supervisor group `4150936`. It serves the current ordinary
+Nightly159 candidate, honestly labelled testing; preserve in-page update choice.
+
+Also preserve old port8001 Node `1095196` / supervisor `1095195`, proxies `705`
+and `706`, and cloudflared `1183764`. Old preview may still need served128 assets;
+do not confuse unused128 compiler objects with actively served package files.
+
+Public Site remains `https://linuxonweb.exact-coot-7512.chatgpt.site` at v10.
+Project `appgprj_6ab78cc88a948191a1abaabd04b81fe0`, deployment
+`appgdep_6abf9e40b8248191ad11721dd367e7a2`, rollback version
+`appgver_d95d358ac7f081918db3fa181f4387ba`.
+Sites hosting skill was already applied; reread relevant instructions when
+actually deploying. On October5 the user explicitly requested the current
+testing version now, overriding the prior acceptance ordering for this trial.
+The ordinary c0eaffe startup-tab archive and current UI are pinned in
+`/mnt/p6/build/sites-testing-release-oct05/`. All10 Worker/asset/graph and3actual
+Miniflare checks pass, covering175routes. Bundled workflow pushed source
+`014359df8ab2858eec0a57c55c65da3cd4546c99` and packaged344705772bytes.
+Nine native save-version archive uploads timed out after300000–300002ms each. No saved
+version or deployment was created; fresh native get_site and version history
+still confirm publicv10. Reconciliation: publication-state-reconciliation.json.
+Latest retry receipt: publication-retry9.json; version history still confirms no matching version.
+Read publication-result.json and publication-retry9.json before retrying; reuse this verified package and
+clean isolated checkout, preserve v10 rollback. Archive upload limits/cause are
+Unknown. Accepted JIT and GPU releases remain separate pending work.
+
+Original performance preparation:
+`/mnt/p6/build/firefox-atomic-observer-benchmark-20261004/`.
+All eight original workloads, same-binary ABBAAB arms, original repetitions,
+warmups/samples/deadlines and independent v10 comparison are still required.
+Primary performance uses diagnostics off; no actual benchmark arms ran.
+See `tools/nightly-jit-safety/GUEST-GATES.md` for independent mandatory gates.
+
+GPU direction is deliberately general, not Firefox-specific. Read
+`docs/general-linux-gpu-plan.md`: Vulkan apps → shared guest loader/ICD →
+machine-owned host Rust wgpu; OpenGL/GLES apps → Mesa EGL/Zink → same ICD/service.
+Keep client ownership, resources, capabilities, surface lifetime and cleanup
+independent of Firefox. Prefer WebGPU, genuine Rust WebGL fallback only for
+implemented supported capabilities. Validate standalone and concurrent clients,
+then Firefox WebRender/WebGL/WebGPU. Force-enable development preferences only
+with honest actual capability/results; preferences alone do not prove acceleration.
+
+Earlier actual native Vulkan clear/triangle benchmark passed independent pixels
+through genuine Rust wgpu: 44.0682 hardware versus 1.22176 SwiftShader completed
+readback frames/s, 36.0693×. This is not presentation FPS or Firefox acceptance.
+RustGl fallback correctness passed without matched acceleration comparison.
+Compute 4.017× is separate. OpenGL/WSI/concurrent apps/native Firefox HAL and
+Firefox GPU acceptance are pending. No GPU code/build/runtime was changed here.
+
+## First actions after an explicit resume
+
+1. Read this file, `AGENTS.md`, the worktree and actual terminal receipts. Check
+   current agent tree, exact processes, resources and services before launching.
+2. Read the completed cleanup receipts before any further storage work. Keep all
+   Firefox/JIT outputs and uncertain intermediates; never repeat absent deletions.
+3. Localize AutoConfig startup before the first marker in the guard harness;
+   preserve original suite and deadlines. Review/adopt or improve the TLS file
+   handshake candidate with fresh exact bindings. Do not blindly repeat failures.
+4. Serialize actual browser runs. Reattempt the original five guard arms only
+   after a concrete repair and fresh admission; stop on actual failure.
+5. Complete remaining actual NSS/update/performance/v10 gates, then deploy JIT
+   through Sites with rollback. Keep acceptance distinctions honest.
+6. Implement shared general Vulkan/OpenGL support, validate independent and
+   concurrent clients and matched acceleration, then Firefox GPU and redeploy.
+
+The historical pause was revoked by the user's resume. The goal is active;
+prepared repairs are unaccepted until actual runtime evidence passes its gates.
+
+## Current ordinary Console owner runs9–10
+
+Both root-owned handles are reaped, with normal browser exit0, no runner cleanup
+signals, three adopted zombies reaped per run, both groups empty and display
+endpoints gone. Actual launch CPU count was6, separately from preflight8.
+Run9 verified the Console sentinel/bootstrap and independent parent relationships,
+but visual waits consumed the original150s deadline before suite release. Run10
+showed the sentinel in the address bar and later empty focused Console input;
+root rejected Enter. No broad suite accepted in either run.
+
+Terminal review: `/mnt/p6/build/headed-jit-root-oct05/main-runs9-10-terminal-review.json`.
+Root-owned source: `/mnt/p6/build/complete-jit-owner-main-oct05/`. Runs12–14 are
+terminal; read main-runs12-14-terminal-review.json. Run13 executed the original
+bootstrap and passed parent joins but its transport global import failed.
+Run14 passed those joins and issued a permit with56.88s left, then its unbound
+Window timer failed. Final owned groups empty/display endpoints gone; run14
+required termination. Source73d0012 uses Gecko Timer.sys.mjs for transport only,
+keeping original bootstrap/run/workloads/deadlines. Run15 root handle62384 is
+now reaped. Original checker independently passes all50 ordinary
+broad/native rows with1137events and6matched CPUs. Actual first privileged scope
+failed its inactive-GC precondition before forceGC; actual GC state and cause
+Unknown, full session unaccepted. Read main-run15-terminal-summary.json and
+main-run15-broad-subset-review.json. Unchanged fresh run16 handle23303 is now
+reaped:50 broad/native rows and gc-debug-coverage/incremental raw subsets pass,
+but original150s expires in slice-gc preparation before interrupt scope. Read
+main-run16-terminal-summary.json and both subset reviews. No root test handle
+remains live. Prepared source56944f3 moves Timer import into the appended callback
+to shorten keyboard typing; original bootstrap/run/workloads/deadlines unchanged,
+new transport runtime acceptance pending. Preserved clean
+runs7/8/9/10/12/13 have symlink paths and receipts under ordinary-console-history-oct05.
+Recheck seals, admission, CPU and4GiB task bound for each launch. Full ordinary
+JIT/TLS/performance remain pending; FJI27 diagnostic pass is a distinct gate.
+
+## Latest acquisition evidence: headed runs23–24
+
+Both runs are terminal/reaped with owned groups absent. Run23 image review took
+75.76s, leaving3.67s at permit; no broad rows completed. Run24 tested the same
+Firefox binary with test-only native `--jsconsole` startup. Independent streaming
+archive verification checked12909 encoded records and found only init's added
+argument; ordinary release init/profile were preserved. Actual focused built-in
+Console, full harmless nonce, original bootstrap and parent/FD joins passed.
+The unchanged broad checker verified28/50 rows and650 native observer events,
+but image review consumed80.17s and permit left14.69s. Original supervisor
+deadline expired; full session/capture and JIT acceptance remain false.
+
+Read `/mnt/p6/build/headed-jit-root-oct05/main-run24-terminal-summary.json` and
+`main-run24-broad-subset-review.json` with `sudo -n` where needed. Root source
+at run24 was ea128a589c949d6cf6c3f594bff4e33d16482147,50-pin seal974eff64053ca6c372baa9b2f8239def6b60b097a0d6b990f91dc6273d59142e.
+Package and independent parity evidence: `/mnt/p6/build/jsconsole-startup-oct05/`.
+Runs22–24 are preserved via same-filesystem relocation receipts and original
+path symlinks. No test handle from those runs remains live. The next repair is
+startup-mode pacing plus prompt actual image review; preserve both visual gates
+and original workloads/deadlines. This remains current-binary test acquisition,
+separate from ordinary unmodified startup and full JIT/TLS/performance acceptance.
+
+## Latest terminal runs25–27 and prepared physical focus repair
+
+Source ed4d4f4 changed only initial pacing to20s for native startup Console,
+retaining10s ordinary pacing and both image gates.53 offline window controls
+passed. Run25 mistakenly used sudo for the whole browser owner; Chromium
+refused root without --no-sandbox, before guest startup. Run26 used user a but
+its disk walk encountered root-owned run25 and stopped before browser launch.
+Both owned handles are reaped and exact groups/endpoints absent. Root preserved
+and relocated run25, retaining its original-path symlink and all bytes/identities.
+Never run the browser owner as root or disable its sandbox to mask this mistake.
+
+Run27 root handle73034, continuouspoll cell1952, is terminal/reaped exit1.
+Its first actual image at53.229s showed mapped Firefox and Parent-only Console;
+input caret/focus was not established. Root rejected it and a second image.
+Actual review waits24.223/49.438s included root's unnecessary analysis; the
+attempted third rejection was refused after terminal. Original150s expired
+before nonce typing/Enter/suite entry. No broad rows or native JIT events;
+six actual host/browser/guest CPUs match. Browser exited0, server closed,
+owned groups physically absent/display758 gone; all nine preview/proxy service
+identities preserved. Original-parser/source audit:
+`/mnt/p6/build/headed-jit-root-oct05/main-run27-terminal-summary.json`.
+No engine JIT or NSS failure follows from this acquisition failure.
+
+New source64647e164f6205726cb478c153e866d70dded084,50-pin seal
+11e63cf641693fb0a71007e673b7c0a2aea98e34237bfbc86be37e633eaef473,
+may physically click visible Console input coordinates explicitly selected by
+the actual image reviewer, bound to the nonce/image SHA. Coordinates are bounded
+integers in the1440x1100 outer viewport. This permits focus acquisition after
+mapped-window review; a click/CDP reply proves no guest focus. The second actual
+image must still show the full harmless nonce in that focused input before any
+code Enter. Original workloads,150/30/170/10 clocks and native PID/FD/permit/
+terminal joins are unchanged.83 window and8 startup identity negative controls
+pass,202 original pins/67 routes/66 files verified, all50 source pins independently
+rehash successfully. `/mnt/p6/build/console-focus-repair-oct05/offline-review.json`
+is preparation only; no runtime of this repair is admitted or running.
+
+Next helpers prepare-main-run28.py / launch-main-run28.py / watch-run28-image.py /
+respond-run28-image.py under headed-jit-root-oct05 target display759 and repaired
+source. They have no new admission/inventory; regenerate both immediately before
+launch. Root owns and continuously polls browser handle. Fresh same-model image
+review agent, or reuse, hit platform thread limits this turn; try fresh delegation
+on the next goal turn, preserving actual vision-only review. For first mapped
+Console image, review may approve a visible input point with focus=false rather
+than falsely claiming a caret. Root helper accepts optional x/y after observation
+only for startup-mode first-window review. Sentinel review remains unchanged.
+No docs/planning between request, actual view and response. Preserve failed
+evidence; runs25/27 safely relocated, task allocated3282288640bytes afterward.
+No root test handle remains live.
+
+
+## Current testing Sites publication attempt10
+
+User again authorized trying the current version on the existing ChatGPT Sites project. Root applied sites:sites-hosting, preserved public audience, testing labels and v10 rollback. Fresh same-model read-only reviewer was rejected by the platform agent thread limit; root completed necessary checks. Existing workflow output/source HEAD014359df8ab2858eec0a57c55c65da3cd4546c99 remained clean, all157 recorded source inputs matched, archive344705772bytes SHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf unchanged. Reused prior successful checks/build/archive. Native save_site_version attempt10 was terminal after300001ms: upload to sdmntprcentralus.oaiusercontent.com timed out, Azure requeste79b71a6-891c-4e8d-b68e-3a7411503399. No saved version returned; no deployment called. Fresh native get_site and complete version history confirm active publicv10 and no matching testing source version. Rollback and live URL https://linuxonweb.exact-coot-7512.chatgpt.site unchanged. Cause Unknown; no runtime acceptance inferred. Receipts /mnt/p6/build/sites-testing-release-oct05/publication-retry10-preflight.json and publication-retry10.json. Native call cell2082 is terminal. No browser/server jobs were launched or cleaned; existing preview/proxy services preserved. Do not repeat uploads without a fresh request or evidence that the upload service changed.
+
+
+## Headed runs28–32, physical input repair, and ACK publication preparation
+
+Root independently audited original checker/raw stderr and sealed sources for terminal runs28–32; receipts are /mnt/p6/build/headed-jit-root-oct05/main-runN-terminal-summary.json and main-runN-broad-subset-review.json. All handles are reaped, exact owned groups absent/endpoints gone and nine protected service identities preserved. Actual host/browser/guest CPU equality6 passed each run. Original150/30/170/10 clocks/workloads/native FD/PID joins unchanged, no extra threaded CPU cap. Scope is test-only native --jsconsole, not unchanged ordinary startup acceptance.
+
+Run28 (64647e1) passed nonce on second image, parent join and permit with15.056s left,29/50 original broad rows/702 native observer events before original deadline. Root incorrectly watched window-2 rather than sentinel-2 after rejected nonce, consuming time. Run29 selected a visible input point but actual owned CDP rejected mouse through keyboard-only allowlist: no nonce/code/suite,0 rows/events. Repair b872269348bc5e43bea99b74e44326b2f8310b63/seal03afb21569d71854733529673884b7e48aba31759be682bd53feeab520094aea added exact bounded move/left press/release validator; mocks now use the real validator.101 controls passed. Run30 verified actual physical click/full nonce, parent join/permit34.810s remaining,37/50 original broad rows/1070 native events before deadline. Full session unaccepted.
+
+First nonce pacing10s prepared in8738d2e, but fixture failed because custom review callback did not increment its counter. Root accidentally committed source before checking failure; no runtime admitted that commit. Corrected fixture/seal committed a3bbd3979d26d35401d90dd863467e8a6d18b3af, seal594d4e430414076a22d47311336de26a89b5cef12a7bb7d8ce06e07ed18cdaef;105 controls passed. Run31 clicked initial prompt458; later actual prompt moved503 and nonce absent. CtrlA selected Console page text; no code/permit/suite,0 rows/events. Layout movement is observed; exact routing cause inferred. Root's first rejected image incorrectly reported focused=true from autocomplete; second actual image disproved routing and was rejected. Fresh image refocus prepared38d4f0045d8021c87ccfadb6409bc1a971f36858/seal2f842d5731717811783fe355124daf2fe0da360009710462e0ed100c139391f5 with127 controls. No code Enter without later exact whole nonce/focus proof.
+
+Run32 selected lower visible input330,515 and passed its first actual nonce image; recovery branch was not exercised. Loader submitted, but at107.298s JSON parse invalid fji12-console-entry-ack-v1 before parent review/permit. Root prematurely said original suite was executing after nonce approval; this was wrong. Audit proves0/50 rows/0 native events. Failed ACK bytes were not retained, exact cause Unknown. Local current source xpcom/ioutils/IOUtils.cpp WriteSync opens PR_CREATE_FILE|PR_EXCL before writing, and coordinator uses create with no tmpPath. A zero-byte publication window is possible. JavaScript empty Buffer is truthy and old gate parsed it prematurely. Root prepared narrow nonempty readiness with original deadline and bounded16 changed raw receipt-pair captures; malformed nonempty JSON/kinds/joins still fail. Capture failure/excess changes block permit.13 new synthetic publication controls plus127 focus controls passed; syntax and all51 sealed source pins independently pass. Commit c57900ae3c453fc1282e0fa34b23b4311ac645f9, seal08819e4848c19d06faec8330b0a871a006ba063f7a8a4af5a70083296180b4b2. Evidence /mnt/p6/build/console-focus-cdp-repair-oct05/. This is preparation until fresh runtime, not JIT acceptance or proof of run32's byte state.
+
+Runs28/29/30/31/32 safely moved to ordinary-console-history-oct05 with exact original path symlinks, all hashes/dev/ino/mode/mtime unchanged, same ext4 filesystem, groups/endpoints absent at moves and no deletion.32 receipt989 entries, manifestSHAd8461e392261f2e8d50deb4d36848ad724de5837f47196f65c75d8eecbd388da, allocated3716980736→3282608128bytes. Existing home/settings/clipboard/dev3000/old8001/proxies/cloudflared preserved. Fresh same-model ACK diagnosis spawn rejected platform agent thread limit; root continued. No Astra execution delegated.
+
+
+## Run33 terminal evidence and delegated-review timing continuation
+
+Actual root-owned run33 handle67991/cell2105 is terminal/reaped1. Source c57900ae3c453fc1282e0fa34b23b4311ac645f9/seal08819e4848c19d06faec8330b0a871a006ba063f7a8a4af5a70083296180b4b2, all51 sealed pins independently verified. Actual window image approved visible lower input330,515; nonce first image full text/end caret/eager preview approved. Actual reviews19.223+9.662=28.885s. Retained ACK299bytes and probe3263bytes parsed strictly; independent parent/native review and permit left49983.075ms. No empty receipt was observed, so run32 cause remains Unknown. Original checker independently passes all50 broad/native rows,1143 native observer events and raw gc-debug-coverage/incremental subsets. Slice-GC starts identity only then original150s expires; interrupt identity absent. Full session unaccepted. CDP evaluate request1448 timeout, producer160.090s with no complete capture; original supervisor deadline forced remaining owned cleanup. Independent exact groups/endpoints absent, protected nine services same identity, actual host/browser/guest6 matched, maximum rootpoll gap10006ms. Original checks/150/30/170/10 clocks unchanged. main-run33 terminal/broad/privileged reviews under headed-jit-root-oct05.
+
+Safe run33 relocation1107entries hashes/dev/ino/mode/mtime identical/ext4 same filesystem/path symlink retained, owned groups gone before move, no deletion. ManifestSHA3d769beffbc64a21673b88b22ce7c43d1699aaabc64afb18bb260827d4365a0b, allocated3747979264→3282616320bytes.
+
+Fresh same-model and Astra-high advice-only spawn both hit platform thread limit. Root listed authoritative tree: previous same-model jit_startup_pacing_run25 was completed and reusable. Followup read-only advice succeeded,3 bounded iterations, source untouched. It measured28.885s actual rootreview cost and advised pre-arming a reviewer rather than changing actual proof or pacing. Root committed c314b4919702617013f3d393996ca34ddc197cb5/seal5f131ea061458e6e368993f67a89256d372ea76c7f17aa30d9d57813e052e81c to explicitly admit truthful reviewer jit-startup-pacing-run25-actual-image-review. Same51 source pins independently verified/syntax passed. Both actual image gates and all nonce/native/clock checks unchanged, no automaticapproval. Reused same-model agent owns only bounded imagewatchers/actual vision/nonce-hash-atomic decisions; root owns fresh run34 normal-user runtime handle66244/cell2122 continuous10s polls. Fresh preflight checked51pins,22.11GiB disk reserve/26.13GiB memory/no omitted privileged inventory/display765. Preparer8CPUs is advisory; actualowner/browser/guest count must be measured inside runtime. Active run34 results pending here. Consolidated preparation/runtime distinction /mnt/p6/build/console-focus-cdp-repair-oct05/offline-review.json.
+
+
+## Run34 terminal handoff and current Sites retry11
+
+Root-owned headed run34 handle66244/cell2122 is terminal/reaped exit1. Source c314b4919702617013f3d393996ca34ddc197cb5,51-pin seal5f131ea061458e6e368993f67a89256d372ea76c7f17aa30d9d57813e052e81c. Independent original checker passes all50 broad/native rows,1149 native observer events and raw gc-debug-coverage/incremental/slice-gc subsets. Interrupt is incomplete; full150s session acceptance remains false. Strict actual image/parent/permit review left49845.900ms. Two actual same-model agent image reviews14.284+14.852=29.136s demonstrated no gain over root run33(28.885s). Retained ready absent then299bytes,probe3263bytes; no empty receipt observed,run32 cause still Unknown. Producer bounded Runtime.evaluate request1470 timed out at150414.533ms; capture incomplete. Browser exited0/serverclosed; exact owned groups/endpoints absent, nine protected identities preserved, host/browser/guest6 matched, all51pins pass,max rootpollgap10006ms. Audits: /mnt/p6/build/headed-jit-root-oct05/main-run34-terminal-summary.json and main-run34-broad-subset-review.json/main-run34-privileged-subset-review.json. Run34 has not yet been relocated; check task bounds and exact owned groups before relocation/new runtime. No root browser runtime remains live.
+
+Fresh same-model/Astra-high spawns were rejected by platform thread limit. Existing same-model jit_startup_pacing_run25 reuse completed actual image reviews and later<=3 read-only source inspections. Existing jit_guard_astra reuse provided advice only; no commands, tools, edits, tests or deployment assigned. Advice suggests measuring passive render/window/input signals to schedule images while preserving actual vision/nonce/native proofs; outer RAF alone cannot prove guest paint/input receipt. Agent found private framebuffer counters but no exposed per-paint/input receipt in inspected ranges; public return tails need inspection before exhaustive absence claim. Source untouched.
+
+Current user explicitly asks to try publishing current version now. Root follows sites:sites-hosting and owns unchanged clean/pushed checkout014359df8ab2858eec0a57c55c65da3cd4546c99. Reused same-model reviewer independently confirms testing labels/falseJIT,NSS,GPU,release acceptance and v10 rollback receipt. Root independently rehashed157source inputs plus packageReview(158total) and unchanged344705772byte archiveSHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf. Fresh native site/history confirms owner/public/active,v10,no matching testing version. Retry11 save_site_version cell2133 currently pending; no deployment claimed. Preflight /mnt/p6/build/sites-testing-release-oct05/publication-retry11-preflight.json. Do not infer runtime acceptance from publishing.
+
+
+## Sites retry11 terminal: current testing publication remains blocked by upload
+
+User-requested retry11 save_site_version cell2133 is terminal/reaped. Native archive upload to sdmntprwestcentralus.oaiusercontent.com failed after300001ms,Azure request0c3df087-70e0-4ef2-bd77-d0b116af4f86; cause Unknown. No saved version returned and no new deployment called. Fresh get_site/complete10-version history confirms public activev10,no matching014359df8ab2858eec0a57c55c65da3cd4546c99 version. Independent get_deployment_status verifies retained v10 deployment appgdep_6abf9e40b8248191ad11721dd367e7a2 succeeded with https://linuxonweb.exact-coot-7512.chatgpt.site. Exact package/archive/157source+1reviewhashes unchanged,testing labels androllback preserved. Existing same-model reviewer completed bounded read-only review. Receipt /mnt/p6/build/sites-testing-release-oct05/publication-retry11.json and publication-retry11-preflight.json. All root upload/runtime tool handles terminal; no new browser/server launched or unrelated process cleaned. Eleven real native uploads have timed out300000–300002ms. No documented supported alternative upload path; do not invent remote-build authorization or omit a locally packagable archive. Await fresh user request or service-change evidence before another identical upload. Broader JIT/TLS/performance/GPU goal remains incomplete; no runtime acceptance claimed.
+
+
+## Latest root continuation: headed run40 and Sites retry16
+
+Current owner is `/mnt/p6/build/complete-jit-owner-main-oct05/`, commit
+`77f724cb083118c1b04202e5267bcc14e63b8c8a`,65-pin seal
+`86b280c52c3a9123def7229aefb5b080ea8fcf08ef19b4d065689fba89822000`.
+Explicit opt-in `nativeBootstrapRequested:true` changes test acquisition only:
+trusted installed bootstrap bytes, fresh nonce-bound actual parent PID/start/FD
+review, then permit. Default actual-image gates remain. New mode retains real
+screenshots but visual approval isfalse and focusUnknown; no fake confirmations.
+135legacy image/13publication/36new protocol/5stage controls pass offline.
+Fresh agents hit thread limit; root owns source review and actual commands.
+
+Run40/display771/root handle19986 is terminal/reaped1, exact groups/endpoints
+absent, all9 protected services preserved, six actual CPUs matched. All50 original
+broad rows and1182 native events pass, three privileged GC scopes pass; interrupt
+completed3 recoveries then expired at original150s. Full original session/JIT,
+TLS/performance/unchanged ordinary startup remain pending. Native--jsconsole is
+still a test startup path. Acquisition64.621s left85.379s at permit. Actual images
+33.694s desktop-only and59.754s partial Console loader do not prove whole input or
+focus. Read main-run40-terminal-summary/broad-subset-review/privileged-subset-review/
+acquisition-timing-review JSONs under `/mnt/p6/build/headed-jit-root-oct05/`.
+No runtime handle is live. Next measure an actual native DevTools responsiveness
+message as a bounded scheduling hint; require genuine native ACK/identity/permit,
+preserve original workloads/deadlines and do not treat the hint as paint/focus.
+
+User-requested Sites retry16 is terminal: archive upload failed at300000ms,
+no saved testing version/new deployment. Fresh native owner/public/active/v10,
+all10version history and succeeded old deployment verified. Unchanged archive
+344705772B SHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf,
+pushed source014359df8ab2858eec0a57c55c65da3cd4546c99,158pins, testing labels and
+rollback retained. Receipt `/mnt/p6/build/sites-testing-release-oct05/publication-retry16.json`.
+Do not repeat identical upload without fresh request or service-change evidence.
+Restart-tab one-CPU actual acceptance and visible Bing repair remain earlier
+scope-specific evidence; current TLS authentication cases are still unverified.
+
+## User-requested Sites publication retry17, 2026-10-06 UTC
+User explicitly asked to try deploying the current version now. Root applied sites:sites-hosting; fresh same-model read-only reviewer spawn rejected by platform thread limit, so root performed necessary verification. Reused successful workflow and clean pushed source014359df8ab2858eec0a57c55c65da3cd4546c99. Actual158 source/review pins and344705772B archive SHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf unchanged; testing labels, Update & restart in-page choice, public audience and v10 rollback preserved. First finite preflight stopped before upload on an unescaped-ampersand text predicate; inspected actual HTML Update &amp; restart and button('update').onclick, corrected check passed. Both owned command handles reaped. Native save_site_version cell2546 terminal: archive upload to sdmntprwestcentralus.oaiusercontent.com timed out300001ms, Azure requeste0cd581a-f816-4484-b157-6dc8c4024b0e; cause Unknown. No saved version returned, no deployment called. Fresh native get_site, all10 versions/cursor null and get_deployment_status confirm public activev10, no matching testing commit, original deployment succeeded at https://linuxonweb.exact-coot-7512.chatgpt.site. Receipts /mnt/p6/build/sites-testing-release-oct05/publication-retry17-preflight.json and publication-retry17.json; original rollback retained. No browser/server jobs launched or unrelated services changed. Full JIT/TLS/GPU acceptance remains pending. Do not repeat an identical upload without fresh user intent or service-change evidence.
+
+## Run41 terminal failure, hint disabled and Console title repair, 2026-10-06 UTC
+Root actual run41 handle17975 and solemonitorcell2561 are terminal/reaped1.29polls,maxgap5171ms. Original150s elapsed at nativeACK missing; no parentreview/permit,0originalbroad/nativeevents and0privilegedidentities. Actual6host/browser/guestCPUequality passes. Browserexit0/serverclosed, owner158.671s, exactownedgroups/endpoints empty and all9protectedservices sameidentities. DisplayownedSIGTERM is recorded; no forcedrunnercleanup. Root audits main-run41-terminal-summary/broad-subset-review/privileged-subset-review/acquisition-timing-review persisted under headed-jit-root-oct05. Actualhint arrived11.970s earlier than20sfallback, but rootvision of46.062s nativebootstrapwindow showeddesktoponly;51.553sinputimage showedmappedFirefoxaddressbar withServices.scriptloader.loadS prefix andnoConsolevisible. ImagesSHAverified and observationsretained diagnostic-only. No nativeacknowledgement or suitepermit, noacceptance. OriginalnativeBootstrapstartupConsoleRequested:true sends noCtrlShiftJ/18sdelay; earlier narrative mistakenly generalized ordinarymodechord tostartupmode, correctedfromactualconsole-gate65–73 source. No inflightinputs changed.
+After terminalaudit, rootdisabledruntimehint andrestoredrunner exactly77f724bytes, commit3c9ae7fa343981e73b0fb3f20d9d3f8000c2afd7/sealbbdd9e4b95ec64e29f3f4c2f8f4e495bcb9be1fc1e6805a6ac03d66f2a9c22f8; previous67seal preservedt/seal-before-disable-native-hint.json. Experimentalhintmodule/controlspreserved andunused. FreshAstraHIGHadvice-onlyspawn again rejectedthreadlimit; noAstraadvice received. Reused same-model bind_scan_owner_oct05 completed5boundedread-onlyreviewbatches actualsource/evidence. Correctedrootcasefilterhypothesis: strstrpredicateonlyretainsdiagnostics; actualviewablewindowsusecase-insensitivematcher already. Actualdefaulttitlematcher rejects exacthistoricalMultiprocess Browser Console/Parent process Browser Console recognized by earlierprojectX11gate; currentguesttitle/timingcause remainsUnknown. Agent new5batchimplementation taskownsisolatedp6helperclone; nooldhelper/package mutation.
+RootupdatedJSreceiptparser torecognizeonlytwoexactadditionalConsole titles; new8syntheticpositive/negativecontrols bringmap47. Sameactual135window13publication36native40disabledhintcontrols pass,5stageproofreadnotrerun becauseowner/stagingsourcesunchanged. Firstboundedofflinejob stoppedbeforeanycommand dueinconsistentTMP/TEMP expansion in shell export; receipt scan-console-title1 preserved. CorrectedexplicitTMPDIR/TMP/TEMP diskpaths job26998reaped0,2.148s10commands, allgroupsreaped, scan-console-title2-receipt.jsonpass. Source252ce3d7496b748ce7c4399e8e39511a7dbebcf7,67seal b409a4e99cf910c52826d91f21c632157e3039bb306bf0eb311da84c5d4a2449,64priorpins unchanged; rootconsole-title-parser-source-review honestlyoffline/rebindpending. Stagebaseline and original150/30/170/10 clocks/workloads/native unchanged.
+Helperfirstnativehosttest failed atmixedcasefixture due14of15charcopy; rootboundedread identifiedactualFiReFoX-NiGhTly vs expectedFiReFoX-NiGhTlY; agentfixedcopy15, originalmatcherwasalreadycorrect, failedbatch4artifacts preservedwithbyteinventory. Hostnative/diagnostic/receipt/scan suites thenpassed. Muslcompile/validation/optimizer stage completed butinspect-fpcast rejectednewownedoutput because inheritedinspectorhardcodesoldp3root/scratch; exactfailedwasm/buildlogs preserved. Agent reached5batchlimit andreturnedownership allhandlesreaped; mainassigned anewboundedfinishtask tosame-model scan_owner_independent_admission_oct06, no executionoverlap. Rootfirstprintedoversizedtestsreport andoutputtruncated; actualfailure diagnosedfromsubsequentboundedJSONsummary, nottruncateddata. Package rebind/native Console receipt/fullruntime remainpending.
+
+## User-requested Sites publication retry18
+
+The user asked to deploy the current version now. An independent same-model reviewer verified the unchanged 344,705,772-byte archive, SHA256 99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf; pushed source 014359df8ab2858eec0a57c55c65da3cd4546c99; all 158 source/review pins; all 123 archive files against checkout dist; testing labels and rollback. Root verified the exact committed worker-graph/platform transformation and augmented provenance. The first root update-handler check inspected index.html and stopped before upload; the corrected check verified the actual storage-panel.mjs click handler, image verification, restart and preserved home.
+
+Native save cell 2597 is terminal: upload to sdmntprwestus.oaiusercontent.com timed out after 300001 ms, request f10c51e0-a2bf-4525-a991-06829b2a30ee. Cause remains Unknown. No saved version or deployment call followed. Fresh Sites metadata, complete 10-version history and original succeeded deployment confirm public version 10 is still live. Receipts: /mnt/p6/build/sites-testing-release-oct05/publication-retry18-preflight.json and publication-retry18.json. Existing live URL and rollback are preserved. Do not repeat identical uploads without fresh user intent or service-change evidence.
+
+## Console title helper sealed and independently reviewed
+
+Implementation owner completed /mnt/p6/build/console-title-repair-oct06 at commit d4ec8a7e5f55432d37c05b159d4a4cee3dc06878. An independent read-only same-model agent verified all 258 canonical pins, 148 alias joins and 409 referenced paths; read 171 passing host checks (54 native, 22 diagnostic, 44 receipt, 51 scan) without rerunning them; verified musl O2/g0, original Binaryen 129, validation and all 563 indirect entries with the 23-i64 ABI. Final Wasm is 881,933 bytes, SHA256 c301624287be0a1963e7339e0ebfc2ea9bd811a4992fb5fab3aa8b318e51b655. Failed evidence and original source pins remain unchanged. Its five bounded review batches included a list-versus-object schema reading error, corrected in the next batch; no build or runtime ran during review.
+
+This permits package rebind preparation only. New package, guest execution, current Console title/focus/native identity and full JIT remain pending. The reviewed testing archive submitted above does not include this newly prepared helper.
+
+## Package rebind preparation and test disk repair, 2026-10-06 UTC
+
+Read the user attachment and latest continuation before continuing. Previous turn made concrete progress: independent helper review completed and Sites retry18 produced terminal failure evidence; current public Sites remains v10.
+
+The new title-helper archive was built at /mnt/p3/codex-build/linuxonweb/console-title-package-oct06/package/. Full 12,910-record comparisons prove only the helper differs from the old selected package, with the native Firefox binary, init and tail unchanged. Thirty selector negatives, eight wrapper controls and four binding controls pass offline. Original automatic O2 and the later fpcast pass are distinct stages; the first selector assumption incorrectly combined them and failed before archive creation. A later independent ABI parser expected the older func[...] syntax; actual objdump emits ref.func:972. A fresh bounded finisher verified all 563 signatures and four rejection controls. Both failures remain preserved. A package README wording correction then invalidated its previous selected pin; the exact old bytes were reconstructed and hash-checked before explicitly refreshing that owned pin.
+
+Current immutable descriptor is 229,958 bytes, SHA256 78ead0f5034b7009e9f55e82ac43a9a5f50d0dd21252ab27212357132da63838. Archive is 283,967,282 bytes, SHA256 5e40d949f9bb40cd375108f99626d0210bba40a595c3bac7fd77fd5d58107ee0. Source commit7155cd16a35ae3aaf58ac7cf566c0daab099cccc initially sealed327 canonical pins. A follow-up closure audit found three nested references absent from that set: two ABI recheck outputs and the prior selected archive. Closure repair is actively owned by /root/title_package_nested_closure_oct06; full package runtime admission is false. /root/owner_title_package_rebind_oct06 is authorized to prepare main owner source/offline staging against the frozen descriptor while preserving exact runner bytes, workloads and deadlines. No run42 browser/guest has launched.
+
+Completed runs40/41 were safely relocated to /mnt/p3/codex-build/linuxonweb/run40-41-history-oct06/, retaining their original paths as exact symlinks. Relocation owner verified 1,858 regular files, 2,166 entries and 927,758,048 logical bytes, including modes, ownership, mtimes, xattrs, symlinks and hardlinks; ten process scans and all nine protected identities passed. Reclaimed 929,222,656 bytes. Root rehashed all29 evidence pins and verified the links and canonical main owner/scratch/runs. Two root schema-reading mistakes (pins versus files; path versus relative name) stopped before mutation and were corrected against actual JSON. /mnt/p6/build/run40-41-relocation-oct06/root-review.json records the successful check. Remeasure free disk before runtime; last root read was23,219,179,520 bytes.
+
+Astra High was successfully consulted for advice only, with no execution assigned. It recommends the repaired allowlist as the next experiment and actual per-phase timestamps. If acquisition still fails, distinguish observer lifetime, actual title/class, display hierarchy, input routing and demonstrated operation/scheduling delay. Advice is recorded in /mnt/p6/build/headed-jit-root-oct05/astra-acquisition-advice-oct06.json. Actual guest title, focus and historical timeout cause remain Unknown. Next complete closure, independently review package and owner seals, then admit a fresh headed run42 with the original150/30/170/10 clocks.
+
+## Package closure and owner rebind completed offline, 2026-10-06 UTC
+
+New package commit 307f626737854975dd34955eeeab73be73ad8764 closes all 330 canonical pins. Independent same-model review rehashed 299 direct pins, 23 metadata files, 2,728 nested references and 450 aliases. Full original/new and old/new archive comparisons preserve the exact two native Firefox members, 190,150,217 bytes with SHA256 815b3813d1ce3b7706973f93df2d2f147962d673bd0d3e35903919963e0c090b. Only the helper differs from the old selected package; original init replacement and helper addition remain explicit. Actual source diff, existing controls and ABI receipts were reviewed, not rerun. Review receipt: /mnt/p6/build/title-package-independent-admission-oct06/review.json, 19,609 bytes, SHA256 235870ff6c20058b03000e1c5618863e905411e170c177b08a1a6180abf9d89c. Tracked source is clean; 20 untracked sealed receipts/logs exist. Reader-schema and export failures are preserved and corrected.
+
+Main owner rebind agent handed off commit adc1f2b1885492af835185135fae8f5ad30de678 and 68-pin seal 7550b48619d1e375352986873141340d1af3280cc4590b0f0dcc8d584308b1bd. Its finite seven-command offline driver passed in 32.379 seconds and reaped all handles. Agent reports 52 selector controls, seven file-stage negatives, 299 descriptor pins, 13 route controls and 67 rehashes, five native-stage controls and original offline staging. Root read the finish receipt; independent root owner source/seal closure and runtime admission remain pending. Exact runner SHA fbadc982dd8c5e8cf2cc2cac9c087e4a4c1ae2c3ca42e290dd2a4b123cb98be5, original150/30/170/10 clocks and25/20 observer/fallback bounds remain recorded unchanged. No run42 browser/guest was launched.
+
+The latest user explicitly requested deploying the current testing version to Sites. Root is handling that foreground action before fresh runtime admission. It reuses the reviewed dev testing archive, which does not include the newly prepared title helper. Fresh site metadata confirms public owner access and version10; complete ten-version history has no matching candidate. Root rehashed the 344,705,772-byte archive and all157 actual source inventory records, verified clean pushed-source HEAD014359df8ab2858eec0a57c55c65da3cd4546c99 and hosting project. Fresh delegate verification stopped on an incorrect assumed158-source count; no independent fresh rehash pass is claimed. Existing independent full package review remains applicable because bytes are unchanged. Native save retry19 is pending under cell2636; no new saved version or deployment is yet established. Receipts are /mnt/p6/build/sites-testing-release-oct05/publication-retry19-preflight.json and publication-retry19-pending.json. Preserve rollback and all prior failed evidence.
+
+## Sites retry19 terminal: upload failed, live version10 verified
+
+Freshly authorized testing publication retry19 reused the unchanged reviewed archive and pushed source. Root independently rehashed all157 actual source input rows and archive, verified clean source HEAD and existing hosting ID. The delegated fresh inventory check stopped on an incorrect assumed158-source count; no independent fresh pass was claimed. Prior independent full archive/source review was reused because its bytes remain unchanged.
+
+Native save cell2636 is terminal. Upload to sdmntprwestus.oaiusercontent.com timed out after300001ms, Azure request77ef5489-223d-49b9-826c-83621a858359. Cause Unknown. No saved version returned and no deployment was called. Fresh get_site, all10 saved versions with null cursor, and original deployment status succeeded confirm public version10 remains live at https://linuxonweb.exact-coot-7512.chatgpt.site. Rollback remains appgprj_6ab78cc88a948191a1abaabd04b81fe0~appgver_d95d358ac7f081918db3fa181f4387ba. Terminal receipt: /mnt/p6/build/sites-testing-release-oct05/publication-retry19.json. Pending receipt is historical evidence only. No identical retry without fresh intent or service-change evidence. Full JIT, TLS, performance and GPU acceptance remain pending; root owner admission and headed run42 are not completed.
+
+## Headed run42 terminal and fresh Sites retry20, 2026-10-06 UTC
+
+Independent owner admission passed20 offline checks against68 owner pins; root closure is /mnt/p6/build/headed-jit-root-oct05/title-owner-package-root-closure-oct06.json. Actual headed run42, source adc1f2b1885492af835185135fae8f5ad30de678, is terminal/reaped1. The original150s deadline expired during interrupt recovery. Actual original subset checks pass all50 broad rows,1079 native events and three GC scopes; only3 interrupt recoveries completed. Full JIT acceptance is false. Acquisition63766.641189ms left86233.358811ms for the unchanged workloads. Six host/browser/guest CPUs matched, exact owned groups/endpoints are gone, all nine protected service identities were preserved. Root terminal/broad/privileged/acquisition-timing receipts are under /mnt/p6/build/headed-jit-root-oct05/. Retained offline parent review has relationshipsPass true and live flags false; owner live ACK/probe/process/FD verification augmented the gate result before permit. Do not describe the offline base flags as live pass.
+
+The title helper completed75 scans/1960 cumulative visits before its unchanged25s timeout; guest times6.832/6.892/7.025/31.877s mean entry/display-open/first-full-scan/terminal. Zero plausible viewable candidates does not prove continuous absence or a blocked X operation. Host20.003s fallback remained unchanged; guest/host clock origins are distinct. Same-model read-only diagnosis receipt /mnt/p6/build/run42-helper-lifetime-diagnosis-oct06/receipt.json, SHA2564ccc9d32e449a546a6f6d2a3d1828a3caefa6e379ed3a49f93c1adcbffde8319, found init launches helper concurrently before Firefox capture-wrapper startup work. Proposed repair is one unchanged25s helper after fresh native startup evidence, within existing scheduling/deadline bounds; this is advice, not implemented or proven. Astra High supplied advice only: establish actual observer coverage and bounded X identity before another predicate change, preserve native authority/workloads/deadlines, and keep guest timestamps separate. Root timing metadata first hit private root-owned EACCES; corrected bounded sudo read succeeded. An old timing-copy note was corrected before execution; guessed package adapt.py was absent, so inspect actual filenames before implementation.
+
+Latest explicit user request authorizes another current-testing Sites publication. Same-model independent preflight now actually rehashed all157 source inputs and the344705772-byte archive, SHA25699fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf, verified clean tracked checkout/source014359df8ab2858eec0a57c55c65da3cd4546c99 and existing project ID. Final receipt /mnt/p6/build/sites-retry20-review/review.json SHA2561bd085c6ab0b94da488b1a01f84eae8e25a3ccf33788cfd05e9739c4d6511fa2. Prepared preflight refreshed its initial receipt pin to this final frozen receipt; archive/source unchanged. Native save retry20 is pending, cell2676; no saved version/deployment yet. Existing public v10 and rollback are preserved. Testing package remains the current reviewed dev package, without the diagnostic title-helper init, and conveys no full JIT/TLS/GPU acceptance.
+
+## Sites retry20 terminal: upload timeout, public v10 verified
+
+Fresh user-authorized retry20 native save cell2676 is terminal: upload to sdmntprcentralus.oaiusercontent.com timed out after300001ms, Azure request9410279b-5257-4b0a-9d74-17886e4bedfb. Started2026-10-06T05:19:38.028Z, completed05:24:38.904Z. Failure cause remains Unknown. No saved version returned; no deployment was called. Fresh get_site/all10 versions with null cursor and successful existing deployment confirm public v10 still live at https://linuxonweb.exact-coot-7512.chatgpt.site. Original rollback preserved. Archive/source unchanged, freshly independently verified all157 inputs. Terminal receipt /mnt/p6/build/sites-testing-release-oct05/publication-retry20.json; pending receipt is historical only. No further identical retry without fresh intent or service-change evidence. Keep testing labels and manual Update choice. Current task stopped at native upload failure, not an approval rejection. JIT/TLS/performance/GPU acceptance remains pending; headed run42 terminal facts are recorded above.
+
+## Sites retry21 terminal, 2026-10-06T05:51:42.191Z
+
+User explicitly requested trying the current version on the existing Sites project. Fresh same-model review rehashed all157 source records, verified unchanged344705772-byte archive SHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf, clean pushed source014359df8ab2858eec0a57c55c65da3cd4546c99 and project ID. Independent receipt remains false because its archive suffix selector missed content-addressed runtime assets; root corrected actual archive UI checks, proving testing/pending JIT/TLS/GPU labels and manual Update handler. Initial root literal unverified-testing predicate also failed; all failed evidence preserved. Combined preflight passes; no independent fresh full archive comparison or runtime acceptance claimed. Corrected receipt /mnt/p6/build/sites-retry21-review/root-corrected-label-review-v2.json.
+
+Native save cell2719 is terminal: upload to sdmntprwestcentralus.oaiusercontent.com timed out after300000ms, request3174bfe2-6e9b-42f3-bd70-87dcea6e9658. Cause Unknown. No saved version returned and no deployment was called. Fresh get_site, complete10-version history/cursor null, and succeeded original deployment confirm public v10 remains live at https://linuxonweb.exact-coot-7512.chatgpt.site. Original rollback retained. Terminal receipt /mnt/p6/build/sites-testing-release-oct05/publication-retry21.json. No identical retry without fresh user intent or service-change evidence. No browser/server jobs or unrelated service cleanup; root finite archive-inspection handles reaped. Full JIT/TLS/performance/GPU acceptance remains pending.
+
+## Deferred Console source and selected package closure, 2026-10-06 UTC
+
+Host preparation /mnt/p6/build/deferred-console-host-trigger-oct06 is now sealed Gitb9abd92fda50a5bfe7436ff89298c918c92529f7, source-seal.json4844SHA8063b7c7e2980ce9b485d08a64d26aa7cccb60b88bc8ada147ea2720a7f18a9b. Root rehashed original68 owner pins, copied native gate/home/map modules byte-identical and reviewed actual persistent-home API semantics. Actual existing33 offline controls and2syntax checks pass; no runtime acceptance. Earlier fixture, API literal spelling and schema/path guesses consumed three5-batch handoffs; failed artifacts preserved. Platform rejected second simultaneous agent and a terminal-agent followup; root finished source seal.
+
+Deferred package frozenGit20015f13e4677f187b8d0e56c98d1ea359f3a57b archive283966422 SHAdeaabb89055fdf0ed4919fab644dee0cc354f1fc5824f64aabbe82e9ea38cae0, descriptor254389SHA3fafbaeec4761004109c720ffab92771f64e67c212141d2839c62578886486c9. Independent full encoded-record/native/helper/init/coordinator comparisons and14 actual shell mocks pass; canonical parent→new onlyinit differs. Native/helper unchanged; clocks150/30/170/10 unchanged. Wrapper waits for fresh33-byte nonce trigger using checked guest uptime120 then unchanged25s helper once:145 is nominal, blocking-call hard guest wall bound Unknown. Host170 supervisor remains hard lifecycle bound.
+
+Two independent selected-closure finish attempts remained false on reviewer assumptions, not proven package defects. Root final corrected selected-closure review /mnt/p6/build/deferred-package-root-closure-oct06/closure-review.json18645SHA7ce1ffccba5cb7b160961453f8f04653466b8bd09f97cb112e16cf2a84f611b9 now passes:348 Q and330 P canonical pins, all299 actual parent descriptor pins inherited, explicit29 selected metadata references and inherited aliases verified. New historicalAliases remains empty; no new alias resolution or fullrecursive closure claim. Selected parent closure-alias-proof is bound by unchanged parent330 even though outsideQ348. Documented previous/current README retainedbytes are verified through actual previousBytes/current schema; exact earlier fullrecursive conflict origin remains Unknown.
+
+Important count correction: prior title-package independent aggregate review claimed450 aliases, while its actual hash-closure-review.json and fresh current selected23 scan both show444. Root preserved the contradicted aggregate and all failed correction attempts; actual444 explicit alias pairs/references verified. Parent330/299/direct bytes remain unchanged. Immutable old package diary wording about resolved historical aliases is too broad; actual empty newaliases/selectedscope govern. Owner integration is being prepared by /root/deferred_owner_rebind_oct06; no run43 started. Full JIT, ordinary startup, TLS/performance/GPU acceptance remain pending.
+
+
+## User-requested Sites retry22 terminal, 2026-10-06 UTC
+
+Fresh user request authorized publishing the current reviewed testing version. Same-model five-batch read-only preflight verified the exact 344705772-byte archive SHA25699fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf, all157 source inputs, clean source014359df8ab2858eec0a57c55c65da3cd4546c99, eight prior references and two actual content-addressed UI members. Independent receipt /mnt/p6/build/sites-retry22-review/review.json SHA321fe9bee4b4f5bde252ff9cafe9ed0f57d11ffbd5869c09d51941cf02f5615a remains false only because its added remote-tracking-ref predicate found no local ref. Root reused exact unchanged successful workflow push/package result per Sites skill; no fresh remote-head proof claimed. A bounded binary-as-text inspection MemoryError was corrected and retained. Combined preflight passes; full JIT/TLS/GPU acceptance remains pending.
+
+Native save cell2758 is terminal: upload to sdmntprwestcentralus.oaiusercontent.com timed out after300001ms, Azure requestf5ef9a1a-aa6a-4324-ab6d-c7f1c9813fce. Cause Unknown. No saved version returned and no deployment was called. Fresh get_site, complete10-version history/cursor null and succeeded original deployment confirm public v10 remains live at https://linuxonweb.exact-coot-7512.chatgpt.site. Rollback unchanged. Receipt /mnt/p6/build/sites-testing-release-oct05/publication-retry22.json. No identical retry without fresh user request or service-change evidence. No runtime, build, preview changes or process cleanup performed.
+
+
+## Deferred owner sealed offline; run43 review pending, 2026-10-06 UTC
+
+Owner R=/mnt/p6/build/complete-jit-owner-main-oct05 now commit78ab3d63f4feaab7343f86f4c25cc3e72180a3da, seal1e7f4024160e3657615d5ec6ed005dd30814ff249bf5d190c3ff2c00f850d649 with483 actual files. Root controls5 finite driver passed14 new commands in12.316s,17 actual prior commands reused with source/pin checks; all owned groups reaped. Stage38, routes17/67actualpins, scheduler33, window135, native36, disabledhint40, mapsignal47, file13, diagnostic25, deadline11 and publication13 checks are offline evidence only. Seven syntax checks pass. No run43 browser/guest has launched. Independent source/package/pin admission review is running.
+
+Driver controls2 had parent hardAS1GiB, preventing child Node2TiB preexec; finisher copiedcontrols3 soft1GiB/hard2TiB and passedstage/six suites. Node22 deadline test requires --experimental-vm-modules; controls3 omitted it and failed before assertions. Root controls4 actualstage38 anddeadline11 passed, then exact known VM warning after JSON caused receipt parser failure. Root controls5 handles only that exact warning footer and reuses those actual zero/reaped controls on unchanged owned source; all failed logs/receipts preserved. Finisher exceeded5 tool/work batches (7), confusing finitejob count with iteration count; stopped after clarification, no further agentcommands. Root finished authorized correction/seal/scopedGit. Source/test logic remains unchanged by driver repairs.
+
+Root prepared run43 scripts with freshdisplay774, original50/4/11 workloads and150/30/170/10 deadlines, no extraCPU limit. Preliminary privileged inventory has no omissions; user Chrome/Xorg and nine services are preserved. Fresh inventory/resources/admission must be revalidated immediately before runtime. Current disk free22,743,511,040 bytes, memoryavailable27,750,084,608 bytes at preparation; these are not reusable launch evidence. Full JIT, TLS, performance and general/FirefoxGPU acceptance remain pending.
+
+
+## Headed run43 failure and run44 terminal, 2026-10-06 UTC
+
+Deferred owner78ab3d63f4feaab7343f86f4c25cc3e72180a3da and483-pin seal1e7f4024160e3657615d5ec6ed005dd30814ff249bf5d190c3ff2c00f850d649 passed independent94-check admission; review /mnt/p6/build/deferred-owner-independent-admission-oct06/review.json, root closure /mnt/p6/build/headed-jit-root-oct05/deferred-owner-package-root-closure-oct06.json. Offline evidence is not runtime acceptance.
+
+Root run43 mistakenly launched Chromium as root; it exited before CDP/guest startup because its sandbox rejects root. No sandbox bypass was added. Owned processes/endpoints drained. The root-owned failed tree was safely moved to persistent p3 with the original symlink and171 tree entries/4452975 regular bytes/stat/xattr/hardlink evidence preserved. Receipts /mnt/p6/build/run43-terminal-relocation-oct06/terminal-summary.json and relocation-receipt.json. Future launcher/preparation now assert usera UID/GID1000.
+
+Run44 actually launched as usera with freshly measured6 CPUs; host/browser/guest checks pass. Handle26894 is terminal/reaped exit1; owned groups empty, display gone and nine protected services retain exact identities. Deferred helper actually observed Parent process Browser Console mapped, scheduling17.281s with no20s fallback. Native parent/FD ACK permit passed with85.934s remaining. Original broad checker passes50 rows and1113 observer events; gc-debug-coverage subset passes. Other three privileged identities are absent. Producer stopped143.487s on retention cap/path, before full session capture; owner157.459s. Startup also logs guest shell set -C invalid option; no proven causal diagnosis. Full JIT remains unaccepted. Root monitoring included a214.294s call gap spanning context continuation; do not claim continuous polling. Actual terminal/broad/privileged audits and poll journal /mnt/p6/build/headed-jit-root-oct05/main-run44-*.json. Source inputs were not changed during runtime. User's latest request is a fresh current-testing Sites publication; no new JIT claim is attached to it.
+
+
+## User-requested Sites retry23 terminal, 2026-10-06 UTC
+
+Fresh user request authorized current testing publication. Independent same-model five-batch preflight rehashed all157 inputs and344705772-byte archive SHA99fb052ec044be734e44e15fb1bcc88fde05764790eed0d81436a2a260aa89bf; clean pushed source014359df8ab2858eec0a57c55c65da3cd4546c99, testing labels/manual Update and rollback match. Review /mnt/p6/build/sites-retry23-review/review.json SHA66cc401a3ca81a833b8c28d49bcb724d5f83c541bf4a5243e102fbf4ad0110e0. Exact unchanged successful workflow reused per hosting skill.
+
+Native save cell2813 is terminal: upload to sdmntprcentralus.oaiusercontent.com timed out after300001ms, requestb1b14787-dc5d-4944-92fb-867130664811. Cause Unknown. No saved version returned/deployment called. Fresh get_site, complete10-version history/cursor null and succeeded original deployment confirm publicv10 remains live at https://linuxonweb.exact-coot-7512.chatgpt.site. Initial status call omitted project_id and failed schema validation; corrected same-ID call succeeded. Original rollback retained. Receipt /mnt/p6/build/sites-testing-release-oct05/publication-retry23.json. Astra High provided advice only, no commands/work delegated: failure is in native blob upload, timeout cannot prove service/network/size cause; no unsupported alternative upload inferred. Do not repeat identical upload without fresh request or service-change evidence. Existing preview/proxy services and reviewed package unchanged. Full JIT/TLS/performance/GPU acceptance remains pending.

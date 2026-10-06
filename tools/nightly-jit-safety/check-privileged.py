@@ -55,6 +55,7 @@ def same(a, b):
 def parse_observer(raw):
     require(len(raw) <= LIMIT, 'raw observer exceeds 2MiB')
     text = raw.decode('utf-8', errors='strict')
+    require('PBLJIT_OBS_EXHAUSTED' not in text and 'PBLJIT_OPTION_EXHAUSTED' not in text, 'native observer budget exhausted')
     require(not FATAL.search(text), 'fatal observer trace')
     out, offset = [], 0
     for encoded in raw.splitlines(keepends=True):
@@ -245,7 +246,7 @@ def main():
     p.add_argument('--review-sha256', required=True, help='Independent caller-reviewed acquisition manifest digest')
     p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()
-    if not args.out.resolve().is_relative_to('/mnt/p6/build'):
+    if not any(args.out.resolve().is_relative_to(root) for root in ('/mnt/p6/build','/mnt/p6/project/build')):
         p.error('disk-backed retained output required')
     try:
         result = check_production(args.acquisition, args.review_sha256)

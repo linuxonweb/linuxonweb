@@ -21,11 +21,21 @@
   table { width: 100%; border-collapse: collapse; font-size: .82rem; }
   td { padding: 3px 6px; border-top: 1px solid #1c302d; vertical-align: top; overflow-wrap: anywhere; }
   td:first-child { width: 38%; color: var(--muted); }
+  .runtime { max-width: 1056px; margin: 0 0 16px; color: var(--muted); }
+  .runtime strong { color: var(--warn); }
+  section.media { flex-basis: 100%; max-width: 1056px; }
+  .media p { margin: 0 0 10px; color: var(--muted); font-size: .82rem; }
+  .table-scroll { overflow-x: auto; }
+  .media table { min-width: 560px; }
+  .media th { text-align: left; padding: 4px 6px; color: var(--muted); }
+  .media td:first-child { width: auto; }
+  .media small { display: block; color: var(--muted); }
 </style>
 </head>
 <body>
 <h1>WebGL / WebGPU check</h1>
 <div class="browser"><strong id="browser-version">Reading browser version…</strong><br><span id="browser-build"></span><br><span id="browser-ua"></span></div>
+<p class="runtime">JavaScript JIT: <strong id="jit-status">Unknown</strong> · This page cannot reliably observe compiler activity.</p>
 <p class="lead">Both demos start automatically. A spinning cube and a rising frame count mean the API really renders here.</p>
 <div class="grid">
   <section>
@@ -39,6 +49,14 @@
     <canvas id="webgpu-canvas" width="320" height="240"></canvas>
     <div id="webgpu-fps" class="fps">not started</div>
     <table id="webgpu-info"></table>
+  </section>
+  <section class="media">
+    <h2>Video codecs <span id="media-badge" class="badge warn">checking</span></h2>
+    <p>Configuration support at 1280 × 720; encoding and Media Capabilities queries request 30 fps at 2 Mbit/s. No video is encoded or decoded. Smooth and power-efficient values are browser estimates, not proof of hardware use. Hardware decode and encode remain Unknown because these APIs do not expose the implementation in use.</p>
+    <div class="table-scroll"><table aria-label="Video codec configuration support">
+      <thead><tr><th scope="col">Codec</th><th scope="col">Video playback</th><th scope="col">WebCodecs decode</th><th scope="col">WebCodecs encode</th><th scope="col">Media Capabilities decode</th><th scope="col">Media Capabilities encode</th><th scope="col">Hardware decode</th><th scope="col">Hardware encode</th></tr></thead>
+      <tbody id="media-info"></tbody>
+    </table></div>
   </section>
 </div>
 <script>
@@ -88,6 +106,94 @@ function fail(api, reason) {
   state[api] = reason === "unavailable" ? "none" : "fail";
   badge(api, "bad", reason === "unavailable" ? "unavailable" : "failed");
   publish();
+}
+
+// Web content has no reliable API for observing JIT compilation. Neither
+// browser identity nor timings establish whether a script entered a JIT tier.
+const gpuCheckCapabilities = window.gpuCheckCapabilities = {
+  jit: { status: "unknown", reason: "Compiler activity is not exposed to this page" },
+  webgpuAdapter: null,
+  media: [],
+};
+async function adapterDetails(adapter) {
+  let info = null;
+  try {
+    info = adapter.info;
+    if (!info && typeof adapter.requestAdapterInfo === "function") info = await adapter.requestAdapterInfo();
+  } catch { /* Identity can be withheld without making rendering unavailable. */ }
+  const details = {};
+  for (const key of ["vendor", "architecture", "device", "description"]) {
+    try { details[key] = typeof info?.[key] === "string" && info[key].trim() ? info[key] : null; }
+    catch { details[key] = null; }
+  }
+  try {
+    const fallback = info?.isFallbackAdapter ?? adapter.isFallbackAdapter;
+    details.isFallbackAdapter = typeof fallback === "boolean" ? fallback : null;
+  } catch { details.isFallbackAdapter = null; }
+  return details;
+}
+async function codecConfigSupport(api, config, timeoutMs = 2000) {
+  if (typeof api?.isConfigSupported !== "function") return { status: "API unavailable" };
+  let timer;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => api.isConfigSupported(config)),
+      new Promise(resolve => { timer = setTimeout(() => resolve(null), timeoutMs); }),
+    ]);
+    return { status: result?.supported === true ? "Supported" : result?.supported === false ? "Unsupported" : "Unknown" };
+  } catch (error) { return { status: "Unknown", error: error.name || "Query failed" }; }
+  finally { clearTimeout(timer); }
+}
+async function mediaConfigSupport(api, method, config, timeoutMs = 2000) {
+  if (typeof api?.[method] !== "function") return { status: "API unavailable", smooth: null, powerEfficient: null };
+  let timer;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => api[method](config)),
+      new Promise(resolve => { timer = setTimeout(() => resolve(null), timeoutMs); }),
+    ]);
+    return {
+      status: result?.supported === true ? "Supported" : result?.supported === false ? "Unsupported" : "Unknown",
+      smooth: typeof result?.smooth === "boolean" ? result.smooth : null,
+      powerEfficient: typeof result?.powerEfficient === "boolean" ? result.powerEfficient : null,
+    };
+  } catch (error) { return { status: "Unknown", smooth: null, powerEfficient: null, error: error.name || "Query failed" }; }
+  finally { clearTimeout(timer); }
+}
+function mediaSupportLabel(result) {
+  const value = flag => flag === null ? "Unknown" : flag ? "Yes" : "No";
+  return `${result.status}; smooth: ${value(result.smooth)}; power efficient: ${value(result.powerEfficient)}`;
+}
+async function checkVideoCodecs() {
+  const video = document.createElement("video");
+  const codecs = [
+    ["VP8", "vp8", 'video/webm; codecs="vp8"'],
+    ["VP9", "vp09.00.10.08", 'video/webm; codecs="vp9"'],
+    ["AV1", "av01.0.04M.08", 'video/mp4; codecs="av01.0.04M.08"'],
+    ["H.264", "avc1.42E01E", 'video/mp4; codecs="avc1.42E01E"'],
+    ["HEVC", "hvc1.1.6.L93.B0", 'video/mp4; codecs="hvc1.1.6.L93.B0"'],
+  ];
+  for (const [name, codec, mime] of codecs) {
+    let playback = "Unknown";
+    try { playback = video.canPlayType(mime) || "Unsupported"; } catch {}
+    const mediaVideo = { contentType: mime, width: 1280, height: 720, bitrate: 2000000, framerate: 30 };
+    const [decode, encode, mediaDecode, mediaEncode] = await Promise.all([
+      codecConfigSupport(globalThis.VideoDecoder, { codec, codedWidth: 1280, codedHeight: 720 }),
+      codecConfigSupport(globalThis.VideoEncoder, { codec, width: 1280, height: 720, bitrate: 2000000, framerate: 30 }),
+      mediaConfigSupport(navigator.mediaCapabilities, "decodingInfo", { type: "file", video: mediaVideo }),
+      mediaConfigSupport(navigator.mediaCapabilities, "encodingInfo", { type: "record", video: mediaVideo }),
+    ]);
+    const result = { name, codec, mime, playback, decode, encode, mediaDecode, mediaEncode, hardwareDecode: "Unknown", hardwareEncode: "Unknown" };
+    gpuCheckCapabilities.media.push(result);
+    const tr = document.createElement("tr");
+    for (const value of [name, playback, decode.status, encode.status, mediaSupportLabel(mediaDecode), mediaSupportLabel(mediaEncode), result.hardwareDecode, result.hardwareEncode]) {
+      const cell = document.createElement("td"); cell.textContent = value; tr.append(cell);
+    }
+    const detail = document.createElement("small"); detail.textContent = codec; tr.firstElementChild.append(detail);
+    document.getElementById("media-info").append(tr);
+  }
+  badge("media", "warn", "support queried");
+  console.log("GPUCHECK capabilities=" + JSON.stringify(gpuCheckCapabilities));
 }
 
 // Column-major 4x4 matrices.
@@ -250,10 +356,11 @@ async function startWebGPU() {
   try { adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" }); }
   catch (error) { row("webgpu", "requestAdapter", `threw: ${error.message}`); fail("webgpu", "error"); return; }
   if (!adapter) { row("webgpu", "requestAdapter", "null (no adapter)"); fail("webgpu", "unavailable"); return; }
-  let info = adapter.info;
-  if (!info && adapter.requestAdapterInfo) info = await adapter.requestAdapterInfo().catch(() => null);
-  if (info) for (const key of ["vendor", "architecture", "device", "description"]) if (info[key]) row("webgpu", key, info[key]);
-  if ("isFallbackAdapter" in adapter) row("webgpu", "fallback adapter", adapter.isFallbackAdapter);
+  const info = gpuCheckCapabilities.webgpuAdapter = await adapterDetails(adapter);
+  for (const [key, label] of [["vendor", "vendor"], ["architecture", "architecture"], ["device", "device ID"], ["description", "name / model (description)"]])
+    row("webgpu", label, info[key] ?? "Unknown (not exposed)");
+  row("webgpu", "fallback adapter", info.isFallbackAdapter ?? "Unknown (not exposed)");
+  console.log("GPUCHECK adapter=" + JSON.stringify(info));
   row("webgpu", "features", [...adapter.features].join(", ") || "none");
   row("webgpu", "maxTextureDimension2D", adapter.limits.maxTextureDimension2D);
   row("webgpu", "maxBufferSize", adapter.limits.maxBufferSize);
@@ -442,6 +549,8 @@ async function runWebGPU(adapter, mode) {
   if (verdict === "lost") stopped = true;
   return verdict;
 }
+
+checkVideoCodecs().catch(error => { badge("media", "warn", "Unknown"); console.log("GPUCHECK media error=" + String(error.message || error)); });
 
 // ?only=webgl or ?only=webgpu runs a single demo, for diagnosis.
 const only = new URLSearchParams(location.search).get("only");

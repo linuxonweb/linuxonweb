@@ -16,6 +16,9 @@ export function user_module_imports_supported(module) {
  * to reserve that much address space, degrading as far as the initial size.
  */
 export function allocate_shared_memory(initial_pages, preferred_maximum_pages, allocate = (descriptor) => new WebAssembly.Memory(descriptor)) {
+    if (!Number.isSafeInteger(initial_pages) || initial_pages < 0 || !Number.isSafeInteger(preferred_maximum_pages) || preferred_maximum_pages < initial_pages) {
+        throw new RangeError("Shared-memory page limits are invalid");
+    }
     let maximum_pages = preferred_maximum_pages;
     for (;;) {
         try {
@@ -30,7 +33,8 @@ export function allocate_shared_memory(initial_pages, preferred_maximum_pages, a
         }
         catch (error) {
             const smaller_maximum = Math.max(initial_pages, Math.floor(maximum_pages / 2));
-            if (!(error instanceof RangeError) || smaller_maximum >= maximum_pages) {
+            const allocation_failure = error instanceof RangeError || error?.name === "RangeError" || error?.name === "OutOfMemoryError" || /\bout of memory\b/i.test(String(error?.message ?? error));
+            if (!allocation_failure || smaller_maximum >= maximum_pages) {
                 throw error;
             }
             maximum_pages = smaller_maximum;

@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import fs from 'node:fs';
+import {acquire} from './original-content.sys.mjs';
+const fixture=fs.readFileSync('/mnt/p6/project/linux/linuxonweb/web/linux/tests/guest-jit-pbl-bench.html','utf8');
+const source=fixture.split('<script>')[1].split('</script>')[0];
+const sourceBodies=Object.fromEntries([[0,19],[5,24],[6,25]].map(([index,line])=>[index,fixture.split('\n')[line-1].replace(/^ \['[^']+',/,'').replace(/,\d+\],$/,'')]));
+let passed=0;
+async function run(name,mutate,negative=false){
+ const doc={documentURI:'file:///home/admin/nightly-jit-safety/original-bench-b-1/pblbench-b-1.html',readyState:'interactive'},out={textContent:'Settling'},logs=[],timers=[];
+ doc.getElementById=id=>id==='result'?out:null;
+ const context=vm.createContext({document:doc,location:{search:'',pathname:'/home/admin/nightly-jit-safety/original-bench-b-1/pblbench-b-1.html'},navigator:{hardwareConcurrency:6,userAgent:'synthetic-host'},URLSearchParams,console:{log:v=>logs.push(v)},performance:{now:()=>25,timeOrigin:1000},setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length;}});
+ vm.runInContext(source,context);
+ const win=vm.runInContext('globalThis',context),child={isCurrentGlobal:true,isClosed:false,innerWindowId:55,contentWindow:win};win.windowGlobalChild=child;
+ const state={win,doc,event:{type:'DOMContentLoaded',isTrusted:true,target:doc},getters:0,options:{'pbl.enable':1,'pbl.warmup.threshold':10},sourceBodies:{...sourceBodies},pref:true};
+ const Services={appinfo:{processID:17,processType:0,appBuildID:'20261004075010',platformBuildID:'20261004075010',version:'159.0a1'},prefs:{getBoolPref:()=>state.pref},env:{exists:k=>k!=='PBLJIT',get:k=>k==='PBLJIT_LOG'?'0':'1'}};
+ const Cu={waiveXrays:x=>x,getGlobalForObject:()=>win,getJSTestingFunctions:()=>({getJitCompilerOptions:()=>{state.getters++;return state.options;}})};
+ const deps={Cu,Services,sourceBodies:state.sourceBodies,boundary:async()=>({bytes:0,sha256:'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'})};
+ mutate?.(state,deps);
+ if(negative)await assert.rejects(()=>acquire(win,state.event,deps));
+ else {const p=await acquire(win,state.event,deps);assert.equal(p.cases.length,3);assert.equal(p.cases.reduce((n,r)=>n+r.results.length,0),60);assert.equal(state.getters,1);assert.equal(p.portableBaselineOption,Number(state.pref));assert.equal(logs.length,1);assert.equal(logs[0].startsWith('PBLBENCH '),true);}
+ assert.equal(timers.length,1);assert.equal(timers[0].ms,15000);passed++;console.log(JSON.stringify({name,pass:true,syntheticHostOnly:true}));
+}
+await run('original lexical closures numeric1');
+await run('original lexical closures numeric0',s=>{s.options['pbl.enable']=0;s.pref=false;});
+for(const value of [undefined,null,false,'1',2,NaN])await run('strict option '+String(value),s=>{s.options['pbl.enable']=value;},true);
+await run('missing own option',s=>{delete s.options['pbl.enable'];},true);
+await run('inherited option',s=>{s.options=Object.assign(Object.create({'pbl.enable':1}),{'pbl.warmup.threshold':10});},true);
+for(const value of [undefined,'10',11])await run('strict threshold '+String(value),s=>{s.options['pbl.warmup.threshold']=value;},true);
+await run('missing getter',(s,d)=>{d.Cu.getJSTestingFunctions=()=>({});},true);
+await run('wrong preference',s=>{s.pref=false;},true);
+await run('stale WindowGlobal',s=>{s.win.windowGlobalChild.isCurrentGlobal=false;},true);
+await run('wrong wrapped target',s=>{s.win.windowGlobalChild.contentWindow={};},true);
+await run('deadline reached',s=>{s.win.performance.now=()=>15000;},true);
+await run('untrusted event',s=>{s.event.isTrusted=false;},true);
+await run('wrong original source body',s=>{s.sourceBodies[0]='()=>49995000';},true);
+await run('window property masquerades lexical',s=>{s.win.cases=[];},true);
+await run('missing lexical cases',s=>{s.win.document.documentURI='about:blank';},true);
+await run('forbidden eval substitute',s=>{s.win.eval=x=>49995000;},true);
+console.log(JSON.stringify({kind:'original-content-host-tests-v1',passed,runtimeAcceptance:false,actualFirefoxPending:true}));

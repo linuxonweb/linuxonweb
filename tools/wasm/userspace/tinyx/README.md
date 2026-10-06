@@ -32,4 +32,4 @@ It changes only the packed Xfbdev keyboard functions: opens the existing
 TinyX KDrive input path, and retains VT fallback. Its hard-coded addresses and
 function layout must not be used on any other TinyX build. The resulting
 initramfs replaced only CPIO member `bin/Xfbdev`; the deployed archive hash
-is recorded in `Agents.md`.
+is recorded in the [archived Agents.md history](../../../../diary.md).

@@ -1,4 +1,4 @@
-// Default: accepted full Nightly159 baseline A versus coherent full PBL/JIT B,
+// Default: the same full Nightly159 PBL/JIT binary, runtime disabled A / enabled B,
 // ABBAAB cold boots with exact compiled/live identity and strict no-regression.
 // Every boot has an exclusively created profile and an owned dynamic CDP port;
 // the QA HTTP server also uses an allocated loopback port. Guest navigation is
@@ -14,12 +14,32 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { readHostNproc, selectHostCpus, guestCpuChecks, guestCpuStateExpression, guestCpuPrebootStateExpression, saveGuestCpuEvidence, saveHostCpuPhaseEvidence } from './firefox-host-cpus.mjs';
-import { TASK, FIXTURE_SHA256, armContract, pairContract, fatalLines, payloads, guestIdentityChecks, caseChecks, benchmarkAcceptance, ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
+import { TASK, FIXTURE_SHA256, armContract, pairContract, fatalLines, payloads, guestIdentityChecks, runtimeTierChecks, benchmarkContentTierChecks, primaryDiagnosticsChecks, caseChecks, benchmarkAcceptance, ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
 import { prepareBrowserAffinity, browserLaunchCommand, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
-const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+import { pinOwnedGroup, drainOwnedGroup } from './benchmark-process-group.mjs';
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const checkerSource = path.join(moduleDir, 'check-firefox-nightly-benchmark.mjs');
+const helperSources = ['firefox-host-cpus.mjs', 'firefox-browser-affinity.mjs', 'benchmark-process-group.mjs'];
+const bridgeNames = ['benchmark-content-options.sys.mjs', 'NightlyBenchmarkOptionsChild.sys.mjs', 'NightlyBenchmarkOptionsParent.sys.mjs', 'benchmark-options-entry.sys.mjs', 'benchmark-diagnostics.sys.mjs'];
+const repo = process.env.PBLBENCH_REPO ? await fs.realpath(process.env.PBLBENCH_REPO) : null;
+if (!repo) throw Error('explicit canonical PBLBENCH_REPO required; staged producer cannot derive repo');
 const mode = process.env.PBLBENCH_MODE || 'nightly';
 if (!['nightly', 'historical'].includes(mode)) throw Error('PBLBENCH_MODE must be nightly or historical');
 const nightly = mode === 'nightly';
+// The acquisition is wired, but launch requires caller-pinned exact executing
+// producer/checker/helpers/bridge manifest. Runtime API/actor success is pending.
+const benchmarkContentOptionBridgeImplemented = true;
+if (nightly) {
+  if (!process.env.PBLBENCH_IMPLEMENTATION_MANIFEST || !/^[a-f0-9]{64}$/.test(process.env.PBLBENCH_IMPLEMENTATION_MANIFEST_SHA256 || '')) throw Error('reviewed implementation manifest required before any launch');
+  const bytes = await fs.readFile(process.env.PBLBENCH_IMPLEMENTATION_MANIFEST);
+  if (createHash('sha256').update(bytes).digest('hex') !== process.env.PBLBENCH_IMPLEMENTATION_MANIFEST_SHA256) throw Error('implementation manifest changed');
+  const manifest = JSON.parse(bytes);
+  if (manifest.kind !== 'benchmark-content-bridge-implementation-v1' || manifest.repo !== repo) throw Error('implementation repo binding differs');
+  for (const name of ['test-firefox-pbl-bench.mjs', 'check-firefox-nightly-benchmark.mjs', ...helperSources, ...bridgeNames]) {
+    const file = path.join(moduleDir, name), pin = manifest.files.find(row => row.path === file);
+    if (!pin || createHash('sha256').update(await fs.readFile(file)).digest('hex') !== pin.sha256) throw Error('actual executing implementation bytes differ: ' + name);
+  }
+}
 const task = process.env.PBLBENCH_TASK || (nightly ? TASK : '/mnt/p6/build/guest-jit-pbl-bench-20261001');
 if (nightly && task !== TASK) throw Error('Nightly gate requires dedicated task');
 if (process.argv.length !== 3) throw Error('usage: OUT');
@@ -52,14 +72,15 @@ const arms = armsBytes ? JSON.parse(armsBytes) : {
 // PBLBENCH_ORDER (e.g. A) is for smoke runs only; it can never pass.
 const order = (process.env.PBLBENCH_ORDER || 'ABBAAB').split('');
 const fixturePath = process.env.PBLBENCH_FIXTURE ? path.resolve(process.env.PBLBENCH_FIXTURE) : path.join(repo, 'web/linux/tests/guest-jit-pbl-bench.html');
-const jitLogBudget = process.env.PBLBENCH_LOG_BUDGET === undefined ? null : Number(process.env.PBLBENCH_LOG_BUDGET);
+const jitLogBudget = process.env.PBLBENCH_LOG_BUDGET === undefined ? (nightly ? 0 : null) : Number(process.env.PBLBENCH_LOG_BUDGET);
+if (nightly && jitLogBudget !== 0) throw Error('primary timed Nightly benchmark requires log budget0');
 const guestReadyMode = process.env.PBLBENCH_GUEST_READY === '1';
 if (nightly && (!guestReadyMode || order.join('') !== 'ABBAAB')) throw Error('Nightly requires ABBAAB and PBLBENCH_GUEST_READY=1');
-if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < 25 || jitLogBudget > 10000)) throw Error('invalid PBLBENCH_LOG_BUDGET');
+if (jitLogBudget !== null && (!Number.isInteger(jitLogBudget) || jitLogBudget < (nightly ? 0 : 25) || jitLogBudget > 10000)) throw Error('invalid PBLBENCH_LOG_BUDGET');
 const inputs = {};
 const readInput = async source => { const bytes = await fs.readFile(source); inputs[source] = sha(bytes); return bytes; };
 const readPinned = async (source, expected) => { if (!/^[a-f0-9]{64}$/.test(expected || '')) throw Error('missing reviewed digest: ' + source); const bytes = await readInput(source); if (sha(bytes) !== expected) throw Error('reviewed digest changed: ' + source); return bytes; };
-for (const source of [fileURLToPath(import.meta.url), path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), path.join(repo, 'tools/guest-rootfs/firefox-browser-affinity.mjs'), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) await readInput(source);
+for (const source of [fileURLToPath(import.meta.url), checkerSource, ...[...helperSources, ...bridgeNames].map(name => path.join(moduleDir, name)), fixturePath, path.join(repo, 'web/desktop/dev-server.mjs'), ...['main.js', 'worker.js', 'persistent-home.mjs', 'boot-assets.mjs', 'vmlinux.wasm', 'initramfs.cpio'].map(s => path.join(repo, 'web/linux', s)), ...Object.values(arms).flatMap(a => [a.dir + '/boot-manifest.json', a.dir + '/initramfs-firefox.cpio.gz'])]) await readInput(source);
 if (process.env.PBLBENCH_ARMS) inputs[process.env.PBLBENCH_ARMS] = sha(armsBytes);
 if (nightly) {
   if (inputs[fixturePath] !== FIXTURE_SHA256 || Object.keys(arms).sort().join('') !== 'AB') throw Error('Nightly requires exact original eight-case fixture and A/B arms');
@@ -74,7 +95,7 @@ if (nightly) {
     for (const c of Object.values(build.commands || {})) await readPinned(c.log, c.logSHA256);
     const review = JSON.parse(await readPinned(n.buildReview.path, n.buildReview.sha256));
     const acceptance = id === 'A' ? JSON.parse(await readPinned(n.baselineAcceptance.path, n.baselineAcceptance.sha256)) : null;
-    for (const e of [...(review.evidence || []), ...(acceptance?.evidence || [])]) await readPinned(e.path, e.sha256);
+    for (const e of [...(review.evidence || []), ...(acceptance?.evidence || []), ...(n.tierEvidence?.artifacts || [])]) await readPinned(e.path, e.sha256);
     const candidateManifest = JSON.parse(await fs.readFile(arm.dir + '/boot-manifest.json'));
     arm.nightlyIdentity = armContract(id, arm, full, overlay, fullManifest, candidateManifest, build, review, acceptance);
     if ((await fs.stat(arm.dir + '/initramfs-firefox.cpio.gz')).size !== overlay.bytes) throw Error('archive size differs ' + id);
@@ -102,15 +123,18 @@ for (const [id, arm] of Object.entries(arms)) {
   await fs.writeFile(arm.served, JSON.stringify(manifest, null, 2) + '\n');
 }
 await fs.copyFile(fileURLToPath(import.meta.url), out + '/runner.mjs');
-await fs.copyFile(path.join(repo, 'tools/guest-rootfs/firefox-host-cpus.mjs'), out + '/firefox-host-cpus.mjs');
-await fs.copyFile(path.join(repo, 'tools/guest-rootfs/check-firefox-nightly-benchmark.mjs'), out + '/check-firefox-nightly-benchmark.mjs');
+for (const name of ['check-firefox-nightly-benchmark.mjs', ...helperSources, ...bridgeNames]) {
+  const source = path.join(moduleDir, name), destination = path.join(out, name);
+  await fs.copyFile(source, destination);
+  if (sha(await fs.readFile(destination)) !== inputs[source]) throw Error('copied executing module differs: ' + name);
+}
 await fs.copyFile(fixturePath, out + '/fixture.html');
 let mainAdapter = null;
 if (jitLogBudget !== null) {
   const mainSource = await fs.readFile(path.join(repo, 'web/linux/main.js'), 'utf8');
   const anchor = 'cmdline: `${rootCommand} ${modeFlags}`,';
   if (mainSource.split(anchor).length !== 2) throw Error('main.js cmdline adapter anchor changed');
-  const adapted = mainSource.replace(anchor, 'cmdline: `${rootCommand} ${modeFlags} PBLJIT_LOG=' + jitLogBudget + '`,');
+  const adapted = mainSource.replace(anchor, 'cmdline: `${rootCommand} ${modeFlags} PBLJIT_LOG=' + jitLogBudget + (nightly ? ' PBLJIT_OBSERVE=0' : '') + '`,');
   const adapterPath = out + '/main-log-budget.js';
   await fs.writeFile(adapterPath, adapted);
   mainAdapter = { path: adapterPath, sha256: sha(adapted), jitLogBudget };
@@ -134,12 +158,14 @@ await new Promise((resolve, reject) => { server.once('error', reject); server.li
 const origin = 'http://127.0.0.1:' + server.address().port;
 const prefs = ['network.http.http2.enabled:false', 'network.http.http3.enable:false', 'toolkit.legacyUserProfileCustomizations.stylesheets:true', 'media.rdd-process.enabled:false', 'media.utility-process.enabled:false', 'media.allow-audio-non-utility:true', 'browser.shell.checkDefaultBrowser:false', 'devtools.console.stdout.content:true', 'browser.aboutwelcome.enabled:false', 'dom.max_script_run_time:0', ...(nightly ? ['devtools.chrome.enabled:true', 'devtools.console.stdout.chrome:true'] : [])].map(s => { const i = s.lastIndexOf(':'); return 'user_pref(' + JSON.stringify(s.slice(0, i)) + ',' + s.slice(i + 1) + ');'; }).join('\n') + '\nuser_pref("datareporting.policy.firstRunURL", "");\n';
 const fixture = await fs.readFile(fixturePath, 'utf8');
+const bridgeSources = Object.fromEntries(await Promise.all(bridgeNames.map(async name => [name, await fs.readFile(path.join(moduleDir,name),'utf8')])));
 const expectedCases = 3 * (fixture.match(/^ \['[^']+',/gm) || []).length;
 const executable = '/home/a/.local/archpkg/pacman/usr/bin/chromium';
 const report = { schema: 2, mode, scope: nightly ? 'nightly-original-eight-case-no-regression' : 'historical-diagnostic', nightlyBenchmarkAcceptance: false, jitAcceptance: false, gpuAcceptance: false, releaseAcceptance: false, pass: false, origin, httpPort: server.address().port, order, mainAdapter, arms: Object.fromEntries(Object.entries(arms).map(([k, a]) => [k, { name: a.name, version: a.version, archiveSha256: a.archiveSha256, ...(nightly ? { nightlyIdentity: a.nightlyIdentity } : {}) }])), boots: [], serverPid: process.pid };
 
 // One boot = one owned headless Chromium with a fresh profile.
 report.guestReadinessMode = guestReadyMode;
+report.checkerExecutionBinding = { source:checkerSource, sha256:inputs[checkerSource], copiedPath:out + '/check-firefox-nightly-benchmark.mjs' };
 async function boot(index, armId) {
   const arm = arms[armId], label = armId.toLowerCase() + '-' + (index + 1), dir = out + '/boot' + (index + 1) + '-' + armId;
   await fs.mkdir(dir);
@@ -147,7 +173,7 @@ async function boot(index, armId) {
   const fileName = 'pblbench-' + label + '.html', url = 'file:///home/admin/pblbench/' + fileName;
   const readyName = 'pblready-' + label + '.html', readyURL = 'file:///home/admin/pblbench/' + readyName;
   const readyFixture = '<!doctype html><title>Firefox benchmark readiness</title><h1>Firefox ready</h1><script>requestAnimationFrame(()=>requestAnimationFrame(()=>console.log("PBLREADY "+JSON.stringify({event:"ready",label:' + JSON.stringify(label) + ',url:location.href,ua:navigator.userAgent,createdAt:Date.now()}))));</script>';
-  const bootPrefs = prefs + (guestReadyMode ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(readyURL) + ');\n' : '');
+  const bootPrefs = prefs + (nightly ? 'user_pref("javascript.options.portable_baseline",' + JSON.stringify(arm.portableBaseline) + ');\nuser_pref("webgl.disabled",true);\nuser_pref("dom.webgpu.enabled",false);\n' : '') + (guestReadyMode ? 'user_pref("browser.startup.page",1);\nuser_pref("browser.startup.homepage",' + JSON.stringify(readyURL) + ');\n' : '');
   const profile = dir + '/profile', activePortPath = profile + '/DevToolsActivePort';
   await fs.mkdir(profile); // Exclusive fresh directory: never reuse a user's profile.
   const args = ['--headless', '--disable-dev-shm-usage', '--no-first-run', '--no-default-browser-check', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', '--user-data-dir=' + profile, '--disk-cache-dir=' + dir + '/cache', 'about:blank'];
@@ -165,6 +191,7 @@ async function boot(index, armId) {
     if (Number.isInteger(child.pid) && !exitInfo && !spawnError && child.exitCode === null && child.signalCode === null) { try { process.kill(child.pid, 0); const argv = readFileSync('/proc/' + child.pid + '/cmdline', 'utf8').split('\0'); ownedProfileArgument = argv.includes('--user-data-dir=' + profile) && argv.includes('--remote-debugging-port=0'); alive = ownedProfileArgument; } catch {} }
     return { pid: child.pid, alive, ownedProfileArgument, exitCode: child.exitCode, signalCode: child.signalCode, spawnError };
   };
+  let ownedGroup;
   let ws, next = 0; const pending = new Map(), errors = [];
   const call = (method, params = {}, deadline = 60000) => new Promise((resolve, reject) => { if (!rec.endpointOwnership?.verified || !childState().alive) { reject(Error('CDP command requires verified live owned browser')); return; } const id = ++next, timer = setTimeout(() => { pending.delete(id); reject(Error('CDP deadline ' + method)); }, deadline); pending.set(id, { resolve, reject, timer }); ws.send(JSON.stringify({ id, method, params })); });
   const ev = async (expression, deadline) => { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, deadline); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; };
@@ -181,7 +208,7 @@ async function boot(index, armId) {
     await key('Control', 'ControlLeft', 17, 2, 'down'); await key('Shift', 'ShiftLeft', 16, 10, 'down'); await key('J', 'KeyJ', 74, 10); await key('Shift', 'ShiftLeft', 16, 2, 'up'); await key('Control', 'ControlLeft', 17, 0, 'up');
   };
   const typeConsole = async text => {
-    const symbols = { ' ': ['Space', 32, false], '.': ['Period', 190, false], ':': ['Semicolon', 186, true], ',': ['Comma', 188, false], '-': ['Minus', 189, false], '+': ['Equal', 187, true], '"': ['Quote', 222, true], '(': ['Digit9', 57, true], ')': ['Digit0', 48, true], '{': ['BracketLeft', 219, true], '}': ['BracketRight', 221, true] };
+    const symbols = { ' ': ['Space', 32, false], '.': ['Period', 190, false], ':': ['Semicolon', 186, true], ',': ['Comma', 188, false], '-': ['Minus', 189, false], '+': ['Equal', 187, true], '"': ['Quote', 222, true], '(': ['Digit9', 57, true], ')': ['Digit0', 48, true], '{': ['BracketLeft', 219, true], '}': ['BracketRight', 221, true], '/':['Slash',191,false], ';':['Semicolon',186,false], '=':['Equal',187,false], '!':['Digit1',49,true], '[':['BracketLeft',219,false], ']':['BracketRight',221,false], '&':['Digit7',55,true], '|':['Backslash',220,true], '?':['Slash',191,true], '<':['Comma',188,true], '>':['Period',190,true], '_':['Minus',189,true], '*':['Digit8',56,true] };
     for (const c of text) {
       const spec = /[a-z]/i.test(c) ? ['Key' + c.toUpperCase(), c.toUpperCase().charCodeAt(0), /[A-Z]/.test(c)] : /[0-9]/.test(c) ? ['Digit' + c, c.charCodeAt(0), false] : symbols[c];
       if (!spec) throw Error('unsupported identity probe key ' + c);
@@ -192,6 +219,8 @@ async function boot(index, armId) {
     }
   };
   try {
+    ownedGroup = await pinOwnedGroup(child.pid);
+    await fs.writeFile(dir + '/browser-group-owner.json', JSON.stringify(ownedGroup,null,2)+'\n');
     let activePortText, portStat, version;
     await until(async () => {
       if (!childState().alive) throw Error('owned browser startup failed');
@@ -235,7 +264,7 @@ async function boot(index, armId) {
     rec.comparisonHostCpuStable = rec.cpu.hostNproc === report.comparisonHostNproc;
     await fs.writeFile(dir + '/comparison-cpu.json', JSON.stringify({ initialHostNproc: report.comparisonHostNproc, cpu: rec.cpu, pass: rec.comparisonHostCpuStable }, null, 2) + '\n');
     if (!rec.comparisonHostCpuStable) throw Error('host CPU allocation changed between benchmark arms');
-    await ev(`(async()=>{localStorage.removeItem('linuxonweb.system.active.v1');localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${rec.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(bootPrefs)});await put('admin/pblbench/${fileName}',${JSON.stringify(fixture)});${guestReadyMode ? `await put('admin/pblbench/${readyName}',${JSON.stringify(readyFixture)});` : ''}await h.destroy();return true;})()`);
+    await ev(`(async()=>{localStorage.removeItem('linuxonweb.system.active.v1');localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({resolution:'1280x720',cpus:${rec.cpu.requestedGuestCpus},ram:4096,backend:'canvas2d'}));const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();async function dir(p){let n=h.root;for(const s of p.split('/').filter(Boolean))n=await h.lookup(n,s)||await h.mkdir(n,s,{mode:0o755,uid:1000,gid:1000});return n;}async function put(p,text){const parts=p.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));const f=await h.create(parent,name,2,{mode:0o644,uid:1000,gid:1000});await h.write(f.node,f.handle,0n,new TextEncoder().encode(text));await h.release(f.node,f.handle);}await put('admin/.mozilla/firefox/http1-profile/user.js',${JSON.stringify(bootPrefs)});await put('admin/pblbench/${fileName}',${JSON.stringify(fixture)});${nightly ? Object.entries(bridgeSources).map(([name,source]) => `await put('admin/pblbench/${name}',${JSON.stringify(source)});`).join('') : ''}${guestReadyMode ? `await put('admin/pblbench/${readyName}',${JSON.stringify(readyFixture)});` : ''}await h.destroy();return true;})()`);
     const manifest = await ev(`fetch('/linux/boot-manifest.json',{cache:'no-store'}).then(r=>r.json())`);
     if (manifest.version !== arm.version) throw Error('served manifest mismatch');
     if (mainAdapter) {
@@ -265,7 +294,7 @@ async function boot(index, armId) {
       // inability to open/evaluate the console fails this gate without fallback.
       await ev("document.querySelector('#fb').focus()");
       await browserConsoleChord(); await sleep(5000);
-      const probe = 'console.log("PBLIDENTITY "+JSON.stringify({label:' + JSON.stringify(label) + ',version:Services.appinfo.version,platformVersion:Services.appinfo.platformVersion,appBuildID:Services.appinfo.appBuildID,platformBuildID:Services.appinfo.platformBuildID,OS:Services.appinfo.OS,XPCOMABI:Services.appinfo.XPCOMABI}))';
+      const probe = '(()=>{if(typeof Cu.getJSTestingFunctions!=="function")throw Error("JSTestingFunctions unavailable");const testing=Cu.getJSTestingFunctions();if(!testing||typeof testing.getJitCompilerOptions!=="function")throw Error("getJitCompilerOptions unavailable");const options=testing.getJitCompilerOptions();if(!options||typeof options!=="object")throw Error("compiler options unavailable");const hasEnable=Object.prototype.hasOwnProperty.call(options,"pbl.enable"),hasWarmup=Object.prototype.hasOwnProperty.call(options,"pbl.warmup.threshold"),enable=Reflect.get(options,"pbl.enable"),warmup=Reflect.get(options,"pbl.warmup.threshold");if(!hasEnable||!hasWarmup||typeof enable!=="number"||(enable!==0&&enable!==1)||typeof warmup!=="number"||warmup!==10)throw Error("actual PBL options unavailable or invalid");console.log("PBLIDENTITY "+JSON.stringify({label:' + JSON.stringify(label) + ',version:Services.appinfo.version,platformVersion:Services.appinfo.platformVersion,appBuildID:Services.appinfo.appBuildID,platformBuildID:Services.appinfo.platformBuildID,OS:Services.appinfo.OS,XPCOMABI:Services.appinfo.XPCOMABI,optionContext:"browser-console",processID:Services.appinfo.processID,processType:Services.appinfo.processType,restartPref:Services.prefs.getBoolPref("javascript.options.portable_baseline"),jitTestingFunctionsAvailable:true,jitCompilerOptionsGetterAvailable:true,pblEnableOwnProperty:hasEnable,pblWarmupOwnProperty:hasWarmup,portableBaselineOption:enable,pblWarmupThreshold:warmup}));})()';
       await fs.writeFile(dir + '/guest-identity-probe.txt', probe + '\n');
       await typeConsole(probe); await key('Enter', 'Enter', 13);
       let identityLogs;
@@ -273,6 +302,15 @@ async function boot(index, armId) {
       await fs.writeFile(dir + '/identity-guest-logs.txt', identityLogs);
       rec.guestIdentityChecks = guestIdentityChecks(rec.guestIdentity, arm.nightlyIdentity.compiled, label);
       if (!Object.values(rec.guestIdentityChecks).every(Boolean)) throw Error('live guest Nightly version/build differs from compiled package');
+      rec.parentRuntimeTierChecks = runtimeTierChecks(rec.guestIdentity, arm.portableBaseline);
+      const installProbe = 'ChromeUtils.importESModule("file:///home/admin/pblbench/benchmark-options-entry.sys.mjs").install(' + JSON.stringify(label) + ');';
+      await fs.writeFile(dir + '/content-bridge-install-probe.txt', installProbe + '\n');
+      await typeConsole(installProbe); await key('Enter', 'Enter', 13);
+      let bridgeReadyLogs;
+      await until(async () => { bridgeReadyLogs = await guestLogs(); return payloads(bridgeReadyLogs, 'PBLCONTENTBRIDGEREADY ').some(p => p.label === label && p.documentURI === url && p.registeredBeforeNavigation === true); }, 60000, 'actual bridge registration before navigation');
+      await fs.writeFile(dir + '/content-bridge-ready-guest-logs.txt', bridgeReadyLogs);
+      rec.contentBridgeRegisteredBeforeNavigation = true;
+      if (!Object.values(rec.parentRuntimeTierChecks).every(Boolean)) throw Error('actual restart preference/numeric tier getter proof differs from selected arm');
       await browserConsoleChord(); await sleep(2000);
       rec.identityFinalCpu = await saveHostCpuPhaseEvidence(rec.cpu, await ev(guestCpuStateExpression), dir, 'identity-final');
     }
@@ -288,6 +326,31 @@ async function boot(index, armId) {
       rec.navigatedMs = Date.now() - start;
       try { await until(async () => benchLines(await guestLogs()).some(l => l.event === 'start' && l.label === label), 45000, 'fixture start'); break; } catch (e) { await shot('nav-attempt-' + rec.navAttempts); if (rec.navAttempts >= 4) throw e; }
     }
+    if (nightly) {
+      let contentLogs;
+      await until(async () => {
+        contentLogs = await guestLogs();
+        if (payloads(contentLogs, 'PBLCONTENTFAIL ').length) throw Error('actual target content acquisition failed');
+        const packets = payloads(contentLogs, 'PBLCONTENTIDENTITY ').filter(p => p.label === label);
+        if (packets.length > 1) throw Error('duplicate actual target option acquisitions');
+        rec.contentTierIdentity = packets[0]; return packets.length === 1;
+      }, 30000, 'actual benchmark target content numeric compiler options');
+      const rawPath = dir + '/content-bridge-guest-logs.txt';
+      await fs.writeFile(rawPath, contentLogs);
+      rec.contentTierAcquisitionArtifact = { path:rawPath, sha256:sha(contentLogs) };
+      inputs[rawPath] = rec.contentTierAcquisitionArtifact.sha256;
+      const logStart = contentLogs.indexOf('console.log: '+JSON.stringify('PBLBENCH '+JSON.stringify(benchLines(contentLogs).find(p => p.event === 'start' && p.label === label))));
+      const logContent = contentLogs.indexOf('console.log: '+JSON.stringify('PBLCONTENTIDENTITY '+JSON.stringify(rec.contentTierIdentity)));
+      const timedAlready = benchLines(contentLogs).some(p => p.label === label && ['case','done','error'].includes(p.event));
+      rec.contentPhaseTranscript = { fixtureStartBeforeAcquisition:logStart >= 0 && logContent > logStart, noTimedOutputBeforeAcquisitionReceipt:!timedAlready };
+      if (!Object.values(rec.contentPhaseTranscript).every(Boolean)) throw Error('actual acquisition phase transcript unavailable or late');
+      rec.contentTierChecks = benchmarkContentTierChecks(rec.contentTierIdentity, arm.portableBaseline, label);
+      if (!Object.values(rec.contentTierChecks).every(Boolean)) throw Error('actual target content tier/phase/identity differs');
+      rec.primaryDiagnosticsChecks = primaryDiagnosticsChecks(rec.contentTierIdentity);
+      rec.primaryDiagnosticsOff = Object.values(rec.primaryDiagnosticsChecks).every(Boolean);
+      if (!rec.primaryDiagnosticsOff) throw Error('actual primary process diagnostics-off proof unavailable');
+      rec.contentTierStatus = 'recorded';
+    }
     await shot('fixture');
     await until(async () => benchLines(await guestLogs()).some(l => l.event === 'done' && l.label === label), 900000, 'PBLBENCH done');
     rec.doneMs = Date.now() - start;
@@ -302,7 +365,7 @@ async function boot(index, armId) {
     rec.state = state;
     rec.finalCpu = await saveHostCpuPhaseEvidence(rec.cpu, state, dir, 'cold-final');
     rec.finalBrowserAffinity = await saveBrowserAffinityEvidence(affinityPlan, child.pid, state.browserHardwareConcurrency, dir, 'browser-final');
-    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), ...rec.finalBrowserAffinity.checks, comparisonBrowserAffinityStable:rec.comparisonBrowserAffinityStable, comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0, noFatalLogs: observedFatalLines.size === 0, noFixtureErrors: rec.errorLines.length === 0, ...(nightly ? { ...caseChecks(rec.cases), ...rec.guestIdentityChecks, ...rec.eventChecks, guestNavigatorCpu: rec.hardwareConcurrency === rec.cpu.hostNproc, guestFirefoxUA: /Firefox\/159(?:\.0)?(?:\s|$)/.test(rec.userAgent || '') } : {}) };
+    rec.checks = { ...guestCpuChecks(rec.cpu, state, rec.finalCpu.hostNprocObserved), ...rec.finalBrowserAffinity.checks, comparisonBrowserAffinityStable:rec.comparisonBrowserAffinityStable, comparisonHostCpuStable: rec.comparisonHostCpuStable, version: state.system === arm.version, isolated: state.isolated === true, config: startupLogs.includes(`cpus=${rec.cpu.requestedGuestCpus}, ram=4 GB`), benchOk: done.ok === true, cases: rec.cases.length === expectedCases, outerErrors: errors.length === 0, noFatalLogs: observedFatalLines.size === 0, noFixtureErrors: rec.errorLines.length === 0, ...(nightly ? { ...caseChecks(rec.cases), ...rec.contentTierChecks, ...rec.contentPhaseTranscript, ...rec.guestIdentityChecks, ...rec.eventChecks, guestNavigatorCpu: rec.hardwareConcurrency === rec.cpu.hostNproc, guestFirefoxUA: /Firefox\/159(?:\.0)?(?:\s|$)/.test(rec.userAgent || '') } : {}) };
     rec.pbljitLines = logs.split('\n').filter(l => l.includes('PBLJIT')).slice(-60);
     rec.fatalLines = [...observedFatalLines];
     rec.pass = Object.values(rec.checks).every(Boolean);
@@ -313,8 +376,16 @@ async function boot(index, armId) {
     rec.fatalLines = [...observedFatalLines];
     if (rec.fatalLines.length) rec.pass = false;
     if (rec.endpointOwnership?.verified && childState().alive && ws?.readyState === 1) { try { await call('Page.navigate', { url: 'about:blank' }); await call('Browser.close'); } catch {} }
-    for (const p of pending.values()) clearTimeout(p.timer); ws?.close(); await Promise.race([exited, sleep(10000)]);
-    if (!exitInfo && !spawnError) { try { if (childState().alive) process.kill(-child.pid, 'SIGTERM'); } catch {} await Promise.race([exited, sleep(5000)]); rec.forcedTermination = true; rec.pass = false; }
+    for (const p of pending.values()) clearTimeout(p.timer); ws?.close();
+    try {
+      // Pin an early-failing spawn too before any signal; no leader-only success.
+      ownedGroup ??= await pinOwnedGroup(child.pid);
+      rec.groupCleanup = await drainOwnedGroup(ownedGroup);
+      rec.forcedTermination = rec.groupCleanup.forced;
+      await fs.writeFile(dir + '/browser-group-cleanup.json', JSON.stringify(rec.groupCleanup,null,2)+'\n');
+      if (!rec.groupCleanup.pass) rec.pass = false;
+    } catch (error) { rec.cleanupError = String(error); rec.pass = false; }
+    await Promise.race([exited, sleep(1000)]);
     rec.browserExit = exitInfo; rec.outerErrors = errors;
     if (exitInfo?.code !== 0) rec.pass = false;
   }

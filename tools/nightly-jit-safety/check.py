@@ -42,6 +42,8 @@ def parse(log):
 
 def check(contract,log,scope='integer'):
     events,obs=parse(log);errors=[];rows=[]
+    if 'PBLJIT_OBS_EXHAUSTED' in log or 'PBLJIT_OPTION_EXHAUSTED' in log or len(obs)>=4096:errors.append('native observer budget reached; completeness unavailable')
+    if any(o.get('event') == 'invalid-kind' for o in obs):errors.append('invalid native specializer return kind')
     if scope not in ('smoke','integer','broad'):
         raise ValueError('unknown safety scope')
     if scope!='smoke' and contract.get('coverage','integer')!=scope:
@@ -100,7 +102,7 @@ def check(contract,log,scope='integer'):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--fixture',type=Path,required=True);p.add_argument('--logs',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--scope',choices=['smoke','integer','broad'],default='integer');a=p.parse_args()
-    if not str(a.out.resolve()).startswith('/mnt/p6/build/'):p.error('disk-backed task evidence required')
+    if not any(a.out.resolve().is_relative_to(root) for root in ('/mnt/p6/build','/mnt/p6/project/build')):p.error('disk-backed task evidence required')
     contract=json.loads((a.fixture/'contract.json').read_text())
     result=check(contract,a.logs.read_text(),a.scope)
     for name,want in contract['files'].items():

@@ -12,11 +12,11 @@ globalThis.NightlySafetyDriver = {
     const prefix='/home/admin/nightly-jit-safety/'+label+'/';
     if(typeof observerLogPath!=='string'||!observerLogPath.startsWith(prefix)||observerLogPath.split('/').some(v=>v==='..'||v==='.')||observerLogPath.includes('//'))throw Error('owned absolute guest stderr path required');
     const child=targetWindow.windowGlobalChild;
-    if(!child?.isInProcess||!child.isCurrentGlobal||child.isClosed)throw Error('direct live same-process WindowGlobalChild required');
+    if(!child?.isCurrentGlobal||child.isClosed||Cu.waiveXrays(child.contentWindow)!==target)throw Error('direct live local WindowGlobalChild/contentWindow required');
     const windowId=String(child.innerWindowId);
     if(!/^[1-9][0-9]*$/.test(windowId))throw Error('actual inner-window identity required');
     const runId=Services.uuid.generateUUID().toString();
-    Cu.importGlobalProperties(['IOUtils']);
+    if(typeof IOUtils==='undefined')Cu.importGlobalProperties(['IOUtils']);
     const emit=o=>console.log('NJS_PRIV '+JSON.stringify({label,runId,windowId,...o}));
     const read=async()=>{const bytes=await IOUtils.read(observerLogPath,{maxBytes:2097153});if(bytes.length>2097152)throw Error('observer log exceeds 2MiB');return bytes;};
     const source=name=>'file://'+prefix+label+'-main-'+name+'.js';

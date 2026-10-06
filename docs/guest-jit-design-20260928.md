@@ -45,7 +45,7 @@ that imports one shared `env.memory`.
   boundaries).
 - Firefox module (`.cache/deployed-firefox-current.bin`, inspected with
   wasm-objdump): post-processed with Binaryen `--fpcast-emu`
-  (`max-func-params@23`, `Agents.md:76-81`, `tools/build-firefox-portable-baseline.py:258`),
+  (`max-func-params@23`, [archived Agents.md, original lines 76–81](../diary.md), `tools/build-firefox-portable-baseline.py:258`),
   so every table-called function has the uniform type (23 x i64) -> i64. The
   table is fixed size (initial = max = 174179). Only `_start` and the table are
   exported (no `__stack_pointer`). It has a Start function, passive data

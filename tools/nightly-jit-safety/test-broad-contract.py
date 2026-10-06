@@ -40,6 +40,8 @@ require('broad fixture cannot pass integer scope',not result(scope='integer')['p
 old=copy.deepcopy(contract);old.pop('coverage')
 require('untagged integer fixture cannot pass broad scope',not result(contract=old)['pass'])
 require('semantics alone cannot establish broad coverage',not result([l for l in lines if 'PBLJIT_OBS' not in l])['pass'])
+for failure in ['PBLJIT_OBS_EXHAUSTED budget=4096','PBLJIT_OPTION_EXHAUSTED event=startup budget=64 pid=1',next(l.replace('event=install','event=invalid-kind') for l in lines if 'event=install' in l)]:
+    require('explicit runtime failure rejected '+failure.split(' ')[0],not result(lines+[failure])['pass'])
 for context in ('main','worker'):
     for id,claim in checker.BROAD_CLAIMS.items():
         filename=f'-{context}-{id}.js'

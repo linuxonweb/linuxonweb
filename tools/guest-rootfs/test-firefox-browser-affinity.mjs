@@ -7,7 +7,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { browserAffinityPlan, browserAffinityChecks, browserLaunchCommand, expandCpuList, prepareBrowserAffinity, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
+import { browserAffinityPlan, browserAffinityChecks, browserLaunchCommand, expandCpuList, parseCpuMax, cgroupPath, readCgroupCpuQuota, prepareBrowserAffinity, saveBrowserAffinityEvidence } from './firefox-browser-affinity.mjs';
 import { ownedBrowserEndpoint, ownedPageEndpoint } from './check-firefox-nightly-benchmark.mjs';
 
 const TASK = '/mnt/p6/build/firefox-nightly-browser-affinity-20261003';
@@ -41,11 +41,31 @@ if (mode === '--self-test') {
   check('count cannot exceed real allowed cores', () => assert.throws(() => browserAffinityPlan(8, '0-5', 'quota')));
   check('forged plan cannot change actual assigned cores', () => assert.throws(() => browserLaunchCommand('/browser', [], {...plan,assignedCpus:[0,1,2,3,4,5]})));
   check('relative launcher refuses', () => assert.throws(() => browserLaunchCommand('browser', [], plan)));
-  const observed = {hostNproc:6,browserHardwareConcurrency:6,browserCpuList:'2-7'};
+  const observed = {hostNproc:6,browserHardwareConcurrency:6,browserCpuList:'2-7',runnerQuota:{effectiveCpus:6},browserQuota:{effectiveCpus:6}};
   check('actual mask and dynamic counts agree', () => assert(Object.values(browserAffinityChecks(plan,observed)).every(Boolean)));
   check('same mask size on wrong cores refuses', () => assert.equal(browserAffinityChecks(plan,{...observed,browserCpuList:'0-5'}).actualBrowserAffinity,false));
   check('host quota drift refuses', () => assert.equal(browserAffinityChecks(plan,{...observed,hostNproc:8}).hostAllocationStable,false));
   check('browser API count mismatch refuses', () => assert.equal(browserAffinityChecks(plan,{...observed,browserHardwareConcurrency:8}).browserCountMatchesHost,false));
+  check('browser quota mismatch refuses even with six affinity CPUs', () => assert.equal(browserAffinityChecks(plan,{...observed,browserQuota:{effectiveCpus:1}}).browserQuotaMatchesHost,false));
+  check('runner quota mismatch refuses', () => assert.equal(browserAffinityChecks(plan,{...observed,runnerQuota:{effectiveCpus:1}}).runnerQuotaMatchesHost,false));
+  check('missing quota evidence refuses', () => assert.equal(browserAffinityChecks(plan,{...observed,browserQuota:undefined}).browserQuotaMatchesHost,false));
+  check('fractional quota rounds to usable CPU count', () => assert.equal(parseCpuMax('560000 100000\n'),5.6));
+  check('unlimited quota parses', () => assert.equal(parseCpuMax('max 100000\n'),null));
+  for (const invalid of ['', '0 100000', 'max 0', '80000 100000 extra', '1e5 100000'])
+    check('invalid cpu.max '+JSON.stringify(invalid), () => assert.throws(() => parseCpuMax(invalid)));
+  check('unified cgroup path parses', () => assert.equal(cgroupPath('0::/cpulimit.slice/test.slice\n'),'/cpulimit.slice/test.slice'));
+  for (const invalid of ['1:cpu:/test\n','0::/../headless.slice\n','0::/one\n0::/two\n'])
+    check('invalid cgroup path '+JSON.stringify(invalid), () => assert.throws(() => cgroupPath(invalid)));
+  const fake = out+'/fake-cgroup';
+  await fs.mkdir(fake+'/limited/child',{recursive:true});
+  await fs.writeFile(fake+'/limited/cpu.max','560000 100000\n');
+  await fs.writeFile(fake+'/limited/child/cpu.max','max 100000\n');
+  const generous = await readCgroupCpuQuota('0::/limited/child\n',6,fake);
+  check('nested 5.6 quota admits six actual CPUs', () => assert.equal(generous.effectiveCpus,6));
+  await fs.writeFile(fake+'/limited/child/cpu.max','80000 100000\n');
+  const throttled = await readCgroupCpuQuota('0::/limited/child\n',6,fake);
+  check('nested 0.8 quota admits one actual CPU', () => assert.equal(throttled.effectiveCpus,1));
+  check('ancestor record identifies limiting cgroup', () => assert.equal(throttled.ancestors.at(-1).cgroup,'/limited/child'));
   report.pass = true;
 } else {
   const affinity = await prepareBrowserAffinity(out), profile = out + '/profile';

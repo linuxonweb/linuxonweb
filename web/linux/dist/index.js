@@ -24,7 +24,7 @@ export class MachinePanicError extends Error {
         this.name = "MachinePanicError";
     }
 }
-const resources = (async () => {
+async function load_resources() {
     const { bytes, module: vmlinux } = await platform.load_wasm(new URL("../vmlinux.wasm", import.meta.url));
     const memories = read_wasm_memories(bytes);
     assert(memories.imports.length === 1 && memories.definitions.length === 0, "Kernel must define exactly one imported memory");
@@ -45,11 +45,9 @@ const resources = (async () => {
         sections,
         initramfs,
     };
-})();
-// Preload still overlaps the UI/guest-image download. A failed preload is
-// reported by spawnMachine; merely opening the page must not emit an unhandled
-// rejection before the user can choose Update & restart to recover.
-void resources.catch(() => {});
+}
+// Loading starts only after the application's package choice. Loading per boot
+// also prevents a newly selected initramfs from using an old compiled kernel.
 const PAGE_SIZE = 0x10000;
 // Leave the final wasm32 page out so the physical-memory size fits in u32.
 const KERNEL_MEMORY_MAXIMUM_PAGES = 0xffff;
@@ -167,16 +165,18 @@ export async function spawnMachine(options) {
     };
     const close = () => void finish();
     try {
-        const { sections, vmlinux, initramfs, memory: memory_type } = await resources;
+        const { sections, vmlinux, initramfs, memory: memory_type } = await load_resources();
         const initcpio = options.initcpio ? await options.initcpio : undefined;
         const module_pages = Number(memory_type.minimum);
         const initcpio_addr = module_pages * PAGE_SIZE;
         const pages = kernel_initial_pages(memory_type, initcpio?.byteLength ?? 0);
         const requested_memory = options.devicetree?.memory?.reg?.[1];
         if (requested_memory !== undefined && (!Number.isSafeInteger(requested_memory) || requested_memory < pages * PAGE_SIZE + 64 * 1024 * 1024)) {
-            throw new RangeError("Selected RAM is too small for the kernel, boot image and boot workspace. Select more memory.");
+            const required_mib = Math.ceil((pages * PAGE_SIZE + 64 * 1024 * 1024) / (1024 * 1024));
+            throw new RangeError(`Selected RAM is too small for this kernel and boot image. This image needs at least ${required_mib} MB including boot workspace. Select more memory.`);
         }
-        const { memory: wasm_memory, maximum_pages } = allocate_shared_memory(pages, KERNEL_MEMORY_MAXIMUM_PAGES);
+        const preferred_maximum_pages = requested_memory === undefined ? KERNEL_MEMORY_MAXIMUM_PAGES : Math.min(KERNEL_MEMORY_MAXIMUM_PAGES, Math.floor(requested_memory / PAGE_SIZE));
+        const { memory: wasm_memory, maximum_pages } = allocate_shared_memory(pages, preferred_maximum_pages);
         if (requested_memory !== undefined && requested_memory > maximum_pages * PAGE_SIZE) {
             throw new RangeError("This browser could not reserve the selected RAM. Select less memory or close other tabs.");
         }
@@ -420,7 +420,7 @@ export async function spawnMachine(options) {
         };
     }
     catch (error) {
-        await finish();
+        await fail(error);
         throw error;
     }
 }

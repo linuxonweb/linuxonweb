@@ -17,8 +17,15 @@ import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
 import { createLogViewer } from "./log-viewer.mjs";
 import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
-import { systemAsset, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
+import { systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
+import { createMoreMenu } from './more-menu.mjs';
+import { installBuildInfo } from './build-info.mjs';
+import { installBrowserInfo } from './browser-info.mjs';
+import { bootWgpuTest } from './gpu-test-boot.mjs';
+import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
+import { appendDesktopExtras } from './desktop-extras.mjs';
+import { nonSharedBytes } from './console-bytes.mjs';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
@@ -30,9 +37,46 @@ function proxyBaseUrl() {
   return `${wsProto}//${location.host}`;
 }
 
+installBuildInfo({ footer: document.getElementById("build-info") });
+
 const status = document.getElementById("status");
 const launchButtons = [...document.querySelectorAll(".launch")];
 const canvas = document.getElementById("fb");
+const toolsToggle = document.getElementById('tools-toggle');
+const toolsPanel = document.getElementById('tools-panel');
+const floatingTools = document.querySelector('.toolbar');
+let toolPosition = { x: 8, y: 8 }, dragTools = null, suppressToolsClick = false;
+function positionTools() {
+  const width = floatingTools.getBoundingClientRect().width;
+  const height = floatingTools.getBoundingClientRect().height;
+  toolPosition.x = Math.max(0, Math.min(toolPosition.x, Math.max(0, innerWidth - width)));
+  toolPosition.y = Math.max(0, Math.min(toolPosition.y, Math.max(0, innerHeight - height)));
+  floatingTools.style.left = `${toolPosition.x}px`; floatingTools.style.top = `${toolPosition.y}px`;
+}
+function expandTools(expanded) {
+  if (!expanded && document.querySelector('.clipboard-error:not([hidden])')) return;
+  toolsPanel.hidden = !expanded;
+  toolsToggle.setAttribute('aria-expanded', String(expanded));
+  toolsToggle.setAttribute('aria-label', expanded ? 'Fold tools' : 'Expand tools');
+  if (!expanded) {
+    for (const menu of toolsPanel.querySelectorAll('.more-menu')) { menu.hidden = true; document.querySelector(`[aria-controls="${menu.id}"]`)?.setAttribute('aria-expanded','false'); }
+    setSettingsOpen(false); setStopConfirmOpen(false);
+    if (toolsPanel.contains(document.activeElement)) toolsToggle.focus();
+  }
+  positionTools();
+}
+toolsToggle.addEventListener('click', event => { if (suppressToolsClick && event.detail !== 0) { suppressToolsClick = false; return; } suppressToolsClick = false; expandTools(toolsPanel.hidden); });
+toolsToggle.addEventListener('keydown', event => { if (!['Enter',' '].includes(event.key)) return; event.preventDefault(); if (!event.repeat) toolsToggle.click(); });
+toolsToggle.addEventListener('pointerdown', event => { if (!event.isPrimary || event.button !== 0) return; suppressToolsClick = false; dragTools = { id: event.pointerId, x: event.clientX, y: event.clientY, origin: { ...toolPosition }, moved: false }; toolsToggle.setPointerCapture(event.pointerId); });
+toolsToggle.addEventListener('pointermove', event => { if (dragTools?.id !== event.pointerId) return; const dx = event.clientX - dragTools.x, dy = event.clientY - dragTools.y; if (Math.hypot(dx,dy) > 6) dragTools.moved = true; if (!dragTools.moved) return; toolPosition = { x: dragTools.origin.x + dx, y: dragTools.origin.y + dy }; positionTools(); });
+function endToolsDrag(event) { if (dragTools?.id !== event.pointerId) return; suppressToolsClick = dragTools.moved || event.type === 'pointercancel'; dragTools = null; }
+toolsToggle.addEventListener('pointerup', endToolsDrag);
+toolsToggle.addEventListener('pointercancel', endToolsDrag);
+toolsToggle.addEventListener('lostpointercapture', event => { if (dragTools?.id === event.pointerId) { suppressToolsClick = true; dragTools = null; } });
+window.addEventListener('resize', positionTools);
+new ResizeObserver(positionTools).observe(floatingTools);
+positionTools();
+window.addEventListener('clipboard-notice-error', () => expandTools(true));
 const mobileKeyboard = createMobileKeyboard({
   toggle: document.getElementById("keyboard-toggle"),
   panel: document.getElementById("mobile-keyboard"),
@@ -103,33 +147,76 @@ for (const button of document.querySelectorAll(".toolbar .tool")) {
     timer = setTimeout(() => button.classList.remove("show-label"), 1500);
   });
 }
-const firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
+let firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
 // ?gputest=1 serves the guest Vulkan ICD over vsock and appends gpu/gputest.cpio.
-const gputestMode = gputestEnabled();
+let gputestMode = gputestEnabled();
 // ?gpubackend=webgpu|webgl forces the gputest host backend (default auto).
-const gpuBackend = gpuBackendParam();
+let gpuBackend = gpuBackendParam();
 // ?gpu=1 serves guest GPU sessions (vsock 4050) without the demo archive.
 // Firefox mode serves them by default (guest WebGL on Zink); ?gpu=0 opts out.
-const gpuParam = new URLSearchParams(location.search).get("gpu");
-const guestGpuEnabled = mode => gputestMode || gpuParam === "1" || (mode === "firefox" && gpuParam !== "0");
+let gpuParam = new URLSearchParams(location.search).get("gpu");
+const guestGpuEnabled = mode => selectedGpuTest !== 'software' && (gputestMode || gpuParam === "1" || (mode === "firefox" && gpuParam !== "0"));
 const settingsKey = "linuxonweb.machine-settings.v1";
 const resumeKey = "linuxonweb.restart-mode.v1";
-const modes = ["guest", "console", "startx", "firefox"];
-const minimumFirefoxMemory = 2048;
+const modes = ["guest", "console", "startx", "firefox", "wgpu"];
+let selectedGpuTest = gpuTestSelection(new URL(location.href));
+let gpuTestReport = null;
+export function guestGpuTest() { return gpuTestReport; }
 let activeMachine = null;
+let clipboardVsock = null;
+let clipboardInput = null;
+installClipboardButton({
+  button: document.getElementById('clipboard-paste'),
+  notice: document.getElementById('clipboard-notice'),
+  async paste() {
+    if (!activeMachine) throw new Error('Start Linux before pasting.');
+    const item = await readHostClipboard();
+    if (currentMode === 'console') {
+      if (item.kind !== 1) throw new Error('Console mode accepts text only. Start X to paste an image.');
+      if (!consoleInputWriter) throw new Error('Linux console is unavailable.');
+      await consoleInputWriter.write(item.bytes);
+      return 'Text sent to Linux console.';
+    }
+    await guestClipboard(clipboardVsock, 1, item);
+    if (!clipboardInput) throw new Error('Linux input is unavailable; clipboard was set.');
+    canvas.focus();
+    clipboardInput.key(Key.LEFTCTRL, true);
+    if (item.kind === 1) clipboardInput.key(Key.LEFTSHIFT, true);
+    clipboardInput.key(Key.V, true); clipboardInput.key(Key.V, false);
+    if (item.kind === 1) clipboardInput.key(Key.LEFTSHIFT, false);
+    clipboardInput.key(Key.LEFTCTRL, false);
+    return item.kind === 2 ? 'Image ready in Linux clipboard · paste requested.' : 'Text ready in Linux clipboard · paste requested.';
+  },
+});
+installClipboardButton({
+  button: document.getElementById('clipboard-copy'),
+  notice: document.getElementById('clipboard-copy-notice'),
+  async copy() {
+    if (!activeMachine) throw new Error('Start Linux before copying.');
+    if (currentMode === 'console') throw new Error('Console mode has no X11 clipboard. Start X to copy from Linux.');
+    const item = await guestClipboard(clipboardVsock, 3, undefined, 25000);
+    await writeHostClipboard(item);
+    return { message: item.kind === 2 ? 'Linux image copied to host clipboard.' : 'Linux text copied to host clipboard.', item };
+  },
+});
 let persistentHome = null;
 let releaseHomeLock = null;
+let homeLeaseQueue = Promise.resolve();
+function queueHomeLease(operation) {
+  const result = homeLeaseQueue.then(operation);
+  homeLeaseQueue = result.catch(() => {});
+  return result;
+}
 export function guestHome() { return persistentHome; }
 const storagePanel = createStoragePanel({
   parent: document.querySelector('main'),
   async usage() {
-    let home;
-    if (persistentHome) home = await persistentHome.usage();
-    else {
+    const home = await queueHomeLease(async () => {
+      if (persistentHome) return persistentHome.usage();
       const release = await acquireHomeLock();
-      try { const store = await openPersistentHome(); try { home = await store.usage(); } finally { await store.destroy(); } }
-      finally { release(); }
-    }
+      try { const store = await openPersistentHome(); try { return await store.usage(); } finally { await store.destroy(); } }
+      finally { await release(); }
+    });
     return { home, system: await systemUsage(), estimate: await navigator.storage?.estimate?.(), persistent: await navigator.storage?.persisted?.() };
   },
   persist: () => navigator.storage?.persist?.(),
@@ -178,6 +265,14 @@ let currentMode = null;
 let configurationLocked = false;
 let restarting = false;
 let pendingConfiguration = null;
+let pendingTestUrl = null;
+const openBrowserInfo = installBrowserInfo({ dialog: document.getElementById('browser-info'), content: document.getElementById('browser-info-content'), close: document.getElementById('browser-info-close'), toggle: document.getElementById('more-toggle') });
+createMoreMenu({
+  action: () => void openBrowserInfo(),
+  toggle: document.getElementById('more-toggle'),
+  menu: document.getElementById('more-menu'),
+  launch: requestGpuTest,
+});
 let resumeMode = null;
 try {
   const savedMode = sessionStorage.getItem(resumeKey);
@@ -244,6 +339,7 @@ function openConsole() {
 let gpuHost = null;
 let gpuLogTail = '';
 function writeConsole(value, source = "guest") {
+  if (typeof value !== 'string') value = nonSharedBytes(value);
   guestLogs.write(value, source);
   terminal?.write(value);
   const text = typeof value === 'string' ? value : new TextDecoder().decode(value);
@@ -268,9 +364,16 @@ function hostLog(line, kind = "host") {
   writeConsole(`[host${kind === "error" ? " error" : ""}] ${line}\r\n`, "host");
 }
 
+function errorDetails(error) {
+  const message = String(error?.message || error || 'No error details were provided');
+  const stack = typeof error?.stack === 'string' ? error.stack : '';
+  return stack && !stack.includes(message) ? `${message}\n${stack}` : stack || message;
+}
+
 function setStatus(message, state = "idle") {
   status.textContent = message;
   status.dataset.state = state;
+  if (state === 'error') expandTools(true);
 }
 
 // The staged kernel supports at most CONFIG_NR_CPUS=64.
@@ -286,12 +389,8 @@ function validConfiguration(value) {
 let activeConfiguration = { ...defaults };
 try {
   const saved = JSON.parse(localStorage.getItem(settingsKey));
-  if (saved?.ram === 256) saved.ram = 512;
   if (validConfiguration(saved)) activeConfiguration = { ...saved, backend: ['canvas2d', 'auto', 'webgl'].includes(saved.backend) ? saved.backend : 'canvas2d' };
 } catch { /* Ignore missing or malformed saved settings. */ }
-// Firefox's larger boot image needs extra headroom. Wasm32 cannot advertise
-// more than 4 GiB; console/X modes also expose smaller memory configurations.
-if ((resumeMode || (firefoxMode ? "firefox" : null)) === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
 function readConfiguration() {
   return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value };
 }
@@ -306,11 +405,9 @@ function showConfiguration(value) {
 function updateSettingsState() {
   const value = readConfiguration();
   settingsApply.disabled = configurationLocked || !validConfiguration(value)
-    || (currentMode === "firefox" && value.ram < minimumFirefoxMemory)
     || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram && value.backend === activeConfiguration.backend);
-  for (const option of ramSelect.options) option.disabled = currentMode === "firefox" && Number(option.value) < minimumFirefoxMemory;
   settingsNote.textContent = configurationLocked ? "Please wait while the machine starts or restarts."
-    : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox requires at least 2 GB. Its default is 4 GB."
+    : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox may need more memory; boot checks the selected image before starting."
       : activeMachine ? "Applying changes restarts the guest. You can review or cancel before anything changes."
         : "Choose settings, then apply your changes.";
 }
@@ -334,6 +431,12 @@ function updateResolution() {
 function setSettingsOpen(open) {
   settingsPanel.hidden = !open;
   settingsToggle.setAttribute("aria-expanded", String(open));
+  if (open) placeToolsPopup(settingsPanel, settingsToggle);
+}
+function placeToolsPopup(panel, button) {
+  const anchor = button.getBoundingClientRect(), bounds = panel.getBoundingClientRect();
+  panel.style.left = `${Math.max(8, Math.min(anchor.left, innerWidth - bounds.width - 8))}px`;
+  panel.style.top = `${Math.max(8, Math.min(anchor.bottom + 8, innerHeight - bounds.height - 8))}px`;
 }
 
 settingsToggle.addEventListener("click", (ev) => {
@@ -355,10 +458,67 @@ updateResolution();
 updateCpuLabel();
 
 function cancelConfiguration() {
+  const cancelledTest = pendingTestUrl !== null;
+  pendingTestUrl = null;
   pendingConfiguration = null;
   restartDialog.close();
   showConfiguration(activeConfiguration);
-  settingsToggle.focus();
+  (cancelledTest ? document.getElementById('more-toggle') : settingsToggle).focus();
+}
+function requestGpuTest(url) {
+  if (configurationLocked || restarting) return;
+  if (!activeMachine) { void launchGpuTest(url); return; }
+  pendingTestUrl = url;
+  pendingConfiguration = null;
+  document.getElementById('restart-error').hidden = true;
+  document.getElementById('restart-title').textContent = 'Boot a GPU test app?';
+  document.getElementById('restart-summary').textContent = 'Continue stops this guest and starts the selected test app.';
+  document.getElementById('restart-warning').hidden = false;
+  restartDialog.showModal();
+}
+function gpuTestSelection(url) {
+  const params = url.searchParams;
+  if (params.get('gputest') === 'wgpu' && ['webgpu', 'webgl'].includes(params.get('wgpubackend'))) return params.get('wgpubackend');
+  if (params.get('gputest') === '1' && params.get('gputestapp') === 'glgears' && params.get('gldriver') === 'softpipe') return 'software';
+  return null;
+}
+async function launchGpuTest(url) {
+  const selection = gpuTestSelection(url);
+  if (!selection) return;
+  restarting = true;
+  lockConfiguration(true);
+  setStatus('starting GPU test…', 'booting');
+  try {
+    await persistentHome?.flush();
+    if (gpuTestReport) gpuTestReport.stopped = true;
+    activeMachine?.close();
+    await activeMachine?.closed.catch(() => {});
+    await persistentHome?.destroy();
+    persistentHome = null;
+    releaseHomeLock?.(); releaseHomeLock = null;
+    activeMachine = null;
+    gpuTestReport = null;
+    sessionStorage.removeItem(resumeKey);
+    // Stay in this app and reuse its canvas, controls and logs for the new VM.
+    const next = new URL(location.href);
+    for (const key of ['firefox', 'gputest', 'gputestapp', 'gldriver', 'glmode', 'gpubackend', 'wgpubackend', 'displaybackend']) next.searchParams.delete(key);
+    for (const [key, value] of url.searchParams) next.searchParams.set(key, value);
+    history.replaceState(null, '', next);
+    firefoxMode = next.searchParams.get('firefox') === '1';
+    gputestMode = gputestEnabled(next.search);
+    gpuBackend = gpuBackendParam(next.search);
+    gpuParam = next.searchParams.get('gpu');
+    selectedGpuTest = selection;
+    restarting = false;
+    lockConfiguration(false);
+    showStopButton(false);
+    await boot(selection === 'software' ? 'startx' : 'wgpu');
+  } catch (error) {
+    restarting = false;
+    lockConfiguration(false);
+    setStatus(activeMachine ? 'running' : 'idle', activeMachine ? 'running' : 'idle');
+    storagePanel.message(`Could not start the GPU test: ${error.message || error}`, true);
+  }
 }
 document.getElementById("restart-cancel").addEventListener("click", cancelConfiguration);
 restartDialog.addEventListener("cancel", (event) => { event.preventDefault(); cancelConfiguration(); });
@@ -373,6 +533,13 @@ settingsApply.addEventListener("click", () => {
   restartDialog.showModal();
 });
 restartContinue.addEventListener("click", async () => {
+  if (pendingTestUrl && !restarting) {
+    const url = pendingTestUrl;
+    pendingTestUrl = null;
+    restartDialog.close();
+    await launchGpuTest(url);
+    return;
+  }
   if (!pendingConfiguration || restarting) return;
   const next = pendingConfiguration;
   let previous;
@@ -438,53 +605,8 @@ function ramBytes(mebibytes) {
   return mebibytes === 4096 ? 0xffff0000 : mebibytes * 1024 * 1024;
 }
 
-async function boot(mode) {
-  if (configurationLocked || activeMachine) return;
-  currentMode = mode;
-  displayStage.hidden = mode === 'console';
-  if (mode === "firefox") activeConfiguration.ram = Math.max(minimumFirefoxMemory, activeConfiguration.ram);
-  // Only confirmed configuration reaches the guest, never uncommitted drafts.
-  showConfiguration(activeConfiguration);
-  updateResolution();
-  lockConfiguration(true);
-  setSettingsOpen(false);
-  setStatus(`booting ${mode}…`, "booting");
-  guestLogs.clear();
-  if (mode === "console") openConsole();
-  terminal?.clear();
-  hostLog(
-    `boot mode=${mode}, display=${FB_W}x${FB_H}, cpus=${cpuInput.value}, ram=${ramSelect.selectedOptions[0].text}`,
-  );
-  let initramfs;
-  let gputestInit = false;
-  const rootfs = null;
-  try {
-    releaseHomeLock = await acquireHomeLock();
-    persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true) });
-    const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
-    const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
-    initramfs = new Uint8Array(await new Response(body).arrayBuffer());
-    if (gputestMode) {
-      const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam()]);
-      if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
-    }
-    storagePanel.message('Home ready · waiting for guest mount');
-  } catch (error) {
-    await persistentHome?.destroy().catch(() => {}); persistentHome = null;
-    releaseHomeLock?.(); releaseHomeLock = null;
-    setStatus('boot failed', 'error'); lockConfiguration(false);
-    storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
-  }
-
-  const input = new TransformStream();
-  const output = new TransformStream();
-  consoleInputWriter = input.writable.getWriter();
-  const pointer = inputDevice({
-    name: "wasm keyboard/mouse",
-    absXMax: FB_W - 1,
-    absYMax: FB_H - 1,
-  });
-
+// The normal desktop and More-menu tests share the same guest input behavior.
+function bindGuestCanvasInput(pointer) {
   canvas.tabIndex = 0;
   canvas.style.outline = "none";
   canvas.style.touchAction = panDisplay ? "pan-x pan-y" : "none";
@@ -630,6 +752,141 @@ async function boot(mode) {
   );
   onCanvas("contextmenu", (ev) => ev.preventDefault());
 
+  return inputEvents;
+}
+
+function chooseSystemUpdate({ current, candidate, changed, canContinue }) {
+  const dialog = document.getElementById('system-update-dialog');
+  const names = { kernel: 'Linux kernel', plain: 'Linux desktop', firefox: 'Firefox' };
+  document.getElementById('system-update-summary').textContent = `${changed.map(key => names[key]).join(', ')} has an update (${current.version} → ${candidate.version}).`;
+  document.getElementById('system-update-cache').textContent = canContinue
+    ? 'Update downloads the new packages. Continue uses your cached system. Your home files are preserved.'
+    : 'The previous system is not fully cached. Update is needed to start. Your home files are preserved.';
+  document.getElementById('system-update-continue').disabled = !canContinue;
+  return new Promise(resolve => {
+    dialog.returnValue = '';
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue === 'update') setStatus('updating system…', 'booting');
+      resolve(dialog.returnValue);
+    }, { once: true });
+    dialog.showModal();
+  });
+}
+
+function chooseFirefoxMemory(currentRam) {
+  const dialog = document.getElementById('firefox-memory-dialog');
+  document.getElementById('firefox-memory-current').textContent = currentRam === 4096 ? '4 GB' : `${currentRam} MB`;
+  return new Promise(resolve => {
+    dialog.returnValue = '';
+    dialog.addEventListener('close', () => {
+      const choice = dialog.returnValue;
+      resolve(choice === 'current' ? currentRam : ['1024', '2048'].includes(choice) ? Number(choice) : null);
+    }, { once: true });
+    dialog.showModal();
+  });
+}
+
+async function boot(mode) {
+  if (configurationLocked || activeMachine) return;
+  if (mode !== 'wgpu') {
+    lockConfiguration(true);
+    setStatus('checking system updates…', 'booting');
+    try {
+      if (!await prepareSystemBoot(mode === 'firefox' ? 'firefox' : 'plain', chooseSystemUpdate)) {
+        setStatus('ready', 'idle');
+        return;
+      }
+    } catch (error) {
+      setStatus('update check failed', 'error');
+      storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
+    } finally { lockConfiguration(false); }
+  }
+  if (mode === 'firefox' && ![1024, 2048].includes(activeConfiguration.ram)) {
+    lockConfiguration(true);
+    let ram;
+    try { ram = await chooseFirefoxMemory(activeConfiguration.ram); }
+    finally { lockConfiguration(false); }
+    if (ram === null) return;
+    activeConfiguration = { ...activeConfiguration, ram };
+  }
+  currentMode = mode;
+  displayStage.hidden = mode === 'console';
+  // Only confirmed configuration reaches the guest, never uncommitted drafts.
+  showConfiguration(activeConfiguration);
+  updateResolution();
+  lockConfiguration(true);
+  setSettingsOpen(false);
+  setStatus(`booting ${mode}…`, "booting");
+  guestLogs.clear();
+  if (mode === "console") openConsole();
+  terminal?.clear();
+  hostLog(
+    `boot mode=${mode}, display=${FB_W}x${FB_H}, cpus=${cpuInput.value}, ram=${ramSelect.selectedOptions[0].text}`,
+  );
+  let initramfs;
+  let gputestInit = false;
+  const rootfs = null;
+  if (mode === 'wgpu') {
+    try {
+      activeMachine = await bootWgpuTest({ backend: selectedGpuTest, canvas, log: writeConsole, onStatus: setStatus,
+        configuration: { cpus: activeConfiguration.cpus, memoryBytes: ramBytes(activeConfiguration.ram), displayBackend: activeConfiguration.backend } });
+      clipboardVsock = activeMachine.clipboardVsock; clipboardInput = activeMachine.gpuTestInput;
+      gpuTestReport = activeMachine.gpuTestReport;
+      const testInputEvents = bindGuestCanvasInput(activeMachine.gpuTestInput);
+      mobileKeyboard.setKeyHandler((code, down) => activeMachine?.gpuTestInput?.key(code, down));
+      void activeMachine.closed.finally(() => {
+        clipboardVsock = null; clipboardInput = null;
+        testInputEvents.abort();
+        mobileKeyboard.setKeyHandler(null);
+        cancelGuestGesture();
+        cancelGuestGesture = () => {};
+      }).catch(() => {});
+      lockConfiguration(false);
+      for (const button of launchButtons) button.disabled = true;
+      showStopButton(true);
+      storagePanel.message('Isolated Vulkan test running · your saved home is preserved.');
+      activeMachine.closed.catch(error => { if (!restarting) hostLog(`Test stopped: ${error}`, 'error'); });
+    } catch (error) {
+      activeMachine = null;
+      setStatus('GPU test failed to start', 'error');
+      hostLog(error.message, 'error');
+      storagePanel.message(error.message, true);
+      lockConfiguration(false);
+    }
+    return;
+  }
+  try {
+    await queueHomeLease(async () => {
+      releaseHomeLock = await acquireHomeLock();
+      try { persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true) }); }
+      catch (error) { await releaseHomeLock(); releaseHomeLock = null; throw error; }
+    });
+    const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
+    const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
+    initramfs = await appendDesktopExtras(new Uint8Array(await new Response(body).arrayBuffer()));
+    if (gputestMode || selectedGpuTest === 'software') {
+      const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam(location.search)]);
+      if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
+    }
+    storagePanel.message('Home ready · waiting for guest mount');
+  } catch (error) {
+    await persistentHome?.destroy().catch(() => {}); persistentHome = null;
+    releaseHomeLock?.(); releaseHomeLock = null;
+    setStatus('boot failed', 'error'); lockConfiguration(false);
+    storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
+  }
+
+  const input = new TransformStream();
+  const output = new TransformStream();
+  consoleInputWriter = input.writable.getWriter();
+  const pointer = inputDevice({
+    name: "wasm keyboard/mouse",
+    absXMax: FB_W - 1,
+    absYMax: FB_H - 1,
+  });
+
+  const inputEvents = bindGuestCanvasInput(pointer);
+
   const proxyUrl = proxyBaseUrl();
   const network = createNetwork(wsTcpProxyNetwork({ proxyUrl }));
   const attached = attach_guest(network);
@@ -644,8 +901,8 @@ async function boot(mode) {
     attached.attachment.device,
     fileSystemDevice(persistentHome, { tag: 'home', cache: true }),
   ];
-  const vsock = guestGpuEnabled(mode) ? vsockDevice() : null;
-  if (vsock) devices.push(vsock);
+  const vsock = vsockDevice();
+  devices.push(vsock);
   if (rootfs) {
     devices.push(
       blockDevice({
@@ -662,10 +919,13 @@ async function boot(mode) {
   const inputWriter = consoleInputWriter;
   let bootReader = null;
   let bootClosed = false;
+  let machineStarted = false;
   const cleanupBoot = () => {
     if (bootClosed) return;
     bootClosed = true;
     gpuHost?.stop(); gpuHost = null;
+    if (clipboardVsock === vsock) { clipboardVsock = null; clipboardInput = null; }
+    vsock.close();
     inputEvents.abort();
     mobileKeyboard.setKeyHandler(null);
     cancelGuestGesture();
@@ -686,7 +946,7 @@ async function boot(mode) {
       if (done) break;
       writeConsole(new Uint8Array(value));
     }
-  })().catch((err) => { if (!restarting && !bootClosed) hostLog(`guest console closed: ${err}`, "error"); });
+  })().catch((err) => { if (machineStarted && !restarting && !bootClosed) hostLog(`guest console closed: ${err?.message || err || "no error details"}`, "error"); });
 
   try {
     const consoleMode = mode === "console";
@@ -698,7 +958,7 @@ async function boot(mode) {
       'home.persistent=1',
       mode === "firefox" ? "firefox=1" : "",
       gputestInit ? "gputest=1" : "",
-      ...(gputestInit ? gputestCmdlineFlags() : []),
+      ...(gputestInit ? gputestCmdlineFlags(location.search) : []),
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
     ]
       .filter(Boolean)
@@ -719,6 +979,8 @@ async function boot(mode) {
       },
     });
     activeMachine = machine;
+    machineStarted = true;
+    clipboardVsock = vsock; clipboardInput = pointer;
     mobileKeyboard.setKeyHandler((code, down) => pointer.key(code, down));
     void machine.closed
       .finally(cleanupBoot)
@@ -738,7 +1000,7 @@ async function boot(mode) {
     else canvas.focus();
     hostLog("machine started (framebuffer + virtio input/console/net)");
     // Serve guest GPU sessions until the machine closes (cleanupBoot stops it).
-    if (vsock && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog, backend: gpuBackend });
+    if (guestGpuEnabled(mode) && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog, backend: gpuBackend });
     bootReader = machine.bootConsole.getReader();
     (async () => {
       for (;;) {
@@ -749,8 +1011,8 @@ async function boot(mode) {
     })().catch((err) => { if (!restarting && !bootClosed) hostLog(`boot console closed: ${err}`, "error"); });
     machine.closed.catch((err) => {
       if (restarting) return;
-      setStatus(`stopped: ${err}`, "error");
-      hostLog(String(err), "error");
+      setStatus(`stopped: ${err?.message || err || "no error details"}`, "error");
+      hostLog(errorDetails(err), "error");
     });
   } catch (err) {
     cleanupBoot();
@@ -758,8 +1020,8 @@ async function boot(mode) {
     persistentHome = null;
     activeMachine = null;
     setStatus("boot failed", "error");
-    storagePanel.message(`Boot failed: ${err.message || err}`, true);
-    hostLog(String(err?.stack || err), "error");
+    storagePanel.message(`Boot failed: ${err?.message || err || "No error details were provided"}`, true);
+    hostLog(errorDetails(err), "error");
     consoleInputWriter = null;
     lockConfiguration(false);
   }
@@ -771,17 +1033,22 @@ const bootButton = document.getElementById("boot");
 const bootIcon = bootButton.querySelector("svg");
 const powerShapes = bootIcon.innerHTML;
 const stopConfirm = document.getElementById("stop-confirm");
+const powerMenu = document.getElementById('power-menu');
+createMoreMenu({ toggle: bootButton, menu: powerMenu, canOpen: () => !configurationLocked, action: item => { if (item.dataset.action === 'stop') setStopConfirmOpen(true); else void boot(item.dataset.mode); } });
 function showStopButton(running) {
   bootIcon.innerHTML = running ? '<rect x="6" y="6" width="12" height="12" rx="1.5" />' : powerShapes;
   bootButton.classList.toggle("stop", running);
-  bootButton.querySelector(".label").textContent = running ? "Stop guest" : "Boot guest";
+  bootButton.querySelector(".label").textContent = 'Power';
+  document.getElementById('power-stop').hidden = !running;
+  powerMenu.hidden = true;
   if (running) bootButton.disabled = false;
   else setStopConfirmOpen(false);
 }
 function setStopConfirmOpen(open) {
   stopConfirm.hidden = !open;
+  if (open) placeToolsPopup(stopConfirm, bootButton);
   if (open) bootButton.setAttribute("aria-expanded", "true");
-  else bootButton.removeAttribute("aria-expanded");
+  else bootButton.setAttribute("aria-expanded", String(!powerMenu.hidden));
   if (open) document.getElementById("stop-cancel").focus();
 }
 stopConfirm.addEventListener("click", (ev) => ev.stopPropagation());
@@ -805,6 +1072,7 @@ async function stopGuest() {
   lockConfiguration(true);
   setStatus("stopping…", "booting");
   await persistentHome?.flush().catch(() => {});
+  if (gpuTestReport) gpuTestReport.stopped = true;
   activeMachine.close();
   await activeMachine.closed.catch(() => {});
   // Reload releases the old guest's listeners, streams, workers and network,
@@ -816,19 +1084,12 @@ async function stopGuest() {
   location.replace(url);
 }
 
-for (const button of launchButtons) {
-  button.addEventListener("click", (ev) => {
-    if (button === bootButton && activeMachine) {
-      ev.stopPropagation();
-      setStopConfirmOpen(stopConfirm.hidden);
-    } else void boot(button.dataset.mode);
-  });
-}
-
 // Firefox mode is intended for unattended Chromium testing. Boot immediately;
 // guest init waits 10 seconds after X is ready before launching /bin/firefox.
 // ?gputest=1 alone auto-boots X; combined with ?firefox=1 it boots Firefox.
-if (resumeMode || firefoxMode || gputestMode) {
+if (selectedGpuTest === 'webgpu' || selectedGpuTest === 'webgl') {
+  queueMicrotask(() => void boot('wgpu'));
+} else if (resumeMode || firefoxMode || gputestMode) {
   // Resume the confirmed launch mode after a clean restart. Defaults are
   // 4 GiB for Firefox and 1 GiB otherwise; validated preferences take priority.
   const mode = resumeMode || (firefoxMode ? "firefox" : "startx");

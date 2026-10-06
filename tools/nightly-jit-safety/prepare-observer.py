@@ -6,7 +6,7 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--overlay',type=Path,required=True)
 p.add_argument('--out',type=Path,required=True)
 a=p.parse_args()
-if not str(a.out.resolve()).startswith('/mnt/p6/build/'):p.error('disk-backed task output required')
+if not any(a.out.resolve().is_relative_to(root) for root in ('/mnt/p6/build','/mnt/p6/project/build')):p.error('disk-backed task output required')
 a.out.mkdir(parents=True,exist_ok=False)
 records=[]
 def replace(s,old,new):
@@ -39,7 +39,12 @@ void Observe(JSScript* script, jsbytecode* pc, JSContext* cx,
              uint32_t sp = 0, int32_t delta = 0, uint32_t ic = 0) {
   if (!ObserverEnabled(script)) return;
   static std::atomic<int> remaining{4096};
-  if (remaining.fetch_sub(1, std::memory_order_relaxed) <= 0) return;
+  int observationRemaining = remaining.fetch_sub(1, std::memory_order_relaxed);
+  if (observationRemaining <= 0) {
+    if (observationRemaining == 0)
+      fprintf(stderr, "PBLJIT_OBS_EXHAUSTED budget=4096\\n");
+    return;
+  }
   fprintf(stderr, "PBLJIT_OBS event=%s file=%s line=%u off=%u tid=%ld pthread=%lu tls=%p epoch=%llu fn=%u kind=%lld sp=%u pcDelta=%d ic=%u\\n",
           event, script->filename() ? script->filename() : "?",
           script->lineno(), unsigned(pc - script->code()),
@@ -94,7 +99,15 @@ s=replace(s,anchor,observer+anchor)
 s=replace(s,'if (IncrementalGC(cx)) return false;','if (IncrementalGC(cx)) {\n    ObserveSkip(script, pc, cx, "skip-incremental");\n    return false;\n  }')
 s=replace(s,'    Evict(e);\n    e->pc = pc;\n    e->script = script;','    if (e->state == 1 && e->majorGC != gc) Observe(script, pc, cx, "gc-evict", e->fn);\n    Evict(e);\n    e->pc = pc;\n    e->script = script;')
 s=replace(s,'    if (e->state != 1) return false;\n  }\n  // Same pc pointer','    if (e->state != 1) { ObserveSkip(script, pc, cx, "reject"); return false; }\n    Observe(script, pc, cx, "install", e->fn);\n  }\n  // Same pc pointer')
-s=replace(s,'  if (kind == NoEntry || kind == Bail) {','  Observe(script, pc, cx, kind == NoEntry ? "noentry" : kind == Bail ? "bail" : kind == Interrupt ? "interrupt" : "run",\n          e->fn, kind, kind == NoEntry ? 0 : out.sp,\n          kind == NoEntry ? 0 : out.pcDelta, kind == NoEntry ? 0 : out.icIndex);\n  if (kind == NoEntry || kind == Bail) {')
+s=replace(s,'  if (kind == NoEntry || kind == Bail) {','''  // emitExit writes all three output fields for Normal, Bail and Interrupt.
+  // Direct NoEntry returns and unexpected kinds have no valid output storage.
+  bool observedOutputValid = kind == Normal || kind == Bail || kind == Interrupt;
+  Observe(script, pc, cx, kind == NoEntry ? "noentry" : kind == Bail ? "bail" :
+          kind == Interrupt ? "interrupt" : kind == Normal ? "run" : "invalid-kind",
+          e->fn, kind, observedOutputValid ? out.sp : 0,
+          observedOutputValid ? out.pcDelta : 0,
+          observedOutputValid ? out.icIndex : 0);
+  if (kind == NoEntry || kind == Bail) {''')
 save(rel,old,s)
 rel='js/src/vm/PortableBaselineInterpret.cpp';old=(a.overlay/rel).read_text();s=old
 s=replace(s,'bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,','void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,\n                 const char* reason);\nvoid ObservePolicy(JSScript* script, JSContext* cx);\nbool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,')

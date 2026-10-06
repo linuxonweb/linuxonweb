@@ -127,8 +127,9 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     task, out = args.task_root.resolve(strict=True), args.output.resolve()
-    if not task.is_relative_to('/mnt/p6/build') or task == Path('/mnt/p6/build'):
-        parser.error('task root must be a dedicated directory under /mnt/p6/build')
+    build_roots = (Path('/mnt/p6/build'), Path('/mnt/p6/project/build'))
+    if not any(task.is_relative_to(root) and task != root for root in build_roots):
+        parser.error('task root must be a dedicated disk-backed build directory')
     if not out.is_relative_to(task) or out == task or out.exists() or args.output.is_symlink() or not out.parent.is_dir():
         parser.error('fresh output under existing task root required')
     filesystems = {str(p.resolve()): base.disk_filesystem(p) for p in (args.source, args.manifest, out.parent)}

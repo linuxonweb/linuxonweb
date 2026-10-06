@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta name="webapp-revision" content="">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wasm Linux — X11 display</title>
@@ -44,7 +45,7 @@
         --side: clamp(0px, calc((var(--viewport-width, 100vw) - var(--guest-display-width, 1280px) - 2px) / 2), 24px);
         width: calc(var(--guest-display-width, 1280px) + 2px + 2 * var(--side));
         margin: 0 auto;
-        padding: 14px var(--side) 48px;
+        padding: 0 var(--side) 48px;
       }
       .settings-wrap { position: relative; }
       .icon-button {
@@ -67,7 +68,7 @@
       }
       .icon-button svg { width: 20px; height: 20px; }
       .settings-panel {
-        position: absolute;
+        position: fixed;
         z-index: 30;
         top: 52px;
         left: 0;
@@ -110,20 +111,47 @@
         font-size: 0.75rem;
         line-height: 1.45;
       }
-      /* Sticky at the left edge so the controls stay visible while the page
-         scrolls horizontally across a display wider than the window. */
+      /* Only the draggable tools float; guest status stays below the display. */
       .toolbar {
-        position: sticky;
+        position: fixed;
         z-index: 20;
-        left: 0;
+        left: 8px;
+        top: 8px;
         display: flex;
         gap: 8px;
-        flex-wrap: wrap;
-        align-items: center;
+        flex-direction: row;
+        align-items: flex-start;
         width: max-content;
-        max-width: var(--viewport-width, 100vw);
-        margin-bottom: 14px;
+        max-width: calc(var(--viewport-width, 100vw) - 28px);
+        margin: 0;
       }
+      #tools-toggle { touch-action: none; cursor: grab; }
+      #tools-toggle:active { cursor: grabbing; }
+      #tools-panel { display: flex; gap: 8px; flex-wrap: nowrap; align-items: flex-start; max-width: calc(var(--viewport-width, 100vw) - 84px); padding: 0; overflow: visible; background: transparent; }
+      #tools-panel > * { flex-shrink: 0; }
+      #tools-panel[hidden], #tools-toggle[hidden] { display: none; }
+      .toolbar > button, .toolbar > div { flex-shrink: 0; }
+      #status { position: static; display: block; margin: 12px 0; overflow-wrap: anywhere; }
+      .info-render-demo { position: relative; width: 320px; max-width: 100%; margin-top: 12px; }
+      .info-render-demo { cursor: pointer; border-radius: 8px; }
+      .info-render-demo:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+      .info-render-demo canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #070a12; }
+      .info-demo-fps { position: absolute; top: 6px; right: 8px; padding: 3px 6px; background: #07100fcc; color: #fff; font: 12px monospace; }
+      .info-render-demo p { margin: 6px 0; }
+      #browser-info-toggle svg { width: 18px; height: 18px; vertical-align: middle; margin-right: 8px; }
+      .browser-info { width: min(900px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 20px; overflow: auto; }
+      .info-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; position: sticky; top: -20px; padding: 12px 0; background: var(--panel-solid); z-index: 1; }
+      .info-heading h2 { margin: 0; font-size: 1.1rem; }
+      .browser-info h3 { margin: 22px 0 8px; }
+      .browser-info table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+      .browser-info th, .browser-info td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+      .browser-info p { font-size: .82rem; color: var(--muted); }
+      .info-table-scroll { overflow-x: auto; }
+      .info-table-scroll table { min-width: 720px; }
+      .power-menu { left: 0; right: auto; }
+      .more-menu button { display: block; width: 100%; text-align: left; background: transparent; border-color: transparent; font-size: .86rem; font-weight: 400; }
+      .more-menu button[hidden] { display: none; }
+      .more-menu button:hover, .more-menu button:focus-visible { background: #15312d; outline: 2px solid var(--accent); outline-offset: -2px; }
       .action {
         min-height: 42px;
         padding: 9px 15px;
@@ -141,6 +169,15 @@
         color: #04201a;
       }
       .action.primary:hover { background: var(--accent-strong); }
+      .clipboard-wrap { position: relative; display: inline-flex; }
+      .clipboard-notice { position: fixed; top: calc(100% + 8px); left: 0; z-index: 30; width: max-content; max-width: min(340px, 85vw); padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--accent); font-size: .8rem; line-height: 1.4; }
+      .clipboard-notice[hidden] { display: none; }
+      .clipboard-notice.clipboard-error { color: var(--danger); }
+      .clipboard-text-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 160px; overflow: auto; margin: 8px 0 0; color: var(--fg); }
+      .clipboard-image-preview { display: block; max-width: min(220px, 65vw); max-height: 140px; margin-top: 8px; object-fit: contain; }
+      #clipboard-paste, #clipboard-copy { touch-action: none; user-select: none; -webkit-touch-callout: none; }
+      .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      #display-pan svg { width: 20px; height: 20px; vertical-align: middle; margin-right: 6px; }
       #display-pan[aria-pressed="true"] { border-color: var(--accent); background: #15312d; color: var(--accent); }
       .action:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
       /* Icon-only toolbar buttons. The label stays in the accessibility tree
@@ -165,13 +202,20 @@
       }
       .tool:hover .label, .tool:focus-visible .label, .tool.show-label .label { opacity: 1; }
       #settings-toggle[aria-expanded="true"] .label { opacity: 0; }
+      .more-wrap { position: relative; }
+      #more-toggle[aria-expanded="true"] .label { opacity: 0; }
+      .more-menu { position: fixed; z-index: 30; top: 52px; right: auto; width: min(290px, calc(100vw - 28px)); padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px #0008; }
+      .more-menu[hidden] { display: none; }
+      .more-title { margin: 4px 10px 8px; color: var(--muted); font-size: .78rem; }
+      .more-menu a { display: block; padding: 12px 10px; border-radius: 7px; color: var(--fg); text-decoration: none; font-size: .86rem; }
+      .more-menu a:hover, .more-menu a:focus-visible { background: #15312d; outline: 2px solid var(--accent); outline-offset: -2px; }
       /* A running guest turns the boot button into a light-blue stop button;
          stopping asks for confirmation in a small popover below it. */
       .stop-wrap { position: relative; }
       #boot.stop, .stop-yes { border-color: #8fd3ff; background: #8fd3ff; color: #06233a; }
       #boot.stop:hover, .stop-yes:hover { background: #b8e4ff; }
       #boot[aria-expanded="true"] .label { opacity: 0; }
-      .stop-confirm { position: absolute; z-index: 30; top: 52px; left: 0; width: min(290px, calc(100vw - 32px)); padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48); }
+      .stop-confirm { position: fixed; z-index: 30; top: 52px; left: 0; width: min(290px, calc(100vw - 32px)); padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48); }
       .stop-confirm[hidden] { display: none; }
       .stop-confirm p { margin: 0; }
       .stop-title { font-weight: 650; }
@@ -203,8 +247,8 @@
       .stage {
         position: relative;
         width: max-content;
-        border: 1px solid var(--line);
-        border-radius: 12px;
+        border: 0;
+        border-radius: 0;
         background: #000;
         box-shadow: 0 22px 65px rgba(0, 0, 0, 0.3);
       }
@@ -280,6 +324,14 @@
       @media (max-width: 600px) {
         .mobile-keyboard p { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
       }
+          .build-info { margin: 24px 0; padding: 0 12px; font-size: .8rem; color: var(--muted); }
+      .build-info h2 { font-size: 1rem; }
+      .build-info p { line-height: 1.6; }
+      .build-info a { color: var(--fg); }
+      .build-table { overflow-x: auto; }
+      .build-info table { width: 100%; border-collapse: collapse; text-align: left; }
+      .build-info th, .build-info td { padding: 5px 12px 5px 0; overflow-wrap: anywhere; }
+      .build-note { font-size: .75rem; }
     </style>
   </head>
   <body>
@@ -294,8 +346,42 @@
       </div>
     </dialog>
 
+    <dialog id="system-update-dialog" class="restart-dialog" aria-labelledby="system-update-title" aria-describedby="system-update-summary system-update-cache">
+      <h2 id="system-update-title" class="settings-heading">System update available</h2>
+      <p id="system-update-summary"></p>
+      <p id="system-update-cache"></p>
+      <form method="dialog" class="settings-actions">
+        <button class="action" value="cancel" type="submit">Cancel</button>
+        <button id="system-update-continue" class="action" value="continue" type="submit">Continue without update</button>
+        <button class="action primary" value="update" type="submit" autofocus>Update</button>
+      </form>
+    </dialog>
+
+    <dialog id="firefox-memory-dialog" class="restart-dialog" aria-labelledby="firefox-memory-title" aria-describedby="firefox-memory-summary">
+      <h2 id="firefox-memory-title" class="settings-heading">Memory for Firefox</h2>
+      <p id="firefox-memory-summary">Firefox may need more memory. Choose 1 GB, 2 GB, or keep your current <span id="firefox-memory-current"></span>. The selected boot image must fit.</p>
+      <form method="dialog" class="settings-actions">
+        <button class="action" value="1024" type="submit">1 GB</button>
+        <button class="action" value="2048" type="submit">2 GB</button>
+        <button class="action primary" value="current" type="submit" autofocus>Keep current</button>
+      </form>
+    </dialog>
+
+    <dialog id="browser-info" aria-labelledby="browser-info-title" class="browser-info">
+      <div class="info-heading"><h2 id="browser-info-title">Host browser information</h2><button id="browser-info-close" class="action" type="button" aria-label="Close browser information" autofocus>Close</button></div>
+      <div id="browser-info-content" aria-live="polite"></div>
+    </dialog>
+
     <main>
+      <div class="workspace">
+        <div class="stage">
+          <canvas id="fb" width="1280" height="720" tabindex="0" aria-label="Linux guest display"></canvas>
+        </div>
+      </div>
+      <span id="status" role="status" aria-live="polite">idle</span>
       <div class="toolbar" aria-label="Guest launch options">
+        <button id="tools-toggle" class="action tool" type="button" aria-label="Fold tools" aria-expanded="true" aria-controls="tools-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 8-8m3-9a5 5 0 0 0-5 6l5 5a5 5 0 0 0 6-5l-3 3-4-4 3-3Z"/></svg><span class="label">Tools</span></button>
+        <div id="tools-panel">
         <div class="settings-wrap">
           <button id="settings-toggle" class="icon-button tool" type="button" aria-label="Machine settings" aria-expanded="false" aria-controls="settings-panel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -334,6 +420,8 @@
             <div class="field">
               <label for="ram">Memory</label>
               <select id="ram">
+                <option value="128">128 MB</option>
+                <option value="256">256 MB</option>
                 <option value="512">512 MB</option>
                 <option value="1024" selected>1 GB</option>
                 <option value="2048">2 GB</option>
@@ -350,25 +438,47 @@
               <span class="settings-copy">Host display only. Guest Firefox rendering and video decoding remain software.</span>
               <output id="graphics-status" aria-live="polite"></output>
             </div>
+            <button class="action" id="display-pan" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18" /><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" /></svg><span class="label">Pan display</span></button>
             <p id="settings-note" class="settings-note" role="status">Choose settings, then apply your changes.</p>
             <div class="settings-actions"><button id="settings-apply" class="action primary" type="button" disabled>Apply changes</button></div>
           </section>
         </div>
         <div class="stop-wrap">
-          <button class="action primary launch tool" id="boot" data-mode="guest" type="button" aria-controls="stop-confirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg><span class="label">Boot guest</span></button>
+          <button class="action primary launch tool" id="boot" data-mode="guest" type="button" aria-label="Power" aria-haspopup="menu" aria-expanded="false" aria-controls="power-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg><span class="label">Power</span></button>
+          <div id="power-menu" class="more-menu power-menu" role="menu" aria-label="Start Linux" hidden>
+            <button class="action launch" id="start-console" data-mode="console" type="button" role="menuitem" tabindex="-1">Start console</button>
+            <button class="action launch" id="start-x" data-mode="startx" type="button" role="menuitem" tabindex="-1">Start desktop WM</button>
+            <button class="action launch" id="start-firefox" data-mode="firefox" type="button" role="menuitem" tabindex="-1">Start Firefox</button>
+            <button class="action" id="power-stop" data-action="stop" type="button" role="menuitem" tabindex="-1" hidden>Stop guest…</button>
+          </div>
           <section id="stop-confirm" class="stop-confirm" role="dialog" aria-label="Stop guest" hidden>
             <p class="stop-title">Stop the running guest?</p>
             <p class="stop-copy">/home is saved first; unsaved work in guest apps is lost.</p>
             <div class="settings-actions"><button id="stop-cancel" class="action" type="button">Cancel</button><button id="stop-yes" class="action stop-yes" type="button">Stop</button></div>
           </section>
         </div>
-        <button class="action launch tool" id="start-console" data-mode="console" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3" /><path d="M13 15h4" /></svg><span class="label">Start console</span></button>
-        <button class="action launch tool" id="start-x" data-mode="startx" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8" /><path d="M12 16v4" /></svg><span class="label">Start X</span></button>
-        <button class="action launch tool" id="start-firefox" data-mode="firefox" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z" /></svg><span class="label">Start Firefox</span></button>
-        <button class="action tool" id="display-pan" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18" /><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" /></svg><span class="label">Pan display</span></button>
+        <div class="clipboard-wrap">
+          <button class="action tool" id="clipboard-paste" type="button" aria-label="Paste host clipboard into Linux" aria-describedby="clipboard-help" title="Paste into Linux"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M12 10v7m-3-3 3 3 3-3"/></svg><span class="label">Paste</span></button>
+          <span id="clipboard-help" class="visually-hidden">Click to paste text or a PNG image into the focused Linux app.</span>
+          <output id="clipboard-notice" class="clipboard-notice" role="status" aria-live="polite" hidden></output>
+        </div>
+        <div class="clipboard-wrap">
+          <button class="action tool" id="clipboard-copy" type="button" aria-label="Copy Linux selection or clipboard to host" title="Copy from Linux"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg><span class="label">Copy</span></button>
+          <output id="clipboard-copy-notice" class="clipboard-notice" role="status" aria-live="polite" hidden></output>
+        </div>
         <button class="action tool" id="keyboard-toggle" type="button" aria-expanded="false" aria-controls="mobile-keyboard" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" /></svg><span class="label">Keyboard</span></button>
         <button class="action tool" id="logs-toggle" type="button" aria-expanded="false" aria-controls="guest-logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" /><path d="M14 3v6h6M8 13h8M8 17h6" /></svg><span class="label">Show logs</span></button>
-        <span id="status" role="status" aria-live="polite">idle</span>
+        <div class="more-wrap">
+          <button class="action tool" id="more-toggle" type="button" aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="more-menu"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg><span class="label" aria-hidden="true">More</span></button>
+          <div id="more-menu" class="more-menu" role="menu" aria-label="More options" hidden>
+            <button class="action" id="browser-info-toggle" data-action="info" type="button" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v7m0-10v1"/></svg>Info</button>
+            <p class="more-title" role="presentation">Boot a GPU test app</p>
+            <a role="menuitem" tabindex="-1" href="./index.html?gputest=1&amp;gputestapp=glgears&amp;gldriver=softpipe&amp;glmode=present">Canvas2D (software)</a>
+            <a role="menuitem" tabindex="-1" href="./index.html?gputest=wgpu&amp;wgpubackend=webgpu">wgpu (WebGPU)</a>
+            <a role="menuitem" tabindex="-1" href="./index.html?gputest=wgpu&amp;wgpubackend=webgl">wgpu (WebGL)</a>
+          </div>
+        </div>
+        </div>
       </div>
 
       <section id="mobile-keyboard" class="mobile-keyboard" aria-label="Linux keyboard controls" hidden>
@@ -381,11 +491,15 @@
         <button class="keyboard-key" type="button" data-key="Enter">Enter</button>
       </section>
 
-      <div class="workspace">
-        <div class="stage">
-          <canvas id="fb" width="1280" height="720" tabindex="0" aria-label="Linux guest display"></canvas>
-        </div>
-      </div>
+
+      <footer id="build-info" class="build-info" aria-label="Server packages and builds">
+        <h2>Server packages</h2>
+        <p>Loaded webapp: <span data-webapp-build>Unknown</span><br>Server webapp: <span data-available-webapp>Unknown</span><br>Server: <span data-server-build>Unknown</span><br>Server started: <span data-server-start>Unknown</span></p>
+        <p data-build-message role="status">Checking server build…</p>
+        <a data-refresh-page href="./index.html" hidden>Refresh page</a>
+        <div class="build-table"><table><thead><tr><th scope="col">Package</th><th scope="col">Version</th><th scope="col">Build date</th></tr></thead><tbody></tbody></table></div>
+        <p class="build-note">Unknown means no version or build date was recorded. Package updates require your choice before boot.</p>
+      </footer>
 
       <footer class="intro">
         <h1><span class="brand">Wasm Linux</span> X11 display</h1>

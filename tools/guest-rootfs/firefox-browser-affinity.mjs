@@ -1,5 +1,6 @@
 // Assign actual cores to an owned test browser; never override browser APIs.
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { readHostNproc } from './firefox-host-cpus.mjs';
 
 export function expandCpuList(text) {
@@ -58,7 +59,54 @@ export function browserAffinityChecks(plan, observed) {
     hostAllocationStable: observed.hostNproc === plan.hostNproc,
     browserCountMatchesHost: observed.browserHardwareConcurrency === plan.hostNproc,
     actualBrowserAffinity: JSON.stringify(expandCpuList(observed.browserCpuList)) === JSON.stringify(plan.assignedCpus),
+    runnerQuotaMatchesHost: observed.runnerQuota?.effectiveCpus === plan.hostNproc,
+    browserQuotaMatchesHost: observed.browserQuota?.effectiveCpus === plan.hostNproc,
   };
+}
+
+export function parseCpuMax(value) {
+  const match = /^(max|[1-9]\d*) ([1-9]\d*)\n?$/.exec(value);
+  if (!match) throw Error('invalid cgroup cpu.max');
+  const period = Number(match[2]);
+  const quota = match[1] === 'max' ? null : Number(match[1]);
+  if (!Number.isSafeInteger(period) || (quota !== null && !Number.isSafeInteger(quota)))
+    throw Error('unsafe cgroup cpu.max');
+  return quota === null ? null : quota / period;
+}
+
+export function cgroupPath(value) {
+  const lines = value.trimEnd().split('\n');
+  if (lines.length !== 1) throw Error('expected one unified cgroup');
+  const match = /^0::(\/.*)$/.exec(lines[0]);
+  if (!match || match[1].split('/').some(part => part === '.' || part === '..'))
+    throw Error('invalid unified cgroup path');
+  return match[1];
+}
+
+export async function readCgroupCpuQuota(cgroupText, allowedCpuCount, root = '/sys/fs/cgroup') {
+  const group = cgroupPath(cgroupText);
+  if (!Number.isInteger(allowedCpuCount) || allowedCpuCount < 1)
+    throw Error('actual allowed CPU count required');
+  const segments = group.split('/').filter(Boolean);
+  let minimum = Infinity;
+  const ancestors = [];
+  for (let count = 0; count <= segments.length; count++) {
+    const name = '/' + segments.slice(0, count).join('/');
+    const filename = path.join(root, ...segments.slice(0, count), 'cpu.max');
+    let value;
+    try { value = await fs.readFile(filename, 'utf8'); }
+    catch (error) {
+      // A unified hierarchy need not expose cpu.max on its root node.
+      if (count === 0 && error.code === 'ENOENT') continue;
+      throw error;
+    }
+    const quotaCpus = parseCpuMax(value);
+    ancestors.push({ cgroup: name, cpuMax: value.trim(), quotaCpus });
+    if (quotaCpus !== null) minimum = Math.min(minimum, quotaCpus);
+  }
+  if (!ancestors.length) throw Error('missing cgroup CPU controller');
+  return { cgroup: group, allowedCpuCount, minimumQuotaCpus: Number.isFinite(minimum) ? minimum : null,
+    effectiveCpus: Math.min(allowedCpuCount, Math.ceil(minimum)), ancestors };
 }
 
 export async function saveBrowserAffinityEvidence(plan, ownedPid, browserHardwareConcurrency, out, label = 'browser-admission') {
@@ -69,6 +117,8 @@ export async function saveBrowserAffinityEvidence(plan, ownedPid, browserHardwar
     runnerCgroupObserved: await fs.readFile('/proc/self/cgroup', 'utf8'),
     browserCgroup: await fs.readFile('/proc/' + ownedPid + '/cgroup', 'utf8'),
   };
+  evidence.runnerQuota = await readCgroupCpuQuota(evidence.runnerCgroupObserved, expandCpuList(plan.runnerCpuList).length);
+  evidence.browserQuota = await readCgroupCpuQuota(evidence.browserCgroup, expandCpuList(evidence.browserCpuList).length);
   await fs.writeFile(out + '/' + label + '-affinity.json', JSON.stringify(evidence, null, 2) + '\n');
   evidence.checks = browserAffinityChecks(plan, evidence);
   await fs.writeFile(out + '/' + label + '-affinity.json', JSON.stringify(evidence, null, 2) + '\n');

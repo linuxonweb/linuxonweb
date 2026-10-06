@@ -1,18 +1,21 @@
-# Full Nightly PBL/JIT build transition — updated 2026-10-03
+# Full Nightly PBL/JIT build transition — updated 2026-10-04
 
 This packet specifies the next full PBL/JIT build; it is not JIT acceptance.
-Run57 built and packaged, but its real startup trapped in the selected musl
-main-thread stack query. The native stack adapter then passed 55 real guest
-checks. The baseline owner is running Run58's ordinary relink, unified session
-94827/owned PGID 850747. Reinspect that exact handle before transitioning.
+Run59 built and packaged with the accepted stack/environment/helper-loader
+corrections. Its actual cold boot connects to Xfbdev, then exits because the
+static GTK display predicate attempts an unavailable dynamic symbol lookup.
+The owner is testing a native-only direct GTK lookup correction before adoption.
 No full PBL/JIT browser build or deployment has started.
 Planning evidence lives in
 `/mnt/p6/build/firefox-nightly-full-jit-build-plan-20261002`, with disk-backed
 TMPDIR/TMP/TEMP, a 2 GiB planning cap and a 20 GiB free-space reserve.
 
-Finish and accept the PBL-disabled full Nightly baseline first. Then build the
-PBL/JIT browser in a separate full-build task, using a copied immutable accepted
-source snapshot and a fresh object tree. Preserve the original baseline source,
+After the real GTK correction fixture, source-adoption review and current NSS
+helper gate pass, build the PBL/JIT browser directly in a separate full-build
+task from a copied immutable corrected source snapshot and fresh object tree.
+This deliberately avoids another ordinary O2 relink. Test ordinary startup with
+the portable tier disabled on the resulting binary, then enable the tier for
+JIT acceptance. Preserve the original baseline source,
 objects, runtime, archive, profiles, logs and acceptance packet. Do not relink
 the old128 archive or change the active recovery recipe during its owner's run.
 Public Sites v10 remains Firefox128 until accepted Nightly JIT is ready; the
@@ -31,11 +34,13 @@ These passed their actual guest unit gates; the rebuilt Firefox's complete
 baseline startup remains pending.
 
 1. **Freeze the accepted baseline and choose storage.** Retain hashes of the
-   accepted recipe, source inventory, target JSON, generated configuration,
+   corrected recipe, source inventory, target JSON, generated configuration,
    compiler/link commands, complete runtime inventory, raw/final binaries,
    package and guest evidence. Obtain source-copy input only after the owner has
    stopped mutating it. Capture before/after inventories so a copy cannot mix
-   two build corrections. An accepted complete baseline needs actual successful
+   two build corrections. Build admission requires the actual GTK fixture,
+   adopted source, current NSS helper gate and exact owned process cleanup.
+   Final ordinary runtime acceptance on the new binary needs actual successful
    full build/link, full runtime packaging, native Wasm validation, startup,
    current NSS/TLS, saved-home and default-page gates; diagnostic objects alone
    are insufficient.
@@ -51,7 +56,15 @@ baseline startup remains pending.
    task boundary, not permission to enlarge the original recovery task or the
    planning packet. The next owner must record the policy before allocating.
 
-   `snapshot-run1.json` is a changing-tree size observation, not an estimate of
+   Current Run59 audit observations supersede the older table below: source
+   5,186,506,752 bytes, objects 14,346,784,768 bytes and complete recovery task
+   22,336,991,232 bytes. Observed free disk 55,351,185,408 bytes leaves
+   33,876,348,928 bytes above the reserve, slightly below the maximum task
+   allowance. Recheck before allocation and throughout the build; a task cap
+   is a ceiling, not a promised allocation. The audit and executable setup are
+   `/mnt/p6/project/build/nightly-full-jit-transition-run59-audit-20261004/next-build-plan.txt`.
+
+   `snapshot-run1.json` is a historical changing-tree observation, not an estimate of
    the completed binary/build. Its measured allocations are:
 
    | Item | Bytes | GiB |
@@ -156,13 +169,22 @@ baseline startup remains pending.
    ENABLE_PORTABLE_BASELINE_INTERP condition. PortableBaselineInterpret.cpp is
    already a standalone SOURCES member there. Keep PblJit.cpp non-unified to
    avoid anonymous namespace collisions; assert exactly one adapter archive
-   member at link. Apply the prepared PortableBaselineInterpret.cpp, Jit.cpp
+   member at link. Use `CONFIG["TARGET_CPU"] == "wasm32"` with
+   `CONFIG["OS_ARCH"] == "Linux"`; current `CPU_ARCH` deliberately raises an
+   obsolete-key error. Apply the prepared PortableBaselineInterpret.cpp, Jit.cpp
    and XPCJSContext.cpp changes in their source locations. The latter compiles
    through actual `Unified_cpp_js_xpconnect_src0.o`; do not invent a standalone
    XPC object target.
 
    The browser setter enables PBL at warmup10 and disables it in Safe Mode;
    upstream PBL configuration alone defaults the runtime option to false.
+   After overlay generation, add the reviewed restart-only startup preference
+   `javascript.options.portable_baseline` (default true) at the existing
+   LoadStartupJSPrefs setter. Enable the tier only when this pref is true and
+   Safe Mode is false. The comparison's disabled arm sets the pref false before
+   startup; normal baselinejit/ion/blinterp prefs do not disable this tier.
+   Require actual process-wide option and Worker inheritance evidence, zero
+   installs in the disabled arm and source-specific installs in the enabled arm.
    Specialization starts after1000 loop heads and honors `PBLJIT=0` separately;
    that environment variable disables the specializer, not the PBL tier.
    Keep the generated239 opcodes and original broad compiler rejection paths.
@@ -348,8 +370,11 @@ baseline startup remains pending.
    replace the in-browser gates.
 
 6. **Freeze comparative acceptance before launching and release only afterward.**
-   Primary A is the accepted full Nightly PBL-disabled baseline; B is full
-   Nightly PBL/JIT with identical resources/defaults/kernel/plain assets. Run
+   Primary A and B use the identical newly built Nightly PBL/JIT binary and
+   resources/defaults/kernel/plain assets. A sets the restart-only portable tier
+   pref false; B sets it true. This explicitly revised same-binary comparison
+   replaces the earlier separately compiled PBL-disabled A before any launch.
+   Record actual tier option false/true and install evidence in each arm. Run
    ABBAAB, three cold boots per arm, all original eight broad cases
    (int-loop, recursion, flat/deep/error throws, property, Math, JSON), same
    frozen bodies/repetitions/warmups/samples. Retain all144 case rows and raw
@@ -380,9 +405,11 @@ baseline startup remains pending.
    becomes GPU rollback baseline. Vulkan/OpenGL/Firefox WebGL/WebGPU work and
    release2 follow it; baseline wgpu backend compilation is not GPU support.
 
-The next executable packet is baseline completion/acceptance by its owner,
-followed by the independent source/recipe/PBL-config setup and full build above.
-Remaining uncertainties are completed baseline size, PBL full-graph compile/
+The next executable packet is the actual GTK fixture and current NSS helper
+gate, followed by source adoption and independent source/recipe/PBL-config setup
+and the full build above. Startup failure remains retained; this schedule does
+not invent ordinary baseline acceptance. Remaining uncertainties are fresh
+PBL output size, full-graph compile/
 link blockers, measured Nightly memory/table/fpcast/callback contracts, actual
 privileged guest diagnostics, fresh NSS trust initialization and comparative
 timings. None is resolved by this planning packet.

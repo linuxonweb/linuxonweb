@@ -8,6 +8,7 @@ const manifestURL = new URL('./boot-manifest.json', import.meta.url);
 // not a documented CacheStorage size limit; keep conservative transfer sizes.
 export const SYSTEM_CHUNK_BYTES = 1024 * 1024;
 let selected;
+let cacheOnlyBoot = new Set();
 let notice = () => {};
 const diagnostics = { hits: 0, downloads: 0, writes: 0, chunkWrites: 0, failures: [] };
 export function assetCacheDiagnostics() { return { ...diagnostics, failures: diagnostics.failures.slice() }; }
@@ -92,10 +93,11 @@ async function cachedResponse(asset, store, key) {
   });
   return new Response(body, { headers: responseHeaders(asset) });
 }
-async function fetchVerified(asset, store, { requireCache = false } = {}) {
+async function fetchVerified(asset, store, { requireCache = false, cachedOnly = false } = {}) {
   const key = assetKey(asset);
   const cached = await cachedResponse(asset, store, key);
   if (cached) { diagnostics.hits++; return cached; }
+  if (cachedOnly) throw new Error('The cached system is no longer complete. Start again and choose Update.');
   // An incomplete or evicted chunk set is not a cache hit. The old index is
   // removed before repair, and a new complete index is committed last.
   await store?.delete(key);
@@ -133,10 +135,54 @@ async function fetchVerified(asset, store, { requireCache = false } = {}) {
 }
 export async function systemAsset(key) {
   const manifest = await activeManifest();
-  return fetchVerified(manifest.assets[key], await cache());
+  return fetchVerified(manifest.assets[key], await cache(), { cachedOnly: cacheOnlyBoot.has(key) });
 }
 const withSystemLock = operation => globalThis.navigator?.locks
   ? navigator.locks.request(CACHE, { mode: 'exclusive' }, operation) : operation();
+// Only the small manifest and cache metadata are read before the user chooses.
+// A declined update must never fall through to downloading a replaced URL.
+export async function prepareSystemBoot(imageKey, choose) {
+  if (!['plain', 'firefox'].includes(imageKey)) throw new Error('Invalid boot image');
+  const current = await activeManifest(), store = await cache();
+  const keys = ['kernel', imageKey];
+  async function completeCache() {
+    for (const key of keys) {
+      const response = await cachedResponse(current.assets[key], store, assetKey(current.assets[key]));
+      if (!response) return false;
+      await response.body?.cancel();
+    }
+    return true;
+  }
+  let candidate;
+  try { candidate = await latest(); }
+  catch (error) {
+    if (!await completeCache()) throw error;
+    cacheOnlyBoot = new Set(keys);
+    notice('Update check unavailable · using the complete cached system.');
+    return true;
+  }
+  if (sameImages(current, candidate)) { cacheOnlyBoot.clear(); return true; }
+  const canContinue = await completeCache();
+  const changed = ['kernel', 'plain', 'firefox'].filter(key =>
+    current.assets[key].sha256 !== candidate.assets[key].sha256 || current.assets[key].bytes !== candidate.assets[key].bytes);
+  const choice = await choose({ current, candidate, changed, canContinue });
+  if (choice === 'continue') {
+    if (!canContinue) throw new Error('The previous system is not fully cached. Choose Update to start.');
+    cacheOnlyBoot = new Set(keys);
+    return true;
+  }
+  if (choice !== 'update') return false;
+  await withSystemLock(async () => {
+    if (!store) throw new Error('Browser image cache is unavailable; update was not activated.');
+    // Verify the selected kernel/image together before activating one pointer.
+    for (const key of keys) await fetchVerified(candidate.assets[key], store, { requireCache: true });
+    const record = { ...snapshot(candidate), previous: snapshot(current) };
+    localStorage.setItem(ACTIVE, JSON.stringify(record));
+    selected = Promise.resolve(record);
+    cacheOnlyBoot = new Set(keys);
+  });
+  return true;
+}
 export function updateSystem(onProgress = () => {}) { return withSystemLock(async () => {
   const candidate = await latest(), current = await activeManifest(), store = await cache();
   if (!store) throw new Error('Browser image cache is unavailable; system update was not activated');

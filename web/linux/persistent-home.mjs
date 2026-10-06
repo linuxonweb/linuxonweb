@@ -22,10 +22,12 @@ function offsetNumber(value) {
  * no beforeunload flush is needed, and a quota failure cannot leave half a write.
  * The guest uses its normal page cache; the transport does not enable writeback.
  */
-export async function openPersistentHome({ indexedDB = globalThis.indexedDB, name = HOME_DATABASE, onError = () => {} } = {}) {
+export async function openPersistentHome({ indexedDB = globalThis.indexedDB, name = HOME_DATABASE, onError = () => {}, readOnly = false } = {}) {
   if (!indexedDB) throw new Error('This browser does not provide IndexedDB storage.');
   const opening = indexedDB.open(name, 1);
   opening.onupgradeneeded = () => {
+    // Observers must never create storage or reclaim a running guest's files.
+    if (readOnly) { opening.transaction.abort(); return; }
     const db = opening.result;
     const nodes = db.createObjectStore('nodes', { keyPath: 'id', autoIncrement: true });
     nodes.createIndex('entry', ['parent', 'name'], { unique: true });
@@ -45,6 +47,7 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
   };
   async function transaction(write, operation) {
     if (closed) throw new FSError('EIO', 'Home storage is closed');
+    if (write && readOnly) throw new FSError('EROFS', 'Home observer is read-only');
     let tx;
     try {
       // strict requests a stable-storage commit on engines which implement it.
@@ -138,6 +141,7 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
       return { node, handle: await api.open(node, flags) };
     },
     async open(node, flags) {
+      if (readOnly && ((flags & 3) || (flags & 0x200))) throw new FSError('EROFS', 'Home observer is read-only');
       const value = await api.getattr(node);
       if (type(value) !== FILE) throw new FSError('EISDIR');
       if ((flags & 0x200) && (flags & 3)) await api.setattr(node, { size: 0n });
@@ -186,7 +190,7 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
       if (count) opens.set(node.id, count);
       else {
         opens.delete(node.id);
-        await transaction(true, async (nodes, chunks) => { const value = await request(nodes.get(node.id)); if (value && value.parent === null) await removeNode(nodes, chunks, value); });
+        if (!readOnly) await transaction(true, async (nodes, chunks) => { const value = await request(nodes.get(node.id)); if (value && value.parent === null) await removeNode(nodes, chunks, value); });
       }
     },
     opendir(node) { return transaction(false, async nodes => { await directory(nodes, node); return {}; }); },
@@ -245,7 +249,7 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     });
   }
   // Unlinked open files from a crashed/closed guest are unreachable on next boot.
-  await transaction(true, async (nodes, chunks) => {
+  if (!readOnly) await transaction(true, async (nodes, chunks) => {
     for (const value of await request(nodes.getAll())) if (value.parent === null) await removeNode(nodes, chunks, value);
   });
   return api;
@@ -254,15 +258,16 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
 /** Prevent independent kernels from caching conflicting views of the same home. */
 export async function acquireHomeLock(locks = globalThis.navigator?.locks) {
   if (!locks) throw new Error('Persistent home requires browser Web Locks support.');
-  let release;
+  let release, requestDone;
   const held = new Promise(resolve => { release = resolve; });
   await new Promise((resolve, reject) => {
-    locks.request(HOME_DATABASE, { mode: 'exclusive', ifAvailable: true }, async lock => {
+    requestDone = locks.request(HOME_DATABASE, { mode: 'exclusive', ifAvailable: true }, async lock => {
       if (!lock) { reject(new Error('Your Linux home is open in another tab. Close that guest, then retry.')); return; }
       resolve(); await held;
     }).catch(reject);
   });
-  return release;
+  // Callers which immediately open another lease can await its actual release.
+  return () => { release(); return requestDone; };
 }
 
 export async function deletePersistentHome(indexedDB = globalThis.indexedDB) {

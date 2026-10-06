@@ -1,0 +1,1 @@
+export function sha256(bytes){const h=Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);h.init(h.SHA256);h.update(bytes,bytes.length);return Array.from(h.finish(false),c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join('');}

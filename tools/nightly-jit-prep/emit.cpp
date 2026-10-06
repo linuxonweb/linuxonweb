@@ -9,7 +9,7 @@ using namespace js::pbljit;
 struct Code {
   std::vector<uint8_t> b;
   size_t op(JSOp o) { b.push_back(uint8_t(o)); return b.size() - 1; }
-  void u(uint32_t v, int n) { for (int i = 0; i < n; i++) b.push_back(uint8_t(v >> (8 * i))); }
+  void u(uint32_t v, int n) { for (int i = 0; i < n; i++) { b.push_back(uint8_t(v)); v >>= 8; } }
   size_t head(uint32_t ic) { size_t at = op(JSOp::LoopHead); u(ic, 4); u(1, 1); return at; }
   void loc(JSOp o, uint32_t n) { op(o); u(n, 3); }
   void arg(JSOp o, uint32_t n) { op(o); u(n, 2); }
