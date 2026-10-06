@@ -263,7 +263,7 @@ static VKAPI_ATTR void VKAPI_CALL zink_begin_rendering(VkCommandBuffer cb,const 
     struct resource *v=resource_get(RID(c->imageView),R_IMAGE_VIEW),*i=v?resource_get(v->graphics.view.image,R_IMAGE):NULL;
     if(c->sType!=VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO||c->pNext||!i||!i->graphics_target||
        c->imageLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||c->resolveMode!=VK_RESOLVE_MODE_NONE||
-       (c->loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||c->storeOp!=VK_ATTACHMENT_STORE_OP_STORE||
+       (c->loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD&&c->loadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE)||c->storeOp!=VK_ATTACHMENT_STORE_OP_STORE||
        r->renderArea.offset.x||r->renderArea.offset.y||r->renderArea.extent.width!=i->width||r->renderArea.extent.height!=i->height){
         ZINK_TRACE("begin_rendering REJECT view=%llu image=%llu target=%u attachmentSType=%u pNext=%u layout=%u resolve=%u load=%u store=%u area=%d,%d %ux%u imageExtent=%ux%u\n",
             (unsigned long long)(v?v->id:0),(unsigned long long)(i?i->id:0),i?i->graphics_target:0,(unsigned)c->sType,c->pNext?1u:0u,(unsigned)c->imageLayout,(unsigned)c->resolveMode,

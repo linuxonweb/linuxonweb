@@ -164,10 +164,17 @@ static int depth_image_barrier(VkPipelineStageFlags src,VkPipelineStageFlags dst
         b->srcAccessMask==VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 }
 static int graphics_prepare_begin(const struct graphics_begin_record *r,struct resource *image,struct resource *depth,struct graphics_json *j) {
+    /* DONT_CARE initial contents are undefined. Choose a real zero clear;
+     * never preserve stale contents or consume its ignored clearValue. */
+    int color_load=r->pass.load==VK_ATTACHMENT_LOAD_OP_LOAD;
     graphics_json_append(j,"{\"target\":%u,\"loadOp\":\"%s\",\"storeOp\":\"store\"",image->host,
-        r->pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR?"clear":"load");
-    if(r->pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR)graphics_json_append(j,",\"clearColor\":[%.9g,%.9g,%.9g,%.9g]",
-        r->clear.float32[0],r->clear.float32[1],r->clear.float32[2],r->clear.float32[3]);
+        color_load?"load":"clear");
+    if(!color_load) {
+        const VkClearColorValue zero={{0,0,0,0}};
+        const VkClearColorValue *clear=r->pass.load==VK_ATTACHMENT_LOAD_OP_CLEAR?&r->clear:&zero;
+        graphics_json_append(j,",\"clearColor\":[%.9g,%.9g,%.9g,%.9g]",
+            clear->float32[0],clear->float32[1],clear->float32[2],clear->float32[3]);
+    }
     /* A5: DONT_CARE load becomes a defined clear to 1.0 (a valid implementation
      * of undefined contents); DONT_CARE store discards. */
     if(depth) {

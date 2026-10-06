@@ -30,7 +30,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_render_pass(VkDevice d,const VkRend
        !i->attachmentCount||i->attachmentCount>(live->depth_supported?2u:1u)||!i->pAttachments||i->subpassCount!=1||!i->pSubpasses||i->dependencyCount)return VK_ERROR_INITIALIZATION_FAILED;
     const VkAttachmentDescription attachment=i->pAttachments[0];const VkSubpassDescription subpass=i->pSubpasses[0];
     if(attachment.flags||!color_format(attachment.format)||attachment.samples!=VK_SAMPLE_COUNT_1_BIT||
-       (attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD)||
+       (attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_CLEAR&&attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_LOAD&&attachment.loadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE)||
        attachment.storeOp!=VK_ATTACHMENT_STORE_OP_STORE||attachment.stencilLoadOp!=VK_ATTACHMENT_LOAD_OP_DONT_CARE||
        attachment.stencilStoreOp!=VK_ATTACHMENT_STORE_OP_DONT_CARE||attachment.initialLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||
        attachment.finalLayout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL||subpass.flags||subpass.pipelineBindPoint!=VK_PIPELINE_BIND_POINT_GRAPHICS||
