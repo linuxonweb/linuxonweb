@@ -19,6 +19,7 @@ import shutil
 import signal
 import subprocess
 import time
+import traceback
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = Path('/mnt/p3/codex-build/firefox-gpu-oct06')
@@ -378,7 +379,8 @@ class Executor:
             self.record(pin(c['link'][0]));self.record(pin(c['trace'][0]));self.record(pin(c['optimize'][0]));self.record(pin('/usr/bin/wasm-validate'));self.record(pin('/usr/bin/wasm-objdump'))
             fpfile=Path(original['authority']['path']).parents[1]/'status'/('fpcast-'+name+'.json')
             self.record(pin(fpfile));require(json.loads(fpfile.read_text())['argv']==original['fpcastOriginal'],'recorded fpcast differs')
-            for row in original['unchangedNativeInputs']:self.record(row)
+            require(isinstance(authority['inputs'],list) and len(authority['inputs'])==original['unchangedNativeInputs'],'original native input count differs')
+            for row in authority['inputs']:self.record(row)
             self.run('trace-original-driver-'+name,c['trace'],Path(c['cwd']),30,native=True)
             trace=(self.out/('trace-original-driver-'+name+'.log')).read_text();expected=original['optimizerOriginal']
             import shlex
@@ -424,7 +426,7 @@ def main():
         x.admission(a,plan)  # Always first: no native trace, link or optimizer before admission.
         x.source_inputs(plan);x.report['passPreflight']=True;x.persist()
         if a.execute:x.execute_links(plan,commands)
-    except BaseException as e:x.report['error']=repr(e)
+    except BaseException as e:x.report['error']=repr(e);x.report['errorTraceback']=traceback.format_exc()
     finally:
         x.report['elapsedSeconds']=time.monotonic()-x.began;x.report['ownerStopSignal']=x.stop_signal;x.persist();x.restore_signal_handlers()
     print(json.dumps(dict(report=pin(out/'report.json'),passPreflight=x.report['passPreflight'],passBuild=x.report['passBuild'],error=x.report.get('error'))))
