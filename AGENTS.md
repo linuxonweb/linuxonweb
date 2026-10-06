@@ -5,6 +5,20 @@ The checkpoint is6301a15; current branch is
 `gpt-6-firefox-hardware-acceleration-20261006`. Read `continue.md` for current
 evidence. Keep requested persistent preview/proxy services running.
 
+The user explicitly paused all work on2026-10-06. Goal status is paused;
+read the top pause handoff in continue.md. Attempt9 sources are incomplete
+and unbuilt, no finite/browser job is live. Preserve devfxdev7/proxies.
+Resume only on explicit user request; the nine-attempt limit remains in force.
+
+The user imposed a further stop limit on 2026-10-06: stop before the tenth
+additional implementation/build/test attempt if Firefox hardware acceleration
+still does not work. Root coordinates at most nine attempts across both agents;
+see `/mnt/p3/codex-build/gpu-service-root-oct06/user-stop-limit.json` for the
+ledger. Do not restart the limit across turns or let agents retry independently.
+At the limit, stop goal work, retain persistent preview services, and write the
+completed work, actual evidence, failures and concrete next steps in `continue.md`
+for the next agent. Resuming after that stop requires fresh user authorization.
+
 ## Goal and order
 - Current priority: diagnose and enable actual current Firefox hardware GPU.
   JIT repair/testing remains stopped under the user's two-cycle limit; this GPU
@@ -64,6 +78,13 @@ evidence. Keep requested persistent preview/proxy services running.
   until runtime acceptance passes. Updates require an in-page user choice.
 
 ## Current continuation pointers
+- Latest dev3000 ownership is `/mnt/p3/codex-build/fxdev7/ownership.json`
+  (4007679 supervisor,4007680 Node); prior run60/current-dev3000 pointers
+  below are historical. It serves archive340640ab/testing, full FirefoxGPU
+  remains unaccepted; original-page attempt7 reports native shader/session
+  errors, but both exact captured shaders pass translator and host validation.
+  Attempt8 failed extraction before translation; attempt9 is the final combined
+  repair/test cycle. No tenth attempt; see root ledger.
 - Firefox Nightly 159.0a1, build 20261004075010, starts; full JIT acceptance is pending.
   Public Sites v10 has not been replaced by this candidate.
 - Original broad JIT checks passed with zero diagnostic worker attachment;
