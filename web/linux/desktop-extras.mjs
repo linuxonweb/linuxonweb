@@ -1,4 +1,5 @@
 import { appendCpio } from './gputest.mjs';
+import { guestRunAgent, guestRunShell } from './test-commands.mjs';
 const encoder = new TextEncoder();
 export function cpioEntry(name, data, mode = 0o100755) {
   const filename = encoder.encode(name + '\0');
@@ -25,8 +26,9 @@ export function desktopInitOverlay(archive) {
     offset = (end + 3) & ~3;
   }
   if (!original || !decoder.decode(original.subarray(0, 128)).startsWith('#!')) throw new Error('Desktop rootfs has no supported /init script.');
-  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\nexec /init.desktop-original "$@"\n');
-  const entries = [cpioEntry('init.desktop-original', original), cpioEntry('init', wrapper), cpioEntry('TRAILER!!!', new Uint8Array(), 0)];
+  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\n/bin/busybox sh /bin/linuxonweb-run-agent &\nexec /init.desktop-original "$@"\n');
+  const entries = [cpioEntry('init.desktop-original', original), cpioEntry('init', wrapper),
+    cpioEntry('bin/linuxonweb-run-agent', encoder.encode(guestRunAgent())), cpioEntry('bin/linuxonweb-run-shell', encoder.encode(guestRunShell())), cpioEntry('TRAILER!!!', new Uint8Array(), 0)];
   const overlay = new Uint8Array(entries.reduce((sum, entry) => sum + entry.length, 0));
   let at = 0; for (const entry of entries) { overlay.set(entry, at); at += entry.length; }
   return overlay;

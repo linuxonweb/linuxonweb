@@ -207,6 +207,11 @@
       .more-menu { position: fixed; z-index: 30; top: 52px; right: auto; width: min(290px, calc(100vw - 28px)); padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px #0008; }
       .more-menu[hidden] { display: none; }
       .more-title { margin: 4px 10px 8px; color: var(--muted); font-size: .78rem; }
+      #tests-toggle[aria-expanded="true"] .label { opacity: 0; }
+      .tests-menu { width: min(400px, calc(100vw - 28px)); max-height: 70vh; overflow: auto; }
+      .more-menu .test-command { padding: 9px 10px; }
+      .test-command span, .test-command code { display: block; }
+      .test-command code { margin-top: 3px; color: var(--muted); font: .74rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
       .more-menu a { display: block; padding: 12px 10px; border-radius: 7px; color: var(--fg); text-decoration: none; font-size: .86rem; }
       .more-menu a:hover, .more-menu a:focus-visible { background: #15312d; outline: 2px solid var(--accent); outline-offset: -2px; }
       /* A running guest turns the boot button into a light-blue stop button;
@@ -221,11 +226,16 @@
       .stop-title { font-weight: 650; }
       .stop-copy { margin-top: 6px !important; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
       .stop-confirm .settings-actions { margin-top: 14px; }
-      #keyboard-toggle[aria-expanded="true"], .keyboard-key[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: #15312d; }
-      .mobile-keyboard { position: relative; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
+      #keyboard-toggle[aria-expanded="true"], .keyboard-key[aria-pressed="true"], #keyboard-more[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: #15312d; }
+      /* Extra keys sit below the display and stay in view (above an iOS soft
+         keyboard too) while a tall display scrolls. */
+      .mobile-keyboard { position: sticky; z-index: 15; left: 0; bottom: 0; justify-self: start; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; width: min(100%, var(--viewport-width, 100vw)); margin: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-solid); }
       .mobile-keyboard[hidden] { display: none; }
       .mobile-keyboard p { flex: 1 1 220px; margin: 0; color: var(--muted); font-size: 0.82rem; }
-      .keyboard-key { min-width: 44px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); background: #091413; }
+      .keyboard-key { min-width: 44px; min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); background: #091413; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+      .keyboard-key:disabled { opacity: 0.45; cursor: not-allowed; }
+      .keyboard-combos { position: fixed; z-index: 30; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; width: min(420px, calc(100vw - 16px)); max-height: min(60vh, 360px); overflow-y: auto; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); box-shadow: 0 24px 70px #0008; }
+      .keyboard-combos[hidden] { display: none; }
       /* A real, focusable edit control opens mobile keyboards. It stays inside
          the visible panel; entered text is sent directly to the guest. */
       #mobile-keyboard-input { position: absolute; top: 1px; left: 1px; width: 2px; height: 2px; min-width: 0; padding: 0; border: 0; opacity: 0.01; font-size: 16px; resize: none; }
@@ -323,6 +333,8 @@
       }
       @media (max-width: 600px) {
         .mobile-keyboard p { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+        .mobile-keyboard { gap: 4px; padding: 6px; }
+        .keyboard-key { min-width: 40px; padding: 6px 8px; }
       }
           .build-info { margin: 24px 0; padding: 0 12px; font-size: .8rem; color: var(--muted); }
       .build-info h2 { font-size: 1rem; }
@@ -367,6 +379,17 @@
       </form>
     </dialog>
 
+    <dialog id="presentation-dialog" class="restart-dialog" aria-labelledby="presentation-title" aria-describedby="presentation-summary presentation-reason">
+      <h2 id="presentation-title" class="settings-heading">WebGPU display is not working</h2>
+      <p id="presentation-summary">Auto display presentation uses WebGPU, which is not working in this browser, so the display is paused. Choose another presenter. Your choice is saved, and the guest keeps running.</p>
+      <p id="presentation-reason" class="restart-warning"></p>
+      <form method="dialog" class="settings-actions">
+        <button class="action" value="cancel" type="submit">Cancel</button>
+        <button class="action" value="canvas2d" type="submit">Use Canvas 2D</button>
+        <button class="action primary" value="webgl" type="submit" autofocus>Use WebGL</button>
+      </form>
+    </dialog>
+
     <dialog id="browser-info" aria-labelledby="browser-info-title" class="browser-info">
       <div class="info-heading"><h2 id="browser-info-title">Host browser information</h2><button id="browser-info-close" class="action" type="button" aria-label="Close browser information" autofocus>Close</button></div>
       <div id="browser-info-content" aria-live="polite"></div>
@@ -377,6 +400,25 @@
         <div class="stage">
           <canvas id="fb" width="1280" height="720" tabindex="0" aria-label="Linux guest display"></canvas>
         </div>
+        <section id="mobile-keyboard" class="mobile-keyboard" aria-label="Linux keyboard controls" hidden>
+          <textarea id="mobile-keyboard-input" aria-label="Type into Linux" inputmode="text" enterkeyhint="enter" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows="1"></textarea>
+          <button class="keyboard-key" type="button" data-key="Escape">Esc</button>
+          <button class="keyboard-key" type="button" data-key="Tab">Tab</button>
+          <button class="keyboard-key" type="button" data-modifier="Control" aria-pressed="false">Ctrl</button>
+          <button class="keyboard-key" type="button" data-modifier="Alt" aria-pressed="false">Alt</button>
+          <button class="keyboard-key" type="button" data-key="Enter">Enter</button>
+          <button class="keyboard-key" type="button" data-key="ArrowLeft" aria-label="Left">&larr;</button>
+          <button class="keyboard-key" type="button" data-key="ArrowUp" aria-label="Up">&uarr;</button>
+          <button class="keyboard-key" type="button" data-key="ArrowDown" aria-label="Down">&darr;</button>
+          <button class="keyboard-key" type="button" data-key="ArrowRight" aria-label="Right">&rarr;</button>
+          <button class="keyboard-key" type="button" data-key="Y">Y</button>
+          <button class="keyboard-key" type="button" data-key="N">N</button>
+          <button class="keyboard-key" type="button" data-key="PageUp" aria-label="Page up">PgUp</button>
+          <button class="keyboard-key" type="button" data-key="PageDown" aria-label="Page down">PgDn</button>
+          <button class="keyboard-key" id="keyboard-more" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="keyboard-combos">More</button>
+          <div id="keyboard-combos" class="keyboard-combos" role="menu" aria-label="Key combinations" hidden></div>
+          <p>Ctrl and Alt apply to the next key. More lists shortcuts such as Ctrl+C and Alt+Tab.</p>
+        </section>
       </div>
       <span id="status" role="status" aria-live="polite">idle</span>
       <div class="toolbar" aria-label="Guest launch options">
@@ -431,11 +473,11 @@
             <div class="field">
               <label for="graphics-backend">Display presentation</label>
               <select id="graphics-backend">
-                <option value="canvas2d">Canvas2D (default)</option>
-                <option value="auto">Auto · WebGPU, WebGL, Canvas2D</option>
+                <option value="auto">Auto (WebGPU)</option>
                 <option value="webgl">WebGL</option>
+                <option value="canvas2d">Canvas 2D (default)</option>
               </select>
-              <span class="settings-copy">Host display only. Guest Firefox rendering and video decoding remain software.</span>
+              <span class="settings-copy">How this page draws the guest display. Auto uses WebGPU; if WebGPU does not work you are asked to choose WebGL or Canvas 2D. Guest Firefox rendering and video decoding remain software.</span>
               <output id="graphics-status" aria-live="polite"></output>
             </div>
             <button class="action" id="display-pan" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18" /><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" /></svg><span class="label">Pan display</span></button>
@@ -466,8 +508,13 @@
           <button class="action tool" id="clipboard-copy" type="button" aria-label="Copy Linux selection or clipboard to host" title="Copy from Linux"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg><span class="label">Copy</span></button>
           <output id="clipboard-copy-notice" class="clipboard-notice" role="status" aria-live="polite" hidden></output>
         </div>
-        <button class="action tool" id="keyboard-toggle" type="button" aria-expanded="false" aria-controls="mobile-keyboard" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" /></svg><span class="label">Keyboard</span></button>
+        <button class="action tool" id="keyboard-toggle" type="button" aria-expanded="false" aria-controls="mobile-keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" /></svg><span class="label">Keyboard</span></button>
         <button class="action tool" id="logs-toggle" type="button" aria-expanded="false" aria-controls="guest-logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" /><path d="M14 3v6h6M8 13h8M8 17h6" /></svg><span class="label">Show logs</span></button>
+        <div class="more-wrap">
+          <button class="action tool" id="tests-toggle" type="button" aria-label="Test commands" aria-haspopup="menu" aria-expanded="false" aria-controls="tests-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3M13 15h4" /></svg><span class="label" aria-hidden="true">Tests</span></button>
+          <div id="tests-menu" class="more-menu tests-menu" role="menu" aria-label="Run a test command in a Linux terminal" hidden></div>
+          <output id="tests-notice" class="clipboard-notice" role="status" aria-live="polite" hidden></output>
+        </div>
         <div class="more-wrap">
           <button class="action tool" id="more-toggle" type="button" aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="more-menu"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg><span class="label" aria-hidden="true">More</span></button>
           <div id="more-menu" class="more-menu" role="menu" aria-label="More options" hidden>
@@ -481,15 +528,6 @@
         </div>
       </div>
 
-      <section id="mobile-keyboard" class="mobile-keyboard" aria-label="Linux keyboard controls" hidden>
-        <p>Tap a text field in Linux, then type with your keyboard. Ctrl and Alt apply to the next key.</p>
-        <textarea id="mobile-keyboard-input" aria-label="Type into Linux" inputmode="text" enterkeyhint="enter" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" rows="1"></textarea>
-        <button class="keyboard-key" type="button" data-key="Escape">Esc</button>
-        <button class="keyboard-key" type="button" data-key="Tab">Tab</button>
-        <button class="keyboard-key" type="button" data-modifier="Control" aria-pressed="false">Ctrl</button>
-        <button class="keyboard-key" type="button" data-modifier="Alt" aria-pressed="false">Alt</button>
-        <button class="keyboard-key" type="button" data-key="Enter">Enter</button>
-      </section>
 
 
       <footer id="build-info" class="build-info" aria-label="Server packages and builds">

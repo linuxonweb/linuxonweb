@@ -74,47 +74,92 @@ export function createFramebufferHost(memory, options) {
     const rowBytes = width * 4;
     let renderer = null;
     let generation = 0;
+    // "auto" means WebGPU. A WebGPU failure never falls back silently: the
+    // display pauses (frames are still snapshotted) and the host reports
+    // awaitingChoice so the page can ask the user for WebGL or Canvas2D.
+    // An explicit WebGL request keeps its Canvas2D fallback.
+    const backends = ["auto", "webgpu", "webgl", "canvas2d"];
+    const webgpuTimeoutMs = options.webgpuTimeoutMs ?? 10000;
     const diagnostics = { backend: "canvas2d", requested: options.backend ?? "canvas2d",
-        frames: 0, presents: 0, coalesced: 0, fallbackReason: null, fallbackAdapter: null };
-    if (!["auto", "webgpu", "webgl", "canvas2d"].includes(diagnostics.requested))
+        frames: 0, presents: 0, coalesced: 0, fallbackReason: null, fallbackAdapter: null,
+        failure: null, awaitingChoice: false };
+    if (!backends.includes(diagnostics.requested))
         throw new Error("unknown framebuffer backend");
+    const message = error => String(error?.message ?? error);
+    const setBackend = backend => {
+        if (!backends.includes(backend)) throw new Error("unknown framebuffer backend");
+        if (closed) return Promise.resolve();
+        diagnostics.requested = backend;
+        return select(backend);
+    };
     const publish = () => {
         if (canvas.dataset) canvas.dataset.framebufferBackend = diagnostics.backend;
         if (canvas.dispatchEvent && globalThis.CustomEvent)
-            canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics } }));
+            canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics, setBackend } }));
+    };
+    const repaint = () => { if (staging) { dirty = true; schedule_paint(); } };
+    // Stop presenting and wait for the user; the latest frame stays pending.
+    const awaitChoice = reason => {
+        generation++;
+        renderer?.close(); renderer = null;
+        diagnostics.backend = "none";
+        diagnostics.fallbackAdapter = null;
+        diagnostics.failure = reason;
+        diagnostics.awaitingChoice = true;
+        dirty = !!staging;
+        publish();
+    };
+    const startWebGPU = async lost => {
+        const pending = createWebGPUPresenter(width, height, lost);
+        let timer;
+        const timeout = new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error(`WebGPU did not start within ${webgpuTimeoutMs / 1000} s`)), webgpuTimeoutMs);
+        });
+        try { return await Promise.race([pending, timeout]); }
+        catch (error) { pending.then(late => late.close(), () => { }); throw error; }
+        finally { clearTimeout(timer); }
     };
     const select = async (backend, reason = null) => {
         const token = ++generation;
         renderer?.close(); renderer = null;
-        diagnostics.backend = "canvas2d";
+        const webgpu = backend === "auto" || backend === "webgpu";
+        diagnostics.backend = webgpu ? "none" : "canvas2d";
         diagnostics.fallbackAdapter = null;
         diagnostics.fallbackReason = reason;
+        diagnostics.failure = null;
+        diagnostics.awaitingChoice = false;
         publish();
-        if (backend === "canvas2d" || closed) return;
-        const lost = message => {
-            if (closed || token !== generation) return;
-            void select(diagnostics.backend === "webgpu" ? "webgl" : "canvas2d", message);
-            if (staging) { dirty = true; schedule_paint(); }
+        if (closed) return;
+        if (backend === "canvas2d") { repaint(); return; }
+        const current = () => !closed && token === generation;
+        const lost = reason => {
+            if (!current()) return;
+            if (webgpu) { awaitChoice(reason); return; }
+            void select("canvas2d", reason);
         };
-        let candidate;
-        try {
-            if (backend === "auto" || backend === "webgpu") {
-                try { candidate = await createWebGPUPresenter(width, height, lost); }
-                catch (error) { diagnostics.fallbackReason = String(error.message ?? error); }
-            }
-            if (!candidate) candidate = createWebGLPresenter(width, height, lost);
-            if (closed || token !== generation) { candidate.close(); return; }
+        if (webgpu) {
+            let candidate;
+            try { candidate = await startWebGPU(lost); }
+            catch (error) { if (current()) awaitChoice(message(error)); return; }
+            if (!current()) { candidate.close(); return; }
             renderer = candidate;
             diagnostics.backend = candidate.backend;
             diagnostics.fallbackAdapter = candidate.fallbackAdapter ?? null;
             publish();
-            if (staging) { dirty = true; schedule_paint(); }
-        } catch (error) {
-            if (!closed && token === generation) {
-                diagnostics.fallbackReason = String(error.message ?? error);
-                publish();
-            }
+            repaint();
+            return;
         }
+        let candidate;
+        try { candidate = createWebGLPresenter(width, height, lost); }
+        catch (error) {
+            if (current()) { diagnostics.fallbackReason = message(error); publish(); repaint(); }
+            return;
+        }
+        if (!current()) { candidate.close(); return; }
+        renderer = candidate;
+        diagnostics.backend = candidate.backend;
+        publish();
+        repaint();
     };
     const paint2d = () => {
         image ??= ctx.createImageData(width, height);
@@ -130,6 +175,9 @@ export function createFramebufferHost(memory, options) {
             raf = 0;
             if (closed || !dirty || !staging)
                 return;
+            // WebGPU is starting or failed: keep the frame for the next presenter.
+            if (!renderer && diagnostics.backend === "none")
+                return;
             dirty = false;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
@@ -143,8 +191,8 @@ export function createFramebufferHost(memory, options) {
                     finally { frame.close?.(); }
                 } else paint2d();
             } catch (error) {
-                const next = diagnostics.backend === "webgpu" ? "webgl" : "canvas2d";
-                void select(next, String(error.message ?? error));
+                if (diagnostics.backend === "webgpu") { awaitChoice(message(error)); return; }
+                void select("canvas2d", message(error));
                 paint2d();
             }
             diagnostics.frames++;
@@ -157,6 +205,7 @@ export function createFramebufferHost(memory, options) {
         bpp,
         ready,
         get diagnostics() { return { ...diagnostics }; },
+        setBackend,
         get_mode(width_ptr, height_ptr, bpp_ptr) {
             const view = new DataView(memory.buffer);
             view.setUint32(width_ptr >>> 0, width, true);

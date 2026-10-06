@@ -1,4 +1,5 @@
 import { compositionEvents, mapKeyboardEvent } from './keyboard.mjs';
+import { comboEvents, createComboMenu, keyboardInset, physicalCombo, MODIFIER_KEYS } from './extra-keys.mjs';
 
 export const INPUT_SENTINEL = '\u200b';
 const key = name => mapKeyboardEvent({ key: name });
@@ -42,27 +43,47 @@ export function createKeyboardTextBridge(send) {
   };
 }
 
-export function createMobileKeyboard({ toggle, panel, input, canvas }) {
+export function createMobileKeyboard({ toggle, panel, input, canvas, more = null, menu = null, view = globalThis }) {
   let sendKey = null;
   let opened = false;
+  // Touch and pen taps type through the hidden edit control so the phone's
+  // keyboard opens; mouse users keep the display focused for hardware keys.
+  let pointerType = '';
+  const touchLike = type => type === 'touch' || type === 'pen';
   const modifiers = new Set();
   const bridge = createKeyboardTextBridge((code, down) => sendKey?.(code, down));
   const modifierButtons = [...panel.querySelectorAll('[data-modifier]')];
+  const keyButtons = () => [...panel.querySelectorAll('button')];
   const reset = () => { input.value = bridge.reset(); input.setSelectionRange(input.value.length, input.value.length); };
   const releaseModifiers = () => {
     for (const name of modifiers) sendKey?.(key(name), false);
     modifiers.clear();
     for (const button of modifierButtons) button.setAttribute('aria-pressed', 'false');
   };
-  const focus = () => {
-    if (!opened || !sendKey) return false;
+  const send = combo => { for (const [code, down] of comboEvents(combo, modifiers)) sendKey?.(code, down); };
+  const focusInput = () => {
     // This must remain synchronous in the user's tap, especially on iOS.
     input.focus({ preventScroll: true });
     input.setSelectionRange(input.value.length, input.value.length);
     return true;
   };
+  // After an extra key: keep an open phone keyboard open without popping a
+  // dismissed one back up; mouse clicks return focus to the display.
+  const refocus = () => {
+    if (!opened || !sendKey) return;
+    if (!touchLike(pointerType)) canvas.focus({ preventScroll: true });
+    else if (view.document?.activeElement === input) focusInput();
+  };
+  const placeAboveKeyboard = () => { panel.style.bottom = `${keyboardInset(view)}px`; };
+  view.visualViewport?.addEventListener('resize', placeAboveKeyboard);
+  view.visualViewport?.addEventListener('scroll', placeAboveKeyboard);
+  const comboMenu = more && menu ? createComboMenu({
+    button: more, menu, view,
+    onCombo(combo) { if (!sendKey) return; send(combo); releaseModifiers(); reset(); refocus(); },
+  }) : null;
   const close = (restoreFocus = false) => {
     releaseModifiers();
+    comboMenu?.open(false);
     opened = false;
     input.blur();
     panel.hidden = true;
@@ -71,15 +92,19 @@ export function createMobileKeyboard({ toggle, panel, input, canvas }) {
     reset();
     if (restoreFocus) canvas.focus({ preventScroll: true });
   };
-  toggle.addEventListener('click', () => {
-    if (!sendKey) return;
+  toggle.addEventListener('pointerdown', event => { pointerType = event.pointerType; });
+  toggle.addEventListener('click', event => {
     if (opened) { close(true); return; }
+    if (event.detail === 0) pointerType = '';
     opened = true;
     panel.hidden = false;
     toggle.setAttribute('aria-expanded', 'true');
     (toggle.querySelector('.label') ?? toggle).textContent = 'Hide keyboard';
     reset();
-    focus();
+    placeAboveKeyboard();
+    if (!sendKey) return;
+    if (touchLike(pointerType)) focusInput();
+    else canvas.focus({ preventScroll: true });
   });
   input.addEventListener('compositionstart', () => bridge.startComposition());
   input.addEventListener('compositionend', () => {
@@ -98,19 +123,26 @@ export function createMobileKeyboard({ toggle, panel, input, canvas }) {
       event.preventDefault(); bridge.tap('Backspace'); releaseModifiers(); reset();
     }
   });
-  const controls = new Set(['Backspace', 'Enter', 'Tab', 'Escape', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
   input.addEventListener('keydown', event => {
-    if (event.isComposing || bridge.composing || event.keyCode === 229 || event.key === 'Process') return;
-    // Printable keys use input/composition only, avoiding duplicate soft keys.
-    if (controls.has(event.key)) {
-      event.preventDefault(); bridge.tap(event.key); releaseModifiers(); reset();
-    }
+    if (bridge.composing) return;
+    // Printable keys use input/composition only, avoiding duplicate soft keys;
+    // hardware shortcuts, controls and function keys go to Linux as keys.
+    const combo = physicalCombo(event);
+    if (!combo) return;
+    event.preventDefault(); send(combo); releaseModifiers(); reset();
   });
   input.addEventListener('blur', releaseModifiers);
-  for (const button of panel.querySelectorAll('button')) {
-    button.addEventListener('pointerdown', event => event.preventDefault());
-    button.addEventListener('click', () => {
+  // A latched Ctrl/Alt also applies to the next hardware key on the display.
+  canvas.addEventListener('keyup', event => {
+    if (!modifiers.size || Object.prototype.hasOwnProperty.call(MODIFIER_KEYS, event.key)) return;
+    // After the display's own keyup handler has released the key.
+    view.setTimeout(releaseModifiers, 0);
+  });
+  for (const button of panel.querySelectorAll('[data-key], [data-modifier]')) {
+    button.addEventListener('pointerdown', event => { pointerType = event.pointerType; event.preventDefault(); });
+    button.addEventListener('click', event => {
       if (!sendKey) return;
+      if (event.detail === 0) pointerType = '';
       if (button.dataset.modifier) {
         const name = button.dataset.modifier;
         const down = !modifiers.has(name);
@@ -118,24 +150,35 @@ export function createMobileKeyboard({ toggle, panel, input, canvas }) {
         sendKey(key(name), down);
         button.setAttribute('aria-pressed', String(down));
       } else {
-        bridge.tap(button.dataset.key);
+        send(button.dataset.key);
         releaseModifiers();
         reset();
       }
-      focus();
+      refocus();
     });
   }
+  more?.addEventListener('pointerdown', event => { pointerType = event.pointerType; }, true);
   reset();
+  for (const button of keyButtons()) button.disabled = true;
   return {
     setKeyHandler(handler) {
-      close();
+      // The panel stays available before boot and across restarts; its keys
+      // only work while a guest accepts input.
+      releaseModifiers();
+      comboMenu?.open(false);
+      if (!handler && view.document?.activeElement === input) input.blur();
       sendKey = handler;
-      toggle.disabled = !handler;
+      for (const button of keyButtons()) button.disabled = !handler;
+      reset();
     },
-    focusDisplay() {
-      if (!opened) return false;
+    /** Display pointerdown: true when the phone keyboard took focus instead. */
+    focusDisplay(type = 'touch') {
+      // Only touch: main.js cancels its default, so the display does not take
+      // focus back from the edit control after this pointerdown.
+      if (!opened || !sendKey || type !== 'touch') return false;
+      pointerType = type;
       releaseModifiers(); reset();
-      return focus();
+      return focusInput();
     },
     close,
   };

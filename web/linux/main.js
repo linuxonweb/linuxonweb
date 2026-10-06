@@ -20,12 +20,14 @@ import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './per
 import { systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
 import { createMoreMenu } from './more-menu.mjs';
+import { installTestCommands, testCommandRequest } from './test-commands.mjs';
 import { installBuildInfo } from './build-info.mjs';
 import { installBrowserInfo } from './browser-info.mjs';
 import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
 import { appendDesktopExtras } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange } from './machine-settings.mjs';
 import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
@@ -83,6 +85,8 @@ const mobileKeyboard = createMobileKeyboard({
   toggle: document.getElementById("keyboard-toggle"),
   panel: document.getElementById("mobile-keyboard"),
   input: document.getElementById("mobile-keyboard-input"),
+  more: document.getElementById("keyboard-more"),
+  menu: document.getElementById("keyboard-combos"),
   canvas,
 });
 export const guestLogs = createLogViewer({
@@ -96,9 +100,16 @@ const cpuInput = document.getElementById("cpu-cores");
 const cpuValue = document.getElementById("cpu-value");
 const ramSelect = document.getElementById("ram");
 const graphicsSelect = document.getElementById('graphics-backend');
+const graphicsStatus = document.getElementById('graphics-status');
+// The running framebuffer host switches presenter without a guest restart.
+let setPresenter = null;
+let presentationPromptOpen = false;
 canvas.addEventListener('framebuffer-backend', event => {
   const detail = event.detail;
-  document.getElementById('graphics-status').textContent = `${detail.backend}${detail.fallbackReason ? ` · fallback: ${detail.fallbackReason}` : ''}`;
+  setPresenter = typeof detail.setBackend === 'function' ? detail.setBackend : null;
+  graphicsStatus.textContent = presentationStatus(detail);
+  // Auto means WebGPU; when it fails, ask instead of falling back silently.
+  if (detail.awaitingChoice) void choosePresentationFallback(detail.failure);
 });
 const settingsNote = document.getElementById("settings-note");
 const settingsApply = document.getElementById("settings-apply");
@@ -126,19 +137,8 @@ displayPan.addEventListener("click", () => {
 });
 new ResizeObserver(updateDisplayPan).observe(displayStage);
 window.addEventListener("resize", updateDisplayPan);
-// Two seconds after a click on the display, align its top with the viewport.
-// Waiting for release and the delay keeps the guest's press, release and any
-// immediate follow-up click at the same display position.
-let scrollTimer = 0;
-canvas.addEventListener("pointerup", () => {
-  if (panDisplay) return;
-  clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(() => {
-    if (panDisplay) return;
-    const top = displayStage.getBoundingClientRect().top;
-    if (Math.abs(top) >= 1) window.scrollBy({ top, behavior: "instant" });
-  }, 2000);
-});
+// Clicks on the display leave the page scroll where the user put it; the
+// display is never re-aligned to the top of the viewport.
 // Icon buttons show their label on hover or keyboard focus; a click or tap
 // shows it briefly, since touch has no hover.
 for (const button of document.querySelectorAll(".toolbar .tool")) {
@@ -208,7 +208,7 @@ installClipboardButton({
     }
     await guestClipboard(clipboardVsock, 1, item);
     if (!clipboardInput) throw new Error('Linux input is unavailable; clipboard was set.');
-    canvas.focus();
+    canvas.focus({ preventScroll: true });
     clipboardInput.key(Key.LEFTCTRL, true);
     if (item.kind === 1) clipboardInput.key(Key.LEFTSHIFT, true);
     clipboardInput.key(Key.V, true); clipboardInput.key(Key.V, false);
@@ -226,6 +226,24 @@ installClipboardButton({
     const item = await guestClipboard(clipboardVsock, 3, undefined, 25000);
     await writeHostClipboard(item);
     return { message: item.kind === 2 ? 'Linux image copied to host clipboard.' : 'Linux text copied to host clipboard.', item };
+  },
+});
+// Test commands: the host sends only a known id over hvc0; the guest agent from
+// desktop-extras.mjs opens an Aurora terminal that runs the fixed command.
+installTestCommands({
+  toggle: document.getElementById('tests-toggle'),
+  menu: document.getElementById('tests-menu'),
+  notice: document.getElementById('tests-notice'),
+  async run(command) {
+    if (!activeMachine) throw new Error('Start Linux (desktop or Firefox) before running a test.');
+    if (!['guest', 'startx', 'firefox'].includes(currentMode)) throw new Error('Test commands need a desktop boot; console and wgpu modes have no Aurora terminal.');
+    if (gputestMode || selectedGpuTest === 'software') throw new Error('GPU test-app boots replace the desktop; boot the normal desktop to run tests.');
+    if (!consoleInputWriter) throw new Error('Linux console is unavailable.');
+    hostLog(`test command: ${command.id} -> ${command.command}`);
+    await consoleInputWriter.write(testCommandRequest(command.id));
+    canvas.focus({ preventScroll: true });
+    const gpuNote = command.gpu && !guestGpuEnabled(currentMode) ? ' Guest GPU service is off; add ?gpu=1 or boot Firefox for GPU tests.' : '';
+    return `Opening an Aurora terminal for “${command.label}”.${gpuNote}`;
   },
 });
 let persistentHome = null;
@@ -295,6 +313,8 @@ let configurationLocked = false;
 let restarting = false;
 let pendingConfiguration = null;
 let pendingTestUrl = null;
+// Settings change only the presenter of a running guest: apply it live.
+let pendingDisplayOnly = false;
 const openBrowserInfo = installBrowserInfo({ dialog: document.getElementById('browser-info'), content: document.getElementById('browser-info-content'), close: document.getElementById('browser-info-close'), toggle: document.getElementById('more-toggle') });
 createMoreMenu({
   action: () => void openBrowserInfo(),
@@ -416,9 +436,12 @@ function validConfiguration(value) {
     && [...ramSelect.options].some(option => Number(option.value) === value.ram);
 }
 let activeConfiguration = { ...defaults };
+// True once the user has saved a memory size; Firefox then boots without asking.
+let ramChosen = false;
 try {
-  const saved = JSON.parse(localStorage.getItem(settingsKey));
-  if (validConfiguration(saved)) activeConfiguration = { ...saved, backend: ['canvas2d', 'auto', 'webgl'].includes(saved.backend) ? saved.backend : 'canvas2d' };
+  ({ configuration: activeConfiguration, ramChosen } = restoreConfiguration(JSON.parse(localStorage.getItem(settingsKey)), defaults, {
+    resolutions: [...resolutionSelect.options].map(option => option.value),
+    ramValues: [...ramSelect.options].map(option => Number(option.value)), maxCpus: hostCores }));
 } catch { /* Ignore missing or malformed saved settings. */ }
 function readConfiguration() {
   return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value };
@@ -436,6 +459,7 @@ function updateSettingsState() {
   settingsApply.disabled = configurationLocked || !validConfiguration(value)
     || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram && value.backend === activeConfiguration.backend);
   settingsNote.textContent = configurationLocked ? "Please wait while the machine starts or restarts."
+    : activeMachine && setPresenter && displayOnlyChange(activeConfiguration, value) ? "Display presentation changes apply without restarting the guest."
     : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox may need more memory; boot checks the selected image before starting."
       : activeMachine ? "Applying changes restarts the guest. You can review or cancel before anything changes."
         : "Choose settings, then apply your changes.";
@@ -490,6 +514,7 @@ function cancelConfiguration() {
   const cancelledTest = pendingTestUrl !== null;
   pendingTestUrl = null;
   pendingConfiguration = null;
+  pendingDisplayOnly = false;
   restartDialog.close();
   showConfiguration(activeConfiguration);
   (cancelledTest ? document.getElementById('more-toggle') : settingsToggle).focus();
@@ -555,10 +580,13 @@ settingsApply.addEventListener("click", () => {
   const next = readConfiguration();
   if (settingsApply.disabled || !validConfiguration(next)) return;
   pendingConfiguration = { ...next };
+  pendingDisplayOnly = Boolean(activeMachine && setPresenter && displayOnlyChange(activeConfiguration, next));
   document.getElementById("restart-error").hidden = true;
-  document.getElementById("restart-title").textContent = activeMachine ? "Restart the guest?" : "Apply machine settings?";
-  document.getElementById("restart-summary").textContent = `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
-  document.getElementById("restart-warning").hidden = !activeMachine;
+  document.getElementById("restart-title").textContent = pendingDisplayOnly ? "Change display presentation?" : activeMachine ? "Restart the guest?" : "Apply machine settings?";
+  document.getElementById("restart-summary").textContent = pendingDisplayOnly
+    ? `Display presentation · ${graphicsSelect.selectedOptions[0].text}. Continue saves this setting and switches the display now; the guest keeps running.`
+    : `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
+  document.getElementById("restart-warning").hidden = !activeMachine || pendingDisplayOnly;
   restartDialog.showModal();
 });
 restartContinue.addEventListener("click", async () => {
@@ -571,11 +599,12 @@ restartContinue.addEventListener("click", async () => {
   }
   if (!pendingConfiguration || restarting) return;
   const next = pendingConfiguration;
+  const displayOnly = pendingDisplayOnly && activeMachine && setPresenter;
   let previous;
   try {
     previous = localStorage.getItem(settingsKey);
     localStorage.setItem(settingsKey, JSON.stringify(next));
-    if (activeMachine) sessionStorage.setItem(resumeKey, currentMode);
+    if (activeMachine && !displayOnly) sessionStorage.setItem(resumeKey, currentMode);
   } catch {
     try { if (previous === null) localStorage.removeItem(settingsKey); else if (previous !== undefined) localStorage.setItem(settingsKey, previous); } catch { /* Storage is unavailable. */ }
     const error = document.getElementById("restart-error");
@@ -586,6 +615,13 @@ restartContinue.addEventListener("click", async () => {
   pendingConfiguration = null;
   restartDialog.close();
   activeConfiguration = { ...next };
+  ramChosen = true;
+  if (displayOnly) {
+    showConfiguration(activeConfiguration);
+    hostLog(`display presentation switched to ${next.backend} without restarting the guest`);
+    await setPresenter(next.backend);
+    return;
+  }
   if (!activeMachine) {
     showConfiguration(activeConfiguration);
     updateResolution();
@@ -715,7 +751,8 @@ function bindGuestCanvasInput(pointer) {
     queuePointer(x, y);
   });
   onCanvas("pointerdown", (ev) => {
-    if (!mobileKeyboard.focusDisplay()) canvas.focus();
+    // Keep the page still: a plain focus() scrolls a tall display to the top.
+    if (!mobileKeyboard.focusDisplay(ev.pointerType)) canvas.focus({ preventScroll: true });
     try {
       canvas.setPointerCapture(ev.pointerId);
     } catch {
@@ -802,6 +839,32 @@ function chooseSystemUpdate({ current, candidate, changed, canContinue }) {
   });
 }
 
+// WebGPU presentation failed: the user picks WebGL or Canvas 2D (saved, so it
+// is not asked again) or cancels and the display stays paused.
+async function choosePresentationFallback(reason) {
+  if (presentationPromptOpen) return;
+  presentationPromptOpen = true;
+  const dialog = document.getElementById('presentation-dialog');
+  document.getElementById('presentation-reason').textContent = `Reason: ${reason || 'unknown'}`;
+  hostLog(`WebGPU display presentation is not working: ${reason || 'unknown reason'}`, 'error');
+  const choice = await new Promise(resolve => {
+    dialog.returnValue = '';
+    dialog.addEventListener('close', () => resolve(presentationChoice(dialog.returnValue)), { once: true });
+    dialog.showModal();
+  });
+  presentationPromptOpen = false;
+  if (!choice) {
+    graphicsStatus.textContent += ' · choose WebGL or Canvas 2D in Settings';
+    return;
+  }
+  try { localStorage.setItem(settingsKey, JSON.stringify(withPresentationChoice(activeConfiguration, choice, ramChosen))); }
+  catch { storagePanel.message('Could not save the display choice in this browser; it applies to this session only.', true); }
+  activeConfiguration = { ...activeConfiguration, backend: choice };
+  showConfiguration(activeConfiguration);
+  hostLog(`display presentation switched to ${choice} by user choice`);
+  await setPresenter?.(choice);
+}
+
 function chooseFirefoxMemory(currentRam) {
   const dialog = document.getElementById('firefox-memory-dialog');
   document.getElementById('firefox-memory-current').textContent = currentRam === 4096 ? '4 GB' : `${currentRam} MB`;
@@ -830,13 +893,16 @@ async function boot(mode) {
       storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
     } finally { lockConfiguration(false); }
   }
-  if (mode === 'firefox' && ![1024, 2048].includes(activeConfiguration.ram)) {
+  if (needsFirefoxMemoryChoice(mode, activeConfiguration.ram, ramChosen)) {
     lockConfiguration(true);
     let ram;
     try { ram = await chooseFirefoxMemory(activeConfiguration.ram); }
     finally { lockConfiguration(false); }
     if (ram === null) return;
     activeConfiguration = { ...activeConfiguration, ram };
+    // Save the choice like applied settings so later boots and restarts keep it.
+    ramChosen = true;
+    try { localStorage.setItem(settingsKey, JSON.stringify(activeConfiguration)); } catch { /* This boot still uses the choice. */ }
   }
   currentMode = mode;
   displayStage.hidden = mode === 'console';
@@ -1026,7 +1092,7 @@ async function boot(mode) {
     for (const button of launchButtons) button.disabled = true;
     showStopButton(true);
     if (consoleMode) terminal?.focus();
-    else canvas.focus();
+    else canvas.focus({ preventScroll: true });
     hostLog("machine started (framebuffer + virtio input/console/net)");
     // Serve guest GPU sessions until the machine closes (cleanupBoot stops it).
     if (guestGpuEnabled(mode) && !bootClosed) gpuHost = startGpuHost({ vsock, log: hostLog, backend: gpuBackend });

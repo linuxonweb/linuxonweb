@@ -18,17 +18,33 @@ export interface FramebufferOptions {
     height?: number;
     /** Bits per pixel. Only 32 (x8r8g8b8) is supported. */
     bpp?: number;
-    /** Host presentation only. Canvas2D remains the measured safe default. */
+    /**
+     * Host presentation only. Canvas2D remains the measured safe default.
+     * "auto" and "webgpu" use WebGPU without any automatic fallback: on failure
+     * the display pauses and diagnostics report awaitingChoice. Explicit WebGL
+     * still falls back to Canvas2D.
+     */
     backend?: "auto" | "webgpu" | "webgl" | "canvas2d";
+    /** Bound on WebGPU adapter/device/pipeline start. Defaults to 10000 ms. */
+    webgpuTimeoutMs?: number;
 }
 export interface FramebufferDiagnostics {
-    backend: "canvas2d" | "webgl" | "webgpu";
+    /** "none" while WebGPU starts or after it failed (display paused). */
+    backend: "canvas2d" | "webgl" | "webgpu" | "none";
     requested: string;
     frames: number;
     presents: number;
     coalesced: number;
     fallbackReason: string | null;
     fallbackAdapter: boolean | null;
+    /** Why WebGPU presentation stopped or could not start. */
+    failure: string | null;
+    /** True when WebGPU failed and the user must choose another presenter. */
+    awaitingChoice: boolean;
+}
+/** Detail of the "framebuffer-backend" event dispatched on the canvas. */
+export interface FramebufferBackendEventDetail extends FramebufferDiagnostics {
+    setBackend(backend: "auto" | "webgpu" | "webgl" | "canvas2d"): Promise<void>;
 }
 export interface FramebufferHost {
     readonly width: number;
@@ -36,6 +52,8 @@ export interface FramebufferHost {
     readonly bpp: number;
     readonly ready: Promise<void>;
     readonly diagnostics: FramebufferDiagnostics;
+    /** Switch presenter without restarting the guest; resolves once selected. */
+    setBackend(backend: "auto" | "webgpu" | "webgl" | "canvas2d"): Promise<void>;
     get_mode(width_ptr: number, height_ptr: number, bpp_ptr: number): void;
     present(addr: number, width: number, height: number, stride: number, bpp: number): void;
     close(): void;

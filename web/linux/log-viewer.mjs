@@ -68,7 +68,14 @@ export class LogHistory {
   }
 }
 
-export function createLogViewer({ toggle, parent }) {
+// Bring a freshly shown panel to the middle of the window. Only the vertical
+// axis moves ('nearest' inline), so a wide guest display does not shift sideways.
+export function revealLogPanel(panel, view = globalThis) {
+  const reduce = view.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  panel?.scrollIntoView?.({ block: 'center', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+}
+
+export function createLogViewer({ toggle, parent, view = globalThis }) {
   const history = new LogHistory();
   let panel = null, viewport = null, list = null, summary = null, latest = null;
   let timer = null, end = 0, following = true, adjusting = false;
@@ -149,7 +156,13 @@ export function createLogViewer({ toggle, parent }) {
     (toggle.querySelector('.label') ?? toggle).textContent = 'Hide logs';
     toggle.setAttribute('aria-expanded', 'true');
   }
-  toggle.addEventListener('click', () => panel ? close() : open());
+  // Showing from the toolbar also scrolls the panel into view; hiding leaves the
+  // page where it is (the browser only clamps if the page became shorter).
+  toggle.addEventListener('click', () => {
+    if (panel) { close(); return; }
+    open();
+    revealLogPanel(panel, view);
+  });
   return {
     history, open, close,
     write(value, source) {
