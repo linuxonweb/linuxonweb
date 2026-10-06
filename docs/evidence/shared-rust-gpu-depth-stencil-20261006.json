@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "scope": "Actual shared Rust wgpu unsampled color320/512 range and attachment-only depth/stencil with original24 primitive regression",
+  "passActualBothBackends": true,
+  "backends": [
+    "BrowserWebGpu",
+    "Gl"
+  ],
+  "runs": {
+    "gds-wg3": {
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/gds-wg3/root-terminal-review.json",
+        "bytes": 12468,
+        "sha256": "2f87edba92713e4f5afd47a211475f816638bbdbcbc6006dacd1e3b982ede35e"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/gds-wg3/owner-terminal.json",
+        "bytes": 13518,
+        "sha256": "61af738a2d65c86590fc2e71d935022fd26ceca0ec7905eb9017f969c8d23941"
+      },
+      "actualResult": {
+        "path": "/mnt/p3/codex-build/gds-wg3/run/result.json",
+        "bytes": 835517,
+        "sha256": "c86dbac5e1b0617258361ae250568160d73d30ebb1955eb12122ab0df0a8a4a2"
+      },
+      "actualValidation": {
+        "path": "/mnt/p3/codex-build/gds-wg3/run/validation.json",
+        "bytes": 1506,
+        "sha256": "fa508cf1dc5f8678dabd95fe6a404711784e730526b1afc17000db6fc3faef5e"
+      },
+      "backend": "BrowserWebGpu",
+      "actualClosedSessions": 5,
+      "totalNativeChecks": 6872865,
+      "depthCases": 13,
+      "hostBrowserGuestCpus": 6,
+      "naturalGroupDrainMs": 241
+    },
+    "gds-gl1": {
+      "rootReview": {
+        "path": "/mnt/p3/codex-build/gds-gl1/root-terminal-review.json",
+        "bytes": 14314,
+        "sha256": "7cd11361c9c03ef9e59ca683bf86fe1d3f4a23ab63178cbce18fed76cd94f066"
+      },
+      "ownerTerminal": {
+        "path": "/mnt/p3/codex-build/gds-gl1/owner-terminal.json",
+        "bytes": 15365,
+        "sha256": "03935634b6fd34a07636c833c9b080883f2dedb013b903b13f95bffa6c3dfe35"
+      },
+      "actualResult": {
+        "path": "/mnt/p3/codex-build/gds-gl1/run/result.json",
+        "bytes": 837124,
+        "sha256": "bd85c29a72bc5bc84d34542bd74bd2f9b1a93ec52888c1375a7b2bbbd72bbfce"
+      },
+      "actualValidation": {
+        "path": "/mnt/p3/codex-build/gds-gl1/run/validation.json",
+        "bytes": 1506,
+        "sha256": "fa508cf1dc5f8678dabd95fe6a404711784e730526b1afc17000db6fc3faef5e"
+      },
+      "backend": "Gl",
+      "actualClosedSessions": 5,
+      "totalNativeChecks": 6872865,
+      "depthCases": 13,
+      "hostBrowserGuestCpus": 6,
+      "naturalGroupDrainMs": 247
+    }
+  },
+  "original24Unchanged": true,
+  "depth320Rounds": 10,
+  "depth512Rounds": 3,
+  "allActualClosedRustResourcesZero": true,
+  "depthMinimumBits": 24,
+  "depthPhysicalStorage": "Unknown",
+  "stencilBits": 8,
+  "samplingAcceptance": false,
+  "packedDepthCopyAcceptance": false,
+  "presentationAcceptance": false,
+  "firefoxGpuAcceptance": false,
+  "concurrencyAcceptance": false,
+  "releaseAcceptance": false,
+  "firstHardwareFailurePreserved": "/mnt/p3/codex-build/gds-wg1/root-failed-terminal-review.json",
+  "prebootSetupFailurePreserved": "/mnt/p3/codex-build/gds-wg2/owner-terminal.json",
+  "repair": "Exact native gpu_call upper bound GPU_DEPTH_TARGET to GPU_GRAPHICS_READBACK_RANGE; existing Rust bytes reused"
+}

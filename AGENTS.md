@@ -308,8 +308,10 @@ evidence. Keep requested persistent preview/proxy services running.
 - Frozen test UI: `/mnt/p6/project/build/nightly-full-jit-startup-20261004/`
   `frozen-four-web-assets-20261004/`. Do not mutate in-flight test inputs;
   rebase routes to exact frozen bytes before adopting production UI changes.
-- Persistent dev owner/status: `/mnt/p6/project/build/`
-  `nightly159-dev-preview-run60-20261005/ownership.json`.
+- Persistent dev owner/status: `/mnt/p3/codex-build/firefox-gpu-preview-oct06/`
+  `current-dev3000/ownership.json`; user-authorized replacement serves the
+  reviewed current159 colour GPU testing archive. Separate diagnostic port3003
+  is also persistent. See `continue.md`; full Firefox GPU acceptance is pending.
 - Dev testing archive review: `/mnt/p6/build/browser-bugs-20261005/transform/`
   `root-startup-tab-testing-package-review.json`; JIT/TLS/GPU remain unverified.
 - Earlier independently reviewed atomic package: `/mnt/p6/build/`
