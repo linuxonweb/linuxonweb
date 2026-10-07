@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, PRESENTATION_VERSION } from './machine-settings.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, PRESENTATION_VERSION, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
 
 const firefoxDefaults = { resolution: '1280x720', cpus: 2, ram: 4096, backend: 'auto' };
 const options = { resolutions: ['400x300', '1280x720', '1920x1080'], ramValues: [128, 256, 512, 1024, 2048, 4096], maxCpus: 6 };
@@ -93,4 +93,18 @@ test('presentation status names the presenter, a paused WebGPU failure and WebGL
   assert.equal(presentationStatus({ backend: 'canvas2d', requested: 'webgl', fallbackReason: 'WebGL unavailable' }), 'Canvas 2D · WebGL failed: WebGL unavailable');
   assert.equal(presentationStatus({ backend: 'canvas2d', requested: 'canvas2d', fallbackReason: null }), 'Canvas 2D');
   assert.equal(presentationStatus(null), '');
+});
+
+test('the renderer URL parameter selects the display presentation', () => {
+  assert.equal(presentationFromUrl('?firefox=1&renderer=webgpu'), 'auto');
+  assert.equal(presentationFromUrl('?renderer=auto'), 'auto');
+  assert.equal(presentationFromUrl('?renderer=webgl'), 'webgl');
+  assert.equal(presentationFromUrl('?renderer=canvas2d'), 'canvas2d');
+  assert.equal(presentationFromUrl('?renderer=metal'), null);
+  assert.equal(presentationFromUrl('?firefox=1'), null);
+});
+
+test('the URL shows the active presentation and keeps other parameters', () => {
+  assert.equal(presentationUrl('http://h/linux/index.html?firefox=1&debug=1', 'auto'), 'http://h/linux/index.html?firefox=1&debug=1&renderer=webgpu');
+  assert.equal(presentationUrl('http://h/linux/index.html?renderer=canvas2d&firefox=1', 'webgl'), 'http://h/linux/index.html?renderer=webgl&firefox=1');
 });

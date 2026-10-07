@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE_SHA = 'c0eaffe22a66bb97f94ff53dcb645e402eb50dea98b0976b66000ea615d4ac9f'
@@ -141,6 +142,8 @@ def main():
     ap.add_argument('--manifest', type=Path, required=True)
     ap.add_argument('--build', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
+    ap.add_argument('--no-publish', action='store_true',
+                    help='do not copy the package into the web/desktop dev server (latest-build)')
     ap.add_argument('--vk-trace', action='store_true',
                     help='enable existing native Vulkan diagnostics in the test-only wrapper')
     ap.add_argument('--gfxtest-build', type=Path,
@@ -284,5 +287,8 @@ def main():
           'postExecIdentity':'Unknown','firefoxParentAcceptance':False,'gpuAcceptance':False}
     (out/'package.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({'passPackage':True,'output':str(out),'untouchedEncodedRecordsVerified':verified,'gpuAcceptance':False}))
+    if not a.no_publish:
+        # The web/desktop dev server serves the newest package and restarts on it.
+        subprocess.run(['node',str(ROOT/'web/desktop/publish-build.mjs'),str(out)],check=True)
 
 if __name__=='__main__': main()

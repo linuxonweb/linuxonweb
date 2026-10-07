@@ -15,6 +15,19 @@ export function restoreConfiguration(saved, defaults, { resolutions, ramValues, 
   return { configuration, ramChosen };
 }
 
+// The page URL's "renderer" parameter and the Settings display presentation
+// stay in sync: a valid parameter selects the presentation for this page load,
+// and the URL always shows the active one ("webgpu" for the Auto default).
+const RENDERER_PARAMS = { webgpu: 'auto', auto: 'auto', webgl: 'webgl', canvas2d: 'canvas2d' };
+export function presentationFromUrl(search) {
+  return RENDERER_PARAMS[new URLSearchParams(search).get('renderer')] ?? null;
+}
+export function presentationUrl(href, backend) {
+  const url = new URL(href);
+  url.searchParams.set('renderer', backend === 'auto' ? 'webgpu' : backend);
+  return url.href;
+}
+
 // Display presentation defaults to "auto" (WebGPU). Saved records carry this
 // version so an explicit Canvas 2D choice is told apart from the old default.
 export const PRESENTATION_VERSION = 2;

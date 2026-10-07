@@ -28,7 +28,7 @@ import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
 import { appendDesktopExtras } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
-import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord } from './machine-settings.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
 import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
@@ -448,6 +448,8 @@ try {
     resolutions: [...resolutionSelect.options].map(option => option.value),
     ramValues: [...ramSelect.options].map(option => Number(option.value)), maxCpus: hostCores }));
 } catch { /* Ignore missing or malformed saved settings. */ }
+// A renderer= URL parameter chooses the display presentation for this page load.
+activeConfiguration.backend = presentationFromUrl(location.search) ?? activeConfiguration.backend;
 function readConfiguration() {
   return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value };
 }
@@ -456,6 +458,8 @@ function showConfiguration(value) {
   cpuInput.value = String(value.cpus);
   ramSelect.value = String(value.ram);
   graphicsSelect.value = value.backend || 'auto';
+  // Only the active configuration is shown here; keep the URL parameter in step with it.
+  history.replaceState(history.state, '', presentationUrl(location.href, graphicsSelect.value));
   updateCpuLabel();
   updateSettingsState();
 }
@@ -639,7 +643,9 @@ restartContinue.addEventListener("click", async () => {
   activeMachine.close();
   await activeMachine.closed.catch(() => {});
   // Reload releases the old guest's canvas listeners, streams, workers and
-  // network. Keep every existing query parameter (proxy, Firefox, diagnostics).
+  // network. Keep every existing query parameter (proxy, Firefox, diagnostics);
+  // renderer= carries the newly applied presentation.
+  history.replaceState(history.state, '', presentationUrl(location.href, next.backend));
   location.reload();
 });
 
