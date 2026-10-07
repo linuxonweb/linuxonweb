@@ -1,3 +1,56 @@
+# Firefox WebGL2 works on host WebGL2 (glremote); speed work and next steps, 2026-10-07 (claude-opus-5-5)
+
+Branch `claude-opus-5-5-firefox-gpu-desktop-freeze-20261006`. User priorities, in order:
+1. WebGL2 in guest Firefox (WebGL 1 does not matter). **Works**.
+2. "too slow". Partially addressed; see below.
+3. Next: hardware WebRender, so the Firefox UI and page rendering use the GPU.
+
+## What works (runtime evidence, prime Chromium on NVIDIA, ANGLE Vulkan)
+- glremote (6914dee) replays guest GLES 3.0/EGL 1.5 on a host WebGL2 context in the GPU-owner worker.
+  Firefox libEGL picks it by `GUEST_GL_BACKEND` (3ca331f; auto = glremote when the host offers WebGL2).
+- The gpu-check page tests WebGL2 by default and the cube renders: "WebGL2 rendering" badge, verified
+  centre pixel. Speed went 12 -> ~22 -> 24-32 fps (2e7364e).
+- The dev server (`node web/desktop/dev-server.mjs`, port 3000) serves reviewed build **a1e1d6576ad6**
+  (`/mnt/p3/codex-build/opus-ffgpu/a18/package2`), republished after the timing experiments below.
+  Full Firefox GPU acceptance (WebRender, WebGPU) is still pending.
+
+## Speed investigation (harness `/mnt/p3/codex-build/opus-ffgpu`: `test.sh RUN QUERY SECS`, driver `drive.mjs`)
+- Each frame is a serial latency chain; no single thread is saturated. The guest timing page (test-only,
+  `a20/gpu-check-timing.html`) measured rAF gaps p10/50/90 31/37/42 ms but only 1.0 ms of page JS per frame.
+  A MessageChannel ping inside Firefox took p50 24 ms, so Firefox's main thread holds one long task per frame
+  (paint, sync GetFrontBuffer, software WebRender, XPutImage).
+- Ruled out or fixed, with no clear fps change on the loaded 8-CPU host (load avg ~8):
+  - **Firefox surface-recycle patch** (`tools/nightly-musl/patches/nightly-webgl-readback-surface-recycle.patch`,
+    a19 build e40ca87e869f). Host GetError time fell 400 -> 5 ms/s, but there was no fps gain, so it is
+    **not shipped** (upstream source patch).
+  - LLC sched-domain kernel; `layout.frame_rate=100`; `webgl.out-of-process=false` (27 fps).
+  - Chromium vsync on/off; Canvas2D vs WebGPU presentation (24.5 vs 24.2 fps averaged).
+  - **Page main thread (bbccc10, shipped).** The fb present diff ran per present and kept the page main
+    thread ~95% busy; worker-message handling went 727 -> 46 ms/s. It now runs once per animation frame,
+    uses a WASM SIMD compare (`web/linux/fbdiff/`), and uploads only the changed rectangle.
+- In isolation the host is fast: getError 0.08 ms, 480x360 readPixels 0.77 ms. In situ, readPixels costs
+  4-8 ms. A Chrome trace shows Chrome's own SwapBuffers (~7 ms, ~200 ms/s) and the WebGPU display presenter
+  (~2 ms per task) on the same GPU-process thread as the WebGL sync calls.
+- Tools:
+  - `a19/trace.mjs RUN START SECS` records a Chrome trace of a driven run.
+  - `DRIVE_PROFILE_PAGE=1` adds the page main thread to `DRIVE_PROFILE`.
+  - `prof/pageprof.py` and `prof/grepsym.py` summarise profiles.
+  - Rebuild one Firefox object out of tree: `make -n -W Unified_cpp_dom_canvas1.cpp ...` in obj-nightly, then
+    `source tools/nightly-musl/recipe/environment.sh` (see `a19/compile-canvas1.sh`, `a19/build.sh`).
+
+## Next steps
+1. Hardware WebRender (the user's next request).
+   - WebRender on glremote moves page and UI rasterisation from the slow guest CPU to the host GPU.
+   - Host WebGL2 contexts cannot share textures. Compositing the WebGL canvas therefore needs either
+     an ImageBitmap/GPU-side copy between host contexts, or virtualised guest contexts on one host
+     WebGL2 context.
+   - Try `gfx.webrender.software=false` with glremote first, and report the actual WebRender backend
+     identity from about:support.
+2. Firefox startup (~1 min) is still slow; not yet profiled in this round.
+3. Zink, glmark2 and vkmark were not rerun after bbccc10. Unit tests pass (88/88).
+
+---
+
 # Guest GPU benchmarks pass; Firefox next, 2026-10-07 (claude-opus-5-5)
 
 User order: vkgears/glgears 500x500 ~200 FPS (accepted), then vkmark, then glmark2, finally Firefox.
