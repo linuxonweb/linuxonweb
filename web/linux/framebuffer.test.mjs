@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createFramebufferHost, swizzle_bgra_to_rgba } from './dist/framebuffer.js';
+import { readFileSync } from 'node:fs';
+import { createFramebufferHost, swizzle_bgra_to_rgba, FBDIFF_WASM } from './dist/framebuffer.js';
 
 test('unaligned padded BGRA input is opaque RGBA without reading padding', () => {
   const source = new Uint8Array(24).subarray(1);
@@ -30,10 +31,11 @@ test('host snapshots shared padded data, coalesces presents, handles resize/grow
     host.present(1,2,2,11,32);
     source[1] = 30;
     host.present(1,2,2,11,32);
-    source.fill(0,1,20);
+    // The guest never waits for a present: the paint reads its latest bytes.
+    source[5] = 60;
     canvas.width = 1; canvas.height = 1;
     callback(); callback = null;
-    assert.deepEqual(painted, [[1,2,30,255,4,5,6,255,7,8,9,255,10,11,12,255]]);
+    assert.deepEqual(painted, [[1,2,30,255,4,5,60,255,7,8,9,255,10,11,12,255]]);
     assert.equal(canvas.width, 2); assert.equal(canvas.height, 2);
     assert.equal(host.diagnostics.coalesced, 1);
     assert.equal(host.diagnostics.frames, 1);
@@ -41,6 +43,12 @@ test('host snapshots shared padded data, coalesces presents, handles resize/grow
     new Uint8Array(memory.buffer).set([20,30,40,0, 0,0,0,0, 0,0,0,0, 0,0,0,0], 65536);
     host.present(65536,2,2,8,32); callback(); callback = null;
     assert.deepEqual(painted[1].slice(0,4), [40,30,20,255]);
+    // Presents between paints share one compare; identical bytes draw nothing.
+    host.present(65536,2,2,8,32); host.present(65536,2,2,8,32); host.present(65536,2,2,8,32);
+    callback(); callback = null;
+    assert.equal(host.diagnostics.unchanged, 1);
+    assert.equal(host.diagnostics.frames, 2);
+    assert.equal(painted.length, 2);
     for (const stride of [7, 8.5, NaN, Infinity, Number.MAX_SAFE_INTEGER]) host.present(1,2,2,stride,32);
     host.present(131072,2,2,8,32);
     assert.equal(callback, null);
@@ -217,4 +225,44 @@ test('invalid dimensions and backend policy fail early', () => {
   const canvas = { getContext: () => ({}) };
   assert.throws(() => createFramebufferHost({}, { canvas, width: -1 }));
   assert.throws(() => createFramebufferHost({}, { canvas, width: 2, height: 2, backend: 'vulkan' }));
+});
+
+test('embedded SIMD diff matches fbdiff.wasm', () => {
+  assert.equal(FBDIFF_WASM, readFileSync(new URL('./fbdiff/fbdiff.wasm', import.meta.url)).toString('base64'));
+});
+
+// Both compare paths (SIMD: 16-byte rows; JavaScript: other widths) paint only
+// the changed rectangle and keep the rest of the frame.
+for (const width of [8, 6]) test(`changed rectangle is detected and painted (width ${width})`, async () => {
+  const oldRAF = globalThis.requestAnimationFrame;
+  let callback = null; const puts = [];
+  globalThis.requestAnimationFrame = fn => { callback = fn; return 1; };
+  try {
+    const height = 5, memory = new WebAssembly.Memory({ initial: 1, maximum: 4, shared: true });
+    const canvas = { width: 0, height: 0, dataset: {}, getContext: () => ({
+      createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }),
+      putImageData: (image, dx, dy, x, y, w, h) => puts.push({ rect: [x, y, w, h], data: [...image.data] }),
+    }) };
+    const host = createFramebufferHost(memory, { canvas, width, height });
+    await host.ready;
+    assert.equal(host.diagnostics.diff, width === 8 ? 'simd' : 'js');
+    const fb = new Uint32Array(memory.buffer, 256, width * height);
+    for (let i = 0; i < fb.length; i++) fb[i] = 0x010203 * (i + 1);
+    host.present(256, width, height, width * 4, 32); callback();
+    assert.deepEqual(puts.at(-1).rect, [0, 0, width, height]);
+    fb[1 * width + 2] = 0xff0000; fb[3 * width + 4] = 0x00ff00;
+    host.present(256, width, height, width * 4, 32); callback();
+    const { rect, data } = puts.at(-1);
+    const [x, y, w, h] = rect;
+    // SIMD compares 4-pixel chunks, so its rectangle may be wider, never narrower.
+    assert.ok(x <= 2 && x + w >= 5 && y === 1 && h === 3, `rect ${rect}`);
+    assert.ok(width === 8 ? x + w <= width : (x === 2 && w === 3), `rect ${rect}`);
+    const pixel = (px, py) => data.slice((py * width + px) * 4, (py * width + px) * 4 + 4);
+    assert.deepEqual(pixel(2, 1), [255, 0, 0, 255]);
+    assert.deepEqual(pixel(4, 3), [0, 255, 0, 255]);
+    const before = puts.length;
+    host.present(256, width, height, width * 4, 32); callback();
+    assert.equal(puts.length, before, 'unchanged frame draws nothing');
+    assert.equal(host.diagnostics.unchanged, 1);
+  } finally { globalThis.requestAnimationFrame = oldRAF; }
 });

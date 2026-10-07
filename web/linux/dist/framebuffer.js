@@ -47,6 +47,21 @@ export function swizzle_bgra_to_rgba(dst, src, width, height, stride) {
         }
     }
 }
+// ../fbdiff/fbdiff.wat assembled with wat2wasm --enable-multi-memory --enable-threads;
+// framebuffer.test.mjs checks that these bytes match fbdiff.wasm.
+export const FBDIFF_WASM = "AGFzbQEAAAABCgFgBX9/f39/AX8CEQEDZW52BWd1ZXN0AgMBgIAEAwIBAAUDAQAABhUEfwFBAAt/AUEAC38BQQALfwFBAAsHMAYHc3RhZ2luZwIBA3RvcAMABmJvdHRvbQMBBGxlZnQDAgVyaWdodAMDBGRpZmYAAAr8AQH5AQEFf0F/JABBACQBIAIkAkEAJAMCQANAIAUgA08NASAAIAUgAWxqIQYgBSACbCEHQQAhCCACQRBrIQkCQCAERQRAAkADQCAIIAJPDQMgBiAIav0ABAAgByAIav0ARAEA/VH9Uw0BIAhBEGohCAwACwsCQANAIAYgCWr9AAQAIAcgCWr9AEQBAP1R/VMNASAJIAhNDQEgCUEQayEJDAALCwsgByAIaiAGIAhqIAlBEGogCGv8CgEAIwBBAEgEQCAFJAALIAVBAWokASAIIwJJBEAgCCQCCyAJQRBqIwNLBEAgCUEQaiQDCwsgBUEBaiEFDAALCyMAQQBOCw==";
+let fbdiffModule;
+// SIMD change detection over the guest memory, or null (no SIMD/multi-memory
+// support, or an unshared memory): the host then compares rows in JavaScript.
+function fbdiff(memory) {
+    if (fbdiffModule === undefined) {
+        try { fbdiffModule = new WebAssembly.Module(Uint8Array.from(atob(FBDIFF_WASM), c => c.charCodeAt(0))); }
+        catch { fbdiffModule = null; }
+    }
+    if (!fbdiffModule) return null;
+    try { return new WebAssembly.Instance(fbdiffModule, { env: { guest: memory } }).exports; }
+    catch { return null; }
+}
 /**
  * Host-side canvas presenter for the wasm framebuffer driver.
  * Stable visible/input canvas, with optional GPU swizzle on a private surface.
@@ -69,12 +84,20 @@ export function createFramebufferHost(memory, options) {
     let closed = false;
     let raf = 0;
     let dirty = false;
-    // Recycled staging buffer so present() does not allocate 3MiB per frame.
+    // Latest presented guest buffer (address and stride); it is read at paint time.
+    let source = null;
+    // Recycled staging buffer so a paint does not allocate 3MiB per frame.
     let staging = null;
     const rowBytes = width * 4;
-    // Rows changed since the last paint ([top, bottom)). The guest presents on every
-    // wakeup, often with identical bytes; unchanged presents schedule no repaint.
-    let top = 0, bottom = 0;
+    // Rectangle changed since the last paint: rows [top, bottom), pixels [left, right).
+    // The guest presents on every wakeup, often with identical bytes; unchanged
+    // frames draw nothing.
+    let top = 0, bottom = 0, left = 0, right = 0;
+    const fast = rowBytes % 16 === 0 ? fbdiff(memory) : null;
+    const mark = (t, b, l, r) => {
+        top = Math.min(top, t); bottom = Math.max(bottom, b);
+        left = Math.min(left, l); right = Math.max(right, r);
+    };
     let renderer = null;
     let generation = 0;
     // "auto" means WebGPU. A WebGPU failure never falls back silently: the
@@ -85,7 +108,7 @@ export function createFramebufferHost(memory, options) {
     const webgpuTimeoutMs = options.webgpuTimeoutMs ?? 10000;
     const diagnostics = { backend: "canvas2d", requested: options.backend ?? "canvas2d",
         frames: 0, presents: 0, coalesced: 0, unchanged: 0, fallbackReason: null, fallbackAdapter: null,
-        failure: null, awaitingChoice: false };
+        failure: null, awaitingChoice: false, diff: fast ? "simd" : "js" };
     if (!backends.includes(diagnostics.requested))
         throw new Error("unknown framebuffer backend");
     const message = error => String(error?.message ?? error);
@@ -100,7 +123,7 @@ export function createFramebufferHost(memory, options) {
         if (canvas.dispatchEvent && globalThis.CustomEvent)
             canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics, setBackend } }));
     };
-    const repaint = () => { if (staging) { dirty = true; top = 0; bottom = height; schedule_paint(); } };
+    const repaint = () => { if (staging || source) { dirty = true; mark(0, height, 0, width); schedule_paint(); } };
     // Stop presenting and wait for the user; the latest frame stays pending.
     const awaitChoice = reason => {
         generation++;
@@ -164,12 +187,59 @@ export function createFramebufferHost(memory, options) {
         publish();
         repaint();
     };
-    const paint2d = (from = 0, to = height) => {
+    const paint2d = (from = 0, to = height, x0 = 0, x1 = width) => {
         if (to <= from && image) return;
-        if (!image) { image = ctx.createImageData(width, height); from = 0; to = height; }
+        if (!image) { image = ctx.createImageData(width, height); from = 0; to = height; x0 = 0; x1 = width; }
         swizzle_bgra_to_rgba(image.data.subarray(from * rowBytes, to * rowBytes),
             staging.subarray(from * rowBytes, to * rowBytes), width, to - from, rowBytes);
-        ctx.putImageData(image, 0, 0, 0, from, width, to - from);
+        ctx.putImageData(image, 0, 0, x0, from, x1 - x0, to - from);
+    };
+    // Copy rows that differ from the staging frame and widen [top, bottom) to them.
+    // The kernel queues one present per main-thread turn while the guest draws, so
+    // this full-frame compare runs once per animation frame, not once per present;
+    // otherwise it saturates the main thread that relays every guest message.
+    // The guest never waits for a present, so reading its buffer here is as
+    // consistent as reading it when the present arrived, and more recent.
+    const snapshot = () => {
+        const pending = source;
+        source = null;
+        if (!pending)
+            return;
+        const { addr, stride } = pending;
+        const bytes = memory_bytes(memory, addr, stride * (height - 1) + rowBytes);
+        if (!bytes)
+            return;
+        // A new staging buffer holds no frame yet, so every row is copied.
+        const need = rowBytes * height, fresh = !staging || staging.byteLength !== need;
+        if (fast) {
+            if (fresh) {
+                const pages = Math.ceil(need / 65536) - fast.staging.buffer.byteLength / 65536;
+                if (pages > 0) fast.staging.grow(pages);
+                staging = new Uint8Array(fast.staging.buffer, 0, need);
+            }
+            if (!fast.diff(addr, stride, rowBytes, height, fresh ? 1 : 0)) { diagnostics.unchanged++; return; }
+            mark(fast.top.value, fast.bottom.value, fast.left.value / 4, fast.right.value / 4);
+            return;
+        }
+        if (fresh) staging = new Uint8Array(need);
+        const words = width, old32 = new Uint32Array(staging.buffer, 0, need / 4);
+        const aligned = bytes.byteOffset % 4 === 0 && stride % 4 === 0;
+        let first = -1, last = -1, x0 = width, x1 = 0;
+        for (let y = 0; y < height; y++) {
+            let lo = 0, hi = width;
+            if (aligned && !fresh) {
+                const new32 = new Uint32Array(bytes.buffer, bytes.byteOffset + y * stride, words);
+                const o = y * words;
+                while (lo < words && new32[lo] === old32[o + lo]) lo++;
+                if (lo === words) continue;
+                while (hi > lo + 1 && new32[hi - 1] === old32[o + hi - 1]) hi--;
+            }
+            staging.set(bytes.subarray(y * stride + lo * 4, y * stride + hi * 4), y * rowBytes + lo * 4);
+            if (first < 0) first = y;
+            last = y; x0 = Math.min(x0, lo); x1 = Math.max(x1, hi);
+        }
+        if (first < 0) { diagnostics.unchanged++; return; }
+        mark(first, last + 1, x0, x1);
     };
     const schedule_paint = () => {
         if (raf || closed)
@@ -178,29 +248,32 @@ export function createFramebufferHost(memory, options) {
             ((cb) => setTimeout(cb, 16));
         raf = request(() => {
             raf = 0;
-            if (closed || !dirty || !staging)
+            if (closed || !dirty)
                 return;
             // WebGPU is starting or failed: keep the frame for the next presenter.
             if (!renderer && diagnostics.backend === "none")
                 return;
             dirty = false;
-            let from = top, to = bottom;
-            top = height; bottom = 0;
+            snapshot();
+            if (!staging || bottom <= top)
+                return;
+            let from = top, to = bottom, x0 = left, x1 = right;
+            top = height; bottom = 0; left = width; right = 0;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
             // A CSS/backing-store resize must not crop or scale the guest mode;
             // it also clears the canvas, so the whole frame is drawn again.
             if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width; canvas.height = height;
-                from = 0; to = height;
+                from = 0; to = height; x0 = 0; x1 = width;
             }
             try {
                 if (renderer) {
-                    // Only the changed rows are uploaded and copied; the canvas keeps the rest.
-                    const frame = renderer.draw(staging, from, to);
-                    try { ctx.drawImage(frame, 0, from, width, to - from, 0, from, width, to - from); }
+                    // Only the changed rectangle is uploaded and copied; the canvas keeps the rest.
+                    const frame = renderer.draw(staging, from, to, x0, x1);
+                    try { ctx.drawImage(frame, x0, from, x1 - x0, to - from, x0, from, x1 - x0, to - from); }
                     finally { frame.close?.(); }
-                } else paint2d(from, to);
+                } else paint2d(from, to, x0, x1);
             } catch (error) {
                 if (diagnostics.backend === "webgpu") { awaitChoice(message(error)); return; }
                 void select("canvas2d", message(error));
@@ -230,37 +303,10 @@ export function createFramebufferHost(memory, options) {
                 return;
             if (!Number.isSafeInteger(stride) || stride < rowBytes)
                 return;
-            const bytes = memory_bytes(memory, addr >>> 0, stride * (height - 1) + rowBytes);
-            if (!bytes)
+            if (!memory_bytes(memory, addr >>> 0, stride * (height - 1) + rowBytes))
                 return;
-            // Snapshot out of shared memory before the guest draws again. Reuse the
-            // staging allocation; only the first frame (or a mode change) allocates.
-            const need = rowBytes * height, fresh = !staging || staging.byteLength !== need;
-            if (fresh) {
-                staging = new Uint8Array(need);
-                top = 0; bottom = height;
-            }
-            // Copy only rows that differ, recording the changed row range. A new
-            // staging buffer holds no frame yet, so every row is copied.
-            const words = width, old32 = new Uint32Array(staging.buffer, 0, need / 4);
-            const aligned = bytes.byteOffset % 4 === 0 && stride % 4 === 0;
-            let first = -1, last = -1;
-            for (let y = 0; y < height; y++) {
-                const row = bytes.subarray(y * stride, y * stride + rowBytes);
-                let same = aligned && !fresh;
-                if (same) {
-                    const new32 = new Uint32Array(bytes.buffer, bytes.byteOffset + y * stride, words);
-                    for (let x = 0, o = y * words; x < words; x++)
-                        if (new32[x] !== old32[o + x]) { same = false; break; }
-                }
-                if (same) continue;
-                staging.set(row, y * rowBytes);
-                if (first < 0) first = y;
-                last = y;
-            }
+            source = { addr: addr >>> 0, stride };
             diagnostics.presents++;
-            if (first < 0) { diagnostics.unchanged++; return; }
-            top = Math.min(top, first); bottom = Math.max(bottom, last + 1);
             if (dirty) diagnostics.coalesced++;
             dirty = true;
             schedule_paint();
@@ -275,6 +321,7 @@ export function createFramebufferHost(memory, options) {
                 raf = 0;
             }
             dirty = false;
+            source = null;
             staging = null;
         },
     };
