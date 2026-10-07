@@ -163,11 +163,15 @@ def main():
                     help='explicitly replace only the genuine existing gfxtest with the reviewed candidate build')
     ap.add_argument('--gfxtest-verification', type=Path,
                     help='exact independently reviewed17-check candidate receipt; required with --gfxtest-build')
+    ap.add_argument('--gfxtest-test-wasm', type=Path,
+                    help='test-only unreviewed gfxtest helper (e.g. linked on glremote) replacing the genuine one')
     ap.add_argument('--gfxtest-probe', action='store_true',
                     help='explicit test-only standalone helper probe before unchanged Firefox exec; requires both helper flags')
     a = ap.parse_args()
     if bool(a.gfxtest_build) != bool(a.gfxtest_verification):
         ap.error('--gfxtest-build and --gfxtest-verification must be selected together')
+    if a.gfxtest_test_wasm and a.gfxtest_build:
+        ap.error('--gfxtest-test-wasm and --gfxtest-build are exclusive')
     if a.gfxtest_probe and not a.gfxtest_build:
         ap.error('--gfxtest-probe requires the authenticated helper build and verification')
     wrapper = diagnostic_wrapper(a.vk_trace, a.gfxtest_probe)
@@ -198,6 +202,9 @@ def main():
     gfxtest = None
     if a.gfxtest_build:
         native['gfxtest'], gfxtest = validated_gfxtest(a.gfxtest_build, a.gfxtest_verification)
+    elif a.gfxtest_test_wasm:
+        native['gfxtest'] = pin(a.gfxtest_test_wasm)
+        gfxtest = {'final':native['gfxtest'], 'testOnly':True, 'reviewed':False, 'gpuAcceptance':False}
     base_pin = pin(a.source)
     if base_pin['sha256'] != BASE_SHA:
         ap.error('current reviewed159 source required')

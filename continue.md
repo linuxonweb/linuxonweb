@@ -1,3 +1,38 @@
+# Hardware WebRender on glremote is faster than software WebRender, 2026-10-07 (claude-opus-5-5)
+
+Firefox's UI and page compositing run on hardware WebRender over glremote (host WebGL2, NVIDIA via ANGLE
+Vulkan). about:support showed "Compositing: WebRender" (not Software) in run wr8. Prefs: gfx.webrender.all,
+gfx.webrender.software=false, gfx.x11-egl.force-enabled, gfx.egl.prefer-gles.enabled,
+layers.acceleration.force-enabled.
+
+The gpu-check WebGL2 cube fps comes from the frame-count delta between screenshots at 100 s and 140 s
+(`/mnt/p3/codex-build/opus-ffgpu/runs/RUN`):
+
+| run | build | fps |
+|---|---|---|
+| sw1 | software WebRender | 22.4 |
+| wr9 | hardware WR, first working | 16.6 |
+| wp3 | + buffer shadows/staging | 17.3 |
+| wp8 | a29, changed-box present, trace on | 31.5 |
+| wp9 | a29/package2, no trace (**now on dev 3000**) | 28.4 |
+
+Fixes in glremote.c:
+- Exact guest shadows of buffer contents, so WebRender's write maps need no GetBufferSubData round trip.
+- Inputs above 64 KB are staged copies rather than forced flushes. PBO offsets do not flush.
+- **Changed-box present** (the big one). The profile showed each swap sent the whole 1152x574 window
+  through XPutImage (~32 ms). WebRender reports full damage every frame, even with
+  `gfx.webrender.force-partial-present=true`; the WebGL async-image update forces a redraw. Partial present
+  is also blocklisted for "NVIDIA" on X11. glremote now keeps what the window shows and sends only the
+  bounding box of pixels that differ. The result is exact, and expose or first frame still sends everything.
+  Swap pixels went from ~630k to ~42k per frame.
+
+Remaining costs per WR frame: two GetError round trips (WebRender's own `take_out_of_memory_error`
+and one more; they are not elided, since faking them would be dishonest), plus the window ReadPixels.
+The ctx3 CheckFramebufferStatus cache still misses (fb_gen bumps every frame). WebGPU is unavailable in
+guest Firefox. Startup is still ~1 min. Profiling: `--env GLREMOTE_TRACE=2` prints `GLREMOTE prof` every
+5 s to the guest log. Rebuild and test: `bash /mnt/p3/codex-build/opus-ffgpu/relink.sh aNN "note" [packager
+args]`, then `bash test.sh RUN "firefox=1" 150`.
+
 # Firefox WebGL2 works on host WebGL2 (glremote); speed work and next steps, 2026-10-07 (claude-opus-5-5)
 
 Branch `claude-opus-5-5-firefox-gpu-desktop-freeze-20261006`. User priorities, in order:

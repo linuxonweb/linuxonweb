@@ -47,6 +47,12 @@
 
 #define CMD_WORDS (256u * 1024u)
 #define INLINE_MAX (64u * 1024u)
+/* Larger inputs are copied and sent by pointer with the next batch; past this
+ * many copied bytes the batch is sent early. */
+#define STAGE_MAX (64u * 1024u * 1024u)
+/* Guest copies of buffer contents (see struct gbuf). */
+#define SHADOW_MAX (16u * 1024u * 1024u)
+#define SHADOW_BUDGET (96u * 1024u * 1024u)
 #define INFO_CAP (64u * 1024u)
 #define MAX_UNITS 96
 #define MAX_VALUES 1024
@@ -57,6 +63,12 @@ enum {
 #include "ops.def"
 #undef OP
   OP_COUNT
+};
+static const char *const op_names[] = {
+  "other", /* profile: batches sent without a query or pointer */
+#define OP(name) #name,
+#include "ops.def"
+#undef OP
 };
 enum { K_BUFFER, K_TEXTURE, K_FRAMEBUFFER, K_RENDERBUFFER, K_QUERY, K_SAMPLER, K_VERTEX_ARRAY, K_TRANSFORM_FEEDBACK, K_PROGRAM, K_SHADER, K_COUNT };
 enum { B_INLINE, B_NULL, B_POINTER, B_OFFSET };
@@ -123,6 +135,13 @@ struct obj { /* program or shader */
   struct block *b;
 };
 struct limit { GLenum pname; int n; double *v; };
+/* A buffer's contents as last sent to the host. Write-only maps that keep
+ * the old contents (WebRender maps without an invalidate bit) start from this
+ * copy instead of reading the buffer back, which takes a host round trip.
+ * The copy is dropped when the host itself writes the buffer (ReadPixels into
+ * a pack buffer, CopyBufferSubData); buffers ever bound for transform
+ * feedback never get one. */
+struct gbuf { unsigned char *shadow; size_t size; int host_written; };
 struct mapping { GLenum target; GLuint buffer; void *ptr; GLintptr offset; GLsizeiptr length; GLbitfield access; };
 struct glr_sync { uint32_t magic; struct glr_ctx *ctx; };
 #define SYNC_MAGIC 0x676c7273u
@@ -136,10 +155,29 @@ struct glr_ctx {
   int lost, bound, destroy_pending, made_current;
   struct glr_ctx *next;
   struct glr_surface *draw, *read;
+  /* Host canvas size, and the window surface whose frame it holds (for
+   * EGL_EXT_buffer_age); resizing the canvas clears it. */
+  EGLint canvas_w, canvas_h;
+  struct glr_surface *shown;
   EGLint config_id;
   uint32_t *cmd, used, since_error;
   int must_flush;
+  /* Input copies referenced by the unsent batch, freed once it ran. */
+  void **staged;
+  size_t nstaged, staged_cap, staged_bytes;
+  /* Framebuffer completeness: bumped by every command that can change it;
+   * the last host answer holds while the count and the binding are the same. */
+  uint32_t fb_gen, fbs_gen;
+  GLuint fbs_name;
+  GLenum fbs_value;
   uint64_t execs, words, queries;
+  /* GLREMOTE_TRACE=2: a summary every 5 s of where batches end. */
+  struct glr_prof {
+    uint64_t start_ns, host_ns, words, execs, pointer_flushes, full_flushes;
+    uint32_t query_ops[OP_COUNT], flush_ops[OP_COUNT], error_after[OP_COUNT], host_us[OP_COUNT];
+    unsigned end_op, last_op;
+    uint64_t swaps, swap_ns, window_ns, swap_pixels, swap_damaged, swap_exposed, swap_first, buffer_age_queries;
+  } prof;
   void *reply;
   uint32_t reply_cap;
   GLenum error;
@@ -159,7 +197,9 @@ struct glr_ctx {
   GLint ps[PS_COUNT];
   unsigned unit;
   GLuint tex[MAX_UNITS][4], sampler[MAX_UNITS];
-  GLuint array_buffer, copy_read, copy_write, pack_buffer, unpack_buffer;
+  GLuint array_buffer, copy_read, copy_write, pack_buffer, unpack_buffer, uniform_buffer, tf_buffer;
+  struct gbuf *bufs;
+  size_t nbufs, shadow_bytes;
   GLuint draw_fb, read_fb, renderbuffer, program, vao, tfo;
   GLuint *vao_elements;
   size_t nvao;
@@ -176,14 +216,69 @@ static void add_error(struct glr_ctx *c, GLenum e) {
 
 /* ---- command stream ---- */
 
+static uint64_t now_ns(void) {
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  return (uint64_t)t.tv_sec * 1000000000u + (uint64_t)t.tv_nsec;
+}
+
+/* Appends the most frequent entries of `counts` (zeroing them) to `line`. */
+static int top_ops(char *line, int n, int cap, uint32_t *counts) {
+  for (int pass = 0; pass < 8; pass++) {
+    int best = 0;
+    for (int op = 1; op < OP_COUNT; op++) if (counts[op] > counts[best]) best = op;
+    if (!counts[best] || n >= cap - 48) break;
+    n += snprintf(line + n, (size_t)(cap - n), " %s=%u", op_names[best], counts[best]);
+    counts[best] = 0;
+  }
+  return n;
+}
+
+static void prof_report(struct glr_ctx *c, uint64_t now) {
+  struct glr_prof *p = &c->prof;
+  char line[1024];
+  int n = top_ops(line, 0, (int)sizeof line, p->query_ops);
+  n += snprintf(line + n, sizeof line - (size_t)n, " | pointer flushes:");
+  n = top_ops(line, n, (int)sizeof line, p->flush_ops);
+  n += snprintf(line + n, sizeof line - (size_t)n, " | GetError after:");
+  n = top_ops(line, n, (int)sizeof line, p->error_after);
+  n += snprintf(line + n, sizeof line - (size_t)n, " | host us by batch end:");
+  n = top_ops(line, n, (int)sizeof line, p->host_us);
+  line[n] = 0;
+  double secs = (double)(now - p->start_ns) / 1e9;
+  say("prof ctx=%d %.1fs execs=%llu host=%.0fms words=%llu pointer-flushes=%llu full-flushes=%llu swaps=%llu swap=%.0fms "
+      "window=%.0fms swap-pixels=%llu damaged=%llu exposed=%llu unpresented=%llu age-queries=%llu queries:%s", c->host, secs,
+      (unsigned long long)p->execs, (double)p->host_ns / 1e6, (unsigned long long)p->words,
+      (unsigned long long)p->pointer_flushes, (unsigned long long)p->full_flushes, (unsigned long long)p->swaps,
+      (double)p->swap_ns / 1e6, (double)p->window_ns / 1e6, (unsigned long long)p->swap_pixels,
+      (unsigned long long)p->swap_damaged, (unsigned long long)p->swap_exposed, (unsigned long long)p->swap_first,
+      (unsigned long long)p->buffer_age_queries, line);
+  memset(p, 0, sizeof *p);
+  p->start_ns = now;
+}
+
 static long run(struct glr_ctx *c, void *reply, uint32_t cap) {
   long r;
+  uint64_t t0 = tracing() >= 2 ? now_ns() : 0;
   if (c->lost) r = -EIO;
   else r = hostcall(HC_GL_EXEC, c->host, (long)(uintptr_t)c->cmd, (long)c->used * 4, (long)(uintptr_t)reply, (long)cap);
+  if (t0) {
+    uint64_t t1 = now_ns();
+    if (!c->prof.start_ns) c->prof.start_ns = t0;
+    c->prof.host_ns += t1 - t0;
+    c->prof.host_us[c->prof.end_op] += (uint32_t)((t1 - t0) / 1000);
+    c->prof.end_op = 0;
+    c->prof.words += c->used;
+    c->prof.execs++;
+    if (t1 - c->prof.start_ns >= 5000000000u) prof_report(c, t1);
+  }
   c->execs++;
   c->words += c->used;
   c->used = 0;
   c->must_flush = 0;
+  for (size_t i = 0; i < c->nstaged; i++) free(c->staged[i]);
+  c->nstaged = 0;
+  c->staged_bytes = 0;
   if (r < 0 && !c->lost) {
     c->lost = 1;
     say("context %d lost: exec failed errno %ld", c->host, -r);
@@ -197,11 +292,24 @@ static void flush(struct glr_ctx *c) {
 }
 
 static uint32_t *emit(struct glr_ctx *c, unsigned op, uint32_t n) {
-  if (c->used + 1 + n > CMD_WORDS) flush(c);
+  if (c->used + 1 + n > CMD_WORDS) {
+    c->prof.full_flushes++;
+    flush(c);
+  }
   uint32_t *w = c->cmd + c->used;
+  if (op == OP_GetError) c->prof.error_after[c->prof.last_op]++;
+  c->prof.last_op = op;
   w[0] = op | (n << 12);
   c->used += 1 + n;
   c->since_error++;
+  switch (op) {
+  case OP_FramebufferTexture2D: case OP_FramebufferTextureLayer: case OP_FramebufferRenderbuffer:
+  case OP_TexImage2D: case OP_TexImage3D: case OP_CompressedTexImage2D: case OP_CompressedTexImage3D:
+  case OP_CopyTexImage2D: case OP_TexStorage2D: case OP_TexStorage3D: case OP_TexParameteri: case OP_TexParameterf:
+  case OP_RenderbufferStorage: case OP_RenderbufferStorageMultisample: case OP_GenerateMipmap:
+  case OP_DeleteObjects: case OP_SetSurface:
+    c->fb_gen++;
+  }
   return w + 1;
 }
 
@@ -218,26 +326,65 @@ static uint32_t fbits(float f) {
 #define CMD0(op) ((void)emit(c, OP_##op, 0))
 
 /* Fixed arguments followed by one blob; returns the fixed-argument words. */
+/* Keeps `p` (malloc'd) until the current batch has run. */
+static int stage(struct glr_ctx *c, void *p, size_t bytes) {
+  if (c->nstaged == c->staged_cap) {
+    size_t cap = c->staged_cap ? c->staged_cap * 2 : 16;
+    void **grown = realloc(c->staged, cap * sizeof *grown);
+    if (!grown) return 0;
+    c->staged = grown;
+    c->staged_cap = cap;
+  }
+  c->staged[c->nstaged++] = p;
+  c->staged_bytes += bytes;
+  return 1;
+}
+
+/* Input data (B_INLINE) beyond INLINE_MAX is copied and sent by pointer with
+ * the batch, so the caller need not wait for the host. */
 static uint32_t *emit_data(struct glr_ctx *c, unsigned op, uint32_t nfixed, int mode, const void *data, size_t bytes) {
   if (mode == B_INLINE && !data) mode = B_NULL;
-  if (mode == B_INLINE && bytes > INLINE_MAX) mode = B_POINTER;
+  int big = mode == B_INLINE && bytes > INLINE_MAX;
+  if (big) {
+    mode = B_POINTER;
+    if (c->staged_bytes + bytes > STAGE_MAX) flush(c);
+  }
   uint32_t extra = mode == B_INLINE ? (uint32_t)((bytes + 3) / 4) : mode == B_NULL ? 0 : 1;
-  uint32_t *w = emit(c, op, nfixed + 2 + extra);
+  uint32_t *w = emit(c, op, nfixed + 2 + extra); /* may run the batch: stage after it */
   w[nfixed] = (uint32_t)bytes;
   w[nfixed + 1] = (uint32_t)mode;
   if (mode == B_INLINE) {
     if (extra) w[nfixed + 1 + extra] = 0;
     memcpy(w + nfixed + 2, data, bytes);
   } else if (mode != B_NULL) {
-    w[nfixed + 2] = (uint32_t)(uintptr_t)data;
+    const void *sent = data;
+    if (big) {
+      void *copy = malloc(bytes);
+      if (copy && stage(c, copy, bytes)) {
+        memcpy(copy, data, bytes);
+        sent = copy;
+      } else {
+        free(copy);
+        c->must_flush = 1; /* send before returning, while `data` is valid */
+        c->prof.flush_ops[op]++;
+        c->prof.end_op = op;
+      }
+    } else if (mode == B_POINTER) {
+      c->must_flush = 1; /* output pointers (ReadPixels) */
+      c->prof.flush_ops[op]++;
+      c->prof.end_op = op;
+    }
+    w[nfixed + 2] = (uint32_t)(uintptr_t)sent;
   }
-  if (mode == B_POINTER) c->must_flush = 1;
   return w;
 }
 
 /* Ends every call that may have sent a guest pointer. */
 static void done(struct glr_ctx *c) {
-  if (c->must_flush) flush(c);
+  if (c->must_flush) {
+    c->prof.pointer_flushes++;
+    flush(c);
+  }
 }
 
 static uint32_t *emit_query(struct glr_ctx *c, unsigned op, uint32_t n, uint32_t *start) {
@@ -249,6 +396,8 @@ static uint32_t *emit_query(struct glr_ctx *c, unsigned op, uint32_t n, uint32_t
 /* Runs the batch ending with the query at `start`; the reply length or -1. */
 static long query(struct glr_ctx *c, uint32_t start) {
   c->queries++;
+  c->prof.query_ops[c->cmd[start] & 0xfffu]++;
+  c->prof.end_op = c->cmd[start] & 0xfffu;
   uint32_t n = c->used - start;
   long r = run(c, c->reply, c->reply_cap);
   if (r > (long)c->reply_cap && !c->lost) {
@@ -532,8 +681,68 @@ static GLuint *buffer_slot(struct glr_ctx *c, GLenum target) {
   case GL_COPY_WRITE_BUFFER: return &c->copy_write;
   case GL_PIXEL_PACK_BUFFER: return &c->pack_buffer;
   case GL_PIXEL_UNPACK_BUFFER: return &c->unpack_buffer;
+  case GL_UNIFORM_BUFFER: return &c->uniform_buffer;
+  case GL_TRANSFORM_FEEDBACK_BUFFER: return &c->tf_buffer;
   }
   return NULL;
+}
+
+/* ---- buffer contents (struct gbuf) ---- */
+
+static struct gbuf *gbuf_of(struct glr_ctx *c, GLuint name) {
+  if (!name) return NULL;
+  if (name >= c->nbufs) {
+    size_t n = c->nbufs ? c->nbufs : 64;
+    while (n <= name) n *= 2;
+    struct gbuf *grown = realloc(c->bufs, n * sizeof *grown);
+    if (!grown) return NULL;
+    memset(grown + c->nbufs, 0, (n - c->nbufs) * sizeof *grown);
+    c->bufs = grown;
+    c->nbufs = n;
+  }
+  return &c->bufs[name];
+}
+static struct gbuf *bound_gbuf(struct glr_ctx *c, GLenum target) {
+  GLuint *slot = buffer_slot(c, target);
+  return slot ? gbuf_of(c, *slot) : NULL;
+}
+static void drop_shadow(struct glr_ctx *c, struct gbuf *g) {
+  if (!g || !g->shadow) return;
+  free(g->shadow);
+  g->shadow = NULL;
+  c->shadow_bytes -= g->size;
+}
+/* The host writes this buffer itself from now on. */
+static void host_writes(struct glr_ctx *c, GLuint name) {
+  struct gbuf *g = gbuf_of(c, name);
+  drop_shadow(c, g);
+  if (g) g->host_written = 1;
+}
+static int valid_usage(GLenum usage) {
+  switch (usage) {
+  case GL_STREAM_DRAW: case GL_STREAM_READ: case GL_STREAM_COPY:
+  case GL_STATIC_DRAW: case GL_STATIC_READ: case GL_STATIC_COPY:
+  case GL_DYNAMIC_DRAW: case GL_DYNAMIC_READ: case GL_DYNAMIC_COPY:
+    return 1;
+  }
+  return 0;
+}
+/* Follows a BufferData sent to the host. */
+static void shadow_data(struct glr_ctx *c, GLenum target, size_t size, const void *data, GLenum usage) {
+  struct gbuf *g = bound_gbuf(c, target);
+  if (!g) return;
+  drop_shadow(c, g);
+  if (!valid_usage(usage)) return; /* the host rejects it; size unknown */
+  g->size = size;
+  if (g->host_written || !size || size > SHADOW_MAX || c->shadow_bytes + size > SHADOW_BUDGET) return;
+  if (!(g->shadow = malloc(size))) return;
+  c->shadow_bytes += size;
+  if (data) memcpy(g->shadow, data, size);
+}
+/* Follows a BufferSubData sent to the host. */
+static void shadow_sub(struct glr_ctx *c, GLenum target, size_t offset, size_t size, const void *data) {
+  struct gbuf *g = bound_gbuf(c, target);
+  if (g && g->shadow && data && offset <= g->size && size <= g->size - offset) memcpy(g->shadow + offset, data, size);
 }
 static int cap_index(GLenum cap) {
   for (unsigned i = 0; i < NCAPS; i++)
@@ -575,6 +784,7 @@ static void glBindBuffer(GLenum target, GLuint buffer) {
   CTX;
   GLuint *slot = buffer_slot(c, target);
   if (slot) *slot = buffer;
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER) host_writes(c, buffer);
   CMD(BindBuffer, target, buffer);
 }
 static void glBindFramebuffer(GLenum target, GLuint framebuffer) {
@@ -606,6 +816,7 @@ static void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenu
   if (m) { free(m->ptr); m->ptr = NULL; }
   uint32_t *w = emit_data(c, OP_BufferData, 2, B_INLINE, data, (size_t)size);
   w[0] = target; w[1] = usage;
+  shadow_data(c, target, (size_t)size, data, usage);
   done(c);
 }
 static void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data) {
@@ -614,12 +825,22 @@ static void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, con
   if (!size) return;
   uint32_t *w = emit_data(c, OP_BufferSubData, 2, B_INLINE, data, (size_t)size);
   w[0] = target; w[1] = (uint32_t)offset;
+  shadow_sub(c, target, (size_t)offset, (size_t)size, data);
   done(c);
 }
 static GLenum glCheckFramebufferStatus(GLenum target) {
   CTXR(0);
+  int known = target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER;
+  GLuint fb = target == GL_READ_FRAMEBUFFER ? c->read_fb : c->draw_fb;
+  if (known && !c->lost && c->fbs_value && c->fbs_gen == c->fb_gen && c->fbs_name == fb) return c->fbs_value;
   double v[1];
-  return q2(c, OP_CheckFramebufferStatus, target, 0, 1, v, 1) >= 1 ? (GLenum)v[0] : 0;
+  GLenum status = q2(c, OP_CheckFramebufferStatus, target, 0, 1, v, 1) >= 1 ? (GLenum)v[0] : 0;
+  if (known && status) {
+    c->fbs_gen = c->fb_gen;
+    c->fbs_name = fb;
+  }
+  c->fbs_value = known ? status : 0;
+  return status;
 }
 static void glClear(GLbitfield mask) { CTX; CMD(Clear, mask); }
 static void glClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { CTX; CMD(ClearColor, fbits(r), fbits(g), fbits(b), fbits(a)); }
@@ -685,8 +906,14 @@ static void delete_names(struct glr_ctx *c, int kind, GLsizei n, const GLuint *n
       if (c->pack_buffer == x) c->pack_buffer = 0;
       if (c->unpack_buffer == x) c->unpack_buffer = 0;
       if (*element_slot(c) == x) *element_slot(c) = 0;
+      if (c->uniform_buffer == x) c->uniform_buffer = 0;
+      if (c->tf_buffer == x) c->tf_buffer = 0;
       for (int k = 0; k < 8; k++)
         if (c->maps[k].ptr && c->maps[k].buffer == x) { free(c->maps[k].ptr); c->maps[k].ptr = NULL; }
+      if (x < c->nbufs) {
+        drop_shadow(c, &c->bufs[x]);
+        c->bufs[x] = (struct gbuf){0};
+      }
       break;
     case K_TEXTURE:
       for (unsigned u = 0; u < MAX_UNITS; u++)
@@ -1213,6 +1440,7 @@ static void glReadPixels(GLint x, GLint y, GLsizei w, GLsizei h, GLenum format, 
   if (w < 0 || h < 0) { add_error(c, GL_INVALID_VALUE); return; }
   size_t bytes = image_bytes(c, 1, w, h, 1, format, type, 0);
   int mode = c->pack_buffer ? B_OFFSET : B_POINTER;
+  if (c->pack_buffer) drop_shadow(c, gbuf_of(c, c->pack_buffer));
   if (mode == B_POINTER && (!pixels || !bytes)) {
     if (!pixels && bytes) add_error(c, GL_INVALID_OPERATION);
     return;
@@ -1466,6 +1694,7 @@ static GLboolean glUnmapBuffer(GLenum target) {
   if ((m->access & GL_MAP_WRITE_BIT) && !(m->access & GL_MAP_FLUSH_EXPLICIT_BIT) && m->length) {
     uint32_t *w = emit_data(c, OP_BufferSubData, 2, B_INLINE, m->ptr, (size_t)m->length);
     w[0] = target; w[1] = (uint32_t)m->offset;
+    shadow_sub(c, target, (size_t)m->offset, (size_t)m->length, m->ptr);
   }
   done(c);
   free(m->ptr);
@@ -1505,7 +1734,10 @@ static void *glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length,
   if (!ptr) { add_error(c, GL_OUT_OF_MEMORY); return NULL; }
   int fetch = (access & GL_MAP_READ_BIT) ||
               !(access & (GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT));
-  if (fetch) {
+  struct gbuf *g = bound_gbuf(c, target);
+  if (fetch && g && g->shadow && (size_t)offset <= g->size && (size_t)length <= g->size - (size_t)offset) {
+    memcpy(ptr, g->shadow + offset, (size_t)length);
+  } else if (fetch) {
     uint32_t start;
     uint32_t *w = emit_query(c, OP_GetBufferSubData, 4 + 1, &start);
     w[0] = target; w[1] = (uint32_t)offset; w[2] = (uint32_t)length; w[3] = B_POINTER; w[4] = (uint32_t)(uintptr_t)ptr;
@@ -1523,6 +1755,7 @@ static void glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr 
   if (!length) return;
   uint32_t *w = emit_data(c, OP_BufferSubData, 2, B_INLINE, (char *)m->ptr + offset, (size_t)length);
   w[0] = target; w[1] = (uint32_t)(m->offset + offset);
+  shadow_sub(c, target, (size_t)(m->offset + offset), (size_t)length, (char *)m->ptr + offset);
   done(c);
 }
 static void glBindVertexArray(GLuint array) {
@@ -1532,11 +1765,24 @@ static void glBindVertexArray(GLuint array) {
 }
 static void glBeginTransformFeedback(GLenum mode) { CTX; CMD(BeginTransformFeedback, mode); }
 static void glEndTransformFeedback(void) { CTX; CMD0(EndTransformFeedback); }
+/* Indexed binds also set the generic binding. */
+static void indexed_bind(struct glr_ctx *c, GLenum target, GLuint buffer) {
+  if (target == GL_UNIFORM_BUFFER) c->uniform_buffer = buffer;
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+    c->tf_buffer = buffer;
+    host_writes(c, buffer);
+  }
+}
 static void glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size) {
   CTX;
+  indexed_bind(c, target, buffer);
   CMD(BindBufferRange, target, index, buffer, (uint32_t)offset, (uint32_t)size);
 }
-static void glBindBufferBase(GLenum target, GLuint index, GLuint buffer) { CTX; CMD(BindBufferBase, target, index, buffer); }
+static void glBindBufferBase(GLenum target, GLuint index, GLuint buffer) {
+  CTX;
+  indexed_bind(c, target, buffer);
+  CMD(BindBufferBase, target, index, buffer);
+}
 static void glTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar *const *varyings, GLenum mode) {
   CTX;
   if (count < 0) { add_error(c, GL_INVALID_VALUE); return; }
@@ -1594,6 +1840,8 @@ static void glClearBufferfv(GLenum b, GLint d, const GLfloat *v) { clear_buffer(
 static void glClearBufferfi(GLenum b, GLint d, GLfloat depth, GLint stencil) { CTX; CMD(ClearBufferfi, b, (uint32_t)d, fbits(depth), (uint32_t)stencil); }
 static void glCopyBufferSubData(GLenum rt, GLenum wt, GLintptr ro, GLintptr wo, GLsizeiptr size) {
   CTX;
+  GLuint *slot = buffer_slot(c, wt);
+  if (slot) drop_shadow(c, gbuf_of(c, *slot));
   CMD(CopyBufferSubData, rt, wt, (uint32_t)ro, (uint32_t)wo, (uint32_t)size);
 }
 static int uniform_index(const struct obj *o, const char *name) {
@@ -1811,6 +2059,16 @@ struct glr_surface {
   EGLint width, height, config_id;
   int destroy_pending, bound;
   struct glr_surface *next;
+  /* window surfaces: native window and the swap readback buffer */
+  int window;
+  unsigned long native;
+  uint32_t *pixels;
+  size_t pixels_cap;
+  int presented; /* the window shows a whole frame of this size */
+  /* What the window shows (top row first), when shown_w/shown_h match the
+   * surface; a swap sends the window only the box that differs from it. */
+  uint32_t *shown_px;
+  EGLint shown_w, shown_h;
 };
 #define SURFACE_MAGIC 0x676c7366u
 
@@ -1821,6 +2079,9 @@ static struct glr_ctx *contexts;
 static struct glr_surface *surfaces;
 static _Thread_local EGLint tls_error = EGL_SUCCESS;
 static _Thread_local EGLenum tls_api = EGL_OPENGL_ES_API;
+static const struct glremote_window_ops *window_ops;
+
+void glremote_set_window_ops(const struct glremote_window_ops *ops) { window_ops = ops; }
 
 static EGLBoolean fail(EGLint error) {
   tls_error = error;
@@ -1881,7 +2142,8 @@ static EGLBoolean eglTerminate(EGLDisplay dpy) {
 static const char *eglQueryString(EGLDisplay dpy, EGLint name) {
   if (dpy == EGL_NO_DISPLAY && name == EGL_EXTENSIONS) {
     tls_error = EGL_SUCCESS;
-    return "EGL_EXT_client_extensions EGL_EXT_platform_base EGL_MESA_platform_surfaceless";
+    return "EGL_EXT_client_extensions EGL_EXT_platform_base EGL_MESA_platform_surfaceless EGL_EXT_device_base "
+           "EGL_EXT_device_query";
   }
   if (!valid_display(dpy, 1)) return NULL;
   tls_error = EGL_SUCCESS;
@@ -1890,10 +2152,39 @@ static const char *eglQueryString(EGLDisplay dpy, EGLint name) {
   case EGL_VERSION: return "1.5 glremote";
   case EGL_CLIENT_APIS: return "OpenGL_ES";
   case EGL_EXTENSIONS:
-    return "EGL_KHR_create_context EGL_KHR_surfaceless_context EGL_KHR_no_config_context EGL_EXT_create_context_robustness";
+    return "EGL_KHR_create_context EGL_KHR_surfaceless_context EGL_KHR_no_config_context EGL_EXT_create_context_robustness"
+           " EGL_EXT_buffer_age EGL_KHR_swap_buffers_with_damage EGL_EXT_swap_buffers_with_damage";
   }
   tls_error = EGL_BAD_PARAMETER;
   return NULL;
+}
+/* EGL_EXT_device_query: one device, the host browser's WebGL2 GPU. It is
+ * reported as software (EGL_MESA_device_software, the extension Mesa and
+ * Firefox use) when a host context named a software renderer. */
+static struct { int unused; } device;
+#define DEVICE ((EGLDeviceEXT)&device)
+static int host_software;
+static int software_renderer(const char *renderer) {
+  static const char *const names[] = {"SwiftShader", "llvmpipe", "softpipe", "Software", "Basic Render"};
+  for (size_t i = 0; i < sizeof names / sizeof names[0]; i++)
+    if (strstr(renderer, names[i])) return 1;
+  return 0;
+}
+static EGLBoolean eglQueryDisplayAttribEXT(EGLDisplay dpy, EGLint attribute, EGLAttrib *value) {
+  if (!valid_display(dpy, 1)) return EGL_FALSE;
+  if (attribute != EGL_DEVICE_EXT) return fail(EGL_BAD_ATTRIBUTE);
+  *value = (EGLAttrib)DEVICE;
+  return ok();
+}
+static const char *eglQueryDeviceStringEXT(EGLDeviceEXT dev, EGLint name) {
+  if (dev != DEVICE) { tls_error = EGL_BAD_DEVICE_EXT; return NULL; }
+  if (name != EGL_EXTENSIONS) { tls_error = EGL_BAD_PARAMETER; return NULL; }
+  tls_error = EGL_SUCCESS;
+  return host_software ? "EGL_MESA_device_software" : "";
+}
+static EGLBoolean eglQueryDeviceAttribEXT(EGLDeviceEXT dev, EGLint attribute, EGLAttrib *value) {
+  (void)attribute; (void)value;
+  return fail(dev == DEVICE ? EGL_BAD_ATTRIBUTE : EGL_BAD_DEVICE_EXT);
 }
 static EGLint config_attrib(const struct glr_config *k, EGLint attribute, int *known) {
   *known = 1;
@@ -1907,13 +2198,14 @@ static EGLint config_attrib(const struct glr_config *k, EGLint attribute, int *k
   case EGL_STENCIL_SIZE: return k->stencil;
   case EGL_CONFIG_ID: return k->id;
   case EGL_CONFIG_CAVEAT: return EGL_NONE;
-  case EGL_LEVEL: case EGL_SAMPLES: case EGL_SAMPLE_BUFFERS: case EGL_NATIVE_VISUAL_ID: case EGL_LUMINANCE_SIZE:
+  case EGL_NATIVE_VISUAL_ID: return window_ops ? window_ops->visual(k->alpha ? 32 : 24) : 0;
+  case EGL_LEVEL: case EGL_SAMPLES: case EGL_SAMPLE_BUFFERS: case EGL_LUMINANCE_SIZE:
   case EGL_ALPHA_MASK_SIZE: case EGL_MIN_SWAP_INTERVAL: case EGL_TRANSPARENT_RED_VALUE: case EGL_TRANSPARENT_GREEN_VALUE:
   case EGL_TRANSPARENT_BLUE_VALUE: return 0;
   case EGL_MAX_SWAP_INTERVAL: return 1;
   case EGL_NATIVE_VISUAL_TYPE: return EGL_NONE;
   case EGL_NATIVE_RENDERABLE: case EGL_BIND_TO_TEXTURE_RGB: case EGL_BIND_TO_TEXTURE_RGBA: return EGL_FALSE;
-  case EGL_SURFACE_TYPE: return EGL_PBUFFER_BIT;
+  case EGL_SURFACE_TYPE: return EGL_PBUFFER_BIT | (window_ops ? EGL_WINDOW_BIT : 0);
   case EGL_RENDERABLE_TYPE: case EGL_CONFORMANT: return EGL_OPENGL_ES2_BIT | EGL_OPENGL_ES3_BIT;
   case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
   case EGL_TRANSPARENT_TYPE: return EGL_NONE;
@@ -1982,7 +2274,7 @@ static EGLBoolean eglChooseConfig(EGLDisplay dpy, const EGLint *attribs, EGLConf
       if (want == EGL_DONT_CARE) continue;
       switch (p[0]) {
       case EGL_CONFIG_ID: good = have == want; break;
-      case EGL_SURFACE_TYPE: good = (want & EGL_PBUFFER_BIT) ? (have & EGL_PBUFFER_BIT) != 0 : 1; break;
+      case EGL_SURFACE_TYPE: good = !(want & (EGL_PBUFFER_BIT | EGL_WINDOW_BIT | EGL_PIXMAP_BIT) & ~have); break;
       case EGL_RENDERABLE_TYPE: case EGL_CONFORMANT: good = (want & have) == want; break;
       case EGL_CONFIG_CAVEAT: case EGL_COLOR_BUFFER_TYPE: case EGL_NATIVE_RENDERABLE: case EGL_TRANSPARENT_TYPE:
       case EGL_LEVEL: case EGL_NATIVE_VISUAL_TYPE: case EGL_BIND_TO_TEXTURE_RGB: case EGL_BIND_TO_TEXTURE_RGBA:
@@ -2032,17 +2324,48 @@ static EGLSurface eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config, cons
   tls_error = EGL_SUCCESS;
   return (EGLSurface)s;
 }
-static EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint *attribs) {
-  (void)config; (void)win; (void)attribs;
+/* `attribs` holds EGLint or EGLAttrib pairs (wide). */
+static EGLSurface create_window_surface(EGLDisplay dpy, EGLConfig config, unsigned long win, const void *attribs, int wide) {
   if (!valid_display(dpy, 1)) return EGL_NO_SURFACE;
-  tls_error = EGL_BAD_MATCH; /* configs offer pbuffers only */
-  return EGL_NO_SURFACE;
+  const struct glr_config *k = config_of(config);
+  if (!k) { tls_error = EGL_BAD_CONFIG; return EGL_NO_SURFACE; }
+  for (size_t i = 0; attribs; i += 2) {
+    EGLAttrib name = wide ? ((const EGLAttrib *)attribs)[i] : ((const EGLint *)attribs)[i];
+    EGLAttrib value = wide ? ((const EGLAttrib *)attribs)[i + 1] : ((const EGLint *)attribs)[i + 1];
+    if (name == EGL_NONE) break;
+    if (name == EGL_RENDER_BUFFER && value == EGL_BACK_BUFFER) continue;
+    if (name == EGL_GL_COLORSPACE && value == EGL_GL_COLORSPACE_LINEAR) continue;
+    if (name == EGL_RENDER_BUFFER || name == EGL_GL_COLORSPACE) { tls_error = EGL_BAD_MATCH; return EGL_NO_SURFACE; }
+    tls_error = EGL_BAD_ATTRIBUTE;
+    return EGL_NO_SURFACE;
+  }
+  int width, height;
+  if (!window_ops || !win || !window_ops->size(win, &width, &height)) { tls_error = EGL_BAD_NATIVE_WINDOW; return EGL_NO_SURFACE; }
+  struct glr_surface *s = calloc(1, sizeof *s);
+  if (!s) { tls_error = EGL_BAD_ALLOC; return EGL_NO_SURFACE; }
+  s->magic = SURFACE_MAGIC;
+  s->width = width;
+  s->height = height;
+  s->config_id = k->id;
+  s->window = 1;
+  s->native = win;
+  pthread_mutex_lock(&egl_lock);
+  s->next = surfaces;
+  surfaces = s;
+  pthread_mutex_unlock(&egl_lock);
+  if (tracing()) say("window surface 0x%lx %dx%d config %d", win, width, height, k->id);
+  tls_error = EGL_SUCCESS;
+  return (EGLSurface)s;
+}
+static EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint *attribs) {
+  return create_window_surface(dpy, config, (unsigned long)win, attribs, 0);
 }
 static EGLSurface eglCreatePlatformWindowSurface(EGLDisplay dpy, EGLConfig config, void *win, const EGLAttrib *attribs) {
-  (void)config; (void)win; (void)attribs;
-  if (!valid_display(dpy, 1)) return EGL_NO_SURFACE;
-  tls_error = EGL_BAD_MATCH;
-  return EGL_NO_SURFACE;
+  /* EGL_KHR_platform_x11: `win` points to the Window. */
+  return create_window_surface(dpy, config, win ? *(const unsigned long *)win : 0, attribs, 1);
+}
+static EGLSurface eglCreatePlatformWindowSurfaceEXT(EGLDisplay dpy, EGLConfig config, void *win, const EGLint *attribs) {
+  return create_window_surface(dpy, config, win ? *(const unsigned long *)win : 0, attribs, 0);
 }
 static EGLSurface eglCreatePixmapSurface(EGLDisplay dpy, EGLConfig config, EGLNativePixmapType pixmap, const EGLint *attribs) {
   (void)config; (void)pixmap; (void)attribs;
@@ -2065,7 +2388,11 @@ static EGLSurface eglCreatePbufferFromClientBuffer(EGLDisplay dpy, EGLenum type,
 static void unlink_surface(struct glr_surface *s) {
   for (struct glr_surface **p = &surfaces; *p; p = &(*p)->next)
     if (*p == s) { *p = s->next; break; }
+  for (struct glr_ctx *c = contexts; c; c = c->next)
+    if (c->shown == s) c->shown = NULL;
   s->magic = 0;
+  free(s->pixels);
+  free(s->shown_px);
   free(s);
 }
 static EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface) {
@@ -2079,10 +2406,32 @@ static EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface) {
   pthread_mutex_unlock(&egl_lock);
   return s ? ok() : fail(EGL_BAD_SURFACE);
 }
+/* Sizes the current context's host canvas; a new size clears it. */
+static void set_canvas(struct glr_ctx *c, EGLint w, EGLint h) {
+  if (w <= 0) w = 1;
+  if (h <= 0) h = 1;
+  if (w != c->canvas_w || h != c->canvas_h) c->shown = NULL;
+  c->canvas_w = w;
+  c->canvas_h = h;
+  CMD(SetSurface, (uint32_t)w, (uint32_t)h);
+}
+/* Window surfaces follow their window's size; the host canvas follows the
+ * current draw surface. Returns 1 when the size changed. */
+static int refresh_window(struct glr_surface *s) {
+  int w, h;
+  if (!s->window || !window_ops->size(s->native, &w, &h) || (w == s->width && h == s->height)) return 0;
+  s->width = w;
+  s->height = h;
+  s->presented = 0;
+  struct glr_ctx *c = tls_ctx;
+  if (c && c->draw == s) set_canvas(c, w, h);
+  return 1;
+}
 static EGLBoolean eglQuerySurface(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint *value) {
   if (!valid_display(dpy, 1)) return EGL_FALSE;
   struct glr_surface *s = surface_of(surface);
   if (!s) return fail(EGL_BAD_SURFACE);
+  if (s->window && (attribute == EGL_WIDTH || attribute == EGL_HEIGHT)) refresh_window(s);
   switch (attribute) {
   case EGL_WIDTH: *value = s->width; break;
   case EGL_HEIGHT: *value = s->height; break;
@@ -2096,6 +2445,15 @@ static EGLBoolean eglQuerySurface(EGLDisplay dpy, EGLSurface surface, EGLint att
   case EGL_GL_COLORSPACE: *value = EGL_GL_COLORSPACE_LINEAR; break;
   case EGL_VG_ALPHA_FORMAT: *value = EGL_VG_ALPHA_FORMAT_NONPRE; break;
   case EGL_VG_COLORSPACE: *value = EGL_VG_COLORSPACE_sRGB; break;
+  case EGL_BUFFER_AGE_EXT: {
+    /* The canvas keeps its drawing buffer, so it still holds the last frame
+     * swapped from this surface unless another surface or a resize used it. */
+    struct glr_ctx *c = tls_ctx;
+    if (!c || c->draw != s) return fail(EGL_BAD_SURFACE);
+    *value = s->window && c->shown == s ? 1 : 0;
+    c->prof.buffer_age_queries += *value;
+    break;
+  }
   default: return fail(EGL_BAD_ATTRIBUTE);
   }
   return ok();
@@ -2176,6 +2534,9 @@ static void free_context(struct glr_ctx *c) {
     if (c->objs[i]) { clear_info(c->objs[i]); free(c->objs[i]->source); free(c->objs[i]); }
   for (int i = 0; i < c->nlimits; i++) free(c->limits[i].v);
   for (int i = 0; i < 8; i++) free(c->maps[i].ptr);
+  for (size_t i = 0; i < c->nbufs; i++) free(c->bufs[i].shadow);
+  for (size_t i = 0; i < c->nstaged; i++) free(c->staged[i]);
+  free(c->bufs); free(c->staged);
   free(c->objs); free(c->limits); free(c->ext); free((void *)c->extensions); free(c->info);
   free(c->vao_elements); free(c->cmd); free(c->reply); free(c);
 }
@@ -2234,6 +2595,7 @@ static EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext 
     return EGL_NO_CONTEXT;
   }
   c->config_id = k ? k->id : 0;
+  if (software_renderer(c->renderer)) host_software = 1;
   c->ps[PS_UNPACK_ALIGNMENT] = c->ps[PS_PACK_ALIGNMENT] = 4;
   c->enabled[cap_index(GL_DITHER)] = 1;
   c->viewport[2] = c->viewport[3] = c->scissor[2] = c->scissor[3] = 1;
@@ -2309,9 +2671,17 @@ static EGLBoolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface rea
   if (r) r->bound = 1;
   pthread_mutex_unlock(&egl_lock);
   tls_ctx = c;
+  if (d && d->window) {
+    int w, h;
+    if (window_ops->size(d->native, &w, &h) && (w != d->width || h != d->height)) {
+      d->width = w;
+      d->height = h;
+      d->presented = 0;
+    }
+  }
   if (d) {
     EGLint w = d->width > 0 ? d->width : 1, h = d->height > 0 ? d->height : 1;
-    CMD(SetSurface, (uint32_t)w, (uint32_t)h);
+    set_canvas(c, w, h);
     if (!c->made_current) {
       /* GL sets viewport and scissor to the surface the first time a context is made current with one. */
       glViewport(0, 0, w, h);
@@ -2348,11 +2718,165 @@ static EGLint eglGetError(void) {
   tls_error = EGL_SUCCESS;
   return e;
 }
-static EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
+/* Narrows the w x h frame rectangle at x,top (top-left origin) of `px` to the
+ * box that differs from what the window shows; returns 0 when nothing does.
+ * The box is moved to the start of `px`, rows `*bw` words apart. */
+static int changed_box(struct glr_surface *s, uint32_t *px, int x, int top, int w, int h, int *bx, int *by, int *bw, int *bh) {
+  int r0 = -1, r1 = -1, c0 = w, c1 = -1;
+  for (int r = 0; r < h; r++) {
+    const uint32_t *now = px + (size_t)r * (size_t)w, *old = s->shown_px + (size_t)(top + r) * (size_t)s->shown_w + x;
+    if (!memcmp(now, old, (size_t)w * 4)) continue;
+    if (r0 < 0) r0 = r;
+    r1 = r;
+    int a = 0, b = w - 1;
+    while (now[a] == old[a]) a++;
+    while (now[b] == old[b]) b--;
+    if (a < c0) c0 = a;
+    if (b > c1) c1 = b;
+  }
+  if (r0 < 0) return 0;
+  *bx = x + c0;
+  *by = top + r0;
+  *bw = c1 - c0 + 1;
+  *bh = r1 - r0 + 1;
+  for (int r = r0; r <= r1; r++)
+    memmove(px + (size_t)(r - r0) * (size_t)*bw, px + (size_t)r * (size_t)w + c0, (size_t)*bw * 4);
+  return 1;
+}
+
+/* Reads the rectangle x,y,w,h (GL coordinates, bottom-left origin) of the
+ * host canvas (bottom row first, RGBA bytes) and presents it top row first as
+ * 0xAARRGGBB words. The context's pack state is restored. Unless `whole`,
+ * only the part that differs from what the window shows is sent. */
+static int present_window(struct glr_ctx *c, struct glr_surface *s, int x, int y, int w, int h, int whole) {
+  if (w <= 0 || h <= 0) return 1;
+  size_t words = (size_t)w * (size_t)h;
+  if (words > s->pixels_cap) {
+    uint32_t *grown = realloc(s->pixels, words * 4);
+    if (!grown) return 0;
+    s->pixels = grown;
+    s->pixels_cap = words;
+  }
+  GLuint read_fb = c->read_fb, pack = c->pack_buffer;
+  GLint ps[4] = {c->ps[PS_PACK_ALIGNMENT], c->ps[PS_PACK_ROW_LENGTH], c->ps[PS_PACK_SKIP_PIXELS], c->ps[PS_PACK_SKIP_ROWS]};
+  static const GLenum ps_pack[4] = {GL_PACK_ALIGNMENT, GL_PACK_ROW_LENGTH, GL_PACK_SKIP_PIXELS, GL_PACK_SKIP_ROWS};
+  static const GLint ps_default[4] = {4, 0, 0, 0};
+  if (read_fb) glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  if (pack) glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+  for (int i = 0; i < 4; i++)
+    if (ps[i] != ps_default[i]) glPixelStorei(ps_pack[i], ps_default[i]);
+  glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
+  for (int i = 0; i < 4; i++)
+    if (ps[i] != ps_default[i]) glPixelStorei(ps_pack[i], ps[i]);
+  if (pack) glBindBuffer(GL_PIXEL_PACK_BUFFER, pack);
+  if (read_fb) glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fb);
+  if (c->lost) return 0;
+  /* Flip rows and swap R and B: little-endian RGBA bytes are 0xAABBGGRR. */
+  for (int top = 0, bottom = h - 1; top <= bottom; top++, bottom--) {
+    uint32_t *a = s->pixels + (size_t)top * (size_t)w, *b = s->pixels + (size_t)bottom * (size_t)w;
+    for (int x = 0; x < w; x++) {
+      uint32_t va = a[x], vb = b[x];
+      a[x] = (vb & 0xff00ff00u) | (vb & 0xffu) << 16 | (vb >> 16 & 0xffu);
+      if (a != b) b[x] = (va & 0xff00ff00u) | (va & 0xffu) << 16 | (va >> 16 & 0xffu);
+    }
+  }
+  int top = s->height - y - h;
+  int known = s->shown_px && s->shown_w == s->width && s->shown_h == s->height;
+  if (whole || !known) {
+    /* The window's contents are unknown: send all, and remember it if it is the whole frame. */
+    if (!known && (w != s->width || h != s->height)) {
+      s->shown_w = s->shown_h = 0;
+    } else {
+      size_t all = (size_t)s->width * (size_t)s->height;
+      if (!known) {
+        free(s->shown_px);
+        s->shown_px = malloc(all * 4);
+        s->shown_w = s->shown_px ? s->width : 0;
+        s->shown_h = s->shown_px ? s->height : 0;
+      }
+      for (int r = 0; s->shown_px && r < h; r++)
+        memcpy(s->shown_px + (size_t)(top + r) * (size_t)s->width + x, s->pixels + (size_t)r * (size_t)w, (size_t)w * 4);
+    }
+  } else {
+    int bx, by, bw, bh;
+    if (!changed_box(s, s->pixels, x, top, w, h, &bx, &by, &bw, &bh)) return 1;
+    for (int k = 0; k < bh; k++)
+      memcpy(s->shown_px + (size_t)(by + k) * (size_t)s->width + bx, s->pixels + (size_t)k * (size_t)bw, (size_t)bw * 4);
+    x = bx; top = by; w = bw; h = bh;
+  }
+  uint64_t t0 = tracing() >= 2 ? now_ns() : 0;
+  int shown = window_ops->present(s->native, s->pixels, x, top, w, h);
+  if (!shown) s->shown_w = s->shown_h = 0;
+  if (t0) {
+    c->prof.window_ns += now_ns() - t0;
+    c->prof.swap_pixels += (uint64_t)w * (uint64_t)h;
+  }
+  return shown;
+}
+/* rects: n x,y,w,h damage rectangles (bottom-left origin); n == 0 means
+ * the whole surface. Only their bounding box is read back, and only the part
+ * of it that changed is presented, unless the window has not shown a whole
+ * frame of this size yet or the window system reports that its contents were
+ * lost. */
+static EGLBoolean swap_buffers(EGLDisplay dpy, EGLSurface surface, const EGLint *rects, EGLint n) {
   if (!valid_display(dpy, 1)) return EGL_FALSE;
-  if (!surface_of(surface)) return fail(EGL_BAD_SURFACE);
-  if (tls_ctx && tls_ctx->draw == surface) flush(tls_ctx);
-  return ok();
+  struct glr_surface *s = surface_of(surface);
+  if (!s) return fail(EGL_BAD_SURFACE);
+  if (n < 0 || (n > 0 && !rects)) return fail(EGL_BAD_PARAMETER);
+  struct glr_ctx *c = tls_ctx;
+  if (!c || c->draw != s) return s->window ? fail(EGL_BAD_SURFACE) : ok();
+  if (!s->window) {
+    flush(c);
+    return ok();
+  }
+  uint64_t t0 = tracing() >= 2 ? now_ns() : 0;
+  int x0 = 0, y0 = 0, x1 = s->width, y1 = s->height;
+  int exposed = window_ops->exposed && window_ops->exposed(s->native);
+  c->prof.swap_damaged += n > 0;
+  if (tracing() >= 2 && c->prof.swaps % 50 == 0) {
+    char text[256];
+    int used = 0;
+    for (EGLint i = 0; i < n && i < 6 && used < 200; i++)
+      used += snprintf(text + used, sizeof text - (size_t)used, " %d,%d %dx%d", rects[4 * i], rects[4 * i + 1], rects[4 * i + 2], rects[4 * i + 3]);
+    text[used] = 0;
+    say("swap ctx=%d surface %dx%d damage n=%d:%s", c->host, s->width, s->height, n, text);
+  }
+  c->prof.swap_exposed += exposed;
+  c->prof.swap_first += !s->presented;
+  if (n > 0 && s->presented && !exposed) {
+    x0 = s->width; y0 = s->height; x1 = 0; y1 = 0;
+    for (EGLint i = 0; i < n; i++) {
+      const EGLint *r = rects + 4 * i;
+      int rx0 = r[0] < 0 ? 0 : r[0], ry0 = r[1] < 0 ? 0 : r[1];
+      int rx1 = r[0] + r[2] > s->width ? s->width : r[0] + r[2];
+      int ry1 = r[1] + r[3] > s->height ? s->height : r[1] + r[3];
+      if (rx0 >= rx1 || ry0 >= ry1) continue;
+      if (rx0 < x0) x0 = rx0;
+      if (ry0 < y0) y0 = ry0;
+      if (rx1 > x1) x1 = rx1;
+      if (ry1 > y1) y1 = ry1;
+    }
+  }
+  int whole = !s->presented || exposed;
+  int shown = x0 < x1 && y0 < y1 ? present_window(c, s, x0, y0, x1 - x0, y1 - y0, whole) : 1;
+  if (shown && !c->lost) {
+    c->shown = s;
+    s->presented = 1;
+  }
+  refresh_window(s);
+  flush(c);
+  if (t0) {
+    c->prof.swaps++;
+    c->prof.swap_ns += now_ns() - t0;
+  }
+  if (c->lost) return fail(EGL_CONTEXT_LOST);
+  return shown ? ok() : fail(EGL_BAD_NATIVE_WINDOW);
+}
+static EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
+  return swap_buffers(dpy, surface, NULL, 0);
+}
+static EGLBoolean eglSwapBuffersWithDamageKHR(EGLDisplay dpy, EGLSurface surface, const EGLint *rects, EGLint n) {
+  return swap_buffers(dpy, surface, rects, n);
 }
 static EGLBoolean eglCopyBuffers(EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target) {
   (void)surface; (void)target;
@@ -2464,7 +2988,9 @@ const struct glremote_export glremote_egl_table[] = {
   {NULL, NULL},
 };
 static const struct glremote_export extra_table[] = {
-  F(eglGetPlatformDisplayEXT)
+  F(eglGetPlatformDisplayEXT) F(eglCreatePlatformWindowSurfaceEXT) F(eglQueryDisplayAttribEXT)
+  F(eglQueryDeviceStringEXT) F(eglQueryDeviceAttribEXT) F(eglSwapBuffersWithDamageKHR)
+  {"eglSwapBuffersWithDamageEXT", (glremote_proc)eglSwapBuffersWithDamageKHR},
   {NULL, NULL},
 };
 static const struct glremote_export gl_table[] = {

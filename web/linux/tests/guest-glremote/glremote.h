@@ -25,4 +25,24 @@ extern const struct glremote_export glremote_egl_table[];
 /* 1 when the host offers the GL remote (probed once). */
 int glremote_available(void);
 
+/* Window-system glue for EGL window surfaces. glremote has no window system
+ * of its own: the application installs these before eglInitialize, and
+ * without them eglCreateWindowSurface fails with EGL_BAD_NATIVE_WINDOW.
+ * `window` is the EGLNativeWindowType value (an X11 Window on X11). A window
+ * surface renders into the host context's canvas; eglSwapBuffers reads that
+ * back and hands it to present(). */
+struct glremote_window_ops {
+  /* Current size of the window; 0 when it is gone. */
+  int (*size)(unsigned long window, int *width, int *height);
+  /* Shows `height` rows, top row first, of `width` little-endian 0xAARRGGBB
+   * words at x,y (top-left origin) in the window. Returns 0 on failure. */
+  int (*present)(unsigned long window, const unsigned *pixels, int x, int y, int width, int height);
+  /* Optional: 1 when the window lost (part of) what it showed since the last
+   * call, so the next swap presents the whole frame. */
+  int (*exposed)(unsigned long window);
+  /* Native visual id with `depth` bits (24 or 32), 0 when there is none. */
+  int (*visual)(int depth);
+};
+void glremote_set_window_ops(const struct glremote_window_ops *ops);
+
 #endif
