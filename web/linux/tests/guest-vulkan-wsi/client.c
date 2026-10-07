@@ -202,10 +202,10 @@ int main(void){
         n=4;CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physical,xsurf,&n,formats)==VK_SUCCESS&&n==1);
         CHECK(formats[0].format==VK_FORMAT_R8G8B8A8_UNORM&&formats[0].colorSpace==VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
         VkPresentModeKHR modes[4];n=0;
-        CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical,csurf,&n,NULL)==VK_SUCCESS&&n==2);
+        CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical,csurf,&n,NULL)==VK_SUCCESS&&n==3);
         n=1;CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical,csurf,&n,modes)==VK_INCOMPLETE&&n==1&&modes[0]==VK_PRESENT_MODE_FIFO_KHR);
-        n=4;CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical,csurf,&n,modes)==VK_SUCCESS&&n==2&&modes[0]==VK_PRESENT_MODE_FIFO_KHR&&modes[1]==VK_PRESENT_MODE_IMMEDIATE_KHR);
-        printf("GUEST_VK_WSI_FORMATS formats=1 r8g8b8a8_unorm_srgb_nonlinear=1 modes=2 fifo=1 immediate=1 incomplete=2\n");fflush(stdout);
+        n=4;CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical,csurf,&n,modes)==VK_SUCCESS&&n==3&&modes[0]==VK_PRESENT_MODE_FIFO_KHR&&modes[1]==VK_PRESENT_MODE_IMMEDIATE_KHR&&modes[2]==VK_PRESENT_MODE_MAILBOX_KHR);
+        printf("GUEST_VK_WSI_FORMATS formats=1 r8g8b8a8_unorm_srgb_nonlinear=1 modes=3 fifo=1 immediate=1 mailbox=1 incomplete=2\n");fflush(stdout);
     }
     /* Device extensions: VK_KHR_swapchain is listed. */
     {

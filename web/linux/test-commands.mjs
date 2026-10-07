@@ -2,14 +2,16 @@
 // over hvc0; the guest agent maps it to the same fixed command and opens an
 // Aurora terminal (aurora-files --terminal) that runs it, then stays open.
 // Every binary below is present in the plain and Firefox desktop images
-// (vkgears/glgears come from desktop-extras.cpio).
+// (vkgears, glgears, vkmark and glmark2 come from desktop-extras.cpio).
 import { createMoreMenu } from './more-menu.mjs';
 
 const glgears = '-info -seconds 30 -readrgba';
 export const TEST_COMMANDS = Object.freeze([
   { id: 'vkgears', group: 'Vulkan', label: 'Vulkan gears (guest ICD)', command: 'vkgears -info -seconds 30', gpu: true },
+  { id: 'vkmark', group: 'Vulkan', label: 'vkmark benchmark', command: 'vkmark -s 500x500', gpu: true },
   { id: 'glgears-zink', group: 'OpenGL', label: 'GL gears · Zink on Vulkan', command: `MESA_LOADER_DRIVER_OVERRIDE=zink LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_THREAD=0 glgears ${glgears}`, gpu: true },
   { id: 'glgears-softpipe', group: 'OpenGL', label: 'GL gears · softpipe (CPU)', command: `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=softpipe glgears ${glgears}` },
+  { id: 'glmark2', group: 'OpenGL', label: 'glmark2 benchmark · Zink', command: 'glmark2 -s 500x500 --swap-mode immediate', gpu: true },
   { id: 'uname', group: 'System', label: 'Kernel', command: 'uname -a' },
   { id: 'nproc', group: 'System', label: 'CPU count', command: 'nproc' },
   { id: 'free', group: 'System', label: 'Memory', command: 'free -m' },

@@ -40,7 +40,7 @@ function check() {
     (webgl ? e.ownership.contextsCreated===e.ownership.contextsClosed : e.ownership.devicesCreated===e.ownership.devicesDestroyed));
   const lines=['GUEST_VK_WSI_INSTANCE_EXTENSIONS ','GUEST_VK_WSI_PROC_DISABLED instance_null=5','GUEST_VK_WSI_SURFACES_CREATED xlib=2 xcb=1 support_family0=1',
     'GUEST_VK_WSI_CAPABILITIES xlib=96x80 big=128x128 xcb=64x48 images=2..3 resized=1',
-    'GUEST_VK_WSI_FORMATS formats=1 r8g8b8a8_unorm_srgb_nonlinear=1 modes=2 fifo=1 immediate=1 incomplete=2',
+    'GUEST_VK_WSI_FORMATS formats=1 r8g8b8a8_unorm_srgb_nonlinear=1 modes=3 fifo=1 immediate=1 mailbox=1 incomplete=2',
     'GUEST_VK_WSI_DEVICE_EXTENSIONS count=1 swapchain=1','GUEST_VK_WSI_PROC_DISABLED device_null=5','GUEST_VK_WSI_SWAPCHAIN_REJECTED count=16',
     'GUEST_VK_WSI_SWAPCHAIN_PASS images=3 extent=96x80 mode=fifo rendered=4 acquire=feature_not_present present=feature_not_present',
     'GUEST_VK_WSI_RETIRE_PASS old=out_of_date replacement_images=2 replace_retired=refused in_use=refused',

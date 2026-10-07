@@ -247,8 +247,8 @@ installTestCommands({
     hostLog(`test command: ${command.id} -> ${command.command}`);
     await consoleInputWriter.write(testCommandRequest(command.id));
     canvas.focus({ preventScroll: true });
-    const gpuNote = command.gpu && !guestGpuEnabled(currentMode) ? ' Guest GPU service is off; add ?gpu=1 or boot Firefox for GPU tests.' : '';
-    return `Opening an Aurora terminal for “${command.label}”.${gpuNote}`;
+    // Guest Vulkan (and Zink on it) reaches the host over gpu_hostcall on every boot.
+    return `Opening an Aurora terminal for “${command.label}”.`;
   },
 });
 let persistentHome = null;

@@ -51,8 +51,10 @@ static const VkSurfaceFormatKHR wsi_formats[] = {
 #define WSI_USAGE_ACCEPTED WSI_USAGE
 #endif
 /* IMMEDIATE is listed because A6b's CPU presenter has no tearing concept
- * distinct from FIFO other than skipping pacing; both are host-feasible. */
-static const VkPresentModeKHR wsi_modes[] = { VK_PRESENT_MODE_FIFO_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR };
+ * distinct from FIFO other than skipping pacing; both are host-feasible.
+ * MAILBOX too: every present copies one whole image without waiting, so the
+ * newest frame replaces the shown one and none tears (vkmark's default). */
+static const VkPresentModeKHR wsi_modes[] = { VK_PRESENT_MODE_FIFO_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR };
 
 static int wsi_instance_enabled(unsigned bit) { return live && (live->instance_extensions_enabled & (1u << bit)); }
 static int wsi_swapchain_enabled(void) { return live && live->graphics_supported && (live->device_extensions_enabled & 1u); }
