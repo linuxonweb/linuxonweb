@@ -42,10 +42,39 @@ let hostModule = null;
 // -ENODEV and the guest falls back to virtio-vsock (the test suites rely on it).
 let config = { enabled: false, backend: "auto" };
 
+// Page canvases transferred for direct presentation, keyed `${session}:${surface}`.
+// null marks a request in flight; frames use ImageBitmaps until the canvas arrives.
+const presentCanvases = new Map(), presentRects = new Map();
+export function attachPresentCanvas(session, surface, canvas) {
+    const key = `${session}:${surface}`;
+    if (sessions.has(session) && presentCanvases.has(key) && typeof OffscreenCanvas === "function" && canvas instanceof OffscreenCanvas)
+        presentCanvases.set(key, canvas);
+}
+function forgetPresentSession(session) {
+    for (const key of [...presentCanvases.keys()])
+        if (key.startsWith(`${session}:`)) { presentCanvases.delete(key); presentRects.delete(key); }
+}
+function createPresentSink(id) {
+    const post = (message, transfer = []) => globalThis.postMessage({ type: "gpu-present", session: id, ...message }, transfer);
+    const sink = (frame) => {
+        const key = `${id}:${frame.surface}`;
+        if (frame.end) { presentCanvases.delete(key); presentRects.delete(key); post(frame); return; }
+        if (frame.bitmap) {
+            if (!presentCanvases.has(key)) { presentCanvases.set(key, null); post({ surface: frame.surface, request: true }); }
+            post(frame, [frame.bitmap]); return;
+        }
+        // Drawn into the transferred canvas: only window moves/resizes need the page.
+        const rect = `${frame.x},${frame.y},${frame.width},${frame.height}`;
+        if (presentRects.get(key) !== rect) { presentRects.set(key, rect); post({ ...frame, attached: true }); }
+    };
+    sink.canvas = (surface) => presentCanvases.get(`${id}:${surface}`) ?? null;
+    return sink;
+}
+
 export function configureVk(value) {
     if (!value || typeof value !== "object")
         return;
-    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true, allowResources: value.allowResources === true };
+    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true, allowResources: value.allowResources === true, allowLargeColorTargets: value.allowLargeColorTargets === true,allowDepthStencil:value.allowDepthStencil===true,allowLargeSampledTargets:value.allowLargeSampledTargets===true, allowPresent: value.allowPresent !== false };
 }
 
 function view(memory, pointer, length) {
@@ -165,16 +194,18 @@ async function openSession(flags, log) {
     const backend = config.backend === "wgpu" ? "wgpu" : requestedBackend ?? config.backend;
     const gpu = backend === "webgl" || backend === "wgpu" ? null : globalThis.navigator?.gpu;
     const wgpuFactory = backend === "wgpu" ? async () => {
-        const { createWgpuRenderer } = await import("../gpu-runtime/v1/bridge.mjs");
-        const renderer = await createWgpuRenderer({backend: requestedBackend ?? config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter, allowResources:config.allowResources});
+        const { createWgpuRenderer } = await import("../gpu-runtime/pipeline-candidate/bridge.mjs");
+        const renderer = await createWgpuRenderer({backend: requestedBackend ?? config.wgpuBackend, forceFallbackAdapter: config.forceFallbackAdapter, allowResources:config.allowResources,allowDepthStencil:config.allowDepthStencil,allowLargeSampledTargets:config.allowLargeSampledTargets});
         return { renderer, backend: "wgpu", adapter: renderer.adapter };
     } : undefined;
     const id = nextSession++;
     const { session, connection } = createSession(id, log);
     sessions.set(id, session);
     session.done = serveGPU(connection, {
-        gpu, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu" || config.allowResources, allowTextures: backend !== "wgpu" || config.allowResources, allowDepth: backend !== "wgpu" || config.allowResources,
+        gpu, allowLargeSampledTargets:config.allowLargeSampledTargets===true, allowDepthStencil:config.allowDepthStencil===true, allowLargeColorTargets: config.allowLargeColorTargets === true, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu" || config.allowResources, allowTextures: backend !== "wgpu" || config.allowResources, allowDepth: backend !== "wgpu" || config.allowResources,
         graphicsBackendFactory: wgpuFactory,
+        // Direct presentation: frames go to the page as ImageBitmaps (guest-gpu-hostcall.js onPresent).
+        presentSink: config.allowPresent === false || typeof globalThis.postMessage !== "function" ? null : createPresentSink(id),
         timeoutMs: 0x7fffffff,
         graphicsTranslatorOptions: GPUTEST_TRANSLATORS.wgsl, webglTranslatorOptions: GPUTEST_TRANSLATORS.glsl,
         onEvent(event) {
@@ -190,6 +221,7 @@ async function openSession(flags, log) {
     }).finally(() => {
         session.close();
         sessions.delete(id);
+        forgetPresentSession(id);
     });
     return id;
 }

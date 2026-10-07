@@ -12,7 +12,7 @@ import {
     S_ARGS, S_GEN, S_OP, S_RESULT, S_RESULT2, S_STATE, STATE_BUSY, STATE_DONE, STATE_REQUEST, slotState, slotWord,
 } from "./guest-gpu-hostcall.js";
 import { handleWgpuCall, OP_WGPU } from "./guest-gpu-wgpu.js";
-import { configureVk, handleVkCall, OP_VK_CALL, OP_VK_CLOSE, OP_VK_OPEN } from "./guest-gpu-vk.js";
+import { attachPresentCanvas, configureVk, handleVkCall, OP_VK_CALL, OP_VK_CLOSE, OP_VK_OPEN } from "./guest-gpu-vk.js";
 
 let hub = null;
 let myGen = 0;
@@ -435,6 +435,9 @@ self.onmessage = ({ data }) => {
             attachments.set(data.slot, { gen: data.gen, memory: data.memory });
             if (parked.delete(data.slot) && hub)
                 serve(data.slot);
+            break;
+        case "present-canvas":
+            attachPresentCanvas(data.session, data.surface, data.canvas);
             break;
         case "detach":
             if (attachments.get(data.slot)?.gen === data.gen)

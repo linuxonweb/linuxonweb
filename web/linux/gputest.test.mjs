@@ -49,7 +49,7 @@ test('host loop retries, serves each session and stops', async () => {
   assert.equal(served.length, 2);
   const o = served[0].options;
   assert.ok(o.allowGraphics && o.allowWebGL && o.allowUniforms && o.allowTextures && o.allowDepth);
-  assert.equal(o.graphicsTranslatorOptions.sha256, '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2');
+  assert.equal(o.graphicsTranslatorOptions.sha256, '5b78ad4937a5f04011fdc8000207009a5fb4d51f41fc1c7af6ce6a303e67fca5');
   assert.equal(o.webglTranslatorOptions.sha256, '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5');
   assert.equal(lines.filter(line => line.includes('connect retry')).length, 1, 'repeated identical failures are logged once');
   assert.ok(lines.some(line => line.includes('session 2 backend=webgpu')));

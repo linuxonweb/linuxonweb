@@ -66,7 +66,8 @@ fn reflect(module: &Module, ty: Handle<Type>, binding: Option<&Binding>, stage: 
     }
     let components = match module.types[ty].inner {
         TypeInner::Vector { size, scalar } if scalar.kind == naga::ScalarKind::Float && scalar.width == 4 => size as u8,
-        _ => return Err("interface supports only float32 vectors of 2 to 4 components".into()),
+        TypeInner::Scalar(scalar) if scalar.kind == naga::ScalarKind::Float && scalar.width == 4 => 1,
+        _ => return Err("interface supports only float32 scalars and vectors of 2 to 4 components".into()),
     };
     let type_json = format!("{{\"scalar\":\"f32\",\"components\":{components}}}");
     let (location, builtin, json) = match binding.unwrap() {
@@ -106,32 +107,39 @@ fn reflect(module: &Module, ty: Handle<Type>, binding: Option<&Binding>, stage: 
     Ok(())
 }
 
-// Bounded std140/std430-compatible uniform profile: tightly packed vec4,
-// mat4x4 (column-major, stride 16) and array<vec4, N> (stride 16) members.
+// Bounded std140/std430-compatible uniform profile: naturally aligned f32
+// scalars, vec2/vec3/vec4<f32>, mat4x4 (column-major, stride 16) and
+// array<vec4, N> (stride 16) members. The reported block size is the member
+// span rounded up to 16 so bound ranges keep the vec4 granularity.
 fn uniform_layout(module: &Module, ty: Handle<Type>) -> Result<(u32, String), String> {
     let float4 = |ty: Handle<Type>| matches!(module.types[ty].inner, TypeInner::Vector { size: naga::VectorSize::Quad, scalar }
         if scalar.kind == naga::ScalarKind::Float && scalar.width == 4);
-    let (members, span) = match module.types[ty].inner {
-        TypeInner::Struct { ref members, span } => (members, span),
+    let f32 = |scalar: naga::Scalar| scalar.kind == naga::ScalarKind::Float && scalar.width == 4;
+    let members = match module.types[ty].inner {
+        TypeInner::Struct { ref members, .. } => members,
         _ => return Err("uniform buffer must be a block struct".into()),
     };
     if members.is_empty() || members.len() > 16 { return Err("uniform block member count outside profile".into()); }
     let mut offset = 0u32; let mut items = Vec::new();
     for member in members {
-        let (kind, length, size) = match module.types[member.ty].inner {
-            _ if float4(member.ty) => ("vec4", 0, 16),
+        let (kind, length, size, align) = match module.types[member.ty].inner {
+            _ if float4(member.ty) => ("vec4", 0, 16, 16),
+            TypeInner::Scalar(scalar) if f32(scalar) => ("f32", 0, 4, 4),
+            TypeInner::Vector { size: naga::VectorSize::Bi, scalar } if f32(scalar) => ("vec2", 0, 8, 8),
+            TypeInner::Vector { size: naga::VectorSize::Tri, scalar } if f32(scalar) => ("vec3", 0, 12, 16),
             TypeInner::Matrix { columns: naga::VectorSize::Quad, rows: naga::VectorSize::Quad, scalar }
-                if scalar.kind == naga::ScalarKind::Float && scalar.width == 4 => ("mat4x4", 0, 64),
+                if f32(scalar) => ("mat4x4", 0, 64, 16),
             TypeInner::Array { base, size: naga::ArraySize::Constant(n), stride: 16 }
-                if float4(base) && n.get() <= 1024 => ("vec4", n.get(), 16 * n.get()),
-            _ => return Err("uniform members must be vec4<f32>, mat4x4<f32> or array<vec4<f32>, N>".into()),
+                if float4(base) && n.get() <= 1024 => ("vec4", n.get(), 16 * n.get(), 16),
+            _ => return Err("uniform members must be f32, vec2/vec3/vec4<f32>, mat4x4<f32> or array<vec4<f32>, N>".into()),
         };
-        if member.offset != offset { return Err("uniform members must be tightly packed".into()); }
-        items.push(format!("{{\"offset\":{offset},\"type\":\"{kind}\",\"arrayLength\":{length}}}"));
-        offset += size;
+        if member.offset < offset || member.offset % align != 0 { return Err("uniform members must be ordered and naturally aligned".into()); }
+        items.push(format!("{{\"offset\":{},\"type\":\"{kind}\",\"arrayLength\":{length}}}", member.offset));
+        offset = member.offset + size;
     }
-    if span != offset || offset > 16_384 { return Err("uniform block size outside profile".into()); }
-    Ok((offset, items.join(",")))
+    let size = (offset + 15) & !15;
+    if size > 16_384 { return Err("uniform block size outside profile".into()); }
+    Ok((size, items.join(",")))
 }
 
 // A4 adapter (no Naga source change): pinned Naga 0.20 samples only through
@@ -206,7 +214,7 @@ fn split_combined_samplers(input: &[u8]) -> Result<Vec<u8>, String> {
         offset += 4 * count;
     }
     if vars.is_empty() { return Ok(input.to_vec()); }
-    if vars.len() > 4 { return Err("combined sampler count exceeds profile (4)".into()); }
+    if vars.len() > 16 { return Err("combined sampler count exceeds profile (16)".into()); }
     let ids: HashSet<u32> = vars.iter().map(|v| v.0).collect();
     // Only direct OpLoad of a combined variable is allowed; any other use as
     // an operand (calls, stores, copies, access chains, OpCopyObject ...) is refused.
@@ -354,7 +362,7 @@ fn compile(input: &[u8]) -> Result<(String, String), String> {
         }
     }
     if uniform_globals.len() > 8 { return Err("uniform buffer count exceeds profile".into()); }
-    if texture_globals.len() > 4 { return Err("texture count exceeds profile".into()); }
+    if texture_globals.len() > 16 { return Err("texture count exceeds profile".into()); }
     for (index, (_, binding)) in texture_globals.iter().chain(sampler_globals.iter()).enumerate() {
         if uniform_globals.iter().any(|item| &item.1 == binding) ||
             texture_globals.iter().chain(sampler_globals.iter()).skip(index + 1).any(|other| &other.1 == binding) {

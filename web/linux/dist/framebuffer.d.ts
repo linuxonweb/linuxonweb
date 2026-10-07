@@ -35,6 +35,8 @@ export interface FramebufferDiagnostics {
     frames: number;
     presents: number;
     coalesced: number;
+    /** Presents whose bytes matched the previous frame (no repaint). */
+    unchanged: number;
     fallbackReason: string | null;
     fallbackAdapter: boolean | null;
     /** Why WebGPU presentation stopped or could not start. */

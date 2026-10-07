@@ -1,6 +1,7 @@
 /* Experimental bounded Vulkan profiles, also used through the pinned static
  * loader. No conformance, general system driver or physical GPU claim. */
 #include "icd.h"
+#include "color-range-policy.h"
 #include "../guest-gpu/guest-gpu.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -20,6 +21,13 @@ static inline int color_format(VkFormat f) {
 #endif
     return f == VK_FORMAT_R8G8B8A8_UNORM;
 }
+/* sRGB variants exist only as sampled textures (large texture profile). */
+static inline int srgb_texture_format(VkFormat f) {
+#ifdef GUEST_VK_ZINK
+    if (f == VK_FORMAT_B8G8R8A8_SRGB) return 1;
+#endif
+    return f == VK_FORMAT_R8G8B8A8_SRGB;
+}
 
 struct VkPhysicalDevice_T { VK_LOADER_DATA loader; };
 struct VkQueue_T { VK_LOADER_DATA loader; };
@@ -30,7 +38,7 @@ struct VkInstance_T {
     pid_t process_pid; /* Native creator identity; never close a fork parent's session. */
     struct VkPhysicalDevice_T physical;
     VkDevice device;
-    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, sampled_target_supported, depth_supported, pipeline_state_supported, host_last_provoking, webgl_backend, failed;
+    int clear_supported, compute_supported, graphics_supported, uniform_supported, texture_supported, anisotropy_supported, large_texture_supported, huge_sampled_supported, line_list_supported, texture_swizzle_supported, wide_texture_supported, indexed_draw_supported, large_vertex_supported, depth_sample_supported, blend_supported, sampled_target_supported, large_sampled_target_supported, depth_supported, depth_stencil_supported, large_color_supported, large_depth_supported, present_supported, viewport_flip_supported, pipeline_state_supported, mipmap_supported, host_last_provoking, webgl_backend, failed;
     uint32_t device_extensions_enabled; /* Bit per device_extension_table index. */
     uint32_t instance_extensions_enabled; /* Bit per instance_extension_table index. */
     /* B2a (GUEST_VK_ZINK builds): features enabled at vkCreateDevice. */
@@ -52,6 +60,26 @@ static void instance_process_exit(void) {
      * detaching does not own the process lifetime and must not close it. */
     if(live&&live->process_pid==getpid())destroy_instance(live,NULL);
 }
+#ifdef GUEST_VK_ZINK
+#define ZINK_D32_PACKED_ICD (live&&live->depth_stencil_supported)
+#else
+#define ZINK_D32_PACKED_ICD 0
+#endif
+static unsigned huge_extent(unsigned fallback);
+static unsigned depth_extent(void) {return live&&live->depth_stencil_supported?huge_extent(512u):128u;}
+/* D32/D16 depth: 512 with the opt-in large depth profile, else 128. */
+static unsigned plain_depth_extent(void) {return live&&live->large_depth_supported?huge_extent(512u):128u;}
+static unsigned color_extent(void) { return live && live->large_color_supported ? 512u : 128u; }
+/* Huge sampled profile: sampled colour images, depth and viewports up to 2048; present stays 512. */
+static unsigned huge_extent(unsigned fallback) {return live&&live->huge_sampled_supported?2048u:fallback;}
+static unsigned color_image_extent(VkImageUsageFlags usage) {
+    if(live&&live->huge_sampled_supported&&(usage&VK_IMAGE_USAGE_SAMPLED_BIT))return 2048u;
+    if(!(usage&VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))return (usage&VK_IMAGE_USAGE_SAMPLED_BIT)&&live&&live->large_texture_supported?1024u:128u;
+    return usage&VK_IMAGE_USAGE_SAMPLED_BIT?(live&&live->large_sampled_target_supported?512u:128u):color_extent();
+}
+/* Full mip chain length for a w x h image (mipmap profile). */
+#define MIP_DIM(x,l) ((x)>>(l)?(x)>>(l):1u)
+static unsigned mip_levels_max(unsigned w,unsigned h) {unsigned n=1,m=w>h?w:h;while(m>1){m>>=1;n++;}return n;}
 static struct guest_vk_audit audit = {.close_status = -1};
 struct guest_vk_audit guest_vk_get_audit(void) { return audit; }
 static int physical_valid(VkPhysicalDevice p) { return live && p == &live->physical; }
@@ -175,16 +203,43 @@ static int hello(VkInstance instance) {
         strstr(data, "\"maxUniformRange\":16384") && strstr(data, "\"uniformOffsetAlignment\":256");
     /* Opt-in A4 sampled-texture profile, layered on the uniform profile. */
     instance->texture_supported = instance->uniform_supported && strstr(data, "\"textureProfile\":1") &&
-        strstr(data, "\"maxSampledTextures\":4") && strstr(data, "\"maxTextureDimension\":128");
+        (strstr(data, "\"maxSampledTextures\":4,") || strstr(data, "\"maxSampledTextures\":16,")) && strstr(data, "\"maxTextureDimension\":128");
+    /* Opt-in sampler anisotropy (WebGPU maxAnisotropy 1..16), layered on the texture profile. */
+    instance->anisotropy_supported = instance->texture_supported && strstr(data, "\"maxSamplerAnisotropy\":16") != NULL;
+    /* Opt-in large (<=1024) RGBA8/sRGB textures uploaded in row bands, layered on the texture profile. */
+    instance->large_texture_supported = instance->texture_supported && strstr(data, "\"largeTextureProfile\":1") &&
+        strstr(data, "\"maxLargeTextureDimension\":1024");
+    /* Opt-in mipmap profile: sampled colour mip chains, level views/uploads and vkCmdBlitImage. */
+    instance->mipmap_supported = instance->large_texture_supported && strstr(data, "\"mipmapProfile\":1") &&
+        strstr(data, "\"maxMipLevels\":11");
+    instance->large_color_supported=instance->graphics_supported && color_large_profile(data,n);
     instance->sampled_target_supported=instance->texture_supported && strstr(data,"\"sampledColorTargets\":1");
     /* Opt-in A5 depth-attachment profile, layered on the texture profile. */
     instance->depth_supported = instance->texture_supported && strstr(data, "\"depthProfile\":1") &&
         strstr(data, "\"maxDepthDimension\":128");
+    instance->large_sampled_target_supported=instance->sampled_target_supported&&instance->large_color_supported&&sampled_color_profile(data,n);
+    instance->huge_sampled_supported=instance->mipmap_supported&&instance->large_sampled_target_supported&&
+        strstr(data,"\"hugeSampledProfile\":1")&&strstr(data,"\"maxHugeSampledDimension\":2048");
+    instance->depth_stencil_supported=instance->texture_supported&&depth_stencil_profile(data,n);
+    instance->depth_supported|=instance->depth_stencil_supported;
+    /* Opt-in large D32/D16 depth and direct swapchain presentation (host canvas). */
+    instance->large_depth_supported=instance->depth_supported&&instance->large_color_supported&&strstr(data,"\"largeDepthProfile\":1")&&strstr(data,"\"maxLargeDepthDimension\":512");
+    instance->present_supported=instance->large_color_supported&&strstr(data,"\"presentProfile\":1")&&strstr(data,"\"maxPresentDimension\":512");
+    /* Negative-height viewports are drawn by a host pipeline variant (flipY). */
+    instance->viewport_flip_supported=instance->graphics_supported&&strstr(data,"\"viewportFlipProfile\":1")!=NULL;
     /* New semantics are opt-in; historical services must remain fail-closed. */
+    /* Opt-in fixed-function blending (one colour target, no constant/dual-source factors). */
+    instance->blend_supported = instance->graphics_supported && strstr(data, "\"blendProfile\":1") != NULL;
     instance->pipeline_state_supported = instance->graphics_supported &&
         strstr(data, "\"pipelineStateProfile\":1") && strstr(data, "\"colorWriteMaskBits\":15") &&
         (strstr(data, "\"triangleProvokingVertex\":\"first\"") || strstr(data, "\"triangleProvokingVertex\":\"last\""));
     instance->host_last_provoking=instance->pipeline_state_supported && strstr(data, "\"triangleProvokingVertex\":\"last\"");
+    instance->line_list_supported=instance->pipeline_state_supported && strstr(data, "\"lineListProfile\":1");
+    instance->texture_swizzle_supported=instance->texture_supported && strstr(data, "\"textureSwizzleProfile\":1");
+    instance->large_vertex_supported=instance->graphics_supported && strstr(data, "\"largeVertexBufferProfile\":1");
+    instance->depth_sample_supported=instance->texture_supported && strstr(data, "\"depthSampleProfile\":1");
+    instance->indexed_draw_supported=instance->graphics_supported && strstr(data, "\"indexedDrawProfile\":1");
+    instance->wide_texture_supported=instance->texture_supported && strstr(data, "\"maxSampledTextures\":16") && strstr(data, "\"maxSamplers\":32");
     return 0;
 }
 static void transfer_cleanup(void);
@@ -309,20 +364,20 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
     }
     if (live->graphics_supported) {
         snprintf(out->deviceName, sizeof(out->deviceName), "EXPERIMENTAL bounded SPIR-V graphics; NOT conformant");
-        out->limits.maxImageDimension2D=128;out->limits.maxImageArrayLayers=1;
+        out->limits.maxImageDimension2D=huge_extent(color_extent());out->limits.maxImageArrayLayers=1;
 #ifdef GUEST_VK_ZINK
         /* B2e: Zink derives GL MAX_TEXTURE_SIZE from MIN3(dim1D, dim2D, 16384).
          * 1D images stay unsupported; this only removes the 0 from the minimum. */
-        out->limits.maxImageDimension1D=128;
+        out->limits.maxImageDimension1D=huge_extent(color_extent());
 #endif
-        out->limits.maxFramebufferWidth=out->limits.maxFramebufferHeight=128;out->limits.maxFramebufferLayers=1;
+        out->limits.maxFramebufferWidth=out->limits.maxFramebufferHeight=huge_extent(color_extent());out->limits.maxFramebufferLayers=1;
         out->limits.maxColorAttachments=out->limits.maxFragmentOutputAttachments=1;
         out->limits.maxVertexInputBindings=out->limits.maxVertexInputAttributes=8;
         out->limits.maxVertexInputBindingStride=live->webgl_backend?252:2048;
         out->limits.maxVertexInputAttributeOffset=live->webgl_backend?244:2040;
         out->limits.maxVertexOutputComponents=out->limits.maxFragmentInputComponents=32;
-        out->limits.maxViewports=1;out->limits.maxViewportDimensions[0]=out->limits.maxViewportDimensions[1]=128;
-        out->limits.viewportBoundsRange[0]=0;out->limits.viewportBoundsRange[1]=128;
+        out->limits.maxViewports=1;out->limits.maxViewportDimensions[0]=out->limits.maxViewportDimensions[1]=huge_extent(color_extent());
+        out->limits.viewportBoundsRange[0]=0;out->limits.viewportBoundsRange[1]=(float)huge_extent(color_extent());
         out->limits.framebufferColorSampleCounts=VK_SAMPLE_COUNT_1_BIT;
         out->limits.minMemoryMapAlignment=4;out->limits.nonCoherentAtomSize=4;out->limits.maxMemoryAllocationCount=32;
     }
@@ -335,12 +390,14 @@ static VKAPI_ATTR void VKAPI_CALL physical_properties(VkPhysicalDevice physical,
         out->limits.maxPerStageResources=8;
     }
     if (live->texture_supported) {
-        /* A4: at most 4 COMBINED_IMAGE_SAMPLER bindings per pipeline layout,
-         * sharing the 8-descriptor layout budget with uniform buffers. */
-        out->limits.maxPerStageDescriptorSamplers=out->limits.maxPerStageDescriptorSampledImages=4;
-        out->limits.maxDescriptorSetSamplers=out->limits.maxDescriptorSetSampledImages=4;
-        out->limits.maxSamplerAllocationCount=8;
-        out->limits.maxSamplerLodBias=0;out->limits.maxSamplerAnisotropy=1;
+        /* A4: at most 4 COMBINED_IMAGE_SAMPLER bindings per pipeline layout
+         * (16 with the host's 16-texture profile: vertex 4, fragment 12), in
+         * addition to the 8-descriptor uniform buffer budget. */
+        out->limits.maxPerStageDescriptorSamplers=out->limits.maxPerStageDescriptorSampledImages=live->wide_texture_supported?12:4;
+        out->limits.maxDescriptorSetSamplers=out->limits.maxDescriptorSetSampledImages=live->wide_texture_supported?16:4;
+        out->limits.maxSamplerAllocationCount=live->wide_texture_supported?32:8;
+        if(live->wide_texture_supported)out->limits.maxPerStageResources=24;
+        out->limits.maxSamplerLodBias=0;out->limits.maxSamplerAnisotropy=live->anisotropy_supported?16:1;
     }
     if (live->depth_supported) {
         /* A5: single-sample D32_SFLOAT/D16_UNORM attachments; no stencil. */
@@ -368,6 +425,7 @@ static VKAPI_ATTR void VKAPI_CALL physical_features(VkPhysicalDevice physical, V
      * Mesa requires for OpenGL ES 2.0 / OpenGL 2.0. */
     if (out && live && live->graphics_supported) out->independentBlend = VK_TRUE;
 #endif
+    if (out && live && live->anisotropy_supported) out->samplerAnisotropy = VK_TRUE;
 }
 /* Loader-required queries describe negotiated bounded usages only. Graphics
  * adds one attachment format and three vertex formats; no sampled/storage or
@@ -386,8 +444,47 @@ static int zink_trace_calls(void) { /* GUEST_VK_TRACE_CALLS=1: trace every devic
     return cached;
 }
 #define ZINK_TRACE(...) do { if (zink_trace_enabled()) fprintf(stderr, "GUEST_VK_TRACE " __VA_ARGS__); } while (0)
+/* Rejection reports: the first 40 rejected calls are written to stderr, and the
+ * first 8 rejection reasons are kept for the submit/end failure reports. */
+static unsigned zink_fail_count;
+static unsigned zrej_count;
+static char zrej_buf[8][200];
+#define ZREJ(...) do { if (zrej_count < 8) { snprintf(zrej_buf[zrej_count], sizeof zrej_buf[0], __VA_ARGS__); } zrej_count++; } while (0)
+static unsigned zalloc_log[64][3], zalloc_n; /* sets@submits/presents per allocation, for failure reports */
+static unsigned zcount[8], zdraws[2], zdlog[16][3], zdlog_n, zelog[16][3], zelog_n; /* failure-report counters: submit, submit2, present, pool create, pool reset, sem wait, sem value, fence wait */
+#define ZINK_FAIL(...) do { if (zink_fail_count < 40) { char zf_[192]; zink_fail_count++; int zn_ = snprintf(zf_, sizeof zf_, "GUEST_VK_FAIL " __VA_ARGS__); if (zn_ > 0) write(2, zf_, zn_ < (int)sizeof zf_ ? zn_ : (int)sizeof zf_ - 1); } } while (0)
+/* Zink records on application threads while its flush thread submits; the
+ * ICD keeps one selected command buffer and shared object tables, so every
+ * wrapped device-level entry point runs under one recursive lock. */
+#include <pthread.h>
+static pthread_mutex_t zink_icd_lock;
+static pthread_once_t zink_icd_lock_once = PTHREAD_ONCE_INIT;
+static void zink_icd_lock_init(void) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&zink_icd_lock, &attr);
+    pthread_mutexattr_destroy(&attr);
+}
+static int zink_icd_lock_take(void) {
+    pthread_once(&zink_icd_lock_once, zink_icd_lock_init);
+    pthread_mutex_lock(&zink_icd_lock);
+    return 1;
+}
+static void zink_icd_lock_release(int *held) { if (*held) pthread_mutex_unlock(&zink_icd_lock); }
+#define ZINK_ICD_LOCK_SCOPE() __attribute__((cleanup(zink_icd_lock_release))) int zink_icd_held = zink_icd_lock_take(); (void)zink_icd_held
+#define WSI_TRACE ZINK_TRACE
 #else
 #define ZINK_TRACE(...) do { } while (0)
+#define ZINK_FAIL(...) do { } while (0)
+#define ZREJ ZINK_TRACE
+/* WSI decisions are also traceable (GUEST_VK_TRACE=1) in non-Zink builds. */
+static __attribute__((unused)) int wsi_trace_enabled(void) {
+    static int cached = -1;
+    if (cached < 0) { const char *t = getenv("GUEST_VK_TRACE"); cached = t && *t && strcmp(t, "0") != 0; }
+    return cached;
+}
+#define WSI_TRACE(...) do { if (wsi_trace_enabled()) fprintf(stderr, "GUEST_VK_TRACE " __VA_ARGS__); } while (0)
 #endif
 static void format_properties_body(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out);
 static VKAPI_ATTR void VKAPI_CALL format_properties(VkPhysicalDevice physical, VkFormat format, VkFormatProperties *out) {
@@ -406,12 +503,15 @@ static void format_properties_body(VkPhysicalDevice physical, VkFormat format, V
         if (format == VK_FORMAT_R32G32_SFLOAT || format == VK_FORMAT_R32G32B32_SFLOAT || format == VK_FORMAT_R32G32B32A32_SFLOAT)
             out->bufferFeatures = VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
     }
-    if (physical_valid(physical) && live->texture_supported && color_format(format))
+    if (physical_valid(physical) && ((live->texture_supported && color_format(format)) || (live->large_texture_supported && srgb_texture_format(format))))
         out->optimalTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
             VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+    if (physical_valid(physical) && live->mipmap_supported && (color_format(format) || srgb_texture_format(format)))
+        out->optimalTilingFeatures |= VK_FORMAT_FEATURE_BLIT_SRC_BIT | VK_FORMAT_FEATURE_BLIT_DST_BIT;
     /* A5: D24_UNORM_S8_UINT and every stencil format stay unsupported. */
-    if (physical_valid(physical) && live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM))
-        out->optimalTilingFeatures = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (physical_valid(physical) && live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM || (live->depth_stencil_supported&&format==VK_FORMAT_D24_UNORM_S8_UINT)))
+        out->optimalTilingFeatures = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT |
+            (live->depth_sample_supported ? VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT : 0);
 }
 static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat format,
         VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags,
@@ -446,9 +546,12 @@ static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat
     int color = color_format(format) &&
         ((live->clear_supported && usage == (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
           (live->graphics_supported && usage == (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
+          (live->large_sampled_target_supported && usage == (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
           (live->texture_supported && usage == (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)));
-    int depth = live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM) &&
-        usage == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    if (live->large_texture_supported && srgb_texture_format(format) && usage == (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)) color = 1;
+    int depth = live->depth_supported && (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM || (live->depth_stencil_supported&&format==VK_FORMAT_D24_UNORM_S8_UINT)) &&
+        (usage == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ||
+         (live->depth_sample_supported && usage == (VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)));
 #ifdef GUEST_VK_ZINK
     /* B2f: Zink allocates GL color resources with TRANSFER_SRC|DST|SAMPLED|
      * COLOR_ATTACHMENT|INPUT_ATTACHMENT (0x97) and MUTABLE_FORMAT/EXTENDED_USAGE. */
@@ -458,8 +561,11 @@ static VkResult image_format_properties_body(VkPhysicalDevice physical, VkFormat
     if (!(color || depth) ||
         type != VK_IMAGE_TYPE_2D || tiling != VK_IMAGE_TILING_OPTIMAL || flags)
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
-    out->maxExtent = (VkExtent3D){128,128,1}; out->maxMipLevels = 1; out->maxArrayLayers = 1;
-    out->sampleCounts = VK_SAMPLE_COUNT_1_BIT; out->maxResourceSize = 65536;
+    int packed = format==VK_FORMAT_D24_UNORM_S8_UINT||(ZINK_D32_PACKED_ICD&&format==VK_FORMAT_D32_SFLOAT);
+    unsigned extent = depth ? (packed?depth_extent():plain_depth_extent()) : color_image_extent(usage);
+    out->maxExtent = (VkExtent3D){extent,extent,1}; out->maxArrayLayers = 1;
+    out->maxMipLevels = color && live->mipmap_supported && (usage & VK_IMAGE_USAGE_SAMPLED_BIT) ? mip_levels_max(extent, extent) : 1;
+    out->sampleCounts = VK_SAMPLE_COUNT_1_BIT; out->maxResourceSize = (VkDeviceSize)extent*extent*(packed?8u:4u);
     return VK_SUCCESS;
 }
 static VKAPI_ATTR void VKAPI_CALL sparse_image_format_properties(VkPhysicalDevice physical, VkFormat format,
@@ -498,7 +604,7 @@ static int any_features(const VkPhysicalDeviceFeatures *f) {
     F(geometryShader) F(tessellationShader) F(sampleRateShading) F(dualSrcBlend)
     F(logicOp) F(multiDrawIndirect) F(drawIndirectFirstInstance) F(depthClamp)
     F(depthBiasClamp) F(fillModeNonSolid) F(depthBounds) F(wideLines) F(largePoints)
-    F(alphaToOne) F(multiViewport) F(samplerAnisotropy) F(textureCompressionETC2)
+    F(alphaToOne) F(multiViewport) F(textureCompressionETC2)
     F(textureCompressionASTC_LDR) F(textureCompressionBC) F(occlusionQueryPrecise)
     F(pipelineStatisticsQuery) F(vertexPipelineStoresAndAtomics) F(fragmentStoresAndAtomics)
     F(shaderTessellationAndGeometryPointSize) F(shaderImageGatherExtended)
@@ -512,6 +618,7 @@ static int any_features(const VkPhysicalDeviceFeatures *f) {
     F(sparseResidency2Samples) F(sparseResidency4Samples) F(sparseResidency8Samples)
     F(sparseResidency16Samples) F(sparseResidencyAliased) F(variableMultisampleRate) F(inheritedQueries)
 #undef F
+    if (f->samplerAnisotropy && !(live && live->anisotropy_supported)) return 1;
     return 0;
 }
 /* Device creation accepts the core 1.1 feature structures with every feature
@@ -809,15 +916,18 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
 #undef PROC
 #ifdef GUEST_VK_WSI
     PFN_vkVoidFunction wsi = wsi_device_proc(name);
+#ifdef GUEST_VK_ZINK
+    if (wsi) return live->graphics_supported ? zink_trace_proc(name, wsi) : wsi;
+#endif
     if (wsi) return wsi;
 #endif
 #ifdef GUEST_VK_ZINK
     PFN_vkVoidFunction zink = live->graphics_supported ? zink_proc(name) : NULL;
-    if (zink) return zink_trace_calls() ? zink_trace_proc(name, zink) : zink;
+    if (zink) return zink_trace_proc(name, zink);
 #endif
     PFN_vkVoidFunction graphics = live->graphics_supported ? graphics_proc(name) : NULL;
 #ifdef GUEST_VK_ZINK
-    if (graphics && zink_trace_calls()) return zink_trace_proc(name, graphics);
+    if (graphics) return zink_trace_proc(name, graphics);
 #endif
     if (graphics) return graphics;
     PFN_vkVoidFunction compute = live->compute_supported ? compute_proc(name) : NULL;
@@ -827,7 +937,7 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL device_proc(VkDevice device, con
      * void() stub traps in wasm, so hand out typed stubs that trace and fail. */
     if (!found && live->graphics_supported) found = zink_stub_proc(name);
     if (!found) ZINK_TRACE("device_proc MISS %s\n", name);
-    if (found && zink_trace_calls()) found = zink_trace_proc(name, found);
+    if (found) found = zink_trace_proc(name, found);
 #endif
     return found;
 }

@@ -17,7 +17,11 @@
  * or MESA_LOADER_DRIVER_OVERRIDE=zink. Output: glxgears-style
  * "N frames in 5.0 seconds = X FPS" lines plus a parseable GLGEARS_FPS line.
  *
- * Options: -nopresent  -seconds N (0 = forever)  -size WxH  -info  -interval S
+ * -window instead renders to an EGL X11 window surface (EGL_PLATFORM_X11_KHR,
+ * Mesa built with -Dplatforms=x11): Zink presents through the Vulkan swapchain
+ * (kopper), eglSwapInterval 0, no CPU copy.
+ *
+ * Options: -nopresent  -window  -seconds N (0 = forever)  -size WxH  -info  -interval S
  *          -readrgba (read GL_RGBA, the renderbuffer's own format, and swizzle
  *          on the CPU; Zink otherwise converts to BGRA with a GPU blit)
  * Exit codes: 0 ok, 1 usage, 2 EGL failure, 3 GL failure, 4 X11 failure.
@@ -331,6 +335,10 @@ static int on_x_io_error(Display *d) { (void)d; say("GLGEARS_X11_LOST display co
 static int read_rgba; /* -readrgba: pixels are RGBA, swap R/B while copying */
 static int check; /* -check: print a colour census of one frame at angle 0 */
 static int direct_bgra; /* XImage is 32bpp LSBFirst with 0xff0000/0xff00/0xff masks: copy BGRA rows as-is */
+static int egl_window; /* -window: EGL window surface + eglSwapBuffers; no GC/XImage */
+/* Optional link-time X round-trip counters (see the kopper link's present guard). */
+extern void guest_xcb_stats(unsigned *round_trips, double *seconds) __attribute__((weak));
+extern void guest_xcb_report(char *out, unsigned size) __attribute__((weak));
 
 static int x11_open(int w, int h) {
     XSetErrorHandler(on_x_error); XSetIOErrorHandler(on_x_io_error);
@@ -354,6 +362,12 @@ static int x11_open(int w, int h) {
         XSetWMNormalHints(dpy, win, hints); XFree(hints); }
     wm_delete = XInternAtom(dpy, "WM_DELETE_WINDOW", False); XSetWMProtocols(dpy, win, &wm_delete, 1);
     XSelectInput(dpy, win, ExposureMask | StructureNotifyMask | KeyPressMask);
+    if (egl_window) {
+        XMapRaised(dpy, win); XSync(dpy, False);
+        say("GLGEARS_X11_OPEN display=%s screen=%dx%d window=%dx%d+%d+%d depth=%d egl_window=1\n",
+            name, sw, sh, w, h, x, y, DefaultDepth(dpy, screen));
+        return !x_error_code;
+    }
     gc = XCreateGC(dpy, win, 0, NULL); if (!gc) return 0;
     image = XCreateImage(dpy, visual, DefaultDepth(dpy, screen), ZPixmap, 0, NULL, w, h, 32, 0);
     if (!image || image->bytes_per_line <= 0) return 0;
@@ -419,7 +433,7 @@ static const char *driver_name(void) {
 }
 
 static void usage(void) {
-    say("usage: glgears [-nopresent] [-seconds N] [-size WxH] [-info] [-interval S] [-readrgba] [-check]\n");
+    say("usage: glgears [-nopresent|-window] [-seconds N] [-size WxH] [-info] [-interval S] [-readrgba] [-check]\n");
 }
 
 int main(int argc, char **argv) {
@@ -428,6 +442,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-nopresent")) present = 0;
         else if (!strcmp(argv[i], "-info")) info = 1;
+        else if (!strcmp(argv[i], "-window")) egl_window = 1;
         else if (!strcmp(argv[i], "-readrgba")) read_rgba = 1;
         else if (!strcmp(argv[i], "-check")) check = 1;
         else if (!strcmp(argv[i], "-seconds") && i + 1 < argc) seconds = atof(argv[++i]);
@@ -437,23 +452,34 @@ int main(int argc, char **argv) {
         } else { usage(); return 1; }
     }
     if (interval <= 0) interval = 5.0;
+    if (egl_window) present = 1;
     const char *driver = driver_name();
-    say("GLGEARS_START driver=%s present=%d size=%dx%d seconds=%g read=%s\n", driver, present, w, h, seconds, read_rgba ? "rgba" : "bgra");
+    say("GLGEARS_START driver=%s present=%d window=%d size=%dx%d seconds=%g read=%s\n", driver, present, egl_window, w, h, seconds, read_rgba ? "rgba" : "bgra");
+    if (egl_window && !x11_open(w, h)) { say("GLGEARS_ERROR X11 open failed\n"); return 4; }
 
     PFNEGLGETPLATFORMDISPLAYEXTPROC gpd = (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
-    EGLDisplay d = gpd ? gpd(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, NULL) : eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    EGLDisplay d = egl_window ? (gpd ? gpd(EGL_PLATFORM_X11_KHR, dpy, NULL) : EGL_NO_DISPLAY) :
+        gpd ? gpd(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, NULL) : eglGetDisplay(EGL_DEFAULT_DISPLAY);
     EGLint major = 0, minor = 0;
     if (d == EGL_NO_DISPLAY || !eglInitialize(d, &major, &minor)) {
         say("GLGEARS_ERROR eglInitialize failed egl=0x%x driver=%s\n", eglGetError(), driver); return 2;
     }
     if (!eglBindAPI(EGL_OPENGL_API)) { say("GLGEARS_ERROR eglBindAPI(EGL_OPENGL_API) failed egl=0x%x\n", eglGetError()); return 2; }
     EGLint cfgattr[] = { EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_NONE };
+    EGLint wincfgattr[] = { EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_DEPTH_SIZE, 16, EGL_NONE };
     EGLConfig cfg = EGL_NO_CONFIG_KHR; EGLint n = 0;
-    if (!eglChooseConfig(d, cfgattr, &cfg, 1, &n) || n < 1) cfg = EGL_NO_CONFIG_KHR;
+    if (!eglChooseConfig(d, egl_window ? wincfgattr : cfgattr, &cfg, 1, &n) || n < 1) cfg = EGL_NO_CONFIG_KHR;
+    if (egl_window && cfg == EGL_NO_CONFIG_KHR) { say("GLGEARS_ERROR no EGL window config egl=0x%x\n", eglGetError()); return 2; }
     /* Compatibility profile (fixed function + display lists), as glxgears' legacy context. */
     EGLContext ctx = eglCreateContext(d, cfg, EGL_NO_CONTEXT, NULL);
     if (ctx == EGL_NO_CONTEXT) { say("GLGEARS_ERROR eglCreateContext failed egl=0x%x configs=%d\n", eglGetError(), n); return 2; }
-    if (!eglMakeCurrent(d, EGL_NO_SURFACE, EGL_NO_SURFACE, ctx)) { say("GLGEARS_ERROR eglMakeCurrent failed egl=0x%x\n", eglGetError()); return 2; }
+    EGLSurface surf = EGL_NO_SURFACE;
+    if (egl_window) {
+        surf = eglCreateWindowSurface(d, cfg, (EGLNativeWindowType)win, NULL);
+        if (surf == EGL_NO_SURFACE) { say("GLGEARS_ERROR eglCreateWindowSurface failed egl=0x%x\n", eglGetError()); return 2; }
+    }
+    if (!eglMakeCurrent(d, surf, surf, ctx)) { say("GLGEARS_ERROR eglMakeCurrent failed egl=0x%x\n", eglGetError()); return 2; }
     if (!load_gl()) return 3;
 
     const char *renderer = (const char *)glGetString(GL_RENDERER);
@@ -467,7 +493,9 @@ int main(int argc, char **argv) {
         say("GL_VENDOR     = %s\n", vendor ? vendor : "?");
     }
 
-    GLuint fbo, rb[2];
+    if (egl_window) eglSwapInterval(d, 0);
+    GLuint fbo = 0, rb[2] = { 0, 0 };
+    if (!egl_window) {
     glGenFramebuffers(1, &fbo); glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glGenRenderbuffers(2, rb);
     glBindRenderbuffer(GL_RENDERBUFFER, rb[0]); glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, w, h);
@@ -476,6 +504,7 @@ int main(int argc, char **argv) {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb[1]);
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) { say("GLGEARS_ERROR framebuffer incomplete 0x%x\n", status); return 3; }
+    }
 
     init();
     reshape(w, h);
@@ -483,12 +512,12 @@ int main(int argc, char **argv) {
     if (err != GL_NO_ERROR) { say("GLGEARS_ERROR GL error 0x%x after init\n", err); return 3; }
 
     unsigned char *pixels = NULL;
-    if (present || check) {
+    if ((present && !egl_window) || check) {
         pixels = malloc((size_t)w * h * 4);
         if (!pixels) { say("GLGEARS_ERROR out of memory\n"); return 4; }
         glPixelStorei(GL_PACK_ALIGNMENT, 4);
     }
-    if (present && !x11_open(w, h)) { say("GLGEARS_ERROR X11 open failed\n"); return 4; }
+    if (present && !egl_window && !x11_open(w, h)) { say("GLGEARS_ERROR X11 open failed\n"); return 4; }
     say("GLGEARS_READY driver=%s renderer=\"%s\" version=\"%s\" present=%d size=%dx%d\n",
         driver, renderer, version ? version : "?", present, w, h);
 
@@ -513,6 +542,7 @@ int main(int argc, char **argv) {
     }
     double t_start = now_s(), t_last = t_start, t_rot = t_start;
     int frames = 0, total = 0;
+    double swap_s = 0;
     for (;;) {
         double t = now_s();
         /* advance rotation for next frame (glxgears: 70 degrees per second) */
@@ -521,7 +551,12 @@ int main(int argc, char **argv) {
         if (angle > 3600.0) angle -= 3600.0;
 
         draw();
-        if (present) {
+        if (egl_window) {
+            double swap_t = now_s();
+            if (!eglSwapBuffers(d, surf)) { say("GLGEARS_ERROR eglSwapBuffers failed egl=0x%x\n", eglGetError()); break; }
+            swap_s += now_s() - swap_t;
+            if (!x11_events()) break;
+        } else if (present) {
             glReadPixels(0, 0, w, h, read_rgba ? GL_RGBA : GL_BGRA, GL_UNSIGNED_BYTE, pixels);
             x11_present(pixels, w, h);
             if (!x11_events()) break;
@@ -536,6 +571,13 @@ int main(int argc, char **argv) {
             say("%d frames in %3.1f seconds = %6.3f FPS\n", frames, secs, fps);
             say("GLGEARS_FPS driver=%s renderer=\"%s\" fps=%.3f frames=%d seconds=%.2f present=%d size=%dx%d\n",
                 driver, renderer, fps, frames, secs, present, w, h);
+            if (egl_window) {
+                unsigned trips = 0; double trip_s = 0;
+                if (guest_xcb_stats) guest_xcb_stats(&trips, &trip_s);
+                say("GLGEARS_SWAP avg_ms=%.2f x_round_trips=%u x_ms=%.1f\n", 1000 * swap_s / frames, trips, 1000 * trip_s);
+                swap_s = 0;
+                if (guest_xcb_report) { char report[1024]; guest_xcb_report(report, sizeof report); say("GLGEARS_XREQ %s\n", report); }
+            }
             t_last = t; frames = 0;
             err = glGetError();
             if (err != GL_NO_ERROR) say("GLGEARS_GL_ERROR 0x%x\n", err);
@@ -545,10 +587,12 @@ int main(int argc, char **argv) {
     double elapsed = now_s() - t_start;
     say("GLGEARS_DONE driver=%s renderer=\"%s\" frames=%d seconds=%.2f avg_fps=%.3f present=%d size=%dx%d\n",
         driver, renderer, total, elapsed, elapsed > 0 ? total / elapsed : 0.0, present, w, h);
-    if (present) x11_close();
+    if (present && !egl_window) x11_close();
     free(pixels);
     eglMakeCurrent(d, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    if (surf != EGL_NO_SURFACE) eglDestroySurface(d, surf);
     eglDestroyContext(d, ctx);
     eglTerminate(d);
+    if (egl_window) x11_close();
     return 0;
 }

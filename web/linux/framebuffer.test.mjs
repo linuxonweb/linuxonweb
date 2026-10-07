@@ -172,11 +172,30 @@ test('WebGPU presents frames, and device loss or draw failure pauses for a choic
     frame();
     assert.equal(fake.state.draws, 2, 'the retained frame repaints on the next presenter');
     fake.state.failDraw = true;
+    new Uint8Array(memory.buffer)[0] = 1; // a changed frame; unchanged presents are not redrawn
     host.present(0,2,2,8,32); frame();
     assert.equal(host.diagnostics.awaitingChoice, true);
     assert.equal(host.diagnostics.failure, 'fake draw failure');
     assert.deepEqual(painted, [], 'a draw failure is not hidden by Canvas2D');
     assert.ok(events.filter(detail => detail.awaitingChoice).length >= 2);
+    host.close();
+  });
+});
+
+test('unchanged presents are skipped and only changed rows repaint', async () => {
+  await withHostGlobals(undefined, async frame => {
+    const memory = new WebAssembly.Memory({ initial: 1 });
+    const { canvas, painted } = fakeCanvas();
+    const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'canvas2d' });
+    await host.ready;
+    host.present(0,2,2,8,32); frame();
+    assert.equal(painted.length, 1, 'the first frame paints even when it is all zero');
+    host.present(0,2,2,8,32); frame();
+    assert.equal(host.diagnostics.unchanged, 1);
+    assert.equal(painted.length, 1);
+    new Uint8Array(memory.buffer)[8] = 1;
+    host.present(0,2,2,8,32); frame();
+    assert.equal(painted.length, 2);
     host.close();
   });
 });

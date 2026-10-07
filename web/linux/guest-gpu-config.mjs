@@ -1,10 +1,20 @@
 // Explicit desktop opt-in to the common Rust Vulkan service. Backend selection
 // still comes from the existing gpubackend parser; no setting is persisted.
 export function guestGpuOwnerConfig(search, gpuBackend = 'auto') {
-  if (new URLSearchParams(search).get('gpuruntime') !== 'rust')
-    return { vk: { backend: gpuBackend } };
+  if (new URLSearchParams(search).get('gpuruntime') !== 'rust') {
+    // The direct WebGPU renderer has 512 colour/depth targets and direct presentation.
+    // Large sampled colour targets are enabled only after the renderer's actual probe passes.
+    const options = new URLSearchParams(search), large = options.get('gpulargetargets') !== '0';
+    return { vk: { backend: gpuBackend, ...(large ? { allowLargeColorTargets: true,
+      ...(options.get('gpulargesampledtargets') !== '0' ? { allowLargeSampledTargets: true } : {}) } : {}) } };
+  }
   const wgpuBackend = ['auto', 'webgpu', 'webgl'].includes(gpuBackend) ? gpuBackend : 'auto';
-  return { vk: { backend: 'wgpu', wgpuBackend, allowResources: true } };
+  const options = new URLSearchParams(search);
+  return { vk: { backend: 'wgpu', wgpuBackend, allowResources: true,
+    ...(options.get('gpulargetargets') === '1' ? { allowLargeColorTargets: true } : {}),
+    ...(options.get('gpudepthstencil') === '1' ? { allowDepthStencil: true } : {}),
+    ...(options.get('gpulargesampledtargets') === '1' ? { allowLargeSampledTargets: true } : {}),
+  } };
 }
 
 // Match the accepted native Rust renderer's synchronous shader guard. The

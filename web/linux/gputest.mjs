@@ -9,7 +9,7 @@ export const GPUTEST_CPIO_URL = new URL('./gpu/gputest.cpio', import.meta.url);
 export const GPUTEST_RDINIT = '/gputest-init';
 /** Exact accepted translator artifacts (A4/A5; see tests/guest-vulkan-webgl/host.mjs). */
 export const GPUTEST_TRANSLATORS = Object.freeze({
-  wgsl: Object.freeze({ url: new URL('./gpu/wgsl.wasm', import.meta.url), sha256: '56b232004f08ae50381b6b8f68a0a9df521fa59ddfb1d1139c9c0dfcdcc2ebb2' }),
+  wgsl: Object.freeze({ url: new URL('./gpu/wgsl.wasm', import.meta.url), sha256: '5b78ad4937a5f04011fdc8000207009a5fb4d51f41fc1c7af6ce6a303e67fca5' }),
   glsl: Object.freeze({ url: new URL('./gpu/glsl.wasm', import.meta.url), sha256: '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5' }),
 });
 

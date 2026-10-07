@@ -48,7 +48,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_set_layout(VkDevice d,const VkDescr
     if(!out)return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
     if(!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO||i->pNext||i->flags){
-        if(i)ZINK_TRACE("set_layout REJECT flags=0x%x pNext=%d bindings=%u\n",(unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,i->bindingCount);
+        if(i)ZREJ("set_layout REJECT flags=0x%x pNext=%d bindings=%u\n",(unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,i->bindingCount);
         return VK_ERROR_INITIALIZATION_FAILED;}
     if(live->uniform_supported&&(i->bindingCount!=1||(i->pBindings&&i->pBindings[0].descriptorType!=VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)))
         return create_uniform_set_layout(i,out);
@@ -88,7 +88,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_pipeline_layout(VkDevice d,const Vk
     if(!graphics&&live->uniform_supported&&i->setLayoutCount&&i->pSetLayouts&&uniform_pipeline_layout(i,&uniforms))graphics=1;
     else if(!graphics&&(!live->compute_supported||i->setLayoutCount!=1||!i->pSetLayouts||
        !resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)||resource_get(RID(i->pSetLayouts[0]),R_SET_LAYOUT)->uniform)){
-        ZINK_TRACE("pipeline_layout REJECT sets=%u push=%u\n",i->setLayoutCount,push_size);return VK_ERROR_INITIALIZATION_FAILED;}
+        ZREJ("pipeline_layout REJECT sets=%u push=%u\n",i->setLayoutCount,push_size);return VK_ERROR_INITIALIZATION_FAILED;}
 #ifdef GUEST_VK_ZINK
     if(push_size&&!graphics)return VK_ERROR_INITIALIZATION_FAILED;
 #endif
@@ -151,7 +151,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_descriptor_pool(VkDevice d,const Vk
             else if(z.type>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)ok=0; /* other core types: capacity ignored */
         }
         if(ok){uniform=1;uniform_count=ub;sampler_count=cis;}
-        else ZINK_TRACE("create_descriptor_pool REJECT maxSets=%u sizes=%u\n",i->maxSets,i->poolSizeCount);
+        else ZREJ("create_descriptor_pool REJECT maxSets=%u sizes=%u\n",i->maxSets,i->poolSizeCount);
     }
 #endif
     if(!uniform&&(i->maxSets!=1||i->poolSizeCount!=1||

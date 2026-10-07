@@ -571,10 +571,57 @@ static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdClearDepthStencilImage(VkCommandBuf
     ZINK_TRACE("UNIMPL vkCmdClearDepthStencilImage\n");
     invalid_command(commandBuffer);
 }
+/* Opus a9: in-pass attachment clears. A full-area clear folds into the
+ * current begin record as CLEAR load ops; after draws, the pass is split
+ * (stored END + LOAD begin) so the clear applies at the split point. Partial
+ * rectangles cannot be expressed without a draw and are ignored with a trace. */
 static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdClearAttachments(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment* pAttachments, uint32_t rectCount, const VkClearRect* pRects) {
-    (void)commandBuffer;(void)attachmentCount;(void)pAttachments;(void)rectCount;(void)pRects;
-    ZINK_TRACE("UNIMPL vkCmdClearAttachments\n");
-    invalid_command(commandBuffer);
+    VkCommandBuffer cb=commandBuffer;
+    SELECT_CB(cb);
+    if(cb!=&command||command.state!=2)return;
+    if(!command.graphics.in_pass||!attachmentCount||!pAttachments||!rectCount||!pRects){invalid_command(cb);return;}
+    unsigned begin=command.count,draws=0;
+    while(begin>0&&command.commands[begin-1].op!=C_GRAPHICS_BEGIN){begin--;if(command.commands[begin].op==C_GRAPHICS_DRAW)draws++;}
+    if(!begin){invalid_command(cb);return;}
+    struct graphics_begin_record *b=&command.commands[begin-1].graphics.begin;
+    struct resource *image=graphics_begin_image(b);
+    if(!image){invalid_command(cb);return;}
+    unsigned full=0;
+    for(uint32_t n=0;n<rectCount;n++)
+        if(!pRects[n].rect.offset.x&&!pRects[n].rect.offset.y&&pRects[n].rect.extent.width>=image->width&&
+           pRects[n].rect.extent.height>=image->height&&!pRects[n].baseArrayLayer&&pRects[n].layerCount>=1)full=1;
+    if(!full){
+        ZINK_TRACE("clear_attachments PARTIAL ignored rects=%u first=%d,%d %ux%u image=%ux%u\n",rectCount,pRects[0].rect.offset.x,pRects[0].rect.offset.y,
+            pRects[0].rect.extent.width,pRects[0].rect.extent.height,image->width,image->height);
+        return;}
+    if(draws) {
+        struct graphics_begin_record next=*b;
+        b->pass.store=VK_ATTACHMENT_STORE_OP_STORE;
+        if(b->pass.depth_format){b->pass.depth_store=VK_ATTACHMENT_STORE_OP_STORE;b->pass.stencil_store=VK_ATTACHMENT_STORE_OP_STORE;}
+        next.pass.load=VK_ATTACHMENT_LOAD_OP_LOAD;next.pass.initial=b->pass.final;
+        if(next.pass.depth_format){next.pass.depth_load=VK_ATTACHMENT_LOAD_OP_LOAD;next.pass.depth_initial=b->pass.depth_final;
+            next.pass.stencil_load=VK_ATTACHMENT_LOAD_OP_LOAD;}
+        if(!record_command(cb,C_GRAPHICS_END))return;
+        struct recorded *r=record_command(cb,C_GRAPHICS_BEGIN);
+        if(!r)return;
+        r->graphics.begin=next;b=&r->graphics.begin;
+    }
+    for(uint32_t n=0;n<attachmentCount;n++) {
+        const VkClearAttachment *a=&pAttachments[n];
+        if((a->aspectMask&VK_IMAGE_ASPECT_COLOR_BIT)&&!a->colorAttachment) {
+            VkClearColorValue c=a->clearValue.color;
+            for(unsigned k=0;k<4;k++)c.float32[k]=c.float32[k]>=0?(c.float32[k]<=1?c.float32[k]:1):0;
+            b->pass.load=VK_ATTACHMENT_LOAD_OP_CLEAR;b->clear=c;
+        }
+        if((a->aspectMask&VK_IMAGE_ASPECT_DEPTH_BIT)&&b->pass.depth_format) {
+            float d=a->clearValue.depthStencil.depth;
+            b->pass.depth_load=VK_ATTACHMENT_LOAD_OP_CLEAR;b->depth_clear=d>=0?(d<=1?d:1):0;
+        }
+        if((a->aspectMask&VK_IMAGE_ASPECT_STENCIL_BIT)&&b->pass.stencil_present) {
+            b->pass.stencil_load=VK_ATTACHMENT_LOAD_OP_CLEAR;b->stencil_clear=a->clearValue.depthStencil.stencil&255u;
+        }
+    }
+    ZINK_TRACE("clear_attachments %s attachments=%u image=%ux%u\n",draws?"split":"folded",attachmentCount,image->width,image->height);
 }
 static VKAPI_ATTR void VKAPI_CALL zstub_vkCmdResolveImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve* pRegions) {
     (void)commandBuffer;(void)srcImage;(void)srcImageLayout;(void)dstImage;(void)dstImageLayout;(void)regionCount;(void)pRegions;
@@ -2628,2752 +2675,3365 @@ static VKAPI_ATTR void VKAPI_CALL zstub_vkGetRenderingAreaGranularityKHR(VkDevic
 }
 static PFN_vkCreateInstance zreal_vkCreateInstance;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance) {
-    ZINK_TRACE("CALL vkCreateInstance\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateInstance\n");
     return zreal_vkCreateInstance(pCreateInfo, pAllocator, pInstance);
 }
 static PFN_vkDestroyInstance zreal_vkDestroyInstance;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyInstance(VkInstance instance, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyInstance\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyInstance\n");
     zreal_vkDestroyInstance(instance, pAllocator);
 }
 static PFN_vkEnumeratePhysicalDevices zreal_vkEnumeratePhysicalDevices;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDevices(VkInstance instance, uint32_t* pPhysicalDeviceCount, VkPhysicalDevice* pPhysicalDevices) {
-    ZINK_TRACE("CALL vkEnumeratePhysicalDevices\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumeratePhysicalDevices\n");
     return zreal_vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
 }
 static PFN_vkGetPhysicalDeviceFeatures zreal_vkGetPhysicalDeviceFeatures;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures\n");
     zreal_vkGetPhysicalDeviceFeatures(physicalDevice, pFeatures);
 }
 static PFN_vkGetPhysicalDeviceFormatProperties zreal_vkGetPhysicalDeviceFormatProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties* pFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties\n");
     zreal_vkGetPhysicalDeviceFormatProperties(physicalDevice, format, pFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceImageFormatProperties zreal_vkGetPhysicalDeviceImageFormatProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceImageFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkImageFormatProperties* pImageFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties\n");
     return zreal_vkGetPhysicalDeviceImageFormatProperties(physicalDevice, format, type, tiling, usage, flags, pImageFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceProperties zreal_vkGetPhysicalDeviceProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceProperties\n");
     zreal_vkGetPhysicalDeviceProperties(physicalDevice, pProperties);
 }
 static PFN_vkGetPhysicalDeviceQueueFamilyProperties zreal_vkGetPhysicalDeviceQueueFamilyProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties\n");
     zreal_vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
 }
 static PFN_vkGetPhysicalDeviceMemoryProperties zreal_vkGetPhysicalDeviceMemoryProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties\n");
     zreal_vkGetPhysicalDeviceMemoryProperties(physicalDevice, pMemoryProperties);
 }
 static PFN_vkGetInstanceProcAddr zreal_vkGetInstanceProcAddr;
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL ztrace_vkGetInstanceProcAddr(VkInstance instance, const char* pName) {
-    ZINK_TRACE("CALL vkGetInstanceProcAddr\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetInstanceProcAddr\n");
     return zreal_vkGetInstanceProcAddr(instance, pName);
 }
 static PFN_vkGetDeviceProcAddr zreal_vkGetDeviceProcAddr;
 static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL ztrace_vkGetDeviceProcAddr(VkDevice device, const char* pName) {
-    ZINK_TRACE("CALL vkGetDeviceProcAddr\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceProcAddr\n");
     return zreal_vkGetDeviceProcAddr(device, pName);
 }
 static PFN_vkCreateDevice zreal_vkCreateDevice;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDevice* pDevice) {
-    ZINK_TRACE("CALL vkCreateDevice\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDevice\n");
     return zreal_vkCreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 }
 static PFN_vkDestroyDevice zreal_vkDestroyDevice;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDevice(VkDevice device, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDevice\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDevice\n");
     zreal_vkDestroyDevice(device, pAllocator);
 }
 static PFN_vkEnumerateInstanceExtensionProperties zreal_vkEnumerateInstanceExtensionProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumerateInstanceExtensionProperties(const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
-    ZINK_TRACE("CALL vkEnumerateInstanceExtensionProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumerateInstanceExtensionProperties\n");
     return zreal_vkEnumerateInstanceExtensionProperties(pLayerName, pPropertyCount, pProperties);
 }
 static PFN_vkEnumerateDeviceExtensionProperties zreal_vkEnumerateDeviceExtensionProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties) {
-    ZINK_TRACE("CALL vkEnumerateDeviceExtensionProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumerateDeviceExtensionProperties\n");
     return zreal_vkEnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
 }
 static PFN_vkEnumerateInstanceLayerProperties zreal_vkEnumerateInstanceLayerProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumerateInstanceLayerProperties(uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
-    ZINK_TRACE("CALL vkEnumerateInstanceLayerProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumerateInstanceLayerProperties\n");
     return zreal_vkEnumerateInstanceLayerProperties(pPropertyCount, pProperties);
 }
 static PFN_vkEnumerateDeviceLayerProperties zreal_vkEnumerateDeviceLayerProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumerateDeviceLayerProperties(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkLayerProperties* pProperties) {
-    ZINK_TRACE("CALL vkEnumerateDeviceLayerProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumerateDeviceLayerProperties\n");
     return zreal_vkEnumerateDeviceLayerProperties(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetDeviceQueue zreal_vkGetDeviceQueue;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceQueue(VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, VkQueue* pQueue) {
-    ZINK_TRACE("CALL vkGetDeviceQueue\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceQueue\n");
     zreal_vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
 }
 static PFN_vkQueueSubmit zreal_vkQueueSubmit;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence) {
-    ZINK_TRACE("CALL vkQueueSubmit\n");
-    return zreal_vkQueueSubmit(queue, submitCount, pSubmits, fence);
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[0]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueSubmit\n");
+    VkResult zr_ = zreal_vkQueueSubmit(queue, submitCount, pSubmits, fence);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 0; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    { static unsigned subfails; if ((int)zr_ < 0 && subfails++ < 3) { char e[256]; int en = snprintf(e, sizeof e, "GUEST_VK_SUBFAIL %d rejcount=%u\n", (int)zr_, zrej_count); write(2, e, en); for (unsigned q = 0; q < 8 && q < zrej_count; q++) { en = snprintf(e, sizeof e, "GUEST_VK_REJ%u %s", q, zrej_buf[q]); write(2, e, en < (int)sizeof e ? en : (int)sizeof e - 1); } } }
+    return zr_;
 }
 static PFN_vkQueueWaitIdle zreal_vkQueueWaitIdle;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueWaitIdle(VkQueue queue) {
-    ZINK_TRACE("CALL vkQueueWaitIdle\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueWaitIdle\n");
     return zreal_vkQueueWaitIdle(queue);
 }
 static PFN_vkDeviceWaitIdle zreal_vkDeviceWaitIdle;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDeviceWaitIdle(VkDevice device) {
-    ZINK_TRACE("CALL vkDeviceWaitIdle\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDeviceWaitIdle\n");
     return zreal_vkDeviceWaitIdle(device);
 }
 static PFN_vkAllocateMemory zreal_vkAllocateMemory;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAllocateMemory(VkDevice device, const VkMemoryAllocateInfo* pAllocateInfo, const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMemory) {
-    ZINK_TRACE("CALL vkAllocateMemory\n");
-    return zreal_vkAllocateMemory(device, pAllocateInfo, pAllocator, pMemory);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAllocateMemory\n");
+    VkResult zr_ = zreal_vkAllocateMemory(device, pAllocateInfo, pAllocator, pMemory);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 6; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkFreeMemory zreal_vkFreeMemory;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkFreeMemory(VkDevice device, VkDeviceMemory memory, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkFreeMemory\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkFreeMemory\n");
     zreal_vkFreeMemory(device, memory, pAllocator);
 }
 static PFN_vkMapMemory zreal_vkMapMemory;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkMapMemory(VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void** ppData) {
-    ZINK_TRACE("CALL vkMapMemory\n");
-    return zreal_vkMapMemory(device, memory, offset, size, flags, ppData);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkMapMemory\n");
+    VkResult zr_ = zreal_vkMapMemory(device, memory, offset, size, flags, ppData);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 8; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkUnmapMemory zreal_vkUnmapMemory;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkUnmapMemory(VkDevice device, VkDeviceMemory memory) {
-    ZINK_TRACE("CALL vkUnmapMemory\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkUnmapMemory\n");
     zreal_vkUnmapMemory(device, memory);
 }
 static PFN_vkFlushMappedMemoryRanges zreal_vkFlushMappedMemoryRanges;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkFlushMappedMemoryRanges(VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges) {
-    ZINK_TRACE("CALL vkFlushMappedMemoryRanges\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkFlushMappedMemoryRanges\n");
     return zreal_vkFlushMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
 }
 static PFN_vkInvalidateMappedMemoryRanges zreal_vkInvalidateMappedMemoryRanges;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkInvalidateMappedMemoryRanges(VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges) {
-    ZINK_TRACE("CALL vkInvalidateMappedMemoryRanges\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkInvalidateMappedMemoryRanges\n");
     return zreal_vkInvalidateMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
 }
 static PFN_vkGetDeviceMemoryCommitment zreal_vkGetDeviceMemoryCommitment;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceMemoryCommitment(VkDevice device, VkDeviceMemory memory, VkDeviceSize* pCommittedMemoryInBytes) {
-    ZINK_TRACE("CALL vkGetDeviceMemoryCommitment\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceMemoryCommitment\n");
     zreal_vkGetDeviceMemoryCommitment(device, memory, pCommittedMemoryInBytes);
 }
 static PFN_vkBindBufferMemory zreal_vkBindBufferMemory;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindBufferMemory(VkDevice device, VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset) {
-    ZINK_TRACE("CALL vkBindBufferMemory\n");
-    return zreal_vkBindBufferMemory(device, buffer, memory, memoryOffset);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindBufferMemory\n");
+    VkResult zr_ = zreal_vkBindBufferMemory(device, buffer, memory, memoryOffset);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 7; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkBindImageMemory zreal_vkBindImageMemory;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindImageMemory(VkDevice device, VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset) {
-    ZINK_TRACE("CALL vkBindImageMemory\n");
-    return zreal_vkBindImageMemory(device, image, memory, memoryOffset);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindImageMemory\n");
+    VkResult zr_ = zreal_vkBindImageMemory(device, image, memory, memoryOffset);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 11; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkGetBufferMemoryRequirements zreal_vkGetBufferMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetBufferMemoryRequirements(VkDevice device, VkBuffer buffer, VkMemoryRequirements* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetBufferMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferMemoryRequirements\n");
     zreal_vkGetBufferMemoryRequirements(device, buffer, pMemoryRequirements);
 }
 static PFN_vkGetImageMemoryRequirements zreal_vkGetImageMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageMemoryRequirements(VkDevice device, VkImage image, VkMemoryRequirements* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageMemoryRequirements\n");
     zreal_vkGetImageMemoryRequirements(device, image, pMemoryRequirements);
 }
 static PFN_vkGetImageSparseMemoryRequirements zreal_vkGetImageSparseMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSparseMemoryRequirements(VkDevice device, VkImage image, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements* pSparseMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements\n");
     zreal_vkGetImageSparseMemoryRequirements(device, image, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
 }
 static PFN_vkGetPhysicalDeviceSparseImageFormatProperties zreal_vkGetPhysicalDeviceSparseImageFormatProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceSparseImageFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkImageTiling tiling, uint32_t* pPropertyCount, VkSparseImageFormatProperties* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties\n");
     zreal_vkGetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, type, samples, usage, tiling, pPropertyCount, pProperties);
 }
 static PFN_vkQueueBindSparse zreal_vkQueueBindSparse;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueBindSparse(VkQueue queue, uint32_t bindInfoCount, const VkBindSparseInfo* pBindInfo, VkFence fence) {
-    ZINK_TRACE("CALL vkQueueBindSparse\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueBindSparse\n");
     return zreal_vkQueueBindSparse(queue, bindInfoCount, pBindInfo, fence);
 }
 static PFN_vkCreateFence zreal_vkCreateFence;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateFence(VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
-    ZINK_TRACE("CALL vkCreateFence\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateFence\n");
     return zreal_vkCreateFence(device, pCreateInfo, pAllocator, pFence);
 }
 static PFN_vkDestroyFence zreal_vkDestroyFence;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyFence(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyFence\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyFence\n");
     zreal_vkDestroyFence(device, fence, pAllocator);
 }
 static PFN_vkResetFences zreal_vkResetFences;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkResetFences(VkDevice device, uint32_t fenceCount, const VkFence* pFences) {
-    ZINK_TRACE("CALL vkResetFences\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetFences\n");
     return zreal_vkResetFences(device, fenceCount, pFences);
 }
 static PFN_vkGetFenceStatus zreal_vkGetFenceStatus;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetFenceStatus(VkDevice device, VkFence fence) {
-    ZINK_TRACE("CALL vkGetFenceStatus\n");
-    return zreal_vkGetFenceStatus(device, fence);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetFenceStatus\n");
+    VkResult zr_ = zreal_vkGetFenceStatus(device, fence);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 9; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkWaitForFences zreal_vkWaitForFences;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitForFences(VkDevice device, uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll, uint64_t timeout) {
-    ZINK_TRACE("CALL vkWaitForFences\n");
-    return zreal_vkWaitForFences(device, fenceCount, pFences, waitAll, timeout);
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[7]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWaitForFences\n");
+    VkResult zr_ = zreal_vkWaitForFences(device, fenceCount, pFences, waitAll, timeout);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 3; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkCreateSemaphore zreal_vkCreateSemaphore;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSemaphore(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore) {
-    ZINK_TRACE("CALL vkCreateSemaphore\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSemaphore\n");
     return zreal_vkCreateSemaphore(device, pCreateInfo, pAllocator, pSemaphore);
 }
 static PFN_vkDestroySemaphore zreal_vkDestroySemaphore;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySemaphore(VkDevice device, VkSemaphore semaphore, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySemaphore\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySemaphore\n");
     zreal_vkDestroySemaphore(device, semaphore, pAllocator);
 }
 static PFN_vkCreateEvent zreal_vkCreateEvent;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateEvent(VkDevice device, const VkEventCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkEvent* pEvent) {
-    ZINK_TRACE("CALL vkCreateEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateEvent\n");
     return zreal_vkCreateEvent(device, pCreateInfo, pAllocator, pEvent);
 }
 static PFN_vkDestroyEvent zreal_vkDestroyEvent;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyEvent(VkDevice device, VkEvent event, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyEvent\n");
     zreal_vkDestroyEvent(device, event, pAllocator);
 }
 static PFN_vkGetEventStatus zreal_vkGetEventStatus;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetEventStatus(VkDevice device, VkEvent event) {
-    ZINK_TRACE("CALL vkGetEventStatus\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetEventStatus\n");
     return zreal_vkGetEventStatus(device, event);
 }
 static PFN_vkSetEvent zreal_vkSetEvent;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetEvent(VkDevice device, VkEvent event) {
-    ZINK_TRACE("CALL vkSetEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetEvent\n");
     return zreal_vkSetEvent(device, event);
 }
 static PFN_vkResetEvent zreal_vkResetEvent;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkResetEvent(VkDevice device, VkEvent event) {
-    ZINK_TRACE("CALL vkResetEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetEvent\n");
     return zreal_vkResetEvent(device, event);
 }
 static PFN_vkCreateQueryPool zreal_vkCreateQueryPool;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateQueryPool(VkDevice device, const VkQueryPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkQueryPool* pQueryPool) {
-    ZINK_TRACE("CALL vkCreateQueryPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateQueryPool\n");
     return zreal_vkCreateQueryPool(device, pCreateInfo, pAllocator, pQueryPool);
 }
 static PFN_vkDestroyQueryPool zreal_vkDestroyQueryPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyQueryPool(VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyQueryPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyQueryPool\n");
     zreal_vkDestroyQueryPool(device, queryPool, pAllocator);
 }
 static PFN_vkGetQueryPoolResults zreal_vkGetQueryPoolResults;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetQueryPoolResults(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, VkDeviceSize stride, VkQueryResultFlags flags) {
-    ZINK_TRACE("CALL vkGetQueryPoolResults\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetQueryPoolResults\n");
     return zreal_vkGetQueryPoolResults(device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags);
 }
 static PFN_vkCreateBuffer zreal_vkCreateBuffer;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateBuffer(VkDevice device, const VkBufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBuffer* pBuffer) {
-    ZINK_TRACE("CALL vkCreateBuffer\n");
-    return zreal_vkCreateBuffer(device, pCreateInfo, pAllocator, pBuffer);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateBuffer\n");
+    VkResult zr_ = zreal_vkCreateBuffer(device, pCreateInfo, pAllocator, pBuffer);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 5; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkDestroyBuffer zreal_vkDestroyBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyBuffer\n");
     zreal_vkDestroyBuffer(device, buffer, pAllocator);
 }
 static PFN_vkCreateBufferView zreal_vkCreateBufferView;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateBufferView(VkDevice device, const VkBufferViewCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBufferView* pView) {
-    ZINK_TRACE("CALL vkCreateBufferView\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateBufferView\n");
     return zreal_vkCreateBufferView(device, pCreateInfo, pAllocator, pView);
 }
 static PFN_vkDestroyBufferView zreal_vkDestroyBufferView;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyBufferView(VkDevice device, VkBufferView bufferView, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyBufferView\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyBufferView\n");
     zreal_vkDestroyBufferView(device, bufferView, pAllocator);
 }
 static PFN_vkCreateImage zreal_vkCreateImage;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateImage(VkDevice device, const VkImageCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkImage* pImage) {
-    ZINK_TRACE("CALL vkCreateImage\n");
-    return zreal_vkCreateImage(device, pCreateInfo, pAllocator, pImage);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateImage\n");
+    VkResult zr_ = zreal_vkCreateImage(device, pCreateInfo, pAllocator, pImage);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 10; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkDestroyImage zreal_vkDestroyImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyImage(VkDevice device, VkImage image, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyImage\n");
     zreal_vkDestroyImage(device, image, pAllocator);
 }
 static PFN_vkGetImageSubresourceLayout zreal_vkGetImageSubresourceLayout;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSubresourceLayout(VkDevice device, VkImage image, const VkImageSubresource* pSubresource, VkSubresourceLayout* pLayout) {
-    ZINK_TRACE("CALL vkGetImageSubresourceLayout\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageSubresourceLayout\n");
     zreal_vkGetImageSubresourceLayout(device, image, pSubresource, pLayout);
 }
 static PFN_vkCreateImageView zreal_vkCreateImageView;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateImageView(VkDevice device, const VkImageViewCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkImageView* pView) {
-    ZINK_TRACE("CALL vkCreateImageView\n");
-    return zreal_vkCreateImageView(device, pCreateInfo, pAllocator, pView);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateImageView\n");
+    { static unsigned calls; calls++; if (calls <= 3 || !(calls & 1023)) { char m[96]; int n = snprintf(m, sizeof m, "GUEST_VK_CALL vkCreateImageView #%u failcount=%u rescount=%u\n", calls, zink_fail_count, (unsigned)resource_count); write(2, m, n); } }
+    VkResult zr = zreal_vkCreateImageView(device, pCreateInfo, pAllocator, pView);
+    if (zr) { char m[256]; const VkImageViewCreateInfo *i = pCreateInfo; struct resource *im = i ? resource_get(RID(i->image), R_IMAGE) : NULL;
+        static unsigned fails; if (!(fails++ & 1023)) { char e[256]; int en = snprintf(e, sizeof e, "GUEST_VK_ALLOCLOG"); for (unsigned q = 0; q < zalloc_n && q < 24; q++) en += snprintf(e + en, sizeof e - en, " %u@%u/%u", zalloc_log[q][0], zalloc_log[q][1], zalloc_log[q][2]); e[en++] = 10; write(2, e, en); en = snprintf(e, sizeof e, "GUEST_VK_ERRLOG"); for (unsigned q = 0; q < zelog_n; q++) en += snprintf(e + en, sizeof e - en, " f%u=%d@%u", zelog[q][0], (int)zelog[q][1], zelog[q][2]); e[en++] = 10; write(2, e, en); en = snprintf(e, sizeof e, "GUEST_VK_REJCOUNT %u", zrej_count); e[en++] = 10; write(2, e, en); for (unsigned q = 0; q < 8 && q < zrej_count; q++) { en = snprintf(e, sizeof e, "GUEST_VK_REJ%u %s", q, zrej_buf[q]); write(2, e, en < (int)sizeof e ? en : (int)sizeof e - 1); } en = snprintf(e, sizeof e, "GUEST_VK_DRAWLOG"); for (unsigned q = 0; q < zdlog_n; q++) en += snprintf(e + en, sizeof e - en, " %u+%u*%u", zdlog[q][0], zdlog[q][1], zdlog[q][2]); e[en++] = 10; write(2, e, en); }
+        if (!(fails & 1023) || fails == 1) { int c = snprintf(m, sizeof m, "GUEST_VK_COUNTS submit=%u submit2=%u present=%u poolcreate=%u poolreset=%u semwait=%u semvalue=%u fencewait=%u\n", zcount[0], zcount[1], zcount[2], zcount[3], zcount[4], zcount[5], zcount[6], zcount[7]); write(2, m, c);
+            c = snprintf(m, sizeof m, "GUEST_VK_POOLS"); for (unsigned a = 0; a < MAX_RES && c < (int)sizeof m - 24; a++) if (resources[a].kind == R_DESC_POOL) { unsigned u = 0;
+                for (unsigned b = 0; b < MAX_RES; b++) if (resources[b].kind == R_DESC_SET && resources[b].parent == resources[a].id) u++;
+                c += snprintf(m + c, sizeof m - c, " %u/%u", u, resources[a].width); }
+            m[c++] = '\n'; write(2, m, c); }
+        int n = snprintf(m, sizeof m, "GUEST_VK_FAIL vkCreateImageView -> %d failcount=%u rescount=%u dev=%d out=%d type=%d fmt=%d pNext=%d flags=%x img=%d host=%u\n", (int)zr,
+            zink_fail_count, (unsigned)resource_count, device_valid(device), pView != NULL, i ? (int)i->viewType : -1, i ? (int)i->format : -1, i && i->pNext, i ? i->flags : 0, im != NULL, im ? im->host : 0);
+        write(2, m, n); }
+    return zr;
 }
 static PFN_vkDestroyImageView zreal_vkDestroyImageView;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyImageView(VkDevice device, VkImageView imageView, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyImageView\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyImageView\n");
     zreal_vkDestroyImageView(device, imageView, pAllocator);
 }
 static PFN_vkCreateShaderModule zreal_vkCreateShaderModule;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkShaderModule* pShaderModule) {
-    ZINK_TRACE("CALL vkCreateShaderModule\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateShaderModule\n");
     return zreal_vkCreateShaderModule(device, pCreateInfo, pAllocator, pShaderModule);
 }
 static PFN_vkDestroyShaderModule zreal_vkDestroyShaderModule;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyShaderModule(VkDevice device, VkShaderModule shaderModule, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyShaderModule\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyShaderModule\n");
     zreal_vkDestroyShaderModule(device, shaderModule, pAllocator);
 }
 static PFN_vkCreatePipelineCache zreal_vkCreatePipelineCache;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePipelineCache(VkDevice device, const VkPipelineCacheCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPipelineCache* pPipelineCache) {
-    ZINK_TRACE("CALL vkCreatePipelineCache\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreatePipelineCache\n");
     return zreal_vkCreatePipelineCache(device, pCreateInfo, pAllocator, pPipelineCache);
 }
 static PFN_vkDestroyPipelineCache zreal_vkDestroyPipelineCache;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPipelineCache(VkDevice device, VkPipelineCache pipelineCache, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyPipelineCache\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyPipelineCache\n");
     zreal_vkDestroyPipelineCache(device, pipelineCache, pAllocator);
 }
 static PFN_vkGetPipelineCacheData zreal_vkGetPipelineCacheData;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineCacheData(VkDevice device, VkPipelineCache pipelineCache, size_t* pDataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetPipelineCacheData\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPipelineCacheData\n");
     return zreal_vkGetPipelineCacheData(device, pipelineCache, pDataSize, pData);
 }
 static PFN_vkMergePipelineCaches zreal_vkMergePipelineCaches;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkMergePipelineCaches(VkDevice device, VkPipelineCache dstCache, uint32_t srcCacheCount, const VkPipelineCache* pSrcCaches) {
-    ZINK_TRACE("CALL vkMergePipelineCaches\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkMergePipelineCaches\n");
     return zreal_vkMergePipelineCaches(device, dstCache, srcCacheCount, pSrcCaches);
 }
 static PFN_vkCreateGraphicsPipelines zreal_vkCreateGraphicsPipelines;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkGraphicsPipelineCreateInfo* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
-    ZINK_TRACE("CALL vkCreateGraphicsPipelines\n");
-    return zreal_vkCreateGraphicsPipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateGraphicsPipelines\n");
+    VkResult zr_ = zreal_vkCreateGraphicsPipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 12; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkCreateComputePipelines zreal_vkCreateComputePipelines;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateComputePipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkComputePipelineCreateInfo* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
-    ZINK_TRACE("CALL vkCreateComputePipelines\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateComputePipelines\n");
     return zreal_vkCreateComputePipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
 }
 static PFN_vkDestroyPipeline zreal_vkDestroyPipeline;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPipeline(VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyPipeline\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyPipeline\n");
     zreal_vkDestroyPipeline(device, pipeline, pAllocator);
 }
 static PFN_vkCreatePipelineLayout zreal_vkCreatePipelineLayout;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePipelineLayout(VkDevice device, const VkPipelineLayoutCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPipelineLayout* pPipelineLayout) {
-    ZINK_TRACE("CALL vkCreatePipelineLayout\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreatePipelineLayout\n");
     return zreal_vkCreatePipelineLayout(device, pCreateInfo, pAllocator, pPipelineLayout);
 }
 static PFN_vkDestroyPipelineLayout zreal_vkDestroyPipelineLayout;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPipelineLayout(VkDevice device, VkPipelineLayout pipelineLayout, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyPipelineLayout\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyPipelineLayout\n");
     zreal_vkDestroyPipelineLayout(device, pipelineLayout, pAllocator);
 }
 static PFN_vkCreateSampler zreal_vkCreateSampler;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSampler(VkDevice device, const VkSamplerCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSampler* pSampler) {
-    ZINK_TRACE("CALL vkCreateSampler\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSampler\n");
     return zreal_vkCreateSampler(device, pCreateInfo, pAllocator, pSampler);
 }
 static PFN_vkDestroySampler zreal_vkDestroySampler;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySampler(VkDevice device, VkSampler sampler, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySampler\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySampler\n");
     zreal_vkDestroySampler(device, sampler, pAllocator);
 }
 static PFN_vkCreateDescriptorSetLayout zreal_vkCreateDescriptorSetLayout;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDescriptorSetLayout(VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorSetLayout* pSetLayout) {
-    ZINK_TRACE("CALL vkCreateDescriptorSetLayout\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDescriptorSetLayout\n");
     return zreal_vkCreateDescriptorSetLayout(device, pCreateInfo, pAllocator, pSetLayout);
 }
 static PFN_vkDestroyDescriptorSetLayout zreal_vkDestroyDescriptorSetLayout;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout descriptorSetLayout, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDescriptorSetLayout\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDescriptorSetLayout\n");
     zreal_vkDestroyDescriptorSetLayout(device, descriptorSetLayout, pAllocator);
 }
 static PFN_vkCreateDescriptorPool zreal_vkCreateDescriptorPool;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDescriptorPool(VkDevice device, const VkDescriptorPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorPool* pDescriptorPool) {
-    ZINK_TRACE("CALL vkCreateDescriptorPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[3]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDescriptorPool\n");
     return zreal_vkCreateDescriptorPool(device, pCreateInfo, pAllocator, pDescriptorPool);
 }
 static PFN_vkDestroyDescriptorPool zreal_vkDestroyDescriptorPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDescriptorPool(VkDevice device, VkDescriptorPool descriptorPool, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDescriptorPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDescriptorPool\n");
     zreal_vkDestroyDescriptorPool(device, descriptorPool, pAllocator);
 }
 static PFN_vkResetDescriptorPool zreal_vkResetDescriptorPool;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkResetDescriptorPool(VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorPoolResetFlags flags) {
-    ZINK_TRACE("CALL vkResetDescriptorPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[4]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetDescriptorPool\n");
     return zreal_vkResetDescriptorPool(device, descriptorPool, flags);
 }
 static PFN_vkAllocateDescriptorSets zreal_vkAllocateDescriptorSets;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAllocateDescriptorSets(VkDevice device, const VkDescriptorSetAllocateInfo* pAllocateInfo, VkDescriptorSet* pDescriptorSets) {
-    ZINK_TRACE("CALL vkAllocateDescriptorSets\n");
-    return zreal_vkAllocateDescriptorSets(device, pAllocateInfo, pDescriptorSets);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAllocateDescriptorSets\n");
+    { static unsigned calls; calls++; if (calls <= 3 || !(calls & 1023)) { char m[96]; int n = snprintf(m, sizeof m, "GUEST_VK_CALL vkAllocateDescriptorSets #%u failcount=%u rescount=%u count=%u\n", calls, zink_fail_count, (unsigned)resource_count, pAllocateInfo ? pAllocateInfo->descriptorSetCount : 0); write(2, m, n); } }
+    VkResult zr = zreal_vkAllocateDescriptorSets(device, pAllocateInfo, pDescriptorSets);
+    if (!zr && zalloc_n < 64) { zalloc_log[zalloc_n][0] = pAllocateInfo->descriptorSetCount; zalloc_log[zalloc_n][1] = zcount[0]; zalloc_log[zalloc_n][2] = zdraws[0] + zdraws[1]; zalloc_n++; }
+    if (zr) { char m[256]; const VkDescriptorSetAllocateInfo *i = pAllocateInfo; struct resource *p = i ? resource_get(RID(i->descriptorPool), R_DESC_POOL) : NULL;
+        int n = snprintf(m, sizeof m, "GUEST_VK_FAIL vkAllocateDescriptorSets -> %d failcount=%u rescount=%u dev=%d count=%u pool=%d uniform=%d pNext=%d\n", (int)zr,
+            zink_fail_count, (unsigned)resource_count, device_valid(device), i ? i->descriptorSetCount : 0, p != NULL, p ? p->uniform : -1, i && i->pNext);
+        write(2, m, n); static int hist; if (!hist++) { unsigned c[16] = {0}, per_pool = 0; for (unsigned k = 0; k < MAX_RES; k++) { c[resources[k].kind & 15]++; if (p && resources[k].kind == R_DESC_SET && resources[k].parent == p->id) per_pool++; }
+            n = snprintf(m, sizeof m, "GUEST_VK_HIST pool_sets=%u", per_pool); for (unsigned k = 1; k < 16; k++) if (c[k]) n += snprintf(m + n, sizeof m - n, " %u:%u", k, c[k]); m[n++] = '\n'; write(2, m, n); } }
+    return zr;
 }
 static PFN_vkFreeDescriptorSets zreal_vkFreeDescriptorSets;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkFreeDescriptorSets(VkDevice device, VkDescriptorPool descriptorPool, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets) {
-    ZINK_TRACE("CALL vkFreeDescriptorSets\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkFreeDescriptorSets\n");
     return zreal_vkFreeDescriptorSets(device, descriptorPool, descriptorSetCount, pDescriptorSets);
 }
 static PFN_vkUpdateDescriptorSets zreal_vkUpdateDescriptorSets;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkUpdateDescriptorSets(VkDevice device, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies) {
-    ZINK_TRACE("CALL vkUpdateDescriptorSets\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkUpdateDescriptorSets\n");
     zreal_vkUpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies);
 }
 static PFN_vkCreateFramebuffer zreal_vkCreateFramebuffer;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateFramebuffer(VkDevice device, const VkFramebufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFramebuffer* pFramebuffer) {
-    ZINK_TRACE("CALL vkCreateFramebuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateFramebuffer\n");
     return zreal_vkCreateFramebuffer(device, pCreateInfo, pAllocator, pFramebuffer);
 }
 static PFN_vkDestroyFramebuffer zreal_vkDestroyFramebuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyFramebuffer(VkDevice device, VkFramebuffer framebuffer, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyFramebuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyFramebuffer\n");
     zreal_vkDestroyFramebuffer(device, framebuffer, pAllocator);
 }
 static PFN_vkCreateRenderPass zreal_vkCreateRenderPass;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRenderPass(VkDevice device, const VkRenderPassCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
-    ZINK_TRACE("CALL vkCreateRenderPass\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateRenderPass\n");
     return zreal_vkCreateRenderPass(device, pCreateInfo, pAllocator, pRenderPass);
 }
 static PFN_vkDestroyRenderPass zreal_vkDestroyRenderPass;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyRenderPass(VkDevice device, VkRenderPass renderPass, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyRenderPass\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyRenderPass\n");
     zreal_vkDestroyRenderPass(device, renderPass, pAllocator);
 }
 static PFN_vkGetRenderAreaGranularity zreal_vkGetRenderAreaGranularity;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetRenderAreaGranularity(VkDevice device, VkRenderPass renderPass, VkExtent2D* pGranularity) {
-    ZINK_TRACE("CALL vkGetRenderAreaGranularity\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRenderAreaGranularity\n");
     zreal_vkGetRenderAreaGranularity(device, renderPass, pGranularity);
 }
 static PFN_vkCreateCommandPool zreal_vkCreateCommandPool;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateCommandPool(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool) {
-    ZINK_TRACE("CALL vkCreateCommandPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateCommandPool\n");
     return zreal_vkCreateCommandPool(device, pCreateInfo, pAllocator, pCommandPool);
 }
 static PFN_vkDestroyCommandPool zreal_vkDestroyCommandPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyCommandPool(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyCommandPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyCommandPool\n");
     zreal_vkDestroyCommandPool(device, commandPool, pAllocator);
 }
 static PFN_vkResetCommandPool zreal_vkResetCommandPool;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkResetCommandPool(VkDevice device, VkCommandPool commandPool, VkCommandPoolResetFlags flags) {
-    ZINK_TRACE("CALL vkResetCommandPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetCommandPool\n");
     return zreal_vkResetCommandPool(device, commandPool, flags);
 }
 static PFN_vkAllocateCommandBuffers zreal_vkAllocateCommandBuffers;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers) {
-    ZINK_TRACE("CALL vkAllocateCommandBuffers\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAllocateCommandBuffers\n");
     return zreal_vkAllocateCommandBuffers(device, pAllocateInfo, pCommandBuffers);
 }
 static PFN_vkFreeCommandBuffers zreal_vkFreeCommandBuffers;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkFreeCommandBuffers(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers) {
-    ZINK_TRACE("CALL vkFreeCommandBuffers\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkFreeCommandBuffers\n");
     zreal_vkFreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers);
 }
 static PFN_vkBeginCommandBuffer zreal_vkBeginCommandBuffer;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBeginCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo) {
-    ZINK_TRACE("CALL vkBeginCommandBuffer\n");
-    return zreal_vkBeginCommandBuffer(commandBuffer, pBeginInfo);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBeginCommandBuffer\n");
+    VkResult zr_ = zreal_vkBeginCommandBuffer(commandBuffer, pBeginInfo);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 14; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkEndCommandBuffer zreal_vkEndCommandBuffer;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEndCommandBuffer(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkEndCommandBuffer\n");
-    return zreal_vkEndCommandBuffer(commandBuffer);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEndCommandBuffer\n");
+    VkResult zr_ = zreal_vkEndCommandBuffer(commandBuffer);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 13; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    { static unsigned endfails; if ((int)zr_ < 0 && endfails++ < 3) { char e[256]; int en = snprintf(e, sizeof e, "GUEST_VK_ENDFAIL %d rejcount=%u\n", (int)zr_, zrej_count); write(2, e, en); for (unsigned q = 0; q < 8 && q < zrej_count; q++) { en = snprintf(e, sizeof e, "GUEST_VK_REJ%u %s", q, zrej_buf[q]); write(2, e, en < (int)sizeof e ? en : (int)sizeof e - 1); } } }
+    return zr_;
 }
 static PFN_vkResetCommandBuffer zreal_vkResetCommandBuffer;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkResetCommandBuffer(VkCommandBuffer commandBuffer, VkCommandBufferResetFlags flags) {
-    ZINK_TRACE("CALL vkResetCommandBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetCommandBuffer\n");
     return zreal_vkResetCommandBuffer(commandBuffer, flags);
 }
 static PFN_vkCmdBindPipeline zreal_vkCmdBindPipeline;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindPipeline(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline) {
-    ZINK_TRACE("CALL vkCmdBindPipeline\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindPipeline\n");
     zreal_vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline);
 }
 static PFN_vkCmdSetViewport zreal_vkCmdSetViewport;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewport(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewport* pViewports) {
-    ZINK_TRACE("CALL vkCmdSetViewport\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewport\n");
     zreal_vkCmdSetViewport(commandBuffer, firstViewport, viewportCount, pViewports);
 }
 static PFN_vkCmdSetScissor zreal_vkCmdSetScissor;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetScissor(VkCommandBuffer commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const VkRect2D* pScissors) {
-    ZINK_TRACE("CALL vkCmdSetScissor\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetScissor\n");
     zreal_vkCmdSetScissor(commandBuffer, firstScissor, scissorCount, pScissors);
 }
 static PFN_vkCmdSetLineWidth zreal_vkCmdSetLineWidth;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineWidth(VkCommandBuffer commandBuffer, float lineWidth) {
-    ZINK_TRACE("CALL vkCmdSetLineWidth\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLineWidth\n");
     zreal_vkCmdSetLineWidth(commandBuffer, lineWidth);
 }
 static PFN_vkCmdSetDepthBias zreal_vkCmdSetDepthBias;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBias(VkCommandBuffer commandBuffer, float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor) {
-    ZINK_TRACE("CALL vkCmdSetDepthBias\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBias\n");
     zreal_vkCmdSetDepthBias(commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor);
 }
 static PFN_vkCmdSetBlendConstants zreal_vkCmdSetBlendConstants;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetBlendConstants(VkCommandBuffer commandBuffer, const float blendConstants[4]) {
-    ZINK_TRACE("CALL vkCmdSetBlendConstants\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetBlendConstants\n");
     zreal_vkCmdSetBlendConstants(commandBuffer, blendConstants);
 }
 static PFN_vkCmdSetDepthBounds zreal_vkCmdSetDepthBounds;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBounds(VkCommandBuffer commandBuffer, float minDepthBounds, float maxDepthBounds) {
-    ZINK_TRACE("CALL vkCmdSetDepthBounds\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBounds\n");
     zreal_vkCmdSetDepthBounds(commandBuffer, minDepthBounds, maxDepthBounds);
 }
 static PFN_vkCmdSetStencilCompareMask zreal_vkCmdSetStencilCompareMask;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilCompareMask(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t compareMask) {
-    ZINK_TRACE("CALL vkCmdSetStencilCompareMask\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilCompareMask\n");
     zreal_vkCmdSetStencilCompareMask(commandBuffer, faceMask, compareMask);
 }
 static PFN_vkCmdSetStencilWriteMask zreal_vkCmdSetStencilWriteMask;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilWriteMask(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t writeMask) {
-    ZINK_TRACE("CALL vkCmdSetStencilWriteMask\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilWriteMask\n");
     zreal_vkCmdSetStencilWriteMask(commandBuffer, faceMask, writeMask);
 }
 static PFN_vkCmdSetStencilReference zreal_vkCmdSetStencilReference;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilReference(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t reference) {
-    ZINK_TRACE("CALL vkCmdSetStencilReference\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilReference\n");
     zreal_vkCmdSetStencilReference(commandBuffer, faceMask, reference);
 }
 static PFN_vkCmdBindDescriptorSets zreal_vkCmdBindDescriptorSets;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets) {
-    ZINK_TRACE("CALL vkCmdBindDescriptorSets\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindDescriptorSets\n");
     zreal_vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets);
 }
 static PFN_vkCmdBindIndexBuffer zreal_vkCmdBindIndexBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindIndexBuffer(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType indexType) {
-    ZINK_TRACE("CALL vkCmdBindIndexBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindIndexBuffer\n");
     zreal_vkCmdBindIndexBuffer(commandBuffer, buffer, offset, indexType);
 }
 static PFN_vkCmdBindVertexBuffers zreal_vkCmdBindVertexBuffers;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindVertexBuffers(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets) {
-    ZINK_TRACE("CALL vkCmdBindVertexBuffers\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindVertexBuffers\n");
     zreal_vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets);
 }
 static PFN_vkCmdDraw zreal_vkCmdDraw;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) {
-    ZINK_TRACE("CALL vkCmdDraw\n");
+    zdraws[0]++;
+    if ((zdraws[0] <= 4 || zdraws[0] == 2000 || zdraws[0] == 4000 || zdraws[0] > zcount[2] + 50) && zdlog_n < 16) { zdlog[zdlog_n][0] = vertexCount; zdlog[zdlog_n][1] = firstVertex; zdlog[zdlog_n][2] = instanceCount; zdlog_n++; }
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDraw\n");
     zreal_vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
 }
 static PFN_vkCmdDrawIndexed zreal_vkCmdDrawIndexed;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) {
-    ZINK_TRACE("CALL vkCmdDrawIndexed\n");
+    zdraws[1]++;
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndexed\n");
     zreal_vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 static PFN_vkCmdDrawIndirect zreal_vkCmdDrawIndirect;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndirect\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndirect\n");
     zreal_vkCmdDrawIndirect(commandBuffer, buffer, offset, drawCount, stride);
 }
 static PFN_vkCmdDrawIndexedIndirect zreal_vkCmdDrawIndexedIndirect;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndexedIndirect\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndexedIndirect\n");
     zreal_vkCmdDrawIndexedIndirect(commandBuffer, buffer, offset, drawCount, stride);
 }
 static PFN_vkCmdDispatch zreal_vkCmdDispatch;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDispatch(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
-    ZINK_TRACE("CALL vkCmdDispatch\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDispatch\n");
     zreal_vkCmdDispatch(commandBuffer, groupCountX, groupCountY, groupCountZ);
 }
 static PFN_vkCmdDispatchIndirect zreal_vkCmdDispatchIndirect;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDispatchIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset) {
-    ZINK_TRACE("CALL vkCmdDispatchIndirect\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDispatchIndirect\n");
     zreal_vkCmdDispatchIndirect(commandBuffer, buffer, offset);
 }
 static PFN_vkCmdCopyBuffer zreal_vkCmdCopyBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
-    ZINK_TRACE("CALL vkCmdCopyBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBuffer\n");
     zreal_vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions);
 }
 static PFN_vkCmdCopyImage zreal_vkCmdCopyImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageCopy* pRegions) {
-    ZINK_TRACE("CALL vkCmdCopyImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImage\n");
     zreal_vkCmdCopyImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
 }
 static PFN_vkCmdBlitImage zreal_vkCmdBlitImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBlitImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageBlit* pRegions, VkFilter filter) {
-    ZINK_TRACE("CALL vkCmdBlitImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBlitImage\n");
     zreal_vkCmdBlitImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter);
 }
 static PFN_vkCmdCopyBufferToImage zreal_vkCmdCopyBufferToImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
-    ZINK_TRACE("CALL vkCmdCopyBufferToImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBufferToImage\n");
     zreal_vkCmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage, dstImageLayout, regionCount, pRegions);
 }
 static PFN_vkCmdCopyImageToBuffer zreal_vkCmdCopyImageToBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
-    ZINK_TRACE("CALL vkCmdCopyImageToBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImageToBuffer\n");
     zreal_vkCmdCopyImageToBuffer(commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions);
 }
 static PFN_vkCmdUpdateBuffer zreal_vkCmdUpdateBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdUpdateBuffer(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData) {
-    ZINK_TRACE("CALL vkCmdUpdateBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdUpdateBuffer\n");
     zreal_vkCmdUpdateBuffer(commandBuffer, dstBuffer, dstOffset, dataSize, pData);
 }
 static PFN_vkCmdFillBuffer zreal_vkCmdFillBuffer;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdFillBuffer(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size, uint32_t data) {
-    ZINK_TRACE("CALL vkCmdFillBuffer\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdFillBuffer\n");
     zreal_vkCmdFillBuffer(commandBuffer, dstBuffer, dstOffset, size, data);
 }
 static PFN_vkCmdClearColorImage zreal_vkCmdClearColorImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdClearColorImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearColorValue* pColor, uint32_t rangeCount, const VkImageSubresourceRange* pRanges) {
-    ZINK_TRACE("CALL vkCmdClearColorImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdClearColorImage\n");
     zreal_vkCmdClearColorImage(commandBuffer, image, imageLayout, pColor, rangeCount, pRanges);
 }
 static PFN_vkCmdClearDepthStencilImage zreal_vkCmdClearDepthStencilImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdClearDepthStencilImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearDepthStencilValue* pDepthStencil, uint32_t rangeCount, const VkImageSubresourceRange* pRanges) {
-    ZINK_TRACE("CALL vkCmdClearDepthStencilImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdClearDepthStencilImage\n");
     zreal_vkCmdClearDepthStencilImage(commandBuffer, image, imageLayout, pDepthStencil, rangeCount, pRanges);
 }
 static PFN_vkCmdClearAttachments zreal_vkCmdClearAttachments;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdClearAttachments(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment* pAttachments, uint32_t rectCount, const VkClearRect* pRects) {
-    ZINK_TRACE("CALL vkCmdClearAttachments\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdClearAttachments\n");
     zreal_vkCmdClearAttachments(commandBuffer, attachmentCount, pAttachments, rectCount, pRects);
 }
 static PFN_vkCmdResolveImage zreal_vkCmdResolveImage;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResolveImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve* pRegions) {
-    ZINK_TRACE("CALL vkCmdResolveImage\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResolveImage\n");
     zreal_vkCmdResolveImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions);
 }
 static PFN_vkCmdSetEvent zreal_vkCmdSetEvent;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetEvent(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask) {
-    ZINK_TRACE("CALL vkCmdSetEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetEvent\n");
     zreal_vkCmdSetEvent(commandBuffer, event, stageMask);
 }
 static PFN_vkCmdResetEvent zreal_vkCmdResetEvent;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetEvent(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask) {
-    ZINK_TRACE("CALL vkCmdResetEvent\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResetEvent\n");
     zreal_vkCmdResetEvent(commandBuffer, event, stageMask);
 }
 static PFN_vkCmdWaitEvents zreal_vkCmdWaitEvents;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers) {
-    ZINK_TRACE("CALL vkCmdWaitEvents\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWaitEvents\n");
     zreal_vkCmdWaitEvents(commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
 }
 static PFN_vkCmdPipelineBarrier zreal_vkCmdPipelineBarrier;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers) {
-    ZINK_TRACE("CALL vkCmdPipelineBarrier\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPipelineBarrier\n");
     zreal_vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
 }
 static PFN_vkCmdBeginQuery zreal_vkCmdBeginQuery;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags) {
-    ZINK_TRACE("CALL vkCmdBeginQuery\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginQuery\n");
     zreal_vkCmdBeginQuery(commandBuffer, queryPool, query, flags);
 }
 static PFN_vkCmdEndQuery zreal_vkCmdEndQuery;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query) {
-    ZINK_TRACE("CALL vkCmdEndQuery\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndQuery\n");
     zreal_vkCmdEndQuery(commandBuffer, queryPool, query);
 }
 static PFN_vkCmdResetQueryPool zreal_vkCmdResetQueryPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetQueryPool(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
-    ZINK_TRACE("CALL vkCmdResetQueryPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResetQueryPool\n");
     zreal_vkCmdResetQueryPool(commandBuffer, queryPool, firstQuery, queryCount);
 }
 static PFN_vkCmdWriteTimestamp zreal_vkCmdWriteTimestamp;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteTimestamp(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query) {
-    ZINK_TRACE("CALL vkCmdWriteTimestamp\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteTimestamp\n");
     zreal_vkCmdWriteTimestamp(commandBuffer, pipelineStage, queryPool, query);
 }
 static PFN_vkCmdCopyQueryPoolResults zreal_vkCmdCopyQueryPoolResults;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyQueryPoolResults(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags) {
-    ZINK_TRACE("CALL vkCmdCopyQueryPoolResults\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyQueryPoolResults\n");
     zreal_vkCmdCopyQueryPoolResults(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags);
 }
 static PFN_vkCmdPushConstants zreal_vkCmdPushConstants;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPushConstants(VkCommandBuffer commandBuffer, VkPipelineLayout layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const void* pValues) {
-    ZINK_TRACE("CALL vkCmdPushConstants\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPushConstants\n");
     zreal_vkCmdPushConstants(commandBuffer, layout, stageFlags, offset, size, pValues);
 }
 static PFN_vkCmdBeginRenderPass zreal_vkCmdBeginRenderPass;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, VkSubpassContents contents) {
-    ZINK_TRACE("CALL vkCmdBeginRenderPass\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginRenderPass\n");
     zreal_vkCmdBeginRenderPass(commandBuffer, pRenderPassBegin, contents);
 }
 static PFN_vkCmdNextSubpass zreal_vkCmdNextSubpass;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdNextSubpass(VkCommandBuffer commandBuffer, VkSubpassContents contents) {
-    ZINK_TRACE("CALL vkCmdNextSubpass\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdNextSubpass\n");
     zreal_vkCmdNextSubpass(commandBuffer, contents);
 }
 static PFN_vkCmdEndRenderPass zreal_vkCmdEndRenderPass;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderPass(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdEndRenderPass\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndRenderPass\n");
     zreal_vkCmdEndRenderPass(commandBuffer);
 }
 static PFN_vkCmdExecuteCommands zreal_vkCmdExecuteCommands;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdExecuteCommands(VkCommandBuffer commandBuffer, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers) {
-    ZINK_TRACE("CALL vkCmdExecuteCommands\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdExecuteCommands\n");
     zreal_vkCmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers);
 }
 static PFN_vkEnumerateInstanceVersion zreal_vkEnumerateInstanceVersion;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumerateInstanceVersion(uint32_t* pApiVersion) {
-    ZINK_TRACE("CALL vkEnumerateInstanceVersion\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumerateInstanceVersion\n");
     return zreal_vkEnumerateInstanceVersion(pApiVersion);
 }
 static PFN_vkBindBufferMemory2 zreal_vkBindBufferMemory2;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindBufferMemory2(VkDevice device, uint32_t bindInfoCount, const VkBindBufferMemoryInfo* pBindInfos) {
-    ZINK_TRACE("CALL vkBindBufferMemory2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindBufferMemory2\n");
     return zreal_vkBindBufferMemory2(device, bindInfoCount, pBindInfos);
 }
 static PFN_vkBindImageMemory2 zreal_vkBindImageMemory2;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindImageMemory2(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo* pBindInfos) {
-    ZINK_TRACE("CALL vkBindImageMemory2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindImageMemory2\n");
     return zreal_vkBindImageMemory2(device, bindInfoCount, pBindInfos);
 }
 static PFN_vkGetDeviceGroupPeerMemoryFeatures zreal_vkGetDeviceGroupPeerMemoryFeatures;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceGroupPeerMemoryFeatures(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags* pPeerMemoryFeatures) {
-    ZINK_TRACE("CALL vkGetDeviceGroupPeerMemoryFeatures\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceGroupPeerMemoryFeatures\n");
     zreal_vkGetDeviceGroupPeerMemoryFeatures(device, heapIndex, localDeviceIndex, remoteDeviceIndex, pPeerMemoryFeatures);
 }
 static PFN_vkCmdSetDeviceMask zreal_vkCmdSetDeviceMask;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDeviceMask(VkCommandBuffer commandBuffer, uint32_t deviceMask) {
-    ZINK_TRACE("CALL vkCmdSetDeviceMask\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDeviceMask\n");
     zreal_vkCmdSetDeviceMask(commandBuffer, deviceMask);
 }
 static PFN_vkCmdDispatchBase zreal_vkCmdDispatchBase;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDispatchBase(VkCommandBuffer commandBuffer, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
-    ZINK_TRACE("CALL vkCmdDispatchBase\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDispatchBase\n");
     zreal_vkCmdDispatchBase(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ);
 }
 static PFN_vkEnumeratePhysicalDeviceGroups zreal_vkEnumeratePhysicalDeviceGroups;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDeviceGroups(VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
-    ZINK_TRACE("CALL vkEnumeratePhysicalDeviceGroups\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumeratePhysicalDeviceGroups\n");
     return zreal_vkEnumeratePhysicalDeviceGroups(instance, pPhysicalDeviceGroupCount, pPhysicalDeviceGroupProperties);
 }
 static PFN_vkGetImageMemoryRequirements2 zreal_vkGetImageMemoryRequirements2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageMemoryRequirements2(VkDevice device, const VkImageMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageMemoryRequirements2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageMemoryRequirements2\n");
     zreal_vkGetImageMemoryRequirements2(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetBufferMemoryRequirements2 zreal_vkGetBufferMemoryRequirements2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetBufferMemoryRequirements2(VkDevice device, const VkBufferMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetBufferMemoryRequirements2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferMemoryRequirements2\n");
     zreal_vkGetBufferMemoryRequirements2(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetImageSparseMemoryRequirements2 zreal_vkGetImageSparseMemoryRequirements2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSparseMemoryRequirements2(VkDevice device, const VkImageSparseMemoryRequirementsInfo2* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements2\n");
     zreal_vkGetImageSparseMemoryRequirements2(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
 }
 static PFN_vkGetPhysicalDeviceFeatures2 zreal_vkGetPhysicalDeviceFeatures2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures2\n");
     zreal_vkGetPhysicalDeviceFeatures2(physicalDevice, pFeatures);
 }
 static PFN_vkGetPhysicalDeviceProperties2 zreal_vkGetPhysicalDeviceProperties2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceProperties2(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceProperties2\n");
     zreal_vkGetPhysicalDeviceProperties2(physicalDevice, pProperties);
 }
 static PFN_vkGetPhysicalDeviceFormatProperties2 zreal_vkGetPhysicalDeviceFormatProperties2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFormatProperties2(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties2* pFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties2\n");
     zreal_vkGetPhysicalDeviceFormatProperties2(physicalDevice, format, pFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceImageFormatProperties2 zreal_vkGetPhysicalDeviceImageFormatProperties2;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceImageFormatProperties2(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo, VkImageFormatProperties2* pImageFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties2\n");
     return zreal_vkGetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo, pImageFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceQueueFamilyProperties2 zreal_vkGetPhysicalDeviceQueueFamilyProperties2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyProperties2(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties2* pQueueFamilyProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties2\n");
     zreal_vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
 }
 static PFN_vkGetPhysicalDeviceMemoryProperties2 zreal_vkGetPhysicalDeviceMemoryProperties2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMemoryProperties2(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties2* pMemoryProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties2\n");
     zreal_vkGetPhysicalDeviceMemoryProperties2(physicalDevice, pMemoryProperties);
 }
 static PFN_vkGetPhysicalDeviceSparseImageFormatProperties2 zreal_vkGetPhysicalDeviceSparseImageFormatProperties2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceSparseImageFormatProperties2(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSparseImageFormatInfo2* pFormatInfo, uint32_t* pPropertyCount, VkSparseImageFormatProperties2* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties2\n");
     zreal_vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, pFormatInfo, pPropertyCount, pProperties);
 }
 static PFN_vkTrimCommandPool zreal_vkTrimCommandPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkTrimCommandPool(VkDevice device, VkCommandPool commandPool, VkCommandPoolTrimFlags flags) {
-    ZINK_TRACE("CALL vkTrimCommandPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkTrimCommandPool\n");
     zreal_vkTrimCommandPool(device, commandPool, flags);
 }
 static PFN_vkGetDeviceQueue2 zreal_vkGetDeviceQueue2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceQueue2(VkDevice device, const VkDeviceQueueInfo2* pQueueInfo, VkQueue* pQueue) {
-    ZINK_TRACE("CALL vkGetDeviceQueue2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceQueue2\n");
     zreal_vkGetDeviceQueue2(device, pQueueInfo, pQueue);
 }
 static PFN_vkCreateSamplerYcbcrConversion zreal_vkCreateSamplerYcbcrConversion;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSamplerYcbcrConversion(VkDevice device, const VkSamplerYcbcrConversionCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSamplerYcbcrConversion* pYcbcrConversion) {
-    ZINK_TRACE("CALL vkCreateSamplerYcbcrConversion\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSamplerYcbcrConversion\n");
     return zreal_vkCreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator, pYcbcrConversion);
 }
 static PFN_vkDestroySamplerYcbcrConversion zreal_vkDestroySamplerYcbcrConversion;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySamplerYcbcrConversion(VkDevice device, VkSamplerYcbcrConversion ycbcrConversion, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySamplerYcbcrConversion\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySamplerYcbcrConversion\n");
     zreal_vkDestroySamplerYcbcrConversion(device, ycbcrConversion, pAllocator);
 }
 static PFN_vkCreateDescriptorUpdateTemplate zreal_vkCreateDescriptorUpdateTemplate;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDescriptorUpdateTemplate(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate) {
-    ZINK_TRACE("CALL vkCreateDescriptorUpdateTemplate\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDescriptorUpdateTemplate\n");
     return zreal_vkCreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate);
 }
 static PFN_vkDestroyDescriptorUpdateTemplate zreal_vkDestroyDescriptorUpdateTemplate;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDescriptorUpdateTemplate(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDescriptorUpdateTemplate\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDescriptorUpdateTemplate\n");
     zreal_vkDestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplate, pAllocator);
 }
 static PFN_vkUpdateDescriptorSetWithTemplate zreal_vkUpdateDescriptorSetWithTemplate;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkUpdateDescriptorSetWithTemplate(VkDevice device, VkDescriptorSet descriptorSet, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const void* pData) {
-    ZINK_TRACE("CALL vkUpdateDescriptorSetWithTemplate\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkUpdateDescriptorSetWithTemplate\n");
     zreal_vkUpdateDescriptorSetWithTemplate(device, descriptorSet, descriptorUpdateTemplate, pData);
 }
 static PFN_vkGetPhysicalDeviceExternalBufferProperties zreal_vkGetPhysicalDeviceExternalBufferProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalBufferProperties(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalBufferProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalBufferProperties\n");
     zreal_vkGetPhysicalDeviceExternalBufferProperties(physicalDevice, pExternalBufferInfo, pExternalBufferProperties);
 }
 static PFN_vkGetPhysicalDeviceExternalFenceProperties zreal_vkGetPhysicalDeviceExternalFenceProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalFenceProperties(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalFenceProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalFenceProperties\n");
     zreal_vkGetPhysicalDeviceExternalFenceProperties(physicalDevice, pExternalFenceInfo, pExternalFenceProperties);
 }
 static PFN_vkGetPhysicalDeviceExternalSemaphoreProperties zreal_vkGetPhysicalDeviceExternalSemaphoreProperties;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalSemaphoreProperties(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalSemaphoreProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalSemaphoreProperties\n");
     zreal_vkGetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, pExternalSemaphoreInfo, pExternalSemaphoreProperties);
 }
 static PFN_vkGetDescriptorSetLayoutSupport zreal_vkGetDescriptorSetLayoutSupport;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetLayoutSupport(VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, VkDescriptorSetLayoutSupport* pSupport) {
-    ZINK_TRACE("CALL vkGetDescriptorSetLayoutSupport\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDescriptorSetLayoutSupport\n");
     zreal_vkGetDescriptorSetLayoutSupport(device, pCreateInfo, pSupport);
 }
 static PFN_vkTrimCommandPoolKHR zreal_vkTrimCommandPoolKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkTrimCommandPoolKHR(VkDevice device, VkCommandPool commandPool, VkCommandPoolTrimFlags flags) {
-    ZINK_TRACE("CALL vkTrimCommandPoolKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkTrimCommandPoolKHR\n");
     zreal_vkTrimCommandPoolKHR(device, commandPool, flags);
 }
 static PFN_vkGetSemaphoreCounterValueKHR zreal_vkGetSemaphoreCounterValueKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSemaphoreCounterValueKHR(VkDevice device, VkSemaphore semaphore, uint64_t* pValue) {
-    ZINK_TRACE("CALL vkGetSemaphoreCounterValueKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSemaphoreCounterValueKHR\n");
     return zreal_vkGetSemaphoreCounterValueKHR(device, semaphore, pValue);
 }
 static PFN_vkWaitSemaphoresKHR zreal_vkWaitSemaphoresKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitSemaphoresKHR(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout) {
-    ZINK_TRACE("CALL vkWaitSemaphoresKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWaitSemaphoresKHR\n");
     return zreal_vkWaitSemaphoresKHR(device, pWaitInfo, timeout);
 }
 static PFN_vkSignalSemaphoreKHR zreal_vkSignalSemaphoreKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSignalSemaphoreKHR(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
-    ZINK_TRACE("CALL vkSignalSemaphoreKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSignalSemaphoreKHR\n");
     return zreal_vkSignalSemaphoreKHR(device, pSignalInfo);
 }
 static PFN_vkSetDebugUtilsObjectNameEXT zreal_vkSetDebugUtilsObjectNameEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetDebugUtilsObjectNameEXT(VkDevice device, const VkDebugUtilsObjectNameInfoEXT* pNameInfo) {
-    ZINK_TRACE("CALL vkSetDebugUtilsObjectNameEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetDebugUtilsObjectNameEXT\n");
     return zreal_vkSetDebugUtilsObjectNameEXT(device, pNameInfo);
 }
 static PFN_vkSetDebugUtilsObjectTagEXT zreal_vkSetDebugUtilsObjectTagEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetDebugUtilsObjectTagEXT(VkDevice device, const VkDebugUtilsObjectTagInfoEXT* pTagInfo) {
-    ZINK_TRACE("CALL vkSetDebugUtilsObjectTagEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetDebugUtilsObjectTagEXT\n");
     return zreal_vkSetDebugUtilsObjectTagEXT(device, pTagInfo);
 }
 static PFN_vkQueueBeginDebugUtilsLabelEXT zreal_vkQueueBeginDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkQueueBeginDebugUtilsLabelEXT(VkQueue queue, const VkDebugUtilsLabelEXT* pLabelInfo) {
-    ZINK_TRACE("CALL vkQueueBeginDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueBeginDebugUtilsLabelEXT\n");
     zreal_vkQueueBeginDebugUtilsLabelEXT(queue, pLabelInfo);
 }
 static PFN_vkQueueEndDebugUtilsLabelEXT zreal_vkQueueEndDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkQueueEndDebugUtilsLabelEXT(VkQueue queue) {
-    ZINK_TRACE("CALL vkQueueEndDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueEndDebugUtilsLabelEXT\n");
     zreal_vkQueueEndDebugUtilsLabelEXT(queue);
 }
 static PFN_vkQueueInsertDebugUtilsLabelEXT zreal_vkQueueInsertDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkQueueInsertDebugUtilsLabelEXT(VkQueue queue, const VkDebugUtilsLabelEXT* pLabelInfo) {
-    ZINK_TRACE("CALL vkQueueInsertDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueInsertDebugUtilsLabelEXT\n");
     zreal_vkQueueInsertDebugUtilsLabelEXT(queue, pLabelInfo);
 }
 static PFN_vkCmdBeginDebugUtilsLabelEXT zreal_vkCmdBeginDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginDebugUtilsLabelEXT(VkCommandBuffer commandBuffer, const VkDebugUtilsLabelEXT* pLabelInfo) {
-    ZINK_TRACE("CALL vkCmdBeginDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginDebugUtilsLabelEXT\n");
     zreal_vkCmdBeginDebugUtilsLabelEXT(commandBuffer, pLabelInfo);
 }
 static PFN_vkCmdEndDebugUtilsLabelEXT zreal_vkCmdEndDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndDebugUtilsLabelEXT(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdEndDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndDebugUtilsLabelEXT\n");
     zreal_vkCmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 static PFN_vkCmdInsertDebugUtilsLabelEXT zreal_vkCmdInsertDebugUtilsLabelEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdInsertDebugUtilsLabelEXT(VkCommandBuffer commandBuffer, const VkDebugUtilsLabelEXT* pLabelInfo) {
-    ZINK_TRACE("CALL vkCmdInsertDebugUtilsLabelEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdInsertDebugUtilsLabelEXT\n");
     zreal_vkCmdInsertDebugUtilsLabelEXT(commandBuffer, pLabelInfo);
 }
 static PFN_vkCreateDebugUtilsMessengerEXT zreal_vkCreateDebugUtilsMessengerEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pMessenger) {
-    ZINK_TRACE("CALL vkCreateDebugUtilsMessengerEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDebugUtilsMessengerEXT\n");
     return zreal_vkCreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, pMessenger);
 }
 static PFN_vkDestroyDebugUtilsMessengerEXT zreal_vkDestroyDebugUtilsMessengerEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDebugUtilsMessengerEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDebugUtilsMessengerEXT\n");
     zreal_vkDestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
 }
 static PFN_vkSubmitDebugUtilsMessageEXT zreal_vkSubmitDebugUtilsMessageEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkSubmitDebugUtilsMessageEXT(VkInstance instance, VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData) {
-    ZINK_TRACE("CALL vkSubmitDebugUtilsMessageEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSubmitDebugUtilsMessageEXT\n");
     zreal_vkSubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, pCallbackData);
 }
 static PFN_vkCmdDrawIndirectCount zreal_vkCmdDrawIndirectCount;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndirectCount\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndirectCount\n");
     zreal_vkCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkCmdDrawIndexedIndirectCount zreal_vkCmdDrawIndexedIndirectCount;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCount\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCount\n");
     zreal_vkCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkCreateRenderPass2 zreal_vkCreateRenderPass2;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
-    ZINK_TRACE("CALL vkCreateRenderPass2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateRenderPass2\n");
     return zreal_vkCreateRenderPass2(device, pCreateInfo, pAllocator, pRenderPass);
 }
 static PFN_vkCmdBeginRenderPass2 zreal_vkCmdBeginRenderPass2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderPass2(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
-    ZINK_TRACE("CALL vkCmdBeginRenderPass2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginRenderPass2\n");
     zreal_vkCmdBeginRenderPass2(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
 }
 static PFN_vkCmdNextSubpass2 zreal_vkCmdNextSubpass2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdNextSubpass2(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
-    ZINK_TRACE("CALL vkCmdNextSubpass2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdNextSubpass2\n");
     zreal_vkCmdNextSubpass2(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
 }
 static PFN_vkCmdEndRenderPass2 zreal_vkCmdEndRenderPass2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderPass2(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
-    ZINK_TRACE("CALL vkCmdEndRenderPass2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndRenderPass2\n");
     zreal_vkCmdEndRenderPass2(commandBuffer, pSubpassEndInfo);
 }
 static PFN_vkResetQueryPool zreal_vkResetQueryPool;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkResetQueryPool(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
-    ZINK_TRACE("CALL vkResetQueryPool\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetQueryPool\n");
     zreal_vkResetQueryPool(device, queryPool, firstQuery, queryCount);
 }
 static PFN_vkGetSemaphoreCounterValue zreal_vkGetSemaphoreCounterValue;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSemaphoreCounterValue(VkDevice device, VkSemaphore semaphore, uint64_t* pValue) {
-    ZINK_TRACE("CALL vkGetSemaphoreCounterValue\n");
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[6]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSemaphoreCounterValue\n");
     return zreal_vkGetSemaphoreCounterValue(device, semaphore, pValue);
 }
 static PFN_vkWaitSemaphores zreal_vkWaitSemaphores;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout) {
-    ZINK_TRACE("CALL vkWaitSemaphores\n");
-    return zreal_vkWaitSemaphores(device, pWaitInfo, timeout);
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[5]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWaitSemaphores\n");
+    VkResult zr_ = zreal_vkWaitSemaphores(device, pWaitInfo, timeout);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 4; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkSignalSemaphore zreal_vkSignalSemaphore;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
-    ZINK_TRACE("CALL vkSignalSemaphore\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSignalSemaphore\n");
     return zreal_vkSignalSemaphore(device, pSignalInfo);
 }
 static PFN_vkGetBufferDeviceAddress zreal_vkGetBufferDeviceAddress;
 static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetBufferDeviceAddress\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferDeviceAddress\n");
     return zreal_vkGetBufferDeviceAddress(device, pInfo);
 }
 static PFN_vkGetBufferOpaqueCaptureAddress zreal_vkGetBufferOpaqueCaptureAddress;
 static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetBufferOpaqueCaptureAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddress\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddress\n");
     return zreal_vkGetBufferOpaqueCaptureAddress(device, pInfo);
 }
 static PFN_vkGetDeviceMemoryOpaqueCaptureAddress zreal_vkGetDeviceMemoryOpaqueCaptureAddress;
 static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetDeviceMemoryOpaqueCaptureAddress(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddress\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddress\n");
     return zreal_vkGetDeviceMemoryOpaqueCaptureAddress(device, pInfo);
 }
 static PFN_vkGetPhysicalDeviceToolProperties zreal_vkGetPhysicalDeviceToolProperties;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceToolProperties(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceToolProperties\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceToolProperties\n");
     return zreal_vkGetPhysicalDeviceToolProperties(physicalDevice, pToolCount, pToolProperties);
 }
 static PFN_vkCreatePrivateDataSlot zreal_vkCreatePrivateDataSlot;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePrivateDataSlot(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
-    ZINK_TRACE("CALL vkCreatePrivateDataSlot\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreatePrivateDataSlot\n");
     return zreal_vkCreatePrivateDataSlot(device, pCreateInfo, pAllocator, pPrivateDataSlot);
 }
 static PFN_vkDestroyPrivateDataSlot zreal_vkDestroyPrivateDataSlot;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPrivateDataSlot(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyPrivateDataSlot\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyPrivateDataSlot\n");
     zreal_vkDestroyPrivateDataSlot(device, privateDataSlot, pAllocator);
 }
 static PFN_vkSetPrivateData zreal_vkSetPrivateData;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
-    ZINK_TRACE("CALL vkSetPrivateData\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetPrivateData\n");
     return zreal_vkSetPrivateData(device, objectType, objectHandle, privateDataSlot, data);
 }
 static PFN_vkGetPrivateData zreal_vkGetPrivateData;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPrivateData(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
-    ZINK_TRACE("CALL vkGetPrivateData\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPrivateData\n");
     zreal_vkGetPrivateData(device, objectType, objectHandle, privateDataSlot, pData);
 }
 static PFN_vkCmdSetEvent2 zreal_vkCmdSetEvent2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetEvent2(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
-    ZINK_TRACE("CALL vkCmdSetEvent2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetEvent2\n");
     zreal_vkCmdSetEvent2(commandBuffer, event, pDependencyInfo);
 }
 static PFN_vkCmdResetEvent2 zreal_vkCmdResetEvent2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetEvent2(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
-    ZINK_TRACE("CALL vkCmdResetEvent2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResetEvent2\n");
     zreal_vkCmdResetEvent2(commandBuffer, event, stageMask);
 }
 static PFN_vkCmdWaitEvents2 zreal_vkCmdWaitEvents2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWaitEvents2(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
-    ZINK_TRACE("CALL vkCmdWaitEvents2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWaitEvents2\n");
     zreal_vkCmdWaitEvents2(commandBuffer, eventCount, pEvents, pDependencyInfos);
 }
 static PFN_vkCmdPipelineBarrier2 zreal_vkCmdPipelineBarrier2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPipelineBarrier2(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
-    ZINK_TRACE("CALL vkCmdPipelineBarrier2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPipelineBarrier2\n");
     zreal_vkCmdPipelineBarrier2(commandBuffer, pDependencyInfo);
 }
 static PFN_vkCmdWriteTimestamp2 zreal_vkCmdWriteTimestamp2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteTimestamp2(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
-    ZINK_TRACE("CALL vkCmdWriteTimestamp2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteTimestamp2\n");
     zreal_vkCmdWriteTimestamp2(commandBuffer, stage, queryPool, query);
 }
 static PFN_vkQueueSubmit2 zreal_vkQueueSubmit2;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
-    ZINK_TRACE("CALL vkQueueSubmit2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[1]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueSubmit2\n");
     return zreal_vkQueueSubmit2(queue, submitCount, pSubmits, fence);
 }
 static PFN_vkCmdCopyBuffer2 zreal_vkCmdCopyBuffer2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBuffer2(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
-    ZINK_TRACE("CALL vkCmdCopyBuffer2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBuffer2\n");
     zreal_vkCmdCopyBuffer2(commandBuffer, pCopyBufferInfo);
 }
 static PFN_vkCmdCopyImage2 zreal_vkCmdCopyImage2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImage2(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
-    ZINK_TRACE("CALL vkCmdCopyImage2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImage2\n");
     zreal_vkCmdCopyImage2(commandBuffer, pCopyImageInfo);
 }
 static PFN_vkCmdCopyBufferToImage2 zreal_vkCmdCopyBufferToImage2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBufferToImage2(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
-    ZINK_TRACE("CALL vkCmdCopyBufferToImage2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBufferToImage2\n");
     zreal_vkCmdCopyBufferToImage2(commandBuffer, pCopyBufferToImageInfo);
 }
 static PFN_vkCmdCopyImageToBuffer2 zreal_vkCmdCopyImageToBuffer2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImageToBuffer2(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
-    ZINK_TRACE("CALL vkCmdCopyImageToBuffer2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImageToBuffer2\n");
     zreal_vkCmdCopyImageToBuffer2(commandBuffer, pCopyImageToBufferInfo);
 }
 static PFN_vkCmdBlitImage2 zreal_vkCmdBlitImage2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBlitImage2(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
-    ZINK_TRACE("CALL vkCmdBlitImage2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBlitImage2\n");
     zreal_vkCmdBlitImage2(commandBuffer, pBlitImageInfo);
 }
 static PFN_vkCmdResolveImage2 zreal_vkCmdResolveImage2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResolveImage2(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
-    ZINK_TRACE("CALL vkCmdResolveImage2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResolveImage2\n");
     zreal_vkCmdResolveImage2(commandBuffer, pResolveImageInfo);
 }
 static PFN_vkCmdBeginRendering zreal_vkCmdBeginRendering;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
-    ZINK_TRACE("CALL vkCmdBeginRendering\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginRendering\n");
     zreal_vkCmdBeginRendering(commandBuffer, pRenderingInfo);
 }
 static PFN_vkCmdEndRendering zreal_vkCmdEndRendering;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRendering(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdEndRendering\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndRendering\n");
     zreal_vkCmdEndRendering(commandBuffer);
 }
 static PFN_vkCmdSetCullMode zreal_vkCmdSetCullMode;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
-    ZINK_TRACE("CALL vkCmdSetCullMode\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCullMode\n");
     zreal_vkCmdSetCullMode(commandBuffer, cullMode);
 }
 static PFN_vkCmdSetFrontFace zreal_vkCmdSetFrontFace;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFrontFace(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
-    ZINK_TRACE("CALL vkCmdSetFrontFace\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetFrontFace\n");
     zreal_vkCmdSetFrontFace(commandBuffer, frontFace);
 }
 static PFN_vkCmdSetPrimitiveTopology zreal_vkCmdSetPrimitiveTopology;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveTopology(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
-    ZINK_TRACE("CALL vkCmdSetPrimitiveTopology\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPrimitiveTopology\n");
     zreal_vkCmdSetPrimitiveTopology(commandBuffer, primitiveTopology);
 }
 static PFN_vkCmdSetViewportWithCount zreal_vkCmdSetViewportWithCount;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
-    ZINK_TRACE("CALL vkCmdSetViewportWithCount\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportWithCount\n");
     zreal_vkCmdSetViewportWithCount(commandBuffer, viewportCount, pViewports);
 }
 static PFN_vkCmdSetScissorWithCount zreal_vkCmdSetScissorWithCount;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
-    ZINK_TRACE("CALL vkCmdSetScissorWithCount\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetScissorWithCount\n");
     zreal_vkCmdSetScissorWithCount(commandBuffer, scissorCount, pScissors);
 }
 static PFN_vkCmdBindVertexBuffers2 zreal_vkCmdBindVertexBuffers2;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindVertexBuffers2(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
-    ZINK_TRACE("CALL vkCmdBindVertexBuffers2\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindVertexBuffers2\n");
     zreal_vkCmdBindVertexBuffers2(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes, pStrides);
 }
 static PFN_vkCmdSetDepthTestEnable zreal_vkCmdSetDepthTestEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthTestEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthTestEnable\n");
     zreal_vkCmdSetDepthTestEnable(commandBuffer, depthTestEnable);
 }
 static PFN_vkCmdSetDepthWriteEnable zreal_vkCmdSetDepthWriteEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthWriteEnable(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthWriteEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthWriteEnable\n");
     zreal_vkCmdSetDepthWriteEnable(commandBuffer, depthWriteEnable);
 }
 static PFN_vkCmdSetDepthCompareOp zreal_vkCmdSetDepthCompareOp;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthCompareOp(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
-    ZINK_TRACE("CALL vkCmdSetDepthCompareOp\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthCompareOp\n");
     zreal_vkCmdSetDepthCompareOp(commandBuffer, depthCompareOp);
 }
 static PFN_vkCmdSetDepthBoundsTestEnable zreal_vkCmdSetDepthBoundsTestEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBoundsTestEnable(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnable\n");
     zreal_vkCmdSetDepthBoundsTestEnable(commandBuffer, depthBoundsTestEnable);
 }
 static PFN_vkCmdSetStencilTestEnable zreal_vkCmdSetStencilTestEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilTestEnable(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetStencilTestEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilTestEnable\n");
     zreal_vkCmdSetStencilTestEnable(commandBuffer, stencilTestEnable);
 }
 static PFN_vkCmdSetStencilOp zreal_vkCmdSetStencilOp;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilOp(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
-    ZINK_TRACE("CALL vkCmdSetStencilOp\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilOp\n");
     zreal_vkCmdSetStencilOp(commandBuffer, faceMask, failOp, passOp, depthFailOp, compareOp);
 }
 static PFN_vkCmdSetRasterizerDiscardEnable zreal_vkCmdSetRasterizerDiscardEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizerDiscardEnable(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
-    ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnable\n");
     zreal_vkCmdSetRasterizerDiscardEnable(commandBuffer, rasterizerDiscardEnable);
 }
 static PFN_vkCmdSetDepthBiasEnable zreal_vkCmdSetDepthBiasEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBiasEnable(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthBiasEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBiasEnable\n");
     zreal_vkCmdSetDepthBiasEnable(commandBuffer, depthBiasEnable);
 }
 static PFN_vkCmdSetPrimitiveRestartEnable zreal_vkCmdSetPrimitiveRestartEnable;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveRestartEnable(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
-    ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnable\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnable\n");
     zreal_vkCmdSetPrimitiveRestartEnable(commandBuffer, primitiveRestartEnable);
 }
 static PFN_vkGetDeviceBufferMemoryRequirements zreal_vkGetDeviceBufferMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceBufferMemoryRequirements(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirements\n");
     zreal_vkGetDeviceBufferMemoryRequirements(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetDeviceImageMemoryRequirements zreal_vkGetDeviceImageMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirements\n");
     zreal_vkGetDeviceImageMemoryRequirements(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetDeviceImageSparseMemoryRequirements zreal_vkGetDeviceImageSparseMemoryRequirements;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageSparseMemoryRequirements(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirements\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirements\n");
     zreal_vkGetDeviceImageSparseMemoryRequirements(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
 }
 static PFN_vkDestroySurfaceKHR zreal_vkDestroySurfaceKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySurfaceKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySurfaceKHR\n");
     zreal_vkDestroySurfaceKHR(instance, surface, pAllocator);
 }
 static PFN_vkGetPhysicalDeviceSurfaceSupportKHR zreal_vkGetPhysicalDeviceSurfaceSupportKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceSupportKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceSupportKHR\n");
     return zreal_vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, pSupported);
 }
 static PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR zreal_vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilitiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilitiesKHR\n");
     return zreal_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, pSurfaceCapabilities);
 }
 static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR zreal_vkGetPhysicalDeviceSurfaceFormatsKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormatsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormatsKHR\n");
     return zreal_vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats);
 }
 static PFN_vkGetPhysicalDeviceSurfacePresentModesKHR zreal_vkGetPhysicalDeviceSurfacePresentModesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfacePresentModesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfacePresentModesKHR\n");
     return zreal_vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, pPresentModeCount, pPresentModes);
 }
 static PFN_vkCreateSwapchainKHR zreal_vkCreateSwapchainKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain) {
-    ZINK_TRACE("CALL vkCreateSwapchainKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSwapchainKHR\n");
     return zreal_vkCreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
 }
 static PFN_vkDestroySwapchainKHR zreal_vkDestroySwapchainKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySwapchainKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySwapchainKHR\n");
     zreal_vkDestroySwapchainKHR(device, swapchain, pAllocator);
 }
 static PFN_vkGetSwapchainImagesKHR zreal_vkGetSwapchainImagesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages) {
-    ZINK_TRACE("CALL vkGetSwapchainImagesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSwapchainImagesKHR\n");
     return zreal_vkGetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
 }
 static PFN_vkAcquireNextImageKHR zreal_vkAcquireNextImageKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex) {
-    ZINK_TRACE("CALL vkAcquireNextImageKHR\n");
-    return zreal_vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquireNextImageKHR\n");
+    VkResult zr_ = zreal_vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 2; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkQueuePresentKHR zreal_vkQueuePresentKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
-    ZINK_TRACE("CALL vkQueuePresentKHR\n");
-    return zreal_vkQueuePresentKHR(queue, pPresentInfo);
+    ZINK_ICD_LOCK_SCOPE();
+    zcount[2]++;
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueuePresentKHR\n");
+    VkResult zr_ = zreal_vkQueuePresentKHR(queue, pPresentInfo);
+    if ((int)zr_ < 0 && zelog_n < 16) { zelog[zelog_n][0] = 1; zelog[zelog_n][1] = (unsigned)(int)zr_; zelog[zelog_n][2] = zcount[0]; zelog_n++; }
+    return zr_;
 }
 static PFN_vkGetDeviceGroupPresentCapabilitiesKHR zreal_vkGetDeviceGroupPresentCapabilitiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceGroupPresentCapabilitiesKHR(VkDevice device, VkDeviceGroupPresentCapabilitiesKHR* pDeviceGroupPresentCapabilities) {
-    ZINK_TRACE("CALL vkGetDeviceGroupPresentCapabilitiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceGroupPresentCapabilitiesKHR\n");
     return zreal_vkGetDeviceGroupPresentCapabilitiesKHR(device, pDeviceGroupPresentCapabilities);
 }
 static PFN_vkGetDeviceGroupSurfacePresentModesKHR zreal_vkGetDeviceGroupSurfacePresentModesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceGroupSurfacePresentModesKHR(VkDevice device, VkSurfaceKHR surface, VkDeviceGroupPresentModeFlagsKHR* pModes) {
-    ZINK_TRACE("CALL vkGetDeviceGroupSurfacePresentModesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceGroupSurfacePresentModesKHR\n");
     return zreal_vkGetDeviceGroupSurfacePresentModesKHR(device, surface, pModes);
 }
 static PFN_vkGetPhysicalDevicePresentRectanglesKHR zreal_vkGetPhysicalDevicePresentRectanglesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDevicePresentRectanglesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pRectCount, VkRect2D* pRects) {
-    ZINK_TRACE("CALL vkGetPhysicalDevicePresentRectanglesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDevicePresentRectanglesKHR\n");
     return zreal_vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, pRectCount, pRects);
 }
 static PFN_vkAcquireNextImage2KHR zreal_vkAcquireNextImage2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo, uint32_t* pImageIndex) {
-    ZINK_TRACE("CALL vkAcquireNextImage2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquireNextImage2KHR\n");
     return zreal_vkAcquireNextImage2KHR(device, pAcquireInfo, pImageIndex);
 }
 static PFN_vkGetPhysicalDeviceDisplayPropertiesKHR zreal_vkGetPhysicalDeviceDisplayPropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPropertiesKHR* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPropertiesKHR\n");
     return zreal_vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR zreal_vkGetPhysicalDeviceDisplayPlanePropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPlanePropertiesKHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlanePropertiesKHR* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlanePropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlanePropertiesKHR\n");
     return zreal_vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetDisplayPlaneSupportedDisplaysKHR zreal_vkGetDisplayPlaneSupportedDisplaysKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneSupportedDisplaysKHR(VkPhysicalDevice physicalDevice, uint32_t planeIndex, uint32_t* pDisplayCount, VkDisplayKHR* pDisplays) {
-    ZINK_TRACE("CALL vkGetDisplayPlaneSupportedDisplaysKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDisplayPlaneSupportedDisplaysKHR\n");
     return zreal_vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, pDisplayCount, pDisplays);
 }
 static PFN_vkGetDisplayModePropertiesKHR zreal_vkGetDisplayModePropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayModePropertiesKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModePropertiesKHR* pProperties) {
-    ZINK_TRACE("CALL vkGetDisplayModePropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDisplayModePropertiesKHR\n");
     return zreal_vkGetDisplayModePropertiesKHR(physicalDevice, display, pPropertyCount, pProperties);
 }
 static PFN_vkCreateDisplayModeKHR zreal_vkCreateDisplayModeKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDisplayModeKHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, const VkDisplayModeCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDisplayModeKHR* pMode) {
-    ZINK_TRACE("CALL vkCreateDisplayModeKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDisplayModeKHR\n");
     return zreal_vkCreateDisplayModeKHR(physicalDevice, display, pCreateInfo, pAllocator, pMode);
 }
 static PFN_vkGetDisplayPlaneCapabilitiesKHR zreal_vkGetDisplayPlaneCapabilitiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkDisplayModeKHR mode, uint32_t planeIndex, VkDisplayPlaneCapabilitiesKHR* pCapabilities) {
-    ZINK_TRACE("CALL vkGetDisplayPlaneCapabilitiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDisplayPlaneCapabilitiesKHR\n");
     return zreal_vkGetDisplayPlaneCapabilitiesKHR(physicalDevice, mode, planeIndex, pCapabilities);
 }
 static PFN_vkCreateDisplayPlaneSurfaceKHR zreal_vkCreateDisplayPlaneSurfaceKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDisplayPlaneSurfaceKHR(VkInstance instance, const VkDisplaySurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
-    ZINK_TRACE("CALL vkCreateDisplayPlaneSurfaceKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDisplayPlaneSurfaceKHR\n");
     return zreal_vkCreateDisplayPlaneSurfaceKHR(instance, pCreateInfo, pAllocator, pSurface);
 }
 static PFN_vkCreateSharedSwapchainsKHR zreal_vkCreateSharedSwapchainsKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSharedSwapchainsKHR(VkDevice device, uint32_t swapchainCount, const VkSwapchainCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchains) {
-    ZINK_TRACE("CALL vkCreateSharedSwapchainsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSharedSwapchainsKHR\n");
     return zreal_vkCreateSharedSwapchainsKHR(device, swapchainCount, pCreateInfos, pAllocator, pSwapchains);
 }
 static PFN_vkCmdBeginRenderingKHR zreal_vkCmdBeginRenderingKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderingKHR(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo) {
-    ZINK_TRACE("CALL vkCmdBeginRenderingKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginRenderingKHR\n");
     zreal_vkCmdBeginRenderingKHR(commandBuffer, pRenderingInfo);
 }
 static PFN_vkCmdEndRenderingKHR zreal_vkCmdEndRenderingKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderingKHR(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdEndRenderingKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndRenderingKHR\n");
     zreal_vkCmdEndRenderingKHR(commandBuffer);
 }
 static PFN_vkGetPhysicalDeviceFeatures2KHR zreal_vkGetPhysicalDeviceFeatures2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFeatures2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures2* pFeatures) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFeatures2KHR\n");
     zreal_vkGetPhysicalDeviceFeatures2KHR(physicalDevice, pFeatures);
 }
 static PFN_vkGetPhysicalDeviceProperties2KHR zreal_vkGetPhysicalDeviceProperties2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties2* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceProperties2KHR\n");
     zreal_vkGetPhysicalDeviceProperties2KHR(physicalDevice, pProperties);
 }
 static PFN_vkGetPhysicalDeviceFormatProperties2KHR zreal_vkGetPhysicalDeviceFormatProperties2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceFormatProperties2KHR(VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties2* pFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFormatProperties2KHR\n");
     zreal_vkGetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, pFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceImageFormatProperties2KHR zreal_vkGetPhysicalDeviceImageFormatProperties2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo, VkImageFormatProperties2* pImageFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceImageFormatProperties2KHR\n");
     return zreal_vkGetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, pImageFormatInfo, pImageFormatProperties);
 }
 static PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR zreal_vkGetPhysicalDeviceQueueFamilyProperties2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties2* pQueueFamilyProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyProperties2KHR\n");
     zreal_vkGetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
 }
 static PFN_vkGetPhysicalDeviceMemoryProperties2KHR zreal_vkGetPhysicalDeviceMemoryProperties2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMemoryProperties2KHR(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties2* pMemoryProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceMemoryProperties2KHR\n");
     zreal_vkGetPhysicalDeviceMemoryProperties2KHR(physicalDevice, pMemoryProperties);
 }
 static PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR zreal_vkGetPhysicalDeviceSparseImageFormatProperties2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceSparseImageFormatProperties2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSparseImageFormatInfo2* pFormatInfo, uint32_t* pPropertyCount, VkSparseImageFormatProperties2* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSparseImageFormatProperties2KHR\n");
     zreal_vkGetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, pFormatInfo, pPropertyCount, pProperties);
 }
 static PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR zreal_vkGetDeviceGroupPeerMemoryFeaturesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceGroupPeerMemoryFeaturesKHR(VkDevice device, uint32_t heapIndex, uint32_t localDeviceIndex, uint32_t remoteDeviceIndex, VkPeerMemoryFeatureFlags* pPeerMemoryFeatures) {
-    ZINK_TRACE("CALL vkGetDeviceGroupPeerMemoryFeaturesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceGroupPeerMemoryFeaturesKHR\n");
     zreal_vkGetDeviceGroupPeerMemoryFeaturesKHR(device, heapIndex, localDeviceIndex, remoteDeviceIndex, pPeerMemoryFeatures);
 }
 static PFN_vkCmdSetDeviceMaskKHR zreal_vkCmdSetDeviceMaskKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDeviceMaskKHR(VkCommandBuffer commandBuffer, uint32_t deviceMask) {
-    ZINK_TRACE("CALL vkCmdSetDeviceMaskKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDeviceMaskKHR\n");
     zreal_vkCmdSetDeviceMaskKHR(commandBuffer, deviceMask);
 }
 static PFN_vkCmdDispatchBaseKHR zreal_vkCmdDispatchBaseKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDispatchBaseKHR(VkCommandBuffer commandBuffer, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
-    ZINK_TRACE("CALL vkCmdDispatchBaseKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDispatchBaseKHR\n");
     zreal_vkCmdDispatchBaseKHR(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ);
 }
 static PFN_vkEnumeratePhysicalDeviceGroupsKHR zreal_vkEnumeratePhysicalDeviceGroupsKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDeviceGroupsKHR(VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
-    ZINK_TRACE("CALL vkEnumeratePhysicalDeviceGroupsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumeratePhysicalDeviceGroupsKHR\n");
     return zreal_vkEnumeratePhysicalDeviceGroupsKHR(instance, pPhysicalDeviceGroupCount, pPhysicalDeviceGroupProperties);
 }
 static PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR zreal_vkGetPhysicalDeviceExternalBufferPropertiesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalBufferPropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalBufferPropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalBufferPropertiesKHR\n");
     zreal_vkGetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice, pExternalBufferInfo, pExternalBufferProperties);
 }
 static PFN_vkGetMemoryFdKHR zreal_vkGetMemoryFdKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryFdKHR(VkDevice device, const VkMemoryGetFdInfoKHR* pGetFdInfo, int* pFd) {
-    ZINK_TRACE("CALL vkGetMemoryFdKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetMemoryFdKHR\n");
     return zreal_vkGetMemoryFdKHR(device, pGetFdInfo, pFd);
 }
 static PFN_vkGetMemoryFdPropertiesKHR zreal_vkGetMemoryFdPropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryFdPropertiesKHR(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, int fd, VkMemoryFdPropertiesKHR* pMemoryFdProperties) {
-    ZINK_TRACE("CALL vkGetMemoryFdPropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetMemoryFdPropertiesKHR\n");
     return zreal_vkGetMemoryFdPropertiesKHR(device, handleType, fd, pMemoryFdProperties);
 }
 static PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR zreal_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalSemaphorePropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalSemaphorePropertiesKHR\n");
     zreal_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice, pExternalSemaphoreInfo, pExternalSemaphoreProperties);
 }
 static PFN_vkImportSemaphoreFdKHR zreal_vkImportSemaphoreFdKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkImportSemaphoreFdKHR(VkDevice device, const VkImportSemaphoreFdInfoKHR* pImportSemaphoreFdInfo) {
-    ZINK_TRACE("CALL vkImportSemaphoreFdKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkImportSemaphoreFdKHR\n");
     return zreal_vkImportSemaphoreFdKHR(device, pImportSemaphoreFdInfo);
 }
 static PFN_vkGetSemaphoreFdKHR zreal_vkGetSemaphoreFdKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSemaphoreFdKHR(VkDevice device, const VkSemaphoreGetFdInfoKHR* pGetFdInfo, int* pFd) {
-    ZINK_TRACE("CALL vkGetSemaphoreFdKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSemaphoreFdKHR\n");
     return zreal_vkGetSemaphoreFdKHR(device, pGetFdInfo, pFd);
 }
 static PFN_vkCmdPushDescriptorSetKHR zreal_vkCmdPushDescriptorSetKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPushDescriptorSetKHR(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites) {
-    ZINK_TRACE("CALL vkCmdPushDescriptorSetKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPushDescriptorSetKHR\n");
     zreal_vkCmdPushDescriptorSetKHR(commandBuffer, pipelineBindPoint, layout, set, descriptorWriteCount, pDescriptorWrites);
 }
 static PFN_vkCmdPushDescriptorSetWithTemplateKHR zreal_vkCmdPushDescriptorSetWithTemplateKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPushDescriptorSetWithTemplateKHR(VkCommandBuffer commandBuffer, VkDescriptorUpdateTemplate descriptorUpdateTemplate, VkPipelineLayout layout, uint32_t set, const void* pData) {
-    ZINK_TRACE("CALL vkCmdPushDescriptorSetWithTemplateKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPushDescriptorSetWithTemplateKHR\n");
     zreal_vkCmdPushDescriptorSetWithTemplateKHR(commandBuffer, descriptorUpdateTemplate, layout, set, pData);
 }
 static PFN_vkCreateDescriptorUpdateTemplateKHR zreal_vkCreateDescriptorUpdateTemplateKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDescriptorUpdateTemplateKHR(VkDevice device, const VkDescriptorUpdateTemplateCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate) {
-    ZINK_TRACE("CALL vkCreateDescriptorUpdateTemplateKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDescriptorUpdateTemplateKHR\n");
     return zreal_vkCreateDescriptorUpdateTemplateKHR(device, pCreateInfo, pAllocator, pDescriptorUpdateTemplate);
 }
 static PFN_vkDestroyDescriptorUpdateTemplateKHR zreal_vkDestroyDescriptorUpdateTemplateKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDescriptorUpdateTemplateKHR(VkDevice device, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDescriptorUpdateTemplateKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDescriptorUpdateTemplateKHR\n");
     zreal_vkDestroyDescriptorUpdateTemplateKHR(device, descriptorUpdateTemplate, pAllocator);
 }
 static PFN_vkUpdateDescriptorSetWithTemplateKHR zreal_vkUpdateDescriptorSetWithTemplateKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkUpdateDescriptorSetWithTemplateKHR(VkDevice device, VkDescriptorSet descriptorSet, VkDescriptorUpdateTemplate descriptorUpdateTemplate, const void* pData) {
-    ZINK_TRACE("CALL vkUpdateDescriptorSetWithTemplateKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkUpdateDescriptorSetWithTemplateKHR\n");
     zreal_vkUpdateDescriptorSetWithTemplateKHR(device, descriptorSet, descriptorUpdateTemplate, pData);
 }
 static PFN_vkCreateRenderPass2KHR zreal_vkCreateRenderPass2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass) {
-    ZINK_TRACE("CALL vkCreateRenderPass2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateRenderPass2KHR\n");
     return zreal_vkCreateRenderPass2KHR(device, pCreateInfo, pAllocator, pRenderPass);
 }
 static PFN_vkCmdBeginRenderPass2KHR zreal_vkCmdBeginRenderPass2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginRenderPass2KHR(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, const VkSubpassBeginInfo* pSubpassBeginInfo) {
-    ZINK_TRACE("CALL vkCmdBeginRenderPass2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginRenderPass2KHR\n");
     zreal_vkCmdBeginRenderPass2KHR(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
 }
 static PFN_vkCmdNextSubpass2KHR zreal_vkCmdNextSubpass2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdNextSubpass2KHR(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo* pSubpassBeginInfo, const VkSubpassEndInfo* pSubpassEndInfo) {
-    ZINK_TRACE("CALL vkCmdNextSubpass2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdNextSubpass2KHR\n");
     zreal_vkCmdNextSubpass2KHR(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
 }
 static PFN_vkCmdEndRenderPass2KHR zreal_vkCmdEndRenderPass2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo) {
-    ZINK_TRACE("CALL vkCmdEndRenderPass2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndRenderPass2KHR\n");
     zreal_vkCmdEndRenderPass2KHR(commandBuffer, pSubpassEndInfo);
 }
 static PFN_vkGetSwapchainStatusKHR zreal_vkGetSwapchainStatusKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainStatusKHR(VkDevice device, VkSwapchainKHR swapchain) {
-    ZINK_TRACE("CALL vkGetSwapchainStatusKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSwapchainStatusKHR\n");
     return zreal_vkGetSwapchainStatusKHR(device, swapchain);
 }
 static PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR zreal_vkGetPhysicalDeviceExternalFencePropertiesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalFencePropertiesKHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalFencePropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalFencePropertiesKHR\n");
     zreal_vkGetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice, pExternalFenceInfo, pExternalFenceProperties);
 }
 static PFN_vkImportFenceFdKHR zreal_vkImportFenceFdKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkImportFenceFdKHR(VkDevice device, const VkImportFenceFdInfoKHR* pImportFenceFdInfo) {
-    ZINK_TRACE("CALL vkImportFenceFdKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkImportFenceFdKHR\n");
     return zreal_vkImportFenceFdKHR(device, pImportFenceFdInfo);
 }
 static PFN_vkGetFenceFdKHR zreal_vkGetFenceFdKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetFenceFdKHR(VkDevice device, const VkFenceGetFdInfoKHR* pGetFdInfo, int* pFd) {
-    ZINK_TRACE("CALL vkGetFenceFdKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetFenceFdKHR\n");
     return zreal_vkGetFenceFdKHR(device, pGetFdInfo, pFd);
 }
 static PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR zreal_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, uint32_t* pCounterCount, VkPerformanceCounterKHR* pCounters, VkPerformanceCounterDescriptionKHR* pCounterDescriptions) {
-    ZINK_TRACE("CALL vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR\n");
     return zreal_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDevice, queueFamilyIndex, pCounterCount, pCounters, pCounterDescriptions);
 }
 static PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR zreal_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(VkPhysicalDevice physicalDevice, const VkQueryPoolPerformanceCreateInfoKHR* pPerformanceQueryCreateInfo, uint32_t* pNumPasses) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR\n");
     zreal_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(physicalDevice, pPerformanceQueryCreateInfo, pNumPasses);
 }
 static PFN_vkAcquireProfilingLockKHR zreal_vkAcquireProfilingLockKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireProfilingLockKHR(VkDevice device, const VkAcquireProfilingLockInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkAcquireProfilingLockKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquireProfilingLockKHR\n");
     return zreal_vkAcquireProfilingLockKHR(device, pInfo);
 }
 static PFN_vkReleaseProfilingLockKHR zreal_vkReleaseProfilingLockKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkReleaseProfilingLockKHR(VkDevice device) {
-    ZINK_TRACE("CALL vkReleaseProfilingLockKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkReleaseProfilingLockKHR\n");
     zreal_vkReleaseProfilingLockKHR(device);
 }
 static PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR zreal_vkGetPhysicalDeviceSurfaceCapabilities2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, VkSurfaceCapabilities2KHR* pSurfaceCapabilities) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2KHR\n");
     return zreal_vkGetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice, pSurfaceInfo, pSurfaceCapabilities);
 }
 static PFN_vkGetPhysicalDeviceSurfaceFormats2KHR zreal_vkGetPhysicalDeviceSurfaceFormats2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo, uint32_t* pSurfaceFormatCount, VkSurfaceFormat2KHR* pSurfaceFormats) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormats2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceFormats2KHR\n");
     return zreal_vkGetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, pSurfaceInfo, pSurfaceFormatCount, pSurfaceFormats);
 }
 static PFN_vkGetPhysicalDeviceDisplayProperties2KHR zreal_vkGetPhysicalDeviceDisplayProperties2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayProperties2KHR* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayProperties2KHR\n");
     return zreal_vkGetPhysicalDeviceDisplayProperties2KHR(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR zreal_vkGetPhysicalDeviceDisplayPlaneProperties2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceDisplayPlaneProperties2KHR(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkDisplayPlaneProperties2KHR* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlaneProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceDisplayPlaneProperties2KHR\n");
     return zreal_vkGetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetDisplayModeProperties2KHR zreal_vkGetDisplayModeProperties2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayModeProperties2KHR(VkPhysicalDevice physicalDevice, VkDisplayKHR display, uint32_t* pPropertyCount, VkDisplayModeProperties2KHR* pProperties) {
-    ZINK_TRACE("CALL vkGetDisplayModeProperties2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDisplayModeProperties2KHR\n");
     return zreal_vkGetDisplayModeProperties2KHR(physicalDevice, display, pPropertyCount, pProperties);
 }
 static PFN_vkGetDisplayPlaneCapabilities2KHR zreal_vkGetDisplayPlaneCapabilities2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDisplayPlaneCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkDisplayPlaneInfo2KHR* pDisplayPlaneInfo, VkDisplayPlaneCapabilities2KHR* pCapabilities) {
-    ZINK_TRACE("CALL vkGetDisplayPlaneCapabilities2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDisplayPlaneCapabilities2KHR\n");
     return zreal_vkGetDisplayPlaneCapabilities2KHR(physicalDevice, pDisplayPlaneInfo, pCapabilities);
 }
 static PFN_vkGetImageMemoryRequirements2KHR zreal_vkGetImageMemoryRequirements2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageMemoryRequirements2KHR(VkDevice device, const VkImageMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageMemoryRequirements2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageMemoryRequirements2KHR\n");
     zreal_vkGetImageMemoryRequirements2KHR(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetBufferMemoryRequirements2KHR zreal_vkGetBufferMemoryRequirements2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetBufferMemoryRequirements2KHR(VkDevice device, const VkBufferMemoryRequirementsInfo2* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetBufferMemoryRequirements2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferMemoryRequirements2KHR\n");
     zreal_vkGetBufferMemoryRequirements2KHR(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetImageSparseMemoryRequirements2KHR zreal_vkGetImageSparseMemoryRequirements2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSparseMemoryRequirements2KHR(VkDevice device, const VkImageSparseMemoryRequirementsInfo2* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageSparseMemoryRequirements2KHR\n");
     zreal_vkGetImageSparseMemoryRequirements2KHR(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
 }
 static PFN_vkCreateSamplerYcbcrConversionKHR zreal_vkCreateSamplerYcbcrConversionKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateSamplerYcbcrConversionKHR(VkDevice device, const VkSamplerYcbcrConversionCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSamplerYcbcrConversion* pYcbcrConversion) {
-    ZINK_TRACE("CALL vkCreateSamplerYcbcrConversionKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateSamplerYcbcrConversionKHR\n");
     return zreal_vkCreateSamplerYcbcrConversionKHR(device, pCreateInfo, pAllocator, pYcbcrConversion);
 }
 static PFN_vkDestroySamplerYcbcrConversionKHR zreal_vkDestroySamplerYcbcrConversionKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroySamplerYcbcrConversionKHR(VkDevice device, VkSamplerYcbcrConversion ycbcrConversion, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroySamplerYcbcrConversionKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroySamplerYcbcrConversionKHR\n");
     zreal_vkDestroySamplerYcbcrConversionKHR(device, ycbcrConversion, pAllocator);
 }
 static PFN_vkBindBufferMemory2KHR zreal_vkBindBufferMemory2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindBufferMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindBufferMemoryInfo* pBindInfos) {
-    ZINK_TRACE("CALL vkBindBufferMemory2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindBufferMemory2KHR\n");
     return zreal_vkBindBufferMemory2KHR(device, bindInfoCount, pBindInfos);
 }
 static PFN_vkBindImageMemory2KHR zreal_vkBindImageMemory2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindImageMemory2KHR(VkDevice device, uint32_t bindInfoCount, const VkBindImageMemoryInfo* pBindInfos) {
-    ZINK_TRACE("CALL vkBindImageMemory2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindImageMemory2KHR\n");
     return zreal_vkBindImageMemory2KHR(device, bindInfoCount, pBindInfos);
 }
 static PFN_vkGetDescriptorSetLayoutSupportKHR zreal_vkGetDescriptorSetLayoutSupportKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetLayoutSupportKHR(VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, VkDescriptorSetLayoutSupport* pSupport) {
-    ZINK_TRACE("CALL vkGetDescriptorSetLayoutSupportKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDescriptorSetLayoutSupportKHR\n");
     zreal_vkGetDescriptorSetLayoutSupportKHR(device, pCreateInfo, pSupport);
 }
 static PFN_vkCmdDrawIndirectCountKHR zreal_vkCmdDrawIndirectCountKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndirectCountKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndirectCountKHR\n");
     zreal_vkCmdDrawIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkCmdDrawIndexedIndirectCountKHR zreal_vkCmdDrawIndexedIndirectCountKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountKHR\n");
     zreal_vkCmdDrawIndexedIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR zreal_vkGetPhysicalDeviceFragmentShadingRatesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceFragmentShadingRatesKHR(VkPhysicalDevice physicalDevice, uint32_t* pFragmentShadingRateCount, VkPhysicalDeviceFragmentShadingRateKHR* pFragmentShadingRates) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceFragmentShadingRatesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceFragmentShadingRatesKHR\n");
     return zreal_vkGetPhysicalDeviceFragmentShadingRatesKHR(physicalDevice, pFragmentShadingRateCount, pFragmentShadingRates);
 }
 static PFN_vkCmdSetFragmentShadingRateKHR zreal_vkCmdSetFragmentShadingRateKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFragmentShadingRateKHR(VkCommandBuffer commandBuffer, const VkExtent2D* pFragmentSize, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
-    ZINK_TRACE("CALL vkCmdSetFragmentShadingRateKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetFragmentShadingRateKHR\n");
     zreal_vkCmdSetFragmentShadingRateKHR(commandBuffer, pFragmentSize, combinerOps);
 }
 static PFN_vkWaitForPresentKHR zreal_vkWaitForPresentKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWaitForPresentKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout) {
-    ZINK_TRACE("CALL vkWaitForPresentKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWaitForPresentKHR\n");
     return zreal_vkWaitForPresentKHR(device, swapchain, presentId, timeout);
 }
 static PFN_vkGetBufferDeviceAddressKHR zreal_vkGetBufferDeviceAddressKHR;
 static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetBufferDeviceAddressKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferDeviceAddressKHR\n");
     return zreal_vkGetBufferDeviceAddressKHR(device, pInfo);
 }
 static PFN_vkGetBufferOpaqueCaptureAddressKHR zreal_vkGetBufferOpaqueCaptureAddressKHR;
 static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetBufferOpaqueCaptureAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddressKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferOpaqueCaptureAddressKHR\n");
     return zreal_vkGetBufferOpaqueCaptureAddressKHR(device, pInfo);
 }
 static PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR zreal_vkGetDeviceMemoryOpaqueCaptureAddressKHR;
 static VKAPI_ATTR uint64_t VKAPI_CALL ztrace_vkGetDeviceMemoryOpaqueCaptureAddressKHR(VkDevice device, const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddressKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceMemoryOpaqueCaptureAddressKHR\n");
     return zreal_vkGetDeviceMemoryOpaqueCaptureAddressKHR(device, pInfo);
 }
 static PFN_vkCreateDeferredOperationKHR zreal_vkCreateDeferredOperationKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDeferredOperationKHR(VkDevice device, const VkAllocationCallbacks* pAllocator, VkDeferredOperationKHR* pDeferredOperation) {
-    ZINK_TRACE("CALL vkCreateDeferredOperationKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDeferredOperationKHR\n");
     return zreal_vkCreateDeferredOperationKHR(device, pAllocator, pDeferredOperation);
 }
 static PFN_vkDestroyDeferredOperationKHR zreal_vkDestroyDeferredOperationKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDeferredOperationKHR(VkDevice device, VkDeferredOperationKHR operation, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDeferredOperationKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDeferredOperationKHR\n");
     zreal_vkDestroyDeferredOperationKHR(device, operation, pAllocator);
 }
 static PFN_vkGetDeferredOperationMaxConcurrencyKHR zreal_vkGetDeferredOperationMaxConcurrencyKHR;
 static VKAPI_ATTR uint32_t VKAPI_CALL ztrace_vkGetDeferredOperationMaxConcurrencyKHR(VkDevice device, VkDeferredOperationKHR operation) {
-    ZINK_TRACE("CALL vkGetDeferredOperationMaxConcurrencyKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeferredOperationMaxConcurrencyKHR\n");
     return zreal_vkGetDeferredOperationMaxConcurrencyKHR(device, operation);
 }
 static PFN_vkGetDeferredOperationResultKHR zreal_vkGetDeferredOperationResultKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeferredOperationResultKHR(VkDevice device, VkDeferredOperationKHR operation) {
-    ZINK_TRACE("CALL vkGetDeferredOperationResultKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeferredOperationResultKHR\n");
     return zreal_vkGetDeferredOperationResultKHR(device, operation);
 }
 static PFN_vkDeferredOperationJoinKHR zreal_vkDeferredOperationJoinKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDeferredOperationJoinKHR(VkDevice device, VkDeferredOperationKHR operation) {
-    ZINK_TRACE("CALL vkDeferredOperationJoinKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDeferredOperationJoinKHR\n");
     return zreal_vkDeferredOperationJoinKHR(device, operation);
 }
 static PFN_vkGetPipelineExecutablePropertiesKHR zreal_vkGetPipelineExecutablePropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutablePropertiesKHR(VkDevice device, const VkPipelineInfoKHR* pPipelineInfo, uint32_t* pExecutableCount, VkPipelineExecutablePropertiesKHR* pProperties) {
-    ZINK_TRACE("CALL vkGetPipelineExecutablePropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPipelineExecutablePropertiesKHR\n");
     return zreal_vkGetPipelineExecutablePropertiesKHR(device, pPipelineInfo, pExecutableCount, pProperties);
 }
 static PFN_vkGetPipelineExecutableStatisticsKHR zreal_vkGetPipelineExecutableStatisticsKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutableStatisticsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pStatisticCount, VkPipelineExecutableStatisticKHR* pStatistics) {
-    ZINK_TRACE("CALL vkGetPipelineExecutableStatisticsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPipelineExecutableStatisticsKHR\n");
     return zreal_vkGetPipelineExecutableStatisticsKHR(device, pExecutableInfo, pStatisticCount, pStatistics);
 }
 static PFN_vkGetPipelineExecutableInternalRepresentationsKHR zreal_vkGetPipelineExecutableInternalRepresentationsKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelineExecutableInternalRepresentationsKHR(VkDevice device, const VkPipelineExecutableInfoKHR* pExecutableInfo, uint32_t* pInternalRepresentationCount, VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations) {
-    ZINK_TRACE("CALL vkGetPipelineExecutableInternalRepresentationsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPipelineExecutableInternalRepresentationsKHR\n");
     return zreal_vkGetPipelineExecutableInternalRepresentationsKHR(device, pExecutableInfo, pInternalRepresentationCount, pInternalRepresentations);
 }
 static PFN_vkCmdSetEvent2KHR zreal_vkCmdSetEvent2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo* pDependencyInfo) {
-    ZINK_TRACE("CALL vkCmdSetEvent2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetEvent2KHR\n");
     zreal_vkCmdSetEvent2KHR(commandBuffer, event, pDependencyInfo);
 }
 static PFN_vkCmdResetEvent2KHR zreal_vkCmdResetEvent2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2 stageMask) {
-    ZINK_TRACE("CALL vkCmdResetEvent2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResetEvent2KHR\n");
     zreal_vkCmdResetEvent2KHR(commandBuffer, event, stageMask);
 }
 static PFN_vkCmdWaitEvents2KHR zreal_vkCmdWaitEvents2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, const VkDependencyInfo* pDependencyInfos) {
-    ZINK_TRACE("CALL vkCmdWaitEvents2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWaitEvents2KHR\n");
     zreal_vkCmdWaitEvents2KHR(commandBuffer, eventCount, pEvents, pDependencyInfos);
 }
 static PFN_vkCmdPipelineBarrier2KHR zreal_vkCmdPipelineBarrier2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer, const VkDependencyInfo* pDependencyInfo) {
-    ZINK_TRACE("CALL vkCmdPipelineBarrier2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPipelineBarrier2KHR\n");
     zreal_vkCmdPipelineBarrier2KHR(commandBuffer, pDependencyInfo);
 }
 static PFN_vkCmdWriteTimestamp2KHR zreal_vkCmdWriteTimestamp2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteTimestamp2KHR(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkQueryPool queryPool, uint32_t query) {
-    ZINK_TRACE("CALL vkCmdWriteTimestamp2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteTimestamp2KHR\n");
     zreal_vkCmdWriteTimestamp2KHR(commandBuffer, stage, queryPool, query);
 }
 static PFN_vkQueueSubmit2KHR zreal_vkQueueSubmit2KHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) {
-    ZINK_TRACE("CALL vkQueueSubmit2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueSubmit2KHR\n");
     return zreal_vkQueueSubmit2KHR(queue, submitCount, pSubmits, fence);
 }
 static PFN_vkCmdWriteBufferMarker2AMD zreal_vkCmdWriteBufferMarker2AMD;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffer, VkPipelineStageFlags2 stage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
-    ZINK_TRACE("CALL vkCmdWriteBufferMarker2AMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteBufferMarker2AMD\n");
     zreal_vkCmdWriteBufferMarker2AMD(commandBuffer, stage, dstBuffer, dstOffset, marker);
 }
 static PFN_vkGetQueueCheckpointData2NV zreal_vkGetQueueCheckpointData2NV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetQueueCheckpointData2NV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointData2NV* pCheckpointData) {
-    ZINK_TRACE("CALL vkGetQueueCheckpointData2NV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetQueueCheckpointData2NV\n");
     zreal_vkGetQueueCheckpointData2NV(queue, pCheckpointDataCount, pCheckpointData);
 }
 static PFN_vkCmdCopyBuffer2KHR zreal_vkCmdCopyBuffer2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2* pCopyBufferInfo) {
-    ZINK_TRACE("CALL vkCmdCopyBuffer2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBuffer2KHR\n");
     zreal_vkCmdCopyBuffer2KHR(commandBuffer, pCopyBufferInfo);
 }
 static PFN_vkCmdCopyImage2KHR zreal_vkCmdCopyImage2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImage2KHR(VkCommandBuffer commandBuffer, const VkCopyImageInfo2* pCopyImageInfo) {
-    ZINK_TRACE("CALL vkCmdCopyImage2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImage2KHR\n");
     zreal_vkCmdCopyImage2KHR(commandBuffer, pCopyImageInfo);
 }
 static PFN_vkCmdCopyBufferToImage2KHR zreal_vkCmdCopyBufferToImage2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyBufferToImage2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo) {
-    ZINK_TRACE("CALL vkCmdCopyBufferToImage2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyBufferToImage2KHR\n");
     zreal_vkCmdCopyBufferToImage2KHR(commandBuffer, pCopyBufferToImageInfo);
 }
 static PFN_vkCmdCopyImageToBuffer2KHR zreal_vkCmdCopyImageToBuffer2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyImageToBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo) {
-    ZINK_TRACE("CALL vkCmdCopyImageToBuffer2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyImageToBuffer2KHR\n");
     zreal_vkCmdCopyImageToBuffer2KHR(commandBuffer, pCopyImageToBufferInfo);
 }
 static PFN_vkCmdBlitImage2KHR zreal_vkCmdBlitImage2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBlitImage2KHR(VkCommandBuffer commandBuffer, const VkBlitImageInfo2* pBlitImageInfo) {
-    ZINK_TRACE("CALL vkCmdBlitImage2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBlitImage2KHR\n");
     zreal_vkCmdBlitImage2KHR(commandBuffer, pBlitImageInfo);
 }
 static PFN_vkCmdResolveImage2KHR zreal_vkCmdResolveImage2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdResolveImage2KHR(VkCommandBuffer commandBuffer, const VkResolveImageInfo2* pResolveImageInfo) {
-    ZINK_TRACE("CALL vkCmdResolveImage2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdResolveImage2KHR\n");
     zreal_vkCmdResolveImage2KHR(commandBuffer, pResolveImageInfo);
 }
 static PFN_vkCmdTraceRaysIndirect2KHR zreal_vkCmdTraceRaysIndirect2KHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) {
-    ZINK_TRACE("CALL vkCmdTraceRaysIndirect2KHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdTraceRaysIndirect2KHR\n");
     zreal_vkCmdTraceRaysIndirect2KHR(commandBuffer, indirectDeviceAddress);
 }
 static PFN_vkGetDeviceBufferMemoryRequirementsKHR zreal_vkGetDeviceBufferMemoryRequirementsKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceBufferMemoryRequirementsKHR(VkDevice device, const VkDeviceBufferMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirementsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceBufferMemoryRequirementsKHR\n");
     zreal_vkGetDeviceBufferMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetDeviceImageMemoryRequirementsKHR zreal_vkGetDeviceImageMemoryRequirementsKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirementsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceImageMemoryRequirementsKHR\n");
     zreal_vkGetDeviceImageMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkGetDeviceImageSparseMemoryRequirementsKHR zreal_vkGetDeviceImageSparseMemoryRequirementsKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceImageSparseMemoryRequirementsKHR(VkDevice device, const VkDeviceImageMemoryRequirements* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirementsKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceImageSparseMemoryRequirementsKHR\n");
     zreal_vkGetDeviceImageSparseMemoryRequirementsKHR(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
 }
 static PFN_vkCreateDebugReportCallbackEXT zreal_vkCreateDebugReportCallbackEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
-    ZINK_TRACE("CALL vkCreateDebugReportCallbackEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateDebugReportCallbackEXT\n");
     return zreal_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
 }
 static PFN_vkDestroyDebugReportCallbackEXT zreal_vkDestroyDebugReportCallbackEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyDebugReportCallbackEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyDebugReportCallbackEXT\n");
     zreal_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
 }
 static PFN_vkDebugReportMessageEXT zreal_vkDebugReportMessageEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDebugReportMessageEXT(VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage) {
-    ZINK_TRACE("CALL vkDebugReportMessageEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDebugReportMessageEXT\n");
     zreal_vkDebugReportMessageEXT(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
 }
 static PFN_vkDebugMarkerSetObjectTagEXT zreal_vkDebugMarkerSetObjectTagEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDebugMarkerSetObjectTagEXT(VkDevice device, const VkDebugMarkerObjectTagInfoEXT* pTagInfo) {
-    ZINK_TRACE("CALL vkDebugMarkerSetObjectTagEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDebugMarkerSetObjectTagEXT\n");
     return zreal_vkDebugMarkerSetObjectTagEXT(device, pTagInfo);
 }
 static PFN_vkDebugMarkerSetObjectNameEXT zreal_vkDebugMarkerSetObjectNameEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDebugMarkerSetObjectNameEXT(VkDevice device, const VkDebugMarkerObjectNameInfoEXT* pNameInfo) {
-    ZINK_TRACE("CALL vkDebugMarkerSetObjectNameEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDebugMarkerSetObjectNameEXT\n");
     return zreal_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
 }
 static PFN_vkCmdDebugMarkerBeginEXT zreal_vkCmdDebugMarkerBeginEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerBeginEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
-    ZINK_TRACE("CALL vkCmdDebugMarkerBeginEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDebugMarkerBeginEXT\n");
     zreal_vkCmdDebugMarkerBeginEXT(commandBuffer, pMarkerInfo);
 }
 static PFN_vkCmdDebugMarkerEndEXT zreal_vkCmdDebugMarkerEndEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerEndEXT(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdDebugMarkerEndEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDebugMarkerEndEXT\n");
     zreal_vkCmdDebugMarkerEndEXT(commandBuffer);
 }
 static PFN_vkCmdDebugMarkerInsertEXT zreal_vkCmdDebugMarkerInsertEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDebugMarkerInsertEXT(VkCommandBuffer commandBuffer, const VkDebugMarkerMarkerInfoEXT* pMarkerInfo) {
-    ZINK_TRACE("CALL vkCmdDebugMarkerInsertEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDebugMarkerInsertEXT\n");
     zreal_vkCmdDebugMarkerInsertEXT(commandBuffer, pMarkerInfo);
 }
 static PFN_vkCmdBindTransformFeedbackBuffersEXT zreal_vkCmdBindTransformFeedbackBuffersEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindTransformFeedbackBuffersEXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes) {
-    ZINK_TRACE("CALL vkCmdBindTransformFeedbackBuffersEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindTransformFeedbackBuffersEXT\n");
     zreal_vkCmdBindTransformFeedbackBuffersEXT(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes);
 }
 static PFN_vkCmdBeginTransformFeedbackEXT zreal_vkCmdBeginTransformFeedbackEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
-    ZINK_TRACE("CALL vkCmdBeginTransformFeedbackEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginTransformFeedbackEXT\n");
     zreal_vkCmdBeginTransformFeedbackEXT(commandBuffer, firstCounterBuffer, counterBufferCount, pCounterBuffers, pCounterBufferOffsets);
 }
 static PFN_vkCmdEndTransformFeedbackEXT zreal_vkCmdEndTransformFeedbackEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndTransformFeedbackEXT(VkCommandBuffer commandBuffer, uint32_t firstCounterBuffer, uint32_t counterBufferCount, const VkBuffer* pCounterBuffers, const VkDeviceSize* pCounterBufferOffsets) {
-    ZINK_TRACE("CALL vkCmdEndTransformFeedbackEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndTransformFeedbackEXT\n");
     zreal_vkCmdEndTransformFeedbackEXT(commandBuffer, firstCounterBuffer, counterBufferCount, pCounterBuffers, pCounterBufferOffsets);
 }
 static PFN_vkCmdBeginQueryIndexedEXT zreal_vkCmdBeginQueryIndexedEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags, uint32_t index) {
-    ZINK_TRACE("CALL vkCmdBeginQueryIndexedEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginQueryIndexedEXT\n");
     zreal_vkCmdBeginQueryIndexedEXT(commandBuffer, queryPool, query, flags, index);
 }
 static PFN_vkCmdEndQueryIndexedEXT zreal_vkCmdEndQueryIndexedEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, uint32_t index) {
-    ZINK_TRACE("CALL vkCmdEndQueryIndexedEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndQueryIndexedEXT\n");
     zreal_vkCmdEndQueryIndexedEXT(commandBuffer, queryPool, query, index);
 }
 static PFN_vkCmdDrawIndirectByteCountEXT zreal_vkCmdDrawIndirectByteCountEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectByteCountEXT(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t firstInstance, VkBuffer counterBuffer, VkDeviceSize counterBufferOffset, uint32_t counterOffset, uint32_t vertexStride) {
-    ZINK_TRACE("CALL vkCmdDrawIndirectByteCountEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndirectByteCountEXT\n");
     zreal_vkCmdDrawIndirectByteCountEXT(commandBuffer, instanceCount, firstInstance, counterBuffer, counterBufferOffset, counterOffset, vertexStride);
 }
 static PFN_vkCreateCuModuleNVX zreal_vkCreateCuModuleNVX;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateCuModuleNVX(VkDevice device, const VkCuModuleCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuModuleNVX* pModule) {
-    ZINK_TRACE("CALL vkCreateCuModuleNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateCuModuleNVX\n");
     return zreal_vkCreateCuModuleNVX(device, pCreateInfo, pAllocator, pModule);
 }
 static PFN_vkCreateCuFunctionNVX zreal_vkCreateCuFunctionNVX;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateCuFunctionNVX(VkDevice device, const VkCuFunctionCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuFunctionNVX* pFunction) {
-    ZINK_TRACE("CALL vkCreateCuFunctionNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateCuFunctionNVX\n");
     return zreal_vkCreateCuFunctionNVX(device, pCreateInfo, pAllocator, pFunction);
 }
 static PFN_vkDestroyCuModuleNVX zreal_vkDestroyCuModuleNVX;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyCuModuleNVX(VkDevice device, VkCuModuleNVX module, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyCuModuleNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyCuModuleNVX\n");
     zreal_vkDestroyCuModuleNVX(device, module, pAllocator);
 }
 static PFN_vkDestroyCuFunctionNVX zreal_vkDestroyCuFunctionNVX;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyCuFunctionNVX(VkDevice device, VkCuFunctionNVX function, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyCuFunctionNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyCuFunctionNVX\n");
     zreal_vkDestroyCuFunctionNVX(device, function, pAllocator);
 }
 static PFN_vkCmdCuLaunchKernelNVX zreal_vkCmdCuLaunchKernelNVX;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCuLaunchKernelNVX(VkCommandBuffer commandBuffer, const VkCuLaunchInfoNVX* pLaunchInfo) {
-    ZINK_TRACE("CALL vkCmdCuLaunchKernelNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCuLaunchKernelNVX\n");
     zreal_vkCmdCuLaunchKernelNVX(commandBuffer, pLaunchInfo);
 }
 static PFN_vkGetImageViewHandleNVX zreal_vkGetImageViewHandleNVX;
 static VKAPI_ATTR uint32_t VKAPI_CALL ztrace_vkGetImageViewHandleNVX(VkDevice device, const VkImageViewHandleInfoNVX* pInfo) {
-    ZINK_TRACE("CALL vkGetImageViewHandleNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageViewHandleNVX\n");
     return zreal_vkGetImageViewHandleNVX(device, pInfo);
 }
 static PFN_vkGetImageViewAddressNVX zreal_vkGetImageViewAddressNVX;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetImageViewAddressNVX(VkDevice device, VkImageView imageView, VkImageViewAddressPropertiesNVX* pProperties) {
-    ZINK_TRACE("CALL vkGetImageViewAddressNVX\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageViewAddressNVX\n");
     return zreal_vkGetImageViewAddressNVX(device, imageView, pProperties);
 }
 static PFN_vkCmdDrawIndirectCountAMD zreal_vkCmdDrawIndirectCountAMD;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndirectCountAMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndirectCountAMD\n");
     zreal_vkCmdDrawIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkCmdDrawIndexedIndirectCountAMD zreal_vkCmdDrawIndexedIndirectCountAMD;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawIndexedIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountAMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawIndexedIndirectCountAMD\n");
     zreal_vkCmdDrawIndexedIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkGetShaderInfoAMD zreal_vkGetShaderInfoAMD;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetShaderInfoAMD(VkDevice device, VkPipeline pipeline, VkShaderStageFlagBits shaderStage, VkShaderInfoTypeAMD infoType, size_t* pInfoSize, void* pInfo) {
-    ZINK_TRACE("CALL vkGetShaderInfoAMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetShaderInfoAMD\n");
     return zreal_vkGetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, pInfo);
 }
 static PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV zreal_vkGetPhysicalDeviceExternalImageFormatPropertiesNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceExternalImageFormatPropertiesNV(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkExternalMemoryHandleTypeFlagsNV externalHandleType, VkExternalImageFormatPropertiesNV* pExternalImageFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceExternalImageFormatPropertiesNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceExternalImageFormatPropertiesNV\n");
     return zreal_vkGetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice, format, type, tiling, usage, flags, externalHandleType, pExternalImageFormatProperties);
 }
 static PFN_vkCmdBeginConditionalRenderingEXT zreal_vkCmdBeginConditionalRenderingEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBeginConditionalRenderingEXT(VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT* pConditionalRenderingBegin) {
-    ZINK_TRACE("CALL vkCmdBeginConditionalRenderingEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBeginConditionalRenderingEXT\n");
     zreal_vkCmdBeginConditionalRenderingEXT(commandBuffer, pConditionalRenderingBegin);
 }
 static PFN_vkCmdEndConditionalRenderingEXT zreal_vkCmdEndConditionalRenderingEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdEndConditionalRenderingEXT(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdEndConditionalRenderingEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdEndConditionalRenderingEXT\n");
     zreal_vkCmdEndConditionalRenderingEXT(commandBuffer);
 }
 static PFN_vkCmdSetViewportWScalingNV zreal_vkCmdSetViewportWScalingNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWScalingNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportWScalingNV* pViewportWScalings) {
-    ZINK_TRACE("CALL vkCmdSetViewportWScalingNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportWScalingNV\n");
     zreal_vkCmdSetViewportWScalingNV(commandBuffer, firstViewport, viewportCount, pViewportWScalings);
 }
 static PFN_vkReleaseDisplayEXT zreal_vkReleaseDisplayEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkReleaseDisplayEXT(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
-    ZINK_TRACE("CALL vkReleaseDisplayEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkReleaseDisplayEXT\n");
     return zreal_vkReleaseDisplayEXT(physicalDevice, display);
 }
 static PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT zreal_vkGetPhysicalDeviceSurfaceCapabilities2EXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilities2EXT* pSurfaceCapabilities) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2EXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSurfaceCapabilities2EXT\n");
     return zreal_vkGetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice, surface, pSurfaceCapabilities);
 }
 static PFN_vkDisplayPowerControlEXT zreal_vkDisplayPowerControlEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkDisplayPowerControlEXT(VkDevice device, VkDisplayKHR display, const VkDisplayPowerInfoEXT* pDisplayPowerInfo) {
-    ZINK_TRACE("CALL vkDisplayPowerControlEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDisplayPowerControlEXT\n");
     return zreal_vkDisplayPowerControlEXT(device, display, pDisplayPowerInfo);
 }
 static PFN_vkRegisterDeviceEventEXT zreal_vkRegisterDeviceEventEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkRegisterDeviceEventEXT(VkDevice device, const VkDeviceEventInfoEXT* pDeviceEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
-    ZINK_TRACE("CALL vkRegisterDeviceEventEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkRegisterDeviceEventEXT\n");
     return zreal_vkRegisterDeviceEventEXT(device, pDeviceEventInfo, pAllocator, pFence);
 }
 static PFN_vkRegisterDisplayEventEXT zreal_vkRegisterDisplayEventEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkRegisterDisplayEventEXT(VkDevice device, VkDisplayKHR display, const VkDisplayEventInfoEXT* pDisplayEventInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence) {
-    ZINK_TRACE("CALL vkRegisterDisplayEventEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkRegisterDisplayEventEXT\n");
     return zreal_vkRegisterDisplayEventEXT(device, display, pDisplayEventInfo, pAllocator, pFence);
 }
 static PFN_vkGetSwapchainCounterEXT zreal_vkGetSwapchainCounterEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetSwapchainCounterEXT(VkDevice device, VkSwapchainKHR swapchain, VkSurfaceCounterFlagBitsEXT counter, uint64_t* pCounterValue) {
-    ZINK_TRACE("CALL vkGetSwapchainCounterEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetSwapchainCounterEXT\n");
     return zreal_vkGetSwapchainCounterEXT(device, swapchain, counter, pCounterValue);
 }
 static PFN_vkGetRefreshCycleDurationGOOGLE zreal_vkGetRefreshCycleDurationGOOGLE;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRefreshCycleDurationGOOGLE(VkDevice device, VkSwapchainKHR swapchain, VkRefreshCycleDurationGOOGLE* pDisplayTimingProperties) {
-    ZINK_TRACE("CALL vkGetRefreshCycleDurationGOOGLE\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRefreshCycleDurationGOOGLE\n");
     return zreal_vkGetRefreshCycleDurationGOOGLE(device, swapchain, pDisplayTimingProperties);
 }
 static PFN_vkGetPastPresentationTimingGOOGLE zreal_vkGetPastPresentationTimingGOOGLE;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPastPresentationTimingGOOGLE(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pPresentationTimingCount, VkPastPresentationTimingGOOGLE* pPresentationTimings) {
-    ZINK_TRACE("CALL vkGetPastPresentationTimingGOOGLE\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPastPresentationTimingGOOGLE\n");
     return zreal_vkGetPastPresentationTimingGOOGLE(device, swapchain, pPresentationTimingCount, pPresentationTimings);
 }
 static PFN_vkCmdSetDiscardRectangleEXT zreal_vkCmdSetDiscardRectangleEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle, uint32_t discardRectangleCount, const VkRect2D* pDiscardRectangles) {
-    ZINK_TRACE("CALL vkCmdSetDiscardRectangleEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDiscardRectangleEXT\n");
     zreal_vkCmdSetDiscardRectangleEXT(commandBuffer, firstDiscardRectangle, discardRectangleCount, pDiscardRectangles);
 }
 static PFN_vkSetHdrMetadataEXT zreal_vkSetHdrMetadataEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, const VkSwapchainKHR* pSwapchains, const VkHdrMetadataEXT* pMetadata) {
-    ZINK_TRACE("CALL vkSetHdrMetadataEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetHdrMetadataEXT\n");
     zreal_vkSetHdrMetadataEXT(device, swapchainCount, pSwapchains, pMetadata);
 }
 static PFN_vkCmdSetSampleLocationsEXT zreal_vkCmdSetSampleLocationsEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleLocationsEXT(VkCommandBuffer commandBuffer, const VkSampleLocationsInfoEXT* pSampleLocationsInfo) {
-    ZINK_TRACE("CALL vkCmdSetSampleLocationsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetSampleLocationsEXT\n");
     zreal_vkCmdSetSampleLocationsEXT(commandBuffer, pSampleLocationsInfo);
 }
 static PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT zreal_vkGetPhysicalDeviceMultisamplePropertiesEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPhysicalDeviceMultisamplePropertiesEXT(VkPhysicalDevice physicalDevice, VkSampleCountFlagBits samples, VkMultisamplePropertiesEXT* pMultisampleProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceMultisamplePropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceMultisamplePropertiesEXT\n");
     zreal_vkGetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice, samples, pMultisampleProperties);
 }
 static PFN_vkGetImageDrmFormatModifierPropertiesEXT zreal_vkGetImageDrmFormatModifierPropertiesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetImageDrmFormatModifierPropertiesEXT(VkDevice device, VkImage image, VkImageDrmFormatModifierPropertiesEXT* pProperties) {
-    ZINK_TRACE("CALL vkGetImageDrmFormatModifierPropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageDrmFormatModifierPropertiesEXT\n");
     return zreal_vkGetImageDrmFormatModifierPropertiesEXT(device, image, pProperties);
 }
 static PFN_vkCreateValidationCacheEXT zreal_vkCreateValidationCacheEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateValidationCacheEXT(VkDevice device, const VkValidationCacheCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkValidationCacheEXT* pValidationCache) {
-    ZINK_TRACE("CALL vkCreateValidationCacheEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateValidationCacheEXT\n");
     return zreal_vkCreateValidationCacheEXT(device, pCreateInfo, pAllocator, pValidationCache);
 }
 static PFN_vkDestroyValidationCacheEXT zreal_vkDestroyValidationCacheEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyValidationCacheEXT(VkDevice device, VkValidationCacheEXT validationCache, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyValidationCacheEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyValidationCacheEXT\n");
     zreal_vkDestroyValidationCacheEXT(device, validationCache, pAllocator);
 }
 static PFN_vkMergeValidationCachesEXT zreal_vkMergeValidationCachesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkMergeValidationCachesEXT(VkDevice device, VkValidationCacheEXT dstCache, uint32_t srcCacheCount, const VkValidationCacheEXT* pSrcCaches) {
-    ZINK_TRACE("CALL vkMergeValidationCachesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkMergeValidationCachesEXT\n");
     return zreal_vkMergeValidationCachesEXT(device, dstCache, srcCacheCount, pSrcCaches);
 }
 static PFN_vkGetValidationCacheDataEXT zreal_vkGetValidationCacheDataEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetValidationCacheDataEXT(VkDevice device, VkValidationCacheEXT validationCache, size_t* pDataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetValidationCacheDataEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetValidationCacheDataEXT\n");
     return zreal_vkGetValidationCacheDataEXT(device, validationCache, pDataSize, pData);
 }
 static PFN_vkCmdBindShadingRateImageNV zreal_vkCmdBindShadingRateImageNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindShadingRateImageNV(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
-    ZINK_TRACE("CALL vkCmdBindShadingRateImageNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindShadingRateImageNV\n");
     zreal_vkCmdBindShadingRateImageNV(commandBuffer, imageView, imageLayout);
 }
 static PFN_vkCmdSetViewportShadingRatePaletteNV zreal_vkCmdSetViewportShadingRatePaletteNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportShadingRatePaletteNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkShadingRatePaletteNV* pShadingRatePalettes) {
-    ZINK_TRACE("CALL vkCmdSetViewportShadingRatePaletteNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportShadingRatePaletteNV\n");
     zreal_vkCmdSetViewportShadingRatePaletteNV(commandBuffer, firstViewport, viewportCount, pShadingRatePalettes);
 }
 static PFN_vkCmdSetCoarseSampleOrderNV zreal_vkCmdSetCoarseSampleOrderNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoarseSampleOrderNV(VkCommandBuffer commandBuffer, VkCoarseSampleOrderTypeNV sampleOrderType, uint32_t customSampleOrderCount, const VkCoarseSampleOrderCustomNV* pCustomSampleOrders) {
-    ZINK_TRACE("CALL vkCmdSetCoarseSampleOrderNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoarseSampleOrderNV\n");
     zreal_vkCmdSetCoarseSampleOrderNV(commandBuffer, sampleOrderType, customSampleOrderCount, pCustomSampleOrders);
 }
 static PFN_vkCreateAccelerationStructureNV zreal_vkCreateAccelerationStructureNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateAccelerationStructureNV(VkDevice device, const VkAccelerationStructureCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureNV* pAccelerationStructure) {
-    ZINK_TRACE("CALL vkCreateAccelerationStructureNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateAccelerationStructureNV\n");
     return zreal_vkCreateAccelerationStructureNV(device, pCreateInfo, pAllocator, pAccelerationStructure);
 }
 static PFN_vkDestroyAccelerationStructureNV zreal_vkDestroyAccelerationStructureNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyAccelerationStructureNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyAccelerationStructureNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyAccelerationStructureNV\n");
     zreal_vkDestroyAccelerationStructureNV(device, accelerationStructure, pAllocator);
 }
 static PFN_vkGetAccelerationStructureMemoryRequirementsNV zreal_vkGetAccelerationStructureMemoryRequirementsNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetAccelerationStructureMemoryRequirementsNV(VkDevice device, const VkAccelerationStructureMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2KHR* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetAccelerationStructureMemoryRequirementsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetAccelerationStructureMemoryRequirementsNV\n");
     zreal_vkGetAccelerationStructureMemoryRequirementsNV(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkBindAccelerationStructureMemoryNV zreal_vkBindAccelerationStructureMemoryNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindAccelerationStructureMemoryNV(VkDevice device, uint32_t bindInfoCount, const VkBindAccelerationStructureMemoryInfoNV* pBindInfos) {
-    ZINK_TRACE("CALL vkBindAccelerationStructureMemoryNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindAccelerationStructureMemoryNV\n");
     return zreal_vkBindAccelerationStructureMemoryNV(device, bindInfoCount, pBindInfos);
 }
 static PFN_vkCmdBuildAccelerationStructureNV zreal_vkCmdBuildAccelerationStructureNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructureNV(VkCommandBuffer commandBuffer, const VkAccelerationStructureInfoNV* pInfo, VkBuffer instanceData, VkDeviceSize instanceOffset, VkBool32 update, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkBuffer scratch, VkDeviceSize scratchOffset) {
-    ZINK_TRACE("CALL vkCmdBuildAccelerationStructureNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBuildAccelerationStructureNV\n");
     zreal_vkCmdBuildAccelerationStructureNV(commandBuffer, pInfo, instanceData, instanceOffset, update, dst, src, scratch, scratchOffset);
 }
 static PFN_vkCmdCopyAccelerationStructureNV zreal_vkCmdCopyAccelerationStructureNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureNV(VkCommandBuffer commandBuffer, VkAccelerationStructureNV dst, VkAccelerationStructureNV src, VkCopyAccelerationStructureModeKHR mode) {
-    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyAccelerationStructureNV\n");
     zreal_vkCmdCopyAccelerationStructureNV(commandBuffer, dst, src, mode);
 }
 static PFN_vkCmdTraceRaysNV zreal_vkCmdTraceRaysNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysNV(VkCommandBuffer commandBuffer, VkBuffer raygenShaderBindingTableBuffer, VkDeviceSize raygenShaderBindingOffset, VkBuffer missShaderBindingTableBuffer, VkDeviceSize missShaderBindingOffset, VkDeviceSize missShaderBindingStride, VkBuffer hitShaderBindingTableBuffer, VkDeviceSize hitShaderBindingOffset, VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer, VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride, uint32_t width, uint32_t height, uint32_t depth) {
-    ZINK_TRACE("CALL vkCmdTraceRaysNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdTraceRaysNV\n");
     zreal_vkCmdTraceRaysNV(commandBuffer, raygenShaderBindingTableBuffer, raygenShaderBindingOffset, missShaderBindingTableBuffer, missShaderBindingOffset, missShaderBindingStride, hitShaderBindingTableBuffer, hitShaderBindingOffset, hitShaderBindingStride, callableShaderBindingTableBuffer, callableShaderBindingOffset, callableShaderBindingStride, width, height, depth);
 }
 static PFN_vkCreateRayTracingPipelinesNV zreal_vkCreateRayTracingPipelinesNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRayTracingPipelinesNV(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoNV* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
-    ZINK_TRACE("CALL vkCreateRayTracingPipelinesNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateRayTracingPipelinesNV\n");
     return zreal_vkCreateRayTracingPipelinesNV(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
 }
 static PFN_vkGetRayTracingShaderGroupHandlesKHR zreal_vkGetRayTracingShaderGroupHandlesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesKHR\n");
     return zreal_vkGetRayTracingShaderGroupHandlesKHR(device, pipeline, firstGroup, groupCount, dataSize, pData);
 }
 static PFN_vkGetRayTracingShaderGroupHandlesNV zreal_vkGetRayTracingShaderGroupHandlesNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingShaderGroupHandlesNV(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRayTracingShaderGroupHandlesNV\n");
     return zreal_vkGetRayTracingShaderGroupHandlesNV(device, pipeline, firstGroup, groupCount, dataSize, pData);
 }
 static PFN_vkGetAccelerationStructureHandleNV zreal_vkGetAccelerationStructureHandleNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetAccelerationStructureHandleNV(VkDevice device, VkAccelerationStructureNV accelerationStructure, size_t dataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetAccelerationStructureHandleNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetAccelerationStructureHandleNV\n");
     return zreal_vkGetAccelerationStructureHandleNV(device, accelerationStructure, dataSize, pData);
 }
 static PFN_vkCmdWriteAccelerationStructuresPropertiesNV zreal_vkCmdWriteAccelerationStructuresPropertiesNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteAccelerationStructuresPropertiesNV(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureNV* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
-    ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesNV\n");
     zreal_vkCmdWriteAccelerationStructuresPropertiesNV(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
 }
 static PFN_vkCompileDeferredNV zreal_vkCompileDeferredNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCompileDeferredNV(VkDevice device, VkPipeline pipeline, uint32_t shader) {
-    ZINK_TRACE("CALL vkCompileDeferredNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCompileDeferredNV\n");
     return zreal_vkCompileDeferredNV(device, pipeline, shader);
 }
 static PFN_vkGetMemoryHostPointerPropertiesEXT zreal_vkGetMemoryHostPointerPropertiesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryHostPointerPropertiesEXT(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHostPointer, VkMemoryHostPointerPropertiesEXT* pMemoryHostPointerProperties) {
-    ZINK_TRACE("CALL vkGetMemoryHostPointerPropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetMemoryHostPointerPropertiesEXT\n");
     return zreal_vkGetMemoryHostPointerPropertiesEXT(device, handleType, pHostPointer, pMemoryHostPointerProperties);
 }
 static PFN_vkCmdWriteBufferMarkerAMD zreal_vkCmdWriteBufferMarkerAMD;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteBufferMarkerAMD(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
-    ZINK_TRACE("CALL vkCmdWriteBufferMarkerAMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteBufferMarkerAMD\n");
     zreal_vkCmdWriteBufferMarkerAMD(commandBuffer, pipelineStage, dstBuffer, dstOffset, marker);
 }
 static PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT zreal_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(VkPhysicalDevice physicalDevice, uint32_t* pTimeDomainCount, VkTimeDomainEXT* pTimeDomains) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceCalibrateableTimeDomainsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceCalibrateableTimeDomainsEXT\n");
     return zreal_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice, pTimeDomainCount, pTimeDomains);
 }
 static PFN_vkGetCalibratedTimestampsEXT zreal_vkGetCalibratedTimestampsEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetCalibratedTimestampsEXT(VkDevice device, uint32_t timestampCount, const VkCalibratedTimestampInfoEXT* pTimestampInfos, uint64_t* pTimestamps, uint64_t* pMaxDeviation) {
-    ZINK_TRACE("CALL vkGetCalibratedTimestampsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetCalibratedTimestampsEXT\n");
     return zreal_vkGetCalibratedTimestampsEXT(device, timestampCount, pTimestampInfos, pTimestamps, pMaxDeviation);
 }
 static PFN_vkCmdDrawMeshTasksNV zreal_vkCmdDrawMeshTasksNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksNV\n");
     zreal_vkCmdDrawMeshTasksNV(commandBuffer, taskCount, firstTask);
 }
 static PFN_vkCmdDrawMeshTasksIndirectNV zreal_vkCmdDrawMeshTasksIndirectNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectNV\n");
     zreal_vkCmdDrawMeshTasksIndirectNV(commandBuffer, buffer, offset, drawCount, stride);
 }
 static PFN_vkCmdDrawMeshTasksIndirectCountNV zreal_vkCmdDrawMeshTasksIndirectCountNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectCountNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountNV\n");
     zreal_vkCmdDrawMeshTasksIndirectCountNV(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkCmdSetExclusiveScissorNV zreal_vkCmdSetExclusiveScissorNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetExclusiveScissorNV(VkCommandBuffer commandBuffer, uint32_t firstExclusiveScissor, uint32_t exclusiveScissorCount, const VkRect2D* pExclusiveScissors) {
-    ZINK_TRACE("CALL vkCmdSetExclusiveScissorNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetExclusiveScissorNV\n");
     zreal_vkCmdSetExclusiveScissorNV(commandBuffer, firstExclusiveScissor, exclusiveScissorCount, pExclusiveScissors);
 }
 static PFN_vkCmdSetCheckpointNV zreal_vkCmdSetCheckpointNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCheckpointNV(VkCommandBuffer commandBuffer, const void* pCheckpointMarker) {
-    ZINK_TRACE("CALL vkCmdSetCheckpointNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCheckpointNV\n");
     zreal_vkCmdSetCheckpointNV(commandBuffer, pCheckpointMarker);
 }
 static PFN_vkGetQueueCheckpointDataNV zreal_vkGetQueueCheckpointDataNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetQueueCheckpointDataNV(VkQueue queue, uint32_t* pCheckpointDataCount, VkCheckpointDataNV* pCheckpointData) {
-    ZINK_TRACE("CALL vkGetQueueCheckpointDataNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetQueueCheckpointDataNV\n");
     zreal_vkGetQueueCheckpointDataNV(queue, pCheckpointDataCount, pCheckpointData);
 }
 static PFN_vkInitializePerformanceApiINTEL zreal_vkInitializePerformanceApiINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkInitializePerformanceApiINTEL(VkDevice device, const VkInitializePerformanceApiInfoINTEL* pInitializeInfo) {
-    ZINK_TRACE("CALL vkInitializePerformanceApiINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkInitializePerformanceApiINTEL\n");
     return zreal_vkInitializePerformanceApiINTEL(device, pInitializeInfo);
 }
 static PFN_vkUninitializePerformanceApiINTEL zreal_vkUninitializePerformanceApiINTEL;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkUninitializePerformanceApiINTEL(VkDevice device) {
-    ZINK_TRACE("CALL vkUninitializePerformanceApiINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkUninitializePerformanceApiINTEL\n");
     zreal_vkUninitializePerformanceApiINTEL(device);
 }
 static PFN_vkCmdSetPerformanceMarkerINTEL zreal_vkCmdSetPerformanceMarkerINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceMarkerInfoINTEL* pMarkerInfo) {
-    ZINK_TRACE("CALL vkCmdSetPerformanceMarkerINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPerformanceMarkerINTEL\n");
     return zreal_vkCmdSetPerformanceMarkerINTEL(commandBuffer, pMarkerInfo);
 }
 static PFN_vkCmdSetPerformanceStreamMarkerINTEL zreal_vkCmdSetPerformanceStreamMarkerINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceStreamMarkerINTEL(VkCommandBuffer commandBuffer, const VkPerformanceStreamMarkerInfoINTEL* pMarkerInfo) {
-    ZINK_TRACE("CALL vkCmdSetPerformanceStreamMarkerINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPerformanceStreamMarkerINTEL\n");
     return zreal_vkCmdSetPerformanceStreamMarkerINTEL(commandBuffer, pMarkerInfo);
 }
 static PFN_vkCmdSetPerformanceOverrideINTEL zreal_vkCmdSetPerformanceOverrideINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCmdSetPerformanceOverrideINTEL(VkCommandBuffer commandBuffer, const VkPerformanceOverrideInfoINTEL* pOverrideInfo) {
-    ZINK_TRACE("CALL vkCmdSetPerformanceOverrideINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPerformanceOverrideINTEL\n");
     return zreal_vkCmdSetPerformanceOverrideINTEL(commandBuffer, pOverrideInfo);
 }
 static PFN_vkAcquirePerformanceConfigurationINTEL zreal_vkAcquirePerformanceConfigurationINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquirePerformanceConfigurationINTEL(VkDevice device, const VkPerformanceConfigurationAcquireInfoINTEL* pAcquireInfo, VkPerformanceConfigurationINTEL* pConfiguration) {
-    ZINK_TRACE("CALL vkAcquirePerformanceConfigurationINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquirePerformanceConfigurationINTEL\n");
     return zreal_vkAcquirePerformanceConfigurationINTEL(device, pAcquireInfo, pConfiguration);
 }
 static PFN_vkReleasePerformanceConfigurationINTEL zreal_vkReleasePerformanceConfigurationINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkReleasePerformanceConfigurationINTEL(VkDevice device, VkPerformanceConfigurationINTEL configuration) {
-    ZINK_TRACE("CALL vkReleasePerformanceConfigurationINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkReleasePerformanceConfigurationINTEL\n");
     return zreal_vkReleasePerformanceConfigurationINTEL(device, configuration);
 }
 static PFN_vkQueueSetPerformanceConfigurationINTEL zreal_vkQueueSetPerformanceConfigurationINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkQueueSetPerformanceConfigurationINTEL(VkQueue queue, VkPerformanceConfigurationINTEL configuration) {
-    ZINK_TRACE("CALL vkQueueSetPerformanceConfigurationINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkQueueSetPerformanceConfigurationINTEL\n");
     return zreal_vkQueueSetPerformanceConfigurationINTEL(queue, configuration);
 }
 static PFN_vkGetPerformanceParameterINTEL zreal_vkGetPerformanceParameterINTEL;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPerformanceParameterINTEL(VkDevice device, VkPerformanceParameterTypeINTEL parameter, VkPerformanceValueINTEL* pValue) {
-    ZINK_TRACE("CALL vkGetPerformanceParameterINTEL\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPerformanceParameterINTEL\n");
     return zreal_vkGetPerformanceParameterINTEL(device, parameter, pValue);
 }
 static PFN_vkSetLocalDimmingAMD zreal_vkSetLocalDimmingAMD;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetLocalDimmingAMD(VkDevice device, VkSwapchainKHR swapChain, VkBool32 localDimmingEnable) {
-    ZINK_TRACE("CALL vkSetLocalDimmingAMD\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetLocalDimmingAMD\n");
     zreal_vkSetLocalDimmingAMD(device, swapChain, localDimmingEnable);
 }
 static PFN_vkGetBufferDeviceAddressEXT zreal_vkGetBufferDeviceAddressEXT;
 static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetBufferDeviceAddressEXT(VkDevice device, const VkBufferDeviceAddressInfo* pInfo) {
-    ZINK_TRACE("CALL vkGetBufferDeviceAddressEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetBufferDeviceAddressEXT\n");
     return zreal_vkGetBufferDeviceAddressEXT(device, pInfo);
 }
 static PFN_vkGetPhysicalDeviceToolPropertiesEXT zreal_vkGetPhysicalDeviceToolPropertiesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceToolPropertiesEXT(VkPhysicalDevice physicalDevice, uint32_t* pToolCount, VkPhysicalDeviceToolProperties* pToolProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceToolPropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceToolPropertiesEXT\n");
     return zreal_vkGetPhysicalDeviceToolPropertiesEXT(physicalDevice, pToolCount, pToolProperties);
 }
 static PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV zreal_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkCooperativeMatrixPropertiesNV* pProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceCooperativeMatrixPropertiesNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceCooperativeMatrixPropertiesNV\n");
     return zreal_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice, pPropertyCount, pProperties);
 }
 static PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV zreal_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(VkPhysicalDevice physicalDevice, uint32_t* pCombinationCount, VkFramebufferMixedSamplesCombinationNV* pCombinations) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV\n");
     return zreal_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice, pCombinationCount, pCombinations);
 }
 static PFN_vkCreateHeadlessSurfaceEXT zreal_vkCreateHeadlessSurfaceEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateHeadlessSurfaceEXT(VkInstance instance, const VkHeadlessSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface) {
-    ZINK_TRACE("CALL vkCreateHeadlessSurfaceEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateHeadlessSurfaceEXT\n");
     return zreal_vkCreateHeadlessSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
 }
 static PFN_vkCmdSetLineStippleEXT zreal_vkCmdSetLineStippleEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineStippleEXT(VkCommandBuffer commandBuffer, uint32_t lineStippleFactor, uint16_t lineStipplePattern) {
-    ZINK_TRACE("CALL vkCmdSetLineStippleEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLineStippleEXT\n");
     zreal_vkCmdSetLineStippleEXT(commandBuffer, lineStippleFactor, lineStipplePattern);
 }
 static PFN_vkResetQueryPoolEXT zreal_vkResetQueryPoolEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkResetQueryPoolEXT(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount) {
-    ZINK_TRACE("CALL vkResetQueryPoolEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkResetQueryPoolEXT\n");
     zreal_vkResetQueryPoolEXT(device, queryPool, firstQuery, queryCount);
 }
 static PFN_vkCmdSetCullModeEXT zreal_vkCmdSetCullModeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCullModeEXT(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) {
-    ZINK_TRACE("CALL vkCmdSetCullModeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCullModeEXT\n");
     zreal_vkCmdSetCullModeEXT(commandBuffer, cullMode);
 }
 static PFN_vkCmdSetFrontFaceEXT zreal_vkCmdSetFrontFaceEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFrontFaceEXT(VkCommandBuffer commandBuffer, VkFrontFace frontFace) {
-    ZINK_TRACE("CALL vkCmdSetFrontFaceEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetFrontFaceEXT\n");
     zreal_vkCmdSetFrontFaceEXT(commandBuffer, frontFace);
 }
 static PFN_vkCmdSetPrimitiveTopologyEXT zreal_vkCmdSetPrimitiveTopologyEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveTopologyEXT(VkCommandBuffer commandBuffer, VkPrimitiveTopology primitiveTopology) {
-    ZINK_TRACE("CALL vkCmdSetPrimitiveTopologyEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPrimitiveTopologyEXT\n");
     zreal_vkCmdSetPrimitiveTopologyEXT(commandBuffer, primitiveTopology);
 }
 static PFN_vkCmdSetViewportWithCountEXT zreal_vkCmdSetViewportWithCountEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWithCountEXT(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport* pViewports) {
-    ZINK_TRACE("CALL vkCmdSetViewportWithCountEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportWithCountEXT\n");
     zreal_vkCmdSetViewportWithCountEXT(commandBuffer, viewportCount, pViewports);
 }
 static PFN_vkCmdSetScissorWithCountEXT zreal_vkCmdSetScissorWithCountEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetScissorWithCountEXT(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D* pScissors) {
-    ZINK_TRACE("CALL vkCmdSetScissorWithCountEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetScissorWithCountEXT\n");
     zreal_vkCmdSetScissorWithCountEXT(commandBuffer, scissorCount, pScissors);
 }
 static PFN_vkCmdBindVertexBuffers2EXT zreal_vkCmdBindVertexBuffers2EXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindVertexBuffers2EXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets, const VkDeviceSize* pSizes, const VkDeviceSize* pStrides) {
-    ZINK_TRACE("CALL vkCmdBindVertexBuffers2EXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindVertexBuffers2EXT\n");
     zreal_vkCmdBindVertexBuffers2EXT(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets, pSizes, pStrides);
 }
 static PFN_vkCmdSetDepthTestEnableEXT zreal_vkCmdSetDepthTestEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthTestEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthTestEnableEXT\n");
     zreal_vkCmdSetDepthTestEnableEXT(commandBuffer, depthTestEnable);
 }
 static PFN_vkCmdSetDepthWriteEnableEXT zreal_vkCmdSetDepthWriteEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthWriteEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthWriteEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthWriteEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthWriteEnableEXT\n");
     zreal_vkCmdSetDepthWriteEnableEXT(commandBuffer, depthWriteEnable);
 }
 static PFN_vkCmdSetDepthCompareOpEXT zreal_vkCmdSetDepthCompareOpEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthCompareOpEXT(VkCommandBuffer commandBuffer, VkCompareOp depthCompareOp) {
-    ZINK_TRACE("CALL vkCmdSetDepthCompareOpEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthCompareOpEXT\n");
     zreal_vkCmdSetDepthCompareOpEXT(commandBuffer, depthCompareOp);
 }
 static PFN_vkCmdSetDepthBoundsTestEnableEXT zreal_vkCmdSetDepthBoundsTestEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBoundsTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBoundsTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBoundsTestEnableEXT\n");
     zreal_vkCmdSetDepthBoundsTestEnableEXT(commandBuffer, depthBoundsTestEnable);
 }
 static PFN_vkCmdSetStencilTestEnableEXT zreal_vkCmdSetStencilTestEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilTestEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stencilTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetStencilTestEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilTestEnableEXT\n");
     zreal_vkCmdSetStencilTestEnableEXT(commandBuffer, stencilTestEnable);
 }
 static PFN_vkCmdSetStencilOpEXT zreal_vkCmdSetStencilOpEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetStencilOpEXT(VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp, VkCompareOp compareOp) {
-    ZINK_TRACE("CALL vkCmdSetStencilOpEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetStencilOpEXT\n");
     zreal_vkCmdSetStencilOpEXT(commandBuffer, faceMask, failOp, passOp, depthFailOp, compareOp);
 }
 static PFN_vkGetGeneratedCommandsMemoryRequirementsNV zreal_vkGetGeneratedCommandsMemoryRequirementsNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetGeneratedCommandsMemoryRequirementsNV(VkDevice device, const VkGeneratedCommandsMemoryRequirementsInfoNV* pInfo, VkMemoryRequirements2* pMemoryRequirements) {
-    ZINK_TRACE("CALL vkGetGeneratedCommandsMemoryRequirementsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetGeneratedCommandsMemoryRequirementsNV\n");
     zreal_vkGetGeneratedCommandsMemoryRequirementsNV(device, pInfo, pMemoryRequirements);
 }
 static PFN_vkCmdPreprocessGeneratedCommandsNV zreal_vkCmdPreprocessGeneratedCommandsNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdPreprocessGeneratedCommandsNV(VkCommandBuffer commandBuffer, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
-    ZINK_TRACE("CALL vkCmdPreprocessGeneratedCommandsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdPreprocessGeneratedCommandsNV\n");
     zreal_vkCmdPreprocessGeneratedCommandsNV(commandBuffer, pGeneratedCommandsInfo);
 }
 static PFN_vkCmdExecuteGeneratedCommandsNV zreal_vkCmdExecuteGeneratedCommandsNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdExecuteGeneratedCommandsNV(VkCommandBuffer commandBuffer, VkBool32 isPreprocessed, const VkGeneratedCommandsInfoNV* pGeneratedCommandsInfo) {
-    ZINK_TRACE("CALL vkCmdExecuteGeneratedCommandsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdExecuteGeneratedCommandsNV\n");
     zreal_vkCmdExecuteGeneratedCommandsNV(commandBuffer, isPreprocessed, pGeneratedCommandsInfo);
 }
 static PFN_vkCmdBindPipelineShaderGroupNV zreal_vkCmdBindPipelineShaderGroupNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindPipelineShaderGroupNV(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline, uint32_t groupIndex) {
-    ZINK_TRACE("CALL vkCmdBindPipelineShaderGroupNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindPipelineShaderGroupNV\n");
     zreal_vkCmdBindPipelineShaderGroupNV(commandBuffer, pipelineBindPoint, pipeline, groupIndex);
 }
 static PFN_vkCreateIndirectCommandsLayoutNV zreal_vkCreateIndirectCommandsLayoutNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateIndirectCommandsLayoutNV(VkDevice device, const VkIndirectCommandsLayoutCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkIndirectCommandsLayoutNV* pIndirectCommandsLayout) {
-    ZINK_TRACE("CALL vkCreateIndirectCommandsLayoutNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateIndirectCommandsLayoutNV\n");
     return zreal_vkCreateIndirectCommandsLayoutNV(device, pCreateInfo, pAllocator, pIndirectCommandsLayout);
 }
 static PFN_vkDestroyIndirectCommandsLayoutNV zreal_vkDestroyIndirectCommandsLayoutNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyIndirectCommandsLayoutNV(VkDevice device, VkIndirectCommandsLayoutNV indirectCommandsLayout, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyIndirectCommandsLayoutNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyIndirectCommandsLayoutNV\n");
     zreal_vkDestroyIndirectCommandsLayoutNV(device, indirectCommandsLayout, pAllocator);
 }
 static PFN_vkAcquireDrmDisplayEXT zreal_vkAcquireDrmDisplayEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, VkDisplayKHR display) {
-    ZINK_TRACE("CALL vkAcquireDrmDisplayEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquireDrmDisplayEXT\n");
     return zreal_vkAcquireDrmDisplayEXT(physicalDevice, drmFd, display);
 }
 static PFN_vkGetDrmDisplayEXT zreal_vkGetDrmDisplayEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDrmDisplayEXT(VkPhysicalDevice physicalDevice, int32_t drmFd, uint32_t connectorId, VkDisplayKHR* display) {
-    ZINK_TRACE("CALL vkGetDrmDisplayEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDrmDisplayEXT\n");
     return zreal_vkGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
 }
 static PFN_vkCreatePrivateDataSlotEXT zreal_vkCreatePrivateDataSlotEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreatePrivateDataSlotEXT(VkDevice device, const VkPrivateDataSlotCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlot* pPrivateDataSlot) {
-    ZINK_TRACE("CALL vkCreatePrivateDataSlotEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreatePrivateDataSlotEXT\n");
     return zreal_vkCreatePrivateDataSlotEXT(device, pCreateInfo, pAllocator, pPrivateDataSlot);
 }
 static PFN_vkDestroyPrivateDataSlotEXT zreal_vkDestroyPrivateDataSlotEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyPrivateDataSlotEXT(VkDevice device, VkPrivateDataSlot privateDataSlot, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyPrivateDataSlotEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyPrivateDataSlotEXT\n");
     zreal_vkDestroyPrivateDataSlotEXT(device, privateDataSlot, pAllocator);
 }
 static PFN_vkSetPrivateDataEXT zreal_vkSetPrivateDataEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkSetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t data) {
-    ZINK_TRACE("CALL vkSetPrivateDataEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetPrivateDataEXT\n");
     return zreal_vkSetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, data);
 }
 static PFN_vkGetPrivateDataEXT zreal_vkGetPrivateDataEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetPrivateDataEXT(VkDevice device, VkObjectType objectType, uint64_t objectHandle, VkPrivateDataSlot privateDataSlot, uint64_t* pData) {
-    ZINK_TRACE("CALL vkGetPrivateDataEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPrivateDataEXT\n");
     zreal_vkGetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
 }
 static PFN_vkCmdSetFragmentShadingRateEnumNV zreal_vkCmdSetFragmentShadingRateEnumNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetFragmentShadingRateEnumNV(VkCommandBuffer commandBuffer, VkFragmentShadingRateNV shadingRate, const VkFragmentShadingRateCombinerOpKHR combinerOps[2]) {
-    ZINK_TRACE("CALL vkCmdSetFragmentShadingRateEnumNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetFragmentShadingRateEnumNV\n");
     zreal_vkCmdSetFragmentShadingRateEnumNV(commandBuffer, shadingRate, combinerOps);
 }
 static PFN_vkGetImageSubresourceLayout2EXT zreal_vkGetImageSubresourceLayout2EXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetImageSubresourceLayout2EXT(VkDevice device, VkImage image, const VkImageSubresource2EXT* pSubresource, VkSubresourceLayout2EXT* pLayout) {
-    ZINK_TRACE("CALL vkGetImageSubresourceLayout2EXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetImageSubresourceLayout2EXT\n");
     zreal_vkGetImageSubresourceLayout2EXT(device, image, pSubresource, pLayout);
 }
 static PFN_vkGetDeviceFaultInfoEXT zreal_vkGetDeviceFaultInfoEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceFaultInfoEXT(VkDevice device, VkDeviceFaultCountsEXT* pFaultCounts, VkDeviceFaultInfoEXT* pFaultInfo) {
-    ZINK_TRACE("CALL vkGetDeviceFaultInfoEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceFaultInfoEXT\n");
     return zreal_vkGetDeviceFaultInfoEXT(device, pFaultCounts, pFaultInfo);
 }
 static PFN_vkAcquireWinrtDisplayNV zreal_vkAcquireWinrtDisplayNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkAcquireWinrtDisplayNV(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
-    ZINK_TRACE("CALL vkAcquireWinrtDisplayNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkAcquireWinrtDisplayNV\n");
     return zreal_vkAcquireWinrtDisplayNV(physicalDevice, display);
 }
 static PFN_vkGetWinrtDisplayNV zreal_vkGetWinrtDisplayNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetWinrtDisplayNV(VkPhysicalDevice physicalDevice, uint32_t deviceRelativeId, VkDisplayKHR* pDisplay) {
-    ZINK_TRACE("CALL vkGetWinrtDisplayNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetWinrtDisplayNV\n");
     return zreal_vkGetWinrtDisplayNV(physicalDevice, deviceRelativeId, pDisplay);
 }
 static PFN_vkCmdSetVertexInputEXT zreal_vkCmdSetVertexInputEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetVertexInputEXT(VkCommandBuffer commandBuffer, uint32_t vertexBindingDescriptionCount, const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions, uint32_t vertexAttributeDescriptionCount, const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) {
-    ZINK_TRACE("CALL vkCmdSetVertexInputEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetVertexInputEXT\n");
     zreal_vkCmdSetVertexInputEXT(commandBuffer, vertexBindingDescriptionCount, pVertexBindingDescriptions, vertexAttributeDescriptionCount, pVertexAttributeDescriptions);
 }
 static PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI zreal_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(VkDevice device, VkRenderPass renderpass, VkExtent2D* pMaxWorkgroupSize) {
-    ZINK_TRACE("CALL vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI\n");
     return zreal_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(device, renderpass, pMaxWorkgroupSize);
 }
 static PFN_vkCmdSubpassShadingHUAWEI zreal_vkCmdSubpassShadingHUAWEI;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSubpassShadingHUAWEI(VkCommandBuffer commandBuffer) {
-    ZINK_TRACE("CALL vkCmdSubpassShadingHUAWEI\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSubpassShadingHUAWEI\n");
     zreal_vkCmdSubpassShadingHUAWEI(commandBuffer);
 }
 static PFN_vkCmdBindInvocationMaskHUAWEI zreal_vkCmdBindInvocationMaskHUAWEI;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBindInvocationMaskHUAWEI(VkCommandBuffer commandBuffer, VkImageView imageView, VkImageLayout imageLayout) {
-    ZINK_TRACE("CALL vkCmdBindInvocationMaskHUAWEI\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBindInvocationMaskHUAWEI\n");
     zreal_vkCmdBindInvocationMaskHUAWEI(commandBuffer, imageView, imageLayout);
 }
 static PFN_vkGetMemoryRemoteAddressNV zreal_vkGetMemoryRemoteAddressNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetMemoryRemoteAddressNV(VkDevice device, const VkMemoryGetRemoteAddressInfoNV* pMemoryGetRemoteAddressInfo, VkRemoteAddressNV* pAddress) {
-    ZINK_TRACE("CALL vkGetMemoryRemoteAddressNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetMemoryRemoteAddressNV\n");
     return zreal_vkGetMemoryRemoteAddressNV(device, pMemoryGetRemoteAddressInfo, pAddress);
 }
 static PFN_vkGetPipelinePropertiesEXT zreal_vkGetPipelinePropertiesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPipelinePropertiesEXT(VkDevice device, const VkPipelineInfoEXT* pPipelineInfo, VkBaseOutStructure* pPipelineProperties) {
-    ZINK_TRACE("CALL vkGetPipelinePropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPipelinePropertiesEXT\n");
     return zreal_vkGetPipelinePropertiesEXT(device, pPipelineInfo, pPipelineProperties);
 }
 static PFN_vkCmdSetPatchControlPointsEXT zreal_vkCmdSetPatchControlPointsEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPatchControlPointsEXT(VkCommandBuffer commandBuffer, uint32_t patchControlPoints) {
-    ZINK_TRACE("CALL vkCmdSetPatchControlPointsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPatchControlPointsEXT\n");
     zreal_vkCmdSetPatchControlPointsEXT(commandBuffer, patchControlPoints);
 }
 static PFN_vkCmdSetRasterizerDiscardEnableEXT zreal_vkCmdSetRasterizerDiscardEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizerDiscardEnableEXT(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable) {
-    ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRasterizerDiscardEnableEXT\n");
     zreal_vkCmdSetRasterizerDiscardEnableEXT(commandBuffer, rasterizerDiscardEnable);
 }
 static PFN_vkCmdSetDepthBiasEnableEXT zreal_vkCmdSetDepthBiasEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthBiasEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthBiasEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthBiasEnableEXT\n");
     zreal_vkCmdSetDepthBiasEnableEXT(commandBuffer, depthBiasEnable);
 }
 static PFN_vkCmdSetLogicOpEXT zreal_vkCmdSetLogicOpEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLogicOpEXT(VkCommandBuffer commandBuffer, VkLogicOp logicOp) {
-    ZINK_TRACE("CALL vkCmdSetLogicOpEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLogicOpEXT\n");
     zreal_vkCmdSetLogicOpEXT(commandBuffer, logicOp);
 }
 static PFN_vkCmdSetPrimitiveRestartEnableEXT zreal_vkCmdSetPrimitiveRestartEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPrimitiveRestartEnableEXT(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable) {
-    ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPrimitiveRestartEnableEXT\n");
     zreal_vkCmdSetPrimitiveRestartEnableEXT(commandBuffer, primitiveRestartEnable);
 }
 static PFN_vkCmdSetColorWriteEnableEXT zreal_vkCmdSetColorWriteEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorWriteEnableEXT(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkBool32* pColorWriteEnables) {
-    ZINK_TRACE("CALL vkCmdSetColorWriteEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetColorWriteEnableEXT\n");
     zreal_vkCmdSetColorWriteEnableEXT(commandBuffer, attachmentCount, pColorWriteEnables);
 }
 static PFN_vkCmdDrawMultiEXT zreal_vkCmdDrawMultiEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawMultiEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMultiEXT\n");
     zreal_vkCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
 }
 static PFN_vkCmdDrawMultiIndexedEXT zreal_vkCmdDrawMultiIndexedEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawIndexedInfoEXT* pIndexInfo, uint32_t instanceCount, uint32_t firstInstance, uint32_t stride, const int32_t* pVertexOffset) {
-    ZINK_TRACE("CALL vkCmdDrawMultiIndexedEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMultiIndexedEXT\n");
     zreal_vkCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
 }
 static PFN_vkCreateMicromapEXT zreal_vkCreateMicromapEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateMicromapEXT(VkDevice device, const VkMicromapCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkMicromapEXT* pMicromap) {
-    ZINK_TRACE("CALL vkCreateMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateMicromapEXT\n");
     return zreal_vkCreateMicromapEXT(device, pCreateInfo, pAllocator, pMicromap);
 }
 static PFN_vkDestroyMicromapEXT zreal_vkDestroyMicromapEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyMicromapEXT(VkDevice device, VkMicromapEXT micromap, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyMicromapEXT\n");
     zreal_vkDestroyMicromapEXT(device, micromap, pAllocator);
 }
 static PFN_vkCmdBuildMicromapsEXT zreal_vkCmdBuildMicromapsEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildMicromapsEXT(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
-    ZINK_TRACE("CALL vkCmdBuildMicromapsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBuildMicromapsEXT\n");
     zreal_vkCmdBuildMicromapsEXT(commandBuffer, infoCount, pInfos);
 }
 static PFN_vkBuildMicromapsEXT zreal_vkBuildMicromapsEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBuildMicromapsEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkMicromapBuildInfoEXT* pInfos) {
-    ZINK_TRACE("CALL vkBuildMicromapsEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBuildMicromapsEXT\n");
     return zreal_vkBuildMicromapsEXT(device, deferredOperation, infoCount, pInfos);
 }
 static PFN_vkCopyMicromapEXT zreal_vkCopyMicromapEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCopyMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyMicromapEXT\n");
     return zreal_vkCopyMicromapEXT(device, deferredOperation, pInfo);
 }
 static PFN_vkCopyMicromapToMemoryEXT zreal_vkCopyMicromapToMemoryEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMicromapToMemoryEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCopyMicromapToMemoryEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyMicromapToMemoryEXT\n");
     return zreal_vkCopyMicromapToMemoryEXT(device, deferredOperation, pInfo);
 }
 static PFN_vkCopyMemoryToMicromapEXT zreal_vkCopyMemoryToMicromapEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMemoryToMicromapEXT(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCopyMemoryToMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyMemoryToMicromapEXT\n");
     return zreal_vkCopyMemoryToMicromapEXT(device, deferredOperation, pInfo);
 }
 static PFN_vkWriteMicromapsPropertiesEXT zreal_vkWriteMicromapsPropertiesEXT;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWriteMicromapsPropertiesEXT(VkDevice device, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
-    ZINK_TRACE("CALL vkWriteMicromapsPropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWriteMicromapsPropertiesEXT\n");
     return zreal_vkWriteMicromapsPropertiesEXT(device, micromapCount, pMicromaps, queryType, dataSize, pData, stride);
 }
 static PFN_vkCmdCopyMicromapEXT zreal_vkCmdCopyMicromapEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyMicromapEXT\n");
     zreal_vkCmdCopyMicromapEXT(commandBuffer, pInfo);
 }
 static PFN_vkCmdCopyMicromapToMemoryEXT zreal_vkCmdCopyMicromapToMemoryEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMicromapToMemoryEXT(VkCommandBuffer commandBuffer, const VkCopyMicromapToMemoryInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyMicromapToMemoryEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyMicromapToMemoryEXT\n");
     zreal_vkCmdCopyMicromapToMemoryEXT(commandBuffer, pInfo);
 }
 static PFN_vkCmdCopyMemoryToMicromapEXT zreal_vkCmdCopyMemoryToMicromapEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMemoryToMicromapEXT(VkCommandBuffer commandBuffer, const VkCopyMemoryToMicromapInfoEXT* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyMemoryToMicromapEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyMemoryToMicromapEXT\n");
     zreal_vkCmdCopyMemoryToMicromapEXT(commandBuffer, pInfo);
 }
 static PFN_vkCmdWriteMicromapsPropertiesEXT zreal_vkCmdWriteMicromapsPropertiesEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteMicromapsPropertiesEXT(VkCommandBuffer commandBuffer, uint32_t micromapCount, const VkMicromapEXT* pMicromaps, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
-    ZINK_TRACE("CALL vkCmdWriteMicromapsPropertiesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteMicromapsPropertiesEXT\n");
     zreal_vkCmdWriteMicromapsPropertiesEXT(commandBuffer, micromapCount, pMicromaps, queryType, queryPool, firstQuery);
 }
 static PFN_vkGetDeviceMicromapCompatibilityEXT zreal_vkGetDeviceMicromapCompatibilityEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceMicromapCompatibilityEXT(VkDevice device, const VkMicromapVersionInfoEXT* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
-    ZINK_TRACE("CALL vkGetDeviceMicromapCompatibilityEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceMicromapCompatibilityEXT\n");
     zreal_vkGetDeviceMicromapCompatibilityEXT(device, pVersionInfo, pCompatibility);
 }
 static PFN_vkGetMicromapBuildSizesEXT zreal_vkGetMicromapBuildSizesEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetMicromapBuildSizesEXT(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkMicromapBuildInfoEXT* pBuildInfo, VkMicromapBuildSizesInfoEXT* pSizeInfo) {
-    ZINK_TRACE("CALL vkGetMicromapBuildSizesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetMicromapBuildSizesEXT\n");
     zreal_vkGetMicromapBuildSizesEXT(device, buildType, pBuildInfo, pSizeInfo);
 }
 static PFN_vkSetDeviceMemoryPriorityEXT zreal_vkSetDeviceMemoryPriorityEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkSetDeviceMemoryPriorityEXT(VkDevice device, VkDeviceMemory memory, float priority) {
-    ZINK_TRACE("CALL vkSetDeviceMemoryPriorityEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkSetDeviceMemoryPriorityEXT\n");
     zreal_vkSetDeviceMemoryPriorityEXT(device, memory, priority);
 }
 static PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE zreal_vkGetDescriptorSetLayoutHostMappingInfoVALVE;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetLayoutHostMappingInfoVALVE(VkDevice device, const VkDescriptorSetBindingReferenceVALVE* pBindingReference, VkDescriptorSetLayoutHostMappingInfoVALVE* pHostMapping) {
-    ZINK_TRACE("CALL vkGetDescriptorSetLayoutHostMappingInfoVALVE\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDescriptorSetLayoutHostMappingInfoVALVE\n");
     zreal_vkGetDescriptorSetLayoutHostMappingInfoVALVE(device, pBindingReference, pHostMapping);
 }
 static PFN_vkGetDescriptorSetHostMappingVALVE zreal_vkGetDescriptorSetHostMappingVALVE;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDescriptorSetHostMappingVALVE(VkDevice device, VkDescriptorSet descriptorSet, void** ppData) {
-    ZINK_TRACE("CALL vkGetDescriptorSetHostMappingVALVE\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDescriptorSetHostMappingVALVE\n");
     zreal_vkGetDescriptorSetHostMappingVALVE(device, descriptorSet, ppData);
 }
 static PFN_vkCmdSetTessellationDomainOriginEXT zreal_vkCmdSetTessellationDomainOriginEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetTessellationDomainOriginEXT(VkCommandBuffer commandBuffer, VkTessellationDomainOrigin domainOrigin) {
-    ZINK_TRACE("CALL vkCmdSetTessellationDomainOriginEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetTessellationDomainOriginEXT\n");
     zreal_vkCmdSetTessellationDomainOriginEXT(commandBuffer, domainOrigin);
 }
 static PFN_vkCmdSetDepthClampEnableEXT zreal_vkCmdSetDepthClampEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClampEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClampEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthClampEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthClampEnableEXT\n");
     zreal_vkCmdSetDepthClampEnableEXT(commandBuffer, depthClampEnable);
 }
 static PFN_vkCmdSetPolygonModeEXT zreal_vkCmdSetPolygonModeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetPolygonModeEXT(VkCommandBuffer commandBuffer, VkPolygonMode polygonMode) {
-    ZINK_TRACE("CALL vkCmdSetPolygonModeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetPolygonModeEXT\n");
     zreal_vkCmdSetPolygonModeEXT(commandBuffer, polygonMode);
 }
 static PFN_vkCmdSetRasterizationSamplesEXT zreal_vkCmdSetRasterizationSamplesEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizationSamplesEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits rasterizationSamples) {
-    ZINK_TRACE("CALL vkCmdSetRasterizationSamplesEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRasterizationSamplesEXT\n");
     zreal_vkCmdSetRasterizationSamplesEXT(commandBuffer, rasterizationSamples);
 }
 static PFN_vkCmdSetSampleMaskEXT zreal_vkCmdSetSampleMaskEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleMaskEXT(VkCommandBuffer commandBuffer, VkSampleCountFlagBits samples, const VkSampleMask* pSampleMask) {
-    ZINK_TRACE("CALL vkCmdSetSampleMaskEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetSampleMaskEXT\n");
     zreal_vkCmdSetSampleMaskEXT(commandBuffer, samples, pSampleMask);
 }
 static PFN_vkCmdSetAlphaToCoverageEnableEXT zreal_vkCmdSetAlphaToCoverageEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetAlphaToCoverageEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToCoverageEnable) {
-    ZINK_TRACE("CALL vkCmdSetAlphaToCoverageEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetAlphaToCoverageEnableEXT\n");
     zreal_vkCmdSetAlphaToCoverageEnableEXT(commandBuffer, alphaToCoverageEnable);
 }
 static PFN_vkCmdSetAlphaToOneEnableEXT zreal_vkCmdSetAlphaToOneEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetAlphaToOneEnableEXT(VkCommandBuffer commandBuffer, VkBool32 alphaToOneEnable) {
-    ZINK_TRACE("CALL vkCmdSetAlphaToOneEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetAlphaToOneEnableEXT\n");
     zreal_vkCmdSetAlphaToOneEnableEXT(commandBuffer, alphaToOneEnable);
 }
 static PFN_vkCmdSetLogicOpEnableEXT zreal_vkCmdSetLogicOpEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLogicOpEnableEXT(VkCommandBuffer commandBuffer, VkBool32 logicOpEnable) {
-    ZINK_TRACE("CALL vkCmdSetLogicOpEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLogicOpEnableEXT\n");
     zreal_vkCmdSetLogicOpEnableEXT(commandBuffer, logicOpEnable);
 }
 static PFN_vkCmdSetColorBlendEnableEXT zreal_vkCmdSetColorBlendEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendEnableEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkBool32* pColorBlendEnables) {
-    ZINK_TRACE("CALL vkCmdSetColorBlendEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetColorBlendEnableEXT\n");
     zreal_vkCmdSetColorBlendEnableEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendEnables);
 }
 static PFN_vkCmdSetColorBlendEquationEXT zreal_vkCmdSetColorBlendEquationEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendEquationEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendEquationEXT* pColorBlendEquations) {
-    ZINK_TRACE("CALL vkCmdSetColorBlendEquationEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetColorBlendEquationEXT\n");
     zreal_vkCmdSetColorBlendEquationEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendEquations);
 }
 static PFN_vkCmdSetColorWriteMaskEXT zreal_vkCmdSetColorWriteMaskEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorWriteMaskEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorComponentFlags* pColorWriteMasks) {
-    ZINK_TRACE("CALL vkCmdSetColorWriteMaskEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetColorWriteMaskEXT\n");
     zreal_vkCmdSetColorWriteMaskEXT(commandBuffer, firstAttachment, attachmentCount, pColorWriteMasks);
 }
 static PFN_vkCmdSetRasterizationStreamEXT zreal_vkCmdSetRasterizationStreamEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRasterizationStreamEXT(VkCommandBuffer commandBuffer, uint32_t rasterizationStream) {
-    ZINK_TRACE("CALL vkCmdSetRasterizationStreamEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRasterizationStreamEXT\n");
     zreal_vkCmdSetRasterizationStreamEXT(commandBuffer, rasterizationStream);
 }
 static PFN_vkCmdSetConservativeRasterizationModeEXT zreal_vkCmdSetConservativeRasterizationModeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetConservativeRasterizationModeEXT(VkCommandBuffer commandBuffer, VkConservativeRasterizationModeEXT conservativeRasterizationMode) {
-    ZINK_TRACE("CALL vkCmdSetConservativeRasterizationModeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetConservativeRasterizationModeEXT\n");
     zreal_vkCmdSetConservativeRasterizationModeEXT(commandBuffer, conservativeRasterizationMode);
 }
 static PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT zreal_vkCmdSetExtraPrimitiveOverestimationSizeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetExtraPrimitiveOverestimationSizeEXT(VkCommandBuffer commandBuffer, float extraPrimitiveOverestimationSize) {
-    ZINK_TRACE("CALL vkCmdSetExtraPrimitiveOverestimationSizeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetExtraPrimitiveOverestimationSizeEXT\n");
     zreal_vkCmdSetExtraPrimitiveOverestimationSizeEXT(commandBuffer, extraPrimitiveOverestimationSize);
 }
 static PFN_vkCmdSetDepthClipEnableEXT zreal_vkCmdSetDepthClipEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClipEnableEXT(VkCommandBuffer commandBuffer, VkBool32 depthClipEnable) {
-    ZINK_TRACE("CALL vkCmdSetDepthClipEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthClipEnableEXT\n");
     zreal_vkCmdSetDepthClipEnableEXT(commandBuffer, depthClipEnable);
 }
 static PFN_vkCmdSetSampleLocationsEnableEXT zreal_vkCmdSetSampleLocationsEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetSampleLocationsEnableEXT(VkCommandBuffer commandBuffer, VkBool32 sampleLocationsEnable) {
-    ZINK_TRACE("CALL vkCmdSetSampleLocationsEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetSampleLocationsEnableEXT\n");
     zreal_vkCmdSetSampleLocationsEnableEXT(commandBuffer, sampleLocationsEnable);
 }
 static PFN_vkCmdSetColorBlendAdvancedEXT zreal_vkCmdSetColorBlendAdvancedEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetColorBlendAdvancedEXT(VkCommandBuffer commandBuffer, uint32_t firstAttachment, uint32_t attachmentCount, const VkColorBlendAdvancedEXT* pColorBlendAdvanced) {
-    ZINK_TRACE("CALL vkCmdSetColorBlendAdvancedEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetColorBlendAdvancedEXT\n");
     zreal_vkCmdSetColorBlendAdvancedEXT(commandBuffer, firstAttachment, attachmentCount, pColorBlendAdvanced);
 }
 static PFN_vkCmdSetProvokingVertexModeEXT zreal_vkCmdSetProvokingVertexModeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetProvokingVertexModeEXT(VkCommandBuffer commandBuffer, VkProvokingVertexModeEXT provokingVertexMode) {
-    ZINK_TRACE("CALL vkCmdSetProvokingVertexModeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetProvokingVertexModeEXT\n");
     zreal_vkCmdSetProvokingVertexModeEXT(commandBuffer, provokingVertexMode);
 }
 static PFN_vkCmdSetLineRasterizationModeEXT zreal_vkCmdSetLineRasterizationModeEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineRasterizationModeEXT(VkCommandBuffer commandBuffer, VkLineRasterizationModeEXT lineRasterizationMode) {
-    ZINK_TRACE("CALL vkCmdSetLineRasterizationModeEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLineRasterizationModeEXT\n");
     zreal_vkCmdSetLineRasterizationModeEXT(commandBuffer, lineRasterizationMode);
 }
 static PFN_vkCmdSetLineStippleEnableEXT zreal_vkCmdSetLineStippleEnableEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetLineStippleEnableEXT(VkCommandBuffer commandBuffer, VkBool32 stippledLineEnable) {
-    ZINK_TRACE("CALL vkCmdSetLineStippleEnableEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetLineStippleEnableEXT\n");
     zreal_vkCmdSetLineStippleEnableEXT(commandBuffer, stippledLineEnable);
 }
 static PFN_vkCmdSetDepthClipNegativeOneToOneEXT zreal_vkCmdSetDepthClipNegativeOneToOneEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetDepthClipNegativeOneToOneEXT(VkCommandBuffer commandBuffer, VkBool32 negativeOneToOne) {
-    ZINK_TRACE("CALL vkCmdSetDepthClipNegativeOneToOneEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetDepthClipNegativeOneToOneEXT\n");
     zreal_vkCmdSetDepthClipNegativeOneToOneEXT(commandBuffer, negativeOneToOne);
 }
 static PFN_vkCmdSetViewportWScalingEnableNV zreal_vkCmdSetViewportWScalingEnableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportWScalingEnableNV(VkCommandBuffer commandBuffer, VkBool32 viewportWScalingEnable) {
-    ZINK_TRACE("CALL vkCmdSetViewportWScalingEnableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportWScalingEnableNV\n");
     zreal_vkCmdSetViewportWScalingEnableNV(commandBuffer, viewportWScalingEnable);
 }
 static PFN_vkCmdSetViewportSwizzleNV zreal_vkCmdSetViewportSwizzleNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetViewportSwizzleNV(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewportSwizzleNV* pViewportSwizzles) {
-    ZINK_TRACE("CALL vkCmdSetViewportSwizzleNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetViewportSwizzleNV\n");
     zreal_vkCmdSetViewportSwizzleNV(commandBuffer, firstViewport, viewportCount, pViewportSwizzles);
 }
 static PFN_vkCmdSetCoverageToColorEnableNV zreal_vkCmdSetCoverageToColorEnableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageToColorEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageToColorEnable) {
-    ZINK_TRACE("CALL vkCmdSetCoverageToColorEnableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageToColorEnableNV\n");
     zreal_vkCmdSetCoverageToColorEnableNV(commandBuffer, coverageToColorEnable);
 }
 static PFN_vkCmdSetCoverageToColorLocationNV zreal_vkCmdSetCoverageToColorLocationNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageToColorLocationNV(VkCommandBuffer commandBuffer, uint32_t coverageToColorLocation) {
-    ZINK_TRACE("CALL vkCmdSetCoverageToColorLocationNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageToColorLocationNV\n");
     zreal_vkCmdSetCoverageToColorLocationNV(commandBuffer, coverageToColorLocation);
 }
 static PFN_vkCmdSetCoverageModulationModeNV zreal_vkCmdSetCoverageModulationModeNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationModeNV(VkCommandBuffer commandBuffer, VkCoverageModulationModeNV coverageModulationMode) {
-    ZINK_TRACE("CALL vkCmdSetCoverageModulationModeNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageModulationModeNV\n");
     zreal_vkCmdSetCoverageModulationModeNV(commandBuffer, coverageModulationMode);
 }
 static PFN_vkCmdSetCoverageModulationTableEnableNV zreal_vkCmdSetCoverageModulationTableEnableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationTableEnableNV(VkCommandBuffer commandBuffer, VkBool32 coverageModulationTableEnable) {
-    ZINK_TRACE("CALL vkCmdSetCoverageModulationTableEnableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageModulationTableEnableNV\n");
     zreal_vkCmdSetCoverageModulationTableEnableNV(commandBuffer, coverageModulationTableEnable);
 }
 static PFN_vkCmdSetCoverageModulationTableNV zreal_vkCmdSetCoverageModulationTableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageModulationTableNV(VkCommandBuffer commandBuffer, uint32_t coverageModulationTableCount, const float* pCoverageModulationTable) {
-    ZINK_TRACE("CALL vkCmdSetCoverageModulationTableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageModulationTableNV\n");
     zreal_vkCmdSetCoverageModulationTableNV(commandBuffer, coverageModulationTableCount, pCoverageModulationTable);
 }
 static PFN_vkCmdSetShadingRateImageEnableNV zreal_vkCmdSetShadingRateImageEnableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetShadingRateImageEnableNV(VkCommandBuffer commandBuffer, VkBool32 shadingRateImageEnable) {
-    ZINK_TRACE("CALL vkCmdSetShadingRateImageEnableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetShadingRateImageEnableNV\n");
     zreal_vkCmdSetShadingRateImageEnableNV(commandBuffer, shadingRateImageEnable);
 }
 static PFN_vkCmdSetRepresentativeFragmentTestEnableNV zreal_vkCmdSetRepresentativeFragmentTestEnableNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRepresentativeFragmentTestEnableNV(VkCommandBuffer commandBuffer, VkBool32 representativeFragmentTestEnable) {
-    ZINK_TRACE("CALL vkCmdSetRepresentativeFragmentTestEnableNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRepresentativeFragmentTestEnableNV\n");
     zreal_vkCmdSetRepresentativeFragmentTestEnableNV(commandBuffer, representativeFragmentTestEnable);
 }
 static PFN_vkCmdSetCoverageReductionModeNV zreal_vkCmdSetCoverageReductionModeNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetCoverageReductionModeNV(VkCommandBuffer commandBuffer, VkCoverageReductionModeNV coverageReductionMode) {
-    ZINK_TRACE("CALL vkCmdSetCoverageReductionModeNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetCoverageReductionModeNV\n");
     zreal_vkCmdSetCoverageReductionModeNV(commandBuffer, coverageReductionMode);
 }
 static PFN_vkGetShaderModuleIdentifierEXT zreal_vkGetShaderModuleIdentifierEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetShaderModuleIdentifierEXT(VkDevice device, VkShaderModule shaderModule, VkShaderModuleIdentifierEXT* pIdentifier) {
-    ZINK_TRACE("CALL vkGetShaderModuleIdentifierEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetShaderModuleIdentifierEXT\n");
     zreal_vkGetShaderModuleIdentifierEXT(device, shaderModule, pIdentifier);
 }
 static PFN_vkGetShaderModuleCreateInfoIdentifierEXT zreal_vkGetShaderModuleCreateInfoIdentifierEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetShaderModuleCreateInfoIdentifierEXT(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo, VkShaderModuleIdentifierEXT* pIdentifier) {
-    ZINK_TRACE("CALL vkGetShaderModuleCreateInfoIdentifierEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetShaderModuleCreateInfoIdentifierEXT\n");
     zreal_vkGetShaderModuleCreateInfoIdentifierEXT(device, pCreateInfo, pIdentifier);
 }
 static PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV zreal_vkGetPhysicalDeviceOpticalFlowImageFormatsNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetPhysicalDeviceOpticalFlowImageFormatsNV(VkPhysicalDevice physicalDevice, const VkOpticalFlowImageFormatInfoNV* pOpticalFlowImageFormatInfo, uint32_t* pFormatCount, VkOpticalFlowImageFormatPropertiesNV* pImageFormatProperties) {
-    ZINK_TRACE("CALL vkGetPhysicalDeviceOpticalFlowImageFormatsNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetPhysicalDeviceOpticalFlowImageFormatsNV\n");
     return zreal_vkGetPhysicalDeviceOpticalFlowImageFormatsNV(physicalDevice, pOpticalFlowImageFormatInfo, pFormatCount, pImageFormatProperties);
 }
 static PFN_vkCreateOpticalFlowSessionNV zreal_vkCreateOpticalFlowSessionNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateOpticalFlowSessionNV(VkDevice device, const VkOpticalFlowSessionCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkOpticalFlowSessionNV* pSession) {
-    ZINK_TRACE("CALL vkCreateOpticalFlowSessionNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateOpticalFlowSessionNV\n");
     return zreal_vkCreateOpticalFlowSessionNV(device, pCreateInfo, pAllocator, pSession);
 }
 static PFN_vkDestroyOpticalFlowSessionNV zreal_vkDestroyOpticalFlowSessionNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyOpticalFlowSessionNV(VkDevice device, VkOpticalFlowSessionNV session, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyOpticalFlowSessionNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyOpticalFlowSessionNV\n");
     zreal_vkDestroyOpticalFlowSessionNV(device, session, pAllocator);
 }
 static PFN_vkBindOpticalFlowSessionImageNV zreal_vkBindOpticalFlowSessionImageNV;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBindOpticalFlowSessionImageNV(VkDevice device, VkOpticalFlowSessionNV session, VkOpticalFlowSessionBindingPointNV bindingPoint, VkImageView view, VkImageLayout layout) {
-    ZINK_TRACE("CALL vkBindOpticalFlowSessionImageNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBindOpticalFlowSessionImageNV\n");
     return zreal_vkBindOpticalFlowSessionImageNV(device, session, bindingPoint, view, layout);
 }
 static PFN_vkCmdOpticalFlowExecuteNV zreal_vkCmdOpticalFlowExecuteNV;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdOpticalFlowExecuteNV(VkCommandBuffer commandBuffer, VkOpticalFlowSessionNV session, const VkOpticalFlowExecuteInfoNV* pExecuteInfo) {
-    ZINK_TRACE("CALL vkCmdOpticalFlowExecuteNV\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdOpticalFlowExecuteNV\n");
     zreal_vkCmdOpticalFlowExecuteNV(commandBuffer, session, pExecuteInfo);
 }
 static PFN_vkGetFramebufferTilePropertiesQCOM zreal_vkGetFramebufferTilePropertiesQCOM;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetFramebufferTilePropertiesQCOM(VkDevice device, VkFramebuffer framebuffer, uint32_t* pPropertiesCount, VkTilePropertiesQCOM* pProperties) {
-    ZINK_TRACE("CALL vkGetFramebufferTilePropertiesQCOM\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetFramebufferTilePropertiesQCOM\n");
     return zreal_vkGetFramebufferTilePropertiesQCOM(device, framebuffer, pPropertiesCount, pProperties);
 }
 static PFN_vkGetDynamicRenderingTilePropertiesQCOM zreal_vkGetDynamicRenderingTilePropertiesQCOM;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetDynamicRenderingTilePropertiesQCOM(VkDevice device, const VkRenderingInfo* pRenderingInfo, VkTilePropertiesQCOM* pProperties) {
-    ZINK_TRACE("CALL vkGetDynamicRenderingTilePropertiesQCOM\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDynamicRenderingTilePropertiesQCOM\n");
     return zreal_vkGetDynamicRenderingTilePropertiesQCOM(device, pRenderingInfo, pProperties);
 }
 static PFN_vkCreateAccelerationStructureKHR zreal_vkCreateAccelerationStructureKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateAccelerationStructureKHR(VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureKHR* pAccelerationStructure) {
-    ZINK_TRACE("CALL vkCreateAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateAccelerationStructureKHR\n");
     return zreal_vkCreateAccelerationStructureKHR(device, pCreateInfo, pAllocator, pAccelerationStructure);
 }
 static PFN_vkDestroyAccelerationStructureKHR zreal_vkDestroyAccelerationStructureKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkDestroyAccelerationStructureKHR(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks* pAllocator) {
-    ZINK_TRACE("CALL vkDestroyAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkDestroyAccelerationStructureKHR\n");
     zreal_vkDestroyAccelerationStructureKHR(device, accelerationStructure, pAllocator);
 }
 static PFN_vkCmdBuildAccelerationStructuresKHR zreal_vkCmdBuildAccelerationStructuresKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructuresKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
-    ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresKHR\n");
     zreal_vkCmdBuildAccelerationStructuresKHR(commandBuffer, infoCount, pInfos, ppBuildRangeInfos);
 }
 static PFN_vkCmdBuildAccelerationStructuresIndirectKHR zreal_vkCmdBuildAccelerationStructuresIndirectKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdBuildAccelerationStructuresIndirectKHR(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkDeviceAddress* pIndirectDeviceAddresses, const uint32_t* pIndirectStrides, const uint32_t* const* ppMaxPrimitiveCounts) {
-    ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresIndirectKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdBuildAccelerationStructuresIndirectKHR\n");
     zreal_vkCmdBuildAccelerationStructuresIndirectKHR(commandBuffer, infoCount, pInfos, pIndirectDeviceAddresses, pIndirectStrides, ppMaxPrimitiveCounts);
 }
 static PFN_vkBuildAccelerationStructuresKHR zreal_vkBuildAccelerationStructuresKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkBuildAccelerationStructuresKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) {
-    ZINK_TRACE("CALL vkBuildAccelerationStructuresKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkBuildAccelerationStructuresKHR\n");
     return zreal_vkBuildAccelerationStructuresKHR(device, deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
 }
 static PFN_vkCopyAccelerationStructureKHR zreal_vkCopyAccelerationStructureKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCopyAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyAccelerationStructureKHR\n");
     return zreal_vkCopyAccelerationStructureKHR(device, deferredOperation, pInfo);
 }
 static PFN_vkCopyAccelerationStructureToMemoryKHR zreal_vkCopyAccelerationStructureToMemoryKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyAccelerationStructureToMemoryKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCopyAccelerationStructureToMemoryKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyAccelerationStructureToMemoryKHR\n");
     return zreal_vkCopyAccelerationStructureToMemoryKHR(device, deferredOperation, pInfo);
 }
 static PFN_vkCopyMemoryToAccelerationStructureKHR zreal_vkCopyMemoryToAccelerationStructureKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCopyMemoryToAccelerationStructureKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCopyMemoryToAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCopyMemoryToAccelerationStructureKHR\n");
     return zreal_vkCopyMemoryToAccelerationStructureKHR(device, deferredOperation, pInfo);
 }
 static PFN_vkWriteAccelerationStructuresPropertiesKHR zreal_vkWriteAccelerationStructuresPropertiesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkWriteAccelerationStructuresPropertiesKHR(VkDevice device, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, size_t dataSize, void* pData, size_t stride) {
-    ZINK_TRACE("CALL vkWriteAccelerationStructuresPropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkWriteAccelerationStructuresPropertiesKHR\n");
     return zreal_vkWriteAccelerationStructuresPropertiesKHR(device, accelerationStructureCount, pAccelerationStructures, queryType, dataSize, pData, stride);
 }
 static PFN_vkCmdCopyAccelerationStructureKHR zreal_vkCmdCopyAccelerationStructureKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyAccelerationStructureKHR\n");
     zreal_vkCmdCopyAccelerationStructureKHR(commandBuffer, pInfo);
 }
 static PFN_vkCmdCopyAccelerationStructureToMemoryKHR zreal_vkCmdCopyAccelerationStructureToMemoryKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyAccelerationStructureToMemoryKHR(VkCommandBuffer commandBuffer, const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyAccelerationStructureToMemoryKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyAccelerationStructureToMemoryKHR\n");
     zreal_vkCmdCopyAccelerationStructureToMemoryKHR(commandBuffer, pInfo);
 }
 static PFN_vkCmdCopyMemoryToAccelerationStructureKHR zreal_vkCmdCopyMemoryToAccelerationStructureKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdCopyMemoryToAccelerationStructureKHR(VkCommandBuffer commandBuffer, const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkCmdCopyMemoryToAccelerationStructureKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdCopyMemoryToAccelerationStructureKHR\n");
     zreal_vkCmdCopyMemoryToAccelerationStructureKHR(commandBuffer, pInfo);
 }
 static PFN_vkGetAccelerationStructureDeviceAddressKHR zreal_vkGetAccelerationStructureDeviceAddressKHR;
 static VKAPI_ATTR VkDeviceAddress VKAPI_CALL ztrace_vkGetAccelerationStructureDeviceAddressKHR(VkDevice device, const VkAccelerationStructureDeviceAddressInfoKHR* pInfo) {
-    ZINK_TRACE("CALL vkGetAccelerationStructureDeviceAddressKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetAccelerationStructureDeviceAddressKHR\n");
     return zreal_vkGetAccelerationStructureDeviceAddressKHR(device, pInfo);
 }
 static PFN_vkCmdWriteAccelerationStructuresPropertiesKHR zreal_vkCmdWriteAccelerationStructuresPropertiesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdWriteAccelerationStructuresPropertiesKHR(VkCommandBuffer commandBuffer, uint32_t accelerationStructureCount, const VkAccelerationStructureKHR* pAccelerationStructures, VkQueryType queryType, VkQueryPool queryPool, uint32_t firstQuery) {
-    ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdWriteAccelerationStructuresPropertiesKHR\n");
     zreal_vkCmdWriteAccelerationStructuresPropertiesKHR(commandBuffer, accelerationStructureCount, pAccelerationStructures, queryType, queryPool, firstQuery);
 }
 static PFN_vkGetDeviceAccelerationStructureCompatibilityKHR zreal_vkGetDeviceAccelerationStructureCompatibilityKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetDeviceAccelerationStructureCompatibilityKHR(VkDevice device, const VkAccelerationStructureVersionInfoKHR* pVersionInfo, VkAccelerationStructureCompatibilityKHR* pCompatibility) {
-    ZINK_TRACE("CALL vkGetDeviceAccelerationStructureCompatibilityKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetDeviceAccelerationStructureCompatibilityKHR\n");
     zreal_vkGetDeviceAccelerationStructureCompatibilityKHR(device, pVersionInfo, pCompatibility);
 }
 static PFN_vkGetAccelerationStructureBuildSizesKHR zreal_vkGetAccelerationStructureBuildSizesKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetAccelerationStructureBuildSizesKHR(VkDevice device, VkAccelerationStructureBuildTypeKHR buildType, const VkAccelerationStructureBuildGeometryInfoKHR* pBuildInfo, const uint32_t* pMaxPrimitiveCounts, VkAccelerationStructureBuildSizesInfoKHR* pSizeInfo) {
-    ZINK_TRACE("CALL vkGetAccelerationStructureBuildSizesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetAccelerationStructureBuildSizesKHR\n");
     zreal_vkGetAccelerationStructureBuildSizesKHR(device, buildType, pBuildInfo, pMaxPrimitiveCounts, pSizeInfo);
 }
 static PFN_vkCmdTraceRaysKHR zreal_vkCmdTraceRaysKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, uint32_t width, uint32_t height, uint32_t depth) {
-    ZINK_TRACE("CALL vkCmdTraceRaysKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdTraceRaysKHR\n");
     zreal_vkCmdTraceRaysKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, width, height, depth);
 }
 static PFN_vkCreateRayTracingPipelinesKHR zreal_vkCreateRayTracingPipelinesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkCreateRayTracingPipelinesKHR(VkDevice device, VkDeferredOperationKHR deferredOperation, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines) {
-    ZINK_TRACE("CALL vkCreateRayTracingPipelinesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCreateRayTracingPipelinesKHR\n");
     return zreal_vkCreateRayTracingPipelinesKHR(device, deferredOperation, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines);
 }
 static PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR zreal_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR;
 static VKAPI_ATTR VkResult VKAPI_CALL ztrace_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData) {
-    ZINK_TRACE("CALL vkGetRayTracingCaptureReplayShaderGroupHandlesKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRayTracingCaptureReplayShaderGroupHandlesKHR\n");
     return zreal_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR(device, pipeline, firstGroup, groupCount, dataSize, pData);
 }
 static PFN_vkCmdTraceRaysIndirectKHR zreal_vkCmdTraceRaysIndirectKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer, const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable, const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable, VkDeviceAddress indirectDeviceAddress) {
-    ZINK_TRACE("CALL vkCmdTraceRaysIndirectKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdTraceRaysIndirectKHR\n");
     zreal_vkCmdTraceRaysIndirectKHR(commandBuffer, pRaygenShaderBindingTable, pMissShaderBindingTable, pHitShaderBindingTable, pCallableShaderBindingTable, indirectDeviceAddress);
 }
 static PFN_vkGetRayTracingShaderGroupStackSizeKHR zreal_vkGetRayTracingShaderGroupStackSizeKHR;
 static VKAPI_ATTR VkDeviceSize VKAPI_CALL ztrace_vkGetRayTracingShaderGroupStackSizeKHR(VkDevice device, VkPipeline pipeline, uint32_t group, VkShaderGroupShaderKHR groupShader) {
-    ZINK_TRACE("CALL vkGetRayTracingShaderGroupStackSizeKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRayTracingShaderGroupStackSizeKHR\n");
     return zreal_vkGetRayTracingShaderGroupStackSizeKHR(device, pipeline, group, groupShader);
 }
 static PFN_vkCmdSetRayTracingPipelineStackSizeKHR zreal_vkCmdSetRayTracingPipelineStackSizeKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdSetRayTracingPipelineStackSizeKHR(VkCommandBuffer commandBuffer, uint32_t pipelineStackSize) {
-    ZINK_TRACE("CALL vkCmdSetRayTracingPipelineStackSizeKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdSetRayTracingPipelineStackSizeKHR\n");
     zreal_vkCmdSetRayTracingPipelineStackSizeKHR(commandBuffer, pipelineStackSize);
 }
 static PFN_vkCmdDrawMeshTasksEXT zreal_vkCmdDrawMeshTasksEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksEXT(VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksEXT\n");
     zreal_vkCmdDrawMeshTasksEXT(commandBuffer, groupCountX, groupCountY, groupCountZ);
 }
 static PFN_vkCmdDrawMeshTasksIndirectEXT zreal_vkCmdDrawMeshTasksIndirectEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectEXT\n");
     zreal_vkCmdDrawMeshTasksIndirectEXT(commandBuffer, buffer, offset, drawCount, stride);
 }
 static PFN_vkCmdDrawMeshTasksIndirectCountEXT zreal_vkCmdDrawMeshTasksIndirectCountEXT;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkCmdDrawMeshTasksIndirectCountEXT(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount, uint32_t stride) {
-    ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountEXT\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkCmdDrawMeshTasksIndirectCountEXT\n");
     zreal_vkCmdDrawMeshTasksIndirectCountEXT(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 }
 static PFN_vkGetRenderingAreaGranularityKHR zreal_vkGetRenderingAreaGranularityKHR;
 static VKAPI_ATTR void VKAPI_CALL ztrace_vkGetRenderingAreaGranularityKHR(VkDevice device, const VkRenderingAreaInfoKHR* pRenderingAreaInfo, VkExtent2D* pGranularity) {
-    ZINK_TRACE("CALL vkGetRenderingAreaGranularityKHR\n");
+    ZINK_ICD_LOCK_SCOPE();
+    if (zink_trace_calls()) ZINK_TRACE("CALL vkGetRenderingAreaGranularityKHR\n");
     zreal_vkGetRenderingAreaGranularityKHR(device, pRenderingAreaInfo, pGranularity);
 }
 static PFN_vkVoidFunction zink_trace_proc(const char *name, PFN_vkVoidFunction real) {

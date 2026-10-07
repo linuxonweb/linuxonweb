@@ -15,6 +15,7 @@ import {
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
 import { createLogViewer } from "./log-viewer.mjs";
+import { createPresentOverlay } from "./gpu-present-overlay.mjs";
 import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
 import { systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
@@ -46,6 +47,8 @@ installBuildInfo({ footer: document.getElementById("build-info") });
 const status = document.getElementById("status");
 const launchButtons = [...document.querySelectorAll(".launch")];
 const canvas = document.getElementById("fb");
+// Directly presented guest Vulkan frames (swapchain present) shown over the display.
+export const presentOverlay = createPresentOverlay({ canvas });
 const toolsToggle = document.getElementById('tools-toggle');
 const toolsPanel = document.getElementById('tools-panel');
 const floatingTools = document.querySelector('.toolbar');
@@ -1073,6 +1076,7 @@ async function boot(mode) {
       gpuHostcall: {
         ...guestGpuHostcallOptions(location.search, gpuBackend),
         log: (event) => { if (event.kind === "owner-log" || event.kind === "owner-error") hostLog(`gpu-owner: ${event.message}`); },
+        onPresent: (frame, reply) => presentOverlay.present(frame, reply),
       },
     });
     activeMachine = machine;

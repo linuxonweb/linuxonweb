@@ -339,7 +339,7 @@ export function gpuHostcallSyscall(client, memory, nr, a0, a1, a2, a3, a4, a5) {
 // relays memory attachments, and marks/terminates dead owners.
 
 export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STALL_MS, startupMs = DEFAULT_STARTUP_MS,
-    ownerUrl = new URL("./guest-gpu-owner.js", import.meta.url), log = () => { }, ownerConfig = {} } = {}) {
+    ownerUrl = new URL("./guest-gpu-owner.js", import.meta.url), log = () => { }, ownerConfig = {}, onPresent = null } = {}) {
     if (typeof SharedArrayBuffer !== "function" || typeof Worker !== "function")
         return null;
     const sab = new SharedArrayBuffer(HUB_BYTES);
@@ -369,6 +369,7 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
             return;
         const state = Atomics.load(hub, H_OWNER_STATE);
         if (state !== OWNER_DEAD) {
+            onPresent?.({ type: "gpu-present", reset: true });
             Atomics.store(hub, H_OWNER_STATE, OWNER_DEAD);
             Atomics.store(hub, H_DEAD_REASON, reason);
         }
@@ -401,6 +402,12 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
                 markDead(DEAD_TERMINATED, gen);
             else if (data?.type === "log")
                 note({ kind: "owner-log", gen, message: data.message });
+            else if (data?.type === "gpu-present") {
+                // Direct guest presentation for the page overlay: ImageBitmap frames,
+                // canvas requests (answered with a transferred OffscreenCanvas) and moves.
+                if (onPresent) onPresent(data, (message, transfer) => { if (owner === worker) worker.postMessage(message, transfer); });
+                else data.bitmap?.close();
+            }
         };
         worker.onerror = (event) => {
             event.preventDefault?.();

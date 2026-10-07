@@ -25,6 +25,8 @@
  *     XPutImage into an X11 window (CPU copy, like glgears/vkcube-lite).
  *   -nopresent: render pass only, submit + vkQueueWaitIdle, no readback and no
  *     X11 at all (glgears -nopresent ends each frame with glFinish).
+ *   -wsi: render into VK_KHR_swapchain images of an Xlib surface and
+ *     vkQueuePresentKHR them (no CPU readback; the ICD presents on the host).
  *
  * Output: glxgears-style "N frames in 5.0 seconds = X FPS" lines plus
  * parseable VKGEARS_START/READY/FPS/DONE/ERROR lines.
@@ -287,7 +289,10 @@ static int x11_events(void) {
 }
 /* rgba: rw x rh, top row first (Vulkan readback with the y-flipped projection). */
 static int *xmap;
+/* Per-phase seconds accumulated since the last FPS line (render, convert, XPutImage, XSync). */
+static double ph_render, ph_convert, ph_put, ph_sync;
 static void x11_present(const unsigned char *rgba, int rw, int rh, int w, int h) {
+    double t0 = now_s();
     for (int y = 0; y < h; y++) {
         const unsigned char *src = rgba + (size_t)((int64_t)y * rh / h) * rw * 4;
         if (direct_rgb) {
@@ -300,8 +305,12 @@ static void x11_present(const unsigned char *rgba, int rw, int rh, int w, int h)
             }
         }
     }
+    double t1 = now_s();
     XPutImage(dpy, win, gc, image, 0, 0, 0, 0, w, h);
+    double t2 = now_s();
     XSync(dpy, False);
+    double t3 = now_s();
+    ph_convert += t1 - t0; ph_put += t2 - t1; ph_sync += t3 - t2;
 }
 static void x11_close(void) {
     if (!dpy) return;
@@ -315,15 +324,21 @@ static void x11_close(void) {
 #define UBO_STRIDE 256 /* minUniformBufferOffsetAlignment of the guest ICD */
 #define UBO_RANGE 144  /* std140: mat4 mvp, mat4 modelview, vec4 color */
 static int RW, RH; /* render target size */
-static VkPhysicalDeviceProperties props;
+static VkPhysicalDeviceProperties props; static VkPhysicalDevice physical;
 static const char *backend = "unknown";
 static VkInstance instance; static VkDevice device; static VkQueue queue; static VkCommandPool cpool; static VkCommandBuffer cb;
-static VkImage color_image, depth_image; static VkImageView color_view, depth_view;
+static VkImage color_image, own_color_image, depth_image; static VkImageView color_view, depth_view;
+static VkFormat depth_format = VK_FORMAT_D32_SFLOAT; static VkImageAspectFlags depth_aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
 static VkDeviceMemory color_mem, depth_mem, read_mem, vertex_mem, uniform_mem;
 static VkBuffer readback, vertices, uniform; static unsigned char *mapped, *vmap, *umap;
 static VkDescriptorSetLayout set_layout; static VkDescriptorPool pool; static VkDescriptorSet sets[3];
 static VkPipelineLayout playout; static VkRenderPass pass; static VkFramebuffer framebuffer; static VkPipeline pipeline;
 static VkImageLayout color_old = VK_IMAGE_LAYOUT_UNDEFINED, depth_old = VK_IMAGE_LAYOUT_UNDEFINED;
+/* -wsi: Xlib surface, swapchain images with their views/framebuffers, acquire/render semaphores. */
+#define MAX_SWAP 4
+static int wsi; static VkSurfaceKHR surface; static VkSwapchainKHR swapchain; static uint32_t swap_count;
+static VkImage swap_images[MAX_SWAP]; static VkImageView swap_views[MAX_SWAP]; static VkFramebuffer swap_fbs[MAX_SWAP];
+static VkSemaphore acquire_sem, render_sem; static VkPresentModeKHR present_mode;
 #define VK(call) do { VkResult r_ = (call); if (r_ != VK_SUCCESS) { say("VKGEARS_ERROR vulkan line=%d result=%d call=%s\n", __LINE__, (int)r_, #call); \
     return r_ == VK_ERROR_DEVICE_LOST || r_ == VK_ERROR_INITIALIZATION_FAILED ? 3 : 5; } } while (0)
 
@@ -341,32 +356,47 @@ static VkResult alloc_bind(VkBuffer buffer, VkImage img, uint32_t type, VkDevice
 }
 static int create_instance(void) {
     VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO, .apiVersion = VK_API_VERSION_1_0, .pApplicationName = "vkgears"};
-    VkInstanceCreateInfo ii = {.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, .pApplicationInfo = &app};
+    const char *instance_ext[] = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME}, *device_ext[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    VkInstanceCreateInfo ii = {.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, .pApplicationInfo = &app,
+        .enabledExtensionCount = wsi ? 2 : 0, .ppEnabledExtensionNames = wsi ? instance_ext : NULL};
     VK(vkCreateInstance(&ii, NULL, &instance));
-    uint32_t count = 1; VkPhysicalDevice physical; VK(vkEnumeratePhysicalDevices(instance, &count, &physical));
+    uint32_t count = 1; VK(vkEnumeratePhysicalDevices(instance, &count, &physical));
     if (count != 1) { say("VKGEARS_ERROR no physical device\n"); return 5; }
     vkGetPhysicalDeviceProperties(physical, &props);
     /* The ICD advertises the backend-specific vertex stride limit: 252 on WebGL2, 2048 on WebGPU. */
     backend = props.limits.maxVertexInputBindingStride == 252 ? "webgl2" : "webgpu";
     float priority = 1;
     VkDeviceQueueCreateInfo qi = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, .queueCount = 1, .pQueuePriorities = &priority};
-    VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .queueCreateInfoCount = 1, .pQueueCreateInfos = &qi};
+    VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .queueCreateInfoCount = 1, .pQueueCreateInfos = &qi,
+        .enabledExtensionCount = wsi ? 1 : 0, .ppEnabledExtensionNames = wsi ? device_ext : NULL};
     VK(vkCreateDevice(physical, &di, NULL, &device)); vkGetDeviceQueue(device, 0, 0, &queue);
     return 0;
 }
+static int setup_swapchain(void);
 static int setup(void) {
     /* Colour + depth targets. */
     VkImageCreateInfo im = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType = VK_IMAGE_TYPE_2D, .format = VK_FORMAT_R8G8B8A8_UNORM,
         .extent = {(uint32_t)RW, (uint32_t)RH, 1}, .mipLevels = 1, .arrayLayers = 1, .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_OPTIMAL, .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
-    VK(vkCreateImage(device, &im, NULL, &color_image)); VK(alloc_bind(VK_NULL_HANDLE, color_image, 0, 0, &color_mem));
-    im.format = VK_FORMAT_D32_SFLOAT; im.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    VK(vkCreateImage(device, &im, NULL, &color_image)); VK(alloc_bind(VK_NULL_HANDLE, color_image, 0, 0, &color_mem)); own_color_image = color_image;
+    /* First depth format the ICD supports at the render size (drivers may limit D32 below combined depth/stencil). */
+    static const VkFormat depth_formats[] = {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM};
+    for (unsigned f = 0; f < sizeof depth_formats / sizeof *depth_formats; f++) {
+        VkImageFormatProperties fp;
+        if (vkGetPhysicalDeviceImageFormatProperties(physical, depth_formats[f], VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0, &fp) == VK_SUCCESS && fp.maxExtent.width >= (uint32_t)RW && fp.maxExtent.height >= (uint32_t)RH) {
+            depth_format = depth_formats[f]; break;
+        }
+    }
+    depth_aspect = depth_format == VK_FORMAT_D24_UNORM_S8_UINT ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
+    say("VKGEARS_DEPTH format=%d render=%dx%d\n", (int)depth_format, RW, RH);
+    im.format = depth_format; im.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     VK(vkCreateImage(device, &im, NULL, &depth_image)); VK(alloc_bind(VK_NULL_HANDLE, depth_image, 0, 0, &depth_mem));
     VkImageViewCreateInfo vi = {.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .image = color_image, .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .format = VK_FORMAT_R8G8B8A8_UNORM, .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
     VK(vkCreateImageView(device, &vi, NULL, &color_view));
-    vi.image = depth_image; vi.format = VK_FORMAT_D32_SFLOAT; vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    vi.image = depth_image; vi.format = depth_format; vi.subresourceRange.aspectMask = depth_aspect;
     VK(vkCreateImageView(device, &vi, NULL, &depth_view));
     /* Readback, vertex and uniform buffers (host-coherent memory type 1). */
     VkBufferCreateInfo bi = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size = (VkDeviceSize)RW * RH * 4,
@@ -404,7 +434,7 @@ static int setup(void) {
         {.format = VK_FORMAT_R8G8B8A8_UNORM, .samples = VK_SAMPLE_COUNT_1_BIT, .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE, .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
          .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
-        {.format = VK_FORMAT_D32_SFLOAT, .samples = VK_SAMPLE_COUNT_1_BIT, .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        {.format = depth_format, .samples = VK_SAMPLE_COUNT_1_BIT, .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE, .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
          .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
     VkAttachmentReference cref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, dref = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
@@ -446,6 +476,38 @@ static int setup(void) {
     VK(vkCreateCommandPool(device, &cpi, NULL, &cpool));
     VkCommandBufferAllocateInfo cai = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .commandPool = cpool, .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount = 1};
     VK(vkAllocateCommandBuffers(device, &cai, &cb));
+    return wsi ? setup_swapchain() : 0;
+}
+/* -wsi: surface on the X11 window, swapchain at the render size (IMMEDIATE when offered), one framebuffer per image. */
+static int setup_swapchain(void) {
+    VkXlibSurfaceCreateInfoKHR si = {.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR, .dpy = dpy, .window = win};
+    VK(vkCreateXlibSurfaceKHR(instance, &si, NULL, &surface));
+    VkBool32 supported = VK_FALSE; VK(vkGetPhysicalDeviceSurfaceSupportKHR(physical, 0, surface, &supported));
+    if (!supported) { say("VKGEARS_ERROR surface not supported\n"); return 6; }
+    VkSurfaceCapabilitiesKHR caps; VK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, surface, &caps));
+    VkPresentModeKHR modes[8]; uint32_t mode_count = 8; VK(vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface, &mode_count, modes));
+    present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    for (uint32_t m = 0; m < mode_count; m++) if (modes[m] == VK_PRESENT_MODE_IMMEDIATE_KHR) present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    if ((uint32_t)RW > caps.maxImageExtent.width || (uint32_t)RH > caps.maxImageExtent.height) {
+        say("VKGEARS_ERROR swapchain max extent %ux%u < render %dx%d\n", caps.maxImageExtent.width, caps.maxImageExtent.height, RW, RH); return 6; }
+    VkSwapchainCreateInfoKHR ci = {.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, .surface = surface, .minImageCount = caps.minImageCount,
+        .imageFormat = VK_FORMAT_R8G8B8A8_UNORM, .imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, .imageExtent = {(uint32_t)RW, (uint32_t)RH},
+        .imageArrayLayers = 1, .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR, .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, .presentMode = present_mode, .clipped = VK_TRUE};
+    VK(vkCreateSwapchainKHR(device, &ci, NULL, &swapchain));
+    swap_count = MAX_SWAP; VK(vkGetSwapchainImagesKHR(device, swapchain, &swap_count, swap_images));
+    for (uint32_t i = 0; i < swap_count; i++) {
+        VkImageViewCreateInfo vi = {.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .image = swap_images[i], .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = VK_FORMAT_R8G8B8A8_UNORM, .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+        VK(vkCreateImageView(device, &vi, NULL, &swap_views[i]));
+        VkImageView views[2] = {swap_views[i], depth_view};
+        VkFramebufferCreateInfo fi = {.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, .renderPass = pass, .attachmentCount = 2, .pAttachments = views,
+            .width = (uint32_t)RW, .height = (uint32_t)RH, .layers = 1};
+        VK(vkCreateFramebuffer(device, &fi, NULL, &swap_fbs[i]));
+    }
+    VkSemaphoreCreateInfo sci = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+    VK(vkCreateSemaphore(device, &sci, NULL, &acquire_sem)); VK(vkCreateSemaphore(device, &sci, NULL, &render_sem));
+    say("VKGEARS_SWAPCHAIN images=%u mode=%s extent=%dx%d\n", swap_count, present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR ? "immediate" : "fifo", RW, RH);
     return 0;
 }
 static void color_barrier(VkImageLayout old, VkImageLayout next) {
@@ -458,12 +520,13 @@ static void color_barrier(VkImageLayout old, VkImageLayout next) {
         /* attachment -> attachment (-nopresent frames): write-after-write hazard, the ICD requires READ|WRITE */
         if (next == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) b.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; }
     if (next == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) { dst = VK_PIPELINE_STAGE_TRANSFER_BIT; b.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT; }
+    if (next == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) { dst = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT; b.dstAccessMask = 0; }
     vkCmdPipelineBarrier(cb, src, dst, 0, 0, NULL, 0, NULL, 1, &b);
 }
 static void depth_barrier(VkImageLayout old) {
     VkImageMemoryBarrier b = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, .oldLayout = old, .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         .image = depth_image, .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1},
+        .subresourceRange = {depth_aspect, 0, 1, 0, 1},
         .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT};
     VkPipelineStageFlags src = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     if (old == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) { src = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT; b.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; }
@@ -498,11 +561,15 @@ static void write_uniforms(void) {
 /* Records, submits and waits for one frame. present: also copies the colour image to the readback buffer. */
 static int render(int present) {
     write_uniforms();
+    uint32_t index = 0;
+    if (wsi) VK(vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, acquire_sem, VK_NULL_HANDLE, &index));
     VkCommandBufferBeginInfo begin = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     VK(vkResetCommandBuffer(cb, 0)); VK(vkBeginCommandBuffer(cb, &begin));
-    color_barrier(color_old, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); buffer_barrier(vertices, 1); buffer_barrier(uniform, 2); depth_barrier(depth_old);
+    if (wsi) { color_image = swap_images[index]; color_barrier(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); }
+    else color_barrier(color_old, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    buffer_barrier(vertices, 1); buffer_barrier(uniform, 2); depth_barrier(depth_old);
     VkClearValue clear[2] = {{.color = {{0, 0, 0, 1}}}, {.depthStencil = {1, 0}}};
-    VkRenderPassBeginInfo rb = {.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, .renderPass = pass, .framebuffer = framebuffer,
+    VkRenderPassBeginInfo rb = {.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, .renderPass = pass, .framebuffer = wsi ? swap_fbs[index] : framebuffer,
         .renderArea = {{0, 0}, {(uint32_t)RW, (uint32_t)RH}}, .clearValueCount = 2, .pClearValues = clear};
     vkCmdBeginRenderPass(cb, &rb, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -512,14 +579,24 @@ static int render(int present) {
         vkCmdDraw(cb, (uint32_t)gear_count[g], 1, (uint32_t)gear_first[g], 0);
     }
     vkCmdEndRenderPass(cb);
-    if (present) {
+    if (wsi) color_barrier(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    else if (present) {
         color_barrier(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
         VkBufferImageCopy copy = {.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, .imageExtent = {(uint32_t)RW, (uint32_t)RH, 1}};
         vkCmdCopyImageToBuffer(cb, color_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readback, 1, &copy); buffer_barrier(readback, 0);
     }
     VK(vkEndCommandBuffer(cb));
+    VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submit = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount = 1, .pCommandBuffers = &cb};
-    VK(vkQueueSubmit(queue, 1, &submit, VK_NULL_HANDLE)); VK(vkQueueWaitIdle(queue));
+    if (wsi) { submit.waitSemaphoreCount = 1; submit.pWaitSemaphores = &acquire_sem; submit.pWaitDstStageMask = &wait_stage;
+        submit.signalSemaphoreCount = 1; submit.pSignalSemaphores = &render_sem; }
+    VK(vkQueueSubmit(queue, 1, &submit, VK_NULL_HANDLE));
+    if (wsi) {
+        VkPresentInfoKHR pi = {.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, .waitSemaphoreCount = 1, .pWaitSemaphores = &render_sem,
+            .swapchainCount = 1, .pSwapchains = &swapchain, .pImageIndices = &index};
+        VK(vkQueuePresentKHR(queue, &pi));
+    }
+    VK(vkQueueWaitIdle(queue));
     color_old = present ? VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     depth_old = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     return 0;
@@ -527,6 +604,11 @@ static int render(int present) {
 static void teardown(void) {
     if (device) {
         vkDeviceWaitIdle(device);
+        for (uint32_t i = 0; i < swap_count; i++) { if (swap_fbs[i]) vkDestroyFramebuffer(device, swap_fbs[i], NULL); if (swap_views[i]) vkDestroyImageView(device, swap_views[i], NULL); }
+        if (acquire_sem) vkDestroySemaphore(device, acquire_sem, NULL);
+        if (render_sem) vkDestroySemaphore(device, render_sem, NULL);
+        if (swapchain) vkDestroySwapchainKHR(device, swapchain, NULL);
+        if (wsi) color_image = own_color_image;
         if (cb) vkFreeCommandBuffers(device, cpool, 1, &cb);
         if (cpool) vkDestroyCommandPool(device, cpool, NULL);
         if (pipeline) vkDestroyPipeline(device, pipeline, NULL);
@@ -552,19 +634,22 @@ static void teardown(void) {
         if (color_mem) vkFreeMemory(device, color_mem, NULL);
         vkDestroyDevice(device, NULL);
     }
+    if (surface) vkDestroySurfaceKHR(instance, surface, NULL);
     if (instance) vkDestroyInstance(instance, NULL);
 }
 
 /* ---- main ---------------------------------------------------------------- */
 static void usage(void) {
-    say("usage: vkgears [-nopresent] [-seconds N] [-size WxH] [-info] [-interval S]\n");
+    say("usage: vkgears [-nopresent|-noput|-wsi] [-seconds N] [-size WxH] [-info] [-interval S]\n");
 }
 int main(int argc, char **argv) {
-    int present = 1, info = 0, w = 300, h = 300;
+    int present = 1, info = 0, w = 300, h = 300, noput = 0;
     double seconds = 0, interval = 5.0;
     signal(SIGPIPE, SIG_IGN);
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-nopresent")) present = 0;
+        else if (!strcmp(argv[i], "-noput")) noput = 1;
+        else if (!strcmp(argv[i], "-wsi")) wsi = 1;
         else if (!strcmp(argv[i], "-info")) info = 1;
         else if (!strcmp(argv[i], "-seconds") && i + 1 < argc) seconds = atof(argv[++i]);
         else if (!strcmp(argv[i], "-interval") && i + 1 < argc) interval = atof(argv[++i]);
@@ -599,17 +684,21 @@ int main(int argc, char **argv) {
         say("VKGEARS_GEOMETRY vertices=%d gear1=%d+%d gear2=%d+%d gear3=%d+%d stride=%d\n", mesh_count, gear_first[0], gear_count[0],
             gear_first[1], gear_count[1], gear_first[2], gear_count[2], STRIDE);
     }
+    if (wsi) {
+        if (!x11_open(w, h)) { say("VKGEARS_ERROR X11 open failed\n"); x11_close(); teardown(); return 4; }
+        RW = w <= RW ? w : RW; RH = h <= RH ? h : RH;
+    }
     status = setup();
     if (status) {
         say("VKGEARS_ERROR setup status=%d reason=%s\n", status, status == 3 ? "gpu-session-unavailable" : "vulkan-setup");
         teardown(); return status;
     }
-    if (present) {
+    if (present && !noput && !wsi) {
         xmap = malloc(sizeof(int) * (size_t)w);
         if (!xmap || !x11_open(w, h)) { say("VKGEARS_ERROR X11 open failed\n"); x11_close(); teardown(); return 4; }
         for (int x = 0; x < w; x++) xmap[x] = (int)((int64_t)x * RW / w) * 4;
     }
-    say("VKGEARS_READY device=\"%s\" backend=%s present=%d size=%dx%d render=%dx%d\n", props.deviceName, backend, present, w, h, RW, RH);
+    say("VKGEARS_READY device=\"%s\" backend=%s present=%d wsi=%d size=%dx%d render=%dx%d\n", props.deviceName, backend, present, wsi, w, h, RW, RH);
 
     double t_start = now_s(), t_last = t_start, t_rot = t_start;
     int frames = 0, total = 0;
@@ -621,8 +710,11 @@ int main(int argc, char **argv) {
         t_rot = t;
         if (angle > 3600.0) angle -= 3600.0;
 
-        if ((status = render(present))) { reason = "gpu-session-lost"; say("VKGEARS_ERROR gpu frames=%d status=%d (host GPU session closed or device lost)\n", total, status); break; }
-        if (present) {
+        double tr = now_s();
+        status = render(present); ph_render += now_s() - tr;
+        if (status) { reason = "gpu-session-lost"; say("VKGEARS_ERROR gpu frames=%d status=%d (host GPU session closed or device lost)\n", total, status); break; }
+        if (wsi) { if (!x11_events()) { reason = "window-closed"; break; } }
+        else if (present && !noput) {
             x11_present(mapped, RW, RH, w, h);
             if (x_error_code) { status = 4; reason = "x11-error"; break; }
             if (!x11_events()) { reason = "window-closed"; break; }
@@ -635,6 +727,9 @@ int main(int argc, char **argv) {
             say("%d frames in %3.1f seconds = %6.3f FPS\n", frames, secs, fps);
             say("VKGEARS_FPS backend=%s device=\"%s\" fps=%.3f frames=%d seconds=%.2f present=%d size=%dx%d render=%dx%d\n",
                 backend, props.deviceName, fps, frames, secs, present, w, h, RW, RH);
+            say("VKGEARS_PHASES_MS render=%.3f convert=%.3f put=%.3f sync=%.3f frames=%d\n", 1e3 * ph_render / frames,
+                1e3 * ph_convert / frames, 1e3 * ph_put / frames, 1e3 * ph_sync / frames, frames);
+            ph_render = ph_convert = ph_put = ph_sync = 0;
             t_last = t; frames = 0;
         }
         if (seconds > 0 && t - t_start >= seconds) break;

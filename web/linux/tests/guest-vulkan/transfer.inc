@@ -5,13 +5,15 @@
 /* B2e: Zink and the zinkcaps suite hold more than 32 live objects (the BGRA
  * frame is the 33rd); the direct exhaustion suite keeps the 32-entry table.
  * B2d: Zink allocates descriptor sets 10, then 90 at a time per pool and
- * batch state (each set is one resource), so the table holds 1024. */
-#define MAX_RES 1024
+ * batch state (each set is one resource), so the table holds 1024.
+ * Firefox runs several contexts with more batch states: 2048, indexed. */
+#define MAX_RES 2048
 #else
 #define MAX_RES 32
 #endif
 #ifdef GUEST_VK_ZINK
-#define MAX_CMDS 64 /* B2f: Zink batches record more than the test clients. */
+/* B2f: Zink batches record more than the test clients; per-buffer storage grows on demand. */
+#define MAX_CMDS 4096
 #else
 #define MAX_CMDS 16
 #endif
@@ -26,17 +28,18 @@ enum resource_kind { R_IMAGE=1, R_BUFFER, R_MEMORY, R_SHADER, R_SET_LAYOUT, R_PI
     R_IMAGE_VIEW, R_RENDER_PASS, R_FRAMEBUFFER, R_GRAPHICS_PIPELINE, R_SAMPLER, R_UPDATE_TEMPLATE };
 /* Inline owned graphics snapshots contain no caller pointers. Binding array
  * order is the normalized host slot order; binding numbers remain Vulkan IDs. */
-struct graphics_view { uint64_t image; };
+struct graphics_view { uint64_t image; VkImageAspectFlags aspects; unsigned base_level, level_count; char swizzle[5]; /* empty: identity */ };
 struct graphics_pass { VkFormat format; VkSampleCountFlagBits samples; VkAttachmentLoadOp load; VkAttachmentStoreOp store; VkImageLayout initial, final;
     /* A5: optional depth attachment 1; depth_format==0 means colour-only. */
-    VkFormat depth_format; VkAttachmentLoadOp depth_load; VkAttachmentStoreOp depth_store; VkImageLayout depth_initial, depth_final; };
+    VkFormat depth_format; VkAttachmentLoadOp depth_load; VkAttachmentStoreOp depth_store; VkImageLayout depth_initial, depth_final;
+    unsigned stencil_present; VkAttachmentLoadOp stencil_load; VkAttachmentStoreOp stencil_store; };
 struct graphics_framebuffer { uint64_t view, image; unsigned width,height; struct graphics_pass pass; uint64_t depth_view, depth_image; };
 struct graphics_binding { unsigned binding,stride,count; VkVertexInputAttributeDescription attributes[8]; };
 /* A3 uniform-buffer descriptor shapes: at most 4 sets x 4 single-descriptor
  * UNIFORM_BUFFER bindings (8 per pipeline layout), vertex/fragment stages. */
 /* A4 adds single COMBINED_IMAGE_SAMPLER bindings (types[]) to the same shape. */
 #ifdef GUEST_VK_ZINK
-#define UNIFORM_SET_BINDINGS 8 /* B2f: Zink's gfx push layout has 5 per-stage UBO bindings. */
+#define UNIFORM_SET_BINDINGS 16 /* B2f: Zink's gfx push layout has 5 per-stage UBO bindings; sampler sets up to 16. */
 #else
 #define UNIFORM_SET_BINDINGS 4
 #endif
@@ -46,12 +49,16 @@ struct uniform_set { struct uniform_set_layout layout; unsigned written; uint64_
     uint64_t views[UNIFORM_SET_BINDINGS], samplers[UNIFORM_SET_BINDINGS]; };
 struct graphics_pipeline { unsigned binding_count; struct graphics_binding bindings[8]; VkViewport viewport; VkRect2D scissor; struct graphics_pass pass;
     struct uniform_pipeline_layout uniforms; unsigned uniform_count; uint32_t min_sizes[8]; unsigned depth_test, depth_write; VkCompareOp depth_compare;
+    unsigned stencil_test, dynamic_stencil_reference; VkStencilOpState stencil_front, stencil_back;
     VkPrimitiveTopology topology; unsigned vertex_index, vertex_flat;
     unsigned dynamic_viewport; /* B2d: viewport+scissor come from vkCmdSetViewport/Scissor at draw time */
     VkCullModeFlags cull_mode; VkFrontFace front_face; /* B2g (Zink only): NONE/FRONT/BACK, CCW/CW */ };
 struct resource { uint64_t id, memory, link, parent; unsigned kind, host, width, height, type, mapped, bound, storage, valid;
+    unsigned srgb; /* sampled texture created with an _SRGB format (host rgba8unorm-srgb) */
     unsigned bgra; /* B2e: image created as B8G8R8A8_UNORM (host stores RGBA; guest bytes swap R/B). */
-    unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
+    unsigned alpha_one; /* sampled through an A=ONE view (Zink's RGBX emulation); uploads force alpha 0xff. */
+    unsigned mips; /* mip levels (mipmap profile); size and width/height describe level 0 */
+    unsigned vertex, uniform, graphics_target, graphics_layout, push_size, graphics_initialized, stencil_initialized, sampled, staging, sampler_capacity, depth; VkShaderStageFlagBits shader_stage;
     uint64_t swapchain; /* A6a: nonzero for images/memory owned by a VkSwapchainKHR (not app-destroyable). */
     size_t size, range; unsigned char *bytes; VkImageLayout layout;
     /* B2f: bind offset of a buffer/image inside its VkDeviceMemory (always 0
@@ -67,16 +74,18 @@ static struct resource resources[MAX_RES];
 #define GUEST_VK_HEAP_BYTES ((size_t)256*1024*1024)
 #define GUEST_VK_MAX_ALLOCATION GUEST_VK_HEAP_BYTES
 #else
-#define GUEST_VK_HEAP_BYTES ((size_t)1024*1024)
-#define GUEST_VK_MAX_ALLOCATION ((size_t)65536)
+
+/* Extended host snapshots remain16MiB-bounded; ordinary native heap unchanged. */
+#define GUEST_VK_HEAP_BYTES (live&&(live->large_color_supported||live->depth_stencil_supported)?(size_t)16*1024*1024:(size_t)1024*1024)
+#define GUEST_VK_MAX_ALLOCATION (live&&live->depth_stencil_supported?(size_t)2097152:live&&live->large_color_supported?(size_t)1048576:(size_t)65536)
 #endif
 static uint64_t next_resource = 1;
-enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER, C_UNIFORM_BARRIER, C_TEXTURE_COPY };
+enum graphics_command_kind { C_GRAPHICS_BEGIN=9, C_GRAPHICS_DRAW, C_GRAPHICS_END, C_VERTEX_BARRIER, C_UNIFORM_BARRIER, C_TEXTURE_COPY, C_BUFFER_COPY, C_BLIT };
 struct graphics_vertex_ref { uint64_t buffer; VkDeviceSize offset; };
 /* framebuffer==0 marks a B2a dynamic-rendering begin that names image views directly. */
-struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; uint64_t view, depth_view; };
+struct graphics_begin_record { uint64_t framebuffer; struct graphics_pass pass; VkClearColorValue clear; float depth_clear; uint64_t view, depth_view; uint32_t stencil_clear; };
 struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint32_t count, first; uint64_t sets[4];
-    unsigned dynamic; VkViewport viewport; VkRect2D scissor;
+    unsigned dynamic; VkViewport viewport; VkRect2D scissor; uint32_t stencil_reference;
 #ifdef GUEST_VK_ZINK
     /* B2g: vkCmdDrawIndexed (index_size 2/4; 0 = non-indexed). first is firstIndex. */
     uint64_t index_buffer; VkDeviceSize index_offset; unsigned index_size; int32_t vertex_offset;
@@ -85,25 +94,33 @@ struct graphics_draw_record { uint64_t pipeline; struct graphics_vertex_ref vert
 struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSize offset; VkImageLayout old_layout, new_layout; VkClearColorValue color;
 #ifdef GUEST_VK_ZINK
     VkBufferImageCopy region; unsigned has_region; /* B2f: sub-rectangle image->buffer copy */
+    VkBufferCopy copy; uint64_t dst; /* C_BUFFER_COPY: one region, src in `buffer`; C_BLIT: dst image */
+    VkImageBlit blit; VkFilter filter; unsigned level; /* C_BLIT region; C_TEXTURE_COPY level */
 #endif
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
 };
 struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4];
-    unsigned dynamic_set; VkViewport viewport; VkRect2D scissor; /* B2d: bit0 viewport, bit1 scissor recorded */
+    unsigned dynamic_set; VkViewport viewport; VkRect2D scissor; unsigned stencil_set; uint32_t stencil_reference[2]; /* B2d: bit0 viewport, bit1 scissor recorded */
 #ifdef GUEST_VK_ZINK
     uint64_t index_buffer; VkDeviceSize index_offset; unsigned index_size; /* B2g: vkCmdBindIndexBuffer */
 #endif
 };
 struct VkCommandBuffer_T { VK_LOADER_DATA loader; unsigned state, count; uint64_t pipeline, set, pipeline_layout;
-    struct graphics_command_state graphics; struct recorded commands[MAX_CMDS]; };
+    struct graphics_command_state graphics;
+#ifdef GUEST_VK_ZINK
+    struct recorded *commands; unsigned capacity; /* heap, grown by record_command up to MAX_CMDS */
+#else
+    struct recorded commands[MAX_CMDS];
+#endif
+};
 #ifdef GUEST_VK_ZINK
 /* B2f: Zink creates two pools per batch state (flags 0) and three primary
  * buffers, records into several at once and submits up to three per batch.
  * Every entry point taking a VkCommandBuffer selects it as the current slot
  * (SELECT_CB) and the existing single-buffer code operates on `command`,
  * which aliases that slot. Execution stays synchronous and per buffer. */
-#define MAX_CBS 24
-#define MAX_POOLS 16
+#define MAX_CBS 96
+#define MAX_POOLS 128
 static struct VkCommandBuffer_T command_slots[MAX_CBS];
 static uint64_t command_slot_pool[MAX_CBS], pools[MAX_POOLS];
 static struct VkCommandBuffer_T *cur_cb=&command_slots[0];
@@ -113,30 +130,89 @@ static int select_cb(VkCommandBuffer cb) {
     return 0;
 }
 #define SELECT_CB(cb) ((void)select_cb(cb))
+static void command_slot_clear(struct VkCommandBuffer_T *c) {free(c->commands);memset(c,0,sizeof(*c));}
+#define CLEAR_RECORDED(c) ((void)0) /* record_command zeroes each entry it hands out */
 static uint64_t pool=1; /* legacy checks below only test pool!=0 */
 static uint64_t next_pool = 1000000;
 #else
 static struct VkCommandBuffer_T command;
 #define SELECT_CB(cb) ((void)0)
+#define CLEAR_RECORDED(c) memset((c).commands,0,sizeof((c).commands))
 static uint64_t pool, next_pool = 1000000;
 #endif
 static unsigned resource_count;
 static size_t allocated_bytes;
 unsigned guest_vk_live_resources(void) {return resource_count;}
 VkDeviceSize guest_vk_allocated_bytes(void) {return allocated_bytes;}
+/* Open-addressed id -> slot index (slot+1; 0 empty) so lookups do not scan
+ * the whole table; deletion shifts back later entries of the probe run. */
+#define RES_HASH (MAX_RES*4)
+static unsigned short res_hash[RES_HASH];
+static unsigned res_free_hint;
+static unsigned res_hpos(uint64_t id) {return (unsigned)((id*0x9E3779B97F4A7C15ull)>>40)&(RES_HASH-1);}
 static struct resource *resource_get(uint64_t id, unsigned kind) {
-    for (unsigned i=0;i<MAX_RES;i++) if (id && resources[i].id==id && resources[i].kind==kind) return &resources[i];
-    return NULL;
-}
-static struct resource *resource_new(unsigned kind) {
-    if (next_resource == UINT64_MAX) return NULL;
-    for (unsigned i=0;i<MAX_RES;i++) if (!resources[i].id) {
-        resources[i]=(struct resource){.id=next_resource++, .kind=kind}; resource_count++; return &resources[i];
+    if (!id) return NULL;
+    for (unsigned h=res_hpos(id);res_hash[h];h=(h+1)&(RES_HASH-1)) {
+        struct resource *r=&resources[res_hash[h]-1];
+        if (r->id==id) return r->kind==kind?r:NULL;
     }
     return NULL;
 }
+static void res_hash_del(uint64_t id) {
+    unsigned i=res_hpos(id);
+    while (res_hash[i] && resources[res_hash[i]-1].id!=id) i=(i+1)&(RES_HASH-1);
+    if (!res_hash[i]) return;
+    for (unsigned j=i;;) {
+        res_hash[i]=0;
+        for (;;) {
+            j=(j+1)&(RES_HASH-1);
+            if (!res_hash[j]) return;
+            unsigned k=res_hpos(resources[res_hash[j]-1].id);
+            if (i<=j ? (i<k&&k<=j) : (i<k||k<=j)) continue;
+            break;
+        }
+        res_hash[i]=res_hash[j]; i=j;
+    }
+}
+static struct resource *resource_new(unsigned kind) {
+    if (next_resource == UINT64_MAX) return NULL;
+    for (unsigned n=0;n<MAX_RES;n++) { unsigned i=(res_free_hint+n)%MAX_RES; if (!resources[i].id) {
+        resources[i]=(struct resource){.id=next_resource++, .kind=kind}; resource_count++; res_free_hint=(i+1)%MAX_RES;
+#ifdef GUEST_VK_ZINK
+        if(!(resource_count&255)&&zink_trace_enabled()){unsigned c[16]={0};for(unsigned k=0;k<MAX_RES;k++)c[resources[k].kind&15]++;
+            char m[200];int n=snprintf(m,sizeof m,"GUEST_VK_HISTSTEP %u:",resource_count);
+            for(unsigned k=1;k<16&&n<(int)sizeof m-16;k++)if(c[k])n+=snprintf(m+n,sizeof m-n," %u:%u",k,c[k]);m[n++]='\n';write(2,m,n);}
+#endif
+        unsigned h=res_hpos(resources[i].id); while (res_hash[h]) h=(h+1)&(RES_HASH-1);
+        res_hash[h]=(unsigned short)(i+1); return &resources[i];
+    } }
+    static int reported;
+    if(!reported){reported=1;unsigned counts[16]={0};for(unsigned n=0;n<MAX_RES;n++)counts[resources[n].kind&15]++;
+        char m[256];int n=snprintf(m,sizeof m,"GUEST_VK resource table full (%u); by kind:",MAX_RES);
+        for(unsigned k=1;k<16&&n<(int)sizeof m-16;k++)if(counts[k])n+=snprintf(m+n,sizeof m-n," %u:%u",k,counts[k]);m[n++]='\n';write(2,m,n);}
+    return NULL;
+}
+#ifdef GUEST_VK_ZINK
+/* GUEST_VK_TRACE profile: per-op host call count/time/bytes, printed about
+ * every five seconds from queue_submit. */
+#include <time.h>
+#define PROF_OPS 32
+static struct { uint64_t calls, ns, bytes; } prof_ops[PROF_OPS];
+static uint64_t prof_submits, prof_submit_ns, prof_last_ns;
+static uint64_t prof_now(void) {struct timespec t;timespec_get(&t,TIME_UTC);return (uint64_t)t.tv_sec*1000000000ull+(uint64_t)t.tv_nsec;}
+static int prof_gpu_call(struct gpu_session *s,enum gpu_op op,const void *data,uint32_t size,void *reply,uint32_t capacity,uint32_t *received) {
+    if(!zink_trace_enabled())return gpu_call(s,op,data,size,reply,capacity,received);
+    uint64_t t0=prof_now();int status=gpu_call(s,op,data,size,reply,capacity,received);
+    unsigned k=(unsigned)op<PROF_OPS?(unsigned)op:PROF_OPS-1;
+    prof_ops[k].calls++;prof_ops[k].ns+=prof_now()-t0;prof_ops[k].bytes+=size+(received?*received:0);
+    return status;
+}
+#define gpu_call prof_gpu_call
+#endif
 static VkResult host_call(enum gpu_op op, const void *data, uint32_t size, void *reply, uint32_t capacity, uint32_t *received) {
-    if (live->failed || gpu_call(&live->session,op,data,size,reply,capacity,received)) { live->failed=1; return VK_ERROR_DEVICE_LOST; }
+    if (live->failed) return VK_ERROR_DEVICE_LOST;
+    int zst=gpu_call(&live->session,op,data,size,reply,capacity,received);
+    if (zst) { ZREJ("host_call op=%d status=%d size=%u capacity=%u\n",(int)op,zst,size,capacity); live->failed=1; return VK_ERROR_DEVICE_LOST; }
     return VK_SUCCESS;
 }
 /* Compute/graphics resource requests retain recoverable validation/allocation status. Only a
@@ -147,7 +223,7 @@ static VkResult compute_call(enum gpu_op op,const void *data,uint32_t size,void 
     if(!status)return VK_SUCCESS;
     if(status==-22)return VK_ERROR_INITIALIZATION_FAILED;
     if(status==-12)return VK_ERROR_OUT_OF_DEVICE_MEMORY;
-    live->failed=1;return VK_ERROR_DEVICE_LOST;
+    ZREJ("compute_call op=%d status=%d size=%u\n",(int)op,status,size);live->failed=1;return VK_ERROR_DEVICE_LOST;
 }
 static VkResult compute_empty(enum gpu_op op,const void *data,uint32_t size) {
     unsigned char reply[512];uint32_t n=0;VkResult result=compute_call(op,data,size,reply,sizeof(reply),&n);
@@ -162,14 +238,14 @@ static VkResult compute_resource(enum gpu_op op,const void *data,uint32_t size,u
 }
 static VkResult host_empty(enum gpu_op op, const void *data, uint32_t size) {
     unsigned char reply[512]; uint32_t n=0;
-    if (host_call(op,data,size,reply,sizeof(reply),&n)!=VK_SUCCESS || n) {live->failed=1; return VK_ERROR_DEVICE_LOST;}
+    if (host_call(op,data,size,reply,sizeof(reply),&n)!=VK_SUCCESS || n) {if(n)ZREJ("host_empty op=%d reply=%u\n",(int)op,n);live->failed=1; return VK_ERROR_DEVICE_LOST;}
     return VK_SUCCESS;
 }
 static void resource_drop(struct resource *r) {
     if (r->host && live && !live->failed) (void)host_empty(GPU_DESTROY,&r->host,4);
     struct resource *m=resource_get(r->memory,R_MEMORY); if (m && m->bound) m->bound--;
     if (r->kind==R_MEMORY) allocated_bytes-=r->size;
-    free(r->bytes); memset(r,0,sizeof(*r)); resource_count--;
+    res_hash_del(r->id); free(r->bytes); memset(r,0,sizeof(*r)); resource_count--;
 }
 static void sync_cleanup(void);
 #ifdef GUEST_VK_ZINK
@@ -177,7 +253,13 @@ static void zink_cleanup(void);
 static VkResult zink_null_ubo(void);
 static uint32_t zink_null_ubo_host; /* B2a robustness2 nullDescriptor dummy UBO (host id; not in resources[]). */
 #define ZINK_RING_CHUNK 65536u
-#define ZINK_RING_CHUNKS 8u
+#define ZINK_RING_CHUNKS 128u
+/* largeVertexBufferProfile: 1 MiB vertex ring chunks, at most 32 (32 MiB of
+ * the host's resource budget); uniform chunks stay 64 KiB. */
+#define ZINK_VERTEX_CHUNK_LARGE 1048576u
+#define ZINK_VERTEX_CHUNKS_LARGE 32u
+static inline uint32_t zink_chunk_size(unsigned kind) {return !kind&&live&&live->large_vertex_supported?ZINK_VERTEX_CHUNK_LARGE:ZINK_RING_CHUNK;}
+static inline unsigned zink_chunk_limit(unsigned kind) {return !kind&&live&&live->large_vertex_supported?ZINK_VERTEX_CHUNKS_LARGE:ZINK_RING_CHUNKS;}
 static void zink_ring_reset(void);
 static int zink_ring_stage(unsigned kind,const unsigned char *src,uint32_t avail,uint32_t size,uint32_t *host,uint32_t *offset);
 static VkResult zink_ring_upload(void);
@@ -194,7 +276,7 @@ static void transfer_cleanup(void) {
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id && resources[i].kind!=R_MEMORY) resource_drop(&resources[i]);
     for (unsigned i=0;i<MAX_RES;i++) if (resources[i].id) resource_drop(&resources[i]);
 #ifdef GUEST_VK_ZINK
-    memset(command_slots,0,sizeof(command_slots));memset(command_slot_pool,0,sizeof(command_slot_pool));memset(pools,0,sizeof(pools));
+    for(unsigned n=0;n<MAX_CBS;n++)command_slot_clear(&command_slots[n]);memset(command_slot_pool,0,sizeof(command_slot_pool));memset(pools,0,sizeof(pools));
 #else
     memset(&command,0,sizeof(command)); pool=0;
 #endif
@@ -216,9 +298,44 @@ static VKAPI_ATTR void VKAPI_CALL memory_properties(VkPhysicalDevice p, VkPhysic
 /* A5 depth format code shared with the host DEPTH_TARGET request: 1=depth32float, 2=depth16unorm. */
 /* B2e helpers: the colour format an image was created with, and the R/B byte
  * swap applied to guest-visible texel bytes of B8G8R8A8 images. */
-static VkFormat image_color_format(const struct resource *i) {return i->bgra?VK_FORMAT_B8G8R8A8_UNORM:VK_FORMAT_R8G8B8A8_UNORM;}
+static VkFormat image_color_format(const struct resource *i) {return i->srgb?(i->bgra?VK_FORMAT_B8G8R8A8_SRGB:VK_FORMAT_R8G8B8A8_SRGB):i->bgra?VK_FORMAT_B8G8R8A8_UNORM:VK_FORMAT_R8G8B8A8_UNORM;}
 static void swap_rb(unsigned char *p,size_t n) {for(size_t k=0;k+3<n;k+=4){unsigned char t=p[k];p[k]=p[k+2];p[k+2]=t;}}
-static unsigned depth_code(VkFormat f) {return f==VK_FORMAT_D32_SFLOAT?1:f==VK_FORMAT_D16_UNORM?2:0;}
+static void force_alpha(unsigned char *p,size_t n) {for(size_t k=3;k<n;k+=4)p[k]=0xff;}
+static VkResult read_color_pixels(struct resource *i,unsigned char **out) {
+    *out=NULL;
+    if(!i||!i->size||i->size>1048576u||i->size%4)return VK_ERROR_DEVICE_LOST;
+    unsigned char *pixels=malloc(i->size);if(!pixels)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    if(!live->large_color_supported||!i->graphics_target) {
+        uint32_t size=0;
+        if(i->size>65536u||host_call(i->graphics_target?GPU_GRAPHICS_READBACK:GPU_READBACK,&i->host,4,pixels,(uint32_t)i->size,&size)!=VK_SUCCESS||size!=i->size)goto bad;
+    } else {
+        unsigned char reply[65532];uint32_t offset=0,token=0;
+        while(offset<i->size) {
+            uint32_t count=(uint32_t)i->size-offset;if(count>65516u)count=65516u;
+            uint32_t request[4]={i->host,offset,count,token},size=0,meta[4];
+            if(host_call(GPU_GRAPHICS_READBACK_RANGE,request,sizeof(request),reply,sizeof(reply),&size)!=VK_SUCCESS||size!=16u+count)goto bad;
+            memcpy(meta,reply,16);
+            if(meta[0]!=i->host||meta[1]!=offset||meta[2]!=i->size||!meta[3]||(token&&meta[3]!=token))goto bad;
+            token=meta[3];memcpy(pixels+offset,reply+16,count);offset+=count;
+        }
+    }
+    *out=pixels;return VK_SUCCESS;
+bad:free(pixels);return VK_ERROR_DEVICE_LOST;
+}
+#ifdef GUEST_VK_ZINK
+/* Opus a9: with the packed host profile, D32_SFLOAT attachments are carried on
+ * host depth24plus-stencil8 (code 3, 512 extent). Zink falls back to D32 for
+ * GL depth24 buffers; 128-texel D32 storage made Firefox framebuffers incomplete. */
+#define ZINK_D32_PACKED (live&&live->depth_stencil_supported)
+#else
+#define ZINK_D32_PACKED 0
+#endif
+static unsigned depth_code(VkFormat f) {return f==VK_FORMAT_D32_SFLOAT?(ZINK_D32_PACKED?3:1):f==VK_FORMAT_D16_UNORM?2:live&&live->depth_stencil_supported&&f==VK_FORMAT_D24_UNORM_S8_UINT?3:0;}
+/* Depth sample profile: depth images may also be sampled (host r32float copy). */
+static int depth_usage_ok(VkImageUsageFlags usage) {
+    return usage==VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT||
+        (live->depth_sample_supported&&usage==(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT));
+}
 static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreateInfo *i,const VkAllocationCallbacks *a,VkImage *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
     *out=VK_NULL_HANDLE;
@@ -227,28 +344,44 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreat
      * still checked to use the image's own format, so the list is ignored. */
     const VkBaseInStructure *zl=i?(const VkBaseInStructure*)i->pNext:NULL;
     const int zink_list_ok=!zl||(zl->sType==VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO&&!zl->pNext);
+    int zink_depth_list=zink_list_ok;
+    if(zl&&zink_depth_list) {
+        const VkImageFormatListCreateInfo *formats=(const VkImageFormatListCreateInfo*)zl;
+        if(formats->viewFormatCount&&!formats->pViewFormats)zink_depth_list=0;
+        if(formats->viewFormatCount>8)zink_depth_list=0;
+        for(uint32_t n=0;zink_depth_list&&n<formats->viewFormatCount;n++)if(formats->pViewFormats[n]!=i->format)zink_depth_list=0;
+    }
+    const int zink_depth=i&&(live->depth_stencil_supported||live->depth_sample_supported)&&depth_code(i->format)&&depth_usage_ok(i->usage)&&zink_depth_list&&
+        !(i->flags&~(VkImageCreateFlags)(VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT|VK_IMAGE_CREATE_EXTENDED_USAGE_BIT));
     const int zink_color=i&&zink_list_ok&&zink_color_usage_ok(i->format,i->usage)&&
         !(i->flags&~(VkImageCreateFlags)(VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT|VK_IMAGE_CREATE_EXTENDED_USAGE_BIT));
+    /* Mipmap profile: sampled colour images may carry a mip chain. */
+    const int zink_mips=zink_color&&live->mipmap_supported&&(i->usage&VK_IMAGE_USAGE_SAMPLED_BIT)&&
+        i->mipLevels>=1&&i->mipLevels<=mip_levels_max(i->extent.width,i->extent.height);
 #else
-    const int zink_color=0;
+    const int zink_color=0,zink_depth=0,zink_mips=0;
 #endif
-    if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO||(i->pNext&&!zink_color)||(i->flags&&!zink_color)||
+    if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO||(i->pNext&&!zink_color&&!zink_depth)||(i->flags&&!zink_color&&!zink_depth)||
         i->imageType!=VK_IMAGE_TYPE_2D||!i->extent.width||!i->extent.height||
-        i->extent.width>128||i->extent.height>128||i->extent.depth!=1||i->mipLevels!=1||i->arrayLayers!=1||
+        i->extent.width>(depth_code(i->format)?(depth_code(i->format)==3?depth_extent():plain_depth_extent()):color_image_extent(i->usage))||i->extent.height>(depth_code(i->format)?(depth_code(i->format)==3?depth_extent():plain_depth_extent()):color_image_extent(i->usage))||i->extent.depth!=1||(i->mipLevels!=1&&!zink_mips)||i->arrayLayers!=1||
         i->samples!=VK_SAMPLE_COUNT_1_BIT||i->tiling!=VK_IMAGE_TILING_OPTIMAL||
         !(zink_color||(color_format(i->format) && ((live->clear_supported && i->usage==(VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
           (live->graphics_supported && i->usage==(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
+          (live->large_sampled_target_supported && i->usage==(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT)) ||
           (live->texture_supported && i->usage==(VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)))) ||
-          (live->depth_supported && depth_code(i->format) && i->usage==VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))||
-        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount||i->initialLayout!=VK_IMAGE_LAYOUT_UNDEFINED) {
-        if (i) ZINK_TRACE("create_image REJECT format=%d type=%d %ux%ux%u mips=%u layers=%u samples=%d tiling=%d usage=0x%x flags=0x%x pNext=%d\n",
+          (live->large_texture_supported && srgb_texture_format(i->format) && i->usage==(VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT)) ||
+          (live->depth_supported && depth_code(i->format) && depth_usage_ok(i->usage)))||
+        i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount||(i->initialLayout!=VK_IMAGE_LAYOUT_UNDEFINED&&
+        !((zink_color||zink_depth||live->large_texture_supported)&&i->initialLayout==VK_IMAGE_LAYOUT_PREINITIALIZED))) {
+        /* OPTIMAL tiling: PREINITIALIZED contents are undefined, same as UNDEFINED. */
+        if (i) ZREJ("create_image REJECT format=%d type=%d %ux%ux%u mips=%u layers=%u samples=%d tiling=%d usage=0x%x flags=0x%x pNext=%d\n",
             (int)i->format,(int)i->imageType,i->extent.width,i->extent.height,i->extent.depth,i->mipLevels,i->arrayLayers,(int)i->samples,(int)i->tiling,
             (unsigned)i->usage,(unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0);
         return VK_ERROR_FORMAT_NOT_SUPPORTED;
     }
     struct resource *r=resource_new(R_IMAGE); if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
-    r->width=i->extent.width;r->height=i->extent.height;r->size=(size_t)r->width*r->height*4;r->layout=VK_IMAGE_LAYOUT_UNDEFINED;
-    r->bgra=i->format==VK_FORMAT_B8G8R8A8_UNORM;
+    r->width=i->extent.width;r->height=i->extent.height;r->size=(size_t)r->width*r->height*4;r->layout=VK_IMAGE_LAYOUT_UNDEFINED;r->mips=i->mipLevels;
+    r->bgra=i->format==VK_FORMAT_B8G8R8A8_UNORM||i->format==VK_FORMAT_B8G8R8A8_SRGB;r->srgb=srgb_texture_format(i->format);
     r->graphics_target=(i->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)!=0;r->sampled=(i->usage & VK_IMAGE_USAGE_SAMPLED_BIT)!=0;
     /* Shared attachment/sampled storage is admitted only when the host
      * explicitly negotiates sampledColorTargets. Legacy hosts retain rejection. */
@@ -258,7 +391,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_image(VkDevice d,const VkImageCreat
 #endif
     /* A5: depth images are host-only attachments; 4 or 2 bytes per texel is the
      * reported (never mapped) size. Contents are not readable by the guest. */
-    r->depth=depth_code(i->format);if(r->depth==2)r->size=(size_t)r->width*r->height*2;
+    r->depth=depth_code(i->format);if(r->depth==2)r->size=(size_t)r->width*r->height*2;else if(r->depth==3)r->size=(size_t)r->width*r->height*8;
     *out=HANDLE(VkImage,r->id);return VK_SUCCESS;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCreateInfo *i,const VkAllocationCallbacks *a,VkBuffer *out) {
@@ -269,7 +402,8 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCre
      * more). Authoritative bytes stay in the bound guest memory; roles that need
      * a host resource are checked when a recorded command actually uses them. */
     int legacy=i&&(i->usage==VK_BUFFER_USAGE_TRANSFER_DST_BIT||i->usage==VK_BUFFER_USAGE_STORAGE_BUFFER_BIT||i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT||
-        i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT||i->usage==VK_BUFFER_USAGE_TRANSFER_SRC_BIT)&&i->size<=65536;
+        i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT||i->usage==VK_BUFFER_USAGE_TRANSFER_SRC_BIT)&&i->size<=65536&&
+        (i->usage==VK_BUFFER_USAGE_TRANSFER_DST_BIT||!(i->size%(i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT?16:4))); /* else generic */
     if (!legacy&&device_valid(d)&&i&&!a&&i->sType==VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO&&!i->pNext&&!i->flags&&i->size&&i->size<=GUEST_VK_MAX_ALLOCATION&&
         i->usage&&i->sharingMode==VK_SHARING_MODE_EXCLUSIVE&&!i->queueFamilyIndexCount) {
         struct resource *r=resource_new(R_BUFFER);if (!r) return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -277,13 +411,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_buffer(VkDevice d,const VkBufferCre
     }
 #endif
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO||i->pNext||i->flags||
-        !i->size||i->size>65536||(i->usage!=VK_BUFFER_USAGE_TRANSFER_DST_BIT &&
+        !i->size||i->size>((live->large_color_supported&&i->usage==VK_BUFFER_USAGE_TRANSFER_DST_BIT)?1048576u:65536u)||(i->usage!=VK_BUFFER_USAGE_TRANSFER_DST_BIT &&
           !(live->compute_supported && i->usage==VK_BUFFER_USAGE_STORAGE_BUFFER_BIT && !(i->size%4)) &&
           !(live->graphics_supported && i->usage==VK_BUFFER_USAGE_VERTEX_BUFFER_BIT && !(i->size%4)) &&
           !(live->uniform_supported && i->usage==VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT && !(i->size%16)) &&
           !(live->texture_supported && i->usage==VK_BUFFER_USAGE_TRANSFER_SRC_BIT && !(i->size%4)))||
         i->sharingMode!=VK_SHARING_MODE_EXCLUSIVE||i->queueFamilyIndexCount) {
-        if (i) ZINK_TRACE("create_buffer REJECT size=%llu usage=0x%x flags=0x%x pNext=%d sharing=%d\n",(unsigned long long)i->size,(unsigned)i->usage,
+        if (i) ZREJ("create_buffer REJECT size=%llu usage=0x%x flags=0x%x pNext=%d sharing=%d\n",(unsigned long long)i->size,(unsigned)i->usage,
             (unsigned)i->flags,i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,(int)i->sharingMode);
         return VK_ERROR_FEATURE_NOT_PRESENT;
     }
@@ -302,6 +436,7 @@ static void requirements(VkDevice d,uint64_t id,unsigned kind,VkMemoryRequiremen
     if (!out) return;
     memset(out,0,sizeof(*out));struct resource *r=resource_get(id,kind);
     if (device_valid(d)&&r) {out->size=r->size;out->alignment=kind==R_BUFFER&&r->uniform?256:4;out->memoryTypeBits=kind==R_IMAGE?1:2;
+        if (kind==R_IMAGE&&r->mips>1) {out->size=0;for(unsigned l=0;l<r->mips;l++)out->size+=(VkDeviceSize)MIP_DIM(r->width,l)*MIP_DIM(r->height,l)*4;}
         /* B2f: generic buffers live in either type (UMA type 0 or host type 1),
          * 256-byte aligned (uniform/storage offset alignment), size rounded up. */
         if (kind==R_BUFFER&&r->generic) {out->alignment=256;out->size=(r->size+255)&~(size_t)255;out->memoryTypeBits=3;}}
@@ -313,7 +448,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL allocate_memory(VkDevice d,const VkMemoryA
     *out=VK_NULL_HANDLE;
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO||i->pNext||
         !i->allocationSize||i->allocationSize>GUEST_VK_MAX_ALLOCATION||i->memoryTypeIndex>1||i->allocationSize>GUEST_VK_HEAP_BYTES-allocated_bytes) {
-        if (i) ZINK_TRACE("allocate_memory REJECT size=%llu type=%u pNext=%d allocated=%zu\n",(unsigned long long)i->allocationSize,i->memoryTypeIndex,
+        if (i) ZREJ("allocate_memory REJECT size=%llu type=%u pNext=%d allocated=%zu\n",(unsigned long long)i->allocationSize,i->memoryTypeIndex,
             i->pNext?(int)((const VkBaseInStructure*)i->pNext)->sType:0,(size_t)allocated_bytes);
         return VK_ERROR_OUT_OF_DEVICE_MEMORY;
     }
@@ -342,7 +477,7 @@ static VkResult bind_memory(VkDevice d,uint64_t id,unsigned kind,VkDeviceMemory 
     if (device_valid(d)&&r&&m&&!r->memory&&(kind==R_IMAGE?m->type==0:r->generic?1:m->type==1)) {
         VkMemoryRequirements req;requirements(d,id,kind,&req);
         if (offset%req.alignment||offset>m->size||m->size-offset<r->size) {
-            ZINK_TRACE("bind_memory REJECT kind=%u offset=%llu size=%zu memory=%zu\n",kind,(unsigned long long)offset,r->size,m->size);
+            ZREJ("bind_memory REJECT kind=%u offset=%llu size=%zu memory=%zu\n",kind,(unsigned long long)offset,r->size,m->size);
             return VK_ERROR_INITIALIZATION_FAILED;
         }
         if (kind==R_BUFFER&&!memory_bytes(m)) return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -351,14 +486,15 @@ static VkResult bind_memory(VkDevice d,uint64_t id,unsigned kind,VkDeviceMemory 
     } else
 #endif
     if (!device_valid(d)||!r||!m||offset||r->memory||m->bound||m->size<r->size||m->type!=(kind==R_BUFFER)) {
-        if (r&&m) ZINK_TRACE("bind_memory REJECT kind=%u offset=%llu type=%u bound=%u\n",kind,(unsigned long long)offset,m->type,m->bound);
+        if (r&&m) ZREJ("bind_memory REJECT kind=%u offset=%llu type=%u bound=%u\n",kind,(unsigned long long)offset,m->type,m->bound);
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     if (kind==R_IMAGE) {
         uint32_t dimensions[2]={r->width,r->height};
         if (r->depth) {uint32_t d3[3]={r->width,r->height,r->depth};VkResult result=compute_resource(GPU_DEPTH_TARGET,d3,12,&r->host);if(result!=VK_SUCCESS)return result;}
-        else if (r->graphics_target) {VkResult result=compute_resource(GPU_GRAPHICS_TARGET,dimensions,8,&r->host);if(result!=VK_SUCCESS)return result;}
-        else if (r->sampled) {VkResult result=compute_resource(GPU_TEXTURE,dimensions,8,&r->host);if(result!=VK_SUCCESS)return result;}
+        /* Mipmap profile: create flags carry (levels - 1) in bits 8-15. */
+        else if (r->graphics_target) {uint32_t t[3]={r->width,r->height,(r->mips-1)<<8};VkResult result=compute_resource(GPU_GRAPHICS_TARGET,t,r->mips>1?12:8,&r->host);if(result!=VK_SUCCESS)return result;}
+        else if (r->sampled) {uint32_t t[3]={r->width,r->height,r->srgb|(r->mips-1)<<8};VkResult result=compute_resource(GPU_TEXTURE,t,live->large_texture_supported?12:8,&r->host);if(result!=VK_SUCCESS)return result;}
         else if (live->failed||gpu_resource(&live->session,GPU_TARGET,dimensions,8,&r->host)) {live->failed=1;return VK_ERROR_DEVICE_LOST;}
     }
     if(kind==R_BUFFER && r->storage) {uint32_t size=(uint32_t)r->size;VkResult result=compute_resource(GPU_STORAGE_BUFFER,&size,4,&r->host);if(result!=VK_SUCCESS)return result;}
@@ -378,7 +514,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL map_memory(VkDevice d,VkDeviceMemory h,VkD
 #endif
     if (!device_valid(d)||!mappable||m->mapped||flags||o>=m->size||
         (size!=VK_WHOLE_SIZE&&(!size||size>m->size-o))) {
-        if (m) ZINK_TRACE("map_memory REJECT type=%u mapped=%u offset=%llu size=%llu memory=%zu\n",m->type,m->mapped,(unsigned long long)o,(unsigned long long)size,m->size);
+        if (m) ZREJ("map_memory REJECT type=%u mapped=%u offset=%llu size=%llu memory=%zu\n",m->type,m->mapped,(unsigned long long)o,(unsigned long long)size,m->size);
         return VK_ERROR_MEMORY_MAP_FAILED;
     }
     if (!memory_bytes(m)) return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -392,30 +528,30 @@ static VKAPI_ATTR VkResult VKAPI_CALL create_pool(VkDevice d,const VkCommandPool
     *out=VK_NULL_HANDLE;
     if (!device_valid(d)||!i||a||i->sType!=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO||i->pNext||i->queueFamilyIndex||
         (i->flags&~(VkCommandPoolCreateFlags)(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT|VK_COMMAND_POOL_CREATE_TRANSIENT_BIT))) {
-        ZINK_TRACE("create_pool REJECT flags=0x%x pNext=%p family=%u\n",i?i->flags:0,i?i->pNext:NULL,i?i->queueFamilyIndex:0);
+        ZREJ("create_pool REJECT flags=0x%x pNext=%p family=%u\n",i?i->flags:0,i?i->pNext:NULL,i?i->queueFamilyIndex:0);
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     for(unsigned n=0;n<MAX_POOLS;n++)if(!pools[n]){pools[n]=next_pool++;*out=HANDLE(VkCommandPool,pools[n]);return VK_SUCCESS;}
-    ZINK_TRACE("create_pool REJECT table full\n");
+    ZREJ("create_pool REJECT table full\n");
     return VK_ERROR_OUT_OF_HOST_MEMORY;
 }
 static VKAPI_ATTR void VKAPI_CALL destroy_pool(VkDevice d,VkCommandPool h,const VkAllocationCallbacks *a) {
     (void)a;int p=device_valid(d)?pool_index(h):-1;if(p<0)return;
-    for(unsigned n=0;n<MAX_CBS;n++)if(command_slot_pool[n]==pools[p]){memset(&command_slots[n],0,sizeof(command_slots[n]));command_slot_pool[n]=0;}
+    for(unsigned n=0;n<MAX_CBS;n++)if(command_slot_pool[n]==pools[p]){command_slot_clear(&command_slots[n]);command_slot_pool[n]=0;}
     pools[p]=0;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL allocate_commands(VkDevice d,const VkCommandBufferAllocateInfo *i,VkCommandBuffer *out) {
     if (!out) return VK_ERROR_INITIALIZATION_FAILED;
     int p=device_valid(d)&&i?pool_index(i->commandPool):-1;
     if (p<0||i->sType!=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO||i->pNext||i->level!=VK_COMMAND_BUFFER_LEVEL_PRIMARY||!i->commandBufferCount) {
-        ZINK_TRACE("allocate_commands REJECT pool=%d level=%d count=%u\n",p,i?(int)i->level:-1,i?i->commandBufferCount:0);
+        ZREJ("allocate_commands REJECT pool=%d level=%d count=%u\n",p,i?(int)i->level:-1,i?i->commandBufferCount:0);
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     unsigned free_slots=0;for(unsigned n=0;n<MAX_CBS;n++)free_slots+=!command_slot_pool[n];
-    if(free_slots<i->commandBufferCount){ZINK_TRACE("allocate_commands REJECT slots free=%u want=%u\n",free_slots,i->commandBufferCount);return VK_ERROR_OUT_OF_HOST_MEMORY;}
+    if(free_slots<i->commandBufferCount){ZREJ("allocate_commands REJECT slots free=%u want=%u\n",free_slots,i->commandBufferCount);return VK_ERROR_OUT_OF_HOST_MEMORY;}
     for(uint32_t k=0,n=0;k<i->commandBufferCount;k++){
         while(command_slot_pool[n])n++;
-        memset(&command_slots[n],0,sizeof(command_slots[n]));set_loader_magic_value(&command_slots[n]);command_slots[n].state=1;
+        command_slot_clear(&command_slots[n]);set_loader_magic_value(&command_slots[n]);command_slots[n].state=1;
         command_slot_pool[n]=pools[p];out[k]=&command_slots[n];
     }
     return VK_SUCCESS;
@@ -423,13 +559,13 @@ static VKAPI_ATTR VkResult VKAPI_CALL allocate_commands(VkDevice d,const VkComma
 static VKAPI_ATTR void VKAPI_CALL free_commands(VkDevice d,VkCommandPool h,uint32_t count,const VkCommandBuffer *items) {
     int p=device_valid(d)?pool_index(h):-1;if(p<0||!items)return;
     for(uint32_t k=0;k<count;k++)for(unsigned n=0;n<MAX_CBS;n++)
-        if(items[k]==&command_slots[n]&&command_slot_pool[n]==pools[p]){memset(&command_slots[n],0,sizeof(command_slots[n]));command_slot_pool[n]=0;}
+        if(items[k]==&command_slots[n]&&command_slot_pool[n]==pools[p]){command_slot_clear(&command_slots[n]);command_slot_pool[n]=0;}
 }
 static VKAPI_ATTR VkResult VKAPI_CALL reset_pool(VkDevice d,VkCommandPool h,VkCommandPoolResetFlags flags) {
     int p=device_valid(d)?pool_index(h):-1;if(p<0||(flags&~(VkCommandPoolResetFlags)VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT))return VK_ERROR_INITIALIZATION_FAILED;
     for(unsigned n=0;n<MAX_CBS;n++)if(command_slot_pool[n]==pools[p]){
         struct VkCommandBuffer_T *c=&command_slots[n];c->state=1;c->count=0;c->pipeline=c->set=c->pipeline_layout=0;
-        memset(&c->graphics,0,sizeof(c->graphics));memset(c->commands,0,sizeof(c->commands));
+        memset(&c->graphics,0,sizeof(c->graphics));
     }
     return VK_SUCCESS;
 }
@@ -459,34 +595,44 @@ static VKAPI_ATTR VkResult VKAPI_CALL reset_command(VkCommandBuffer cb,VkCommand
     SELECT_CB(cb);
     if(cb!=&command||!pool||!command.state||command.state==5||flags) return VK_ERROR_INITIALIZATION_FAILED;
     command.state=1;command.count=0;command.pipeline=command.set=command.pipeline_layout=0;
-    memset(&command.graphics,0,sizeof(command.graphics));memset(command.commands,0,sizeof(command.commands));return VK_SUCCESS;
+    memset(&command.graphics,0,sizeof(command.graphics));CLEAR_RECORDED(command);return VK_SUCCESS;
 }
 static VKAPI_ATTR VkResult VKAPI_CALL begin_command(VkCommandBuffer cb,const VkCommandBufferBeginInfo *i) {
     SELECT_CB(cb);
 #ifdef GUEST_VK_ZINK
-    /* B2f: ONE_TIME_SUBMIT is a hint; begin also implicitly resets (Zink resets via the pool). */
+    /* B2f: ONE_TIME_SUBMIT is a hint; begin also implicitly resets (Zink resets via the pool).
+     * SIMULTANEOUS_USE holds trivially: queue_submit executes synchronously
+     * and leaves recordings executable, so resubmission never overlaps. */
     if(cb!=&command||!command.state||command.state==2||command.state==5||!i||i->sType!=VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO||i->pNext||
-       (i->flags&~(VkCommandBufferUsageFlags)VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)||i->pInheritanceInfo){
-        ZINK_TRACE("begin_command REJECT state=%u flags=0x%x\n",cb==&command?command.state:99,i?i->flags:0);return VK_ERROR_INITIALIZATION_FAILED;}
+       (i->flags&~(VkCommandBufferUsageFlags)(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT|VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT))||i->pInheritanceInfo){
+        ZREJ("begin_command REJECT state=%u flags=0x%x\n",cb==&command?command.state:99,i?i->flags:0);return VK_ERROR_INITIALIZATION_FAILED;}
 #else
     if(cb!=&command||!pool||command.state!=1||!i||i->sType!=VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO||i->pNext||i->flags||i->pInheritanceInfo)return VK_ERROR_INITIALIZATION_FAILED;
 #endif
     command.state=2;command.count=0;command.pipeline=command.set=command.pipeline_layout=0;
-    memset(&command.graphics,0,sizeof(command.graphics));memset(command.commands,0,sizeof(command.commands));return VK_SUCCESS;
+    memset(&command.graphics,0,sizeof(command.graphics));CLEAR_RECORDED(command);return VK_SUCCESS;
 }
 static struct recorded *record_command(VkCommandBuffer cb,unsigned op) {
     SELECT_CB(cb);
     if(cb!=&command||command.state!=2)return NULL;
     if(command.count>=MAX_CMDS){
 #ifdef GUEST_VK_ZINK
-        ZINK_TRACE("record_command REJECT full (%u commands)\n",command.count);
+        ZREJ("record_command REJECT full (%u commands)\n",command.count);
 #endif
         command.state=4;return NULL;}
+#ifdef GUEST_VK_ZINK
+    if(command.count>=command.capacity){
+        unsigned capacity=command.capacity?command.capacity*2:64;if(capacity>MAX_CMDS)capacity=MAX_CMDS;
+        struct recorded *grown=realloc(command.commands,capacity*sizeof(*grown));
+        if(!grown){ZREJ("record_command REJECT out of memory (%u commands)\n",command.count);command.state=4;return NULL;}
+        command.commands=grown;command.capacity=capacity;
+    }
+#endif
     struct recorded *r=&command.commands[command.count++];memset(r,0,sizeof(*r));r->op=op;return r;
 }
 static int full_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_COLOR_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
-static int depth_range(const VkImageSubresourceRange *r) {return r&&r->aspectMask==VK_IMAGE_ASPECT_DEPTH_BIT&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
-static void invalid_command_at(VkCommandBuffer cb,const char *fn,int line) {SELECT_CB(cb);if(cb==&command&&command.state){if(command.state!=4)ZINK_TRACE("invalid_command %s:%d\n",fn,line);command.state=4;}(void)fn;(void)line;}
+static int depth_range(const VkImageSubresourceRange *r,unsigned code) {return r&&(r->aspectMask==VK_IMAGE_ASPECT_DEPTH_BIT||(code==3&&r->aspectMask==(VK_IMAGE_ASPECT_DEPTH_BIT|VK_IMAGE_ASPECT_STENCIL_BIT)))&&!r->baseMipLevel&&r->levelCount==1&&!r->baseArrayLayer&&r->layerCount==1;}
+static void invalid_command_at(VkCommandBuffer cb,const char *fn,int line) {SELECT_CB(cb);if(cb==&command&&command.state){if(command.state!=4){ZINK_TRACE("invalid_command %s:%d\n",fn,line);ZREJ("invalid_command %s:%d\n",fn,line);}command.state=4;}(void)fn;(void)line;}
 #define invalid_command(cb) invalid_command_at((cb),__func__,__LINE__)
 #include "compute.inc"
 #include "graphics.inc"
@@ -514,7 +660,9 @@ static int zink_lenient_barrier(VkCommandBuffer cb,VkPipelineStageFlags src,VkPi
     }
     for(uint32_t k=0;k<ic;k++) {
         if(ib[k].oldLayout==ib[k].newLayout)continue; /* execution/memory dependency only */
-        struct recorded *r=record_command(cb,1);if(r){r->image=RID(ib[k].image);r->old_layout=ib[k].oldLayout;r->new_layout=ib[k].newLayout;}
+        /* Mipmap profile: layouts are tracked for level 0; other levels need no tracking. */
+        if(ib[k].subresourceRange.baseMipLevel)continue;
+        struct recorded *r=record_command(cb,1);if(r){r->image=RID(ib[k].image);r->old_layout=ib[k].oldLayout==VK_IMAGE_LAYOUT_PREINITIALIZED?VK_IMAGE_LAYOUT_UNDEFINED:ib[k].oldLayout;r->new_layout=ib[k].newLayout;}
     }
     return 1;
 }
@@ -533,7 +681,7 @@ static VKAPI_ATTR void VKAPI_CALL pipeline_barrier(VkCommandBuffer cb,VkPipeline
     struct recorded *r;
     if(ic) {
         struct resource *image=resource_get(RID(ib->image),R_IMAGE);
-        if(ib->sType!=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER||ib->pNext||!(image&&image->depth?depth_range(&ib->subresourceRange):full_range(&ib->subresourceRange))||
+        if(ib->sType!=VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER||ib->pNext||!(image&&image->depth?depth_range(&ib->subresourceRange,image->depth):full_range(&ib->subresourceRange))||
            ib->srcQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED||ib->dstQueueFamilyIndex!=VK_QUEUE_FAMILY_IGNORED){
             ZINK_TRACE("barrier REJECT image=%p depth=%d state=%d stype=%d pnext=%p aspect=0x%x mip=%u+%u layer=%u+%u qf=%u,%u layout=%d->%d src=0x%x dst=0x%x acc=0x%x->0x%x\n",
                 (void*)image,image?image->depth:-1,command.state,ib->sType,ib->pNext,ib->subresourceRange.aspectMask,ib->subresourceRange.baseMipLevel,ib->subresourceRange.levelCount,
@@ -544,7 +692,7 @@ static VKAPI_ATTR void VKAPI_CALL pipeline_barrier(VkCommandBuffer cb,VkPipeline
            (ib->oldLayout==VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&src==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->srcAccessMask==VK_ACCESS_TRANSFER_READ_BIT));
         int to_src=ib->oldLayout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&ib->newLayout==VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&
           src==VK_PIPELINE_STAGE_TRANSFER_BIT&&dst==VK_PIPELINE_STAGE_TRANSFER_BIT&&ib->srcAccessMask==VK_ACCESS_TRANSFER_WRITE_BIT&&ib->dstAccessMask==VK_ACCESS_TRANSFER_READ_BIT;
-        if(!image||(image->depth?!depth_image_barrier(src,dst,ib):image->sampled?!texture_image_barrier(src,dst,ib):image->graphics_target?!graphics_image_barrier(src,dst,ib):(!to_dst&&!to_src))){invalid_command(cb);return;}
+        if(!image||(image->swapchain&&(ib->oldLayout==VK_IMAGE_LAYOUT_PRESENT_SRC_KHR||ib->newLayout==VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)?!present_image_barrier(src,dst,ib):image->depth?!(depth_image_barrier(src,dst,ib)||sampled_depth_barrier(image,ib)):image->sampled&&image->graphics_target?!sampled_target_image_barrier(src,dst,ib):image->sampled?!texture_image_barrier(src,dst,ib):image->graphics_target?!graphics_image_barrier(src,dst,ib):(!to_dst&&!to_src))){invalid_command(cb);return;}
         r=record_command(cb,1);if(r){r->image=RID(ib->image);r->old_layout=ib->oldLayout;r->new_layout=ib->newLayout;}
     } else {
         if(live->graphics_supported && record_vertex_barrier(cb,src,dst,bb))return;
@@ -565,6 +713,7 @@ static VKAPI_ATTR void VKAPI_CALL clear_image(VkCommandBuffer cb,VkImage image,V
 static VKAPI_ATTR void VKAPI_CALL copy_image(VkCommandBuffer cb,VkImage image,VkImageLayout layout,VkBuffer buffer,uint32_t count,const VkBufferImageCopy *region) {
     SELECT_CB(cb);
     struct resource *i=resource_get(RID(image),R_IMAGE);
+    if(i&&i->depth){invalid_command(cb);return;} /* Attachment-only profile: no packed byte copy. */
 #ifdef GUEST_VK_ZINK
     {   /* B2f: one sub-rectangle of a color image into a generic buffer. */
         struct resource *b=resource_get(RID(buffer),R_BUFFER);
@@ -578,8 +727,7 @@ static VKAPI_ATTR void VKAPI_CALL copy_image(VkCommandBuffer cb,VkImage image,Vk
            (!region->bufferRowLength||region->bufferRowLength>=region->imageExtent.width)&&
            (!region->bufferImageHeight||region->bufferImageHeight>=region->imageExtent.height)) {
             uint64_t row=(region->bufferRowLength?region->bufferRowLength:region->imageExtent.width)*4ull;
-            uint64_t need=region->bufferOffset+row*(region->imageExtent.height-1)+region->imageExtent.width*4ull;
-            if(need>b->size){invalid_command(cb);return;}
+            if(!color_copy_region_fits(b->size,region->bufferOffset,row,region->imageExtent.width*4ull,region->imageExtent.height)){invalid_command(cb);return;}
             struct recorded *r=record_command(cb,3);if(r){r->image=RID(image);r->buffer=RID(buffer);r->region=*region;r->has_region=1;}
             return;
         }
@@ -590,13 +738,30 @@ static VKAPI_ATTR void VKAPI_CALL copy_image(VkCommandBuffer cb,VkImage image,Vk
        region->imageOffset.x||region->imageOffset.y||region->imageOffset.z||region->imageExtent.width!=i->width||region->imageExtent.height!=i->height||region->imageExtent.depth!=1){invalid_command(cb);return;}
     struct recorded *r=record_command(cb,3);if(r){r->image=RID(image);r->buffer=RID(buffer);}
 }
+#ifdef GUEST_VK_ZINK
+/* vkCmdCopyBuffer between generic buffers. All buffer memory is guest-owned
+ * and generic vertex/uniform reads are snapshotted into the rings while the
+ * submit is validated in command order, so the copy is applied (memmove) at
+ * that point in the same order. One recorded command per region. */
+static VKAPI_ATTR void VKAPI_CALL copy_buffer(VkCommandBuffer cb,VkBuffer src,VkBuffer dst,uint32_t count,const VkBufferCopy *regions) {
+    SELECT_CB(cb);
+    struct resource *s=resource_get(RID(src),R_BUFFER),*d=resource_get(RID(dst),R_BUFFER);
+    if(!s||!d||!s->generic||!d->generic||!(s->usage&VK_BUFFER_USAGE_TRANSFER_SRC_BIT)||!(d->usage&VK_BUFFER_USAGE_TRANSFER_DST_BIT)||!count||!regions){invalid_command(cb);return;}
+    for(uint32_t n=0;n<count;n++) {
+        const VkBufferCopy *g=&regions[n];
+        if(!g->size||g->srcOffset>s->size||g->size>s->size-g->srcOffset||g->dstOffset>d->size||g->size>d->size-g->dstOffset){invalid_command(cb);return;}
+        struct recorded *r=record_command(cb,C_BUFFER_COPY);if(!r)return;
+        r->buffer=s->id;r->dst=d->id;r->copy=*g;
+    }
+}
+#endif
 static VKAPI_ATTR VkResult VKAPI_CALL end_command(VkCommandBuffer cb) {
     SELECT_CB(cb);
 #ifdef GUEST_VK_ZINK
     /* B2f: empty buffers end fine (Zink ends all three per batch); a buffer
      * invalidated while recording reports which state it reached. */
     if(cb!=&command||command.state!=2||command.graphics.in_pass){
-        ZINK_TRACE("end_command REJECT state=%u count=%u in_pass=%u\n",cb==&command?command.state:99,cb==&command?command.count:0,cb==&command?command.graphics.in_pass:0);
+        ZREJ("end_command REJECT state=%u count=%u in_pass=%u\n",cb==&command?command.state:99,cb==&command?command.count:0,cb==&command?command.graphics.in_pass:0);
         return VK_ERROR_INITIALIZATION_FAILED;}
 #else
     if(cb!=&command||command.state!=2||!command.count||command.graphics.in_pass)return VK_ERROR_INITIALIZATION_FAILED;
@@ -606,156 +771,237 @@ static VKAPI_ATTR VkResult VKAPI_CALL end_command(VkCommandBuffer cb) {
 /* Executes the single recorded primary buffer. The public queue_submit wrapper
  * validates batches/semaphores/fence first and commits sync state only after
  * this returns VK_SUCCESS. */
+/* Prepared pass JSON, one lazily allocated buffer per command index that opens a
+ * pass; kept across submits (submission is serialized) to avoid per-submit zeroing. */
+static struct graphics_json *prepared_slots[MAX_CMDS];
+static struct graphics_json *prepared_open(unsigned n) {
+    if(!prepared_slots[n]&&!(prepared_slots[n]=calloc(1,sizeof(struct graphics_json))))return NULL;
+    prepared_slots[n]->used=0;prepared_slots[n]->bad=0;return prepared_slots[n]; /* keeps any grown buffer */
+}
 static VkResult execute_submit(void) {
-    if(command.state!=3)return VK_ERROR_INITIALIZATION_FAILED;
+    if(command.state!=3){ZREJ("submit_validate REJECT command=0/%u kind=0 state=%u\n",command.count,command.state);return VK_ERROR_INITIALIZATION_FAILED;}
     /* Heap-owned, bounded prepared passes avoid exceeding the 256 KiB guest
      * stack. All allocation/serialization/validation completes before effects.
      * The single cleanup path covers every validation/execution failure. */
-    struct graphics_json *prepared=live->graphics_supported?calloc(MAX_CMDS,sizeof(*prepared)):NULL;
-    if(live->graphics_supported&&!prepared)return VK_ERROR_OUT_OF_HOST_MEMORY;
+    struct graphics_json **prepared=prepared_slots;
     VkResult result=VK_ERROR_INITIALIZATION_FAILED;
-    VkImageLayout layouts[MAX_RES];unsigned initialized[MAX_RES],used_vertices[MAX_RES]={0},used_uniforms[MAX_RES]={0};
-    unsigned written[MAX_RES]={0},ready[MAX_RES]={0},dirty[MAX_RES]={0};
+    /* Static: MAX_RES-sized arrays exceed a safe stack share; submission is
+     * serialized by the device lock (Zink) or single-threaded (tests). */
+    static VkImageLayout layouts[MAX_RES];static unsigned stencil_initialized[MAX_RES],initialized[MAX_RES],used_vertices[MAX_RES],used_uniforms[MAX_RES];
+    static unsigned written[MAX_RES],ready[MAX_RES],dirty[MAX_RES],readback[MAX_RES];
+    memset(used_vertices,0,sizeof(used_vertices));memset(used_uniforms,0,sizeof(used_uniforms));memset(readback,0,sizeof(readback));
+    memset(written,0,sizeof(written));memset(ready,0,sizeof(ready));memset(dirty,0,sizeof(dirty));
     struct resource *pass_image=NULL,*pass_depth=NULL;const struct graphics_pass *pass=NULL;
-    unsigned pass_start=0,pass_draws=0;
-    for(unsigned i=0;i<MAX_RES;i++){layouts[i]=resources[i].layout;initialized[i]=resources[i].graphics_initialized;}
+    unsigned pass_start=0,pass_draws=0,validation_index=0,validation_kind=0;
+#define SUBMIT_REJECT() do { \
+    ZREJ("submit_validate REJECT command=%u/%u kind=%u predicate=transfer.inc:%u\n",validation_index,command.count,validation_kind,(unsigned)__LINE__); \
+    ZINK_TRACE("submit_validate pass color=%u actualLayout=%d expectedLayout=%d initialized=%u load=%d depth=%u actualDepthLayout=%d expectedDepthLayout=%d depthInitialized=%u depthLoad=%d stencilInitialized=%u stencilLoad=%d\n", \
+        pass_image?pass_image->host:0,pass_image?(int)layouts[pass_image-resources]:-1,pass?(int)pass->initial:-1,pass_image?initialized[pass_image-resources]:0,pass?(int)pass->load:-1, \
+        pass_depth?pass_depth->host:0,pass_depth?(int)layouts[pass_depth-resources]:-1,pass?(int)pass->depth_initial:-1,pass_depth?initialized[pass_depth-resources]:0,pass?(int)pass->depth_load:-1, \
+        pass_depth?stencil_initialized[pass_depth-resources]:0,pass?(int)pass->stencil_load:-1); \
+    goto submit_done; \
+} while(0)
+
+    for(unsigned i=0;i<MAX_RES;i++){layouts[i]=resources[i].layout;initialized[i]=resources[i].graphics_initialized;stencil_initialized[i]=resources[i].stencil_initialized;}
     zink_ring_reset();
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
-        if(pass_image&&c->op!=C_GRAPHICS_DRAW&&c->op!=C_GRAPHICS_END)goto submit_done;
+        validation_index=n;validation_kind=c->op;
+        if(pass_image&&c->op!=C_GRAPHICS_DRAW&&c->op!=C_GRAPHICS_END)SUBMIT_REJECT();
         switch(c->op) {
         case 1: case 2: case 3:
-            if(!i||!i->host||!resource_get(i->memory,R_MEMORY))goto submit_done;
+            if(!i||!i->host||!resource_get(i->memory,R_MEMORY))SUBMIT_REJECT();
             if(c->op==1){
-                if(c->old_layout!=VK_IMAGE_LAYOUT_UNDEFINED&&layouts[i-resources]!=c->old_layout)goto submit_done;
+                if(c->old_layout!=VK_IMAGE_LAYOUT_UNDEFINED&&layouts[i-resources]!=c->old_layout)SUBMIT_REJECT();
                 if(i->depth) {
-                    if(c->new_layout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)goto submit_done;
-                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)initialized[i-resources]=0;
+                    if(c->new_layout!=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL&&!(i->sampled&&depth_sample_layout(c->new_layout)))SUBMIT_REJECT();
+                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED){initialized[i-resources]=0;stencil_initialized[i-resources]=0;}
                 } else if(i->graphics_target) {
 #ifdef GUEST_VK_ZINK
                     if(!i->zink_color)
 #endif
-                    if(c->new_layout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)goto submit_done;
-                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)initialized[i-resources]=0;
+                    if(c->new_layout!=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&
+                       !(i->swapchain&&c->new_layout==VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)&&
+#ifdef GUEST_VK_ZINK
+                       c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&
+#endif
+                       !(live->large_sampled_target_supported&&i->sampled&&c->new_layout==VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))SUBMIT_REJECT();
+                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED){initialized[i-resources]=0;stencil_initialized[i-resources]=0;}
                 } else if(i->sampled) {
-                    if(c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)goto submit_done;
-                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)initialized[i-resources]=0;
-                } else if(c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)goto submit_done;
+                    if(c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)SUBMIT_REJECT();
+                    if(c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED){initialized[i-resources]=0;stencil_initialized[i-resources]=0;}
+                } else if(c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&c->new_layout!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)SUBMIT_REJECT();
                 layouts[i-resources]=c->new_layout;break;
             }
-            if(c->op==2){if(i->depth||i->graphics_target||i->sampled||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)goto submit_done;break;}
+#ifdef GUEST_VK_ZINK
+            /* vkCmdClearColorImage on a color attachment (e.g. a swapchain
+             * image) becomes a zero-draw render pass with a CLEAR load. */
+            if(c->op==2&&i->graphics_target&&!i->depth){
+                if(layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL&&layouts[i-resources]!=VK_IMAGE_LAYOUT_GENERAL)SUBMIT_REJECT();
+                if(!prepared_open(n))SUBMIT_REJECT();
+                graphics_json_append(prepared[n],"{\"target\":%u,\"loadOp\":\"clear\",\"storeOp\":\"store\",\"clearColor\":[%.9g,%.9g,%.9g,%.9g],\"draws\":[]}",
+                    i->host,c->color.float32[0],c->color.float32[1],c->color.float32[2],c->color.float32[3]);
+                if(prepared[n]->bad)SUBMIT_REJECT();
+                initialized[i-resources]=1;break;
+            }
+#endif
+            if(c->op==2){if(i->depth||i->graphics_target||i->sampled||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)SUBMIT_REJECT();break;}
 #ifdef GUEST_VK_ZINK
             if(c->has_region){
                 VkImageLayout l=layouts[i-resources];
                 if(!b||!b->generic||!resource_get(b->memory,R_MEMORY)||(l!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL&&l!=VK_IMAGE_LAYOUT_GENERAL)||
-                   (i->graphics_target&&!initialized[i-resources]))goto submit_done;
-                break;
+                   (i->graphics_target&&!initialized[i-resources]))SUBMIT_REJECT();
+                readback[b-resources]=1;break;
             }
 #endif
-            if(i->depth||i->sampled||!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
-               b->size<i->size||(i->graphics_target&&!initialized[i-resources]))goto submit_done;
-            written[b-resources]=1;break;
+            if(i->depth||(i->sampled&&!i->graphics_target)||!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||layouts[i-resources]!=VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL||
+               b->size<i->size||(i->graphics_target&&!initialized[i-resources]))SUBMIT_REJECT();
+            written[b-resources]=1;readback[b-resources]=1;break;
         case 4:
-            if(!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||!written[b-resources])goto submit_done;
+            if(!b||b->storage||b->vertex||b->uniform||b->staging||!resource_get(b->memory,R_MEMORY)||!written[b-resources])SUBMIT_REJECT();
             written[b-resources]=0;break;
         case 5: case 6: case 7:
-            if(!live->compute_supported||!b||!b->storage||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
-            if(c->op==5){if(dirty[b-resources])goto submit_done;ready[b-resources]=1;}
-            if(c->op==6){if(!dirty[b-resources])goto submit_done;ready[b-resources]=1;}
-            if(c->op==7){if(!dirty[b-resources])goto submit_done;dirty[b-resources]=0;ready[b-resources]=0;}
+            if(!live->compute_supported||!b||!b->storage||!b->host||!resource_get(b->memory,R_MEMORY))SUBMIT_REJECT();
+            if(c->op==5){if(dirty[b-resources])SUBMIT_REJECT();ready[b-resources]=1;}
+            if(c->op==6){if(!dirty[b-resources])SUBMIT_REJECT();ready[b-resources]=1;}
+            if(c->op==7){if(!dirty[b-resources])SUBMIT_REJECT();dirty[b-resources]=0;ready[b-resources]=0;}
             break;
         case 8: {
             struct resource *pipeline=resource_get(c->pipeline,R_COMPUTE_PIPELINE),*set=resource_get(c->set,R_DESC_SET);
             b=set?resource_get(set->link,R_BUFFER):NULL;
             if(!live->compute_supported||!pipeline||!pipeline->host||!resource_get(pipeline->link,R_PIPELINE_LAYOUT)||
                !set||!set->valid||!resource_get(set->parent,R_DESC_POOL)||!b||!b->storage||!b->host||!resource_get(b->memory,R_MEMORY)||
-               set->range<256||set->range>b->size||!ready[b-resources])goto submit_done;
+               set->range<256||set->range>b->size||!ready[b-resources])SUBMIT_REJECT();
             ready[b-resources]=0;dirty[b-resources]=1;break;
         }
         case C_GRAPHICS_BEGIN:
-            if(!live->graphics_supported||pass_image)goto submit_done;
+            if(!live->graphics_supported||pass_image)SUBMIT_REJECT();
+        {
+            /* Opus a9: host targets have no layouts and LOAD of never-written
+             * contents is undefined, so an uninitialized LOAD becomes a defined
+             * DONT_CARE clear and layout mismatches are traced, not rejected. */
+            struct graphics_begin_record begin=c->graphics.begin;
             pass=&c->graphics.begin.pass;
             pass_image=graphics_begin_image(&c->graphics.begin);
-            if(!pass_image||layouts[pass_image-resources]!=pass->initial||
-               (pass->load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_image-resources]))goto submit_done;
+            if(!pass_image)SUBMIT_REJECT();
+            if(pass->initial!=VK_IMAGE_LAYOUT_UNDEFINED&&layouts[pass_image-resources]!=pass->initial)
+                ZINK_TRACE("submit_validate lenient color=%llu actualLayout=%u expectedLayout=%u initialized=%u\n",
+                    (unsigned long long)pass_image->id,(unsigned)layouts[pass_image-resources],(unsigned)pass->initial,initialized[pass_image-resources]);
+            if(begin.pass.load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_image-resources])begin.pass.load=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             pass_depth=NULL;
             if(pass->depth_format) {
                 pass_depth=graphics_begin_depth(&c->graphics.begin);
-                if(!pass_depth||layouts[pass_depth-resources]!=pass->depth_initial||
-                   (pass->depth_load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_depth-resources]))goto submit_done;
+                if(!pass_depth)SUBMIT_REJECT();
+                if(begin.pass.depth_load==VK_ATTACHMENT_LOAD_OP_LOAD&&!initialized[pass_depth-resources])begin.pass.depth_load=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                if(begin.pass.stencil_present&&begin.pass.stencil_load==VK_ATTACHMENT_LOAD_OP_LOAD&&!stencil_initialized[pass_depth-resources])begin.pass.stencil_load=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             }
             pass_start=n;pass_draws=0;
-            if(!graphics_prepare_begin(&c->graphics.begin,pass_image,pass_depth,&prepared[n]))goto submit_done;
+            if(!prepared_open(n)||!graphics_prepare_begin(&begin,pass_image,pass_depth,prepared[n]))SUBMIT_REJECT();
+        }
             break;
         case C_GRAPHICS_DRAW:
-            if(!pass_image||!graphics_prepare_draw(&c->graphics.draw,pass,pass_image,&prepared[pass_start],pass_draws++,used_vertices,used_uniforms,layouts,initialized))goto submit_done;
+            if(!pass_image||!graphics_prepare_draw(&c->graphics.draw,pass,pass_image,prepared[pass_start],pass_draws++,used_vertices,used_uniforms,layouts,initialized))SUBMIT_REJECT();
             break;
         case C_GRAPHICS_END:
-            if(!pass_image)goto submit_done;
-            graphics_json_append(&prepared[pass_start],"]}");if(prepared[pass_start].bad)goto submit_done;
+            if(!pass_image)SUBMIT_REJECT();
+            graphics_json_append(prepared[pass_start],"]}");if(prepared[pass_start]->bad)SUBMIT_REJECT();
             layouts[pass_image-resources]=pass->final;initialized[pass_image-resources]=1;
-            if(pass_depth){layouts[pass_depth-resources]=pass->depth_final;initialized[pass_depth-resources]=pass->depth_store==VK_ATTACHMENT_STORE_OP_STORE;}
+            if(pass_depth){layouts[pass_depth-resources]=pass->depth_final;initialized[pass_depth-resources]=pass->depth_store==VK_ATTACHMENT_STORE_OP_STORE;if(pass->stencil_present)stencil_initialized[pass_depth-resources]=pass->stencil_store==VK_ATTACHMENT_STORE_OP_STORE;}
             pass_image=NULL;pass_depth=NULL;pass=NULL;
             break;
         case C_VERTEX_BARRIER:
-            if(!live->graphics_supported||!b||!b->vertex||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
+            if(!live->graphics_supported||!b||!b->vertex||!b->host||!resource_get(b->memory,R_MEMORY))SUBMIT_REJECT();
             break;
         case C_UNIFORM_BARRIER:
-            if(!live->uniform_supported||!b||!b->uniform||!b->host||!resource_get(b->memory,R_MEMORY))goto submit_done;
+            if(!live->uniform_supported||!b||!b->uniform||!b->host||!resource_get(b->memory,R_MEMORY))SUBMIT_REJECT();
             break;
         case C_TEXTURE_COPY:
-            if(!texture_prepare_copy(c,layouts,initialized))goto submit_done;
+            if(!texture_prepare_copy(c,layouts,initialized))SUBMIT_REJECT();
             break;
-        default:goto submit_done;
+#ifdef GUEST_VK_ZINK
+        case C_BLIT:
+            if(!texture_prepare_blit(c,initialized))SUBMIT_REJECT();
+            break;
+#endif
+#ifdef GUEST_VK_ZINK
+        case C_BUFFER_COPY: {
+            /* Readbacks land only during execution, so a copy reading or
+             * overwriting such a buffer in the same submit is not ordered. A
+             * later validation failure leaves applied copies in place. */
+            struct resource *d=resource_get(c->dst,R_BUFFER),*sm=b?resource_get(b->memory,R_MEMORY):NULL,*dm=d?resource_get(d->memory,R_MEMORY):NULL;
+            if(!b||!d||!sm||!dm||readback[b-resources]||readback[d-resources]||c->copy.srcOffset+c->copy.size>b->size||c->copy.dstOffset+c->copy.size>d->size)SUBMIT_REJECT();
+            memmove(dm->bytes+d->offset+c->copy.dstOffset,sm->bytes+b->offset+c->copy.srcOffset,(size_t)c->copy.size);
+            break;
+        }
+#endif
+        default:SUBMIT_REJECT();
         }
     }
-    if(pass_image)goto submit_done;
-    for(unsigned i=0;i<MAX_RES;i++)if(written[i]||dirty[i])goto submit_done;
+    validation_index=command.count;validation_kind=0;
+    if(pass_image)SUBMIT_REJECT();
+    for(unsigned i=0;i<MAX_RES;i++)if(written[i]||dirty[i])SUBMIT_REJECT();
+#undef SUBMIT_REJECT
     command.state=5; /* Pending, even though this transport completes synchronously. */
     if(graphics_upload_vertices(used_vertices)!=VK_SUCCESS||graphics_upload_uniforms(used_uniforms)!=VK_SUCCESS||
-       zink_ring_upload()!=VK_SUCCESS)goto submit_lost;
+       zink_ring_upload()!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
-        if(c->op==1){i->layout=c->new_layout;if((i->graphics_target||i->sampled||i->depth)&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=0;}
-        if(c->op==C_TEXTURE_COPY&&texture_execute_copy(c)!=VK_SUCCESS)goto submit_lost;
-        if(c->op==2){unsigned char payload[20];memcpy(payload,&i->host,4);memcpy(payload+4,c->color.float32,16);if(host_empty(GPU_CLEAR,payload,20)!=VK_SUCCESS)goto submit_lost;}
-        if(c->op>=5 && c->op<=8){if(execute_compute(c)!=VK_SUCCESS)goto submit_lost;}
+        if(c->op==1){i->layout=c->new_layout;if((i->graphics_target||i->sampled||i->depth)&&c->old_layout==VK_IMAGE_LAYOUT_UNDEFINED)i->graphics_initialized=i->stencil_initialized=0;}
+        if(c->op==C_TEXTURE_COPY&&texture_execute_copy(c)!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
+#ifdef GUEST_VK_ZINK
+        if(c->op==C_BLIT&&texture_execute_blit(c)!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
+#endif
+#ifdef GUEST_VK_ZINK
+        if(c->op==2&&i->graphics_target){
+            if(host_empty(GPU_GRAPHICS_PASS,prepared[n]->bytes,(uint32_t)prepared[n]->used)!=VK_SUCCESS){i->graphics_initialized=0;{ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}}
+            i->graphics_initialized=1;continue;
+        }
+#endif
+        if(c->op==2){unsigned char payload[20];memcpy(payload,&i->host,4);memcpy(payload+4,c->color.float32,16);if(host_empty(GPU_CLEAR,payload,20)!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}}
+        if(c->op>=5 && c->op<=8){if(execute_compute(c)!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}}
         if(c->op==C_GRAPHICS_BEGIN) {
             const struct graphics_pass *bp=&c->graphics.begin.pass;
             i=graphics_begin_image(&c->graphics.begin);
             struct resource *depth=bp->depth_format?graphics_begin_depth(&c->graphics.begin):NULL;
             /* Once native submission starts, even allocation errors cannot
              * promise unchanged application resources. Poison on all failures. */
-            if(host_empty(GPU_GRAPHICS_PASS,prepared[n].bytes,(uint32_t)prepared[n].used)!=VK_SUCCESS) {
-                i->graphics_initialized=0;if(depth)depth->graphics_initialized=0;goto submit_lost;
+            if(host_empty(GPU_GRAPHICS_PASS,prepared[n]->bytes,(uint32_t)prepared[n]->used)!=VK_SUCCESS) {
+                i->graphics_initialized=0;if(depth)depth->graphics_initialized=depth->stencil_initialized=0;{ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
             }
             i->graphics_initialized=1;i->layout=bp->final;
-            if(depth){depth->graphics_initialized=bp->depth_store==VK_ATTACHMENT_STORE_OP_STORE;depth->layout=bp->depth_final;}
+            if(depth){depth->graphics_initialized=bp->depth_store==VK_ATTACHMENT_STORE_OP_STORE;if(bp->stencil_present)depth->stencil_initialized=bp->stencil_store==VK_ATTACHMENT_STORE_OP_STORE;depth->layout=bp->depth_final;}
         }
-        if(c->op==3){unsigned char data[65536];uint32_t size=0;struct resource *m=resource_get(b->memory,R_MEMORY);
-            if(host_call(i->graphics_target?GPU_GRAPHICS_READBACK:GPU_READBACK,&i->host,4,data,sizeof(data),&size)!=VK_SUCCESS||size!=i->size)goto submit_lost;
+        if(c->op==3){unsigned char legacy[65536],*data=legacy,*heap=NULL;uint32_t size=0;struct resource *m=resource_get(b->memory,R_MEMORY);
+            if(live->large_color_supported&&i->graphics_target&&i->size>sizeof(legacy)) {
+                if(read_color_pixels(i,&heap)!=VK_SUCCESS){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
+                data=heap;size=(uint32_t)i->size;
+            } else if(host_call(i->graphics_target?GPU_GRAPHICS_READBACK:GPU_READBACK,&i->host,4,data,sizeof(legacy),&size)!=VK_SUCCESS||size!=i->size){ZREJ("submit_lost line=%u\n",(unsigned)__LINE__);goto submit_lost;}
 #ifdef GUEST_VK_ZINK
             if(c->has_region){
                 const VkBufferImageCopy *g=&c->region;if(i->bgra)swap_rb(data,size);
                 size_t row=(size_t)(g->bufferRowLength?g->bufferRowLength:g->imageExtent.width)*4;
                 for(uint32_t y=0;y<g->imageExtent.height;y++)
                     memcpy(m->bytes+b->offset+g->bufferOffset+row*y,data+((size_t)(g->imageOffset.y+y)*i->width+g->imageOffset.x)*4,(size_t)g->imageExtent.width*4);
-                continue;
+                free(heap);continue;
             }
 #endif
-            memcpy(m->bytes+b->offset,data,size);if(i->bgra)swap_rb(m->bytes+b->offset,size);
+            memcpy(m->bytes+b->offset,data,size);free(heap);if(i->bgra)swap_rb(m->bytes+b->offset,size);
         }
     }
     command.state=3;result=VK_SUCCESS;goto submit_done;
 submit_lost:
     live->failed=1;command.state=4;result=VK_ERROR_DEVICE_LOST;
 submit_done:
-    free(prepared);return result;
+    return result;
 }
 /* Guest-only synchronization objects. Submission completes synchronously, so
  * semaphores/fences are signaled at completion and never involve the host.
  * They use a separate table so resource/exhaustion accounting is unchanged. */
+#ifdef GUEST_VK_ZINK
+#define MAX_SYNC 256 /* every Firefox context's batch states hold fences/semaphores */
+#else
 #define MAX_SYNC 32
+#endif
 enum sync_kind { S_FENCE=1, S_SEMAPHORE };
 /* B2a: timeline semaphores (GUEST_VK_ZINK builds) keep a 64-bit counter. */
 struct sync_object { uint64_t id; unsigned kind, signaled; uint64_t value; unsigned timeline; };
@@ -834,6 +1080,22 @@ static VKAPI_ATTR void VKAPI_CALL destroy_semaphore(VkDevice d,VkSemaphore h,con
  * waits consume a signaled semaphore, signals require an unsignaled one. At
  * most one command buffer (the single primary) per call. Nothing commits
  * unless execution succeeds; DEVICE_LOST leaves semaphores/fence unchanged. */
+#ifdef GUEST_VK_ZINK
+static void prof_tick(void) {
+    uint64_t now=prof_now();if(!prof_last_ns){prof_last_ns=now;return;}
+    if(now-prof_last_ns<5000000000ull)return;
+    unsigned cbs=0,pools_used=0,syncs_used=0;
+    for(unsigned n=0;n<MAX_CBS;n++)cbs+=command_slot_pool[n]!=0;
+    for(unsigned n=0;n<MAX_POOLS;n++)pools_used+=pools[n]!=0;
+    for(unsigned n=0;n<MAX_SYNC;n++)syncs_used+=syncs[n].id!=0;
+    fprintf(stderr,"GUEST_VK_TRACE prof %.1fs submits=%llu submit_ms=%.1f res=%u cbs=%u pools=%u syncs=%u",
+        (double)(now-prof_last_ns)/1e9,(unsigned long long)prof_submits,(double)prof_submit_ns/1e6,resource_count,cbs,pools_used,syncs_used);
+    for(unsigned k=0;k<PROF_OPS;k++)if(prof_ops[k].calls)
+        fprintf(stderr," op%u=%llu/%.1fms/%lluKB",k,(unsigned long long)prof_ops[k].calls,(double)prof_ops[k].ns/1e6,(unsigned long long)(prof_ops[k].bytes>>10));
+    fputc('\n',stderr);
+    memset(prof_ops,0,sizeof(prof_ops));prof_submits=prof_submit_ns=0;prof_last_ns=now;
+}
+#endif
 static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,const VkSubmitInfo *info,VkFence fence) {
     if(!live||!live->device||q!=&live->device->queue||live->failed)return VK_ERROR_DEVICE_LOST;
     struct sync_object *f=NULL;
@@ -871,7 +1133,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,cons
 #ifdef GUEST_VK_ZINK
         for(uint32_t c=0;c<s->commandBufferCount;c++){
             if(!select_cb(s->pCommandBuffers[c])||command.state!=3||commands>=MAX_CBS){
-                ZINK_TRACE("queue_submit REJECT cb state=%u\n",select_cb(s->pCommandBuffers[c])?command.state:99);return VK_ERROR_INITIALIZATION_FAILED;}
+                ZREJ("queue_submit REJECT cb state=%u\n",select_cb(s->pCommandBuffers[c])?command.state:99);return VK_ERROR_INITIALIZATION_FAILED;}
             submit_cbs[commands++]=cur_cb;}
 #else
         for(uint32_t c=0;c<s->commandBufferCount;c++)if(s->pCommandBuffers[c]!=&command||++commands>1)return VK_ERROR_INITIALIZATION_FAILED;
@@ -887,9 +1149,10 @@ static VKAPI_ATTR VkResult VKAPI_CALL queue_submit(VkQueue q,uint32_t count,cons
 #ifdef GUEST_VK_ZINK
     /* B2f: buffers run in submission order; an empty buffer is a no-op. A
      * failing later buffer poisons the device (earlier effects are kept). */
-    ZINK_TRACE("queue_submit batches=%u cbs=%u fence=%d\n",count,commands,f!=NULL);
+    uint64_t submit_t0=zink_trace_enabled()?prof_now():0;
     for(unsigned c=0;c<commands;c++){cur_cb=submit_cbs[c];if(!command.count)continue;
         VkResult result=execute_submit();if(result!=VK_SUCCESS){ZINK_TRACE("queue_submit execute FAIL cb=%u/%u result=%d count=%u\n",c,commands,result,command.count);return result;}}
+    if(submit_t0){prof_submits++;prof_submit_ns+=prof_now()-submit_t0;prof_tick();}
 #else
     if(commands){VkResult result=execute_submit();if(result!=VK_SUCCESS)return result;}
 #endif
@@ -910,7 +1173,7 @@ static PFN_vkVoidFunction transfer_proc(const char *name) {
     P(vkMapMemory,map_memory) P(vkUnmapMemory,unmap_memory) P(vkCreateCommandPool,create_pool) P(vkDestroyCommandPool,destroy_pool)
     P(vkAllocateCommandBuffers,allocate_commands) P(vkFreeCommandBuffers,free_commands) P(vkResetCommandBuffer,reset_command)
 #ifdef GUEST_VK_ZINK
-    P(vkResetCommandPool,reset_pool)
+    P(vkResetCommandPool,reset_pool) P(vkCmdCopyBuffer,copy_buffer)
 #endif
    
     P(vkBeginCommandBuffer,begin_command) P(vkEndCommandBuffer,end_command) P(vkCmdPipelineBarrier,pipeline_barrier)
@@ -919,6 +1182,9 @@ static PFN_vkVoidFunction transfer_proc(const char *name) {
     P(vkCreateFence,create_fence) P(vkDestroyFence,destroy_fence) P(vkResetFences,reset_fences) P(vkGetFenceStatus,fence_status)
     P(vkWaitForFences,wait_fences) P(vkCreateSemaphore,create_semaphore) P(vkDestroySemaphore,destroy_semaphore)
     if(live->texture_supported){P(vkCreateSampler,create_sampler) P(vkDestroySampler,destroy_sampler) P(vkCmdCopyBufferToImage,copy_buffer_to_image)}
+#ifdef GUEST_VK_ZINK
+    if(live->mipmap_supported){P(vkCmdBlitImage,blit_image) P(vkCmdCopyImage,copy_image_image)}
+#endif
 #undef P
     return NULL;
 }
