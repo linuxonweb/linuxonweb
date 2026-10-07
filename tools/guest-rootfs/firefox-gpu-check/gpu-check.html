@@ -19,7 +19,7 @@
   canvas { display: block; width: 320px; max-width: 100%; height: auto; aspect-ratio: 4 / 3; margin-bottom: 10px; border-radius: 6px; background: #000; }
   .browser { max-width: 1056px; margin-bottom: 16px; color: var(--muted); overflow-wrap: anywhere; }
   .browser strong { color: #eef6f4; }
-  .fps { margin: -4px 0 10px; color: var(--muted); font: .8rem ui-monospace, monospace; }
+  .fps { margin: 0 0 8px; color: var(--muted); font: .8rem ui-monospace, monospace; }
   table { width: 100%; border-collapse: collapse; font-size: .82rem; }
   td { padding: 3px 6px; border-top: 1px solid #1c302d; vertical-align: top; overflow-wrap: anywhere; }
   td:first-child { width: 38%; color: var(--muted); }
@@ -42,14 +42,14 @@
 <div class="grid">
   <section>
     <h2>WebGL2 <span id="webgl-badge" class="badge warn">checking</span></h2>
-    <canvas id="webgl-canvas" width="320" height="240"></canvas>
     <div id="webgl-fps" class="fps">not started</div>
+    <canvas id="webgl-canvas" width="320" height="240"></canvas>
     <table id="webgl-info"></table>
   </section>
   <section>
     <h2>WebGPU <span id="webgpu-badge" class="badge warn">checking</span></h2>
-    <canvas id="webgpu-canvas" width="320" height="240"></canvas>
     <div id="webgpu-fps" class="fps">not started</div>
+    <canvas id="webgpu-canvas" width="320" height="240"></canvas>
     <table id="webgpu-info"></table>
   </section>
   <section class="media">

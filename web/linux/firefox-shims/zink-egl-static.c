@@ -20,10 +20,19 @@
  * EGL_PLATFORM=surfaceless (no DRM/GBM/X11 EGL platform in the static
  * build), MESA_LOADER_DRIVER_OVERRIDE=zink and LIBGL_ALWAYS_SOFTWARE=1 (Zink
  * on the guest Vulkan ICD, reached without a DRM render node).
+ *
+ * GUEST_GL_BACKEND picks the GL behind those names: "webgl2" registers
+ * glremote (OpenGL ES 3.0 replayed on the host browser's WebGL2, see
+ * web/linux/tests/guest-glremote), "zink" registers Mesa, and "auto" (the
+ * default) uses glremote when the host offers it and Mesa otherwise. The
+ * choice is written to GUEST_GL_BACKEND_ACTIVE for reports.
  */
 #define _POSIX_C_SOURCE 200809L /* setenv */
 #include <EGL/egl.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "glremote.h"
 
 /* NSPR ABI (prlink.h), declared locally to avoid NSPR include paths. */
 typedef void (*PRFuncPtr)(void);
@@ -68,6 +77,16 @@ static const PRStaticLinkTable zink_gl_table[] = {
 };
 
 __attribute__((constructor)) static void zink_egl_static_register(void) {
+  const char *backend = getenv("GUEST_GL_BACKEND");
+  int remote = backend && !strcmp(backend, "webgl2");
+  if (!backend || !*backend || !strcmp(backend, "auto")) remote = glremote_available();
+  setenv("GUEST_GL_BACKEND_ACTIVE", remote ? "webgl2" : "zink", 1);
+  if (remote) {
+    /* struct glremote_export has PRStaticLinkTable's layout. */
+    PR_LoadStaticLibrary("libEGL.so", (const PRStaticLinkTable *)glremote_egl_table);
+    PR_LoadStaticLibrary("libGL.so", zink_gl_table);
+    return;
+  }
   setenv("EGL_PLATFORM", "surfaceless", 0);
   setenv("MESA_LOADER_DRIVER_OVERRIDE", "zink", 0);
   setenv("LIBGL_ALWAYS_SOFTWARE", "1", 0);

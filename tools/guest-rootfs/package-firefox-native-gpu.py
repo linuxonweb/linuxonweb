@@ -24,7 +24,7 @@ WRAPPER_NAME = 'opt/firefox/firefox-gpu-diagnostic'
 PAGES = {'opt/firefox/gpu-check/gpu-check.html': ROOT/'tools/guest-rootfs/firefox-gpu-check/gpu-check.html'}
 WRAPPER = b'''#!/bin/busybox sh
 export MOZ_WEBGL_FORCE_EGL=1 MOZ_GL_SPEW=1
-export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto
+export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto GUEST_GL_BACKEND=auto
 exec /opt/firefox/firefox "$@"
 '''
 GFXTEST_PROBE = b'''# Explicit standalone diagnostic; this subshell cannot change Firefox limits.
@@ -280,7 +280,7 @@ def main():
       'archive':artifact,'changes':changes,'added':[WRAPPER_NAME,PAGE_NAME],
       'untouchedEncodedRecordsVerified':verified,'ordinaryInitPreserved':True,'homeAndProfileRecordsPreserved':True,
       'tailPreserved':True,'otherSystemAssetsUnchanged':{k:v for k,v in manifest['assets'].items() if k!='firefox'},
-      'environment':{'MOZ_WEBGL_FORCE_EGL':'1','MOZ_GL_SPEW':'1','GUEST_GPU_TRANSPORT':'hostcall','GUEST_GPU_BACKEND':'auto',
+      'environment':{'MOZ_WEBGL_FORCE_EGL':'1','MOZ_GL_SPEW':'1','GUEST_GPU_TRANSPORT':'hostcall','GUEST_GPU_BACKEND':'auto','GUEST_GL_BACKEND':'auto',
                      **({'GUEST_VK_TRACE':'1'} if a.vk_trace else {})},
       'vkTrace':a.vk_trace,
       'version':new_manifest['version'],'pageUrl':'file:///'+PAGE_NAME}

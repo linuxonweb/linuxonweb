@@ -1881,7 +1881,7 @@ static EGLBoolean eglTerminate(EGLDisplay dpy) {
 static const char *eglQueryString(EGLDisplay dpy, EGLint name) {
   if (dpy == EGL_NO_DISPLAY && name == EGL_EXTENSIONS) {
     tls_error = EGL_SUCCESS;
-    return "EGL_EXT_client_extensions EGL_EXT_platform_base EGL_KHR_platform_gbm EGL_MESA_platform_surfaceless";
+    return "EGL_EXT_client_extensions EGL_EXT_platform_base EGL_MESA_platform_surfaceless";
   }
   if (!valid_display(dpy, 1)) return NULL;
   tls_error = EGL_SUCCESS;
