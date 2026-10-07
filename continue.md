@@ -1,3 +1,25 @@
+# Guest GPU benchmarks pass; Firefox next, 2026-10-07 (claude-opus-5-5)
+
+User order: vkgears/glgears 500x500 ~200 FPS (accepted), then vkmark, then glmark2, finally Firefox.
+- **vkmark** (guest wasm, Zink ICD, host WebGPU on NVIDIA via prime Chromium): full default suite, Score 273.
+- **glmark2** full default suite at 500x500: **Score 242**, zero ICD rejects, every scene visually correct
+  (contact sheet `/mnt/p3/codex-build/opus-ffgpu/a14/m67/sheet.png`; regression m68 after diagnostic cleanup).
+- Ported to the repo in commit 041b3f1 (branch `claude-opus-5-5-firefox-gpu-desktop-freeze-20261006`).
+  The repo ICD builds a glmark2 wasm byte-identical to the a14 build (g47 == g48). Web unit tests pass (83/83);
+  `guest-vulkan-pipeline/source-controls.mjs` passes (77 checks).
+  `guest-vulkan-uniform/check-translators.mjs` is pinned to an old task root and was not run.
+- The a14 Zink ICD already takes one recursive lock around every wrapped device-level entry point
+  (`icd.c` `ZINK_ICD_LOCK_SCOPE`). That addresses the attempt-9 `cur_cb` race, but Firefox has not been rerun with it.
+- Harness: a14 server port 3012 (`/mnt/p3/codex-build/opus-ffgpu/a14/serve`), `mrun.sh RUN BUILD SECS -b scene`,
+  recipes in `tools/guest-gpu-bench/` (machine-local paths).
+- a14 still routes many page files from the `fxgc1` snapshot, a12 Firefox packages and the a13/gpu-sampled-colour pipeline candidate.
+  Only readback-range.mjs was needed for the glmark2 path; it is now in the repo.
+- dev3000 (fxdev7) still serves the older reviewed snapshot. The user must choose before it is updated.
+- Next: Firefox GPU with the current ICD. Relinks skip wasm-opt -O but keep --fpcast-emu. Run against an isolated port,
+  using prime Chromium with the user's flags and `?debug=1`.
+
+---
+
 # STOPPED AT USER LIMIT: attempt 9 terminal, next-agent handoff, 2026-10-06 (claude-opus-5-5)
 
 The user resumed the paused final attempt 9 ("continue to make gpu works for firefox", single thread, branch `claude-opus-5-5-firefox-gpu-desktop-freeze-20261006`). **Attempt 9 has now built, packaged and run, and Firefox GPU still does not work.** Under the user's nine-attempt limit, goal work is stopped. **Attempt 10 requires fresh explicit user authorization.** Ledger: `/mnt/p3/codex-build/gpu-service-root-oct06/user-stop-limit.json` (attempt 9 `terminal-failed-limit-reached`). dev3000 (fxdev7, PIDs 4007679/4007680) still serves archive 340640ab and was never touched; 3001–3003, 8001 and cloudflared are preserved.
