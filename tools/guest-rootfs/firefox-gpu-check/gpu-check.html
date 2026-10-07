@@ -332,9 +332,10 @@ function startWebGL(version = new URLSearchParams(location.search).get("webgl") 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.uniformMatrix4fv(lm, false, new Float32Array(multiply(proj, modelView((performance.now() - start) / 1000))));
     gl.drawArrays(gl.TRIANGLES, 0, 36);
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR) { row("webgl", "error", `GL error ${error}`); fail("webgl", "error"); return; }
     const n = frame();
+    // getError waits for the GPU, so check only once a second or so.
+    const error = n % 60 === 1 ? gl.getError() : gl.NO_ERROR;
+    if (error !== gl.NO_ERROR) { row("webgl", "error", `GL error ${error}`); fail("webgl", "error"); return; }
     if (!verified && n >= 3) {
       // The cube covers the centre; its faces are bright, the clear colour is not.
       const px = new Uint8Array(4);

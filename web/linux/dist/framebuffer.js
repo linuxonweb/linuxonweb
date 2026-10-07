@@ -184,17 +184,21 @@ export function createFramebufferHost(memory, options) {
             if (!renderer && diagnostics.backend === "none")
                 return;
             dirty = false;
-            const from = top, to = bottom;
+            let from = top, to = bottom;
             top = height; bottom = 0;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
-            // A CSS/backing-store resize must not crop or scale the guest mode.
-            if (canvas.width !== width) canvas.width = width;
-            if (canvas.height !== height) canvas.height = height;
+            // A CSS/backing-store resize must not crop or scale the guest mode;
+            // it also clears the canvas, so the whole frame is drawn again.
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width; canvas.height = height;
+                from = 0; to = height;
+            }
             try {
                 if (renderer) {
-                    const frame = renderer.draw(staging);
-                    try { ctx.drawImage(frame, 0, 0); }
+                    // Only the changed rows are uploaded and copied; the canvas keeps the rest.
+                    const frame = renderer.draw(staging, from, to);
+                    try { ctx.drawImage(frame, 0, from, width, to - from, 0, from, width, to - from); }
                     finally { frame.close?.(); }
                 } else paint2d(from, to);
             } catch (error) {

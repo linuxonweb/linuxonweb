@@ -92,6 +92,12 @@ const GL = {
     UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: 0x8A43, UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: 0x8A44,
     UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: 0x8A46, ARRAY_BUFFER: 0x8892, STATIC_DRAW: 0x88E4,
     UNMASKED_VENDOR_WEBGL: 0x9245, UNMASKED_RENDERER_WEBGL: 0x9246, VERSION: 0x1F02, VENDOR: 0x1F00, RENDERER: 0x1F01,
+    NONE: 0, LEQUAL: 0x0203, LINEAR: 0x2601, NEAREST_MIPMAP_LINEAR: 0x2702, REPEAT: 0x2901, TEXTURE_2D: 0x0DE1,
+    TEXTURE_CUBE_MAP: 0x8513, TEXTURE0: 0x84C0, TEXTURE_MAG_FILTER: 0x2800, TEXTURE_MIN_FILTER: 0x2801,
+    TEXTURE_WRAP_S: 0x2802, TEXTURE_WRAP_T: 0x2803, TEXTURE_WRAP_R: 0x8072, TEXTURE_MIN_LOD: 0x813A, TEXTURE_MAX_LOD: 0x813B,
+    TEXTURE_BASE_LEVEL: 0x813C, TEXTURE_MAX_LEVEL: 0x813D, TEXTURE_COMPARE_MODE: 0x884C, TEXTURE_COMPARE_FUNC: 0x884D,
+    FRAMEBUFFER: 0x8D40, READ_FRAMEBUFFER: 0x8CA8, DRAW_FRAMEBUFFER: 0x8CA9, FRAMEBUFFER_COMPLETE: 0x8CD5,
+    DEPTH_STENCIL_ATTACHMENT: 0x821A,
 };
 
 // Constant limits sent at open; the guest answers these without a roundtrip.
@@ -129,11 +135,12 @@ class Fault extends Error {
 const contexts = new Map();
 let nextContext = 1;
 let probeResult = null;
-let enabled = true;
+let enabled = true, statsEnabled = false;
 
-/** Owner config `gl`: the remote is on unless `{enabled: false}`. */
+/** Owner config `gl`: the remote is on unless `{enabled: false}`; `{stats: true}` logs per-context call rates. */
 export function configureGl(value) {
     enabled = value?.enabled !== false;
+    statsEnabled = value?.stats === true;
 }
 
 const encoder = new TextEncoder(), decoder = new TextDecoder();
@@ -291,6 +298,8 @@ function open(memory, a, log, memories) {
         objects: Array.from({ length: K_PROGRAM + 1 }, () => new Map()), names: new WeakMap(),
         programs: new WeakMap(), program: null, cookiePointer: 0, cookie: null, memory: null, cmdPointer: 0,
         w: null, i32: null, f32: null, warned: new Set(), log,
+        texUnit: 0, texBound: new Map(), texInfo: new WeakMap(), fbBound: new Map(), fbAttach: new WeakMap(), fbComplex: new WeakMap(), texPool: [], complete: new Set(),
+        stats: { start: performance.now(), execs: 0, replies: 0, ms: 0, ops: new Uint32Array(OPS.length + 1), opMs: new Float64Array(OPS.length + 1), texReuse: 0 },
     };
     canvas.addEventListener?.("webglcontextlost", (event) => {
         event.preventDefault();
@@ -358,6 +367,7 @@ function exec(ctx, memory, pointer, length, replyPointer, capacity) {
     ctx.i32 = new Int32Array(bytes.buffer, pointer, words);
     ctx.f32 = new Float32Array(bytes.buffer, pointer, words);
     ctx.execs++;
+    const stats = statsEnabled ? ctx.stats : null, started = stats && performance.now();
     let reply = null;
     for (let i = 0; i < words;) {
         const header = ctx.w[i];
@@ -365,14 +375,45 @@ function exec(ctx, memory, pointer, length, replyPointer, capacity) {
         if (i + 1 + n > words || !op || op > OPS.length)
             throw new Fault(EINVAL);
         ctx.commands++;
-        reply = run(ctx, op, i + 1, n);
+        if (stats) {
+            const t = performance.now();
+            reply = run(ctx, op, i + 1, n);
+            stats.ops[op]++;
+            stats.opMs[op] += performance.now() - t;
+        }
+        else
+            reply = run(ctx, op, i + 1, n);
         i += 1 + n;
+    }
+    if (stats) {
+        const ended = performance.now();
+        stats.execs++;
+        stats.ms += ended - started;
+        if (reply)
+            stats.replies++;
+        if (ended - stats.start >= 5000)
+            reportStats(ctx, ended);
     }
     if (!reply)
         return 0;
     if (reply.length <= capacity)
         bytesAt(memory, replyPointer, reply.length).set(reply);
     return reply.length;
+}
+
+// Every 5 s of activity: calls per second, host GL time and the busiest ops.
+function reportStats(ctx, now) {
+    const stats = ctx.stats, seconds = (now - stats.start) / 1000;
+    const top = [...stats.ops].map((count, op) => [count, op]).filter(([count]) => count).sort((x, y) => y[0] - x[0]).slice(0, 8)
+        .map(([count, op]) => `${OPS[op - 1]}=${(count / seconds).toFixed(0)}`).join(" ");
+    const slow = [...stats.opMs].map((ms, op) => [ms, op]).filter(([ms]) => ms >= 1).sort((x, y) => y[0] - x[0]).slice(0, 6)
+        .map(([ms, op]) => `${OPS[op - 1]}=${(ms / seconds).toFixed(1)}`).join(" ");
+    ctx.log(`gl context ${ctx.id} stats ${seconds.toFixed(1)}s: execs/s=${(stats.execs / seconds).toFixed(1)} ` +
+        `sync/s=${(stats.replies / seconds).toFixed(1)} host-gl-ms/s=${(stats.ms / seconds).toFixed(1)} tex-reuse/s=${(stats.texReuse / seconds).toFixed(1)} ops/s: ${top} ms/s: ${slow}`);
+    stats.start = now;
+    stats.execs = stats.replies = stats.ms = stats.texReuse = 0;
+    stats.ops.fill(0);
+    stats.opMs.fill(0);
 }
 
 function run(ctx, op, i, n) {
@@ -562,12 +603,125 @@ function textReply(parts) {
     return out;
 }
 
+// Texture recycling. Firefox's WebGL swap chain creates and deletes a canvas-sized
+// texture every frame, and each host allocation makes ANGLE create a new image that the
+// next sync call waits for. A deleted single-level 2D texture that no framebuffer holds
+// is kept per shape and reused by the next null-data level-0 TexImage2D of that shape
+// into a texture with no image yet; GLES leaves those contents undefined.
+const TEX_POOL_LIMIT = 6;
+const TEX_DEFAULTS = new Map([
+    [GL.TEXTURE_MIN_FILTER, [false, GL.NEAREST_MIPMAP_LINEAR]], [GL.TEXTURE_MAG_FILTER, [false, GL.LINEAR]],
+    [GL.TEXTURE_WRAP_S, [false, GL.REPEAT]], [GL.TEXTURE_WRAP_T, [false, GL.REPEAT]], [GL.TEXTURE_WRAP_R, [false, GL.REPEAT]],
+    [GL.TEXTURE_MIN_LOD, [true, -1000]], [GL.TEXTURE_MAX_LOD, [true, 1000]], [GL.TEXTURE_BASE_LEVEL, [false, 0]],
+    [GL.TEXTURE_MAX_LEVEL, [false, 1000]], [GL.TEXTURE_COMPARE_MODE, [false, GL.NONE]], [GL.TEXTURE_COMPARE_FUNC, [false, GL.LEQUAL]],
+]);
+const CUBE_FACES = new Set([0x8515, 0x8516, 0x8517, 0x8518, 0x8519, 0x851A]);
+const bindingKey = (ctx, target) => ctx.texUnit * 0x10000 + (CUBE_FACES.has(target) ? GL.TEXTURE_CUBE_MAP : target);
+function texInfo(ctx, o) {
+    let t = ctx.texInfo.get(o);
+    if (!t)
+        ctx.texInfo.set(o, t = { fresh: true, shape: null, params: new Map() });
+    return t;
+}
+const boundTexture = (ctx, target) => ctx.texBound.get(bindingKey(ctx, target)) ?? null;
+/** Any image definition other than one level-0 2D image makes the texture ineligible. */
+function texDefined(ctx, target) {
+    const o = boundTexture(ctx, target);
+    if (o)
+        Object.assign(texInfo(ctx, o), { fresh: false, shape: null });
+}
+function attached(ctx, o) {
+    for (const fb of ctx.objects[2].values())
+        for (const a of ctx.fbAttach.get(fb)?.values() ?? [])
+            if (a === o)
+                return true;
+    for (const fb of ctx.fbBound.values())
+        for (const a of ctx.fbAttach.get(fb)?.values() ?? [])
+            if (a === o)
+                return true;
+    return false;
+}
+/** `simple`: level 0 of a 2D texture; anything else keeps the framebuffer's status uncached. */
+function attach(ctx, target, attachment, o, simple) {
+    const fb = ctx.fbBound.get(target === GL.READ_FRAMEBUFFER ? GL.READ_FRAMEBUFFER : GL.DRAW_FRAMEBUFFER);
+    if (!fb)
+        return;
+    let map = ctx.fbAttach.get(fb), complex = ctx.fbComplex.get(fb);
+    if (!map) {
+        ctx.fbAttach.set(fb, map = new Map());
+        ctx.fbComplex.set(fb, complex = new Set());
+    }
+    if (o)
+        map.set(attachment, o);
+    else
+        map.delete(attachment);
+    // DEPTH_STENCIL_ATTACHMENT also replaces the depth and stencil points.
+    if (attachment === GL.DEPTH_STENCIL_ATTACHMENT)
+        complex.add(-1);
+    else if (o && !simple)
+        complex.add(attachment);
+    else
+        complex.delete(attachment);
+    if (o instanceof WebGLTexture)
+        texInfo(ctx, o).fresh = false;
+}
+function unbindTexture(ctx, o) {
+    for (const [key, bound] of ctx.texBound) {
+        if (bound !== o)
+            continue;
+        ctx.gl.activeTexture(GL.TEXTURE0 + (key >>> 16));
+        ctx.gl.bindTexture(key & 0xffff, null);
+        ctx.texBound.delete(key);
+    }
+    ctx.gl.activeTexture(GL.TEXTURE0 + ctx.texUnit);
+}
+function poolTexture(ctx, o) {
+    const t = ctx.texInfo.get(o);
+    if (!t?.shape || attached(ctx, o) || [...t.params.keys()].some((p) => !TEX_DEFAULTS.has(p)))
+        return false;
+    unbindTexture(ctx, o);
+    ctx.texPool.push({ shape: t.shape, o });
+    if (ctx.texPool.length > TEX_POOL_LIMIT)
+        ctx.gl.deleteTexture(ctx.texPool.shift().o);
+    return true;
+}
+/** Replace the bound fresh texture `o` with a pooled one of `shape`; true when done. */
+function reuseTexture(ctx, target, o, shape) {
+    const k = ctx.texPool.findIndex((e) => e.shape === shape);
+    if (k < 0 || attached(ctx, o) || [...ctx.texBound.values()].filter((b) => b === o).length !== 1)
+        return false;
+    const p = ctx.texPool.splice(k, 1)[0].o, name = ctx.names.get(o), t = texInfo(ctx, o), pt = texInfo(ctx, p);
+    ctx.objects[1].set(name, p);
+    ctx.names.set(p, name);
+    ctx.gl.bindTexture(target, p);
+    ctx.texBound.set(bindingKey(ctx, target), p);
+    ctx.gl.deleteTexture(o);
+    ctx.texInfo.delete(o);
+    for (const [pname, [float, value]] of new Map([...[...pt.params.keys()].filter((q) => !t.params.has(q)).map((q) => [q, TEX_DEFAULTS.get(q)]), ...t.params]))
+        float ? ctx.gl.texParameterf(target, pname, value) : ctx.gl.texParameteri(target, pname, value);
+    Object.assign(pt, { fresh: false, shape, params: t.params });
+    ctx.stats.texReuse++;
+    return true;
+}
+
 function deleteObject(ctx, kind, name) {
     const map = ctx.objects[kind >= K_PROGRAM ? K_PROGRAM : kind];
     const o = map.get(name);
     if (!o)
         return;
     map.delete(name);
+    if (kind === 1 && poolTexture(ctx, o))
+        return;
+    if (kind === 1)
+        unbindTexture(ctx, o);
+    for (const fb of ctx.fbBound.values())
+        for (const [point, a] of ctx.fbAttach.get(fb) ?? [])
+            if (a === o)
+                ctx.fbAttach.get(fb).delete(point);
+    if (kind === 2)
+        for (const [target, fb] of ctx.fbBound)
+            if (fb === o)
+                ctx.fbBound.delete(target);
     if (kind === K_PROGRAM)
         ctx.gl.deleteProgram(o);
     else if (kind === K_SHADER)
@@ -603,13 +757,25 @@ H.DeleteObjects = (c, i) => {
     for (let k = 0; k < count; k++)
         deleteObject(c, kind, c.w[i + 2 + k]);
 };
-H.ActiveTexture = (c, i) => c.gl.activeTexture(c.w[i]);
+H.ActiveTexture = (c, i) => {
+    c.gl.activeTexture(c.w[i]);
+    c.texUnit = c.w[i] - GL.TEXTURE0;
+};
 H.AttachShader = (c, i) => c.gl.attachShader(programOf(c, c.w[i]), programOf(c, c.w[i + 1]));
 H.BindAttribLocation = (c, i) => c.gl.bindAttribLocation(programOf(c, c.w[i]), c.w[i + 1], toHost(blobText(c, i + 2)));
 H.BindBuffer = (c, i) => c.gl.bindBuffer(c.w[i], object(c, 0, c.w[i + 1]));
-H.BindFramebuffer = (c, i) => c.gl.bindFramebuffer(c.w[i], object(c, 2, c.w[i + 1]));
+H.BindFramebuffer = (c, i) => {
+    const target = c.w[i], fb = object(c, 2, c.w[i + 1]);
+    c.gl.bindFramebuffer(target, fb);
+    for (const t of target === GL.FRAMEBUFFER ? [GL.READ_FRAMEBUFFER, GL.DRAW_FRAMEBUFFER] : [target === GL.READ_FRAMEBUFFER ? target : GL.DRAW_FRAMEBUFFER])
+        fb ? c.fbBound.set(t, fb) : c.fbBound.delete(t);
+};
 H.BindRenderbuffer = (c, i) => c.gl.bindRenderbuffer(c.w[i], object(c, 3, c.w[i + 1]));
-H.BindTexture = (c, i) => c.gl.bindTexture(c.w[i], object(c, 1, c.w[i + 1]));
+H.BindTexture = (c, i) => {
+    const o = object(c, 1, c.w[i + 1]);
+    c.gl.bindTexture(c.w[i], o);
+    o ? c.texBound.set(bindingKey(c, c.w[i]), o) : c.texBound.delete(bindingKey(c, c.w[i]));
+};
 H.BlendColor = (c, i) => c.gl.blendColor(c.f32[i], c.f32[i + 1], c.f32[i + 2], c.f32[i + 3]);
 H.BlendEquation = (c, i) => c.gl.blendEquation(c.w[i]);
 H.BlendEquationSeparate = (c, i) => c.gl.blendEquationSeparate(c.w[i], c.w[i + 1]);
@@ -632,12 +798,16 @@ H.CompileShader = (c, i) => c.gl.compileShader(programOf(c, c.w[i]));
 function compressed(c, b) {
     return b.mode === B_OFFSET ? [b.bytes, b.offset] : [typed(c, b.data ?? new Uint8Array(), Uint8Array)];
 }
-H.CompressedTexImage2D = (c, i) =>
+H.CompressedTexImage2D = (c, i) => {
+    texDefined(c, c.w[i]);
     c.gl.compressedTexImage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], ...compressed(c, blob(c, i + 6)));
+};
 H.CompressedTexSubImage2D = (c, i) =>
     c.gl.compressedTexSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], ...compressed(c, blob(c, i + 7)));
-H.CopyTexImage2D = (c, i) =>
+H.CopyTexImage2D = (c, i) => {
+    texDefined(c, c.w[i]);
     c.gl.copyTexImage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7]);
+};
 H.CopyTexSubImage2D = (c, i) =>
     c.gl.copyTexSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7]);
 H.CreateProgram = (c, i) => {
@@ -672,10 +842,21 @@ H.Enable = (c, i) => {
 H.EnableVertexAttribArray = (c, i) => c.gl.enableVertexAttribArray(c.w[i]);
 H.Finish = (c) => c.gl.finish();
 H.Flush = (c) => c.gl.flush();
-H.FramebufferRenderbuffer = (c, i) => c.gl.framebufferRenderbuffer(c.w[i], c.w[i + 1], c.w[i + 2], object(c, 3, c.w[i + 3]));
-H.FramebufferTexture2D = (c, i) => c.gl.framebufferTexture2D(c.w[i], c.w[i + 1], c.w[i + 2], object(c, 1, c.w[i + 3]), c.i32[i + 4]);
+H.FramebufferRenderbuffer = (c, i) => {
+    const rb = object(c, 3, c.w[i + 3]);
+    c.gl.framebufferRenderbuffer(c.w[i], c.w[i + 1], c.w[i + 2], rb);
+    attach(c, c.w[i], c.w[i + 1], rb, false);
+};
+H.FramebufferTexture2D = (c, i) => {
+    const o = object(c, 1, c.w[i + 3]);
+    c.gl.framebufferTexture2D(c.w[i], c.w[i + 1], c.w[i + 2], o, c.i32[i + 4]);
+    attach(c, c.w[i], c.w[i + 1], o, c.w[i + 2] === GL.TEXTURE_2D && c.i32[i + 4] === 0);
+};
 H.FrontFace = (c, i) => c.gl.frontFace(c.w[i]);
-H.GenerateMipmap = (c, i) => c.gl.generateMipmap(c.w[i]);
+H.GenerateMipmap = (c, i) => {
+    texDefined(c, c.w[i]);
+    c.gl.generateMipmap(c.w[i]);
+};
 H.Hint = (c, i) => c.gl.hint(c.w[i], c.w[i + 1]);
 H.LineWidth = (c, i) => c.gl.lineWidth(c.f32[i]);
 H.LinkProgram = (c, i) => {
@@ -706,11 +887,26 @@ H.StencilMaskSeparate = (c, i) => c.gl.stencilMaskSeparate(c.w[i], c.w[i + 1]);
 H.StencilOp = (c, i) => c.gl.stencilOp(c.w[i], c.w[i + 1], c.w[i + 2]);
 H.StencilOpSeparate = (c, i) => c.gl.stencilOpSeparate(c.w[i], c.w[i + 1], c.w[i + 2], c.w[i + 3]);
 H.TexImage2D = (c, i) => {
-    const type = hostType(c.w[i + 7]);
+    const type = hostType(c.w[i + 7]), target = c.w[i], o = boundTexture(c, target);
+    if (o && target === GL.TEXTURE_2D && c.i32[i + 1] === 0) {
+        const t = texInfo(c, o), shape = Array.from(c.w.subarray(i + 2, i + 8)).join();
+        if (t.fresh && blob(c, i + 8).mode === B_NULL && reuseTexture(c, target, o, shape))
+            return;
+        if (t.fresh || t.shape)
+            Object.assign(t, { fresh: false, shape });
+    }
+    else
+        texDefined(c, target);
     c.gl.texImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], type, source(c, blob(c, i + 8), type));
 };
-H.TexParameterf = (c, i) => c.gl.texParameterf(c.w[i], c.w[i + 1], c.f32[i + 2]);
-H.TexParameteri = (c, i) => c.gl.texParameteri(c.w[i], c.w[i + 1], c.i32[i + 2]);
+function texParameter(c, target, pname, float, value) {
+    const o = boundTexture(c, target);
+    if (o)
+        texInfo(c, o).params.set(pname, [float, value]);
+    float ? c.gl.texParameterf(target, pname, value) : c.gl.texParameteri(target, pname, value);
+}
+H.TexParameterf = (c, i) => texParameter(c, c.w[i], c.w[i + 1], true, c.f32[i + 2]);
+H.TexParameteri = (c, i) => texParameter(c, c.w[i], c.w[i + 1], false, c.i32[i + 2]);
 H.TexSubImage2D = (c, i) => {
     const type = hostType(c.w[i + 7]);
     c.gl.texSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], type, source(c, blob(c, i + 8), type));
@@ -759,6 +955,7 @@ H.ReadBuffer = (c, i) => c.gl.readBuffer(c.w[i]);
 H.DrawRangeElements = (c, i) => c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]);
 H.TexImage3D = (c, i) => {
     const type = hostType(c.w[i + 8]);
+    texDefined(c, c.w[i]);
     c.gl.texImage3D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.w[i + 7], type, source(c, blob(c, i + 9), type));
 };
 H.TexSubImage3D = (c, i) => {
@@ -767,8 +964,10 @@ H.TexSubImage3D = (c, i) => {
 };
 H.CopyTexSubImage3D = (c, i) =>
     c.gl.copyTexSubImage3D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7], c.i32[i + 8]);
-H.CompressedTexImage3D = (c, i) =>
+H.CompressedTexImage3D = (c, i) => {
+    texDefined(c, c.w[i]);
     c.gl.compressedTexImage3D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], ...compressed(c, blob(c, i + 7)));
+};
 H.CompressedTexSubImage3D = (c, i) =>
     c.gl.compressedTexSubImage3D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7], c.w[i + 8], ...compressed(c, blob(c, i + 9)));
 H.BeginQuery = (c, i) => c.gl.beginQuery(c.w[i], object(c, 4, c.w[i + 1]));
@@ -777,7 +976,11 @@ H.DrawBuffers = (c, i) => c.gl.drawBuffers(Array.from(c.w.subarray(i + 1, i + 1 
 H.BlitFramebuffer = (c, i) =>
     c.gl.blitFramebuffer(c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7], c.w[i + 8], c.w[i + 9]);
 H.RenderbufferStorageMultisample = (c, i) => c.gl.renderbufferStorageMultisample(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4]);
-H.FramebufferTextureLayer = (c, i) => c.gl.framebufferTextureLayer(c.w[i], c.w[i + 1], object(c, 1, c.w[i + 2]), c.i32[i + 3], c.i32[i + 4]);
+H.FramebufferTextureLayer = (c, i) => {
+    const o = object(c, 1, c.w[i + 2]);
+    c.gl.framebufferTextureLayer(c.w[i], c.w[i + 1], o, c.i32[i + 3], c.i32[i + 4]);
+    attach(c, c.w[i], c.w[i + 1], o, false);
+};
 H.BindVertexArray = (c, i) => c.gl.bindVertexArray(object(c, 6, c.w[i]));
 H.BeginTransformFeedback = (c, i) => c.gl.beginTransformFeedback(c.w[i]);
 H.EndTransformFeedback = (c) => c.gl.endTransformFeedback();
@@ -808,8 +1011,14 @@ H.ResumeTransformFeedback = (c) => c.gl.resumeTransformFeedback();
 H.InvalidateFramebuffer = (c, i) => c.gl.invalidateFramebuffer(c.w[i], Array.from(c.w.subarray(i + 2, i + 2 + c.w[i + 1])));
 H.InvalidateSubFramebuffer = (c, i) =>
     c.gl.invalidateSubFramebuffer(c.w[i], Array.from(c.w.subarray(i + 6, i + 6 + c.w[i + 5])), c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4]);
-H.TexStorage2D = (c, i) => c.gl.texStorage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4]);
-H.TexStorage3D = (c, i) => c.gl.texStorage3D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5]);
+H.TexStorage2D = (c, i) => {
+    texDefined(c, c.w[i]);
+    c.gl.texStorage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4]);
+};
+H.TexStorage3D = (c, i) => {
+    texDefined(c, c.w[i]);
+    c.gl.texStorage3D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5]);
+};
 
 // Queries.
 H.GetParameter = (c, i) => reply(c, c.gl.getParameter(c.w[i]));
@@ -853,7 +1062,34 @@ H.IsObject = (c, i) => {
         yes = c.gl[KINDS[kind][2]](o);
     return numberReply([yes ? 1 : 0]);
 };
-H.CheckFramebufferStatus = (c, i) => numberReply([c.gl.checkFramebufferStatus(c.w[i])]);
+// Completeness depends only on the attachments' formats, sizes and identities. Firefox
+// checks a new framebuffer per WebGL frame; each check would wait for the host GPU
+// process, so complete results are kept per attachment shape.
+function fbSignature(c, target) {
+    const fb = c.fbBound.get(target === GL.READ_FRAMEBUFFER ? GL.READ_FRAMEBUFFER : GL.DRAW_FRAMEBUFFER);
+    const map = fb && c.fbAttach.get(fb);
+    if (!map?.size || c.fbComplex.get(fb).size)
+        return null;
+    const seen = [], parts = [];
+    for (const [point, o] of [...map].sort((x, y) => x[0] - y[0])) {
+        const shape = o instanceof WebGLTexture && c.texInfo.get(o)?.shape;
+        if (!shape)
+            return null;
+        if (!seen.includes(o))
+            seen.push(o);
+        parts.push(`${point}:${seen.indexOf(o)}:${shape}`);
+    }
+    return parts.join(";");
+}
+H.CheckFramebufferStatus = (c, i) => {
+    const signature = fbSignature(c, c.w[i]);
+    if (signature && c.complete.has(signature))
+        return numberReply([GL.FRAMEBUFFER_COMPLETE]);
+    const status = c.gl.checkFramebufferStatus(c.w[i]);
+    if (signature && status === GL.FRAMEBUFFER_COMPLETE)
+        c.complete.add(signature);
+    return numberReply([status]);
+};
 H.GetFragDataLocation = (c, i) => numberReply([c.gl.getFragDataLocation(programOf(c, c.w[i]), toHost(blobText(c, i + 1)))]);
 H.ProgramInfo = (c, i) => textReply(programInfo(c, c.w[i]));
 H.ShaderInfo = (c, i) => textReply(shaderInfo(c, c.w[i]));

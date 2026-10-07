@@ -1,6 +1,11 @@
 // Explicit desktop opt-in to the common Rust Vulkan service. Backend selection
 // still comes from the existing gpubackend parser; no setting is persisted.
 export function guestGpuOwnerConfig(search, gpuBackend = 'auto') {
+  // ?debug=1 also logs guest GL remote call rates every 5 s of activity.
+  const gl = new URLSearchParams(search).get('debug') === '1' ? { gl: { stats: true } } : {};
+  return { ...gl, ...vulkanOwnerConfig(search, gpuBackend) };
+}
+function vulkanOwnerConfig(search, gpuBackend) {
   if (new URLSearchParams(search).get('gpuruntime') !== 'rust') {
     // The direct WebGPU renderer has 512 colour/depth targets and direct presentation.
     // Large sampled colour targets are enabled only after the renderer's actual probe passes.

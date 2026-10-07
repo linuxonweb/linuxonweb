@@ -22,8 +22,13 @@ PAGE_NAME = 'opt/firefox/native-service-probe.html'
 WRAPPER_NAME = 'opt/firefox/firefox-gpu-diagnostic'
 # Existing pages replaced by the current repo copies (metadata kept, size updated).
 PAGES = {'opt/firefox/gpu-check/gpu-check.html': ROOT/'tools/guest-rootfs/firefox-gpu-check/gpu-check.html'}
+# Default prefs appended to the existing Wasm pref file (defaults only; saved user prefs win).
+PREF_FILE = 'opt/firefox/defaults/pref/wasm.js'
+# glremote keeps the current context per thread, so WebGL may run on its own
+# CanvasRenderer thread instead of sharing WebRender's Renderer thread.
+GPU_PREFS = {'webgl.threadsafe-gl.force-enabled': 'true'}
 WRAPPER = b'''#!/bin/busybox sh
-export MOZ_WEBGL_FORCE_EGL=1 MOZ_GL_SPEW=1
+export MOZ_WEBGL_FORCE_EGL=1
 export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto GUEST_GL_BACKEND=auto
 exec /opt/firefox/firefox "$@"
 '''
@@ -148,6 +153,12 @@ def main():
                     help='do not copy the package into the web/desktop dev server (latest-build)')
     ap.add_argument('--vk-trace', action='store_true',
                     help='enable existing native Vulkan diagnostics in the test-only wrapper')
+    ap.add_argument('--env', action='append', default=[], metavar='NAME=VALUE',
+                    help='test-only extra environment for Firefox in the wrapper (e.g. MOZ_LOG=...)')
+    ap.add_argument('--gpu-check-page', type=Path,
+                    help='test-only replacement for the built-in gpu-check page')
+    ap.add_argument('--pref', action='append', default=[], metavar='NAME=VALUE',
+                    help='test-only extra default pref (JS literal value); repeatable')
     ap.add_argument('--gfxtest-build', type=Path,
                     help='explicitly replace only the genuine existing gfxtest with the reviewed candidate build')
     ap.add_argument('--gfxtest-verification', type=Path,
@@ -160,6 +171,11 @@ def main():
     if a.gfxtest_probe and not a.gfxtest_build:
         ap.error('--gfxtest-probe requires the authenticated helper build and verification')
     wrapper = diagnostic_wrapper(a.vk_trace, a.gfxtest_probe)
+    extra_env = dict(item.split('=', 1) for item in a.env)
+    if any(not k.replace('_', '').isalnum() or "'" in v for k, v in extra_env.items()):
+        ap.error('--env needs NAME=VALUE without quotes')
+    if extra_env:
+        wrapper = wrapper.replace(b'exec /opt/firefox/firefox', ''.join(f"export {k}='{v}'\n" for k, v in extra_env.items()).encode()+b'exec /opt/firefox/firefox')
     out = a.output.absolute()
     parent = out.parent.resolve(strict=True)
     if out.exists() or out.is_symlink() or parent != out.parent or not str(parent).startswith('/mnt/p3/codex-build/'):
@@ -196,6 +212,13 @@ def main():
     if gfxtest:
         replacement['opt/firefox/gfxtest'] = ('gfxtest', OLD_GFXTEST)
     pages = {name:path.read_bytes() for name,path in PAGES.items()}
+    if a.gpu_check_page:
+        pages['opt/firefox/gpu-check/gpu-check.html'] = a.gpu_check_page.read_bytes()
+    prefs = {**GPU_PREFS, **dict(item.split('=', 1) for item in a.pref)}
+    if any(not k.replace('.', '').replace('-', '').replace('_', '').isalnum() or '\n' in v or ')' in v for k, v in prefs.items()):
+        ap.error('--pref needs NAME=VALUE with a plain JS literal')
+    pref_block = ('// BEGIN Linux on Web GPU defaults\n' + ''.join(f'pref("{k}", {v});\n' for k, v in prefs.items())
+                  + '// END Linux on Web GPU defaults\n').encode()
     original = {}; changes = {}; max_inode = 0
     with gzip.open(a.source,'rb') as src, archive.open('xb') as target, gzip.GzipFile(filename='',fileobj=target,mode='wb',mtime=0,compresslevel=6) as dst:
         while True:
@@ -227,6 +250,13 @@ def main():
                 old_sha = copy_body(src,None,values[6],encoded); body = pages[name]
                 dst.write(header[:54]+f'{len(body):08x}'.encode()+header[62:]+name_raw+padding+body+b'\0'*(-len(body)%4))
                 changes[name]={'beforeSha256':old_sha,'afterSha256':hashlib.sha256(body).hexdigest(),'metadataPreservedExceptSize':True}
+            elif name == PREF_FILE:
+                if stat.S_IFMT(values[1]) != stat.S_IFREG: raise ValueError('expected regular pref record')
+                old = exact(src,values[6]); encoded.update(old)
+                if b'Linux on Web GPU defaults' in old: raise ValueError('GPU pref block already present')
+                body = old + (b'' if old.endswith(b'\n') else b'\n') + pref_block
+                dst.write(header[:54]+f'{len(body):08x}'.encode()+header[62:]+name_raw+padding+body+b'\0'*(-len(body)%4))
+                changes[name]={'beforeSha256':hashlib.sha256(old).hexdigest(),'afterSha256':hashlib.sha256(body).hexdigest(),'metadataPreservedExceptSize':True}
             elif name == 'bin/firefox':
                 old = exact(src,values[6]);encoded.update(old)
                 if old != b'/opt/firefox/firefox' or stat.S_IFMT(values[1]) != stat.S_IFLNK:
@@ -242,7 +272,7 @@ def main():
             original[name]={'encodedSha256':encoded.hexdigest(),'bodyBytes':values[6],'fields':values}
             if name == 'TRAILER!!!':
                 tail=src.read();dst.write(tail);break
-    if set(changes) != set(replacement)|set(pages)|{'bin/firefox'}:raise ValueError('missing expected native/launcher changes')
+    if set(changes) != set(replacement)|set(pages)|{'bin/firefox',PREF_FILE}:raise ValueError('missing expected native/launcher changes')
     if 'opt/firefox' not in original or stat.S_IFMT(original['opt/firefox']['fields'][1]) != stat.S_IFDIR:
         raise ValueError('diagnostic parent directory missing')
     # Independently stream the completed archive; preserve every untouched encoded record.
@@ -258,7 +288,7 @@ def main():
             elif name in replacement:
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
                 if new_fields != old_fields or body_sha != native[replacement[name][0]]['sha256']:raise ValueError('native replacement verification')
-            elif name=='bin/firefox' or name in pages:
+            elif name=='bin/firefox' or name in pages or name==PREF_FILE:
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
                 if new_fields!=old_fields or body_sha!=changes[name]['afterSha256']:raise ValueError('launcher/page metadata verification')
             elif name in (PAGE_NAME,WRAPPER_NAME):
@@ -280,9 +310,9 @@ def main():
       'archive':artifact,'changes':changes,'added':[WRAPPER_NAME,PAGE_NAME],
       'untouchedEncodedRecordsVerified':verified,'ordinaryInitPreserved':True,'homeAndProfileRecordsPreserved':True,
       'tailPreserved':True,'otherSystemAssetsUnchanged':{k:v for k,v in manifest['assets'].items() if k!='firefox'},
-      'environment':{'MOZ_WEBGL_FORCE_EGL':'1','MOZ_GL_SPEW':'1','GUEST_GPU_TRANSPORT':'hostcall','GUEST_GPU_BACKEND':'auto','GUEST_GL_BACKEND':'auto',
-                     **({'GUEST_VK_TRACE':'1'} if a.vk_trace else {})},
-      'vkTrace':a.vk_trace,
+      'environment':{'MOZ_WEBGL_FORCE_EGL':'1','GUEST_GPU_TRANSPORT':'hostcall','GUEST_GPU_BACKEND':'auto','GUEST_GL_BACKEND':'auto',
+                     **({'GUEST_VK_TRACE':'1'} if a.vk_trace else {}),**extra_env},
+      'prefs':prefs,'vkTrace':a.vk_trace,
       'version':new_manifest['version'],'pageUrl':'file:///'+PAGE_NAME}
     if gfxtest:
         report['gfxtestCandidate'] = gfxtest

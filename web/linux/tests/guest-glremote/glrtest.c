@@ -63,7 +63,8 @@ static void say(const char *format, ...) {
   X(void, glTransformFeedbackVaryings, (GLuint, GLsizei, const GLchar *const *, GLenum)) \
   X(void, glBeginTransformFeedback, (GLenum)) X(void, glEndTransformFeedback, (void)) X(void, glEnable, (GLenum)) \
   X(void, glDisable, (GLenum)) X(void *, glMapBufferRange, (GLenum, GLintptr, GLsizeiptr, GLbitfield)) \
-  X(GLboolean, glUnmapBuffer, (GLenum)) X(void, glFinish, (void))
+  X(GLboolean, glUnmapBuffer, (GLenum)) X(void, glFinish, (void)) \
+  X(void, glDeleteTextures, (GLsizei, const GLuint *)) X(void, glDeleteFramebuffers, (GLsizei, const GLuint *))
 #define DECLARE(ret, name, args) static ret (*name) args;
 FUNCS(DECLARE)
 
@@ -233,6 +234,34 @@ int main(void) {
   for (int k = 0; k < 200; k++) glGetError();
   double roundtrip_ms = (now_ms() - start) / 200;
   say("GLRTEST timing frames=%d frame_ms=%.3f (100 draws + 1x1 readback) roundtrip_ms=%.3f\n", frames, frame_ms, roundtrip_ms);
+
+  /* Firefox's WebGL present pattern: per frame a draw, then a fresh 320x240 surface
+   * checked with GetError/CheckFramebufferStatus, and a full readback. */
+  static unsigned char image[320 * 240 * 4];
+  GLuint ring_tex[2] = {0}, ring_fbo[2] = {0};
+  start = now_ms();
+  frames = 0;
+  while (now_ms() - start < 3000) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glGetError();
+    int slot = frames & 1;
+    if (ring_tex[slot]) { glDeleteFramebuffers(1, &ring_fbo[slot]); glDeleteTextures(1, &ring_tex[slot]); }
+    glGenTextures(1, &ring_tex[slot]);
+    glBindTexture(GL_TEXTURE_2D, ring_tex[slot]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glGetError();
+    glGenFramebuffers(1, &ring_fbo[slot]);
+    glBindFramebuffer(GL_FRAMEBUFFER, ring_fbo[slot]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ring_tex[slot], 0);
+    glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glReadPixels(0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    frames++;
+  }
+  say("GLRTEST timing swapchain frames=%d frame_ms=%.3f (draw, 2 GetError, new 320x240 surface, status, readback)\n",
+      frames, (now_ms() - start) / frames);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
   eglDestroyContext(display, context);

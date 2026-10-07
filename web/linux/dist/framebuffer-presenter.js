@@ -74,9 +74,11 @@ export function createWebGLPresenter(width, height, onLost) {
         canvas.addEventListener?.("webglcontextlost", lose);
         return {
             backend: "webgl", canvas,
-            draw(bytes) {
+            // Upload only rows [from, to); the texture keeps the other rows.
+            draw(bytes, from = 0, to = height) {
                 if (closed || gl.isContextLost()) throw new Error("WebGL context lost");
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, from, width, to - from, gl.RGBA, gl.UNSIGNED_BYTE,
+                    bytes.subarray(from * width * 4, to * width * 4));
                 gl.drawArrays(gl.TRIANGLES, 0, 3);
                 return canvas;
             }, close,
@@ -132,9 +134,10 @@ export async function createWebGPUPresenter(width, height, onLost) {
         return {
             backend: "webgpu", canvas,
             fallbackAdapter: adapter.info?.isFallbackAdapter ?? null,
-            draw(bytes) {
+            draw(bytes, from = 0, to = height) {
                 if (closed) throw new Error("WebGPU presenter closed");
-                device.queue.writeTexture({ texture }, bytes, { bytesPerRow: width * 4 }, [width,height]);
+                device.queue.writeTexture({ texture, origin: [0, from] }, bytes,
+                    { offset: from * width * 4, bytesPerRow: width * 4 }, [width, to - from]);
                 const encoder = device.createCommandEncoder();
                 const pass = encoder.beginRenderPass({ colorAttachments: [{
                     view: context.getCurrentTexture().createView(),
