@@ -752,10 +752,22 @@ struct Out { @builtin(position) position: vec4f, @location(0) uv: vec2f };
     });
     counters.flippedPipelines++;
   };
+  // Buffers and textures are created from descriptors JavaScript already validated
+  // against the device limits and byte budget, so, as for uploads, their scope
+  // results settle in the background (no GPU process round trip per creation, which
+  // cost Firefox WebGL a compositor-paced wait for every new frame target); a
+  // native error found later is terminal for the renderer.
   const makeNative = async (kind, size, action) => {
+    available();
     let object;
-    try { await checked(() => { object = track(action(), kind, size); }); return object; }
-    catch (error) { releaseNative(object); throw error; }
+    const made = scoped(() => { object = track(action(), kind, size); });
+    if (made.caught) {
+      const settled = await settle([made.pops]);
+      releaseNative(object); classify(settled.lists[0], made.caught ?? settled.caught); throw made.caught;
+    }
+    defer(made.pops);
+    if (deferred.size >= MAX_DEFERRED) { const settled = await settle([]); classify([], settled.caught); }
+    return object;
   };
   const limits = device.limits ?? {};
   const checkDevicePipelineLimits = descriptor => {

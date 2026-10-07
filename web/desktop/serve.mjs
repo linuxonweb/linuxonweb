@@ -173,4 +173,7 @@ process.on('SIGTERM', () => {
   for (const client of reloadClients) client.end();
   server.close(() => process.exit(0));
   server.closeAllConnections();
+  // A response still streaming a large archive can hold close() open; the
+  // supervisor waits for this exit before starting the next server.
+  setTimeout(() => process.exit(0), 2000).unref();
 });

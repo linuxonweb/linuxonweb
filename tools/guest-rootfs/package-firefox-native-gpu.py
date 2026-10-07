@@ -20,6 +20,8 @@ GFXTEST_FINAL = 'f178f071b85d6029847d842ebd00e085ddb9f78b086fbb0da4e864c9fb5e020
 GFXTEST_VERIFICATION = '6214c186b34dc376bdac60298b439e0521580f10a3140737a0fd0531e674c236'
 PAGE_NAME = 'opt/firefox/native-service-probe.html'
 WRAPPER_NAME = 'opt/firefox/firefox-gpu-diagnostic'
+# Existing pages replaced by the current repo copies (metadata kept, size updated).
+PAGES = {'opt/firefox/gpu-check/gpu-check.html': ROOT/'tools/guest-rootfs/firefox-gpu-check/gpu-check.html'}
 WRAPPER = b'''#!/bin/busybox sh
 export MOZ_WEBGL_FORCE_EGL=1 MOZ_GL_SPEW=1
 export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto
@@ -193,6 +195,7 @@ def main():
                    'opt/firefox/plugin-container':('plugin-container',OLD_PLUGIN)}
     if gfxtest:
         replacement['opt/firefox/gfxtest'] = ('gfxtest', OLD_GFXTEST)
+    pages = {name:path.read_bytes() for name,path in PAGES.items()}
     original = {}; changes = {}; max_inode = 0
     with gzip.open(a.source,'rb') as src, archive.open('xb') as target, gzip.GzipFile(filename='',fileobj=target,mode='wb',mtime=0,compresslevel=6) as dst:
         while True:
@@ -219,6 +222,11 @@ def main():
                     if copy_body(f,dst,new['bytes']) != new['sha256']:raise ValueError('native module changed while copying')
                 dst.write(b'\0'*(-new['bytes']%4))
                 changes[name]={'beforeSha256':old_sha,'after':new,'metadataPreservedExceptSize':True}
+            elif name in pages:
+                if stat.S_IFMT(values[1]) != stat.S_IFREG: raise ValueError('expected regular page record: '+name)
+                old_sha = copy_body(src,None,values[6],encoded); body = pages[name]
+                dst.write(header[:54]+f'{len(body):08x}'.encode()+header[62:]+name_raw+padding+body+b'\0'*(-len(body)%4))
+                changes[name]={'beforeSha256':old_sha,'afterSha256':hashlib.sha256(body).hexdigest(),'metadataPreservedExceptSize':True}
             elif name == 'bin/firefox':
                 old = exact(src,values[6]);encoded.update(old)
                 if old != b'/opt/firefox/firefox' or stat.S_IFMT(values[1]) != stat.S_IFLNK:
@@ -234,7 +242,7 @@ def main():
             original[name]={'encodedSha256':encoded.hexdigest(),'bodyBytes':values[6],'fields':values}
             if name == 'TRAILER!!!':
                 tail=src.read();dst.write(tail);break
-    if set(changes) != set(replacement)|{'bin/firefox'}:raise ValueError('missing expected native/launcher changes')
+    if set(changes) != set(replacement)|set(pages)|{'bin/firefox'}:raise ValueError('missing expected native/launcher changes')
     if 'opt/firefox' not in original or stat.S_IFMT(original['opt/firefox']['fields'][1]) != stat.S_IFDIR:
         raise ValueError('diagnostic parent directory missing')
     # Independently stream the completed archive; preserve every untouched encoded record.
@@ -250,9 +258,9 @@ def main():
             elif name in replacement:
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
                 if new_fields != old_fields or body_sha != native[replacement[name][0]]['sha256']:raise ValueError('native replacement verification')
-            elif name=='bin/firefox':
+            elif name=='bin/firefox' or name in pages:
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
-                if new_fields!=old_fields or body_sha!=changes[name]['afterSha256']:raise ValueError('launcher metadata verification')
+                if new_fields!=old_fields or body_sha!=changes[name]['afterSha256']:raise ValueError('launcher/page metadata verification')
             elif name in (PAGE_NAME,WRAPPER_NAME):
                 expected=page if name==PAGE_NAME else wrapper
                 if body_sha!=hashlib.sha256(expected).hexdigest():raise ValueError('added asset changed')

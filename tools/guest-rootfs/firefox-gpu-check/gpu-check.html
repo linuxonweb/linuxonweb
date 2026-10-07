@@ -12,6 +12,8 @@
   .grid { display: flex; flex-wrap: wrap; gap: 16px; }
   section { box-sizing: border-box; min-width: 0; flex: 1 1 340px; max-width: 520px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #101e1c; }
   h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.05rem; }
+  .choice { margin: 8px 0; }
+  .choice button { margin-right: 8px; }
   .badge { padding: 2px 8px; border-radius: 999px; font-size: .78rem; font-weight: 650; border: 1px solid currentColor; }
   .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); }
   canvas { display: block; width: 320px; max-width: 100%; height: auto; aspect-ratio: 4 / 3; margin-bottom: 10px; border-radius: 6px; background: #000; }
@@ -36,10 +38,10 @@
 <h1>WebGL / WebGPU check</h1>
 <div class="browser"><strong id="browser-version">Reading browser version…</strong><br><span id="browser-build"></span><br><span id="browser-ua"></span></div>
 <p class="runtime">JavaScript JIT: <strong id="jit-status">Unknown</strong> · This page cannot reliably observe compiler activity.</p>
-<p class="lead">Both demos start automatically. A spinning cube and a rising frame count mean the API really renders here.</p>
+<p class="lead">Both demos start automatically; the WebGL demo tests WebGL2 (WebGL 1 only if you choose it). A spinning cube and a rising frame count mean the API really renders here.</p>
 <div class="grid">
   <section>
-    <h2>WebGL <span id="webgl-badge" class="badge warn">checking</span></h2>
+    <h2>WebGL2 <span id="webgl-badge" class="badge warn">checking</span></h2>
     <canvas id="webgl-canvas" width="320" height="240"></canvas>
     <div id="webgl-fps" class="fps">not started</div>
     <table id="webgl-info"></table>
@@ -77,6 +79,8 @@ document.getElementById("browser-ua").textContent = browserIdentity.userAgent;
 console.log("GPUCHECK browser=" + JSON.stringify(browserIdentity));
 // Results are mirrored into document.title so automated tests can read them:
 // "GPUCHECK webgl=<state> webgpu=<state>", state = pending|ok|fail|none|skipped.
+// The WebGL demo tests WebGL2. When WebGL2 is unavailable the page asks the user
+// whether to test WebGL 1 instead (never automatically); ?webgl=1 tests WebGL 1.
 const state = { webgl: "pending", webgpu: "pending" };
 // Each change is also logged, with the info tables once both APIs settle,
 // so a browser that prints console output to stdout (the guest) reports it.
@@ -256,7 +260,7 @@ function fpsMeter(api) {
   };
 }
 
-function startWebGL() {
+function startWebGL(version = new URLSearchParams(location.search).get("webgl") === "1" ? 1 : 2) {
   const canvas = document.getElementById("webgl-canvas");
   const errors = [];
   canvas.addEventListener("webglcontextlost", () => {
@@ -264,12 +268,14 @@ function startWebGL() {
     fail("webgl", "error");
   });
   canvas.addEventListener("webglcontextcreationerror", e => errors.push(e.statusMessage || "(no message)"));
-  let gl = canvas.getContext("webgl2", { antialias: false }), version = 2;
-  if (!gl) { gl = canvas.getContext("webgl", { antialias: false }); version = 1; }
+  const gl = canvas.getContext(version === 2 ? "webgl2" : "webgl", { antialias: false });
   if (!gl) {
-    row("webgl", "context", "WebGL and WebGL2 contexts unavailable");
+    row("webgl", "context", version === 2 ? "WebGL2 unavailable" : "WebGL 1 unavailable");
     for (const message of [...new Set(errors)]) row("webgl", "creation error", message);
-    fail("webgl", "unavailable"); return;
+    fail("webgl", "unavailable");
+    // No automatic fallback: the user decides whether to test WebGL 1 instead.
+    if (version === 2) offerWebGL1(canvas);
+    return;
   }
   row("webgl", "context", version === 2 ? "webgl2" : "webgl (1.0)");
   row("webgl", "version", gl.getParameter(gl.VERSION));
@@ -284,9 +290,14 @@ function startWebGL() {
   row("webgl", "max texture size", gl.getParameter(gl.MAX_TEXTURE_SIZE));
   row("webgl", "extensions", (gl.getSupportedExtensions() || []).length);
 
-  const vs = `attribute vec3 p; attribute vec3 c; uniform mat4 m; varying vec3 v;
+  // WebGL2 draws with GLSL ES 3.00 shaders and a vertex array object.
+  const vs = version === 2 ? `#version 300 es
+    in vec3 p; in vec3 c; uniform mat4 m; out vec3 v;
+    void main() { v = c; gl_Position = m * vec4(p, 1.0); }` : `attribute vec3 p; attribute vec3 c; uniform mat4 m; varying vec3 v;
     void main() { v = c; gl_Position = m * vec4(p, 1.0); }`;
-  const fs = `precision mediump float; varying vec3 v; void main() { gl_FragColor = vec4(v, 1.0); }`;
+  const fs = version === 2 ? `#version 300 es
+    precision mediump float; in vec3 v; out vec4 colour; void main() { colour = vec4(v, 1.0); }` :
+    `precision mediump float; varying vec3 v; void main() { gl_FragColor = vec4(v, 1.0); }`;
   function shader(type, src) {
     const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
@@ -301,6 +312,7 @@ function startWebGL() {
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
   } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); return; }
   const verts = cubeVertices();
+  if (version === 2) gl.bindVertexArray(gl.createVertexArray());
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
   gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
   const lp = gl.getAttribLocation(prog, "p"), lc = gl.getAttribLocation(prog, "c");
@@ -328,7 +340,7 @@ function startWebGL() {
       const px = new Uint8Array(4);
       gl.readPixels(canvas.width / 2, canvas.height / 2, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
       verified = true;
-      if (px[0] + px[1] + px[2] > 150) { state.webgl = "ok"; badge("webgl", "ok", "rendering"); }
+      if (px[0] + px[1] + px[2] > 150) { state.webgl = "ok"; badge("webgl", "ok", version === 2 ? "WebGL2 rendering" : "WebGL 1 rendering"); }
       else { state.webgl = "fail"; badge("webgl", "bad", "no pixels"); row("webgl", "centre pixel", Array.from(px).join(",")); }
       publish();
     }
@@ -338,6 +350,28 @@ function startWebGL() {
     try { draw(); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
   }
   requestAnimationFrame(safeDraw);
+}
+
+// Asks once whether to run the WebGL 1 test after WebGL2 failed.
+function offerWebGL1(canvas) {
+  const box = document.createElement("div"); box.className = "choice";
+  const text = document.createElement("p");
+  text.textContent = "WebGL2 is not supported here. Test WebGL 1 instead?";
+  const yes = document.createElement("button"), no = document.createElement("button");
+  yes.textContent = "Test WebGL 1"; no.textContent = "No";
+  box.append(text, yes, no);
+  document.getElementById("webgl-info").before(box);
+  no.onclick = () => box.remove();
+  yes.onclick = () => {
+    box.remove();
+    // A canvas keeps the first context type it tried; WebGL 1 gets a fresh one.
+    const fresh = canvas.cloneNode(); canvas.replaceWith(fresh);
+    document.getElementById("webgl-info").replaceChildren();
+    document.getElementById("webgl-fps").textContent = "not started";
+    state.webgl = "pending"; badge("webgl", "warn", "checking WebGL 1"); publish();
+    document.querySelector("#webgl-badge").parentElement.firstChild.textContent = "WebGL 1 ";
+    try { startWebGL(1); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
+  };
 }
 
 const WGSL = `
