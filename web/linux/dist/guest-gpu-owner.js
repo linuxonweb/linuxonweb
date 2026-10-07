@@ -12,6 +12,7 @@ import {
     S_ARGS, S_GEN, S_OP, S_RESULT, S_RESULT2, S_STATE, STATE_BUSY, STATE_DONE, STATE_REQUEST, slotState, slotWord,
 } from "./guest-gpu-hostcall.js";
 import { handleWgpuCall, OP_WGPU } from "./guest-gpu-wgpu.js";
+import { configureGl, handleGlCall, OP_GL_CLOSE, OP_GL_EXEC, OP_GL_OPEN } from "./guest-gl-remote.js";
 import { attachPresentCanvas, configureVk, handleVkCall, OP_VK_CALL, OP_VK_CLOSE, OP_VK_OPEN } from "./guest-gpu-vk.js";
 
 let hub = null;
@@ -355,6 +356,12 @@ function serve(slot) {
                     .then((write) => completeWith(slot, seq, write))
                     .catch((error) => complete(slot, seq, errnoOf(error)));
                 return;
+            case OP_GL_OPEN:
+            case OP_GL_EXEC:
+            case OP_GL_CLOSE:
+                // Guest GLES 3.0 remoted to a WebGL2 context (guest-gl-remote.js); synchronous.
+                return complete(slot, seq, handleGlCall(memory, op, a, (message) => postMessage({ type: "log", message }),
+                    [...attachments.values()].map((x) => x.memory)));
             case OP_SLEEP: {
                 const ms = a[0] >>> 0;
                 if (ms > 10000)
@@ -421,6 +428,7 @@ self.onmessage = ({ data }) => {
             hub = new Int32Array(data.hub);
             myGen = data.gen;
             configureVk(data.config?.vk);
+            configureGl(data.config?.gl);
             for (const { slot, gen, memory } of data.attachments)
                 attachments.set(slot, { gen, memory });
             heartbeatTimer = setInterval(() => Atomics.add(hub, H_HEARTBEAT, 1), 50);
