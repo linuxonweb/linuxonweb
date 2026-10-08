@@ -123,6 +123,12 @@ export interface FSDeviceOptions {
      * disable the guest data page cache and does not provide direct I/O.
      */
     cache?: boolean;
+    /**
+     * Seconds the guest may keep cached metadata and names; defaults to 1.
+     * Only a filesystem that nothing but this guest changes while it runs can
+     * use a longer time without the guest seeing stale entries.
+     */
+    cacheSeconds?: number;
 }
 type AnyFn = (...args: never[]) => unknown;
 /**
@@ -142,8 +148,9 @@ type RequiresDurability<T> = T extends {
 /**
  * Creates a virtio-fs device backed by a JavaScript filesystem object.
  *
- * Cached devices use one-second metadata/name validity; `cache: false` uses
- * zero validity. Both retain the guest data page cache. This transport does not
+ * Cached devices let the guest keep metadata and names, absent names included,
+ * for `cacheSeconds` (one second by default); `cache: false` uses zero
+ * validity. Both retain the guest data page cache. This transport does not
  * advertise direct I/O: upstream virtio-fs extracts the caller's user pages,
  * while wasm process memory is private to its owner worker and cannot be placed
  * directly on the shared virtqueue. Supporting it would require a separate

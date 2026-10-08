@@ -458,8 +458,9 @@ async function async_iterable(source) {
 /**
  * Creates a virtio-fs device backed by a JavaScript filesystem object.
  *
- * Cached devices use one-second metadata/name validity; `cache: false` uses
- * zero validity. Both retain the guest data page cache. This transport does not
+ * Cached devices let the guest keep metadata and names, absent names included,
+ * for `cacheSeconds` (one second by default); `cache: false` uses zero
+ * validity. Both retain the guest data page cache. This transport does not
  * advertise direct I/O: upstream virtio-fs extracts the caller's user pages,
  * while wasm process memory is private to its owner worker and cannot be placed
  * directly on the shared virtqueue. Supporting it would require a separate
@@ -468,8 +469,11 @@ async function async_iterable(source) {
  * Neither policy enables DAX or a writeback cache.
  */
 export function fileSystemDevice(filesystem, options) {
-    const { tag, cache = true } = options;
-    const validity = cache ? 1n : 0n;
+    const { tag, cache = true, cacheSeconds = 1 } = options;
+    if (!Number.isSafeInteger(cacheSeconds) || cacheSeconds < 0) {
+        throw new RangeError("virtio-fs cacheSeconds must be a non-negative integer");
+    }
+    const validity = cache ? BigInt(cacheSeconds) : 0n;
     const encoded_tag = utf8_encoder.encode(tag);
     if (encoded_tag.byteLength === 0 || encoded_tag.byteLength > 36) {
         throw new RangeError("virtio-fs tag must be between 1 and 36 UTF-8 bytes");
@@ -647,7 +651,22 @@ export function fileSystemDevice(filesystem, options) {
                 break;
             }
             case FuseOpcode.LOOKUP: {
-                const record = await lookup(node, body.cstring());
+                let record;
+                try {
+                    record = await lookup(node, body.cstring());
+                }
+                catch (error) {
+                    if (!(error instanceof FSError && error.errno === Errno.ENOENT && validity > 0n))
+                        throw error;
+                    // Node id zero: the name is absent, and the guest may
+                    // remember that for the same time as a found name.
+                    payload.alloc(FuseEntryOut).value = {
+                        nodeid: 0n, generation: 0n, entry_valid: validity, attr_valid: 0n,
+                        entry_valid_nsec: 0, attr_valid_nsec: 0,
+                        attr: attr_fields(0n, { size: 0n, blocks: 0n, mode: 0, nlink: 0 }),
+                    };
+                    break;
+                }
                 write_entry(payload, record, await filesystem.getattr(record.node), validity);
                 break;
             }

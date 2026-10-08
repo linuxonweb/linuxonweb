@@ -1005,7 +1005,8 @@ async function boot(mode) {
     entropyDevice(),
     pointer,
     attached.attachment.device,
-    fileSystemDevice(persistentHome, { tag: 'home', cache: true }),
+    // The exclusive home lease leaves the guest as the home's only writer, so its name and attribute caches stay exact.
+    fileSystemDevice(persistentHome, { tag: 'home', cache: true, cacheSeconds: 3600 }),
   ];
   const vsock = vsockDevice();
   devices.push(vsock);

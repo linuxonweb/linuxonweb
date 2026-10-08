@@ -95,38 +95,95 @@ static Display *x_open(void) {
   return x_display;
 }
 
+/* What this connection knows about a window surface's X window. Depth and
+ * visual never change for a window; size, exposures and destruction arrive as
+ * events, so a frame needs no round trip to learn them. */
+struct x_window {
+  unsigned long id;
+  int width, height, depth, exposed, gone;
+  Visual *visual;
+};
+static struct x_window x_windows[32];
+
+/* Applies every event that has already arrived; never waits. */
+static void x_drain(Display *d) {
+  while (XEventsQueued(d, QueuedAfterReading)) {
+    XEvent event;
+    XNextEvent(d, &event);
+    for (unsigned i = 0; i < sizeof x_windows / sizeof *x_windows; i++) {
+      struct x_window *w = &x_windows[i];
+      if (!w->id || w->gone) continue;
+      if (event.type == ConfigureNotify && event.xconfigure.window == (Window)w->id) {
+        w->width = event.xconfigure.width;
+        w->height = event.xconfigure.height;
+      } else if (event.type == DestroyNotify && event.xdestroywindow.window == (Window)w->id) {
+        w->gone = 1;
+      } else if (event.type == Expose && event.xexpose.window == (Window)w->id) {
+        w->exposed = 1;
+      }
+    }
+  }
+}
+
+/* The window's entry, created on first use: events are selected before its
+ * attributes are read, so no later change is missed. With the table full of
+ * live windows, a window is read afresh on every call and always counts as
+ * exposed. NULL when the window cannot be read. */
+static struct x_window *x_window(Display *d, unsigned long window) {
+  static struct x_window uncached;
+  struct x_window *slot = NULL;
+  for (unsigned i = 0; i < sizeof x_windows / sizeof *x_windows; i++) {
+    struct x_window *w = &x_windows[i];
+    if (w->id == window && !w->gone) return w;
+    if (!slot && (!w->id || w->gone)) slot = w;
+  }
+  if (!slot) slot = &uncached;
+  XWindowAttributes wa;
+  XSelectInput(d, (Window)window, StructureNotifyMask | ExposureMask);
+  if (!XGetWindowAttributes(d, (Window)window, &wa)) return NULL;
+  *slot = (struct x_window){window, wa.width, wa.height, wa.depth, 1, 0, wa.visual};
+  return slot;
+}
+
 static int x_size(unsigned long window, int *width, int *height) {
   pthread_mutex_lock(&x_lock);
-  Window root;
-  int x, y;
-  unsigned w = 0, h = 0, border, depth;
   Display *d = x_open();
-  int ok = d && XGetGeometry(d, (Window)window, &root, &x, &y, &w, &h, &border, &depth);
+  struct x_window *w = NULL;
+  if (d) {
+    x_drain(d);
+    w = x_window(d, window);
+  }
+  int ok = w && !w->gone;
+  if (ok) { *width = w->width; *height = w->height; }
   pthread_mutex_unlock(&x_lock);
-  if (ok) { *width = (int)w; *height = (int)h; }
   return ok;
 }
 
 static int x_present(unsigned long window, const unsigned *pixels, int x, int y, int width, int height) {
   pthread_mutex_lock(&x_lock);
-  XWindowAttributes wa;
   Display *d = x_open();
-  int ok = d && XGetWindowAttributes(d, (Window)window, &wa);
-  Visual *v = ok ? wa.visual : NULL;
+  struct x_window *w = NULL;
+  if (d) {
+    x_drain(d);
+    w = x_window(d, window);
+  }
+  Visual *v = w ? w->visual : NULL;
   /* glremote hands over 0xAARRGGBB words: the common 24/32-bit TrueColor layout. */
-  ok = ok && (wa.depth == 24 || wa.depth == 32) && v->red_mask == 0xff0000 && v->green_mask == 0xff00 &&
-       v->blue_mask == 0xff;
+  int ok = w && !w->gone && (w->depth == 24 || w->depth == 32) && v->red_mask == 0xff0000 &&
+           v->green_mask == 0xff00 && v->blue_mask == 0xff;
   if (ok) {
-    GC *gc = &x_gc[wa.depth == 32];
+    GC *gc = &x_gc[w->depth == 32];
     if (!*gc) *gc = XCreateGC(d, (Window)window, 0, NULL);
-    XImage *image = XCreateImage(d, v, (unsigned)wa.depth, ZPixmap, 0, (char *)pixels, (unsigned)width,
+    XImage *image = XCreateImage(d, v, (unsigned)w->depth, ZPixmap, 0, (char *)pixels, (unsigned)width,
                                  (unsigned)height, 32, width * 4);
     if (image) {
       image->byte_order = LSBFirst;
       XPutImage(d, (Window)window, *gc, image, 0, 0, x, y, (unsigned)width, (unsigned)height);
       image->data = NULL; /* not ours to free */
       XDestroyImage(image);
-      XSync(d, False);
+      /* Sent, not awaited: XPutImage has already copied the pixels out, and a
+       * full socket holds the next frame back until the server catches up. */
+      XFlush(d);
     }
     ok = image != NULL;
   }
@@ -134,26 +191,21 @@ static int x_present(unsigned long window, const unsigned *pixels, int x, int y,
   return ok;
 }
 
-/* Expose events on this private connection tell when a window lost what it
- * showed; glremote then presents a whole frame instead of the damage only.
- * A window seen for the first time (or beyond the table) counts as exposed. */
+/* Expose events tell when a window lost what it showed; glremote then
+ * presents a whole frame instead of the damage only. A window seen for the
+ * first time counts as exposed. */
 static int x_exposed(unsigned long window) {
-  static unsigned long watched[32];
-  static unsigned n_watched;
   int exposed = 1;
   pthread_mutex_lock(&x_lock);
   Display *d = x_open();
+  struct x_window *w = NULL;
   if (d) {
-    unsigned i = 0;
-    while (i < n_watched && watched[i] != window) i++;
-    if (i < n_watched) {
-      XEvent event;
-      exposed = 0;
-      while (XCheckTypedWindowEvent(d, (Window)window, Expose, &event)) exposed = 1;
-    } else if (n_watched < sizeof watched / sizeof *watched) {
-      watched[n_watched++] = window;
-      XSelectInput(d, (Window)window, ExposureMask);
-    }
+    x_drain(d);
+    w = x_window(d, window);
+  }
+  if (w) {
+    exposed = w->exposed;
+    w->exposed = 0;
   }
   pthread_mutex_unlock(&x_lock);
   return exposed;
