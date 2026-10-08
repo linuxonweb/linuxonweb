@@ -277,7 +277,7 @@ const storagePanel = createStoragePanel({
   rollback: restorePreviousSystem,
   async restart() {
     if (currentMode) sessionStorage.setItem(resumeKey, currentMode);
-    await persistentHome?.flush();
+    await persistentHome?.settle();
     restarting = true;
     activeMachine?.close();
     await activeMachine?.closed.catch(() => {});
@@ -552,7 +552,7 @@ async function launchGpuTest(url) {
   lockConfiguration(true);
   setStatus('starting GPU test…', 'booting');
   try {
-    await persistentHome?.flush();
+    await persistentHome?.settle();
     if (gpuTestReport) gpuTestReport.stopped = true;
     activeMachine?.close();
     await activeMachine?.closed.catch(() => {});
@@ -639,7 +639,7 @@ restartContinue.addEventListener("click", async () => {
   restarting = true;
   lockConfiguration(true);
   setStatus("restarting…", "booting");
-  await persistentHome?.flush();
+  await persistentHome?.settle();
   activeMachine.close();
   await activeMachine.closed.catch(() => {});
   // Reload releases the old guest's canvas listeners, streams, workers and
@@ -1178,7 +1178,7 @@ async function stopGuest() {
   restarting = true;
   lockConfiguration(true);
   setStatus("stopping…", "booting");
-  await persistentHome?.flush().catch(() => {});
+  await persistentHome?.settle().catch(() => {});
   if (gpuTestReport) gpuTestReport.stopped = true;
   activeMachine.close();
   await activeMachine.closed.catch(() => {});

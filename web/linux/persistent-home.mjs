@@ -2,6 +2,13 @@ import { FSError } from './dist/virtio/fs.js';
 
 export const HOME_DATABASE = 'linuxonweb.home.v1';
 export const CHUNK_SIZE = 65536;
+// Files created (or truncated to empty) by this version keep data in 4 KiB
+// blocks, so a small write such as one SQLite page rewrites 4 KiB instead of a
+// 64 KiB chunk. Files written before keep their 64 KiB chunks.
+export const BLOCK_SIZE = 4096;
+// Version 2 marks homes that may hold 4 KiB-block files; an older page asks
+// for version 1 and fails to open instead of misreading them.
+const HOME_VERSION = 2;
 const DIRECTORY = 0o040000, FILE = 0o100000, SYMLINK = 0o120000;
 const request = req => new Promise((resolve, reject) => {
   req.onsuccess = () => resolve(req.result);
@@ -18,16 +25,18 @@ function offsetNumber(value) {
   return Number(value);
 }
 
-/** Atomic metadata and 64 KiB sparse chunks. Every write resolves after commit;
+/** Atomic metadata and sparse chunks (node.block bytes each, else 64 KiB). Every write resolves after commit;
  * no beforeunload flush is needed, and a quota failure cannot leave half a write.
  * The guest uses its normal page cache; the transport does not enable writeback.
  */
 export async function openPersistentHome({ indexedDB = globalThis.indexedDB, name = HOME_DATABASE, onError = () => {}, readOnly = false } = {}) {
   if (!indexedDB) throw new Error('This browser does not provide IndexedDB storage.');
-  const opening = indexedDB.open(name, 1);
-  opening.onupgradeneeded = () => {
+  const opening = indexedDB.open(name, HOME_VERSION);
+  opening.onupgradeneeded = event => {
     // Observers must never create storage or reclaim a running guest's files.
     if (readOnly) { opening.transaction.abort(); return; }
+    // Version 1 -> 2 changes no stores: chunk size is per node.
+    if (event.oldVersion >= 1) return;
     const db = opening.result;
     const nodes = db.createObjectStore('nodes', { keyPath: 'id', autoIncrement: true });
     nodes.createIndex('entry', ['parent', 'name'], { unique: true });
@@ -82,7 +91,8 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     return value;
   };
   const entry = (store, parent, name) => request(store.index('entry').get([parent.id, name]));
-  const attrs = node => ({ ...node, size: BigInt(node.size), blocks: BigInt(Math.ceil(node.size / 512)), nlink: node.parent === null ? 0 : type(node) === DIRECTORY ? 2 : 1, blockSize: CHUNK_SIZE });
+  const blockOf = node => node.block || CHUNK_SIZE;
+  const attrs = node => ({ ...node, size: BigInt(node.size), blocks: BigInt(Math.ceil(node.size / 512)), nlink: node.parent === null ? 0 : type(node) === DIRECTORY ? 2 : 1, blockSize: blockOf(node) });
   async function removeChunks(chunks, id, from = 0) {
     const range = IDBKeyRange.bound([id, from], [id, Number.MAX_SAFE_INTEGER]);
     await request(chunks.delete(range));
@@ -97,7 +107,9 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
       const dir = await directory(nodes, parent);
       if (await entry(nodes, parent, name)) throw new FSError('EEXIST');
       const now = timestamp();
-      const id = await request(nodes.add({ parent: parent.id, name, mode: kind | (context.mode & 0o7777), uid: context.uid, gid: context.gid, size: target ? new TextEncoder().encode(target).length : 0, target, atime: now, mtime: now, ctime: now }));
+      const value = { parent: parent.id, name, mode: kind | (context.mode & 0o7777), uid: context.uid, gid: context.gid, size: target ? new TextEncoder().encode(target).length : 0, target, atime: now, mtime: now, ctime: now };
+      if (kind === FILE) value.block = BLOCK_SIZE;
+      const id = await request(nodes.add(value));
       dir.mtime = dir.ctime = now; await request(nodes.put(dir));
       return id;
     });
@@ -115,8 +127,9 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
         if (attributes.size !== undefined) {
           if (type(value) !== FILE) throw new FSError('EINVAL');
           const size = offsetNumber(attributes.size);
-          if (size < value.size) {
-            const index = Math.floor(size / CHUNK_SIZE), tail = size % CHUNK_SIZE;
+          if (size === 0) { await removeChunks(chunks, node.id); value.block = BLOCK_SIZE; }
+          else if (size < value.size) {
+            const block = blockOf(value), index = Math.floor(size / block), tail = size % block;
             await removeChunks(chunks, node.id, index + (tail ? 1 : 0));
             if (tail) {
               const chunk = await request(chunks.get([node.id, index]));
@@ -150,14 +163,17 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     },
     read(node, handle, offset, length) {
       return transaction(false, async (nodes, chunks) => {
-        const value = await get(nodes, node), start = offsetNumber(offset);
+        const value = await get(nodes, node), start = offsetNumber(offset), block = blockOf(value);
         const bytes = new Uint8Array(Math.max(0, Math.min(length, value.size - start)));
-        for (let done = 0; done < bytes.length;) {
-          const position = start + done, index = Math.floor(position / CHUNK_SIZE), within = position % CHUNK_SIZE;
-          const amount = Math.min(bytes.length - done, CHUNK_SIZE - within);
-          const chunk = await request(chunks.get([node.id, index]));
-          if (chunk) bytes.set(chunk.data.subarray(within, within + amount), done);
-          done += amount;
+        if (!bytes.length) return bytes;
+        // One request for every stored chunk in the range; missing ones are holes.
+        const first = Math.floor(start / block), last = Math.floor((start + bytes.length - 1) / block);
+        const found = first === last ? [await request(chunks.get([node.id, first]))]
+          : await request(chunks.getAll(IDBKeyRange.bound([node.id, first], [node.id, last])));
+        for (const chunk of found) {
+          if (!chunk) continue;
+          const from = Math.max(start, chunk.index * block), to = Math.min(start + bytes.length, (chunk.index + 1) * block);
+          bytes.set(chunk.data.subarray(from - chunk.index * block, to - chunk.index * block), from - start);
         }
         return bytes;
       });
@@ -169,12 +185,13 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
         const value = await get(nodes, node);
         if (type(value) !== FILE) throw new FSError('EISDIR');
         // Linux has already selected the offset for O_APPEND under inode lock.
-        const start = offsetNumber(offset);
+        const start = offsetNumber(offset), block = blockOf(value);
         if (!Number.isSafeInteger(start + bytes.length)) throw new FSError('EINVAL');
         for (let done = 0; done < bytes.length;) {
-          const position = start + done, index = Math.floor(position / CHUNK_SIZE), within = position % CHUNK_SIZE;
-          const amount = Math.min(bytes.length - done, CHUNK_SIZE - within);
-          const chunk = await request(chunks.get([node.id, index])) || { inode: node.id, index, data: new Uint8Array(CHUNK_SIZE) };
+          const position = start + done, index = Math.floor(position / block), within = position % block;
+          const amount = Math.min(bytes.length - done, block - within);
+          // A whole-chunk write needs no read of the old bytes.
+          const chunk = (amount < block && await request(chunks.get([node.id, index]))) || { inode: node.id, index, data: new Uint8Array(block) };
           chunk.data.set(bytes.subarray(done, done + amount), within);
           await request(chunks.put(chunk)); done += amount;
         }
@@ -183,8 +200,12 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
         return bytes.length;
       });
     },
-    flush() { return transaction(false, () => {}); },
-    fsync() { return transaction(false, () => {}); },
+    // Every write has committed before it returns, so the guest's flush and
+    // fsync have nothing left to wait for; they cost no browser transaction.
+    flush() {},
+    fsync() {},
+    /** Resolves after every transaction started before it has finished. */
+    settle() { return transaction(false, () => {}); },
     async release(node) {
       const count = (opens.get(node.id) || 1) - 1;
       if (count) opens.set(node.id, count);
@@ -232,8 +253,14 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
       const quota = estimate.quota || 1024 ** 3, free = Math.max(0, quota - (estimate.usage || 0));
       return { blocks: BigInt(Math.floor(quota / CHUNK_SIZE)), blocksFree: BigInt(Math.floor(free / CHUNK_SIZE)), blocksAvailable: BigInt(Math.floor(free / CHUNK_SIZE)), blockSize: CHUNK_SIZE, nameLength: 255 };
     },
-    usage() { return transaction(false, async (nodes, chunks) => ({ files: await request(nodes.count()), bytes: (await request(chunks.count())) * CHUNK_SIZE })); },
-    async destroy() { if (!closed) { await api.flush(); closed = true; db.close(); } },
+    usage() {
+      return transaction(false, async (nodes, chunks) => {
+        const block = new Map((await request(nodes.getAll())).map(value => [value.id, blockOf(value)]));
+        const inodes = (await request(chunks.getAllKeys())).map(key => key[0]);
+        return { files: block.size, bytes: inodes.reduce((sum, id) => sum + (block.get(id) || CHUNK_SIZE), 0) };
+      });
+    },
+    async destroy() { if (!closed) { await api.settle(); closed = true; db.close(); } },
   };
   async function remove(parent, name, isDirectory) {
     nameCheck(name);

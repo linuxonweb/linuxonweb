@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU check</title>
+<style>
+  :root { color-scheme: dark; --line: #2b4540; --muted: #93aaa5; --ok: #5be3a1; --bad: #ff8f8f; --warn: #ffd27a; }
+  body { margin: 0; padding: 18px; background: #0b1514; color: #eef6f4; font: 14px/1.45 system-ui, sans-serif; }
+  h1 { margin: 0 0 4px; font-size: 1.35rem; }
+  p.lead { margin: 0 0 16px; color: var(--muted); }
+  .grid { display: flex; flex-wrap: wrap; gap: 16px; }
+  section { box-sizing: border-box; min-width: 0; flex: 1 1 340px; max-width: 520px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #101e1c; }
+  h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.05rem; }
+  .choice { margin: 8px 0; }
+  .choice button { margin-right: 8px; }
+  .badge { padding: 2px 8px; border-radius: 999px; font-size: .78rem; font-weight: 650; border: 1px solid currentColor; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); }
+  canvas { display: block; width: 320px; max-width: 100%; height: auto; aspect-ratio: 4 / 3; margin-bottom: 10px; border-radius: 6px; background: #000; }
+  .browser { max-width: 1056px; margin-bottom: 16px; color: var(--muted); overflow-wrap: anywhere; }
+  .browser strong { color: #eef6f4; }
+  .fps { margin: 0 0 8px; color: var(--muted); font: .8rem ui-monospace, monospace; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  td { padding: 3px 6px; border-top: 1px solid #1c302d; vertical-align: top; overflow-wrap: anywhere; }
+  td:first-child { width: 38%; color: var(--muted); }
+  .runtime { max-width: 1056px; margin: 0 0 16px; color: var(--muted); }
+  .runtime strong { color: var(--warn); }
+  section.media { flex-basis: 100%; max-width: 1056px; }
+  .media p { margin: 0 0 10px; color: var(--muted); font-size: .82rem; }
+  .table-scroll { overflow-x: auto; }
+  .media table { min-width: 560px; }
+  .media th { text-align: left; padding: 4px 6px; color: var(--muted); }
+  .media td:first-child { width: auto; }
+  .media small { display: block; color: var(--muted); }
+</style>
+</head>
+<body>
+<h1>WebGL / WebGPU check</h1>
+<div class="browser"><strong id="browser-version">Reading browser version…</strong><br><span id="browser-build"></span><br><span id="browser-ua"></span></div>
+<p class="runtime">JavaScript JIT: <strong id="jit-status">Unknown</strong> · This page cannot reliably observe compiler activity.</p>
+<p class="lead">Both demos start automatically; the WebGL demo tests WebGL2 (WebGL 1 only if you choose it). A spinning cube and a rising frame count mean the API really renders here.</p>
+<div class="grid">
+  <section>
+    <h2>WebGL2 <span id="webgl-badge" class="badge warn">checking</span></h2>
+    <div id="webgl-fps" class="fps">not started</div>
+    <canvas id="webgl-canvas" width="320" height="240"></canvas>
+    <table id="webgl-info"></table>
+  </section>
+  <section>
+    <h2>WebGPU <span id="webgpu-badge" class="badge warn">checking</span></h2>
+    <div id="webgpu-fps" class="fps">not started</div>
+    <canvas id="webgpu-canvas" width="320" height="240"></canvas>
+    <table id="webgpu-info"></table>
+  </section>
+  <section class="media">
+    <h2>Video codecs <span id="media-badge" class="badge warn">checking</span></h2>
+    <p>Configuration support at 1280 × 720; encoding and Media Capabilities queries request 30 fps at 2 Mbit/s. No video is encoded or decoded. Smooth and power-efficient values are browser estimates, not proof of hardware use. Hardware decode and encode remain Unknown because these APIs do not expose the implementation in use.</p>
+    <div class="table-scroll"><table aria-label="Video codec configuration support">
+      <thead><tr><th scope="col">Codec</th><th scope="col">Video playback</th><th scope="col">WebCodecs decode</th><th scope="col">WebCodecs encode</th><th scope="col">Media Capabilities decode</th><th scope="col">Media Capabilities encode</th><th scope="col">Hardware decode</th><th scope="col">Hardware encode</th></tr></thead>
+      <tbody id="media-info"></tbody>
+    </table></div>
+  </section>
+</div>
+<script>
+"use strict";
+// Identity comes from this document's browser, including inside the guest.
+// UA/buildID may be reduced by browser privacy settings; report them verbatim.
+const browserIdentity = window.gpuCheckBrowser = {
+  userAgent: navigator.userAgent,
+  firefoxVersion: navigator.userAgent.match(/Firefox\/([^\s]+)/)?.[1] || null,
+  buildID: typeof navigator.buildID === "string" ? navigator.buildID : null,
+};
+document.getElementById("browser-version").textContent = browserIdentity.firefoxVersion
+  ? `Firefox ${browserIdentity.firefoxVersion} (reported by this browser)`
+  : "Firefox version unavailable in this browser";
+document.getElementById("browser-build").textContent = browserIdentity.buildID
+  ? `Reported build ID: ${browserIdentity.buildID}` : "Build ID not exposed to this page";
+document.getElementById("browser-ua").textContent = browserIdentity.userAgent;
+console.log("GPUCHECK browser=" + JSON.stringify(browserIdentity));
+// Results are mirrored into document.title so automated tests can read them:
+// "GPUCHECK webgl=<state> webgpu=<state>", state = pending|ok|fail|none|skipped.
+// The WebGL demo tests WebGL2. When WebGL2 is unavailable the page asks the user
+// whether to test WebGL 1 instead (never automatically); ?webgl=1 tests WebGL 1.
+const state = { webgl: "pending", webgpu: "pending" };
+// Each change is also logged, with the info tables once both APIs settle,
+// so a browser that prints console output to stdout (the guest) reports it.
+function publish() {
+  const title = `GPUCHECK webgl=${state.webgl} webgpu=${state.webgpu}`;
+  if (title === document.title) return;
+  document.title = title;
+  const settled = !Object.values(state).includes("pending");
+  const info = settled ? Object.fromEntries(["webgl", "webgpu"].map(api =>
+    [api, Array.from(document.querySelectorAll(`#${api}-info tr`), tr => Array.from(tr.cells, td => td.textContent.trim()).join(": "))])) : undefined;
+  console.log(title + (info ? " " + JSON.stringify(info) : ""));
+}
+publish();
+function badge(api, cls, text) {
+  const el = document.getElementById(`${api}-badge`);
+  el.className = `badge ${cls}`;
+  el.textContent = text;
+}
+function row(api, key, value) {
+  const tr = document.createElement("tr");
+  const a = document.createElement("td"), b = document.createElement("td");
+  a.textContent = key; b.textContent = String(value);
+  tr.append(a, b);
+  document.getElementById(`${api}-info`).append(tr);
+}
+function fail(api, reason) {
+  state[api] = reason === "unavailable" ? "none" : "fail";
+  badge(api, "bad", reason === "unavailable" ? "unavailable" : "failed");
+  publish();
+}
+
+// Web content has no reliable API for observing JIT compilation. Neither
+// browser identity nor timings establish whether a script entered a JIT tier.
+const gpuCheckCapabilities = window.gpuCheckCapabilities = {
+  jit: { status: "unknown", reason: "Compiler activity is not exposed to this page" },
+  webgpuAdapter: null,
+  media: [],
+};
+async function adapterDetails(adapter) {
+  let info = null;
+  try {
+    info = adapter.info;
+    if (!info && typeof adapter.requestAdapterInfo === "function") info = await adapter.requestAdapterInfo();
+  } catch { /* Identity can be withheld without making rendering unavailable. */ }
+  const details = {};
+  for (const key of ["vendor", "architecture", "device", "description"]) {
+    try { details[key] = typeof info?.[key] === "string" && info[key].trim() ? info[key] : null; }
+    catch { details[key] = null; }
+  }
+  try {
+    const fallback = info?.isFallbackAdapter ?? adapter.isFallbackAdapter;
+    details.isFallbackAdapter = typeof fallback === "boolean" ? fallback : null;
+  } catch { details.isFallbackAdapter = null; }
+  return details;
+}
+async function codecConfigSupport(api, config, timeoutMs = 2000) {
+  if (typeof api?.isConfigSupported !== "function") return { status: "API unavailable" };
+  let timer;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => api.isConfigSupported(config)),
+      new Promise(resolve => { timer = setTimeout(() => resolve(null), timeoutMs); }),
+    ]);
+    return { status: result?.supported === true ? "Supported" : result?.supported === false ? "Unsupported" : "Unknown" };
+  } catch (error) { return { status: "Unknown", error: error.name || "Query failed" }; }
+  finally { clearTimeout(timer); }
+}
+async function mediaConfigSupport(api, method, config, timeoutMs = 2000) {
+  if (typeof api?.[method] !== "function") return { status: "API unavailable", smooth: null, powerEfficient: null };
+  let timer;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => api[method](config)),
+      new Promise(resolve => { timer = setTimeout(() => resolve(null), timeoutMs); }),
+    ]);
+    return {
+      status: result?.supported === true ? "Supported" : result?.supported === false ? "Unsupported" : "Unknown",
+      smooth: typeof result?.smooth === "boolean" ? result.smooth : null,
+      powerEfficient: typeof result?.powerEfficient === "boolean" ? result.powerEfficient : null,
+    };
+  } catch (error) { return { status: "Unknown", smooth: null, powerEfficient: null, error: error.name || "Query failed" }; }
+  finally { clearTimeout(timer); }
+}
+function mediaSupportLabel(result) {
+  const value = flag => flag === null ? "Unknown" : flag ? "Yes" : "No";
+  return `${result.status}; smooth: ${value(result.smooth)}; power efficient: ${value(result.powerEfficient)}`;
+}
+async function checkVideoCodecs() {
+  const video = document.createElement("video");
+  const codecs = [
+    ["VP8", "vp8", 'video/webm; codecs="vp8"'],
+    ["VP9", "vp09.00.10.08", 'video/webm; codecs="vp9"'],
+    ["AV1", "av01.0.04M.08", 'video/mp4; codecs="av01.0.04M.08"'],
+    ["H.264", "avc1.42E01E", 'video/mp4; codecs="avc1.42E01E"'],
+    ["HEVC", "hvc1.1.6.L93.B0", 'video/mp4; codecs="hvc1.1.6.L93.B0"'],
+  ];
+  for (const [name, codec, mime] of codecs) {
+    let playback = "Unknown";
+    try { playback = video.canPlayType(mime) || "Unsupported"; } catch {}
+    const mediaVideo = { contentType: mime, width: 1280, height: 720, bitrate: 2000000, framerate: 30 };
+    const [decode, encode, mediaDecode, mediaEncode] = await Promise.all([
+      codecConfigSupport(globalThis.VideoDecoder, { codec, codedWidth: 1280, codedHeight: 720 }),
+      codecConfigSupport(globalThis.VideoEncoder, { codec, width: 1280, height: 720, bitrate: 2000000, framerate: 30 }),
+      mediaConfigSupport(navigator.mediaCapabilities, "decodingInfo", { type: "file", video: mediaVideo }),
+      mediaConfigSupport(navigator.mediaCapabilities, "encodingInfo", { type: "record", video: mediaVideo }),
+    ]);
+    const result = { name, codec, mime, playback, decode, encode, mediaDecode, mediaEncode, hardwareDecode: "Unknown", hardwareEncode: "Unknown" };
+    gpuCheckCapabilities.media.push(result);
+    const tr = document.createElement("tr");
+    for (const value of [name, playback, decode.status, encode.status, mediaSupportLabel(mediaDecode), mediaSupportLabel(mediaEncode), result.hardwareDecode, result.hardwareEncode]) {
+      const cell = document.createElement("td"); cell.textContent = value; tr.append(cell);
+    }
+    const detail = document.createElement("small"); detail.textContent = codec; tr.firstElementChild.append(detail);
+    document.getElementById("media-info").append(tr);
+  }
+  badge("media", "warn", "support queried");
+  console.log("GPUCHECK capabilities=" + JSON.stringify(gpuCheckCapabilities));
+}
+
+// Column-major 4x4 matrices.
+function perspective(fovy, aspect, near, far, zeroToOne) {
+  const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+  return zeroToOne
+    ? [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, far * nf, -1, 0, 0, far * near * nf, 0]
+    : [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
+}
+function multiply(a, b) {
+  const out = new Array(16);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
+    let s = 0;
+    for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k];
+    out[c * 4 + r] = s;
+  }
+  return out;
+}
+function modelView(t) {
+  const ay = t * 0.9, ax = t * 0.55;
+  const cy = Math.cos(ay), sy = Math.sin(ay), cx = Math.cos(ax), sx = Math.sin(ax);
+  const ry = [cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1];
+  const rx = [1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1];
+  const tr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -4, 1];
+  return multiply(tr, multiply(rx, ry));
+}
+// Cube: 36 vertices, position xyz + colour rgb per vertex.
+function cubeVertices() {
+  const faces = [
+    [[1, 0, 0], [0.95, 0.35, 0.3]], [[-1, 0, 0], [0.3, 0.85, 0.5]],
+    [[0, 1, 0], [0.3, 0.55, 0.95]], [[0, -1, 0], [0.95, 0.8, 0.3]],
+    [[0, 0, 1], [0.8, 0.4, 0.95]], [[0, 0, -1], [0.3, 0.9, 0.9]],
+  ];
+  const data = [];
+  for (const [n, color] of faces) {
+    const axis = n.findIndex(v => v !== 0), s = n[axis];
+    const u = (axis + 1) % 3, v = (axis + 2) % 3;
+    const corner = (a, b) => { const p = [0, 0, 0]; p[axis] = s; p[u] = a; p[v] = b; return p; };
+    const quad = s > 0
+      ? [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, -1), corner(1, 1), corner(-1, 1)]
+      : [corner(-1, -1), corner(1, 1), corner(1, -1), corner(-1, -1), corner(-1, 1), corner(1, 1)];
+    for (const p of quad) data.push(...p, ...color);
+  }
+  return new Float32Array(data);
+}
+// Frame counters for automated tests.
+const gpuCheckFrames = window.gpuCheckFrames = { webgl: 0, webgpu: 0 };
+function fpsMeter(api) {
+  const el = document.getElementById(`${api}-fps`);
+  let frames = 0, windowFrames = 0, windowStart = performance.now();
+  return function frame() {
+    frames++; windowFrames++;
+    gpuCheckFrames[api] = frames;
+    const now = performance.now();
+    if (now - windowStart >= 1000) {
+      el.textContent = `${frames} frames · ${(windowFrames * 1000 / (now - windowStart)).toFixed(1)} fps`;
+      windowFrames = 0; windowStart = now;
+    }
+    return frames;
+  };
+}
+
+function startWebGL(version = new URLSearchParams(location.search).get("webgl") === "1" ? 1 : 2) {
+  const canvas = document.getElementById("webgl-canvas");
+  const errors = [];
+  canvas.addEventListener("webglcontextlost", () => {
+    row("webgl", "error", "context lost; reload to retry");
+    fail("webgl", "error");
+  });
+  canvas.addEventListener("webglcontextcreationerror", e => errors.push(e.statusMessage || "(no message)"));
+  const gl = canvas.getContext(version === 2 ? "webgl2" : "webgl", { antialias: false });
+  if (!gl) {
+    row("webgl", "context", version === 2 ? "WebGL2 unavailable" : "WebGL 1 unavailable");
+    for (const message of [...new Set(errors)]) row("webgl", "creation error", message);
+    fail("webgl", "unavailable");
+    // No automatic fallback: the user decides whether to test WebGL 1 instead.
+    if (version === 2) offerWebGL1(canvas);
+    return;
+  }
+  row("webgl", "context", version === 2 ? "webgl2" : "webgl (1.0)");
+  row("webgl", "version", gl.getParameter(gl.VERSION));
+  row("webgl", "shading language", gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+  row("webgl", "vendor", gl.getParameter(gl.VENDOR));
+  row("webgl", "renderer", gl.getParameter(gl.RENDERER));
+  const debug = gl.getExtension("WEBGL_debug_renderer_info");
+  if (debug) {
+    row("webgl", "unmasked vendor", gl.getParameter(debug.UNMASKED_VENDOR_WEBGL));
+    row("webgl", "unmasked renderer", gl.getParameter(debug.UNMASKED_RENDERER_WEBGL));
+  }
+  row("webgl", "max texture size", gl.getParameter(gl.MAX_TEXTURE_SIZE));
+  row("webgl", "extensions", (gl.getSupportedExtensions() || []).length);
+
+  // WebGL2 draws with GLSL ES 3.00 shaders and a vertex array object.
+  const vs = version === 2 ? `#version 300 es
+    in vec3 p; in vec3 c; uniform mat4 m; out vec3 v;
+    void main() { v = c; gl_Position = m * vec4(p, 1.0); }` : `attribute vec3 p; attribute vec3 c; uniform mat4 m; varying vec3 v;
+    void main() { v = c; gl_Position = m * vec4(p, 1.0); }`;
+  const fs = version === 2 ? `#version 300 es
+    precision mediump float; in vec3 v; out vec4 colour; void main() { colour = vec4(v, 1.0); }` :
+    `precision mediump float; varying vec3 v; void main() { gl_FragColor = vec4(v, 1.0); }`;
+  function shader(type, src) {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, shader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); return; }
+  const verts = cubeVertices();
+  if (version === 2) gl.bindVertexArray(gl.createVertexArray());
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  const lp = gl.getAttribLocation(prog, "p"), lc = gl.getAttribLocation(prog, "c");
+  gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 3, gl.FLOAT, false, 24, 0);
+  gl.enableVertexAttribArray(lc); gl.vertexAttribPointer(lc, 3, gl.FLOAT, false, 24, 12);
+  gl.useProgram(prog);
+  const lm = gl.getUniformLocation(prog, "m");
+  gl.enable(gl.DEPTH_TEST);
+  const proj = perspective(Math.PI / 4, canvas.width / canvas.height, 0.1, 100, false);
+  const frame = fpsMeter("webgl");
+  const start = performance.now();
+  let verified = false;
+  function draw() {
+    if (gl.isContextLost()) { row("webgl", "error", "context lost"); fail("webgl", "error"); return; }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(0.02, 0.05, 0.05, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniformMatrix4fv(lm, false, new Float32Array(multiply(proj, modelView((performance.now() - start) / 1000))));
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    const n = frame();
+    // getError waits for the GPU, so check only once a second or so.
+    const error = n % 60 === 1 ? gl.getError() : gl.NO_ERROR;
+    if (error !== gl.NO_ERROR) { row("webgl", "error", `GL error ${error}`); fail("webgl", "error"); return; }
+    if (!verified && n >= 3) {
+      // The cube covers the centre; its faces are bright, the clear colour is not.
+      const px = new Uint8Array(4);
+      gl.readPixels(canvas.width / 2, canvas.height / 2, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      verified = true;
+      if (px[0] + px[1] + px[2] > 150) { state.webgl = "ok"; badge("webgl", "ok", version === 2 ? "WebGL2 rendering" : "WebGL 1 rendering"); }
+      else { state.webgl = "fail"; badge("webgl", "bad", "no pixels"); row("webgl", "centre pixel", Array.from(px).join(",")); }
+      publish();
+    }
+    requestAnimationFrame(safeDraw);
+  }
+  function safeDraw() {
+    try { draw(); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
+  }
+  requestAnimationFrame(safeDraw);
+}
+
+// Asks once whether to run the WebGL 1 test after WebGL2 failed.
+function offerWebGL1(canvas) {
+  const box = document.createElement("div"); box.className = "choice";
+  const text = document.createElement("p");
+  text.textContent = "WebGL2 is not supported here. Test WebGL 1 instead?";
+  const yes = document.createElement("button"), no = document.createElement("button");
+  yes.textContent = "Test WebGL 1"; no.textContent = "No";
+  box.append(text, yes, no);
+  document.getElementById("webgl-info").before(box);
+  no.onclick = () => box.remove();
+  yes.onclick = () => {
+    box.remove();
+    // A canvas keeps the first context type it tried; WebGL 1 gets a fresh one.
+    const fresh = canvas.cloneNode(); canvas.replaceWith(fresh);
+    document.getElementById("webgl-info").replaceChildren();
+    document.getElementById("webgl-fps").textContent = "not started";
+    state.webgl = "pending"; badge("webgl", "warn", "checking WebGL 1"); publish();
+    document.querySelector("#webgl-badge").parentElement.firstChild.textContent = "WebGL 1 ";
+    try { startWebGL(1); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
+  };
+}
+
+const WGSL = `
+  struct U { m : mat4x4<f32> };
+  @group(0) @binding(0) var<uniform> u : U;
+  struct O { @builtin(position) p : vec4<f32>, @location(0) c : vec3<f32> };
+  @vertex fn vs(@location(0) p : vec3<f32>, @location(1) c : vec3<f32>) -> O {
+    var o : O; o.p = u.m * vec4<f32>(p, 1.0); o.c = c; return o;
+  }
+  @fragment fn fs(@location(0) c : vec3<f32>) -> @location(0) vec4<f32> { return vec4<f32>(c, 1.0); }`;
+
+async function startWebGPU() {
+  if (!navigator.gpu) { row("webgpu", "navigator.gpu", "absent"); fail("webgpu", "unavailable"); return; }
+  row("webgpu", "navigator.gpu", "present");
+  let adapter;
+  try { adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" }); }
+  catch (error) { row("webgpu", "requestAdapter", `threw: ${error.message}`); fail("webgpu", "error"); return; }
+  if (!adapter) { row("webgpu", "requestAdapter", "null (no adapter)"); fail("webgpu", "unavailable"); return; }
+  const info = gpuCheckCapabilities.webgpuAdapter = await adapterDetails(adapter);
+  for (const [key, label] of [["vendor", "vendor"], ["architecture", "architecture"], ["device", "device ID"], ["description", "name / model (description)"]])
+    row("webgpu", label, info[key] ?? "Unknown (not exposed)");
+  row("webgpu", "fallback adapter", info.isFallbackAdapter ?? "Unknown (not exposed)");
+  console.log("GPUCHECK adapter=" + JSON.stringify(info));
+  row("webgpu", "features", [...adapter.features].join(", ") || "none");
+  row("webgpu", "maxTextureDimension2D", adapter.limits.maxTextureDimension2D);
+  row("webgpu", "maxBufferSize", adapter.limits.maxBufferSize);
+  // Present through the WebGPU canvas first. Some hosts cannot share the
+  // adapter's memory with the display GPU (for example a discrete GPU next
+  // to an integrated display GPU); then the device is lost and the demo
+  // renders offscreen and copies each frame into a 2D canvas instead.
+  const result = await runWebGPU(adapter, "canvas");
+  if (result !== "lost") return;
+  const retry = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
+  if (!retry) { fail("webgpu", "error"); return; }
+  await runWebGPU(retry, "readback");
+}
+
+async function runWebGPU(adapter, mode) {
+  let device;
+  try { device = await adapter.requestDevice(); }
+  catch (error) { row("webgpu", "requestDevice", `failed: ${error.message}`); fail("webgpu", "error"); return "error"; }
+  let lostMessage = null, resolveLost, failed = false;
+  function renderError(error) {
+    if (failed) return;
+    failed = true;
+    row("webgpu", "error", error.message || String(error));
+    fail("webgpu", "error");
+  }
+  device.addEventListener("uncapturederror", event => renderError(event.error));
+  // Capture shader/pipeline/resource validation as well as first-frame errors.
+  device.pushErrorScope("validation");
+  const lostEarly = new Promise(resolve => { resolveLost = resolve; });
+  device.lost.then(lost => {
+    lostMessage = lost.message || lost.reason;
+    row("webgpu", `device lost (${mode})`, lostMessage);
+    resolveLost("lost");
+    if (mode === "readback" || state.webgpu === "ok") fail("webgpu", "error");
+  });
+
+  let canvas = document.getElementById("webgpu-canvas");
+  let context = null, blit = null, format = "rgba8unorm";
+  if (mode === "canvas") {
+    context = canvas.getContext("webgpu");
+    if (!context) { row("webgpu", "canvas context", "unavailable"); fail("webgpu", "error"); return "error"; }
+    format = navigator.gpu.getPreferredCanvasFormat();
+    context.configure({ device, format, alphaMode: "opaque" });
+  } else {
+    // A canvas keeps its first context type, so swap in a fresh element.
+    const fresh = canvas.cloneNode(false);
+    canvas.replaceWith(fresh);
+    canvas = fresh;
+    blit = canvas.getContext("2d");
+    if (!blit) throw new Error("2D readback presentation context unavailable");
+  }
+  row("webgpu", "presentation", mode === "canvas" ? `webgpu canvas (${format})` : "offscreen render + readback to 2D canvas");
+  const module = device.createShaderModule({ code: WGSL });
+  const pipeline = device.createRenderPipeline({
+    layout: "auto",
+    vertex: { module, entryPoint: "vs", buffers: [{ arrayStride: 24, attributes: [
+      { shaderLocation: 0, offset: 0, format: "float32x3" }, { shaderLocation: 1, offset: 12, format: "float32x3" }] }] },
+    fragment: { module, entryPoint: "fs", targets: [{ format }] },
+    primitive: { topology: "triangle-list", cullMode: "back" },
+    depthStencil: { format: "depth24plus", depthWriteEnabled: true, depthCompare: "less" },
+  });
+  const verts = cubeVertices();
+  const vbuf = device.createBuffer({ size: verts.byteLength, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  device.queue.writeBuffer(vbuf, 0, verts);
+  const ubuf = device.createBuffer({ size: 64, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const bind = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: ubuf } }] });
+  const w = canvas.width, h = canvas.height, rowBytes = Math.ceil(w * 4 / 256) * 256;
+  const depth = device.createTexture({ size: [w, h], format: "depth24plus", usage: GPUTextureUsage.RENDER_ATTACHMENT });
+  // Offscreen target: every frame in readback mode, and a one-off pixel check in canvas mode.
+  const target = device.createTexture({ size: [w, h], format, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+  const readback = device.createBuffer({ size: rowBytes * h, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const proj = perspective(Math.PI / 4, w / h, 0.1, 100, true);
+  const frame = fpsMeter("webgpu");
+  const start = performance.now();
+  let checked = false;
+  function encodePass(encoder, view) {
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [{ view, clearValue: { r: 0.02, g: 0.05, b: 0.05, a: 1 }, loadOp: "clear", storeOp: "store" }],
+      depthStencilAttachment: { view: depth.createView(), depthClearValue: 1, depthLoadOp: "clear", depthStoreOp: "store" },
+    });
+    pass.setPipeline(pipeline); pass.setBindGroup(0, bind); pass.setVertexBuffer(0, vbuf); pass.draw(36);
+    pass.end();
+  }
+  // Renders one frame offscreen and maps it; returns the RGBA rows.
+  async function renderOffscreen() {
+    const encoder = device.createCommandEncoder();
+    encodePass(encoder, target.createView());
+    encoder.copyTextureToBuffer({ texture: target }, { buffer: readback, bytesPerRow: rowBytes }, [w, h]);
+    device.queue.submit([encoder.finish()]);
+    await readback.mapAsync(GPUMapMode.READ);
+    const rows = new Uint8Array(readback.getMappedRange()).slice();
+    readback.unmap();
+    return rows;
+  }
+  function check(rows) {
+    if (failed || lostMessage) return;
+    // The cube covers the centre; its faces are bright, the clear colour is not.
+    const i = (h / 2) * rowBytes + (w / 2) * 4;
+    const bright = format.startsWith("bgra") ? rows[i + 2] + rows[i + 1] + rows[i] : rows[i] + rows[i + 1] + rows[i + 2];
+    if (bright > 150) { state.webgpu = "ok"; badge("webgpu", "ok", mode === "canvas" ? "rendering" : "rendering (readback)"); }
+    else { state.webgpu = "fail"; badge("webgpu", "bad", "no pixels"); row("webgpu", "centre pixel", Array.from(rows.slice(i, i + 4)).join(",")); }
+    publish();
+  }
+  const setUniform = () => device.queue.writeBuffer(ubuf, 0, new Float32Array(multiply(proj, modelView((performance.now() - start) / 1000))));
+
+  if (mode === "readback") {
+    // Several frames stay in flight, each with its own target and readback
+    // buffer, so the map round trip does not bound the frame rate.
+    const image = new ImageData(w, h);
+    const slots = Array.from({ length: 4 }, () => ({
+      texture: device.createTexture({ size: [w, h], format, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }),
+      buffer: device.createBuffer({ size: rowBytes * h, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ }),
+      busy: false,
+    }));
+    let shown = 0, submitted = 0;
+    await new Promise(resolve => {
+      function tick() {
+        if (lostMessage || failed) { resolve(); return; }
+        const slot = slots.find(candidate => !candidate.busy);
+        if (slot) {
+          slot.busy = true;
+          const serial = ++submitted;
+          setUniform();
+          const encoder = device.createCommandEncoder();
+          encodePass(encoder, slot.texture.createView());
+          encoder.copyTextureToBuffer({ texture: slot.texture }, { buffer: slot.buffer, bytesPerRow: rowBytes }, [w, h]);
+          device.queue.submit([encoder.finish()]);
+          slot.buffer.mapAsync(GPUMapMode.READ).then(async () => {
+            const rows = new Uint8Array(slot.buffer.getMappedRange());
+            if (serial > shown) {
+              shown = serial;
+              for (let y = 0; y < h; y++) image.data.set(rows.subarray(y * rowBytes, y * rowBytes + w * 4), y * w * 4);
+              blit.putImageData(image, 0, 0);
+              frame();
+            }
+            if (!checked) {
+              checked = true;
+              const copy = rows.slice();
+              const error = await device.popErrorScope();
+              if (error) renderError(error);
+              else check(copy);
+            }
+            slot.buffer.unmap();
+            slot.busy = false;
+          }).catch(error => { slot.busy = false; renderError(error); });
+        }
+        requestAnimationFrame(safeTick);
+      }
+      function safeTick() {
+        try { tick(); } catch (error) { renderError(error); resolve(); }
+      }
+      requestAnimationFrame(safeTick);
+    });
+    return lostMessage ? "lost" : "error";
+  }
+
+  // Canvas mode: draw a few frames, then verify one offscreen frame. A
+  // device lost before the check counts as a presentation failure.
+  let stopped = false;
+  function draw() {
+    if (stopped || lostMessage || failed) return;
+    setUniform();
+    const encoder = device.createCommandEncoder();
+    encodePass(encoder, context.getCurrentTexture().createView());
+    device.queue.submit([encoder.finish()]);
+    frame();
+    requestAnimationFrame(safeDraw);
+  }
+  function safeDraw() {
+    try { draw(); } catch (error) { renderError(error); }
+  }
+  requestAnimationFrame(safeDraw);
+  for (let i = 0; i < 5; i++) await new Promise(resolve => requestAnimationFrame(resolve));
+  const verdict = await Promise.race([
+    lostEarly,
+    (async () => {
+      await device.queue.onSubmittedWorkDone();
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (lostMessage) return "lost";
+      const error = await device.popErrorScope();
+      if (error) { renderError(error); return "error"; }
+      check(await renderOffscreen());
+      return "ok";
+    })(),
+  ]).catch(error => { if (lostMessage) return "lost"; row("webgpu", "error", error.message); fail("webgpu", "error"); return "error"; });
+  if (verdict === "lost") stopped = true;
+  return verdict;
+}
+
+checkVideoCodecs().catch(error => { badge("media", "warn", "Unknown"); console.log("GPUCHECK media error=" + String(error.message || error)); });
+
+// ?only=webgl or ?only=webgpu runs a single demo, for diagnosis.
+const only = new URLSearchParams(location.search).get("only");
+if (only !== "webgpu") try { startWebGL(); } catch (error) { row("webgl", "error", error.message); fail("webgl", "error"); }
+else { state.webgl = "skipped"; badge("webgl", "warn", "skipped"); publish(); }
+if (only !== "webgl") startWebGPU().catch(error => { row("webgpu", "error", error.message); fail("webgpu", "error"); });
+else { state.webgpu = "skipped"; badge("webgpu", "warn", "skipped"); publish(); }
+</script>
+</body>
+</html>

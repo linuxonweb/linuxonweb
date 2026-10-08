@@ -1,12 +1,13 @@
 <!doctype html><meta charset="utf-8"><title>Persistent home regression</title><pre id="result">Running…</pre>
 <script type="module">
-import { openPersistentHome, acquireHomeLock, CHUNK_SIZE } from '../persistent-home.mjs';
+import { openPersistentHome, acquireHomeLock, CHUNK_SIZE, BLOCK_SIZE } from '../persistent-home.mjs';
 const result = document.querySelector('#result');
 const passed = [];
 const assert = (condition, label) => { if (!condition) throw new Error(label); passed.push(label); };
 const encoder = new TextEncoder(), decoder = new TextDecoder();
 const context = { mode: 0o700, uid: 1000, gid: 1000 };
-const dbName = 'linuxonweb.home.test.' + Date.now();
+const dbName = 'linuxonweb.home.test.' + Date.now(), legacyName = dbName + '.legacy';
+const idb = req => new Promise((resolve, reject) => { req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); });
 let home;
 try {
   home = await openPersistentHome({ name: dbName });
@@ -70,6 +71,47 @@ try {
   assert(decoder.decode(await home.read(source.node, source.handle, 0n, 9)) === 'new', 'failed multi-chunk write rolls back bytes and size');
   await home.write(source.node, source.handle, 3n, encoder.encode(' recovery'));
   assert(decoder.decode(await home.read(source.node, source.handle, 0n, 30)) === 'new recovery', 'storage accepts writes after aborted transaction');
+  const blocks = await home.create(admin, 'blocks', 2, context);
+  assert((await home.getattr(blocks.node)).blockSize === BLOCK_SIZE, 'new files use small blocks');
+  await home.write(blocks.node, blocks.handle, BigInt(BLOCK_SIZE * 3 - 3), encoder.encode('across'));
+  const spanned = await home.read(blocks.node, blocks.handle, 0n, BLOCK_SIZE * 4);
+  assert(spanned.length === BLOCK_SIZE * 3 + 3 && spanned.subarray(0, BLOCK_SIZE * 3 - 3).every(byte => byte === 0), 'holes before small blocks read as zero');
+  assert(decoder.decode(spanned.subarray(BLOCK_SIZE * 3 - 3)) === 'across', 'write spans a small-block boundary');
+  await home.write(blocks.node, blocks.handle, BigInt(BLOCK_SIZE), new Uint8Array(BLOCK_SIZE).fill(9));
+  const whole = await home.read(blocks.node, blocks.handle, BigInt(BLOCK_SIZE - 1), BLOCK_SIZE + 2);
+  assert(whole[0] === 0 && whole.subarray(1, BLOCK_SIZE + 1).every(byte => byte === 9) && whole[BLOCK_SIZE + 1] === 0, 'whole-block write replaces exactly one block');
+  await home.release(blocks.node, blocks.handle);
+  // A home written by the 64 KiB-only version (database version 1).
+  await new Promise((resolve, reject) => {
+    const open = indexedDB.open(legacyName, 1);
+    open.onupgradeneeded = () => {
+      const db = open.result, nodes = db.createObjectStore('nodes', { keyPath: 'id', autoIncrement: true });
+      nodes.createIndex('entry', ['parent', 'name'], { unique: true }); nodes.createIndex('parent', 'parent');
+      db.createObjectStore('chunks', { keyPath: ['inode', 'index'] }).createIndex('inode', 'inode');
+      const now = { seconds: 0n, nanoseconds: 0 };
+      nodes.put({ id: 1, parent: 0, name: '', mode: 0o040755, uid: 0, gid: 0, size: 0, atime: now, mtime: now, ctime: now });
+      nodes.put({ id: 2, parent: 1, name: 'old', mode: 0o100600, uid: 1000, gid: 1000, size: CHUNK_SIZE + 5, atime: now, mtime: now, ctime: now });
+      const first = new Uint8Array(CHUNK_SIZE); first.set(encoder.encode('legacy'), CHUNK_SIZE - 6);
+      const second = new Uint8Array(CHUNK_SIZE); second.set(encoder.encode('chunk'));
+      open.transaction.objectStore('chunks').put({ inode: 2, index: 0, data: first });
+      open.transaction.objectStore('chunks').put({ inode: 2, index: 1, data: second });
+    };
+    open.onsuccess = () => { open.result.close(); resolve(); }; open.onerror = () => reject(open.error);
+  });
+  const legacy = await openPersistentHome({ name: legacyName });
+  try {
+    const old = await legacy.lookup(legacy.root, 'old');
+    assert(decoder.decode(await legacy.read(old, {}, BigInt(CHUNK_SIZE - 6), 11)) === 'legacychunk', 'legacy 64 KiB chunks still read');
+    await legacy.write(old, {}, BigInt(CHUNK_SIZE - 3), encoder.encode('ACY'));
+    assert(decoder.decode(await legacy.read(old, {}, BigInt(CHUNK_SIZE - 6), 11)) === 'legACYchunk', 'legacy file keeps its chunk size on write');
+    await legacy.setattr(old, { size: 0n });
+    await legacy.write(old, {}, BigInt(BLOCK_SIZE - 1), encoder.encode('xy'));
+    const fresh = await legacy.getattr(old);
+    assert(Number(fresh.blockSize) === BLOCK_SIZE && fresh.size === BigInt(BLOCK_SIZE + 1), 'emptied legacy file moves to small blocks');
+    assert(decoder.decode((await legacy.read(old, {}, 0n, BLOCK_SIZE + 1)).subarray(BLOCK_SIZE - 1)) === 'xy', 'emptied legacy file reads its new bytes');
+  } finally { await legacy.destroy(); }
+  try { (await idb(indexedDB.open(legacyName, 1))).close(); throw new Error('expected VersionError'); }
+  catch (error) { assert(error.name === 'VersionError', 'an older page cannot open an upgraded home'); }
   const nested = await home.mkdir(admin, 'nested', context);
   try { await home.rename(home.root, 'admin', nested, 'cycle'); throw new Error('expected EINVAL'); } catch (error) { assert(error.errno === 22, 'directory cycles rejected'); }
   const release = await acquireHomeLock();
@@ -84,5 +126,6 @@ try {
 } finally {
   await home?.destroy();
   indexedDB.deleteDatabase(dbName);
+  indexedDB.deleteDatabase(legacyName);
 }
 </script>

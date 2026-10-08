@@ -27,6 +27,16 @@ PREF_FILE = 'opt/firefox/defaults/pref/wasm.js'
 # glremote keeps the current context per thread, so WebGL may run on its own
 # CanvasRenderer thread instead of sharing WebRender's Renderer thread.
 GPU_PREFS = {'webgl.threadsafe-gl.force-enabled': 'true'}
+# Every guest home write is a browser storage transaction, so background
+# writers cost host CPU. Defaults only: a saved user choice wins.
+# - Telemetry upload on makes Glean rewrite datareporting/glean/db constantly.
+# - Intermediate CA preloading downloads ~1,900 certificates one by one into
+#   the remote-settings IndexedDB after the first sync: ~120 writes/s for 8-9
+#   minutes on a 2-CPU guest. Without it, a server that sends an incomplete
+#   chain can fail with an unknown-issuer error; revocation data still syncs.
+PERF_PREFS = {'datareporting.healthreport.uploadEnabled': 'false',
+              'datareporting.policy.dataSubmissionEnabled': 'false',
+              'security.remote_settings.intermediates.enabled': 'false'}
 WRAPPER = b'''#!/bin/busybox sh
 export MOZ_WEBGL_FORCE_EGL=1
 export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto GUEST_GL_BACKEND=auto
@@ -225,7 +235,9 @@ def main():
     if any(not k.replace('.', '').replace('-', '').replace('_', '').isalnum() or '\n' in v or ')' in v for k, v in prefs.items()):
         ap.error('--pref needs NAME=VALUE with a plain JS literal')
     pref_block = ('// BEGIN Linux on Web GPU defaults\n' + ''.join(f'pref("{k}", {v});\n' for k, v in prefs.items())
-                  + '// END Linux on Web GPU defaults\n').encode()
+                  + '// END Linux on Web GPU defaults\n'
+                  + '// BEGIN Linux on Web performance defaults\n' + ''.join(f'pref("{k}", {v});\n' for k, v in PERF_PREFS.items())
+                  + '// END Linux on Web performance defaults\n').encode()
     original = {}; changes = {}; max_inode = 0
     with gzip.open(a.source,'rb') as src, archive.open('xb') as target, gzip.GzipFile(filename='',fileobj=target,mode='wb',mtime=0,compresslevel=6) as dst:
         while True:
