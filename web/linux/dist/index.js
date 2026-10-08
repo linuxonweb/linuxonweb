@@ -242,10 +242,45 @@ export async function spawnMachine(options) {
         // call back into, but they only run once exports.boot() starts the kernel.
         let instance;
         let virtio_config_written;
+        // A guest fork blocks its parent until the child worker has started
+        // (~200 ms for a fresh module worker), so keep a few workers loaded
+        // ahead of time; a spawn then only posts the init message.
+        const SPARE_WORKERS = 8;
+        const spares = [];
+        const load_worker = (name) => {
+            const slot = { handlers: null, error: null };
+            const worker = platform.spawn_worker(name, {
+                on_message: (message) => slot.handlers?.on_message(message),
+                on_error: (error) => {
+                    if (slot.handlers)
+                        slot.handlers.on_error(error);
+                    else
+                        slot.error = error;
+                },
+            });
+            workers.add(worker);
+            return { worker, slot };
+        };
+        const refill_spares = () => {
+            while (!closed && spares.length < SPARE_WORKERS)
+                spares.push(load_worker("linux-worker"));
+        };
+        const take_worker = (name) => {
+            for (let spare; (spare = spares.shift());) {
+                if (!spare.slot.error)
+                    return spare;
+                // An idle worker that failed to load is discarded; a fresh one reports its own error.
+                workers.delete(spare.worker);
+                void spare.worker.terminate();
+            }
+            return load_worker(name);
+        };
         const start_worker = (name, init) => {
             if (closed)
                 return;
-            const worker = platform.spawn_worker(name, {
+            const { worker, slot } = take_worker(name);
+            setTimeout(refill_spares, 0);
+            slot.handlers = {
                 on_message(raw) {
                     const message = raw;
                     switch (message.type) {
@@ -321,8 +356,7 @@ export async function spawnMachine(options) {
                         console.error("[linux-worker] error stack", stack);
                     fail(error);
                 },
-            });
-            workers.add(worker);
+            };
             worker.post(init, init.type === "forwarded_init" ? [init.port] : undefined);
         };
         const spawn_worker = (fn, arg, name, user, copy_user_memory) => {
@@ -421,6 +455,7 @@ export async function spawnMachine(options) {
                 return framebuffer_imports(wasm_memory, framebuffer_host, framebuffer_mode);
             })(),
         };
+        refill_spares();
         instance = (await WebAssembly.instantiate(vmlinux, imports));
         instance.exports.boot();
         return {

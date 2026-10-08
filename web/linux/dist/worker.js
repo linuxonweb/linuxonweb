@@ -20,6 +20,9 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
     const HALT_USER = Symbol("halt user");
     let context = parent;
     let instance = null;
+    // Clone and fork children instantiate on first entry to user code, not
+    // before the kernel starts the task (see prepare()).
+    let instance_deferred = false;
     let pending_module_bytes = null;
     let pending = null;
     // Guest runtime code installation (see guest-jit.js); one per user Instance.
@@ -237,8 +240,7 @@ function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent,
     }
 
     function call_start() {
-        assert(instance);
-        const { _start } = instance.exports;
+        const { _start } = ready_instance().exports;
         assert(typeof _start === "function", "_start not found");
         if (firefox_diagnostics_enabled())
             console.error("[firefox-callback-adapter] before _start");
@@ -498,7 +500,14 @@ function create_instance(context) {
             pending = null;
         }
         assert(context);
+        instance_deferred = false;
         instance = create_instance(context);
+    }
+    function ready_instance() {
+        if (instance_deferred)
+            instantiate(false);
+        assert(instance);
+        return instance;
     }
     return {
         get context() {
@@ -511,8 +520,11 @@ function create_instance(context) {
             }
         },
         prepare() {
+            // Instantiating a large module costs tens of milliseconds, during
+            // which a just-spawned task would still be inside the scheduler and
+            // other CPUs spin on its runqueue lock.
             if (parent)
-                instantiate(false);
+                instance_deferred = true;
         },
         imports: {
             // program management:
@@ -642,12 +654,10 @@ function create_instance(context) {
             switch_entry(fn, arg) {
                 // This is called if this thread was created by a clone call,
                 // so its entrypoint is a user-specified function.
-                // The worker prepares an instance sharing the parent's user context
-                // before the kernel enters this callback.
+                // The worker instantiates the parent's user context on first entry.
                 assert(parent);
                 call_entry = () => {
-                    assert(instance);
-                    const { __indirect_function_table } = instance.exports;
+                    const { __indirect_function_table } = ready_instance().exports;
                     assert(__indirect_function_table instanceof WebAssembly.Table, "Invalid function table");
                     call_user_table_function(__indirect_function_table.get(fn >>> 0), [arg], 1, "Invalid function signature");
                     // throw new Error("thread entrypoint reached the end without exiting");
@@ -656,14 +666,12 @@ function create_instance(context) {
             },
             // signal handling:
             call_signal_handler(fn, sig) {
-                assert(instance);
-                const { __indirect_function_table } = instance.exports;
+                const { __indirect_function_table } = ready_instance().exports;
                 assert(__indirect_function_table instanceof WebAssembly.Table, "Invalid function table");
                 call_user_table_function(__indirect_function_table.get(fn >>> 0), [sig], 1, "Invalid function signature");
             },
             call_siginfo_handler(trampoline, fn, sig) {
-                assert(instance);
-                const { __indirect_function_table } = instance.exports;
+                const { __indirect_function_table } = ready_instance().exports;
                 assert(__indirect_function_table instanceof WebAssembly.Table, "Invalid function table");
                 siginfo_copy_results.push(null);
                 try {

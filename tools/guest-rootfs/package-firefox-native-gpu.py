@@ -37,6 +37,13 @@ GPU_PREFS = {'webgl.threadsafe-gl.force-enabled': 'true'}
 PERF_PREFS = {'datareporting.healthreport.uploadEnabled': 'false',
               'datareporting.policy.dataSubmissionEnabled': 'false',
               'security.remote_settings.intermediates.enabled': 'false'}
+# Browser prefs load after PREF_FILE, so defaults Firefox's own firefox.js sets
+# are appended there instead.
+APP_PREF_FILE = 'opt/firefox/browser/defaults/preferences/firefox.js'
+# Closing the page ends Firefox abruptly; start normally instead of showing
+# the crashed-session page on every boot. The guest has no other browser.
+APP_PREFS = {'browser.sessionstore.resume_from_crash': 'false',
+             'browser.shell.checkDefaultBrowser': 'false'}
 WRAPPER = b'''#!/bin/busybox sh
 export MOZ_WEBGL_FORCE_EGL=1
 export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto GUEST_GL_BACKEND=auto
@@ -238,6 +245,8 @@ def main():
                   + '// END Linux on Web GPU defaults\n'
                   + '// BEGIN Linux on Web performance defaults\n' + ''.join(f'pref("{k}", {v});\n' for k, v in PERF_PREFS.items())
                   + '// END Linux on Web performance defaults\n').encode()
+    app_pref_block = ('// BEGIN Linux on Web browser defaults\n' + ''.join(f'pref("{k}", {v});\n' for k, v in APP_PREFS.items())
+                      + '// END Linux on Web browser defaults\n').encode()
     original = {}; changes = {}; max_inode = 0
     with gzip.open(a.source,'rb') as src, archive.open('xb') as target, gzip.GzipFile(filename='',fileobj=target,mode='wb',mtime=0,compresslevel=6) as dst:
         while True:
@@ -269,11 +278,11 @@ def main():
                 old_sha = copy_body(src,None,values[6],encoded); body = pages[name]
                 dst.write(header[:54]+f'{len(body):08x}'.encode()+header[62:]+name_raw+padding+body+b'\0'*(-len(body)%4))
                 changes[name]={'beforeSha256':old_sha,'afterSha256':hashlib.sha256(body).hexdigest(),'metadataPreservedExceptSize':True}
-            elif name == PREF_FILE:
+            elif name in (PREF_FILE, APP_PREF_FILE):
                 if stat.S_IFMT(values[1]) != stat.S_IFREG: raise ValueError('expected regular pref record')
                 old = exact(src,values[6]); encoded.update(old)
-                if b'Linux on Web GPU defaults' in old: raise ValueError('GPU pref block already present')
-                body = old + (b'' if old.endswith(b'\n') else b'\n') + pref_block
+                if b'Linux on Web GPU defaults' in old or b'Linux on Web browser defaults' in old: raise ValueError('pref block already present')
+                body = old + (b'' if old.endswith(b'\n') else b'\n') + (pref_block if name == PREF_FILE else app_pref_block)
                 dst.write(header[:54]+f'{len(body):08x}'.encode()+header[62:]+name_raw+padding+body+b'\0'*(-len(body)%4))
                 changes[name]={'beforeSha256':hashlib.sha256(old).hexdigest(),'afterSha256':hashlib.sha256(body).hexdigest(),'metadataPreservedExceptSize':True}
             elif name == 'bin/firefox':
@@ -291,7 +300,7 @@ def main():
             original[name]={'encodedSha256':encoded.hexdigest(),'bodyBytes':values[6],'fields':values}
             if name == 'TRAILER!!!':
                 tail=src.read();dst.write(tail);break
-    if set(changes) != set(replacement)|set(pages)|{'bin/firefox',PREF_FILE}:raise ValueError('missing expected native/launcher changes')
+    if set(changes) != set(replacement)|set(pages)|{'bin/firefox',PREF_FILE,APP_PREF_FILE}:raise ValueError('missing expected native/launcher changes')
     if 'opt/firefox' not in original or stat.S_IFMT(original['opt/firefox']['fields'][1]) != stat.S_IFDIR:
         raise ValueError('diagnostic parent directory missing')
     # Independently stream the completed archive; preserve every untouched encoded record.
@@ -307,7 +316,7 @@ def main():
             elif name in replacement:
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
                 if new_fields != old_fields or body_sha != native[replacement[name][0]]['sha256']:raise ValueError('native replacement verification')
-            elif name=='bin/firefox' or name in pages or name==PREF_FILE:
+            elif name=='bin/firefox' or name in pages or name in (PREF_FILE,APP_PREF_FILE):
                 old_fields=original[name]['fields'];new_fields=list(v);new_fields[6]=old_fields[6]
                 if new_fields!=old_fields or body_sha!=changes[name]['afterSha256']:raise ValueError('launcher/page metadata verification')
             elif name in (PAGE_NAME,WRAPPER_NAME):
@@ -331,7 +340,7 @@ def main():
       'tailPreserved':True,'otherSystemAssetsUnchanged':{k:v for k,v in manifest['assets'].items() if k!='firefox'},
       'environment':{'MOZ_WEBGL_FORCE_EGL':'1','GUEST_GPU_TRANSPORT':'hostcall','GUEST_GPU_BACKEND':'auto','GUEST_GL_BACKEND':'auto',
                      **({'GUEST_VK_TRACE':'1'} if a.vk_trace else {}),**extra_env},
-      'prefs':prefs,'vkTrace':a.vk_trace,
+      'prefs':prefs,'appPrefs':APP_PREFS,'vkTrace':a.vk_trace,
       'version':new_manifest['version'],'pageUrl':'file:///'+PAGE_NAME}
     if gfxtest:
         report['gfxtestCandidate'] = gfxtest

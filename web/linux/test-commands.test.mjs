@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TEST_COMMANDS, RUN_PREFIX, shellQuote, findTestCommand, testCommandRequest, guestRunAgent, guestRunShell } from './test-commands.mjs';
-import { cpioEntry, desktopInitOverlay } from './desktop-extras.mjs';
+import { cpioEntry, desktopInitOverlay, desktopInitramfs } from './desktop-extras.mjs';
+import { appendCpio } from './gputest.mjs';
 
 const text = bytes => new TextDecoder().decode(bytes);
 
@@ -58,4 +59,20 @@ test('desktop init overlay installs and starts the agent', () => {
   assert.ok(overlay.includes(guestRunAgent()) && overlay.includes(guestRunShell()));
   assert.match(overlay, /\/bin\/busybox sh \/bin\/linuxonweb-run-agent &\nexec \/init\.desktop-original "\$@"/);
   assert.ok(overlay.indexOf('linuxonweb-run-shell\0') < overlay.indexOf('TRAILER!!!'));
+  assert.ok(overlay.includes('network-smoke-skip\0'));
+});
+
+test('desktop initramfs from chunks matches appending to the whole archive', () => {
+  const enc = new TextEncoder();
+  const records = [cpioEntry('bin/a', enc.encode('x'.repeat(301))), cpioEntry('init', enc.encode('#!/bin/busybox sh\necho chunked\n')),
+    cpioEntry('bin/b', enc.encode('yz')), cpioEntry('TRAILER!!!', new Uint8Array(), 0)];
+  const whole = new Uint8Array(records.reduce((sum, r) => sum + r.length, 0) + 1);
+  let at = 0; for (const r of records) { whole.set(r, at); at += r.length; }
+  const extras = enc.encode('extras-not-aligned');
+  const expected = appendCpio(appendCpio(whole, extras), desktopInitOverlay(whole));
+  for (const size of [1, 7, 110, 113, 4096]) {
+    const chunks = []; for (let i = 0; i < whole.length; i += size) chunks.push(whole.slice(i, i + size));
+    assert.deepEqual(desktopInitramfs(chunks, extras), expected, `chunk size ${size}`);
+  }
+  assert.deepEqual(desktopInitramfs(whole, extras), expected);
 });

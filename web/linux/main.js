@@ -26,7 +26,7 @@ import { installBuildInfo } from './build-info.mjs';
 import { installBrowserInfo } from './browser-info.mjs';
 import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
-import { appendDesktopExtras } from './desktop-extras.mjs';
+import { desktopInitramfs, loadDesktopExtras } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
 import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
 import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
@@ -891,6 +891,9 @@ function chooseFirefoxMemory(currentRam) {
 
 async function boot(mode) {
   if (configurationLocked || activeMachine) return;
+  const bootStart = performance.now();
+  let updateChecked = '-';
+  const bootTime = () => `${((performance.now() - bootStart) / 1000).toFixed(1)}s`;
   if (mode !== 'wgpu') {
     lockConfiguration(true);
     setStatus('checking system updates…', 'booting');
@@ -899,6 +902,7 @@ async function boot(mode) {
         setStatus('ready', 'idle');
         return;
       }
+      updateChecked = bootTime();
     } catch (error) {
       setStatus('update check failed', 'error');
       storagePanel.message(error.message, true); hostLog(error.message, 'error'); return;
@@ -924,6 +928,7 @@ async function boot(mode) {
   setSettingsOpen(false);
   setStatus(`booting ${mode}…`, "booting");
   guestLogs.clear();
+  hostLog(`boot timing: ${mode} boot requested ${(bootStart / 1000).toFixed(1)}s after page load; update check done at ${updateChecked}`);
   if (mode === "console") openConsole();
   terminal?.clear();
   hostLog(
@@ -967,9 +972,22 @@ async function boot(mode) {
       try { persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true) }); }
       catch (error) { await releaseHomeLock(); releaseHomeLock = null; throw error; }
     });
+    hostLog(`boot timing: home ready at ${bootTime()}`);
+    const extras = loadDesktopExtras();
+    extras.catch(() => {}); // reported below unless the system image fails first
     const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
     const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
-    initramfs = await appendDesktopExtras(new Uint8Array(await new Response(body).arrayBuffer()));
+    // Keep the chunks; desktopInitramfs copies them once into the final archive.
+    const system = [];
+    for (const reader = body.getReader(); ;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      system.push(value);
+    }
+    const systemBytes = system.reduce((sum, part) => sum + part.length, 0);
+    hostLog(`boot timing: system image (${(systemBytes / 1048576).toFixed(0)} MiB) ready at ${bootTime()}`);
+    initramfs = desktopInitramfs(system, await extras);
+    hostLog(`boot timing: desktop extras appended at ${bootTime()}`);
     if (gputestMode || selectedGpuTest === 'software') {
       const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam(location.search)]);
       if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
@@ -1088,6 +1106,7 @@ async function boot(mode) {
     });
     activeMachine = machine;
     machineStarted = true;
+    hostLog(`boot timing: machine started at ${bootTime()}`);
     clipboardVsock = vsock; clipboardInput = pointer;
     mobileKeyboard.setKeyHandler((code, down) => pointer.key(code, down));
     void machine.closed
