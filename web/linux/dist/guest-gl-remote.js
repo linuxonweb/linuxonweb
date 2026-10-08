@@ -97,7 +97,11 @@ const GL = {
     TEXTURE_WRAP_S: 0x2802, TEXTURE_WRAP_T: 0x2803, TEXTURE_WRAP_R: 0x8072, TEXTURE_MIN_LOD: 0x813A, TEXTURE_MAX_LOD: 0x813B,
     TEXTURE_BASE_LEVEL: 0x813C, TEXTURE_MAX_LEVEL: 0x813D, TEXTURE_COMPARE_MODE: 0x884C, TEXTURE_COMPARE_FUNC: 0x884D,
     FRAMEBUFFER: 0x8D40, READ_FRAMEBUFFER: 0x8CA8, DRAW_FRAMEBUFFER: 0x8CA9, FRAMEBUFFER_COMPLETE: 0x8CD5,
-    DEPTH_STENCIL_ATTACHMENT: 0x821A,
+    DEPTH_STENCIL_ATTACHMENT: 0x821A, COLOR_ATTACHMENT0: 0x8CE0, TRIANGLES: 4, NEAREST: 0x2600, VIEWPORT: 0x0BA2, SCISSOR_BOX: 0x0C10,
+    BLEND: 0x0BE2, SCISSOR_TEST: 0x0C11, CULL_FACE: 0x0B44, RASTERIZER_DISCARD: 0x8C89,
+    ZERO: 0, ONE: 1, RED: 0x1903, GREEN: 0x1904, BLUE: 0x1905, ALPHA: 0x1906,
+    RGBA8: 0x8058, RGBA16F: 0x881A, RGBA32F: 0x8814, SRGB8: 0x8C41, SRGB8_ALPHA8: 0x8C43,
+    RENDERBUFFER: 0x8D41, RENDERBUFFER_BINDING: 0x8CA7, COLOR_BUFFER_BIT: 0x4000,
 };
 
 // Constant limits sent at open; the guest answers these without a roundtrip.
@@ -328,6 +332,9 @@ function open(memory, a, log, memories) {
         programs: new WeakMap(), program: null, cookiePointer: 0, cookie: null, memory: null, cmdPointer: 0,
         w: null, i32: null, f32: null, warned: new Set(), log,
         texUnit: 0, texBound: new Map(), texInfo: new WeakMap(), fbBound: new Map(), fbAttach: new WeakMap(), fbComplex: new WeakMap(), texPool: [], complete: new Set(),
+        // State the texture swizzle pass changes and puts back (see swizzledDraw).
+        caps: new Map(), viewport: Array.from(gl.getParameter(GL.VIEWPORT)), scissorBox: Array.from(gl.getParameter(GL.SCISSOR_BOX)),
+        colorMask: [true, true, true, true], vao: null, samplers: new Map(), feedback: false, swizzled: new Set(), swizzlePass: null, shadowed: false,
         stats: { start: performance.now(), execs: 0, replies: 0, ms: 0, ops: new Uint32Array(OPS.length + 1), opMs: new Float64Array(OPS.length + 1), texReuse: 0 },
     };
     canvas.addEventListener?.("webglcontextlost", (event) => {
@@ -706,7 +713,7 @@ function unbindTexture(ctx, o) {
 }
 function poolTexture(ctx, o) {
     const t = ctx.texInfo.get(o);
-    if (!t?.shape || attached(ctx, o) || [...t.params.keys()].some((p) => !TEX_DEFAULTS.has(p)))
+    if (!t?.shape || t.swizzle || t.shadow || attached(ctx, o) || [...t.params.keys()].some((p) => !TEX_DEFAULTS.has(p)))
         return false;
     unbindTexture(ctx, o);
     ctx.texPool.push({ shape: t.shape, o });
@@ -733,6 +740,232 @@ function reuseTexture(ctx, target, o, shape) {
     return true;
 }
 
+// Texture swizzle. WebGL2 has no TEXTURE_SWIZZLE_*; WebRender on GLES keeps BGRA
+// images in RGBA textures and swizzles them when sampling. A texture with a
+// non-identity swizzle gets a shadow texture holding its level 0 with the swizzle
+// applied, which is bound in its place for draws. The shadow is redrawn from the
+// texture, over the changed region only, before a draw that needs it. Only 2D
+// textures with a known level-0 format other than integer or depth formats are
+// emulated; others warn once and sample unswizzled.
+const SWIZZLE_SLOT = new Map([[0x8E42, 0], [0x8E43, 1], [0x8E44, 2], [0x8E45, 3]]);
+const SWIZZLE_IDENTITY = [GL.RED, GL.GREEN, GL.BLUE, GL.ALPHA];
+const SWIZZLE_VALUES = new Set([GL.RED, GL.GREEN, GL.BLUE, GL.ALPHA, GL.ZERO, GL.ONE]);
+const INTEGER_FORMATS = new Set([0x8231, 0x8232, 0x8233, 0x8234, 0x8235, 0x8236, 0x8237, 0x8238, 0x8239, 0x823A, 0x823B, 0x823C,
+    0x8D70, 0x8D71, 0x8D76, 0x8D77, 0x8D7C, 0x8D7D, 0x8D82, 0x8D83, 0x8D88, 0x8D89, 0x8D8E, 0x8D8F, 0x906F,
+    0x8D94, 0x8D95, 0x8D96, 0x8D97, 0x8D98, 0x8D99]);
+const DEPTH_FORMATS = new Set([0x1902, 0x84F9, 0x81A5, 0x81A6, 0x81A7, 0x8CAC, 0x88F0, 0x8CAD, 0x1901, 0x8D48]);
+const FLOAT32_FORMATS = new Set([0x822E, 0x8230, 0x8815, 0x8814, 0x8F94, 0x8F95, 0x8F96, 0x8F97]);
+const FLOAT16_FORMATS = new Set([0x822D, 0x822F, 0x881B, 0x881A, 0x8C3A, 0x8C3D, 0x8059]);
+/** Colour-renderable format holding every value of `format` exactly enough, or 0. */
+function shadowFormat(ctx, format, type) {
+    if (INTEGER_FORMATS.has(format) || DEPTH_FORMATS.has(format))
+        return 0;
+    if (format === GL.SRGB8 || format === GL.SRGB8_ALPHA8)
+        return GL.SRGB8_ALPHA8;
+    const wide = FLOAT32_FORMATS.has(format) || type === GL.FLOAT ? GL.RGBA32F
+        : FLOAT16_FORMATS.has(format) || type === GL.HALF_FLOAT || type === GL.HALF_FLOAT_OES ? GL.RGBA16F : 0;
+    if (!wide)
+        return GL.RGBA8;
+    return ctx.gl.getExtension("EXT_color_buffer_float") ? wide : 0;
+}
+/** Level 0 of the 2D texture bound to `target` now has this format and size. */
+function defineLevel0(ctx, target, level, format, type, width, height) {
+    const o = target === GL.TEXTURE_2D && level === 0 ? boundTexture(ctx, target) : null;
+    if (!o)
+        return;
+    const t = texInfo(ctx, o);
+    t.base = { format, type, width, height };
+    if (t.shadow)
+        t.dirty = { x0: 0, y0: 0, x1: width, y1: height };
+}
+/** A region of level 0 of the texture bound to `target` changed. */
+function touchLevel0(ctx, target, level, x, y, width, height) {
+    const o = target === GL.TEXTURE_2D && level === 0 ? boundTexture(ctx, target) : null;
+    const t = o && ctx.texInfo.get(o);
+    if (!t?.shadow || width <= 0 || height <= 0)
+        return;
+    const d = t.dirty;
+    t.dirty = d ? { x0: Math.min(d.x0, x), y0: Math.min(d.y0, y), x1: Math.max(d.x1, x + width), y1: Math.max(d.y1, y + height) }
+        : { x0: x, y0: y, x1: x + width, y1: y + height };
+}
+/** Drawing into the draw framebuffer changes whatever textures it holds. */
+function renderedTo(ctx) {
+    if (!ctx.swizzled.size && !ctx.shadowed)
+        return;
+    const fb = ctx.fbBound.get(GL.DRAW_FRAMEBUFFER);
+    for (const o of (fb && ctx.fbAttach.get(fb)?.values()) ?? []) {
+        const t = o instanceof WebGLTexture && ctx.texInfo.get(o);
+        if (t?.shadow && t.base)
+            t.dirty = { x0: 0, y0: 0, x1: t.base.width, y1: t.base.height };
+    }
+}
+function swizzleParameter(ctx, target, slot, value) {
+    if (!SWIZZLE_VALUES.has(value)) {
+        ctx.error ||= GL.INVALID_ENUM;
+        return;
+    }
+    const o = boundTexture(ctx, target);
+    if (!o)
+        return warnOnce(ctx, "swizzle-default", "texture swizzle on the default texture is ignored");
+    if (target !== GL.TEXTURE_2D)
+        warnOnce(ctx, "swizzle-target", `texture swizzle is emulated for 2D textures only; target 0x${target.toString(16)} samples unswizzled`);
+    const t = texInfo(ctx, o), swizzle = [...(t.swizzle ?? SWIZZLE_IDENTITY)];
+    swizzle[slot] = value;
+    t.swizzle = swizzle.every((v, k) => v === SWIZZLE_IDENTITY[k]) ? null : swizzle;
+    t.swizzle ? ctx.swizzled.add(o) : ctx.swizzled.delete(o);
+}
+function swizzlePass(ctx) {
+    if (ctx.swizzlePass !== null)
+        return ctx.swizzlePass;
+    const gl = ctx.gl, program = gl.createProgram();
+    const stage = (type, text) => {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, text);
+        gl.compileShader(shader);
+        gl.attachShader(program, shader);
+        gl.deleteShader(shader);
+    };
+    stage(0x8B31, "#version 300 es\nvoid main() {\n  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));\n  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);\n}\n");
+    stage(0x8B30, "#version 300 es\nprecision highp float;\nprecision highp sampler2D;\nuniform sampler2D s;\nuniform mat4 m;\nuniform vec4 k;\nout vec4 o;\n" +
+        "void main() { o = m * texelFetch(s, ivec2(gl_FragCoord.xy), 0) + k; }\n");
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, GL.LINK_STATUS)) {
+        warnOnce(ctx, "swizzle-pass", `texture swizzle pass failed to link: ${gl.getProgramInfoLog(program)}`);
+        gl.deleteProgram(program);
+        return ctx.swizzlePass = false;
+    }
+    const sampler = gl.createSampler();
+    gl.samplerParameteri(sampler, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+    gl.samplerParameteri(sampler, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+    return ctx.swizzlePass = {
+        program, sampler, fbo: gl.createFramebuffer(), vao: gl.createVertexArray(), target: null,
+        s: gl.getUniformLocation(program, "s"), m: gl.getUniformLocation(program, "m"), k: gl.getUniformLocation(program, "k"),
+    };
+}
+/** Draws the dirty region of `o` (bound on `unit`) into its shadow; false when it cannot. */
+function redrawShadow(ctx, unit, o, t) {
+    const gl = ctx.gl, pass = swizzlePass(ctx), shadow = t.shadow, d = t.dirty;
+    if (!pass)
+        return false;
+    if (ctx.feedback) {
+        warnOnce(ctx, "swizzle-feedback", "swizzled texture changed during transform feedback; it samples its previous contents");
+        return false;
+    }
+    const matrix = new Float32Array(16), constant = new Float32Array(4);
+    t.swizzle.forEach((source, k) => {
+        const from = SWIZZLE_IDENTITY.indexOf(source);
+        if (from >= 0)
+            matrix[from * 4 + k] = 1;
+        else if (source === GL.ONE)
+            constant[k] = 1;
+    });
+    gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, pass.fbo);
+    if (pass.target !== shadow.texture) {
+        gl.framebufferTexture2D(GL.DRAW_FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, shadow.texture, 0);
+        pass.target = shadow.texture;
+    }
+    const x0 = Math.max(0, d.x0), y0 = Math.max(0, d.y0), x1 = Math.min(shadow.width, d.x1), y1 = Math.min(shadow.height, d.y1);
+    gl.viewport(0, 0, shadow.width, shadow.height);
+    gl.scissor(x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+    if (!ctx.caps.get(GL.SCISSOR_TEST))
+        gl.enable(GL.SCISSOR_TEST);
+    for (const cap of [GL.BLEND, GL.CULL_FACE, GL.RASTERIZER_DISCARD])
+        if (ctx.caps.get(cap))
+            gl.disable(cap);
+    const mask = ctx.colorMask, fullMask = mask.every(Boolean);
+    if (!fullMask)
+        gl.colorMask(true, true, true, true);
+    gl.useProgram(pass.program);
+    gl.uniformMatrix4fv(pass.m, false, matrix);
+    gl.uniform4fv(pass.k, constant);
+    gl.uniform1i(pass.s, unit);
+    gl.bindVertexArray(pass.vao);
+    gl.bindSampler(unit, pass.sampler);
+    gl.bindTexture(GL.TEXTURE_2D, o);
+    gl.drawArrays(GL.TRIANGLES, 0, 3);
+    gl.bindSampler(unit, ctx.samplers.get(unit) ?? null);
+    gl.bindVertexArray(ctx.vao);
+    gl.useProgram(ctx.program);
+    if (!fullMask)
+        gl.colorMask(...mask);
+    for (const cap of [GL.BLEND, GL.CULL_FACE, GL.RASTERIZER_DISCARD])
+        if (ctx.caps.get(cap))
+            gl.enable(cap);
+    if (!ctx.caps.get(GL.SCISSOR_TEST))
+        gl.disable(GL.SCISSOR_TEST);
+    gl.scissor(...ctx.scissorBox);
+    gl.viewport(...ctx.viewport);
+    gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, ctx.fbBound.get(GL.DRAW_FRAMEBUFFER) ?? null);
+    return true;
+}
+/** Shadow of swizzled texture `o` bound on `unit`, brought up to date; null when not emulated. Leaves `unit` active. */
+function shadowTexture(ctx, unit, o) {
+    const gl = ctx.gl, t = ctx.texInfo.get(o), base = t?.base;
+    const format = base && shadowFormat(ctx, base.format, base.type);
+    if (!format) {
+        warnOnce(ctx, "swizzle-format", "texture swizzle needs a 2D texture with a known non-integer, non-depth level 0; sampling unswizzled");
+        return null;
+    }
+    gl.activeTexture(GL.TEXTURE0 + unit);
+    let shadow = t.shadow;
+    if (!shadow || shadow.width !== base.width || shadow.height !== base.height || shadow.format !== format) {
+        if (shadow)
+            gl.deleteTexture(shadow.texture);
+        shadow = t.shadow = { texture: gl.createTexture(), width: base.width, height: base.height, format, key: "", params: -1 };
+        ctx.shadowed = true;
+        gl.bindTexture(GL.TEXTURE_2D, shadow.texture);
+        gl.texStorage2D(GL.TEXTURE_2D, 1, format, base.width, base.height);
+        t.dirty = { x0: 0, y0: 0, x1: base.width, y1: base.height };
+    }
+    const key = t.swizzle.join();
+    if (shadow.key !== key) {
+        shadow.key = key;
+        t.dirty = { x0: 0, y0: 0, x1: base.width, y1: base.height };
+    }
+    if (shadow.params !== (t.paramsVersion ?? 0)) {
+        gl.bindTexture(GL.TEXTURE_2D, shadow.texture);
+        for (const [pname, [float, value]] of t.params)
+            if (pname !== GL.TEXTURE_BASE_LEVEL && pname !== GL.TEXTURE_MAX_LEVEL)
+                float ? gl.texParameterf(GL.TEXTURE_2D, pname, value) : gl.texParameteri(GL.TEXTURE_2D, pname, value);
+        shadow.params = t.paramsVersion ?? 0;
+    }
+    if (t.dirty && redrawShadow(ctx, unit, o, t))
+        t.dirty = null;
+    gl.bindTexture(GL.TEXTURE_2D, o);
+    return shadow.texture;
+}
+/** Runs `draw` with every bound swizzled 2D texture replaced by its shadow. */
+function swizzledDraw(ctx, draw) {
+    let swapped = null;
+    if (ctx.swizzled.size) {
+        for (const [key, o] of ctx.texBound) {
+            if ((key & 0xffff) !== GL.TEXTURE_2D || !ctx.swizzled.has(o))
+                continue;
+            const shadow = shadowTexture(ctx, key >>> 16, o);
+            if (shadow)
+                (swapped ??= []).push(key >>> 16, o, shadow);
+        }
+        if (swapped)
+            for (let k = 0; k < swapped.length; k += 3) {
+                ctx.gl.activeTexture(GL.TEXTURE0 + swapped[k]);
+                ctx.gl.bindTexture(GL.TEXTURE_2D, swapped[k + 2]);
+            }
+    }
+    try {
+        draw();
+    }
+    finally {
+        if (swapped)
+            for (let k = 0; k < swapped.length; k += 3) {
+                ctx.gl.activeTexture(GL.TEXTURE0 + swapped[k]);
+                ctx.gl.bindTexture(GL.TEXTURE_2D, swapped[k + 1]);
+            }
+        if (ctx.swizzled.size)
+            ctx.gl.activeTexture(GL.TEXTURE0 + ctx.texUnit);
+        renderedTo(ctx);
+    }
+}
+
 function deleteObject(ctx, kind, name) {
     const map = ctx.objects[kind >= K_PROGRAM ? K_PROGRAM : kind];
     const o = map.get(name);
@@ -741,8 +974,13 @@ function deleteObject(ctx, kind, name) {
     map.delete(name);
     if (kind === 1 && poolTexture(ctx, o))
         return;
-    if (kind === 1)
+    if (kind === 1) {
         unbindTexture(ctx, o);
+        ctx.swizzled.delete(o);
+        const shadow = ctx.texInfo.get(o)?.shadow;
+        if (shadow)
+            ctx.gl.deleteTexture(shadow.texture);
+    }
     for (const fb of ctx.fbBound.values())
         for (const [point, a] of ctx.fbAttach.get(fb) ?? [])
             if (a === o)
@@ -751,7 +989,19 @@ function deleteObject(ctx, kind, name) {
         for (const [target, fb] of ctx.fbBound)
             if (fb === o)
                 ctx.fbBound.delete(target);
-    if (kind === K_PROGRAM)
+    // Deleting a bound sampler or vertex array unbinds it, as GL does.
+    if (kind === 5)
+        for (const [unit, sampler] of ctx.samplers)
+            if (sampler === o)
+                ctx.samplers.delete(unit);
+    if (kind === 6 && ctx.vao === o)
+        ctx.vao = null;
+    // GL keeps a deleted program in use until another replaces it, but WebGL
+    // refuses to bind a deleted one again (the swizzle pass rebinds it), so the
+    // host deletes the current program only once it is no longer current.
+    if (kind === K_PROGRAM && o === ctx.program)
+        ctx.programDeleted = true;
+    else if (kind === K_PROGRAM)
         ctx.gl.deleteProgram(o);
     else if (kind === K_SHADER)
         ctx.gl.deleteShader(o);
@@ -818,11 +1068,17 @@ H.BufferData = (c, i) => {
         c.gl.bufferData(c.w[i], typed(c, b.data, Uint8Array), c.w[i + 1]);
 };
 H.BufferSubData = (c, i) => c.gl.bufferSubData(c.w[i], c.w[i + 1], typed(c, blob(c, i + 2).data, Uint8Array));
-H.Clear = (c, i) => c.gl.clear(c.w[i]);
+H.Clear = (c, i) => {
+    c.gl.clear(c.w[i]);
+    renderedTo(c);
+};
 H.ClearColor = (c, i) => c.gl.clearColor(c.f32[i], c.f32[i + 1], c.f32[i + 2], c.f32[i + 3]);
 H.ClearDepthf = (c, i) => c.gl.clearDepth(c.f32[i]);
 H.ClearStencil = (c, i) => c.gl.clearStencil(c.i32[i]);
-H.ColorMask = (c, i) => c.gl.colorMask(!!c.w[i], !!c.w[i + 1], !!c.w[i + 2], !!c.w[i + 3]);
+H.ColorMask = (c, i) => {
+    c.colorMask = [!!c.w[i], !!c.w[i + 1], !!c.w[i + 2], !!c.w[i + 3]];
+    c.gl.colorMask(...c.colorMask);
+};
 H.CompileShader = (c, i) => c.gl.compileShader(programOf(c, c.w[i]));
 function compressed(c, b) {
     return b.mode === B_OFFSET ? [b.bytes, b.offset] : [typed(c, b.data ?? new Uint8Array(), Uint8Array)];
@@ -830,15 +1086,21 @@ function compressed(c, b) {
 H.CompressedTexImage2D = (c, i) => {
     texDefined(c, c.w[i]);
     c.gl.compressedTexImage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], ...compressed(c, blob(c, i + 6)));
+    defineLevel0(c, c.w[i], c.i32[i + 1], c.w[i + 2], GL.UNSIGNED_BYTE, c.i32[i + 3], c.i32[i + 4]);
 };
-H.CompressedTexSubImage2D = (c, i) =>
+H.CompressedTexSubImage2D = (c, i) => {
     c.gl.compressedTexSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], ...compressed(c, blob(c, i + 7)));
+    touchLevel0(c, c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5]);
+};
 H.CopyTexImage2D = (c, i) => {
     texDefined(c, c.w[i]);
     c.gl.copyTexImage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7]);
+    defineLevel0(c, c.w[i], c.i32[i + 1], c.w[i + 2], GL.UNSIGNED_BYTE, c.i32[i + 5], c.i32[i + 6]);
 };
-H.CopyTexSubImage2D = (c, i) =>
+H.CopyTexSubImage2D = (c, i) => {
     c.gl.copyTexSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7]);
+    touchLevel0(c, c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 6], c.i32[i + 7]);
+};
 H.CreateProgram = (c, i) => {
     const o = c.gl.createProgram();
     c.objects[K_PROGRAM].set(c.w[i], o);
@@ -860,13 +1122,16 @@ H.Disable = (c, i) => {
     if (c.w[i] === GL.PRIMITIVE_RESTART_FIXED_INDEX)
         return warnOnce(c, "restart-off", "WebGL2 always restarts at the fixed index; Disable(PRIMITIVE_RESTART_FIXED_INDEX) ignored");
     c.gl.disable(c.w[i]);
+    c.caps.set(c.w[i], false);
 };
 H.DisableVertexAttribArray = (c, i) => c.gl.disableVertexAttribArray(c.w[i]);
-H.DrawArrays = (c, i) => c.gl.drawArrays(c.w[i], c.i32[i + 1], c.i32[i + 2]);
-H.DrawElements = (c, i) => c.gl.drawElements(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3]);
+H.DrawArrays = (c, i) => swizzledDraw(c, () => c.gl.drawArrays(c.w[i], c.i32[i + 1], c.i32[i + 2]));
+H.DrawElements = (c, i) => swizzledDraw(c, () => c.gl.drawElements(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3]));
 H.Enable = (c, i) => {
-    if (c.w[i] !== GL.PRIMITIVE_RESTART_FIXED_INDEX)
-        c.gl.enable(c.w[i]);
+    if (c.w[i] === GL.PRIMITIVE_RESTART_FIXED_INDEX)
+        return;
+    c.gl.enable(c.w[i]);
+    c.caps.set(c.w[i], true);
 };
 H.EnableVertexAttribArray = (c, i) => c.gl.enableVertexAttribArray(c.w[i]);
 H.Finish = (c) => c.gl.finish();
@@ -907,7 +1172,10 @@ H.ReadPixels = (c, i) => {
 };
 H.RenderbufferStorage = (c, i) => c.gl.renderbufferStorage(c.w[i], c.w[i + 1], c.i32[i + 2], c.i32[i + 3]);
 H.SampleCoverage = (c, i) => c.gl.sampleCoverage(c.f32[i], !!c.w[i + 1]);
-H.Scissor = (c, i) => c.gl.scissor(c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]);
+H.Scissor = (c, i) => {
+    c.scissorBox = [c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]];
+    c.gl.scissor(...c.scissorBox);
+};
 H.ShaderSource = (c, i) => c.gl.shaderSource(programOf(c, c.w[i]), toHost(blobText(c, i + 1)));
 H.StencilFunc = (c, i) => c.gl.stencilFunc(c.w[i], c.i32[i + 1], c.w[i + 2]);
 H.StencilFuncSeparate = (c, i) => c.gl.stencilFuncSeparate(c.w[i], c.w[i + 1], c.i32[i + 2], c.w[i + 3]);
@@ -920,18 +1188,25 @@ H.TexImage2D = (c, i) => {
     if (o && target === GL.TEXTURE_2D && c.i32[i + 1] === 0) {
         const t = texInfo(c, o), shape = Array.from(c.w.subarray(i + 2, i + 8)).join();
         if (t.fresh && blob(c, i + 8).mode === B_NULL && reuseTexture(c, target, o, shape))
-            return;
+            return defineLevel0(c, target, 0, c.w[i + 2], type, c.i32[i + 3], c.i32[i + 4]);
         if (t.fresh || t.shape)
             Object.assign(t, { fresh: false, shape });
     }
     else
         texDefined(c, target);
     c.gl.texImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], type, source(c, blob(c, i + 8), type));
+    defineLevel0(c, target, c.i32[i + 1], c.w[i + 2], type, c.i32[i + 3], c.i32[i + 4]);
 };
 function texParameter(c, target, pname, float, value) {
+    const slot = SWIZZLE_SLOT.get(pname);
+    if (slot !== undefined)
+        return swizzleParameter(c, target, slot, float ? Math.round(value) : value);
     const o = boundTexture(c, target);
-    if (o)
-        texInfo(c, o).params.set(pname, [float, value]);
+    if (o) {
+        const t = texInfo(c, o);
+        t.params.set(pname, [float, value]);
+        t.paramsVersion = (t.paramsVersion ?? 0) + 1;
+    }
     float ? c.gl.texParameterf(target, pname, value) : c.gl.texParameteri(target, pname, value);
 }
 H.TexParameterf = (c, i) => texParameter(c, c.w[i], c.w[i + 1], true, c.f32[i + 2]);
@@ -939,6 +1214,7 @@ H.TexParameteri = (c, i) => texParameter(c, c.w[i], c.w[i + 1], false, c.i32[i +
 H.TexSubImage2D = (c, i) => {
     const type = hostType(c.w[i + 7]);
     c.gl.texSubImage2D(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.w[i + 6], type, source(c, blob(c, i + 8), type));
+    touchLevel0(c, c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5]);
 };
 const UNIFORM_SCALAR = { f: [null, "uniform1f", "uniform2f", "uniform3f", "uniform4f"], i: [null, "uniform1i", "uniform2i", "uniform3i", "uniform4i"], ui: [null, "uniform1ui", "uniform2ui", "uniform3ui", "uniform4ui"] };
 const UNIFORM_VECTOR = { f: [null, "uniform1fv", "uniform2fv", "uniform3fv", "uniform4fv"], i: [null, "uniform1iv", "uniform2iv", "uniform3iv", "uniform4iv"], ui: [null, "uniform1uiv", "uniform2uiv", "uniform3uiv", "uniform4uiv"] };
@@ -973,15 +1249,23 @@ H.UniformMatrixfv = (c, i) => {
     c.gl[name](location(c, c.program, c.i32[i]), !!c.w[i + 4], typed(c, blob(c, i + 5).data, Float32Array));
 };
 H.UseProgram = (c, i) => {
+    const previous = c.program;
     c.program = programOf(c, c.w[i]);
     c.gl.useProgram(c.program);
+    if (c.programDeleted && previous !== c.program) {
+        c.programDeleted = false;
+        c.gl.deleteProgram(previous);
+    }
 };
 H.ValidateProgram = (c, i) => c.gl.validateProgram(programOf(c, c.w[i]));
 H.VertexAttribf = (c, i) => c.gl.vertexAttrib4f(c.w[i], c.f32[i + 1], c.f32[i + 2], c.f32[i + 3], c.f32[i + 4]);
 H.VertexAttribPointer = (c, i) => c.gl.vertexAttribPointer(c.w[i], c.i32[i + 1], c.w[i + 2], !!c.w[i + 3], c.i32[i + 4], c.w[i + 5]);
-H.Viewport = (c, i) => c.gl.viewport(c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]);
+H.Viewport = (c, i) => {
+    c.viewport = [c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]];
+    c.gl.viewport(...c.viewport);
+};
 H.ReadBuffer = (c, i) => c.gl.readBuffer(c.w[i]);
-H.DrawRangeElements = (c, i) => c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]);
+H.DrawRangeElements = (c, i) => swizzledDraw(c, () => c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]));
 H.TexImage3D = (c, i) => {
     const type = hostType(c.w[i + 8]);
     texDefined(c, c.w[i]);
@@ -1002,17 +1286,28 @@ H.CompressedTexSubImage3D = (c, i) =>
 H.BeginQuery = (c, i) => c.gl.beginQuery(c.w[i], object(c, 4, c.w[i + 1]));
 H.EndQuery = (c, i) => c.gl.endQuery(c.w[i]);
 H.DrawBuffers = (c, i) => c.gl.drawBuffers(Array.from(c.w.subarray(i + 1, i + 1 + c.w[i])));
-H.BlitFramebuffer = (c, i) =>
+H.BlitFramebuffer = (c, i) => {
     c.gl.blitFramebuffer(c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6], c.i32[i + 7], c.w[i + 8], c.w[i + 9]);
+    renderedTo(c);
+};
 H.RenderbufferStorageMultisample = (c, i) => c.gl.renderbufferStorageMultisample(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4]);
 H.FramebufferTextureLayer = (c, i) => {
     const o = object(c, 1, c.w[i + 2]);
     c.gl.framebufferTextureLayer(c.w[i], c.w[i + 1], o, c.i32[i + 3], c.i32[i + 4]);
     attach(c, c.w[i], c.w[i + 1], o, false);
 };
-H.BindVertexArray = (c, i) => c.gl.bindVertexArray(object(c, 6, c.w[i]));
-H.BeginTransformFeedback = (c, i) => c.gl.beginTransformFeedback(c.w[i]);
-H.EndTransformFeedback = (c) => c.gl.endTransformFeedback();
+H.BindVertexArray = (c, i) => {
+    c.vao = object(c, 6, c.w[i]);
+    c.gl.bindVertexArray(c.vao);
+};
+H.BeginTransformFeedback = (c, i) => {
+    c.gl.beginTransformFeedback(c.w[i]);
+    c.feedback = true;
+};
+H.EndTransformFeedback = (c) => {
+    c.gl.endTransformFeedback();
+    c.feedback = false;
+};
 H.BindBufferRange = (c, i) => c.gl.bindBufferRange(c.w[i], c.w[i + 1], object(c, 0, c.w[i + 2]), c.w[i + 3], c.w[i + 4]);
 H.BindBufferBase = (c, i) => c.gl.bindBufferBase(c.w[i], c.w[i + 1], object(c, 0, c.w[i + 2]));
 H.TransformFeedbackVaryings = (c, i) => {
@@ -1022,27 +1317,50 @@ H.TransformFeedbackVaryings = (c, i) => {
 H.VertexAttribIPointer = (c, i) => c.gl.vertexAttribIPointer(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4]);
 H.VertexAttribI4i = (c, i) => c.gl.vertexAttribI4i(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4]);
 H.VertexAttribI4ui = (c, i) => c.gl.vertexAttribI4ui(c.w[i], c.w[i + 1], c.w[i + 2], c.w[i + 3], c.w[i + 4]);
-H.ClearBufferiv = (c, i) => c.gl.clearBufferiv(c.w[i], c.i32[i + 1], Int32Array.from(c.i32.subarray(i + 2, i + 6)));
-H.ClearBufferuiv = (c, i) => c.gl.clearBufferuiv(c.w[i], c.i32[i + 1], Uint32Array.from(c.w.subarray(i + 2, i + 6)));
-H.ClearBufferfv = (c, i) => c.gl.clearBufferfv(c.w[i], c.i32[i + 1], Float32Array.from(c.f32.subarray(i + 2, i + 6)));
-H.ClearBufferfi = (c, i) => c.gl.clearBufferfi(c.w[i], c.i32[i + 1], c.f32[i + 2], c.i32[i + 3]);
+H.ClearBufferiv = (c, i) => {
+    c.gl.clearBufferiv(c.w[i], c.i32[i + 1], Int32Array.from(c.i32.subarray(i + 2, i + 6)));
+    renderedTo(c);
+};
+H.ClearBufferuiv = (c, i) => {
+    c.gl.clearBufferuiv(c.w[i], c.i32[i + 1], Uint32Array.from(c.w.subarray(i + 2, i + 6)));
+    renderedTo(c);
+};
+H.ClearBufferfv = (c, i) => {
+    c.gl.clearBufferfv(c.w[i], c.i32[i + 1], Float32Array.from(c.f32.subarray(i + 2, i + 6)));
+    renderedTo(c);
+};
+H.ClearBufferfi = (c, i) => {
+    c.gl.clearBufferfi(c.w[i], c.i32[i + 1], c.f32[i + 2], c.i32[i + 3]);
+    renderedTo(c);
+};
 H.CopyBufferSubData = (c, i) => c.gl.copyBufferSubData(c.w[i], c.w[i + 1], c.w[i + 2], c.w[i + 3], c.w[i + 4]);
 H.UniformBlockBinding = (c, i) => c.gl.uniformBlockBinding(programOf(c, c.w[i]), c.w[i + 1], c.w[i + 2]);
-H.DrawArraysInstanced = (c, i) => c.gl.drawArraysInstanced(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]);
-H.DrawElementsInstanced = (c, i) => c.gl.drawElementsInstanced(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3], c.i32[i + 4]);
-H.BindSampler = (c, i) => c.gl.bindSampler(c.w[i], object(c, 5, c.w[i + 1]));
+H.DrawArraysInstanced = (c, i) => swizzledDraw(c, () => c.gl.drawArraysInstanced(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]));
+H.DrawElementsInstanced = (c, i) => swizzledDraw(c, () => c.gl.drawElementsInstanced(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3], c.i32[i + 4]));
+H.BindSampler = (c, i) => {
+    const o = object(c, 5, c.w[i + 1]);
+    c.gl.bindSampler(c.w[i], o);
+    o ? c.samplers.set(c.w[i], o) : c.samplers.delete(c.w[i]);
+};
 H.SamplerParameteri = (c, i) => c.gl.samplerParameteri(object(c, 5, c.w[i]), c.w[i + 1], c.i32[i + 2]);
 H.SamplerParameterf = (c, i) => c.gl.samplerParameterf(object(c, 5, c.w[i]), c.w[i + 1], c.f32[i + 2]);
 H.VertexAttribDivisor = (c, i) => c.gl.vertexAttribDivisor(c.w[i], c.w[i + 1]);
 H.BindTransformFeedback = (c, i) => c.gl.bindTransformFeedback(c.w[i], object(c, 7, c.w[i + 1]));
-H.PauseTransformFeedback = (c) => c.gl.pauseTransformFeedback();
-H.ResumeTransformFeedback = (c) => c.gl.resumeTransformFeedback();
+H.PauseTransformFeedback = (c) => {
+    c.gl.pauseTransformFeedback();
+    c.feedback = false;
+};
+H.ResumeTransformFeedback = (c) => {
+    c.gl.resumeTransformFeedback();
+    c.feedback = true;
+};
 H.InvalidateFramebuffer = (c, i) => c.gl.invalidateFramebuffer(c.w[i], Array.from(c.w.subarray(i + 2, i + 2 + c.w[i + 1])));
 H.InvalidateSubFramebuffer = (c, i) =>
     c.gl.invalidateSubFramebuffer(c.w[i], Array.from(c.w.subarray(i + 6, i + 6 + c.w[i + 5])), c.i32[i + 1], c.i32[i + 2], c.i32[i + 3], c.i32[i + 4]);
 H.TexStorage2D = (c, i) => {
     texDefined(c, c.w[i]);
     c.gl.texStorage2D(c.w[i], c.i32[i + 1], c.w[i + 2], c.i32[i + 3], c.i32[i + 4]);
+    defineLevel0(c, c.w[i], 0, c.w[i + 2], GL.UNSIGNED_BYTE, c.i32[i + 3], c.i32[i + 4]);
 };
 H.TexStorage3D = (c, i) => {
     texDefined(c, c.w[i]);
@@ -1055,7 +1373,12 @@ H.GetIndexedParameter = (c, i) => reply(c, c.gl.getIndexedParameter(c.w[i], c.w[
 H.GetBufferParameter = (c, i) => reply(c, c.gl.getBufferParameter(c.w[i], c.w[i + 1]));
 H.GetFramebufferAttachmentParameter = (c, i) => reply(c, c.gl.getFramebufferAttachmentParameter(c.w[i], c.w[i + 1], c.w[i + 2]));
 H.GetRenderbufferParameter = (c, i) => reply(c, c.gl.getRenderbufferParameter(c.w[i], c.w[i + 1]));
-H.GetTexParameter = (c, i) => reply(c, c.gl.getTexParameter(c.w[i], c.w[i + 1]));
+H.GetTexParameter = (c, i) => {
+    const slot = SWIZZLE_SLOT.get(c.w[i + 1]), o = slot === undefined ? null : boundTexture(c, c.w[i]);
+    if (slot !== undefined)
+        return numberReply([((o && c.texInfo.get(o)?.swizzle) ?? SWIZZLE_IDENTITY)[slot]]);
+    return reply(c, c.gl.getTexParameter(c.w[i], c.w[i + 1]));
+};
 H.GetSamplerParameter = (c, i) => reply(c, c.gl.getSamplerParameter(object(c, 5, c.w[i]), c.w[i + 1]));
 H.GetVertexAttrib = (c, i) => reply(c, c.gl.getVertexAttrib(c.w[i], c.w[i + 1]));
 H.GetVertexAttribOffset = (c, i) => reply(c, c.gl.getVertexAttribOffset(c.w[i], c.w[i + 1]));
@@ -1144,12 +1467,54 @@ H.PresentSurface = (c, i) => {
         c.key = key;
         keyOwners.set(key, c);
     }
-    // preserveDrawingBuffer: the canvas keeps its pixels for the next partial frame.
-    const bitmap = c.canvas.transferToImageBitmap();
+    const bitmap = transferKeepingFrame(c);
     globalThis.postMessage({ type: "gpu-present", keyed: true, key: c.key, x: c.i32[i + 1], y: c.i32[i + 2],
         damage: [c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6]], bitmap }, [bitmap]);
     return numberReply([c.key]);
 };
+
+// Chromium's transferToImageBitmap takes the drawing buffer and leaves the
+// canvas cleared even with preserveDrawingBuffer, but the guest's window keeps
+// its frame (EGL_BUFFER_PRESERVED, buffer age 1) and redraws only damage, so
+// the colour buffer is copied aside and back around the transfer.
+function transferKeepingFrame(ctx) {
+    const gl = ctx.gl, { width, height } = ctx.canvas;
+    let keep = ctx.keepFrame;
+    if (!keep || keep.width !== width || keep.height !== height) {
+        if (keep) {
+            gl.deleteFramebuffer(keep.fbo);
+            gl.deleteRenderbuffer(keep.renderbuffer);
+        }
+        keep = ctx.keepFrame = { width, height, fbo: gl.createFramebuffer(), renderbuffer: gl.createRenderbuffer() };
+        const bound = gl.getParameter(GL.RENDERBUFFER_BINDING);
+        gl.bindRenderbuffer(GL.RENDERBUFFER, keep.renderbuffer);
+        gl.renderbufferStorage(GL.RENDERBUFFER, GL.RGBA8, width, height);
+        gl.bindRenderbuffer(GL.RENDERBUFFER, bound);
+        gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, keep.fbo);
+        gl.framebufferRenderbuffer(GL.DRAW_FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.RENDERBUFFER, keep.renderbuffer);
+    }
+    // Blits obey only the scissor test among the guest's state.
+    const scissor = ctx.caps.get(GL.SCISSOR_TEST);
+    if (scissor)
+        gl.disable(GL.SCISSOR_TEST);
+    const copy = (from, to) => {
+        gl.bindFramebuffer(GL.READ_FRAMEBUFFER, from);
+        gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, to);
+        gl.blitFramebuffer(0, 0, width, height, 0, 0, width, height, GL.COLOR_BUFFER_BIT, GL.NEAREST);
+    };
+    copy(null, keep.fbo);
+    const bitmap = ctx.canvas.transferToImageBitmap();
+    // The canvas clears itself at its next drawing call, which would wipe the
+    // copied frame; clearing no buffers runs that first.
+    gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, null);
+    gl.clear(0);
+    copy(keep.fbo, null);
+    gl.bindFramebuffer(GL.READ_FRAMEBUFFER, ctx.fbBound.get(GL.READ_FRAMEBUFFER) ?? null);
+    gl.bindFramebuffer(GL.DRAW_FRAMEBUFFER, ctx.fbBound.get(GL.DRAW_FRAMEBUFFER) ?? null);
+    if (scissor)
+        gl.enable(GL.SCISSOR_TEST);
+    return bitmap;
+}
 
 const HANDLERS = [null, ...OPS.map((name) => {
     if (!H[name])
