@@ -148,3 +148,4 @@ OP(GetFragDataLocation)        /* program, blob name */
 OP(ProgramInfo)                /* program; reply is text (see guest-gl-remote.js) */
 OP(ShaderInfo)                 /* shader; reply is text */
 OP(GetBufferSubData)           /* target, offset, blob (out: guest pointer) */
+OP(PresentSurface)             /* flags, root x, y, damage x, y, w, h; reply: key or 0 */

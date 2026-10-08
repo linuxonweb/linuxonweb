@@ -12,7 +12,7 @@ import {
     S_ARGS, S_GEN, S_OP, S_RESULT, S_RESULT2, S_STATE, STATE_BUSY, STATE_DONE, STATE_REQUEST, slotState, slotWord,
 } from "./guest-gpu-hostcall.js";
 import { handleWgpuCall, OP_WGPU } from "./guest-gpu-wgpu.js";
-import { configureGl, handleGlCall, OP_GL_CLOSE, OP_GL_EXEC, OP_GL_OPEN } from "./guest-gl-remote.js";
+import { configureGl, handleGlCall, OP_GL_CLOSE, OP_GL_EXEC, OP_GL_OPEN, setKeyedPresent } from "./guest-gl-remote.js";
 import { attachPresentCanvas, configureVk, handleVkCall, OP_VK_CALL, OP_VK_CLOSE, OP_VK_OPEN } from "./guest-gpu-vk.js";
 
 let hub = null;
@@ -429,6 +429,7 @@ self.onmessage = ({ data }) => {
             myGen = data.gen;
             configureVk(data.config?.vk);
             configureGl(data.config?.gl);
+            setKeyedPresent(data.keyedPresent);
             for (const { slot, gen, memory } of data.attachments)
                 attachments.set(slot, { gen, memory });
             heartbeatTimer = setInterval(() => Atomics.add(hub, H_HEARTBEAT, 1), 50);
@@ -446,6 +447,9 @@ self.onmessage = ({ data }) => {
             break;
         case "present-canvas":
             attachPresentCanvas(data.session, data.surface, data.canvas);
+            break;
+        case "keyed-present":
+            setKeyedPresent(data.on);
             break;
         case "detach":
             if (attachments.get(data.slot)?.gen === data.gen)

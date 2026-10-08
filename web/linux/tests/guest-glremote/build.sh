@@ -9,7 +9,8 @@ MESA=${MESA_INCLUDE:-/mnt/p6/build/glgears-kopper-20261006/mesa-26.2.3/include}
 HERE=$(cd "$(dirname "$0")" && pwd)
 CFLAGS="-std=c11 -O2 -g0 -Wall -Wextra -Werror -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections -I$MESA"
 node "$HERE/check-ops.mjs"
-$W/wasm32-unknown-linux-musl-clang $CFLAGS -c "$HERE/glremote.c" -o "$OUT/obj/glremote.o"
+# SIMD (required by the host page anyway) for the frame compare and swizzle.
+$W/wasm32-unknown-linux-musl-clang $CFLAGS -msimd128 -c "$HERE/glremote.c" -o "$OUT/obj/glremote.o"
 $W/wasm32-unknown-linux-musl-clang $CFLAGS -Wno-unused-result -c "$HERE/glrtest.c" -o "$OUT/obj/glrtest.o"
 # No -O at link: the clang driver would run wasm-opt implicitly.
 $W/wasm32-unknown-linux-musl-clang -pthread -matomics -mbulk-memory -static "$OUT/obj/glrtest.o" "$OUT/obj/glremote.o" -lm \

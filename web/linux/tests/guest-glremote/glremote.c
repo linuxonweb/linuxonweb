@@ -19,6 +19,7 @@
 #include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <errno.h>
+#include <malloc.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -30,6 +31,9 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef __wasm_simd128__
+#include <wasm_simd128.h>
+#endif
 
 #include "glremote.h"
 
@@ -159,12 +163,18 @@ struct glr_ctx {
    * EGL_EXT_buffer_age); resizing the canvas clears it. */
   EGLint canvas_w, canvas_h;
   struct glr_surface *shown;
+  /* The host offers keyed presentation ("present keyed"); the surface the
+   * context's key belongs to (one window per host canvas). */
+  int keyed;
+  struct glr_surface *key_surface;
   EGLint config_id;
   uint32_t *cmd, used, since_error;
   int must_flush;
   /* Input copies referenced by the unsent batch, freed once it ran. */
   void **staged;
   size_t nstaged, staged_cap, staged_bytes;
+  /* Large blocks kept for the next buffer mapping instead of a fresh mmap. */
+  void *spare[4];
   /* Framebuffer completeness: bumped by every command that can change it;
    * the last host answer holds while the count and the binding are the same. */
   uint32_t fb_gen, fbs_gen;
@@ -257,6 +267,30 @@ static void prof_report(struct glr_ctx *c, uint64_t now) {
   p->start_ns = now;
 }
 
+/* Mapping and staging blocks of INLINE_MAX bytes or more are mmap-backed in
+ * musl's malloc; a few freed ones (64 MiB at most) are reused instead. */
+static void *block_alloc(struct glr_ctx *c, size_t n) {
+  for (int i = 0; n >= INLINE_MAX && i < 4; i++) {
+    size_t have = c->spare[i] ? malloc_usable_size(c->spare[i]) : 0;
+    if (have >= n && have - n <= n / 2 + INLINE_MAX) {
+      void *p = c->spare[i];
+      c->spare[i] = NULL;
+      return p;
+    }
+  }
+  return malloc(n);
+}
+static void block_release(struct glr_ctx *c, void *p) {
+  size_t n = p ? malloc_usable_size(p) : 0, kept = n;
+  int slot = -1;
+  for (int i = 0; i < 4; i++) {
+    if (!c->spare[i]) slot = slot < 0 ? i : slot;
+    else kept += malloc_usable_size(c->spare[i]);
+  }
+  if (n >= INLINE_MAX && slot >= 0 && kept <= 64u * 1024u * 1024u) c->spare[slot] = p;
+  else free(p);
+}
+
 static long run(struct glr_ctx *c, void *reply, uint32_t cap) {
   long r;
   uint64_t t0 = tracing() >= 2 ? now_ns() : 0;
@@ -276,7 +310,7 @@ static long run(struct glr_ctx *c, void *reply, uint32_t cap) {
   c->words += c->used;
   c->used = 0;
   c->must_flush = 0;
-  for (size_t i = 0; i < c->nstaged; i++) free(c->staged[i]);
+  for (size_t i = 0; i < c->nstaged; i++) block_release(c, c->staged[i]);
   c->nstaged = 0;
   c->staged_bytes = 0;
   if (r < 0 && !c->lost) {
@@ -359,7 +393,7 @@ static uint32_t *emit_data(struct glr_ctx *c, unsigned op, uint32_t nfixed, int 
   } else if (mode != B_NULL) {
     const void *sent = data;
     if (big) {
-      void *copy = malloc(bytes);
+      void *copy = block_alloc(c, bytes);
       if (copy && stage(c, copy, bytes)) {
         memcpy(copy, data, bytes);
         sent = copy;
@@ -1692,12 +1726,23 @@ static GLboolean glUnmapBuffer(GLenum target) {
   struct mapping *m = mapping_of(c, target);
   if (!m) { add_error(c, GL_INVALID_OPERATION); return GL_FALSE; }
   if ((m->access & GL_MAP_WRITE_BIT) && !(m->access & GL_MAP_FLUSH_EXPLICIT_BIT) && m->length) {
-    uint32_t *w = emit_data(c, OP_BufferSubData, 2, B_INLINE, m->ptr, (size_t)m->length);
-    w[0] = target; w[1] = (uint32_t)m->offset;
     shadow_sub(c, target, (size_t)m->offset, (size_t)m->length, m->ptr);
+    size_t bytes = (size_t)m->length;
+    if (bytes > INLINE_MAX) {
+      /* The mapped block itself goes with the batch: no copy. */
+      if (c->staged_bytes + bytes > STAGE_MAX) flush(c);
+      uint32_t *w = emit(c, OP_BufferSubData, 2 + 3); /* may run the batch: stage after it */
+      w[0] = target; w[1] = (uint32_t)m->offset; w[2] = (uint32_t)bytes; w[3] = B_POINTER;
+      w[4] = (uint32_t)(uintptr_t)m->ptr;
+      if (stage(c, m->ptr, bytes)) m->ptr = NULL;
+      else { c->must_flush = 1; c->prof.flush_ops[OP_BufferSubData]++; c->prof.end_op = OP_BufferSubData; }
+    } else {
+      uint32_t *w = emit_data(c, OP_BufferSubData, 2, B_INLINE, m->ptr, bytes);
+      w[0] = target; w[1] = (uint32_t)m->offset;
+    }
   }
   done(c);
-  free(m->ptr);
+  block_release(c, m->ptr);
   m->ptr = NULL;
   return GL_TRUE;
 }
@@ -1730,7 +1775,7 @@ static void *glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length,
   for (int i = 0; i < 8 && !m; i++)
     if (!c->maps[i].ptr) m = &c->maps[i];
   if (!m) { add_error(c, GL_OUT_OF_MEMORY); return NULL; }
-  void *ptr = malloc((size_t)length);
+  void *ptr = block_alloc(c, (size_t)length);
   if (!ptr) { add_error(c, GL_OUT_OF_MEMORY); return NULL; }
   int fetch = (access & GL_MAP_READ_BIT) ||
               !(access & (GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT));
@@ -2069,6 +2114,11 @@ struct glr_surface {
    * surface; a swap sends the window only the box that differs from it. */
   uint32_t *shown_px;
   EGLint shown_w, shown_h;
+  /* Keyed presentation: the key colour the window is filled with (0: none),
+   * and swaps left before trying again after the host declined or the window
+   * could not be keyed. */
+  unsigned key;
+  int key_wait;
 };
 #define SURFACE_MAGIC 0x676c7366u
 
@@ -2388,8 +2438,11 @@ static EGLSurface eglCreatePbufferFromClientBuffer(EGLDisplay dpy, EGLenum type,
 static void unlink_surface(struct glr_surface *s) {
   for (struct glr_surface **p = &surfaces; *p; p = &(*p)->next)
     if (*p == s) { *p = s->next; break; }
-  for (struct glr_ctx *c = contexts; c; c = c->next)
+  for (struct glr_ctx *c = contexts; c; c = c->next) {
     if (c->shown == s) c->shown = NULL;
+    /* The key stays with the context; another of its windows can take it. */
+    if (c->key_surface == s) c->key_surface = NULL;
+  }
   s->magic = 0;
   free(s->pixels);
   free(s->shown_px);
@@ -2486,6 +2539,7 @@ static int parse_open_info(struct glr_ctx *c, char *text) {
     else if (!strcmp(line, "renderer")) c->renderer = value;
     else if (!strcmp(line, "vendor")) c->vendor = value;
     else if (!strcmp(line, "glsl")) c->glsl = value;
+    else if (!strcmp(line, "present")) c->keyed = !strcmp(value, "keyed");
     else if (!strcmp(line, "ext")) {
       c->extensions = strdup(value);
       for (char *e = value; *e;) {
@@ -2536,6 +2590,7 @@ static void free_context(struct glr_ctx *c) {
   for (int i = 0; i < 8; i++) free(c->maps[i].ptr);
   for (size_t i = 0; i < c->nbufs; i++) free(c->bufs[i].shadow);
   for (size_t i = 0; i < c->nstaged; i++) free(c->staged[i]);
+  for (int i = 0; i < 4; i++) free(c->spare[i]);
   free(c->bufs); free(c->staged);
   free(c->objs); free(c->limits); free(c->ext); free((void *)c->extensions); free(c->info);
   free(c->vao_elements); free(c->cmd); free(c->reply); free(c);
@@ -2718,6 +2773,27 @@ static EGLint eglGetError(void) {
   tls_error = EGL_SUCCESS;
   return e;
 }
+/* Index of the first word from the left (from_right: last word from the
+ * right) where a and b differ in n words; -1 when they are equal. */
+static int first_diff(const uint32_t *a, const uint32_t *b, int n, int from_right) {
+  int i = 0;
+#ifdef __wasm_simd128__
+  if (!from_right) {
+    for (; i + 16 <= n; i += 16) {
+      v128_t d = wasm_v128_or(wasm_v128_or(wasm_v128_xor(wasm_v128_load(a + i), wasm_v128_load(b + i)),
+                                           wasm_v128_xor(wasm_v128_load(a + i + 4), wasm_v128_load(b + i + 4))),
+                              wasm_v128_or(wasm_v128_xor(wasm_v128_load(a + i + 8), wasm_v128_load(b + i + 8)),
+                                           wasm_v128_xor(wasm_v128_load(a + i + 12), wasm_v128_load(b + i + 12))));
+      if (wasm_v128_any_true(d)) break;
+    }
+  } else {
+    for (; i + 4 <= n && !wasm_v128_any_true(wasm_v128_xor(wasm_v128_load(a + n - i - 4), wasm_v128_load(b + n - i - 4))); i += 4) {}
+  }
+#endif
+  for (; i < n; i++)
+    if (from_right ? a[n - 1 - i] != b[n - 1 - i] : a[i] != b[i]) return from_right ? n - 1 - i : i;
+  return -1;
+}
 /* Narrows the w x h frame rectangle at x,top (top-left origin) of `px` to the
  * box that differs from what the window shows; returns 0 when nothing does.
  * The box is moved to the start of `px`, rows `*bw` words apart. */
@@ -2725,12 +2801,11 @@ static int changed_box(struct glr_surface *s, uint32_t *px, int x, int top, int 
   int r0 = -1, r1 = -1, c0 = w, c1 = -1;
   for (int r = 0; r < h; r++) {
     const uint32_t *now = px + (size_t)r * (size_t)w, *old = s->shown_px + (size_t)(top + r) * (size_t)s->shown_w + x;
-    if (!memcmp(now, old, (size_t)w * 4)) continue;
+    int a = first_diff(now, old, w, 0);
+    if (a < 0) continue;
     if (r0 < 0) r0 = r;
     r1 = r;
-    int a = 0, b = w - 1;
-    while (now[a] == old[a]) a++;
-    while (now[b] == old[b]) b--;
+    int b = first_diff(now, old, w, 1);
     if (a < c0) c0 = a;
     if (b > c1) c1 = b;
   }
@@ -2774,7 +2849,15 @@ static int present_window(struct glr_ctx *c, struct glr_surface *s, int x, int y
   /* Flip rows and swap R and B: little-endian RGBA bytes are 0xAABBGGRR. */
   for (int top = 0, bottom = h - 1; top <= bottom; top++, bottom--) {
     uint32_t *a = s->pixels + (size_t)top * (size_t)w, *b = s->pixels + (size_t)bottom * (size_t)w;
-    for (int x = 0; x < w; x++) {
+    int x = 0;
+#ifdef __wasm_simd128__
+    for (; x + 4 <= w; x += 4) {
+      v128_t va = wasm_v128_load(a + x), vb = wasm_v128_load(b + x);
+      wasm_v128_store(a + x, wasm_i8x16_shuffle(vb, vb, 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
+      if (a != b) wasm_v128_store(b + x, wasm_i8x16_shuffle(va, va, 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15));
+    }
+#endif
+    for (; x < w; x++) {
       uint32_t va = a[x], vb = b[x];
       a[x] = (vb & 0xff00ff00u) | (vb & 0xffu) << 16 | (vb >> 16 & 0xffu);
       if (a != b) b[x] = (va & 0xff00ff00u) | (va & 0xffu) << 16 | (va >> 16 & 0xffu);
@@ -2812,6 +2895,53 @@ static int present_window(struct glr_ctx *c, struct glr_surface *s, int x, int y
     c->prof.swap_pixels += (uint64_t)w * (uint64_t)h;
   }
   return shown;
+}
+/* Keyed presentation of the damage x0,y0-x1,y1 (bottom-left origin): the
+ * host posts the canvas to the page, which shows it wherever the window shows
+ * the context's key colour. Returns 1 when presented so, 0 when the swap has
+ * to read back instead (the window then has to be sent whole). */
+static int present_keyed(struct glr_ctx *c, struct glr_surface *s, int x0, int y0, int x1, int y1, int whole) {
+  if (!c->keyed || !window_ops->origin || !window_ops->fill) return 0;
+  if (c->key_surface && c->key_surface != s) return 0;
+  if (s->key_wait > 0) { s->key_wait--; return 0; }
+  int rx, ry;
+  if (!window_ops->origin(s->native, &rx, &ry)) return 0;
+  if (!s->key || whole) { x0 = 0; y0 = 0; x1 = s->width; y1 = s->height; }
+  uint32_t start;
+  uint32_t *w = emit_query(c, OP_PresentSurface, 7, &start);
+  w[0] = 0;
+  w[1] = (uint32_t)rx;
+  w[2] = (uint32_t)ry;
+  w[3] = (uint32_t)x0;
+  w[4] = (uint32_t)(s->height - y1);
+  w[5] = (uint32_t)(x1 - x0);
+  w[6] = (uint32_t)(y1 - y0);
+  double key = 0;
+  if (query_numbers(c, start, &key, 1) < 1 || key <= 0 || key > 0xffffff) {
+    /* No keyed presenter on the page, or all keys taken. */
+    if (c->key_surface == s) c->key_surface = NULL;
+    s->key = 0;
+    s->key_wait = 60;
+    return 0;
+  }
+  c->key_surface = s;
+  /* The frame is on the page before the window shows the key, so the key is
+   * never shown without it. */
+  if (s->key != (unsigned)key || whole) {
+    if (!window_ops->fill(s->native, (unsigned)key)) {
+      uint32_t end;
+      uint32_t *e = emit_query(c, OP_PresentSurface, 7, &end);
+      memset(e, 0, 7 * 4);
+      e[0] = 1; /* end */
+      query_numbers(c, end, &key, 1);
+      c->key_surface = NULL;
+      s->key = 0;
+      s->key_wait = 600;
+      return 0;
+    }
+    s->key = (unsigned)key;
+  }
+  return 1;
 }
 /* rects: n x,y,w,h damage rectangles (bottom-left origin); n == 0 means
  * the whole surface. Only their bounding box is read back, and only the part
@@ -2858,7 +2988,17 @@ static EGLBoolean swap_buffers(EGLDisplay dpy, EGLSurface surface, const EGLint 
     }
   }
   int whole = !s->presented || exposed;
-  int shown = x0 < x1 && y0 < y1 ? present_window(c, s, x0, y0, x1 - x0, y1 - y0, whole) : 1;
+  int shown = 1;
+  unsigned had_key = s->key;
+  if (x0 < x1 && y0 < y1 && !present_keyed(c, s, x0, y0, x1, y1, whole)) {
+    if (had_key) {
+      /* The window shows the key colour, not a frame. */
+      s->key = 0;
+      whole = 1;
+      x0 = 0; y0 = 0; x1 = s->width; y1 = s->height;
+    }
+    shown = present_window(c, s, x0, y0, x1 - x0, y1 - y0, whole);
+  }
   if (shown && !c->lost) {
     c->shown = s;
     s->presented = 1;

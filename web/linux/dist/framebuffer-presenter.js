@@ -87,6 +87,16 @@ export function createWebGLPresenter(width, height, onLost) {
     } catch (error) { close(); throw error; }
 }
 
+// Keyed GL window holes (guest-gl-remote.js PresentSurface): where the
+// framebuffer pixel's colour is a hole's key and lies inside its rectangle,
+// the frame is transparent, showing the GL window's canvas underneath.
+export const MAX_HOLES = 4;
+const holeTest = (k) => `
+                if (hole[${k}].key.w == 1u && all(c == hole[${k}].key.xyz)) {
+                    let q = p - hole[${k}].rect.xy;
+                    if (all(q >= vec2i(0)) && all(q < hole[${k}].rect.zw)) { out = vec4f(0.); }
+                }`;
+
 export async function createWebGPUPresenter(width, height, onLost) {
     const gpu = globalThis.navigator?.gpu;
     if (!gpu) throw new Error("WebGPU unavailable");
@@ -94,10 +104,14 @@ export async function createWebGPUPresenter(width, height, onLost) {
     if (!adapter) throw new Error("WebGPU adapter unavailable");
     const device = await adapter.requestDevice();
     let context, texture, closed = false;
+    // Per hole: key (r, g, b, live) and rectangle (x, y, w, h).
+    const uniforms = new Int32Array(MAX_HOLES * 8);
+    let uniformBuffer;
     const close = () => {
         if (closed) return;
         closed = true;
         texture?.destroy();
+        uniformBuffer?.destroy();
         context?.unconfigure();
         device.destroy();
     };
@@ -106,7 +120,7 @@ export async function createWebGPUPresenter(width, height, onLost) {
         context = canvas.getContext("webgpu");
         if (!context) throw new Error("WebGPU canvas unavailable");
         const format = gpu.getPreferredCanvasFormat();
-        context.configure({ device, format, alphaMode: "opaque" });
+        context.configure({ device, format, alphaMode: "premultiplied" });
         const shader = device.createShaderModule({ code: `
             struct Vertex { @builtin(position) pos: vec4f, @location(0) uv: vec2f }
             @vertex fn vertex(@builtin(vertex_index) i:u32)->Vertex {
@@ -114,9 +128,14 @@ export async function createWebGPUPresenter(width, height, onLost) {
                 var o:Vertex; o.pos=vec4f(p,0.,1.); o.uv=vec2f((p.x+1.)*.5,(1.-p.y)*.5); return o;
             }
             @group(0) @binding(0) var pixels:texture_2d<f32>;
+            struct Hole { key: vec4u, rect: vec4i }
+            @group(0) @binding(1) var<uniform> hole: array<Hole, ${MAX_HOLES}>;
             @fragment fn fragment(v:Vertex)->@location(0) vec4f {
                 let p=vec2i(v.uv*vec2f(textureDimensions(pixels)));
-                return vec4f(textureLoad(pixels,p,0).bgr,1.);
+                let t=textureLoad(pixels,p,0);
+                let c=vec3u(round(t.bgr*255.));
+                var out=vec4f(t.bgr,1.);${Array.from({ length: MAX_HOLES }, (_, k) => holeTest(k)).join("")}
+                return out;
             }` });
         const pipeline = await device.createRenderPipelineAsync({
             layout: "auto", vertex: { module: shader, entryPoint: "vertex" },
@@ -125,8 +144,9 @@ export async function createWebGPUPresenter(width, height, onLost) {
         });
         texture = device.createTexture({ size: [width,height], format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
-        const group = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0),
-            entries: [{ binding: 0, resource: texture.createView() }] });
+        uniformBuffer = device.createBuffer({ size: uniforms.byteLength, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+        const group = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [
+            { binding: 0, resource: texture.createView() }, { binding: 1, resource: { buffer: uniformBuffer } }] });
         device.lost.then(info => { if (!closed) onLost(`WebGPU device lost: ${info.reason}`); });
         device.addEventListener("uncapturederror", event => {
             event.preventDefault();
@@ -135,15 +155,24 @@ export async function createWebGPUPresenter(width, height, onLost) {
         return {
             backend: "webgpu", canvas,
             fallbackAdapter: adapter.info?.isFallbackAdapter ?? null,
-            // Upload only the changed rectangle; the texture keeps the rest.
-            draw(bytes, from = 0, to = height, x0 = 0, x1 = width) {
+            /** Holes for the next draws: up to MAX_HOLES {key: 0xRRGGBB, x, y, width, height}. */
+            setHoles(holes) {
                 if (closed) throw new Error("WebGPU presenter closed");
-                device.queue.writeTexture({ texture, origin: [x0, from] }, bytes,
+                uniforms.fill(0);
+                holes.slice(0, MAX_HOLES).forEach((h, k) => uniforms.set([h.key >> 16 & 255, h.key >> 8 & 255, h.key & 255, 1,
+                    h.x, h.y, h.width, h.height], k * 8));
+                device.queue.writeBuffer(uniformBuffer, 0, uniforms);
+            },
+            // Upload only the changed rectangle; the texture keeps the rest.
+            // upload false: only the holes changed, the framebuffer texture is current.
+            draw(bytes, from = 0, to = height, x0 = 0, x1 = width, upload = true) {
+                if (closed) throw new Error("WebGPU presenter closed");
+                if (upload) device.queue.writeTexture({ texture, origin: [x0, from] }, bytes,
                     { offset: (from * width + x0) * 4, bytesPerRow: width * 4 }, [x1 - x0, to - from]);
                 const encoder = device.createCommandEncoder();
                 const pass = encoder.beginRenderPass({ colorAttachments: [{
                     view: context.getCurrentTexture().createView(),
-                    loadOp: "clear", storeOp: "store", clearValue: { r:0,g:0,b:0,a:1 },
+                    loadOp: "clear", storeOp: "store", clearValue: { r:0,g:0,b:0,a:0 },
                 }] });
                 pass.setPipeline(pipeline); pass.setBindGroup(0, group); pass.draw(3); pass.end();
                 device.queue.submit([encoder.finish()]);

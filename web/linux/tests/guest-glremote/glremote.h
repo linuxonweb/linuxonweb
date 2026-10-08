@@ -42,6 +42,14 @@ struct glremote_window_ops {
   int (*exposed)(unsigned long window);
   /* Native visual id with `depth` bits (24 or 32), 0 when there is none. */
   int (*visual)(int depth);
+  /* Optional, both or neither: keyed presentation. When the host offers it,
+   * the window is filled with a key colour and the host shows the canvas
+   * wherever the screen shows that colour, so swaps read nothing back.
+   * origin(): the window's position on the root window; 0 when unknown.
+   * fill(): paints the whole window with the 0xRRGGBB colour `rgb`; 0 when
+   * the window cannot be keyed (gone, or not an opaque 24-bit TrueColor one). */
+  int (*origin)(unsigned long window, int *x, int *y);
+  int (*fill)(unsigned long window, unsigned rgb);
 };
 void glremote_set_window_ops(const struct glremote_window_ops *ops);
 

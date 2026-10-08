@@ -98,6 +98,24 @@ export function createFramebufferHost(memory, options) {
         top = Math.min(top, t); bottom = Math.max(bottom, b);
         left = Math.min(left, l); right = Math.max(right, r);
     };
+    // Rectangle to show again without new framebuffer bytes (keyed GL window
+    // holes changed): rows [ptop, pbottom), pixels [pleft, pright).
+    let ptop = height, pbottom = 0, pleft = width, pright = 0;
+    const markPaint = (x, y, w, h) => {
+        const x0 = Math.max(0, x), y0 = Math.max(0, y), x1 = Math.min(width, x + w), y1 = Math.min(height, y + h);
+        if (x0 >= x1 || y0 >= y1) return;
+        ptop = Math.min(ptop, y0); pbottom = Math.max(pbottom, y1);
+        pleft = Math.min(pleft, x0); pright = Math.max(pright, x1);
+    };
+    // Keyed GL window overlays (guest-gl-remote.js PresentSurface), by key:
+    // {pending: newest unshown frame, x, y, element: the window's canvas,
+    // rect: [x, y, w, h] it shows}. Each GL window's frames go straight to its
+    // own bitmaprenderer canvas under the framebuffer canvas; the presenter
+    // makes the framebuffer transparent where it shows the window's key colour
+    // inside that rectangle, so stacking and the cursor stay the guest's.
+    const overlays = new Map();
+    const stage = canvas.parentElement ?? null;
+    let overlaySupport = false, holesChanged = false, holeCount = 0;
     let renderer = null;
     let generation = 0;
     // "auto" means WebGPU. A WebGPU failure never falls back silently: the
@@ -107,7 +125,8 @@ export function createFramebufferHost(memory, options) {
     const backends = ["auto", "webgpu", "webgl", "canvas2d"];
     const webgpuTimeoutMs = options.webgpuTimeoutMs ?? 10000;
     const diagnostics = { backend: "canvas2d", requested: options.backend ?? "canvas2d",
-        frames: 0, presents: 0, coalesced: 0, unchanged: 0, fallbackReason: null, fallbackAdapter: null,
+        frames: 0, presents: 0, coalesced: 0, unchanged: 0, overlayFrames: 0, overlayDropped: 0, overlays: 0,
+        fallbackReason: null, fallbackAdapter: null,
         failure: null, awaitingChoice: false, diff: fast ? "simd" : "js" };
     if (!backends.includes(diagnostics.requested))
         throw new Error("unknown framebuffer backend");
@@ -119,11 +138,66 @@ export function createFramebufferHost(memory, options) {
         return select(backend);
     };
     const publish = () => {
+        // Overlays stay while a presenter restarts; a new one shows them again.
+        const support = !!renderer?.setHoles && !!stage && !!globalThis.document;
+        if (support !== overlaySupport) {
+            overlaySupport = support;
+            if (support) {
+                // The underlays sit between the stage's background and the canvas.
+                stage.style.isolation = "isolate";
+                canvas.style.background = "transparent";
+            }
+            options.onOverlaySupport?.(support);
+        }
         if (canvas.dataset) canvas.dataset.framebufferBackend = diagnostics.backend;
         if (canvas.dispatchEvent && globalThis.CustomEvent)
             canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics, setBackend } }));
     };
-    const repaint = () => { if (staging || source) { dirty = true; mark(0, height, 0, width); schedule_paint(); } };
+    const dropOverlay = key => {
+        const o = overlays.get(key);
+        if (!o) return;
+        o.pending?.close();
+        o.element?.remove();
+        overlays.delete(key);
+        diagnostics.overlays = overlays.size;
+        if (o.rect) { markPaint(...o.rect); holesChanged = true; dirty = true; schedule_paint(); }
+    };
+    // Shows each overlay's newest frame and marks the framebuffer rectangles whose holes moved.
+    const applyOverlays = () => {
+        for (const o of overlays.values()) {
+            if (!o.pending) continue;
+            const bitmap = o.pending, rect = [o.x, o.y, bitmap.width, bitmap.height];
+            o.pending = null;
+            if (!o.element) {
+                o.element = document.createElement("canvas");
+                o.element.className = "gl-keyed-surface";
+                Object.assign(o.element.style, { position: "absolute", zIndex: "-1", pointerEvents: "none", imageRendering: "pixelated" });
+                stage.prepend(o.element);
+                o.context = o.element.getContext("bitmaprenderer");
+            }
+            if (o.element.width !== bitmap.width) o.element.width = bitmap.width;
+            if (o.element.height !== bitmap.height) o.element.height = bitmap.height;
+            o.context.transferFromImageBitmap(bitmap);
+            diagnostics.overlayFrames++;
+            if (o.rect && o.rect.every((v, k) => v === rect[k])) continue;
+            if (o.rect) markPaint(...o.rect);
+            markPaint(...rect);
+            o.rect = rect;
+            place(o);
+            holesChanged = true;
+        }
+    };
+    // Positions an overlay's canvas over its guest root rectangle in CSS pixels,
+    // clipped to the screen.
+    const place = o => {
+        const sx = canvas.clientWidth / width, sy = canvas.clientHeight / height, [x, y, w, h] = o.rect;
+        const clip = [Math.max(0, -y) * sy, Math.max(0, x + w - width) * sx, Math.max(0, y + h - height) * sy, Math.max(0, -x) * sx];
+        Object.assign(o.element.style, { left: `${canvas.offsetLeft + x * sx}px`, top: `${canvas.offsetTop + y * sy}px`,
+            width: `${w * sx}px`, height: `${h * sy}px`, clipPath: `inset(${clip.map(v => `${v}px`).join(" ")})` });
+    };
+    const holes = () => [...overlays.values()].filter(o => o.rect)
+        .map(o => ({ key: o.key, x: o.rect[0], y: o.rect[1], width: o.rect[2], height: o.rect[3] }));
+    const repaint = () => { holesChanged = true; if (staging || source) { dirty = true; mark(0, height, 0, width); schedule_paint(); } };
     // Stop presenting and wait for the user; the latest frame stays pending.
     const awaitChoice = reason => {
         generation++;
@@ -255,23 +329,31 @@ export function createFramebufferHost(memory, options) {
                 return;
             dirty = false;
             snapshot();
-            if (!staging || bottom <= top)
+            if (overlaySupport && overlays.size) applyOverlays();
+            if (holesChanged && renderer?.setHoles) { const list = holes(); renderer.setHoles(list); holeCount = list.length; holesChanged = false; }
+            if (!staging || (bottom <= top && pbottom <= ptop))
                 return;
-            let from = top, to = bottom, x0 = left, x1 = right;
+            let from = top, to = bottom, x0 = left, x1 = right, upload = bottom > top;
+            // Shown: the uploaded rows plus where holes changed.
+            let pfrom = Math.min(top, ptop), pto = Math.max(bottom, pbottom), px0 = Math.min(left, pleft), px1 = Math.max(right, pright);
             top = height; bottom = 0; left = width; right = 0;
+            ptop = height; pbottom = 0; pleft = width; pright = 0;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
             // A CSS/backing-store resize must not crop or scale the guest mode;
             // it also clears the canvas, so the whole frame is drawn again.
             if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width; canvas.height = height;
-                from = 0; to = height; x0 = 0; x1 = width;
+                from = 0; to = height; x0 = 0; x1 = width; upload = true;
             }
+            if (upload) { pfrom = Math.min(pfrom, from); pto = Math.max(pto, to); px0 = Math.min(px0, x0); px1 = Math.max(px1, x1); }
             try {
                 if (renderer) {
                     // Only the changed rectangle is uploaded and copied; the canvas keeps the rest.
-                    const frame = renderer.draw(staging, from, to, x0, x1);
-                    try { ctx.drawImage(frame, x0, from, x1 - x0, to - from, x0, from, x1 - x0, to - from); }
+                    const frame = renderer.draw(staging, from, to, x0, x1, upload);
+                    // The frame is transparent in holes: replace, do not blend.
+                    if (holeCount) ctx.clearRect(px0, pfrom, px1 - px0, pto - pfrom);
+                    try { ctx.drawImage(frame, px0, pfrom, px1 - px0, pto - pfrom, px0, pfrom, px1 - px0, pto - pfrom); }
                     finally { frame.close?.(); }
                 } else paint2d(from, to, x0, x1);
             } catch (error) {
@@ -289,6 +371,23 @@ export function createFramebufferHost(memory, options) {
         bpp,
         ready,
         get diagnostics() { return { ...diagnostics }; },
+        /** Keyed GL window overlay frames from the GPU owner (guest-gl-remote.js PresentSurface). */
+        overlay(frame) {
+            if (frame.reset) { for (const key of [...overlays.keys()]) dropOverlay(key); return; }
+            if (frame.end) { dropOverlay(frame.key); return; }
+            if (!frame.bitmap) return;
+            if (closed || !overlaySupport) { frame.bitmap.close(); return; }
+            let o = overlays.get(frame.key);
+            if (!o) {
+                overlays.set(frame.key, o = { key: frame.key, pending: null, x: 0, y: 0, element: null, context: null, rect: null });
+                diagnostics.overlays = overlays.size;
+            }
+            // Not shown yet: only the newest frame is.
+            if (o.pending) { o.pending.close(); diagnostics.overlayDropped++; }
+            o.pending = frame.bitmap; o.x = frame.x; o.y = frame.y;
+            dirty = true;
+            schedule_paint();
+        },
         setBackend,
         get_mode(width_ptr, height_ptr, bpp_ptr) {
             const view = new DataView(memory.buffer);
@@ -316,6 +415,8 @@ export function createFramebufferHost(memory, options) {
             generation++;
             renderer?.close();
             renderer = null;
+            for (const o of overlays.values()) { o.pending?.close(); o.element?.remove(); }
+            overlays.clear();
             if (raf) {
                 (globalThis.cancelAnimationFrame ?? clearTimeout)(raf);
                 raf = 0;

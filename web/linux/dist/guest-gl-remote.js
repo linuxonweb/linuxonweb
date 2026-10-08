@@ -62,7 +62,7 @@ export const OPS = [
     "GetRenderbufferParameter", "GetTexParameter", "GetSamplerParameter", "GetVertexAttrib", "GetVertexAttribOffset",
     "GetQuery", "GetQueryParameter", "GetUniform", "GetShaderPrecisionFormat", "GetInternalformatParameter", "GetError",
     "IsEnabled", "IsObject", "CheckFramebufferStatus", "GetFragDataLocation", "ProgramInfo", "ShaderInfo",
-    "GetBufferSubData",
+    "GetBufferSubData", "PresentSurface",
 ];
 
 const K_PROGRAM = 8, K_SHADER = 9;
@@ -141,6 +141,33 @@ let enabled = true, statsEnabled = false;
 export function configureGl(value) {
     enabled = value?.enabled !== false;
     statsEnabled = value?.stats === true;
+}
+
+// Keyed window presentation. The guest paints a window surface's visible
+// pixels in the guest framebuffer with a key colour, and the page's
+// framebuffer presenter shows the context's canvas wherever it finds that
+// colour. Each swap then posts the canvas as an ImageBitmap to the page
+// ("gpu-present" with keyed: true) instead of reading it back to the guest.
+// Only while the page says its presenter can do it; each live key belongs to
+// one context, and the presenter has room for KEYS.length of them.
+const KEYS = [0xfe01fd, 0x01fe02, 0xfd02fc, 0x02fd01];
+const PRESENT_END = 1;
+let keyedSink = false;
+const keyOwners = new Map(); // key -> context
+/** Page presenter state (guest-gpu-owner.js): keyed overlays can be shown or not. */
+export function setKeyedPresent(on) {
+    keyedSink = !!on && typeof globalThis.postMessage === "function";
+    if (!keyedSink)
+        for (const ctx of [...keyOwners.values()])
+            endKeyed(ctx, false);
+}
+function endKeyed(ctx, notify = true) {
+    if (!ctx.key)
+        return;
+    if (notify && keyedSink)
+        globalThis.postMessage({ type: "gpu-present", keyed: true, key: ctx.key, end: true });
+    keyOwners.delete(ctx.key);
+    ctx.key = 0;
 }
 
 const encoder = new TextEncoder(), decoder = new TextDecoder();
@@ -235,6 +262,7 @@ function closeContext(id, log, why) {
     if (!ctx)
         return false;
     contexts.delete(id);
+    endKeyed(ctx);
     log?.(`gl context ${id} closed (${why}): execs=${ctx.execs} commands=${ctx.commands}`);
     try {
         ctx.gl.getExtension("WEBGL_lose_context")?.loseContext();
@@ -253,6 +281,7 @@ function openInfo(gl, ctx) {
     lines.push(`renderer Host WebGL2 (${renderer})`);
     lines.push(`vendor glremote (${vendor})`);
     lines.push("glsl OpenGL ES GLSL ES 3.00");
+    lines.push("present keyed");
     const names = [];
     for (const [webgl, gles] of EXTENSIONS)
         if (gl.getExtension(webgl) && gles)
@@ -294,7 +323,7 @@ function open(memory, a, log, memories) {
         throw new Fault(ENODEV);
     const id = nextContext++;
     const ctx = {
-        id, gl, canvas, lost: false, error: 0, copyShared: false, execs: 0, commands: 0, failures: 0,
+        id, gl, canvas, lost: false, error: 0, key: 0, copyShared: false, execs: 0, commands: 0, failures: 0,
         objects: Array.from({ length: K_PROGRAM + 1 }, () => new Map()), names: new WeakMap(),
         programs: new WeakMap(), program: null, cookiePointer: 0, cookie: null, memory: null, cmdPointer: 0,
         w: null, i32: null, f32: null, warned: new Set(), log,
@@ -1099,6 +1128,27 @@ H.GetBufferSubData = (c, i) => {
     c.gl.getBufferSubData(c.w[i], c.w[i + 1], out.view);
     out.finish();
     return new Uint8Array();
+};
+// flags, root x, root y, damage x, y, width, height (canvas pixels, top-left
+// origin). Reply: the key the window must show, or 0 when the guest has to
+// present by reading back (no keyed presenter on the page, or no free key).
+H.PresentSurface = (c, i) => {
+    if (c.w[i] & PRESENT_END || !keyedSink || typeof c.canvas.transferToImageBitmap !== "function") {
+        endKeyed(c);
+        return numberReply([0]);
+    }
+    if (!c.key) {
+        const key = KEYS.find((k) => !keyOwners.has(k));
+        if (key === undefined)
+            return numberReply([0]);
+        c.key = key;
+        keyOwners.set(key, c);
+    }
+    // preserveDrawingBuffer: the canvas keeps its pixels for the next partial frame.
+    const bitmap = c.canvas.transferToImageBitmap();
+    globalThis.postMessage({ type: "gpu-present", keyed: true, key: c.key, x: c.i32[i + 1], y: c.i32[i + 2],
+        damage: [c.i32[i + 3], c.i32[i + 4], c.i32[i + 5], c.i32[i + 6]], bitmap }, [bitmap]);
+    return numberReply([c.key]);
 };
 
 const HANDLERS = [null, ...OPS.map((name) => {

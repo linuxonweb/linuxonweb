@@ -33,8 +33,10 @@
  */
 #define _POSIX_C_SOURCE 200809L /* setenv */
 #include <EGL/egl.h>
+#include <X11/Xlib-xcb.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <xcb/xcb.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,6 +104,8 @@ struct x_window {
   unsigned long id;
   int width, height, depth, exposed, gone;
   Visual *visual;
+  /* Position on the root window, while placed (see x_origin). */
+  int x, y, placed;
 };
 static struct x_window x_windows[32];
 
@@ -110,6 +114,10 @@ static void x_drain(Display *d) {
   while (XEventsQueued(d, QueuedAfterReading)) {
     XEvent event;
     XNextEvent(d, &event);
+    /* Only window surfaces and their ancestors send these here: any of them
+     * moving can move every window surface. */
+    if (event.type == ConfigureNotify || event.type == ReparentNotify)
+      for (unsigned i = 0; i < sizeof x_windows / sizeof *x_windows; i++) x_windows[i].placed = 0;
     for (unsigned i = 0; i < sizeof x_windows / sizeof *x_windows; i++) {
       struct x_window *w = &x_windows[i];
       if (!w->id || w->gone) continue;
@@ -141,7 +149,7 @@ static struct x_window *x_window(Display *d, unsigned long window) {
   XWindowAttributes wa;
   XSelectInput(d, (Window)window, StructureNotifyMask | ExposureMask);
   if (!XGetWindowAttributes(d, (Window)window, &wa)) return NULL;
-  *slot = (struct x_window){window, wa.width, wa.height, wa.depth, 1, 0, wa.visual};
+  *slot = (struct x_window){window, wa.width, wa.height, wa.depth, 1, 0, wa.visual, 0, 0, 0};
   return slot;
 }
 
@@ -211,6 +219,70 @@ static int x_exposed(unsigned long window) {
   return exposed;
 }
 
+/* Keyed presentation (glremote.h). The position on the root window is read
+ * once and again only after the window or an ancestor was configured or
+ * reparented; StructureNotify is selected on every ancestor for that. The
+ * requests go through XCB so that an ancestor destroyed meanwhile is an error
+ * reply here, not a call to the application's fatal Xlib error handler. */
+static int x_origin(unsigned long window, int *x, int *y) {
+  pthread_mutex_lock(&x_lock);
+  Display *d = x_open();
+  struct x_window *w = NULL;
+  if (d) {
+    x_drain(d);
+    w = x_window(d, window);
+  }
+  int ok = w && !w->gone;
+  if (ok && !w->placed) {
+    xcb_connection_t *conn = XGetXCBConnection(d);
+    uint32_t mask = XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+    xcb_window_t root = 0;
+    for (xcb_window_t at = (xcb_window_t)window; ok;) {
+      xcb_query_tree_reply_t *tree = xcb_query_tree_reply(conn, xcb_query_tree(conn, at), NULL);
+      if (!tree) { ok = 0; break; }
+      root = tree->root;
+      xcb_window_t parent = tree->parent;
+      free(tree);
+      if (!parent || parent == root) break;
+      xcb_generic_error_t *error = xcb_request_check(conn, xcb_change_window_attributes_checked(conn, parent, XCB_CW_EVENT_MASK, &mask));
+      if (error) { free(error); ok = 0; }
+      at = parent;
+    }
+    xcb_translate_coordinates_reply_t *at = ok ? xcb_translate_coordinates_reply(conn, xcb_translate_coordinates(conn, (xcb_window_t)window, root, 0, 0), NULL) : NULL;
+    if (at) {
+      w->x = at->dst_x;
+      w->y = at->dst_y;
+      w->placed = 1;
+      free(at);
+    } else ok = 0;
+  }
+  if (ok) { *x = w->x; *y = w->y; }
+  pthread_mutex_unlock(&x_lock);
+  return ok;
+}
+
+static int x_fill(unsigned long window, unsigned rgb) {
+  pthread_mutex_lock(&x_lock);
+  Display *d = x_open();
+  struct x_window *w = NULL;
+  if (d) {
+    x_drain(d);
+    w = x_window(d, window);
+  }
+  Visual *v = w ? w->visual : NULL;
+  /* Opaque windows only: the host shows the key's pixels without alpha. */
+  int ok = w && !w->gone && w->depth == 24 && v->red_mask == 0xff0000 && v->green_mask == 0xff00 && v->blue_mask == 0xff;
+  if (ok) {
+    GC *gc = &x_gc[0];
+    if (!*gc) *gc = XCreateGC(d, (Window)window, 0, NULL);
+    XSetForeground(d, *gc, rgb & 0xffffff);
+    XFillRectangle(d, (Window)window, *gc, 0, 0, (unsigned)w->width, (unsigned)w->height);
+    XFlush(d);
+  }
+  pthread_mutex_unlock(&x_lock);
+  return ok;
+}
+
 static int x_visual(int depth) {
   static int ids[2] = {-1, -1};
   int *id = &ids[depth == 32];
@@ -225,7 +297,7 @@ static int x_visual(int depth) {
   return result;
 }
 
-static const struct glremote_window_ops x11_window_ops = {x_size, x_present, x_exposed, x_visual};
+static const struct glremote_window_ops x11_window_ops = {x_size, x_present, x_exposed, x_visual, x_origin, x_fill};
 
 __attribute__((constructor)) static void zink_egl_static_register(void) {
   const char *backend = getenv("GUEST_GL_BACKEND");

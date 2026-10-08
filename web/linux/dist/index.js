@@ -105,7 +105,18 @@ export async function spawnMachine(options) {
     let framebuffer_host = null;
     const audio_host = options.audio ? createAudioHost() : null;
     // Guest GPU hostcall hub; its owner Worker starts only at the first guest call.
-    const gpu_host = options.gpuHostcall === false ? null : createGpuHostcallHost(options.gpuHostcall ?? {});
+    // Keyed GL window frames (guest-gl-remote.js PresentSurface) go to the
+    // framebuffer presenter; the rest to the page's own onPresent.
+    const gpu_options = options.gpuHostcall ?? {};
+    const gpu_host = options.gpuHostcall === false ? null : createGpuHostcallHost({
+        ...gpu_options,
+        onPresent: (data, reply) => {
+            if (data.keyed || data.reset) framebuffer_host?.overlay(data);
+            if (data.keyed) { if (!framebuffer_host) data.bitmap?.close(); return; }
+            if (gpu_options.onPresent) gpu_options.onPresent(data, reply);
+            else data.bitmap?.close();
+        },
+    });
     const framebuffer_mode = {
         width: options.framebuffer?.width ?? 1024,
         height: options.framebuffer?.height ?? 768,
@@ -401,6 +412,10 @@ export async function spawnMachine(options) {
                         width: framebuffer_mode.width,
                         height: framebuffer_mode.height,
                         bpp: framebuffer_mode.bpp,
+                        onOverlaySupport: (on) => {
+                            gpu_host?.setKeyedPresent(on);
+                            options.framebuffer.onOverlaySupport?.(on);
+                        },
                     });
                 }
                 return framebuffer_imports(wasm_memory, framebuffer_host, framebuffer_mode);

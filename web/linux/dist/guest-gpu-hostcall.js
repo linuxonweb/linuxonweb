@@ -352,6 +352,8 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
     const attachments = new Map(); // slot -> {gen, memory}
     let owner = null;
     let closed = false;
+    // The page can show keyed GL window overlays (framebuffer.js); told to every owner.
+    let keyedPresent = false;
     const events = [];
     const note = (event) => {
         if (events.length < 256)
@@ -414,7 +416,7 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
             note({ kind: "owner-error", gen, message: String(event.message ?? event) });
             markDead(DEAD_ERROR, gen);
         };
-        worker.postMessage({ type: "init", hub: sab, gen, config: ownerConfig, attachments: [...attachments].map(([slot, a]) => ({ slot, ...a })) });
+        worker.postMessage({ type: "init", hub: sab, gen, config: ownerConfig, keyedPresent, attachments: [...attachments].map(([slot, a]) => ({ slot, ...a })) });
         note({ kind: "owner-spawned", gen });
     }
     return {
@@ -422,6 +424,11 @@ export function createGpuHostcallHost({ testHooks = false, stallMs = DEFAULT_STA
         events,
         get owner() {
             return owner;
+        },
+        /** Whether the page presenter shows keyed GL window overlays now. */
+        setKeyedPresent(on) {
+            keyedPresent = !!on;
+            owner?.postMessage({ type: "keyed-present", on: keyedPresent });
         },
         handle(message) {
             if (closed)

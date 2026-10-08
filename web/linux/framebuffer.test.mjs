@@ -66,7 +66,8 @@ function fakeCanvas() {
     getContext: () => ({
       createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }),
       putImageData: image => painted.push([...image.data]),
-      drawImage: frame => drawn.push(frame),
+      drawImage: (frame, ...rect) => drawn.push({ frame, rect }),
+      clearRect: (...rect) => drawn.push({ clear: rect }),
     }),
     dispatchEvent: event => events.push(event.detail) };
   return { canvas, painted, drawn, events };
@@ -76,7 +77,7 @@ function fakeCanvas() {
 async function withHostGlobals(gpu, fn) {
   const saved = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   const oldRAF = globalThis.requestAnimationFrame, oldCancel = globalThis.cancelAnimationFrame;
-  const oldOffscreen = globalThis.OffscreenCanvas, oldUsage = globalThis.GPUTextureUsage;
+  const oldOffscreen = globalThis.OffscreenCanvas, oldUsage = globalThis.GPUTextureUsage, oldBufferUsage = globalThis.GPUBufferUsage;
   let callback = null;
   globalThis.requestAnimationFrame = cb => { callback = cb; return 1; };
   globalThis.cancelAnimationFrame = () => { callback = null; };
@@ -86,26 +87,30 @@ async function withHostGlobals(gpu, fn) {
   } finally {
     Object.defineProperty(globalThis, 'navigator', saved);
     globalThis.requestAnimationFrame = oldRAF; globalThis.cancelAnimationFrame = oldCancel;
-    globalThis.OffscreenCanvas = oldOffscreen; globalThis.GPUTextureUsage = oldUsage;
+    globalThis.OffscreenCanvas = oldOffscreen; globalThis.GPUTextureUsage = oldUsage; globalThis.GPUBufferUsage = oldBufferUsage;
   }
 }
 
 // Minimal WebGPU fake: enough for createWebGPUPresenter to configure and draw.
 function fakeGpu() {
-  const state = { draws: 0, destroyed: 0, failDraw: false };
+  const state = { draws: 0, destroyed: 0, failDraw: false, uploads: 0, copies: [], uniforms: [] };
   let loseDevice;
   const makeDevice = () => ({
     lost: new Promise(resolve => { loseDevice = resolve; }),
     addEventListener() {},
     createShaderModule: () => ({}),
     createRenderPipelineAsync: async () => ({ getBindGroupLayout: () => ({}) }),
-    createTexture: () => ({ createView: () => ({}), destroy() {} }),
+    createTexture: ({ size }) => ({ width: size[0], height: size[1], createView: () => ({}), destroy() {} }),
+    createBuffer: () => ({ destroy() {} }),
     createBindGroup: () => ({}),
     createCommandEncoder: () => ({ beginRenderPass: () => ({ setPipeline() {}, setBindGroup() {}, draw() {}, end() {} }), finish: () => ({}) }),
-    queue: { writeTexture() { if (state.failDraw) throw new Error('fake draw failure'); }, submit() { state.draws++; } },
+    queue: { writeTexture() { if (state.failDraw) throw new Error('fake draw failure'); state.uploads++; }, submit() { state.draws++; },
+      writeBuffer(buffer, offset, data) { state.uniforms.push([offset, ...data]); },
+      copyExternalImageToTexture(source, destination, size) { state.copies.push([source.source.id, ...size]); } },
     destroy() { state.destroyed++; },
   });
-  globalThis.GPUTextureUsage = { TEXTURE_BINDING: 4, COPY_DST: 2 };
+  globalThis.GPUTextureUsage = { TEXTURE_BINDING: 4, COPY_DST: 2, RENDER_ATTACHMENT: 16 };
+  globalThis.GPUBufferUsage = { UNIFORM: 64, COPY_DST: 8 };
   globalThis.OffscreenCanvas = class { constructor(w, h) { this.width = w; this.height = h; }
     getContext(kind) { return kind === 'webgpu' ? { configure() {}, unconfigure() {}, getCurrentTexture: () => ({ createView: () => ({}) }) } : null; }
     transferToImageBitmap() { return { bitmap: true, close() {} }; } };
@@ -188,6 +193,76 @@ test('WebGPU presents frames, and device loss or draw failure pauses for a choic
     assert.ok(events.filter(detail => detail.awaitingChoice).length >= 2);
     host.close();
   });
+});
+
+test('keyed GL windows show in their own canvas under holes in the WebGPU frame', async () => {
+  const fake = fakeGpu();
+  const oldDocument = globalThis.document;
+  const shown = [];
+  const element = () => ({ width: 0, height: 0, style: {}, removed: false, remove() { this.removed = true; },
+    getContext: kind => kind === 'bitmaprenderer' ? { transferFromImageBitmap: bitmap => shown.push(bitmap.id) } : null });
+  globalThis.document = { createElement: () => element() };
+  try {
+    await withHostGlobals(fake.gpu, async frame => {
+      const memory = new WebAssembly.Memory({ initial: 1 });
+      const { canvas, drawn } = fakeCanvas();
+      const children = [];
+      canvas.style = {}; canvas.clientWidth = 16; canvas.clientHeight = 16; canvas.offsetLeft = 1; canvas.offsetTop = 0;
+      canvas.parentElement = { style: {}, prepend: child => children.unshift(child) };
+      const support = [];
+      const host = createFramebufferHost(memory, { canvas, width: 8, height: 8, backend: 'auto', onOverlaySupport: on => support.push(on) });
+      await host.ready;
+      assert.deepEqual(support, [true]);
+      assert.equal(canvas.parentElement.style.isolation, 'isolate');
+      assert.equal(canvas.style.background, 'transparent');
+      host.present(0,8,8,32,32); frame();
+      const uploads = fake.state.uploads;
+      const closed = [];
+      const bitmap = (id, width, height) => ({ id, width, height, close() { closed.push(id); } });
+      // First frame of key 0xfe01fd at 2,3: its canvas shows the frame, the hole is cut, no framebuffer bytes move.
+      host.overlay({ type: 'gpu-present', keyed: true, key: 0xfe01fd, x: 2, y: 3, damage: [1, 0, 1, 1], bitmap: bitmap('a', 4, 2) });
+      frame();
+      assert.equal(fake.state.uploads, uploads);
+      assert.deepEqual(shown, ['a']);
+      assert.equal(children.length, 1);
+      assert.deepEqual([children[0].width, children[0].height], [4, 2]);
+      assert.deepEqual({ ...children[0].style }, { position: 'absolute', zIndex: '-1', pointerEvents: 'none', imageRendering: 'pixelated',
+        left: '5px', top: '6px', width: '8px', height: '4px', clipPath: 'inset(0px 0px 0px 0px)' });
+      assert.deepEqual(fake.state.uniforms.at(-1).slice(0, 9), [0, 0xfe, 0x01, 0xfd, 1, 2, 3, 4, 2]);
+      assert.deepEqual(drawn.at(-2).clear, [2, 3, 4, 2]);
+      assert.deepEqual(drawn.at(-1).rect, [2, 3, 4, 2, 2, 3, 4, 2]);
+      assert.deepEqual(closed, []);
+      // Frames between paints: only the newest is shown; an unmoved window redraws no framebuffer.
+      const draws = fake.state.draws, uniforms = fake.state.uniforms.length;
+      host.overlay({ type: 'gpu-present', keyed: true, key: 0xfe01fd, x: 2, y: 3, damage: [0, 0, 1, 1], bitmap: bitmap('b', 4, 2) });
+      host.overlay({ type: 'gpu-present', keyed: true, key: 0xfe01fd, x: 2, y: 3, damage: [3, 1, 1, 1], bitmap: bitmap('c', 4, 2) });
+      frame();
+      assert.deepEqual(shown, ['a', 'c']);
+      assert.deepEqual(closed, ['b']);
+      assert.equal(fake.state.draws, draws);
+      assert.equal(fake.state.uniforms.length, uniforms);
+      assert.equal(host.diagnostics.overlayDropped, 1);
+      // Moving cuts the hole again over both rectangles; it is clipped to the screen.
+      host.overlay({ type: 'gpu-present', keyed: true, key: 0xfe01fd, x: 6, y: 5, damage: [0, 0, 1, 1], bitmap: bitmap('d', 4, 2) });
+      frame();
+      assert.deepEqual(drawn.at(-1).rect, [2, 3, 6, 4, 2, 3, 6, 4]);
+      assert.equal(children[0].style.clipPath, 'inset(0px 4px 0px 0px)');
+      // A new presenter gets the holes again.
+      fake.lose('unknown');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      await host.setBackend('auto');
+      frame();
+      assert.deepEqual(fake.state.uniforms.at(-1).slice(0, 9), [0, 0xfe, 0x01, 0xfd, 1, 6, 5, 4, 2]);
+      // End removes its canvas and the hole, repainting where it was.
+      host.overlay({ type: 'gpu-present', keyed: true, key: 0xfe01fd, end: true });
+      frame();
+      assert.equal(children[0].removed, true);
+      assert.deepEqual(fake.state.uniforms.at(-1), [0, ...new Array(32).fill(0)]);
+      assert.deepEqual(drawn.at(-1).rect, [6, 5, 2, 2, 6, 5, 2, 2]);
+      host.close();
+      assert.deepEqual(support, [true, false, true]);
+    });
+  } finally { globalThis.document = oldDocument; }
 });
 
 test('unchanged presents are skipped and only changed rows repaint', async () => {
