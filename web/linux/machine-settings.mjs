@@ -5,7 +5,10 @@ export function restoreConfiguration(saved, defaults, { resolutions, ramValues, 
   const configuration = { ...defaults };
   if (!saved || typeof saved !== 'object') return { configuration, ramChosen: false };
   if (resolutions.includes(saved.resolution)) configuration.resolution = saved.resolution;
-  if (Number.isInteger(saved.cpus) && saved.cpus >= 1 && saved.cpus <= maxCpus) configuration.cpus = saved.cpus;
+  // Records without the current CPU version saved 2 as the old default (also
+  // when only the Firefox memory choice was saved); they now get the new default.
+  const oldCpuDefault = saved.cpus === 2 && saved.cpuVersion !== CPU_VERSION;
+  if (Number.isInteger(saved.cpus) && saved.cpus >= 1 && saved.cpus <= maxCpus && !oldCpuDefault) configuration.cpus = saved.cpus;
   const ramChosen = ramValues.includes(saved.ram);
   if (ramChosen) configuration.ram = saved.ram;
   // Records without the current presentation version saved 'canvas2d' as the old
@@ -31,8 +34,9 @@ export function presentationUrl(href, backend) {
 // Display presentation defaults to "auto" (WebGPU). Saved records carry this
 // version so an explicit Canvas 2D choice is told apart from the old default.
 export const PRESENTATION_VERSION = 2;
+export const CPU_VERSION = 1;
 export function settingsRecord(configuration) {
-  return { ...configuration, presentationVersion: PRESENTATION_VERSION };
+  return { ...configuration, presentationVersion: PRESENTATION_VERSION, cpuVersion: CPU_VERSION };
 }
 
 // Firefox asks for memory only while the user has not chosen any and the

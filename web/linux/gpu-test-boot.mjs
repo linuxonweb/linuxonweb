@@ -15,7 +15,7 @@ async function packageResponse(url) {
 
 export async function bootWgpuTest({ backend, canvas, log, onStatus, configuration = {} }) {
   if (!crossOriginIsolated || !['webgpu', 'webgl'].includes(backend)) throw new Error('An isolated page and a supported wgpu backend are required.');
-  const cpus = configuration.cpus ?? navigator.hardwareConcurrency;
+  const cpus = configuration.cpus ?? Math.min(4, navigator.hardwareConcurrency);
   const memoryBytes = configuration.memoryBytes ?? 1073741824;
   const displayBackend = configuration.displayBackend ?? 'canvas2d';
   if (!Number.isInteger(cpus) || cpus < 1 || cpus > Math.min(64, navigator.hardwareConcurrency)) throw new Error('The test needs a supported CPU allocation.');

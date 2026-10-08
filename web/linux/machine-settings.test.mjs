@@ -108,3 +108,10 @@ test('the URL shows the active presentation and keeps other parameters', () => {
   assert.equal(presentationUrl('http://h/linux/index.html?firefox=1&debug=1', 'auto'), 'http://h/linux/index.html?firefox=1&debug=1&renderer=webgpu');
   assert.equal(presentationUrl('http://h/linux/index.html?renderer=canvas2d&firefox=1', 'webgl'), 'http://h/linux/index.html?renderer=webgl&firefox=1');
 });
+
+test('an unversioned saved 2 CPUs is the old default and takes the new default', () => {
+  const defaults = { ...firefoxDefaults, cpus: 4 };
+  assert.equal(restoreConfiguration({ resolution: '1280x720', cpus: 2, ram: 4096, backend: 'auto' }, defaults, options).configuration.cpus, 4);
+  assert.equal(restoreConfiguration(settingsRecord({ resolution: '1280x720', cpus: 2, ram: 4096, backend: 'auto' }), defaults, options).configuration.cpus, 2);
+  assert.equal(restoreConfiguration({ resolution: '1280x720', cpus: 3, ram: 4096, backend: 'auto' }, defaults, options).configuration.cpus, 3);
+});

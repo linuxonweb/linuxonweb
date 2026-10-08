@@ -17,7 +17,7 @@ type MaybePromise<T> = T | PromiseLike<T>;
 export interface SpawnMachineOptions {
     /** Kernel command line arguments, appended after `console=hvc0`. */
     cmdline?: string;
-    /** Virtual CPUs to boot, one Web Worker each. Defaults to the host's hardware concurrency. */
+    /** Virtual CPUs to boot, one Web Worker each. Defaults to four, capped at the host's hardware concurrency. */
     cpus?: number;
     /** The machine's virtio devices, in device tree order. */
     devices: readonly VirtioDevice[];
@@ -63,7 +63,7 @@ export declare class MachinePanicError extends Error {
  * @example
  * ```ts
  * const machine = await spawnMachine({
- *   cpus: navigator.hardwareConcurrency,
+ *   cpus: Math.min(4, navigator.hardwareConcurrency),
  *   initcpio: initramfs,
  *   devices: [
  *     consoleDevice(input, output),

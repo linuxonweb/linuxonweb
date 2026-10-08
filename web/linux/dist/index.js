@@ -85,7 +85,7 @@ function merge_devicetree(target, source) {
  * @example
  * ```ts
  * const machine = await spawnMachine({
- *   cpus: navigator.hardwareConcurrency,
+ *   cpus: Math.min(4, navigator.hardwareConcurrency),
  *   initcpio: initramfs,
  *   devices: [
  *     consoleDevice(input, output),
@@ -198,7 +198,8 @@ export async function spawnMachine(options) {
             chosen: {
                 "rng-seed": crypto.getRandomValues(new Uint8Array(64)),
                 bootargs: `console=hvc0 ${options.cmdline ?? ""}`,
-                ncpus: options.cpus ?? navigator.hardwareConcurrency,
+                // Default: four CPUs, capped at the host CPU count.
+                ncpus: options.cpus ?? Math.min(4, navigator.hardwareConcurrency || 1),
             },
             aliases: {},
             memory: {

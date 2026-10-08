@@ -432,9 +432,11 @@ function setStatus(message, state = "idle") {
 
 // The staged kernel supports at most CONFIG_NR_CPUS=64.
 const hostCores = Math.min(64, Math.max(1, navigator.hardwareConcurrency || 2));
+// Default to four guest CPUs, or every host CPU when the host has fewer.
+const defaultCpus = Math.min(4, hostCores);
 cpuInput.max = String(hostCores);
-cpuInput.value = String(Math.min(2, hostCores));
-const defaults = { resolution: "1280x720", cpus: Math.min(2, hostCores), ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'auto' };
+cpuInput.value = String(defaultCpus);
+const defaults = { resolution: "1280x720", cpus: defaultCpus, ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'auto' };
 function validConfiguration(value) {
   return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
     && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
