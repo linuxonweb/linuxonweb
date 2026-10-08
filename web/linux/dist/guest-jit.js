@@ -13,6 +13,9 @@
 //
 // Private syscall numbers (i386 numbering stops far below this range):
 //   0x6a490001 jit_install(module_ptr, module_len, flags, out_ptr) -> 0 | -errno
+//              flags JIT_INSTALL_PRIVATE places the functions in the calling
+//              thread's table only: the indices stay reserved process-wide
+//              but other threads (and fork children) see null there.
 //   0x6a490002 jit_free(base_index, count)                        -> 0 | -errno
 //   0x6a490003 jit_sync()                                         -> epoch (>= 0)
 //   0x6a490004 jit_stats(out_ptr) writes JIT_STATS_WORDS u32 values -> 0 | -errno
@@ -33,6 +36,7 @@ export const JIT_STATS_WORDS = 12;
 
 export const JIT_MAX_MODULE_BYTES = 1 << 20;
 export const JIT_MAX_EXPORTS = 1024;
+export const JIT_INSTALL_PRIVATE = 1;
 
 const E2BIG = 7, ENOEXEC = 8, ENOMEM = 12, EFAULT = 14, EINVAL = 22, ENOSPC = 28, ENOSYS = 38;
 
@@ -386,7 +390,7 @@ export class JitThread {
     install(memory, modulePtr, moduleLength, flags, outPtr) {
         if (!this.table)
             return -ENOSYS;
-        if (flags !== 0)
+        if (flags !== 0 && flags !== JIT_INSTALL_PRIVATE)
             return -EINVAL;
         if (moduleLength > JIT_MAX_MODULE_BYTES)
             return -E2BIG;
@@ -413,6 +417,8 @@ export class JitThread {
             // Under the lock nobody else appends: bring this thread up to date so
             // that the entry appended below is the only one not yet applied.
             this.replay();
+            if (flags === JIT_INSTALL_PRIVATE)
+                return this.installPrivate(module, count, memory, outPtr);
             if (ctl[W_EPOCH] >= MAX_LOG)
                 return -ENOSPC;
             const arenaUsed = ctl[W_ARENA_USED];
@@ -485,6 +491,30 @@ export class JitThread {
         finally {
             this.unlock();
         }
+    }
+    // Called with the lock held. Private installs are not logged, so they use
+    // no log or arena space and are never replayed; fresh indices only.
+    installPrivate(module, count, memory, outPtr) {
+        const ctl = this.ctl;
+        if (ctl[W_TABLE_BASE] === 0)
+            ctl[W_TABLE_BASE] = Math.max(1, this.table.length);
+        const base = Math.max(ctl[W_NEXT], ctl[W_TABLE_BASE]);
+        if (base + count > 0x7fffffff)
+            return -ENOMEM;
+        try {
+            this.place(module, base, count);
+        }
+        catch (error) {
+            if (error instanceof WebAssembly.LinkError)
+                return -ENOEXEC;
+            return -ENOMEM;
+        }
+        ctl[W_NEXT] = base + count;
+        ctl[W_INSTALLS]++;
+        const view = new DataView(memory.buffer);
+        for (let i = 0; i < count; i++)
+            view.setUint32(outPtr + i * 4, base + i, true);
+        return 0;
     }
     free(base, count) {
         const ctl = this.ctl;

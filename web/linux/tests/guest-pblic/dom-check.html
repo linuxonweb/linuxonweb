@@ -1,0 +1,85 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>DOM check running</title>
+<style>
+  body { font: 18px monospace; margin: 12px; }
+  #summary { font-size: 34px; font-weight: bold; }
+  .fail { color: #b00; } .ok { color: #070; }
+</style>
+<div id="summary">running…</div>
+<pre id="out"></pre>
+<div id="host"><span id="a" class="x y" data-k="v">text</span></div>
+<canvas id="c" width="64" height="64"></canvas>
+<script>
+// Guest Firefox DOM IC check: hot DOM getters, setters and methods (the
+// CallDOMGetterResult/CallDOMSetter/CallDOMFunction stubs), wrong-|this|
+// and throwing DOM calls. Every round must equal the expected values, and
+// the hash must match between ?pblic=0 and ?pblic=1 boots.
+"use strict";
+const ROUNDS = 6, N = 400;
+function show(v) {
+  if (Object.is(v, -0)) return "-0";
+  if (Array.isArray(v)) return "[" + v.map(show).join(",") + "]";
+  return typeof v + ":" + String(v);
+}
+const cases = [];
+function add(name, inputs, f, expected) { cases.push({ name, inputs, f, expected }); }
+const span = document.getElementById("a"), host = document.getElementById("host");
+const canvas = document.getElementById("c");
+const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+const ctx2 = document.createElement("canvas").getContext("2d");
+
+add("getters", [0, 1, 2], (i) => [span.id, span.className, span.tagName, host.childElementCount, span.dataset.k, i],
+    (i) => ["a", "x y", "SPAN", 1, "v", i]);
+add("setters", [0, 1, 2, 3], (i) => { span.title = "t" + i; span.tabIndex = i; return [span.title, span.tabIndex]; },
+    (i) => ["t" + i, i]);
+add("methods", [0, 1, 2], (i) => [document.getElementById("a") === span, span.getAttribute("data-k"),
+    span.hasAttribute("class"), span.classList.contains(i ? "x" : "z"), host.querySelector("#a") === span],
+    (i) => [true, "v", true, !!i, true]);
+add("canvas2d", [1, 2, 3], (i) => { ctx2.fillStyle = "#00000" + i; ctx2.lineWidth = i; return [ctx2.fillStyle, ctx2.lineWidth, ctx2.measureText("ab").width > 0]; },
+    (i) => ["#00000" + i, i, true]);
+add("webgl", [0, 1, 2], (i) => {
+  if (!gl) return "nogl";
+  gl.clearColor(i / 4, 0, 0, 1); gl.enable(gl.BLEND); const on = gl.isEnabled(gl.BLEND); gl.disable(gl.BLEND);
+  return [on, gl.isEnabled(gl.BLEND), gl.getParameter(gl.COLOR_CLEAR_VALUE)[0], gl.drawingBufferWidth];
+}, (i) => (gl ? [true, false, i / 4, 64] : "nogl"));
+const getId = Object.getOwnPropertyDescriptor(Element.prototype, "id").get;
+const getAttr = Element.prototype.getAttribute;
+add("wrong this", [0, 1, 2, 3], (i) => {
+  const t = i === 3 ? {} : span;
+  try { return [getId.call(t), getAttr.call(t, "data-k")]; } catch (e) { return e.constructor.name; }
+}, (i) => (i === 3 ? "TypeError" : ["a", "v"]));
+add("dom throws", [0, 1, 2], (i) => {
+  try { return host.querySelector(i === 2 ? "#!" : "#a") === span; } catch (e) { return e.name; }
+}, (i) => (i === 2 ? "SyntaxError" : true));
+
+let hash = 0x811c9dc5, fails = 0;
+function mix(s) { for (let i = 0; i < s.length; i++) { hash ^= s.charCodeAt(i); hash = Math.imul(hash, 16777619) >>> 0; } }
+const out = [];
+for (const c of cases) {
+  let bad = 0, firstBad = "";
+  const t0 = performance.now();
+  for (let r = 0; r < ROUNDS; r++) {
+    for (let k = 0; k < N; k++) {
+      const input = c.inputs[k % c.inputs.length];
+      const got = show(c.f(input));
+      const want = show(c.expected(input));
+      if (got !== want) { if (!bad) firstBad = `round ${r} input ${input} got ${got} want ${want}`; bad++; }
+      if (r === ROUNDS - 1 && k < c.inputs.length) mix(got);
+    }
+  }
+  const ms = (performance.now() - t0).toFixed(0);
+  if (bad) fails++;
+  out.push(`${bad ? "FAIL" : "ok  "} ${c.name.padEnd(12)} ${String(ms).padStart(6)}ms ${bad ? bad + " bad; first: " + firstBad : ""}`);
+}
+// DOM call throughput (not part of the hash).
+let s = 0; const t1 = performance.now();
+for (let k = 0; k < 20000; k++) { s += span.id.length + span.getAttribute("data-k").length; span.tabIndex = k & 7; }
+out.push(`domloop ${(performance.now() - t1).toFixed(0)}ms (${s})`);
+const hex = hash.toString(16).padStart(8, "0");
+document.getElementById("out").textContent = out.join("\n");
+const summary = document.getElementById("summary");
+summary.textContent = `${fails ? "FAIL " + fails : "ALL PASS"} (${cases.length} cases) hash ${hex}`;
+summary.className = fails ? "fail" : "ok";
+document.title = `DOM check ${fails ? "FAIL" : "PASS"} ${hex}`;
+</script>

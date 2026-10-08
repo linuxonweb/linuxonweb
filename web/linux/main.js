@@ -1087,6 +1087,14 @@ async function boot(mode) {
       gputestInit ? "gputest=1" : "",
       ...(gputestInit ? gputestCmdlineFlags(location.search) : []),
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
+      // Guest Firefox IC compiler switch for A/B tests (PBLIC; 0 disables).
+      /^[0-9]$/.test(new URLSearchParams(location.search).get("pblic") ?? "")
+        ? `pblic=${new URLSearchParams(location.search).get("pblic")}` : "",
+      // Guest Firefox method compiler switch (PBLBC; 0 disables, needs PBLIC).
+      /^[0-9]$/.test(new URLSearchParams(location.search).get("pblbc") ?? "")
+        ? `pblbc=${new URLSearchParams(location.search).get("pblbc")}` : "",
+      // Opcode histogram in diagnostic Firefox builds (PBLOPS).
+      new URLSearchParams(location.search).get("pblops") === "1" ? "pblops=1" : "",
     ]
       .filter(Boolean)
       .join(" ");
