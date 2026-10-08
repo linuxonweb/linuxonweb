@@ -145,6 +145,77 @@ let enabled = true, statsEnabled = false;
 export function configureGl(value) {
     enabled = value?.enabled !== false;
     statsEnabled = value?.stats === true;
+    if (statsEnabled) {
+        globalThis.__glDumpTextures = dumpTextures;
+        globalThis.__glSetKeyedPresent = setKeyedPresent;
+    }
+}
+
+/** Debug (?debug=1): level 0 of every 2D texture `min` to `max` wide in context `id`
+ * (and its swizzle shadow) as PNG data URLs, read back without changing guest state.
+ * `min` 0: only the textures WebRender drew text into or sampled glyphs from. */
+async function dumpTextures(id, min = 64, max = 4096) {
+    const ctx = contexts.get(id), out = [];
+    if (!ctx)
+        return out;
+    const gl = ctx.gl, fbo = gl.createFramebuffer();
+    // PACK_ALIGNMENT, PACK_ROW_LENGTH, PACK_SKIP_PIXELS, PACK_SKIP_ROWS
+    const PACK_ALIGNMENT = 0x0D05, saved = [PACK_ALIGNMENT, 0x0D02, 0x0D04, 0x0D03].map((p) => [p, gl.getParameter(p)]);
+    const packBuffer = gl.getParameter(0x88ED); // PIXEL_PACK_BUFFER_BINDING
+    gl.bindBuffer(0x88EB, null);
+    for (const [p] of saved)
+        gl.pixelStorei(p, p === PACK_ALIGNMENT ? 4 : 0);
+    // Keep a pending guest error for the guest's next GetError.
+    const pending = gl.getError();
+    if (pending)
+        ctx.error ||= pending;
+    gl.bindFramebuffer(GL.READ_FRAMEBUFFER, fbo);
+    // Reads synchronously: guest commands run at every await and change bindings.
+    const read = (texture, width, height) => {
+        gl.framebufferTexture2D(GL.READ_FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, texture, 0);
+        const error = gl.getError();
+        if (error || !gl.isTexture(texture))
+            return `attach error 0x${error.toString(16)} isTexture ${gl.isTexture(texture)}`;
+        if (gl.getFramebufferAttachmentParameter(GL.READ_FRAMEBUFFER, GL.COLOR_ATTACHMENT0, 0x8CD1) !== texture)
+            return "attached another object";
+        if (gl.checkFramebufferStatus(GL.READ_FRAMEBUFFER) !== 0x8CD5)
+            return "incomplete";
+        const pixels = new Uint8ClampedArray(width * height * 4);
+        gl.readPixels(0, 0, width, height, 0x1908 /* RGBA */, GL.UNSIGNED_BYTE, pixels);
+        const readError = gl.getError();
+        return readError ? `read error 0x${readError.toString(16)}` : { pixels, width, height };
+    };
+    const encode = async (r) => {
+        if (typeof r === "string" || !r)
+            return r;
+        const { pixels, width, height } = r;
+        const canvas = new OffscreenCanvas(width, height);
+        canvas.getContext("2d").putImageData(new ImageData(pixels, width, height), 0, 0);
+        const bytes = new Uint8Array(await (await canvas.convertToBlob({ type: "image/png" })).arrayBuffer());
+        let s = "";
+        for (let k = 0; k < bytes.length; k += 0x8000)
+            s += String.fromCharCode(...bytes.subarray(k, k + 0x8000));
+        return "data:image/png;base64," + btoa(s);
+    };
+    for (const [name, o] of ctx.objects[1]) {
+        const t = ctx.texInfo.get(o), base = t?.base;
+        if (!base || (min ? base.width < min : !ctx.textTargets?.has(o)) || base.width > max || base.width * base.height > 4096 * 4096)
+            continue;
+        out.push({ name, ...base, swizzle: t.swizzle, image: read(o, base.width, base.height),
+            shadow: t.shadow ? read(t.shadow.texture, t.shadow.width, t.shadow.height) : null, dirty: t.dirty ?? null });
+    }
+    gl.bindFramebuffer(GL.READ_FRAMEBUFFER, ctx.fbBound.get(GL.READ_FRAMEBUFFER) ?? null);
+    gl.deleteFramebuffer(fbo);
+    for (const [p, v] of saved)
+        gl.pixelStorei(p, v);
+    gl.bindBuffer(0x88EB, packBuffer);
+    if (ctx.textDraws)
+        out.push({ name: "textDraws", draws: Object.fromEntries(ctx.textDraws) });
+    for (const t of out) {
+        t.image = await encode(t.image);
+        t.shadow = await encode(t.shadow);
+    }
+    return out;
 }
 
 // Keyed window presentation. The guest paints a window surface's visible
@@ -335,7 +406,8 @@ function open(memory, a, log, memories) {
         // State the texture swizzle pass changes and puts back (see swizzledDraw).
         caps: new Map(), viewport: Array.from(gl.getParameter(GL.VIEWPORT)), scissorBox: Array.from(gl.getParameter(GL.SCISSOR_BOX)),
         colorMask: [true, true, true, true], vao: null, samplers: new Map(), feedback: false, swizzled: new Set(), swizzlePass: null, shadowed: false,
-        stats: { start: performance.now(), execs: 0, replies: 0, ms: 0, ops: new Uint32Array(OPS.length + 1), opMs: new Float64Array(OPS.length + 1), texReuse: 0 },
+        stats: { start: performance.now(), execs: 0, replies: 0, ms: 0, ops: new Uint32Array(OPS.length + 1), opMs: new Float64Array(OPS.length + 1), texReuse: 0,
+            errorAfter: new Uint32Array(OPS.length + 1) },
     };
     canvas.addEventListener?.("webglcontextlost", (event) => {
         event.preventDefault();
@@ -404,7 +476,7 @@ function exec(ctx, memory, pointer, length, replyPointer, capacity) {
     ctx.f32 = new Float32Array(bytes.buffer, pointer, words);
     ctx.execs++;
     const stats = statsEnabled ? ctx.stats : null, started = stats && performance.now();
-    let reply = null;
+    let reply = null, previous = 0;
     for (let i = 0; i < words;) {
         const header = ctx.w[i];
         const op = header & 0xfff, n = header >>> 12;
@@ -416,6 +488,9 @@ function exec(ctx, memory, pointer, length, replyPointer, capacity) {
             reply = run(ctx, op, i + 1, n);
             stats.ops[op]++;
             stats.opMs[op] += performance.now() - t;
+            if (OPS[op - 1] === "GetError")
+                stats.errorAfter[previous]++;
+            previous = op;
         }
         else
             reply = run(ctx, op, i + 1, n);
@@ -444,12 +519,17 @@ function reportStats(ctx, now) {
         .map(([count, op]) => `${OPS[op - 1]}=${(count / seconds).toFixed(0)}`).join(" ");
     const slow = [...stats.opMs].map((ms, op) => [ms, op]).filter(([ms]) => ms >= 1).sort((x, y) => y[0] - x[0]).slice(0, 6)
         .map(([ms, op]) => `${OPS[op - 1]}=${(ms / seconds).toFixed(1)}`).join(" ");
+    // The op before each GetError in its batch ("batch" when GetError starts one).
+    const errorAfter = [...stats.errorAfter].map((count, op) => [count, op]).filter(([count]) => count).sort((x, y) => y[0] - x[0]).slice(0, 6)
+        .map(([count, op]) => `${op ? OPS[op - 1] : "batch"}=${(count / seconds).toFixed(0)}`).join(" ");
     ctx.log(`gl context ${ctx.id} stats ${seconds.toFixed(1)}s: execs/s=${(stats.execs / seconds).toFixed(1)} ` +
-        `sync/s=${(stats.replies / seconds).toFixed(1)} host-gl-ms/s=${(stats.ms / seconds).toFixed(1)} tex-reuse/s=${(stats.texReuse / seconds).toFixed(1)} ops/s: ${top} ms/s: ${slow}`);
+        `sync/s=${(stats.replies / seconds).toFixed(1)} host-gl-ms/s=${(stats.ms / seconds).toFixed(1)} tex-reuse/s=${(stats.texReuse / seconds).toFixed(1)} ops/s: ${top} ms/s: ${slow}` +
+        (errorAfter ? ` GetError after: ${errorAfter}` : ""));
     stats.start = now;
     stats.execs = stats.replies = stats.ms = stats.texReuse = 0;
     stats.ops.fill(0);
     stats.opMs.fill(0);
+    stats.errorAfter.fill(0);
 }
 
 function run(ctx, op, i, n) {
@@ -934,6 +1014,20 @@ function shadowTexture(ctx, unit, o) {
     gl.bindTexture(GL.TEXTURE_2D, o);
     return shadow.texture;
 }
+/** Debug: counts, per texture on unit 0, text-shader draws and whether GL has the expected texture bound. */
+function textDrawRecord(ctx, swapped) {
+    const o = ctx.texBound.get(GL.TEXTURE_2D) ?? null, t = o && ctx.texInfo.get(o);
+    const k = swapped ? swapped.indexOf(0) : -1, expected = k >= 0 && k % 3 === 0 ? swapped[k + 2] : o;
+    ctx.gl.activeTexture(GL.TEXTURE0);
+    const actual = ctx.gl.getParameter(0x8069 /* TEXTURE_BINDING_2D */);
+    ctx.gl.activeTexture(GL.TEXTURE0 + ctx.texUnit);
+    const fb = ctx.fbBound.get(GL.DRAW_FRAMEBUFFER), target = fb && ctx.fbAttach.get(fb)?.get(GL.COLOR_ATTACHMENT0);
+    const tt = target && ctx.texInfo.get(target)?.base;
+    const key = `[${ctx.textPrograms.get(ctx.program)}] fb ${fb ? `t${target ? ctx.names.get(target) : "?"} ${tt?.width}x${tt?.height}` : "default"} vp ${ctx.viewport.join(",")} t${o ? ctx.names.get(o) : 0} fmt${t?.base?.format ?? "?"} ${t?.base?.width ?? 0}x${t?.base?.height ?? 0}` +
+        `${t?.swizzle ? " swizzled" : ""}${k >= 0 ? " shadow" : ""}${actual === expected ? "" : " MISMATCH"}`;
+    (ctx.textDraws ??= new Map()).set(key, (ctx.textDraws.get(key) ?? 0) + 1);
+    (ctx.textTargets ??= new Set()).add(target).add(o);
+}
 /** Runs `draw` with every bound swizzled 2D texture replaced by its shadow. */
 function swizzledDraw(ctx, draw) {
     let swapped = null;
@@ -951,6 +1045,8 @@ function swizzledDraw(ctx, draw) {
                 ctx.gl.bindTexture(GL.TEXTURE_2D, swapped[k + 2]);
             }
     }
+    if (ctx.textPrograms?.has(ctx.program))
+        textDrawRecord(ctx, swapped);
     try {
         draw();
     }
@@ -1040,7 +1136,12 @@ H.ActiveTexture = (c, i) => {
     c.gl.activeTexture(c.w[i]);
     c.texUnit = c.w[i] - GL.TEXTURE0;
 };
-H.AttachShader = (c, i) => c.gl.attachShader(programOf(c, c.w[i]), programOf(c, c.w[i + 1]));
+H.AttachShader = (c, i) => {
+    const program = programOf(c, c.w[i]), shader = programOf(c, c.w[i + 1]);
+    if (c.textShaders?.has(shader))
+        (c.textPrograms ??= new WeakMap()).set(program, `${c.textPrograms.get(program) ?? ""} ${c.textShaders.get(shader)}`);
+    c.gl.attachShader(program, shader);
+};
 H.BindAttribLocation = (c, i) => c.gl.bindAttribLocation(programOf(c, c.w[i]), c.w[i + 1], toHost(blobText(c, i + 2)));
 H.BindBuffer = (c, i) => c.gl.bindBuffer(c.w[i], object(c, 0, c.w[i + 1]));
 H.BindFramebuffer = (c, i) => {
@@ -1176,7 +1277,13 @@ H.Scissor = (c, i) => {
     c.scissorBox = [c.i32[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]];
     c.gl.scissor(...c.scissorBox);
 };
-H.ShaderSource = (c, i) => c.gl.shaderSource(programOf(c, c.w[i]), toHost(blobText(c, i + 1)));
+H.ShaderSource = (c, i) => {
+    const text = toHost(blobText(c, i + 1));
+    // Debug: remember WebRender's text shaders (see textDrawRecord).
+    if (statsEnabled && text.includes("v_mask_swizzle"))
+        (c.textShaders ??= new WeakMap()).set(programOf(c, c.w[i]), [...text.matchAll(/#define (WR_FEATURE_\w+|WR_\w*_SHADER)/g)].map((m) => m[1].replace("WR_FEATURE_", "")).join("+"));
+    c.gl.shaderSource(programOf(c, c.w[i]), text);
+};
 H.StencilFunc = (c, i) => c.gl.stencilFunc(c.w[i], c.i32[i + 1], c.w[i + 2]);
 H.StencilFuncSeparate = (c, i) => c.gl.stencilFuncSeparate(c.w[i], c.w[i + 1], c.i32[i + 2], c.w[i + 3]);
 H.StencilMask = (c, i) => c.gl.stencilMask(c.w[i]);

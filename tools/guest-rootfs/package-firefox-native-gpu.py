@@ -49,12 +49,14 @@ export MOZ_WEBGL_FORCE_EGL=1
 export GUEST_GPU_TRANSPORT=hostcall GUEST_GPU_BACKEND=auto GUEST_GL_BACKEND=auto
 # pblic=N on the kernel command line sets the IC compiler switch (A/B tests);
 # pblbc=N sets the method compiler switch (PBLBC; needs PBLIC);
-# pblops=1 turns on the opcode histogram of diagnostic builds.
+# pblops=1 turns on the opcode histogram of diagnostic builds;
+# glremote=N sets the guest GL remote trace level (GLREMOTE_TRACE).
 for arg in $(cat /proc/cmdline); do
   case "$arg" in
     pblic=[0-9]) export PBLIC="${arg#pblic=}";;
     pblbc=[0-9]) export PBLBC="${arg#pblbc=}";;
     pblops=1) export PBLOPS=1;;
+    glremote=[0-9]) export GLREMOTE_TRACE="${arg#glremote=}";;
   esac
 done
 exec /opt/firefox/firefox "$@"

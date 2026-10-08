@@ -771,7 +771,9 @@ static void shadow_data(struct glr_ctx *c, GLenum target, size_t size, const voi
   if (g->host_written || !size || size > SHADOW_MAX || c->shadow_bytes + size > SHADOW_BUDGET) return;
   if (!(g->shadow = malloc(size))) return;
   c->shadow_bytes += size;
+  /* The host zero-fills a buffer defined without data. */
   if (data) memcpy(g->shadow, data, size);
+  else memset(g->shadow, 0, size);
 }
 /* Follows a BufferSubData sent to the host. */
 static void shadow_sub(struct glr_ctx *c, GLenum target, size_t offset, size_t size, const void *data) {
@@ -783,9 +785,13 @@ static int cap_index(GLenum cap) {
     if (caps[i] == cap) return (int)i;
   return -1;
 }
+/* GL maps buffer objects, not targets: several buffers may be mapped while
+ * each is bound to the same target in turn (WebRender's PBO pool does). */
 static struct mapping *mapping_of(struct glr_ctx *c, GLenum target) {
+  GLuint *slot = buffer_slot(c, target);
+  if (!slot || !*slot) return NULL;
   for (int i = 0; i < 8; i++)
-    if (c->maps[i].ptr && c->maps[i].target == target) return &c->maps[i];
+    if (c->maps[i].ptr && c->maps[i].buffer == *slot) return &c->maps[i];
   return NULL;
 }
 
@@ -847,7 +853,7 @@ static void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenu
   CTX;
   if (size < 0) { add_error(c, GL_INVALID_VALUE); return; }
   struct mapping *m = mapping_of(c, target);
-  if (m) { free(m->ptr); m->ptr = NULL; }
+  if (m) { block_release(c, m->ptr); m->ptr = NULL; }
   uint32_t *w = emit_data(c, OP_BufferData, 2, B_INLINE, data, (size_t)size);
   w[0] = target; w[1] = usage;
   shadow_data(c, target, (size_t)size, data, usage);
@@ -1770,7 +1776,8 @@ static void glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint t
 static void *glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access) {
   CTXR(NULL);
   if (offset < 0 || length <= 0 || !(access & (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT))) { add_error(c, GL_INVALID_VALUE); return NULL; }
-  if (mapping_of(c, target)) { add_error(c, GL_INVALID_OPERATION); return NULL; }
+  GLuint *slot = buffer_slot(c, target);
+  if (!slot || !*slot || mapping_of(c, target)) { add_error(c, GL_INVALID_OPERATION); return NULL; }
   struct mapping *m = NULL;
   for (int i = 0; i < 8 && !m; i++)
     if (!c->maps[i].ptr) m = &c->maps[i];
@@ -1788,8 +1795,7 @@ static void *glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length,
     w[0] = target; w[1] = (uint32_t)offset; w[2] = (uint32_t)length; w[3] = B_POINTER; w[4] = (uint32_t)(uintptr_t)ptr;
     if (query(c, start) < 0) memset(ptr, 0, (size_t)length);
   }
-  GLuint *slot = buffer_slot(c, target);
-  *m = (struct mapping){.target = target, .buffer = slot ? *slot : 0, .ptr = ptr, .offset = offset, .length = length, .access = access};
+  *m = (struct mapping){.target = target, .buffer = *slot, .ptr = ptr, .offset = offset, .length = length, .access = access};
   return ptr;
 }
 static void glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length) {

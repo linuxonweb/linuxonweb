@@ -835,6 +835,11 @@ function bindGuestCanvasInput(pointer) {
 }
 
 function chooseSystemUpdate({ current, candidate, changed, canContinue }) {
+  // ?update=1 accepts every system update without asking (tests, kiosks).
+  if (new URLSearchParams(location.search).get('update') === '1') {
+    setStatus('updating system…', 'booting');
+    return Promise.resolve('update');
+  }
   const dialog = document.getElementById('system-update-dialog');
   const names = { kernel: 'Linux kernel', plain: 'Linux desktop', firefox: 'Firefox' };
   document.getElementById('system-update-summary').textContent = `${changed.map(key => names[key]).join(', ')} has an update (${current.version} → ${candidate.version}).`;
@@ -1095,6 +1100,9 @@ async function boot(mode) {
         ? `pblbc=${new URLSearchParams(location.search).get("pblbc")}` : "",
       // Opcode histogram in diagnostic Firefox builds (PBLOPS).
       new URLSearchParams(location.search).get("pblops") === "1" ? "pblops=1" : "",
+      // Guest GL remote trace level (GLREMOTE_TRACE; 2 logs where batches end every 5 s).
+      /^[0-9]$/.test(new URLSearchParams(location.search).get("glremote") ?? "")
+        ? `glremote=${new URLSearchParams(location.search).get("glremote")}` : "",
     ]
       .filter(Boolean)
       .join(" ");
