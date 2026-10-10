@@ -28,3 +28,9 @@
 [submodule "firefox"]
 	path = firefox
 	url = git@github.com:linuxonweb/firefox.git
+[submodule "guest-glremote"]
+	path = guest-glremote
+	url = git@github.com:linuxonweb/guest-glremote.git
+[submodule "guest-gpu-stack"]
+	path = guest-gpu-stack
+	url = git@github.com:linuxonweb/guest-gpu-stack.git
