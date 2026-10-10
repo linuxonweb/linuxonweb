@@ -1,0 +1,27 @@
+[submodule "linux"]
+	path = linux
+	url = git@github.com:linuxonweb/linux.git
+[submodule "xserver"]
+	path = xserver
+	url = git@github.com:linuxonweb/xserver.git
+[submodule "tinyx"]
+	path = tinyx
+	url = git@github.com:linuxonweb/tinyx.git
+[submodule "vkmark"]
+	path = vkmark
+	url = git@github.com:linuxonweb/vkmark.git
+[submodule "glmark2"]
+	path = glmark2
+	url = git@github.com:linuxonweb/glmark2.git
+[submodule "glgears"]
+	path = glgears
+	url = git@github.com:linuxonweb/glgears.git
+[submodule "htop"]
+	path = htop
+	url = git@github.com:linuxonweb/htop.git
+[submodule "musl"]
+	path = musl
+	url = git@github.com:linuxonweb/musl.git
+[submodule "mesa"]
+	path = mesa
+	url = git@github.com:linuxonweb/mesa.git
