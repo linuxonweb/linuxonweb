@@ -25,3 +25,6 @@
 [submodule "mesa"]
 	path = mesa
 	url = git@github.com:linuxonweb/mesa.git
+[submodule "firefox"]
+	path = firefox
+	url = git@github.com:linuxonweb/firefox.git

@@ -14,20 +14,21 @@ few small userspace programs. Each one is a git submodule pinned to a commit.
 | `musl/` | musl libc 1.2.6 source (snapshot) | https://git.musl-libc.org/git/musl | tag `v1.2.6` |
 | `vkmark/` | vkmark Vulkan benchmark | https://github.com/vkmark/vkmark | upstream `83a128d` |
 | `glmark2/` | glmark2 OpenGL benchmark | https://github.com/glmark2/glmark2 | upstream `22c527c` |
+| `firefox/` | Firefox 159.0a1 source for the wasm guest, with the linuxonweb build recipe (see `firefox/LINUXONWEB-WASM-BUILD.md`) | https://github.com/mozilla-firefox/firefox (mozilla-central `dfc77f7a6d`) | upstream `bf9757d91e` + linuxonweb commit |
 | `glgears/` | glxgears port for the wasm guest (linuxonweb code) | linuxonweb project | project commit `3de18d3` |
 | `htop/` | htop process viewer | https://github.com/htop-dev/htop | tag `3.5.1` |
 | `tinyx/` | tinyx userspace patch and helper for the wasm X server | linuxonweb project | project tree |
 
-Each snapshot is a single commit with the upstream files, not the upstream
+The Firefox repo keeps two commits: the upstream base, then the linuxonweb changes.
+The other snapshots are single commits with the upstream files, not the upstream
 git history. The upstream URL and pinned commit are in its commit message.
 `tinyx/` and `glgears/` are linuxonweb's own code.
 
 ## Not included
 
-- **Firefox**: the source checkout was not fully materialized on the build
-  machine, and the repo is not published yet.
-- **Firefox source tarball** (`firefox-128.14.0esr.source.tar.xz`, 480 MB):
-  larger than GitHub's 100 MB file limit.
+- **Firefox 128 ESR source tarball** (`firefox-128.14.0esr.source.tar.xz`,
+  480 MB): an older version, and larger than GitHub's 100 MB file limit.
+  The Firefox 159.0a1 source is in `firefox/` instead.
 - **Build outputs**, caches, the wasm toolchain and the web app itself.
 
 ## How to use
