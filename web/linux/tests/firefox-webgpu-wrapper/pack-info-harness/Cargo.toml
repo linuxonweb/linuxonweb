@@ -1,0 +1,26 @@
+[package]
+name = "webgpu-pack-info-harness"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Built only inside the workspace assembled by ../make-pack-info-goldens.py (reusing W3 make-goldens.py), which places
+# verbatim copies of gfx/wgpu_bindings and xpcom/rust/nsstring next to it.
+
+[dependencies]
+wgpu_bindings = { path = "../gfx/wgpu_bindings" }
+nsstring = { path = "../xpcom/rust/nsstring" }
+bincode = "1"
+serde = { version = "1", features = ["derive"] }
+
+[dependencies.wgc]
+package = "wgpu-core"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "c7458638d14921c7562e4197ddeefa17be413587"
+features = ["serde", "replay", "trace"]
+
+[dependencies.wgt]
+package = "wgpu-types"
+git = "https://github.com/gfx-rs/wgpu"
+rev = "c7458638d14921c7562e4197ddeefa17be413587"
+features = ["serde"]

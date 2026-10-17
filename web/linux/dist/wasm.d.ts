@@ -85,7 +85,7 @@ export interface Imports {
     };
 }
 export declare const HALT_KERNEL: unique symbol;
-export declare function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, }: {
+export declare function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, recycle_worker, }: {
     is_worker: boolean;
     memory: WebAssembly.Memory;
     spawn_worker: (fn: number, arg: number, name: string, user: UserContext | null, copy_user_memory: boolean) => number;
@@ -96,4 +96,5 @@ export declare function kernel_imports({ is_worker, memory, spawn_worker, boot_c
     get_user_context: () => UserContext | null;
     /** Reports that this worker's kernel thread halted and the worker is closing. */
     worker_exit: () => void;
+    recycle_worker?: boolean;
 }): Imports["kernel"];

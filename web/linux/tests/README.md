@@ -64,6 +64,21 @@ In a task-owned browser profile, open `persistent-home.html` and wait for
 IndexedDB, including injected quota rollback; it deletes only its uniquely
 named test database.
 
+In the same isolated profile, also run these real IndexedDB regressions:
+
+- `persistent-home-write.html`: bounded batched writes, strict commit completion,
+  partial-block preservation, quota/abort rollback, sparse and overlapping
+  writes, legacy blocks, reopened bytes, and write timings.
+- `gpt6-codex-home-release.html`: read-only transactions for linked-file final
+  close, strict orphan cleanup, read-only observer safety, rename replacement,
+  concurrent unlink/close, reopened bytes, and repeated open/close timings.
+
+Both expose `window.testReport` and set the document's `data-result` to `pass`
+or `fail`. Their databases have unique test names. Transaction counts show
+requested IndexedDB operations, not physical disk writes or Firefox startup
+performance. Compare timing samples in the same browser/resource configuration;
+passing storage regressions does not establish guest launch or JIT acceptance.
+
 Open `boot-assets.html` in a **separate task-owned profile with no running
 guest**. It uses real CacheStorage and temporary system metadata with controlled
 fetch/integrity/quota failures. It restores the original system metadata, but

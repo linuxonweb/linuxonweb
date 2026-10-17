@@ -1,5 +1,34 @@
 # Project instructions
 
+Latest user authorization (2026-10-15, current continuation): user explicitly
+approved wasm-opt to continue JIT, then authorized routine choices without
+further confirmation provided app/build work does not become too slow (more
+than ten minutes). Compatibility-only --fpcast-emu is now approved; prior
+no-wasm-opt pause is superseded for this work. Keep expensive optimization
+optional and each finite build/test cycle within ten minutes; preserve the
+original stricter JIT workloads/checkers/150-second deadline. Desktop Chromium
+first; mobile remains deferred. Current native transform/test evidence is in
+continue.md. Do not treat approval or compilation as runtime acceptance.
+
+Latest user priority (2026-10-15): goal resumed; real Firefox JIT and daily
+usability first. Test desktop Chromium first; improve/test mobile only after
+desktop goals pass. This supersedes the Oct13 pause and historical JIT stops.
+Keep original workload/checker/deadline requirements and the existing no-new-
+optimizer constraint. Historical Xephyr :13 was absent on arrival Oct15;
+current isolated CPU/JIT validation may use existing Xvfb :11 with exact
+identity/connection checks. Do not restart displays or infer GPU acceptance.
+
+Latest user priority (2026-10-12): resume and improve Firefox JIT first, then
+GPU. This is fresh authorization superseding the historical JIT pause below.
+The final graphics target remains full Vulkan/OpenGL; later benchmark Firefox
+desktop OpenGL and retain OpenGL ES if desktop GL performs worse. Do not claim
+unsupported features or acceptance from preparation. User also authorizes ADB
+control/testing of connected Android Brave. Latest testing order: primarily
+validate on this host first; defer mobile testing until the host goals are
+finished. Preserve phone/browser data.
+Keep persistent Xephyr :13 running without restart. Current work/evidence and
+resource instructions are at the top of continue.md; historical notes follow.
+
 The user requested GPU-first work on 2026-10-06 after stopping JIT repair.
 The checkpoint is6301a15; current branch is
 `gpt-6-firefox-hardware-acceleration-20261006`. Read `continue.md` for current

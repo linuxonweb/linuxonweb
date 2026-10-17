@@ -1,0 +1,158 @@
+<!doctype html><meta charset="utf-8"><title>Persistent home write regression and benchmark</title><pre id="result">Running…</pre>
+<script type="module">
+import { openPersistentHome, BLOCK_SIZE, CHUNK_SIZE } from '../persistent-home.mjs';
+
+const checks = [], measurements = [];
+const assert = (condition, label) => checks.push({ label, pass: Boolean(condition) });
+const context = { mode: 0o600, uid: 1000, gid: 1000 };
+const databaseName = 'linuxonweb.home.write.test.' + crypto.randomUUID();
+const originalPut = IDBObjectStore.prototype.put;
+const originalGet = IDBObjectStore.prototype.get;
+const originalTransaction = IDBDatabase.prototype.transaction;
+const idb = request => new Promise((resolve, reject) => {
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+let home, tracking = null;
+IDBObjectStore.prototype.put = function (...args) {
+  const sample = tracking;
+  if (!sample || this.transaction.db.name !== databaseName || this.name !== 'chunks') return originalPut.apply(this, args);
+  sample.puts++;
+  if (sample.failAt === sample.puts) throw new DOMException('Injected quota exhaustion', 'QuotaExceededError');
+  const abortRequest = sample.abortAt === sample.puts;
+  const request = originalPut.apply(this, args);
+  sample.pending++;
+  sample.peak = Math.max(sample.peak, sample.pending);
+  request.addEventListener('success', () => {
+    sample.pending--;
+    if (abortRequest) {
+      sample.aborted = true;
+      this.transaction.abort();
+    }
+  });
+  request.addEventListener('error', () => { sample.pending--; });
+  return request;
+};
+IDBObjectStore.prototype.get = function (...args) {
+  if (tracking && this.transaction.db.name === databaseName && this.name === 'chunks') tracking.gets++;
+  return originalGet.apply(this, args);
+};
+IDBDatabase.prototype.transaction = function (...args) {
+  const transaction = originalTransaction.apply(this, args);
+  if (tracking && this.name === databaseName && args[1] === 'readwrite') {
+    const sample = tracking;
+    sample.transactions++;
+    sample.strict &&= args[2]?.durability === 'strict';
+    transaction.addEventListener('complete', () => { sample.committed = true; });
+  }
+  return transaction;
+};
+const sample = options => ({ puts: 0, gets: 0, pending: 0, peak: 0, transactions: 0, strict: true, committed: false, ...options });
+try {
+  home = await openPersistentHome({ name: databaseName });
+  const file = await home.create(home.root, 'batched', 2, context);
+  const initial = new Uint8Array(BLOCK_SIZE * 98).fill(17);
+  await home.write(file.node, file.handle, 0n, initial);
+  const payload = Uint8Array.from({ length: BLOCK_SIZE * 96 + 100 }, (_, index) => index % 251);
+  const expected = initial.slice();
+  expected.set(payload, 23);
+  tracking = sample();
+  const writing = home.write(file.node, file.handle, 23n, payload);
+  payload.fill(255);
+  assert(await writing === payload.length, 'write returns exact byte count');
+  const batching = tracking;
+  tracking = null;
+  assert(batching.peak > 1, 'multi-block write queues multiple requests before awaiting completion');
+  assert(batching.peak <= 32, 'queued block writes are bounded to 32');
+  assert(batching.gets === 2, 'only partial edge blocks read old bytes');
+  assert(batching.transactions === 1 && batching.committed && batching.strict, 'write resolves after one strict transaction commits');
+  const actual = await home.read(file.node, file.handle, 0n, initial.length);
+  assert(actual.length === expected.length && actual.every((byte, index) => byte === expected[index]), 'batched write preserves both edges and copies caller-owned input');
+
+  tracking = sample();
+  await home.write(file.node, file.handle, 0n, new Uint8Array(BLOCK_SIZE * 65).fill(8));
+  const aligned = tracking;
+  tracking = null;
+  assert(aligned.gets === 0 && aligned.puts === 65 && aligned.peak > 1 && aligned.peak <= 32, 'aligned full blocks skip old reads and span bounded batches');
+  const beforeFailure = await home.read(file.node, file.handle, 0n, initial.length);
+  tracking = sample({ failAt: 40 });
+  let quotaError;
+  try { await home.write(file.node, file.handle, 0n, new Uint8Array(initial.length + BLOCK_SIZE).fill(99)); }
+  catch (error) { quotaError = error; }
+  tracking = null;
+  assert(quotaError?.errno === 28, 'later-batch synchronous quota error maps to ENOSPC');
+  const afterFailure = await home.read(file.node, file.handle, 0n, initial.length + BLOCK_SIZE);
+  assert(afterFailure.length === beforeFailure.length && afterFailure.every((byte, index) => byte === beforeFailure[index]), 'later-batch failure rolls back earlier batches and metadata');
+
+  tracking = sample({ abortAt: 32 });
+  let abortError;
+  try { await home.write(file.node, file.handle, 0n, new Uint8Array(BLOCK_SIZE * 32).fill(77)); }
+  catch (error) { abortError = error; }
+  tracking = null;
+  assert(abortError?.errno === 5, 'asynchronous transaction abort rejects the write');
+  const afterAbort = await home.read(file.node, file.handle, 0n, initial.length);
+  assert(afterAbort.length === beforeFailure.length && afterAbort.every((byte, index) => byte === beforeFailure[index]), 'asynchronous abort rolls back queued writes');
+
+  const sparse = await home.create(home.root, 'sparse', 2, context);
+  await home.write(sparse.node, sparse.handle, BigInt(BLOCK_SIZE * 35 + 2), new Uint8Array(BLOCK_SIZE * 34 + 7).fill(19));
+  const sparseBytes = await home.read(sparse.node, sparse.handle, 0n, BLOCK_SIZE * 70);
+  assert(sparseBytes.subarray(0, BLOCK_SIZE * 35 + 2).every(byte => byte === 0) && sparseBytes.subarray(BLOCK_SIZE * 35 + 2).every(byte => byte === 19), 'sparse batched writes preserve zero-filled holes');
+  await Promise.all([
+    home.write(sparse.node, sparse.handle, 0n, new Uint8Array(BLOCK_SIZE * 34).fill(20)),
+    home.write(sparse.node, sparse.handle, BigInt(BLOCK_SIZE * 33), new Uint8Array(BLOCK_SIZE * 34).fill(21)),
+  ]);
+  const overlapping = await home.read(sparse.node, sparse.handle, 0n, BLOCK_SIZE * 67);
+  assert(overlapping.subarray(0, BLOCK_SIZE * 33).every(byte => byte === 20) && overlapping.subarray(BLOCK_SIZE * 33).every(byte => byte === 21), 'overlapping concurrent writes serialize atomically');
+  await home.release(file.node, file.handle);
+  await home.release(sparse.node, sparse.handle);
+  await home.destroy();
+  home = await openPersistentHome({ name: databaseName });
+  const reopened = await home.lookup(home.root, 'batched');
+  const durable = await home.read(reopened, {}, 0n, initial.length);
+  assert(durable.length === beforeFailure.length && durable.every((byte, index) => byte === beforeFailure[index]), 'successful bytes survive close and reopen after failed writes');
+
+  const legacy = await home.create(home.root, 'legacy', 2, context);
+  const database = await idb(indexedDB.open(databaseName, 2));
+  try {
+    const transaction = database.transaction('nodes', 'readwrite');
+    const complete = new Promise((resolve, reject) => { transaction.oncomplete = resolve; transaction.onabort = () => reject(transaction.error); });
+    const nodes = transaction.objectStore('nodes');
+    const node = await idb(nodes.get(legacy.node.id));
+    delete node.block;
+    await idb(nodes.put(node));
+    await complete;
+  } finally { database.close(); }
+  const legacyPayload = new Uint8Array(CHUNK_SIZE * 34 + 13).fill(42);
+  await home.write(legacy.node, legacy.handle, 5n, legacyPayload);
+  const legacyBytes = await home.read(legacy.node, legacy.handle, 0n, legacyPayload.length + 5);
+  assert((await home.getattr(legacy.node)).blockSize === CHUNK_SIZE && legacyBytes.length === legacyPayload.length + 5 && legacyBytes.subarray(0, 5).every(byte => byte === 0) && legacyBytes.subarray(5).every(byte => byte === 42), 'legacy 64-KiB files retain their format across multiple batches');
+  await home.release(legacy.node, legacy.handle);
+
+  const benchmark = await home.create(home.root, 'benchmark', 2, context);
+  for (const bytes of [BLOCK_SIZE, BLOCK_SIZE * 32, BLOCK_SIZE * 256]) {
+    const data = new Uint8Array(bytes).fill(31);
+    await home.write(benchmark.node, benchmark.handle, 0n, data);
+    const durations = [];
+    for (let repeat = 0; repeat < 7; repeat++) {
+      const start = performance.now();
+      await home.write(benchmark.node, benchmark.handle, 0n, data);
+      durations.push(performance.now() - start);
+    }
+    durations.sort((left, right) => left - right);
+    measurements.push({ bytes, samples: durations, medianMs: durations[3], mibPerSecond: bytes / 1048576 / (durations[3] / 1000) });
+  }
+  await home.release(benchmark.node, benchmark.handle);
+  window.testReport = { status: checks.every(check => check.pass) ? 'passed' : 'failed', checks, batching, aligned, measurements };
+} catch (error) {
+  window.testReport = { status: 'failed', checks, measurements, error: String(error.stack || error) };
+} finally {
+  tracking = null;
+  IDBObjectStore.prototype.put = originalPut;
+  IDBObjectStore.prototype.get = originalGet;
+  IDBDatabase.prototype.transaction = originalTransaction;
+  await home?.destroy();
+  await idb(indexedDB.deleteDatabase(databaseName));
+  document.querySelector('#result').textContent = JSON.stringify(window.testReport, null, 2);
+  document.documentElement.dataset.result = window.testReport.status === 'passed' ? 'pass' : 'fail';
+}
+</script>

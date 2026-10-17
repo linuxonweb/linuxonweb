@@ -21,15 +21,17 @@ import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './per
 import { systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
 import { createMoreMenu } from './more-menu.mjs';
+import { installDownloadPanel } from './download-panel.mjs';
 import { installTestCommands, testCommandRequest } from './test-commands.mjs';
 import { installBuildInfo } from './build-info.mjs';
 import { installBrowserInfo } from './browser-info.mjs';
 import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
-import { desktopInitramfs, loadDesktopExtras } from './desktop-extras.mjs';
+import { loadDesktopInitramfs, loadDesktopExtras, useCompressedInitramfs } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
 import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
 import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
+import { firefoxJitFlags } from './firefox-jit-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
 
@@ -121,6 +123,8 @@ const settingsApply = document.getElementById("settings-apply");
 const restartDialog = document.getElementById("restart-dialog");
 const restartContinue = document.getElementById("restart-continue");
 const displayStage = document.querySelector(".stage");
+// Package download sizes and progress, shown over the bottom of the display.
+installDownloadPanel(displayStage);
 const displayPan = document.getElementById("display-pan");
 let panDisplay = false;
 let cancelGuestGesture = () => {};
@@ -436,7 +440,9 @@ const hostCores = Math.min(64, Math.max(1, navigator.hardwareConcurrency || 2));
 const defaultCpus = Math.min(4, hostCores);
 cpuInput.max = String(hostCores);
 cpuInput.value = String(defaultCpus);
-const defaults = { resolution: "1280x720", cpus: defaultCpus, ram: firefoxMode || resumeMode === "firefox" ? 4096 : 1024, backend: 'auto' };
+// Window-based resolutions are measured when a guest boots. A window narrower
+// than 720 px defaults to its width × 500; wider windows keep 1280 × 720.
+const defaults = { resolution: window.innerWidth < 720 ? "window-500" : "1280x720", cpus: defaultCpus, ram: 2048, backend: 'auto' };
 function validConfiguration(value) {
   return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
     && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
@@ -482,8 +488,23 @@ function updateCpuLabel() {
   cpuValue.textContent = cpuValue.value;
 }
 
+// Turns a resolution option into WxH. "window-500" is the browser window width
+// × 500; "window" is the window width × height. Sizes are clamped and rounded to
+// even numbers so the guest framebuffer stays a valid size.
+function resolveResolution(value) {
+  const even = (number, min, max) => Math.min(max, Math.max(min, Math.floor(number / 2) * 2));
+  const width = even(window.innerWidth, 320, 3840);
+  if (value === "window-500") return `${width}x500`;
+  if (value === "window") return `${width}x${even(window.innerHeight, 240, 2160)}`;
+  return value;
+}
+function updateWindowResolutionLabels() {
+  const [width, height] = resolveResolution("window").split("x");
+  resolutionSelect.querySelector('option[value="window-500"]').textContent = `Browser window width × 500 (${width} × 500)`;
+  resolutionSelect.querySelector('option[value="window"]').textContent = `Browser window width × height (${width} × ${height})`;
+}
 function updateResolution() {
-  [FB_W, FB_H] = activeConfiguration.resolution.split("x").map(Number);
+  [FB_W, FB_H] = resolveResolution(activeConfiguration.resolution).split("x").map(Number);
   canvas.width = FB_W;
   canvas.height = FB_H;
   canvas.style.width = `${FB_W}px`;
@@ -517,6 +538,8 @@ resolutionSelect.addEventListener("change", updateSettingsState);
 ramSelect.addEventListener("change", updateSettingsState);
 graphicsSelect.addEventListener('change', updateSettingsState);
 cpuInput.addEventListener("input", () => { updateCpuLabel(); updateSettingsState(); });
+updateWindowResolutionLabels();
+window.addEventListener("resize", updateWindowResolutionLabels);
 showConfiguration(activeConfiguration);
 updateResolution();
 updateCpuLabel();
@@ -596,7 +619,7 @@ settingsApply.addEventListener("click", () => {
   document.getElementById("restart-title").textContent = pendingDisplayOnly ? "Change display presentation?" : activeMachine ? "Restart the guest?" : "Apply machine settings?";
   document.getElementById("restart-summary").textContent = pendingDisplayOnly
     ? `Display presentation · ${graphicsSelect.selectedOptions[0].text}. Continue saves this setting and switches the display now; the guest keeps running.`
-    : `${next.resolution.replace("x", " × ")} · ${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
+    : `${resolveResolution(next.resolution).replace("x", " × ")} ·${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
   document.getElementById("restart-warning").hidden = !activeMachine || pendingDisplayOnly;
   restartDialog.showModal();
 });
@@ -973,6 +996,7 @@ async function boot(mode) {
     }
     return;
   }
+  const archiveController = new AbortController();
   try {
     await queueHomeLease(async () => {
       releaseHomeLock = await acquireHomeLock();
@@ -980,27 +1004,24 @@ async function boot(mode) {
       catch (error) { await releaseHomeLock(); releaseHomeLock = null; throw error; }
     });
     hostLog(`boot timing: home ready at ${bootTime()}`);
-    const extras = loadDesktopExtras();
-    extras.catch(() => {}); // reported below unless the system image fails first
-    const image = await systemAsset(mode === 'firefox' ? 'firefox' : 'plain');
-    const body = mode === 'firefox' ? image.body.pipeThrough(new DecompressionStream('gzip')) : image.body;
-    // Keep the chunks; desktopInitramfs copies them once into the final archive.
-    const system = [];
-    for (const reader = body.getReader(); ;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      system.push(value);
-    }
-    const systemBytes = system.reduce((sum, part) => sum + part.length, 0);
-    hostLog(`boot timing: system image (${(systemBytes / 1048576).toFixed(0)} MiB) ready at ${bootTime()}`);
-    initramfs = desktopInitramfs(system, await extras);
-    hostLog(`boot timing: desktop extras appended at ${bootTime()}`);
+    const compressedInitramfs = useCompressedInitramfs(mode, location.search, gputestMode || selectedGpuTest === 'software');
+    initramfs = loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs }), {
+      gzip: mode === 'firefox',
+      preserveGzip: compressedInitramfs,
+      compressExtras: compressedInitramfs,
+      signal: archiveController.signal,
+      onImage: bytes => hostLog(`boot timing: system image (${(bytes / 1048576).toFixed(0)} MiB) ready at ${bootTime()}`),
+      onReady: () => hostLog(`boot timing: desktop extras appended at ${bootTime()}`),
+    });
+    initramfs.catch(() => {});
     if (gputestMode || selectedGpuTest === 'software') {
+      initramfs = await initramfs;
       const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam(location.search)]);
       if (demo) { initramfs = appendCpio(initramfs, demo); gputestInit = true; }
     }
     storagePanel.message('Home ready · waiting for guest mount');
   } catch (error) {
+    archiveController.abort(error);
     await persistentHome?.destroy().catch(() => {}); persistentHome = null;
     releaseHomeLock?.(); releaseHomeLock = null;
     setStatus('boot failed', 'error'); lockConfiguration(false);
@@ -1055,6 +1076,7 @@ async function boot(mode) {
   const cleanupBoot = () => {
     if (bootClosed) return;
     bootClosed = true;
+    archiveController.abort();
     gpuHost?.stop(); gpuHost = null;
     if (clipboardVsock === vsock) { clipboardVsock = null; clipboardInput = null; }
     vsock.close();
@@ -1092,12 +1114,7 @@ async function boot(mode) {
       gputestInit ? "gputest=1" : "",
       ...(gputestInit ? gputestCmdlineFlags(location.search) : []),
       new URLSearchParams(location.search).get("firefox_trace") === "1" ? "firefox_trace=1" : "",
-      // Guest Firefox IC compiler switch for A/B tests (PBLIC; 0 disables).
-      /^[0-9]$/.test(new URLSearchParams(location.search).get("pblic") ?? "")
-        ? `pblic=${new URLSearchParams(location.search).get("pblic")}` : "",
-      // Guest Firefox method compiler switch (PBLBC; 0 disables, needs PBLIC).
-      /^[0-9]$/.test(new URLSearchParams(location.search).get("pblbc") ?? "")
-        ? `pblbc=${new URLSearchParams(location.search).get("pblbc")}` : "",
+      ...firefoxJitFlags(location.search),
       // Opcode histogram in diagnostic Firefox builds (PBLOPS).
       new URLSearchParams(location.search).get("pblops") === "1" ? "pblops=1" : "",
       // Guest GL remote trace level (GLREMOTE_TRACE; 2 logs where batches end every 5 s).
@@ -1160,6 +1177,7 @@ async function boot(mode) {
       hostLog(errorDetails(err), "error");
     });
   } catch (err) {
+    archiveController.abort(err);
     cleanupBoot();
     await persistentHome?.destroy().catch(() => {});
     persistentHome = null;

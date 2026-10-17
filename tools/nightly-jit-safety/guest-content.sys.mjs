@@ -1,6 +1,5 @@
 /* Actual guest privileged content driver. Loaded in the target process through
  * a narrowly registered JSWindowActor, including for remote Firefox tabs. */
-const { Services } = ChromeUtils.importESModule('resource://gre/modules/Services.sys.mjs');
 const { setTimeout } = ChromeUtils.importESModule('resource://gre/modules/Timer.sys.mjs');
 const scopes = { 'gc-debug-coverage':'run', incremental:'incremental', 'slice-gc':'sliceGC', interrupt:'interrupt' };
 const bounded = (value, label, mismatch=false) => { if (!value) { const error=Error(label);error.gateMismatch=mismatch;throw error; } };
@@ -31,7 +30,20 @@ export async function invoke(targetWindow, options, IOUtils) {
     bounded(result.identity.startupPref === portableBaseline, 'startup preference mismatch', true);
     const target = Components.utils.waiveXrays(targetWindow);
     result.fixture = { mainDone:target.nightlySafetyMainDone === true, workerDone:target.nightlySafetyWorkerDone === true, error:target.nightlySafetyError || null };
-    if (scope === 'identity') { result.status = 'recorded'; return result; }
+    if (scope === 'identity') {
+      if (!target.nightlySafetyStarted && typeof target.nightlySafetyStart === 'function' &&
+          targetWindow.document.readyState === 'complete') {
+        bounded(typeof testing.gcstate === 'function', 'actual GC state API unavailable');
+        const readiness = Components.utils.exportFunction(() => {
+          bounded(child.isCurrentGlobal && !child.isClosed && targetWindow.document.documentURI === url,
+            'GC readiness target changed');
+          return testing.gcstate();
+        }, targetWindow);
+        target.nightlySafetyStart(readiness);
+      }
+      result.fixture = { mainDone:target.nightlySafetyMainDone === true, workerDone:target.nightlySafetyWorkerDone === true, error:target.nightlySafetyError || null };
+      result.status = 'recorded'; return result;
+    }
     bounded(portableBaseline === true, 'privileged specializer gates require enabled arm');
     bounded(result.fixture.mainDone && result.fixture.workerDone && !result.fixture.error, 'actual main and Worker fixture not completed');
     for (const name of ['gcstate','startgc','finishgc','gcslice']) bounded(typeof testing[name] === 'function', 'privileged API unavailable: ' + name);
@@ -44,10 +56,11 @@ export async function invoke(targetWindow, options, IOUtils) {
     bounded(await IOUtils.exists(observerLogPath), 'direct native observer stderr missing');
     sandbox = Components.utils.Sandbox(Services.scriptSecurityManager.getSystemPrincipal(),
       { sandboxName:'NightlyJitSafety-' + label, freshCompartment:true, wantGlobalProperties:['TextDecoder'] });
-    Object.assign(sandbox, { Services, Components, ChromeUtils, IOUtils, TextDecoder, setTimeout,
+    bounded(typeof sandbox.Components?.utils?.getJSTestingFunctions === 'function', 'sandbox Components API unavailable');
+    Object.assign(sandbox, { Services, ChromeUtils, IOUtils, TextDecoder, setTimeout,
       console:{ log(line) { bounded(typeof line === 'string' && line.startsWith('NJS_PRIV '), 'unexpected privileged transcript');
         bounded(logs.length < 128 && line.length < 65536, 'privileged transcript cap'); logs.push(line); console.log(line); } } });
-    Services.scriptloader.loadSubScript('file://' + base + 'privileged-driver.js', sandbox);
+    Services.scriptloader.loadSubScript(import.meta.url.replace(/[^/]+$/, 'privileged-driver.js'), sandbox);
     bounded(typeof sandbox.NightlySafetyDriver?.[scopes[scope]] === 'function', 'actual driver unavailable');
     result.status = 'running';
     await sandbox.NightlySafetyDriver[scopes[scope]](targetWindow, observerLogPath);

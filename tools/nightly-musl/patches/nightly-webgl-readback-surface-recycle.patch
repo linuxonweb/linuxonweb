@@ -1,0 +1,15 @@
+--- a/dom/canvas/WebGLContext.cpp
++++ b/dom/canvas/WebGLContext.cpp
+@@ -1431,6 +1431,12 @@
+     }
+ 
+     ownerClient->PushTexture(textureId, ownerId, std::move(data));
++    // The remote texture now holds a copy of this front buffer. Let the next
++    // Acquire() reuse the surface instead of creating a new framebuffer every
++    // frame; it stays the front buffer for snapshots until then.
++    if (surf) {
++      swapChain.StoreRecycledSurface(surf);
++    }
+     return true;
+   }
+ 

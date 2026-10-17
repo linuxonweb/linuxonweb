@@ -14,7 +14,7 @@ export async function run(label){
  const actor='OriginalBenchmark';let tab,timer,registered=false;
  const result=new Promise(resolve=>{c.resolve=resolve;});
  try {
-  ChromeUtils.registerWindowActor(actor,{child:{esModuleURI:'file://'+base+'OriginalBenchmarkChild.sys.mjs',events:{DOMContentLoaded:{capture:true,createActor:true}}},parent:{esModuleURI:'file://'+base+'OriginalBenchmarkParent.sys.mjs'},matches:[url],allFrames:false});registered=true;
+  ChromeUtils.registerWindowActor(actor,{child:{esModuleURI:import.meta.url.replace(/[^/]+$/, 'OriginalBenchmarkChild.sys.mjs'),events:{DOMContentLoaded:{capture:true,createActor:true}}},parent:{esModuleURI:import.meta.url.replace(/[^/]+$/, 'OriginalBenchmarkParent.sys.mjs')},matches:[url],allFrames:false});registered=true;
   tab=main.gBrowser.addTab('about:blank',{triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal()});
   ownTarget(c,main,tab,c.resolve);
   tab.linkedBrowser.loadURI(Services.io.newURI(url),{triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal()});

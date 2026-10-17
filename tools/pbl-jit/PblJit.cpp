@@ -131,6 +131,7 @@ std::atomic<uint32_t> gRejects{0};
 std::atomic<uint32_t> gRuns{0};
 std::atomic<uint32_t> gBails{0};
 std::atomic<int> gLogBudget{-1};
+std::atomic<bool> gLogEnabled{false};
 std::atomic<int> gEnabled{-1};
 
 bool Enabled() {
@@ -139,16 +140,21 @@ bool Enabled() {
     const char* v = getenv("PBLJIT");
     e = (v && v[0] == '0') ? 0 : 1;
     const char* l = getenv("PBLJIT_LOG");
-    gLogBudget.store(l ? atoi(l) : 24, std::memory_order_relaxed);
+    const int logBudget = l ? atoi(l) : 24;
+    gLogBudget.store(logBudget, std::memory_order_relaxed);
+    gLogEnabled.store(logBudget > 0, std::memory_order_relaxed);
     gEnabled.store(e, std::memory_order_relaxed);
-    if (e) {
-      fprintf(stderr, "PBLJIT enabled (threshold=%u, logBudget=%d)\n", kCompileHits, l ? atoi(l) : 24);
+    if (e && logBudget > 0) {
+      fprintf(stderr, "PBLJIT enabled (threshold=%u, logBudget=%d)\n", kCompileHits, logBudget);
     }
   }
   return e != 0;
 }
 
-bool TakeLog() { return gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0; }
+bool TakeLog() {
+  return gLogEnabled.load(std::memory_order_relaxed) &&
+         gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
+}
 
 // ---- wasm byte emitter ----------------------------------------------------
 
@@ -1820,7 +1826,7 @@ bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
             unsigned(pc - script->code()), len, c.nops, c.nvars, c.maxDepth,
             m.n, idx[0], c.attempts, static_cast<unsigned long long>(e->majorGC));
   }
-  if ((n & (n - 1)) == 0) {
+  if ((n & (n - 1)) == 0 && gLogEnabled.load(std::memory_order_relaxed)) {
     fprintf(stderr,
             "PBLJIT stats compiles=%u rejects=%u runs=%u bails=%u\n", n,
             gRejects.load(std::memory_order_relaxed),

@@ -42,5 +42,7 @@ export type WorkerMessage = AudioPacket | {
     /** 0 pending, 1 done. Shared with the worker's Atomics.wait. */
     status: Int32Array<SharedArrayBuffer>;
 } | {
+    type: "worker_idle";
+} | {
     type: "worker_exit";
 };

@@ -90,7 +90,7 @@ globalThis.NightlySafetyDriver = {
   async interrupt(targetWindow, observerLogPath) {
     const c=await this.context(targetWindow,observerLogPath,'interrupt');const {target,emit,read,source,finish}=c,before=await read();c.requireBaseline(before);
     const names=['dom.max_script_run_time','dom.always_stop_slow_scripts','dom.global_stop_script'];
-    const old=names.map(name=>({name,user:Services.prefs.prefHasUserValue(name),value:name===names[0]?Services.prefs.getIntPref(name):Services.prefs.getBoolPref(name)}));let elapsedMs;
+    const old=names.map(name=>{const type=Services.prefs.getPrefType(name);return {name,type,user:Services.prefs.prefHasUserValue(name),value:type===0?undefined:name===names[0]?Services.prefs.getIntPref(name):Services.prefs.getBoolPref(name)};});let elapsedMs;
     try {
       Services.prefs.setIntPref(names[0],1);Services.prefs.setBoolPref(names[1],true);Services.prefs.setBoolPref(names[2],false);
       emit({event:'interrupt-start',source:source('infinite'),beforeBytes:before.length,timeoutSeconds:1,globalStopScript:false});
@@ -100,7 +100,7 @@ globalThis.NightlySafetyDriver = {
       while(target.nightlyInterruptRecovered!==8386560){if(Date.now()-start>15000)throw Error('bounded same-window recovery timeout');await new Promise(r=>setTimeout(r,100));}elapsedMs=Date.now()-start;
     } finally {
       for(const pref of old){if(!pref.user)Services.prefs.clearUserPref(pref.name);else if(pref.name===names[0])Services.prefs.setIntPref(pref.name,pref.value);else Services.prefs.setBoolPref(pref.name,pref.value);}
-      const restored=old.every(pref=>Services.prefs.prefHasUserValue(pref.name)===pref.user&&(pref.name===names[0]?Services.prefs.getIntPref(pref.name):Services.prefs.getBoolPref(pref.name))===pref.value);
+      const restored=old.every(pref=>Services.prefs.prefHasUserValue(pref.name)===pref.user&&Services.prefs.getPrefType(pref.name)===pref.type&&(pref.type===0||(pref.name===names[0]?Services.prefs.getIntPref(pref.name):Services.prefs.getBoolPref(pref.name))===pref.value));
       emit({event:'interrupt-cleanup',prefsRestored:restored});if(!restored)throw Error('interrupt pref cleanup');
     }
     await finish(before,'interrupt-done',{source:source('infinite'),result:target.nightlyInterruptRecovered,elapsedMs,recoveryWindowId:String(targetWindow.windowGlobalChild?.innerWindowId)});c.done();

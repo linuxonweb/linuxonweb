@@ -1,0 +1,57 @@
+{
+ "schema": "firefox-webgpu-w4b-pack-info-goldens-v1",
+ "firefox": "128.14.0esr",
+ "wgpu_rev": "c7458638d14921c7562e4197ddeefa17be413587",
+ "firefox_cargo_lock_sha256": "3a72a0456cfe9ab0c2239852383a18c4a90a119c5dc684c0b56d513414114d3f",
+ "server_rs_sha256": "cda17e93b018088d68abc79d7a90b9efe49fccc9d2013a4c18222ad9ac5bfb31",
+ "restrict_rs_sha256": "4b823714651d0951ac4b1578db51f60b29c3ffd238e2303b12242d24d1bd1463",
+ "harness_main_sha256": "efb609bd861d3cdc714495fd3c8ea9975550e333ffc17a79e10f4efd99e3af97",
+ "wire": "bincode 1.3.3 serialize() of wgpu_bindings::AdapterInformation<String>; None = serialize(&0u64)",
+ "check": "real bincode::deserialize::<AdapterInformation<String>> (strict, no trailing), field-equal via repr(C) mirror, re-serialize byte-equal",
+ "producer": "pack-info-harness linked against verbatim gfx/wgpu_bindings, host-native rustc 1.94.1 (e408947bf 2026-03-25)",
+ "storage": {
+  "fstype": "ext4",
+  "source": "/dev/nvme0n1p6",
+  "free_bytes": 124272099328
+ },
+ "run": "goldens-run1",
+ "goldens": [
+  {
+   "name": "nvidia-like",
+   "adapter_id": "0x2000000100000000",
+   "bin": "nvidia-like.bin",
+   "bin_len": 262,
+   "payload": "nvidia-like.payload",
+   "payload_len": 512,
+   "bin_sha256": "5376c508e6868650289738093ca84ed8f20953a947daf5b44b5c2bd490059e2b",
+   "payload_sha256": "dba17988359a5902fa14bc0dfff7c81e988874547b48ecc96e3ffffc92c9d0ab"
+  },
+  {
+   "name": "clamped",
+   "adapter_id": "0x3fffffff12345678",
+   "bin": "clamped.bin",
+   "bin_len": 264,
+   "payload": "clamped.payload",
+   "payload_len": 512,
+   "bin_sha256": "9b56059a9ebf8a852f43c373bb95901a508d9dfc166f150cd34c07c072ae2f89",
+   "payload_sha256": "ca4d8f7d42d4fbe1933e387ec95df1a890e5f2d9f73d6fb916d8d4f8f09fc63f"
+  },
+  {
+   "name": "cpu-fallback",
+   "adapter_id": "0x2000000700000003",
+   "bin": "cpu-fallback.bin",
+   "bin_len": 204,
+   "payload": "cpu-fallback.payload",
+   "payload_len": 440,
+   "bin_sha256": "87a4e8d9a3462185451b812fe7711f94a200427d6a53166963d9085dd25de68c",
+   "payload_sha256": "929c98367a9df37eb4c018b77926169e7cd92f6d244d960a000e441d3d5d2957"
+  },
+  {
+   "name": "none",
+   "adapter_id": "0x0",
+   "bin": "none.bin",
+   "bin_len": 8,
+   "bin_sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc"
+  }
+ ]
+}

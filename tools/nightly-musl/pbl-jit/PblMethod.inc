@@ -11,7 +11,7 @@
 // one block per op) with the interpreter's sp, runs ops inline with the
 // interpreter's exact fast-path semantics, calls the script's IC chains for
 // the IC ops exactly like INVOKE_IC, and returns to the interpreter at the
-// first op it does not handle inline (calls, returns, environment ops, slow
+// first op it does not handle inline (scripted calls, returns, environment ops, slow
 // paths). The interpreter runs that op and re-enters at its next DISPATCH.
 //
 // Interpreter state at an exit is exactly the state the interpreter would
@@ -74,6 +74,7 @@ constexpr uint32_t kProbe = 16;
 
 std::atomic<int> gEnabled{-1};
 std::atomic<int> gLogBudget{0};
+std::atomic<bool> gLogEnabled{false};
 std::atomic<uint32_t> gCompiles{0};
 std::atomic<uint32_t> gRejects{0};
 uint32_t gHits = 50;
@@ -99,17 +100,22 @@ bool Enabled() {
     const char* lj = getenv("PBLBC_LOOPJIT");
     gLoopJit = !(lj && lj[0] == '0');
     const char* l = getenv("PBLBC_LOG");
-    gLogBudget.store(l ? atoi(l) : 40, std::memory_order_relaxed);
+    const int logBudget = l ? atoi(l) : 40;
+    gLogBudget.store(logBudget, std::memory_order_relaxed);
+    gLogEnabled.store(logBudget > 0, std::memory_order_relaxed);
     gEnabled.store(e, std::memory_order_relaxed);
-    fprintf(stderr, "PBLBC %s (threshold=%u ic=%d loopexit=%d loopjit=%d)\n",
-            e ? "enabled" : "disabled", gHits, int(gIcInline), int(gLoopExit),
-            int(gLoopJit));
+    if (logBudget > 0) {
+      fprintf(stderr, "PBLBC %s (threshold=%u ic=%d loopexit=%d loopjit=%d)\n",
+              e ? "enabled" : "disabled", gHits, int(gIcInline), int(gLoopExit),
+              int(gLoopJit));
+    }
   }
   return e != 0;
 }
 
 bool TakeLog() {
-  return gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
+  return gLogEnabled.load(std::memory_order_relaxed) &&
+         gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
 }
 
 // Frame field offsets from the BaselineFrame* (the frame pointer is
@@ -452,6 +458,14 @@ struct MT {
     ifThen();
     exitAt(cur + 1);
     end();
+    lget(L_FR);
+    load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfInterpreterScript())));
+    load32(uint32_t(JSScript::offsetOfMutableFlags()));
+    i32c(int32_t(MutableScriptFlagsEnum::HasScriptCounts));
+    op(OP_I32AND);
+    ifThen();
+    exitAt(cur + 1);
+    end();
   }
 
   bool scan();
@@ -462,6 +476,7 @@ struct MT {
   bool compare(JSOp jop);
   bool unary(JSOp jop);
   bool generic(uint32_t nargs);
+  bool nativeCall();
 };
 
 // ---- scan: op table, static IC indexes, eligibility ------------------------
@@ -544,6 +559,8 @@ bool IsInlineOp(JSOp op) {
 
 bool IsIcCallOp(JSOp op) {
   switch (op) {
+    case JSOp::Call:
+    case JSOp::CallIgnoresRv:
     case JSOp::GetProp:
     case JSOp::GetBoundName:
     case JSOp::GetElem:
@@ -621,6 +638,51 @@ bool MT::scan() {
 }
 
 // ---- per-op translation ----------------------------------------------------
+
+bool MT::nativeCall() {
+  if (cur + 1 >= n) return reject("call at end");
+  const uint32_t argc = GET_ARGC(code + ops[cur].pcOff);
+  ld(argc + 1);
+  lset(L_A);
+  tagIs(L_A, JSVAL_TAG_OBJECT);
+  op(OP_I32EQZ);
+  ifThen();
+  exitHere();
+  end();
+  lget(L_A);
+  op(OP_I32WRAP);
+  load32(uint32_t(kShapeOffset));
+  load32(uint32_t(Shape::offsetOfBaseShape()));
+  load32(uint32_t(BaseShape::offsetOfClasp()));
+  ltee(L_X);
+  i32c(int32_t(uintptr_t(js::FunctionClassPtr)));
+  op(OP_I32NE);
+  lget(L_X);
+  i32c(int32_t(uintptr_t(js::FunctionExtendedClassPtr)));
+  op(OP_I32NE);
+  op(OP_I32AND);
+  ifThen();
+  exitHere();
+  end();
+  lget(L_A);
+  op(OP_I32WRAP);
+  load32(uint32_t(JSFunction::offsetOfFlagsAndArgCount()));
+  i32c(int32_t(FunctionFlags::BASESCRIPT | FunctionFlags::SELFHOSTLAZY));
+  op(OP_I32AND);
+  ifThen();
+  exitHere();
+  end();
+  lget(L_CTX);
+  i32c(2);
+  store32(kCtxExtraArgs);
+  i64c(argc);
+  lset(L_A);
+  invokeIC(L_A, ~0u, ~0u, false);
+  spAdd(int32_t(argc + 2));
+  pushLocal(L_R);
+  debugCheckNext();
+  return true;
+}
 
 // Add/Sub/Mul/Div/Mod: the interpreter's HybridICs fast paths; anything else
 // (strings, objects, double Mod) is left to the interpreter.
@@ -955,6 +1017,9 @@ bool MT::translateOp() {
   }
   nInline++;
   switch (o.op) {
+    case JSOp::Call:
+    case JSOp::CallIgnoresRv:
+      return nativeCall();
     case JSOp::Nop:
     case JSOp::NopDestructuring:
     case JSOp::NopIsAssignOp:
@@ -1749,8 +1814,9 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
   if (e->exitOp[j]) return kPending;
   JSOp jop = JSOp(*pc);
   if (jop != JSOp::JumpTarget && jop != JSOp::LoopHead &&
+      frame->icScript()->numICEntries() != 0 &&
       icEntry != icEntries + e->icIdx[j]) {
-    if (gMismatch++ < 20) {
+    if (gMismatch++ < 20 && gLogEnabled.load(std::memory_order_relaxed)) {
       fprintf(stderr, "PBLBC ic mismatch at %s off=%u dyn=%d static=%u\n",
               CodeName(jop), off, int(icEntry - icEntries), e->icIdx[j]);
     }
@@ -1798,6 +1864,7 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
   uint32_t& st = e->loopState[e->opAt[pcOff]];
   JSScript* script = frame->script();
   if (frame->isDebuggee() || script->hasScriptCounts()) return 0;
+  if (cx->runtime()->gc.isIncrementalGCInProgress()) return 0;
   js::pbljit::Exit jx;
   if (!js::pbljit::OnLoopHead(script, frame,
                               reinterpret_cast<uint64_t*>(uintptr_t(spA)),

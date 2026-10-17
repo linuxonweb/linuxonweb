@@ -18,6 +18,7 @@ let gpu_hub = null;
 let gpu_client = null;
 function user_imports({ kernel_memory, get_kernel_instance, parent_user: parent, }) {
     const HALT_USER = Symbol("halt user");
+    const has_parent = Boolean(parent);
     let context = parent;
     let instance = null;
     // Clone and fork children instantiate on first entry to user code, not
@@ -523,7 +524,7 @@ function create_instance(context) {
             // Instantiating a large module costs tens of milliseconds, during
             // which a just-spawned task would still be inside the scheduler and
             // other CPUs spin on its runqueue lock.
-            if (parent)
+            if (has_parent)
                 instance_deferred = true;
         },
         imports: {
@@ -655,7 +656,7 @@ function create_instance(context) {
                 // This is called if this thread was created by a clone call,
                 // so its entrypoint is a user-specified function.
                 // The worker instantiates the parent's user context on first entry.
-                assert(parent);
+                assert(has_parent);
                 call_entry = () => {
                     const { __indirect_function_table } = ready_instance().exports;
                     assert(__indirect_function_table instanceof WebAssembly.Table, "Invalid function table");
@@ -759,6 +760,7 @@ function create_instance(context) {
     };
 }
 function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy_status, framebuffer, gpu, }) {
+    let retired = false;
     gpu_hub = gpu instanceof SharedArrayBuffer ? gpu : null;
     // A long hostcall wait yields through sched_yield (124) so this virtual CPU keeps
     // taking interrupts, scheduling and signals (see guest-gpu-hostcall.js).
@@ -789,9 +791,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
         }
         Atomics.notify(user_copy_status, 0);
         if (Atomics.load(user_copy_status, 0) < 0) {
-            postMessage({ type: "worker_exit" });
-            platform.quit();
-            return;
+            return true;
         }
     }
     const user = user_imports({
@@ -808,6 +808,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
         user: user.imports,
         kernel: kernel_imports({
             is_worker: true,
+            recycle_worker: true,
             memory,
             spawn_worker(fn, arg, name, user, copy_user_memory) {
                 const direct = new MessageChannel();
@@ -857,7 +858,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
             worker_exit() {
                 user.release_jit();
                 gpu_client?.release();
-                postMessage({ type: "worker_exit" });
+                retired = true;
             },
         }),
         virtio: {
@@ -897,22 +898,40 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
     }
     catch (error) {
         if (error === HALT_KERNEL)
-            return;
+            return retired;
         throw error;
     }
 }
+function run_task(message) {
+    let reusable;
+    try {
+        reusable = start(message);
+    }
+    finally {
+        gpu_client?.release();
+        gpu_client = null;
+        gpu_hub = null;
+    }
+    if (reusable)
+        postMessage({ type: "worker_idle" });
+}
 channel.on_message((raw) => {
     const message = raw;
+    if (message.type === "shutdown") {
+        postMessage({ type: "worker_exit" });
+        platform.quit();
+        return;
+    }
     // Initial workers receive InitMessage directly from the page. Workers
     // spawned by another worker receive their InitMessage over this port, which
     // works around a WebKit bug reclaiming shared Wasm memory across JS VMs.
     if (message.type === "forwarded_init") {
         message.port.onmessage = ({ data }) => {
             message.port.close();
-            start(data);
+            run_task(data);
         };
         message.port.start();
         return;
     }
-    start(message);
+    run_task(message);
 });

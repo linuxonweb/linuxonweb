@@ -1,0 +1,109 @@
+<!doctype html><meta charset="utf-8"><title>Persistent home close regression</title><pre id="result">Running…</pre>
+<script type="module">
+import { openPersistentHome } from '../persistent-home.mjs';
+
+const databaseName = 'linuxonweb.home.close.test.' + crypto.randomUUID();
+const context = { mode: 0o600, uid: 1000, gid: 1000 };
+const checks = [], measurements = [];
+const assert = (condition, label) => checks.push({ label, pass: Boolean(condition) });
+const originalTransaction = IDBDatabase.prototype.transaction;
+let tracking = null, home;
+IDBDatabase.prototype.transaction = function (...args) {
+  const transaction = originalTransaction.apply(this, args);
+  if (tracking && this.name === databaseName) {
+    const record = { mode: args[1], durability: args[2]?.durability, committed: false };
+    tracking.push(record);
+    transaction.addEventListener('complete', () => { record.committed = true; });
+  }
+  return transaction;
+};
+const missing = async node => {
+  try { await home.getattr(node); return false; }
+  catch (error) { if (error.errno !== 2) throw error; return true; }
+};
+try {
+  home = await openPersistentHome({ name: databaseName });
+  const linked = await home.create(home.root, 'linked', 2, context);
+  const data = new TextEncoder().encode('durable bytes');
+  await home.write(linked.node, linked.handle, 0n, data);
+  tracking = [];
+  await home.release(linked.node, linked.handle);
+  const linkedClose = tracking;
+  tracking = null;
+  assert(linkedClose.length === 1 && linkedClose[0].mode === 'readonly' && linkedClose[0].committed,
+    'closing linked file uses one committed readonly transaction, not a disk write');
+  assert(new TextDecoder().decode(await home.read(linked.node, {}, 0n, 100)) === 'durable bytes', 'linked close preserves data');
+
+  const first = await home.open(linked.node, 0), second = await home.open(linked.node, 0);
+  tracking = [];
+  await home.release(linked.node, first);
+  assert(tracking.length === 0, 'nonfinal close needs no storage transaction');
+  await home.release(linked.node, second);
+  assert(tracking.length === 1 && tracking[0].mode === 'readonly', 'last linked reader remains readonly');
+  tracking = null;
+
+  const orphan = await home.create(home.root, 'orphan', 2, context);
+  await home.write(orphan.node, orphan.handle, 0n, data);
+  await home.unlink(home.root, 'orphan');
+  const observer = await openPersistentHome({ name: databaseName, readOnly: true });
+  try {
+    const observed = await observer.open(orphan.node, 0);
+    tracking = [];
+    await observer.release(orphan.node, observed);
+    assert(tracking.length === 0, 'observer close never reclaims another connection inode');
+    tracking = null;
+    assert((await home.read(orphan.node, orphan.handle, 0n, 100)).length === data.length, 'observer preserves open unlinked bytes');
+  } finally { await observer.destroy(); }
+  tracking = [];
+  await home.release(orphan.node, orphan.handle);
+  const orphanClose = tracking;
+  tracking = null;
+  assert(orphanClose.length === 2 && orphanClose[0].mode === 'readonly' && orphanClose[1].mode === 'readwrite' &&
+    orphanClose[1].durability === 'strict' && orphanClose.every(record => record.committed), 'orphan cleanup still waits for strict atomic deletion');
+  assert(await missing(orphan.node), 'final close reclaims unlinked inode');
+
+  const source = await home.create(home.root, 'source', 2, context);
+  const overwritten = await home.create(home.root, 'overwritten', 2, context);
+  await home.write(overwritten.node, overwritten.handle, 0n, data);
+  await home.rename(home.root, 'source', home.root, 'overwritten');
+  await home.release(overwritten.node, overwritten.handle);
+  assert(await missing(overwritten.node), 'rename-overwritten open inode is reclaimed');
+  assert((await home.lookup(home.root, 'overwritten')).id === source.node.id, 'rename replacement survives cleanup');
+  await home.release(source.node, source.handle);
+
+  for (let index = 0; index < 16; index++) {
+    const name = 'race-' + index, file = await home.create(home.root, name, 2, context);
+    await home.write(file.node, file.handle, 0n, data);
+    if (index % 2) await Promise.all([home.unlink(home.root, name), home.release(file.node, file.handle)]);
+    else await Promise.all([home.release(file.node, file.handle), home.unlink(home.root, name)]);
+    assert(await missing(file.node), 'concurrent unlink and final close leave no inode: ' + index);
+  }
+
+  for (let repeat = 0; repeat < 7; repeat++) {
+    tracking = [];
+    const started = performance.now();
+    for (let index = 0; index < 32; index++) {
+      const handle = await home.open(linked.node, 0);
+      await home.release(linked.node, handle);
+    }
+    measurements.push({ operations: 32, elapsedMs: performance.now() - started,
+      writeTransactions: tracking.filter(record => record.mode === 'readwrite').length });
+    tracking = null;
+  }
+  assert(measurements.every(row => row.writeTransactions === 0), 'repeated linked read-close never commits write transactions');
+  await home.destroy();
+  home = await openPersistentHome({ name: databaseName });
+  const reopened = await home.lookup(home.root, 'linked');
+  assert(new TextDecoder().decode(await home.read(reopened, {}, 0n, 100)) === 'durable bytes', 'durable bytes survive reopen');
+  window.testReport = { status: checks.every(check => check.pass) ? 'passed' : 'failed', checks, linkedClose, orphanClose, measurements };
+} catch (error) {
+  window.testReport = { status: 'failed', checks, measurements, error: String(error.stack || error) };
+} finally {
+  tracking = null;
+  IDBDatabase.prototype.transaction = originalTransaction;
+  await home?.destroy();
+  indexedDB.deleteDatabase(databaseName);
+  document.querySelector('#result').textContent = JSON.stringify(window.testReport, null, 2);
+  document.documentElement.dataset.result = window.testReport.status === 'passed' ? 'pass' : 'fail';
+}
+</script>

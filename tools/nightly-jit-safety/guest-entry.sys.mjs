@@ -1,6 +1,5 @@
 /* Import this from the actual Browser Console. It owns only its file fixture
  * actor; it does not change startup tier preferences, kill Firefox, or quit. */
-const { Services } = ChromeUtils.importESModule('resource://gre/modules/Services.sys.mjs');
 const { setTimeout, clearTimeout } = ChromeUtils.importESModule('resource://gre/modules/Timer.sys.mjs');
 Components.utils.importGlobalProperties(['IOUtils']);
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -29,7 +28,7 @@ export async function run(sessionPath) {
     const main = Services.wm.getMostRecentWindow('navigator:browser');
     if (!main?.gBrowser) throw Error('actual Firefox browser required');
     const url = 'file://' + base + label + '.html';
-    ChromeUtils.registerWindowActor(name, { child:{esModuleURI:'file://' + base + 'NightlyJitSafetyChild.sys.mjs'}, parent:{esModuleURI:'file://' + base + 'NightlyJitSafetyParent.sys.mjs'}, matches:[url], allFrames:false });
+    ChromeUtils.registerWindowActor(name, { child:{esModuleURI:import.meta.url.replace(/[^/]+$/, 'NightlyJitSafetyChild.sys.mjs')}, parent:{esModuleURI:import.meta.url.replace(/[^/]+$/, 'NightlyJitSafetyParent.sys.mjs')}, matches:[url], allFrames:false });
     registered = true;
     const browser = main.gBrowser.selectedBrowser;
     browser.loadURI(Services.io.newURI(url), { triggeringPrincipal:Services.scriptSecurityManager.getSystemPrincipal() });

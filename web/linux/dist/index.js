@@ -2,6 +2,7 @@ import { createAudioHost } from "./audio.js";
 // SPDX-License-Identifier: MIT
 import { generate_devicetree } from "./devicetree.js";
 import { platform } from "./platform.js";
+import { createWorkerPool } from "./worker-pool.mjs";
 import { assert, unreachable } from "./util.js";
 import { read_wasm_memories } from "./wasm_binary.js";
 import { close_virtio_device, virtio_device_description, virtio_imports, } from "./virtio/core.js";
@@ -18,6 +19,16 @@ export { vsockDevice, } from "./virtio/vsock.js";
 export { Abs, Ev, inputDevice, Key, Rel, Syn, } from "./virtio/input.js";
 export { createFramebufferHost, swizzle_bgra_to_rgba, } from "./framebuffer.js";
 export { attach_guest, connectTcpOverWebSocket, createNetwork, resolveDnsOverProxy, wsTcpProxyNetwork, } from "./network/index.js";
+function framebuffer_options(settings, mode, gpu_host) {
+    return {
+        ...settings,
+        ...mode,
+        onOverlaySupport(on) {
+            gpu_host?.setKeyedPresent(on);
+            settings.onOverlaySupport?.(on);
+        },
+    };
+}
 export class MachinePanicError extends Error {
     constructor() {
         super("kernel panic");
@@ -102,6 +113,7 @@ export async function spawnMachine(options) {
     let failed = false;
     let finish_error;
     let finish_promise;
+    let worker_pool;
     let framebuffer_host = null;
     const audio_host = options.audio ? createAudioHost() : null;
     // Guest GPU hostcall hub; its owner Worker starts only at the first guest call.
@@ -138,6 +150,7 @@ export async function spawnMachine(options) {
         if (finish_promise)
             return finish_promise;
         closed = true;
+        worker_pool?.close();
         finish_promise = (async () => {
             framebuffer_host?.close();
             framebuffer_host = null;
@@ -247,7 +260,6 @@ export async function spawnMachine(options) {
         // (~200 ms for a fresh module worker), so keep a few workers loaded
         // ahead of time; a spawn then only posts the init message.
         const SPARE_WORKERS = 8;
-        const spares = [];
         const load_worker = (name) => {
             const slot = { handlers: null, error: null };
             const worker = platform.spawn_worker(name, {
@@ -262,25 +274,24 @@ export async function spawnMachine(options) {
             workers.add(worker);
             return { worker, slot };
         };
-        const refill_spares = () => {
-            while (!closed && spares.length < SPARE_WORKERS)
-                spares.push(load_worker("linux-worker"));
-        };
-        const take_worker = (name) => {
-            for (let spare; (spare = spares.shift());) {
-                if (!spare.slot.error)
-                    return spare;
-                // An idle worker that failed to load is discarded; a fresh one reports its own error.
-                workers.delete(spare.worker);
-                void spare.worker.terminate();
-            }
-            return load_worker(name);
-        };
+        worker_pool = createWorkerPool({
+            capacity: SPARE_WORKERS,
+            load: load_worker,
+            retire(entry, failed) {
+                if (failed) {
+                    workers.delete(entry.worker);
+                    void entry.worker.terminate();
+                }
+                else {
+                    entry.worker.post({ type: "shutdown" });
+                }
+            },
+        });
         const start_worker = (name, init) => {
             if (closed)
                 return;
-            const { worker, slot } = take_worker(name);
-            setTimeout(refill_spares, 0);
+            const entry = worker_pool.take(name);
+            const { worker, slot } = entry;
             slot.handlers = {
                 on_message(raw) {
                     const message = raw;
@@ -338,6 +349,10 @@ export async function spawnMachine(options) {
                         case "gpu_hostcall":
                             gpu_host?.handle(message);
                             break;
+                        case "worker_idle":
+                            if (!closed)
+                                worker_pool.release(entry);
+                            break;
                         case "worker_exit": {
                             // The worker closes itself after posting this message. Calling
                             // terminate() here races that orderly shutdown and leaks the
@@ -380,6 +395,9 @@ export async function spawnMachine(options) {
         const unavailable = () => {
             throw new Error("not available on main thread");
         };
+        if (options.framebuffer) {
+            framebuffer_host = createFramebufferHost(wasm_memory, framebuffer_options(options.framebuffer, framebuffer_mode, gpu_host));
+        }
         const imports = {
             env: { memory: wasm_memory },
             boot: {
@@ -440,23 +458,9 @@ export async function spawnMachine(options) {
                 virtio_config_written = imports.config_written;
                 return imports;
             })(),
-            fb: (() => {
-                if (options.framebuffer) {
-                    framebuffer_host = createFramebufferHost(wasm_memory, {
-                        ...options.framebuffer,
-                        width: framebuffer_mode.width,
-                        height: framebuffer_mode.height,
-                        bpp: framebuffer_mode.bpp,
-                        onOverlaySupport: (on) => {
-                            gpu_host?.setKeyedPresent(on);
-                            options.framebuffer.onOverlaySupport?.(on);
-                        },
-                    });
-                }
-                return framebuffer_imports(wasm_memory, framebuffer_host, framebuffer_mode);
-            })(),
+            fb: framebuffer_imports(wasm_memory, framebuffer_host, framebuffer_mode),
         };
-        refill_spares();
+        worker_pool.prewarm();
         instance = (await WebAssembly.instantiate(vmlinux, imports));
         instance.exports.boot();
         return {

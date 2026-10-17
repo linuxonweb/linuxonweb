@@ -53,6 +53,8 @@ const uint32_t kCtxRegVals =
     uint32_t(offsetof(ICCtx, icregs) + offsetof(ICRegs, icVals));
 const uint32_t kCtxRegTags =
     uint32_t(offsetof(ICCtx, icregs) + offsetof(ICRegs, icTags));
+const uint32_t kCtxExtraArgs =
+    uint32_t(offsetof(ICCtx, icregs) + offsetof(ICRegs, extraArgs));
 const uint32_t kCtxSp = uint32_t(offsetof(ICCtx, sp_));
 const uint32_t kCtxArg2 = uint32_t(offsetof(ICCtx, arg2));
 const uint32_t kCtxStepOff = uint32_t(offsetof(ICCtx, stepOff));
@@ -69,6 +71,7 @@ std::atomic<uint32_t> gCompiles{0};
 std::atomic<uint32_t> gRejects{0};
 std::atomic<uint32_t> gInstalls{0};
 std::atomic<int> gLogBudget{0};
+std::atomic<bool> gLogEnabled{false};
 std::atomic<int> gEnabled{-1};
 uint32_t gNextStatSteps = 1u << 20;
 
@@ -78,19 +81,25 @@ bool Enabled() {
     const char* v = getenv("PBLIC");
     e = (v && v[0] == '0') ? 0 : 1;
     const char* l = getenv("PBLIC_LOG");
-    gLogBudget.store(l ? atoi(l) : 40, std::memory_order_relaxed);
+    const int logBudget = l ? atoi(l) : 40;
+    gLogBudget.store(logBudget, std::memory_order_relaxed);
+    gLogEnabled.store(logBudget > 0, std::memory_order_relaxed);
     gEnabled.store(e, std::memory_order_relaxed);
-    fprintf(stderr, "PBLIC %s (threshold=%u)\n", e ? "enabled" : "disabled",
-            kHits);
+    if (logBudget > 0) {
+      fprintf(stderr, "PBLIC %s (threshold=%u)\n", e ? "enabled" : "disabled",
+              kHits);
+    }
   }
   return e != 0;
 }
 
 bool TakeLog() {
-  return gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
+  return gLogEnabled.load(std::memory_order_relaxed) &&
+         gLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
 }
 
 void PrintStats(const char* why) {
+  if (!gLogEnabled.load(std::memory_order_relaxed)) return;
   // Top stepped ops show which ops are worth translating inline next.
   uint32_t top[8];
   uint32_t ntop = 0;
@@ -971,8 +980,12 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       load64(0);
       lset(L_RET);
       return true;
-    case CacheOp::LoadDenseElementResult: {
-      bool packed = a[2] != 0;
+    case CacheOp::LoadDenseElementResult:
+    case CacheOp::LoadDenseElementExistsResult:
+    case CacheOp::StoreDenseElement: {
+      bool exists = cop == CacheOp::LoadDenseElementExistsResult;
+      bool storing = cop == CacheOp::StoreDenseElement;
+      bool packed = !exists && a[storing ? 3 : 2] != 0;
       readReg32(a[0]);
       load32(uint32_t(NativeObject::offsetOfElements()));
       lset(L_Y);
@@ -1004,14 +1017,52 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       op(OP_I32SHL);
       op(OP_I32ADD);
       load64(0);
-      lset(L_RET);
+      lset(storing ? L_B : L_RET);
       if (!packed) {
-        lget(L_RET);
+        lget(storing ? L_B : L_RET);
         tagIs(JSVAL_TAG_MAGIC);
         failIf();
       }
+      if (storing) {
+        const int32_t gcTag =
+            int32_t(uint32_t(JS::detail::ValueLowerInclGCThingTag));
+        readValue(a[2]);
+        lset(L_A);
+        lget(L_B);
+        hi();
+        i32c(gcTag);
+        op(OP_I32GEU);
+        lget(L_A);
+        hi();
+        i32c(gcTag);
+        op(OP_I32GEU);
+        op(OP_I32OR);
+        failIf();
+        lget(L_Y);
+        lget(L_X);
+        i32c(3);
+        op(OP_I32SHL);
+        op(OP_I32ADD);
+        lget(L_A);
+        store64(0);
+      }
+      if (exists) {
+        i32c(1);
+        boxBool();
+        lset(L_RET);
+      }
       return true;
     }
+    case CacheOp::LoadStringLengthResult:
+      readReg32(a[0]);
+      load32(uint32_t(JSString::offsetOfLength()));
+      ltee(L_X);
+      i32c(0);
+      op(OP_I32LTS);
+      failIf();
+      lget(L_X);
+      RET_INT32_FROM_I32();
+      return true;
     case CacheOp::LoadInt32ArrayLengthResult:
     case CacheOp::LoadInt32ArrayLength:
       readReg32(a[0]);
@@ -1293,6 +1344,49 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       writeReg(a[3], JSVAL_TAG_INT32);
       return true;
     }
+    case CacheOp::CompareStringResult: {
+      const JSOp comparison = JSOp(a[0]);
+      const bool equal = comparison == JSOp::Eq || comparison == JSOp::StrictEq;
+      const bool notEqual =
+          comparison == JSOp::Ne || comparison == JSOp::StrictNe;
+      if (!equal && !notEqual && comparison != JSOp::Lt &&
+          comparison != JSOp::Le && comparison != JSOp::Gt &&
+          comparison != JSOp::Ge) {
+        return false;
+      }
+      readReg32(a[1]);
+      readReg32(a[2]);
+      op(OP_I32EQ);
+      ifThen();
+      i32c(equal || comparison == JSOp::Le || comparison == JSOp::Ge);
+      boxBool();
+      lset(L_RET);
+      elseThen();
+      if (equal || notEqual) {
+        readReg32(a[1]);
+        load32(uint32_t(JSString::offsetOfFlags()));
+        readReg32(a[2]);
+        load32(uint32_t(JSString::offsetOfFlags()));
+        op(OP_I32AND);
+        i32c(int32_t(StringFlags::ATOM_BIT));
+        op(OP_I32AND);
+        readReg32(a[1]);
+        load32(uint32_t(JSString::offsetOfLength()));
+        readReg32(a[2]);
+        load32(uint32_t(JSString::offsetOfLength()));
+        op(OP_I32NE);
+        op(OP_I32OR);
+        op(OP_I32EQZ);
+        failIf();
+        i32c(notEqual);
+        boxBool();
+        lset(L_RET);
+      } else {
+        fail();
+      }
+      endIf();
+      return true;
+    }
     case CacheOp::CompareInt32Result:
     case CacheOp::CompareDoubleResult: {
       bool isInt = cop == CacheOp::CompareInt32Result;
@@ -1423,11 +1517,16 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       return true;
     }
     case CacheOp::IsTypedArrayResult:
-      // Possibly wrapped objects may need IsPossiblyWrappedTypedArray: step.
-      if (a[1]) return false;
       readReg32(a[0]);
       classOf();
       ltee(L_X);
+      if (a[1]) {
+        lget(L_X);
+        load32(uint32_t(offsetof(JSClass, flags)));
+        i32c(int32_t(JSCLASS_IS_PROXY));
+        op(OP_I32AND);
+        failIf();
+      }
       i32c(int32_t(uintptr_t(std::begin(TypedArrayObject::fixedLengthClasses))));
       op(OP_I32GEU);
       lget(L_X);

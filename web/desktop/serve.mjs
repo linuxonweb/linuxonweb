@@ -109,6 +109,22 @@ function safePath(urlPath) {
   const target = normalize(join(root, mapped));
   return target.startsWith(root + '/') ? target : null;
 }
+// One byte range ("bytes=a-b", "bytes=a-", "bytes=-n"). Returns null when the
+// whole file should be sent, 'invalid' when the range cannot be satisfied.
+function parseRange(header, size) {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(String(header || '').trim());
+  if (!match || (match[1] === '' && match[2] === '')) return null;
+  let start, end;
+  if (match[1] === '') {
+    const suffix = Number(match[2]);
+    if (suffix === 0) return 'invalid';
+    start = Math.max(0, size - suffix); end = size - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] === '' ? size - 1 : Math.min(Number(match[2]), size - 1);
+  }
+  return start >= size || start > end ? 'invalid' : [start, end];
+}
 // A published build file replaces the repo file with the same /linux/ path.
 async function servedPath(urlPath) {
   const target = safePath(urlPath);
@@ -133,11 +149,33 @@ const server = createServer(async (request, response) => {
   try {
     const info = await stat(target);
     if (!info.isFile()) throw new Error('not file');
-    response.writeHead(200, {
-      ...headers(mime[extname(target)] || 'application/octet-stream'),
-      'Content-Length': String(info.size),
-    });
-    const stream = createReadStream(target);
+    const type = mime[extname(target)] || 'application/octet-stream';
+    // Byte ranges let the page fetch one large package as parallel segments.
+    const range = parseRange(request.headers.range, info.size);
+    if (range === 'invalid') {
+      response.writeHead(416, { 'Accept-Ranges': 'bytes', 'Content-Range': `bytes */${info.size}` });
+      response.end();
+      return;
+    }
+    let stream;
+    if (range) {
+      const [start, end] = range;
+      response.writeHead(206, {
+        ...headers(type),
+        'Accept-Ranges': 'bytes',
+        'Last-Modified': info.mtime.toUTCString(),
+        'Content-Range': `bytes ${start}-${end}/${info.size}`,
+        'Content-Length': String(end - start + 1),
+      });
+      if (request.method === 'HEAD') { response.end(); return; }
+      stream = createReadStream(target, { start, end });
+    } else {
+      // The file's modified time lets the page tell whether a stored copy is current.
+      response.writeHead(200, { ...headers(type), 'Accept-Ranges': 'bytes', 'Last-Modified': info.mtime.toUTCString(), 'Content-Length': String(info.size) });
+      // HEAD gets the same headers (including the modified time) without the body.
+      if (request.method === 'HEAD') { response.end(); return; }
+      stream = createReadStream(target);
+    }
     stream.once('error', () => {
       if (response.headersSent) {
         response.destroy();

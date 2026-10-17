@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build the default desktop extras overlay without replacing a frozen base rootfs."""
 import argparse
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -15,6 +16,15 @@ export GUEST_VK_DEVICE_TYPE=${GUEST_VK_DEVICE_TYPE-cpu} GALLIUM_THREAD=${GALLIUM
 exec /usr/libexec/glmark2/glmark2 "$@"
 """
 newc_entry = SourceFileLoader('gputest_package', str(ROOT / 'tools/guest-rootfs/package-gputest-glgears.py')).load_module().newc_entry
+
+def write_archive(output, archive, members):
+    compressed = gzip.compress(archive, compresslevel=6, mtime=0)
+    output.write_bytes(archive)
+    Path(str(output) + '.gz').write_bytes(compressed)
+    manifest = {'schema':1,'bytes':len(archive),'sha256':hashlib.sha256(archive).hexdigest(),'members':members,
+                'gzip':{'bytes':len(compressed),'sha256':hashlib.sha256(compressed).hexdigest()}}
+    Path(str(output) + '.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    return manifest
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -54,8 +64,6 @@ def main():
         add('usr/share/doc/glmark2/' + name, 0o100644, (a.glmark2_source / name).read_bytes())
     add('usr/share/doc/vkmark/COPYING-LGPL2.1', 0o100644, (a.vkmark_source / 'COPYING-LGPL2.1').read_bytes())
     archive.extend(newc_entry(0,'TRAILER!!!',0,b'')); archive.extend(b'\0' * (-len(archive)%512))
-    a.output.write_bytes(archive)
-    manifest = {'schema':1,'bytes':len(archive),'sha256':hashlib.sha256(archive).hexdigest(),'members':members}
-    Path(str(a.output)+'.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    manifest = write_archive(a.output, archive, members)
     print(json.dumps(manifest,indent=2))
 if __name__ == '__main__': main()

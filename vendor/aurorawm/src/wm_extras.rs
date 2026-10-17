@@ -445,6 +445,16 @@ impl Aurora {
                 self.redraw_frame_titlebar(client)?;
             }
             self.raise_chrome()?;
+            if !self.compositor_active {
+                // Fullscreen obscures the chrome that raise_chrome normally
+                // keeps visible. Restore its pixels after raising the windows;
+                // uncomposited servers may have discarded the covered content.
+                self.redraw_topbar()?;
+                self.redraw_dock()?;
+                if self.settings_visible {
+                    self.redraw_settings()?;
+                }
+            }
         }
         Ok(())
     }

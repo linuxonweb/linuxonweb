@@ -76,7 +76,7 @@ export const MachineTerminationReason = {
     Panic: 1,
 };
 export const HALT_KERNEL = Symbol("halt kernel");
-export function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, }) {
+export function kernel_imports({ is_worker, memory, spawn_worker, boot_console_write, boot_console_close, terminate_machine, run_on_main, get_user_context, worker_exit, recycle_worker = false, }) {
     return {
         breakpoint: () => {
             debugger;
@@ -86,7 +86,8 @@ export function kernel_imports({ is_worker, memory, spawn_worker, boot_console_w
                 throw new Error("Halt called in main thread");
             // Messages posted after platform.quit() are not guaranteed to arrive.
             worker_exit();
-            platform.quit();
+            if (!recycle_worker)
+                platform.quit();
             throw HALT_KERNEL;
         },
         terminate_machine: (reason) => {

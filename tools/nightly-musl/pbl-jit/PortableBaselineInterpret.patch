@@ -242,7 +242,12 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3850,8 +3960,8 @@
+@@ -3846,12 +3956,12 @@
+       CACHEOP_CASE(MathTruncToInt32Result) {
+         NumberOperandId inputId = cacheIRReader.numberOperandId();
+         double input = READ_VALUE_REG(inputId.id()).toNumber();
+-        if (input == 0.0 && std::signbit(input)) {
++        if (input > -1.0 && std::signbit(input)) {
            FAIL_IC();
          }
          double result = std::trunc(input);
@@ -429,7 +434,45 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9378,8 +9569,12 @@
+@@ -9348,6 +9539,20 @@
+   if (!JitOptions.portableBaselineInterpreter) {
+     return MethodStatus::Method_CantCompile;
+   }
++  const bool debuggee = state.script()->isDebuggee();
++  const bool coverage = state.script()->hasScriptCounts() ||
++                        cx->realm()->collectCoverageForDebug();
++  if (debuggee || coverage) {
++    if (debuggee) {
++      js::pbljit::ObserveSkip(state.script(), state.script()->code(), cx,
++                            "skip-debuggee");
++    }
++    if (coverage) {
++      js::pbljit::ObserveSkip(state.script(), state.script()->code(), cx,
++                            "skip-coverage");
++    }
++    return MethodStatus::Method_CantCompile;
++  }
+   if (state.script()->hasJitScript()) {
+     return MethodStatus::Method_Compiled;
+   }
+@@ -9368,18 +9573,27 @@
+       return MethodStatus::Method_CantCompile;
+     }
+   }
++  // The C++ interpreter cannot OSR into the portable tier at a loop head.
++  // Admit loop scripts here so a long first invocation can reach the native
++  // loop hotness checks. Straight-line scripts keep invocation warmup.
+   if (state.script()->getWarmUpCount() <=
+-      JitOptions.portableBaselineInterpreterWarmUpThreshold) {
++          JitOptions.portableBaselineInterpreterWarmUpThreshold &&
++      !state.script()->hasLoops()) {
+     return MethodStatus::Method_Skipped;
+   }
+-  // After warmup and before first JitScript allocation: retain C++ exception policy.
++  // Before first JitScript allocation, retain the C++ exception policy for both
++  // warmed scripts and first-invocation loops.
+   bool reject = false;
+   for (const auto& note : state.script()->trynotes()) {
      reject |= note.kind() == TryNoteKind::Catch ||
                note.kind() == TryNoteKind::Finally;
    }

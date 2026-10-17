@@ -283,6 +283,31 @@ test('unchanged presents are skipped and only changed rows repaint', async () =>
   });
 });
 
+for (const backend of ['canvas2d', 'webgpu']) {
+  test(`${backend} restores a cleared backing store even when guest pixels are unchanged`, async () => {
+    await withHostGlobals(backend === 'webgpu' ? fakeGpu().gpu : undefined, async flush => {
+      const memory = { buffer: new ArrayBuffer(32) };
+      new Uint8Array(memory.buffer).set([3, 2, 1, 0, 6, 5, 4, 0,
+        9, 8, 7, 0, 12, 11, 10, 0]);
+      const { canvas, painted, drawn } = fakeCanvas();
+      const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend });
+      try {
+        await host.ready;
+        host.present(0, 2, 2, 8, 32); flush();
+        assert.equal(host.diagnostics.frames, 1);
+        canvas.width = 1; canvas.height = 1;
+        host.present(0, 2, 2, 8, 32); flush();
+        assert.deepEqual([canvas.width, canvas.height], [2, 2]);
+        assert.equal(host.diagnostics.frames, 2, 'unchanged pixels restore the cleared canvas');
+        if (backend === 'canvas2d') assert.deepEqual(painted[1], painted[0]);
+        else assert.deepEqual(drawn.at(-1).rect, [0, 0, 2, 2, 0, 0, 2, 2]);
+        host.present(0, 2, 2, 8, 32); flush();
+        assert.equal(host.diagnostics.frames, 2, 'normal unchanged-frame skipping resumes');
+      } finally { host.close(); }
+    });
+  });
+}
+
 test('explicit WebGL keeps its Canvas2D fallback with an honest diagnostic', async () => {
   await withHostGlobals(undefined, async () => {
     const canvas = { getContext: () => ({}), dataset: {} };

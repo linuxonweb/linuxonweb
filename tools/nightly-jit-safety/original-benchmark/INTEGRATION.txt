@@ -1,0 +1,106 @@
+Repo tooling adoption and host preparation only; no installation, build, browser or guest has run.
+
+Canonical tools: tools/nightly-jit-safety/original-benchmark. TASK_ROOT must be
+an existing canonical directory under /mnt/p6/project/build on its disk filesystem.
+The preparer copies adjacent repo modules; no proposal-directory input is needed.
+The existing admitted outer producer remains responsible for launch and receipt.
+
+Producer preparation
+  python3 -B tools/nightly-jit-safety/original-benchmark/prepare.py --repo /mnt/p6/project/linux/linuxonweb --task-root TASK_ROOT --out TASK_ROOT/INSTALL --label a-1 --option 0 --cpus ACTUAL_CPUS --build-id ACTUAL_FINAL_BUILD_ID
+  Prepare b-1 identically with --option 1 from the SAME accepted final binary.
+  Import producerInterface(INSTALL, TASK_ROOT) from tools/nightly-jit-safety/original-benchmark/launch-interface.mjs. It verifies
+  all nine installed file pins and supplies installExpression, profile user.js,
+  guest argv/command/environment, Browser Console expression, and output paths.
+  The sample install-host-fixture-b-1 is host packaging proof only, not an actual
+  guest install or final-binary startup contract.
+
+Admitted outer producer interface
+  Before boot, evaluate installExpression on the owned outer Linux page to put
+  the exact nine files and diagnostic-only profile into persistent /home/admin.
+  Bind its actual package/raw/final/BuildID/runtime pins to the same binary A/B
+  identities. Keep existing diagnostics-off ABBAAB producer unchanged.
+  The admitted task-only guest launcher runs guest.command as admin under the
+  accepted native runtime and existing DISPLAY=:0, without a duplicate default
+  Firefox process. This redirects complete native Firefox stdout+stderr from
+  process launch to base/observer.stderr. It uses no tee, pipe or background log
+  copier. Require new cold-boot empty log and verified startup/current env:
+  PBLJIT=1 PBLJIT_LOG=0 PBLJIT_OBSERVE=1. The profile begins about:blank, disables
+  WebGL/WebGPU, and requests the restart preference 0/1. Requested values alone
+  never constitute option evidence.
+  Open the actual Browser Console using the already-reviewed UI route. Evaluate
+  browserConsoleEntry there. It registers the narrow exact-URI actor BEFORE it
+  creates/navigates a dedicated tab to the byte-identical original fixture.
+  Do not navigate the original page separately; its own timer must not run while
+  waiting to type the console command.
+  Browser Console JavaScript creates no debugger, attaches no debuggee, changes
+  no timer, and replaces no original body. Target child trusted DOMContentLoaded
+  resolves `cases` through the original target native indirect eval. Only static
+  expressions `cases`, `cases[0|5|6][1]`, and `cases[0|5|6][1]()` are evaluated.
+  It synchronously verifies strict same function references, target globals,
+  exact Function.toString bodies and all twenty original return values per case.
+  Parent IO reads complete append-only native stderr prefix boundaries before
+  and after each group of twenty calls. Actual native observer fields prove
+  file/line/loop offset, compiled fn, native exit, pthread, tid, TLS and epoch.
+  Parent verifies actual in-process OsPid=-1 or actual remote PID, strict actual
+  getter/current preference, process startup/current diagnostics and CPU identity,
+  then removes ONLY the exact owned tab. It waits at most 1000ms for its exact
+  WindowGlobal to become closed, and requires targetTimeOrigin+15000 NOT reached.
+  Entire acquisition has a 12000ms query wall deadline; timeout/late/failure is
+  recorded as failure. Cleanup after a failed attempt is never acceptance.
+
+Collection
+  acquisition.json: exact child/parent packet and per-case prefix boundaries.
+  observer-after-close.bin: complete append-only raw bytes at target destruction.
+  entry-failure.json: failure artifact if entry/child/API/deadline fails.
+  observer.stderr: complete single-file stdout+stderr retained THROUGH actual
+  native Firefox terminal exit, never a truncated or live-only snapshot.
+  Quit native Firefox through the admitted natural route after acquisition and
+  retain process terminal/reap receipt. Export the final observer.stderr bytes;
+  use those SAME complete bytes as both --native and --console for the checker.
+  Original inline start and PBLORIGINAL are then in the same retained log. If the
+  actual logging route does not supply both exactly, fix/review the acquisition
+  integration; no DOM-only or parent-console substitute is allowed.
+  Actual outer finite supervisor owns native/browser/host exact-group drainage,
+  resource guards, CPU evidence, receipt hashing, all export paths and terminal
+  scope. This task deliberately supplies no second outer launch/supervisor.
+
+Raw checker
+  python3 -B tools/nightly-jit-safety/original-benchmark/check.py --task-root TASK_ROOT --install INSTALL --acquisition ACQUISITION_JSON --native FINAL_STDOUT_STDERR --console FINAL_STDOUT_STDERR --receipt OUTER_RECEIPT --out TASK_ROOT/status/actual-review-LABEL.json
+  OUTER_RECEIPT kind=actual-original-diagnostic-outer-receipt-v1 status=recorded
+  synthetic=false; firefoxExitCode=0; targetProcessID and parentProcessID must
+  equal actual actor/native process identities; hostCPUs/browserCPUs/guestCPUs/
+  kernelCPUs must equal the actual target content count. Required true fields:
+  firefoxReaped/browserReaped/nativeProcessGroupsPhysicallyEmpty/
+  hostProcessGroupsPhysicallyEmpty/observerCompleteFromStartupThroughExit/
+  consoleCompleteFromStartupThroughExit/nativeLogAppendOnly. Required false:
+  forcedCleanup/guardStop/queryTimeout. observerSHA256/consoleSHA256 bind the
+  final complete logs; fixtureSHA256 binds full unchanged 3175B HTML.
+  The actual outer raw process/group receipts and same-binary archive/raw/final
+  package identities remain independently reviewed upstream prerequisites;
+  this narrow checker neither synthesizes nor replaces those gates.
+
+Native ABI / source contract
+  PBLJIT_OPTION startup: pid tid pthread option threshold available pref safemode.
+  PBLJIT_OBS: event file line off tid pthread tls epoch fn kind sp pcDelta ic.
+  Install kind=-1, genuine Normal kind=1, Bail kind=2. NoEntry=0/Interrupt=3
+  cannot establish required Normal. Match install->exit by exact file,line,off,
+  tid,pthread,tls,epoch,fn plus ordered raw spans. Main native startup pid ties
+  the original actor PID to native tid/pthread; a nonzero wasm32 TLS address is
+  required. Original cases lines 19/24/25 must match the exact full source bytes.
+  Runtime0 requires zero install/run/bail/noentry/interrupt across the COMPLETE
+  raw process scope, not a selected suffix or absent diagnostic flag. Runtime1
+  requires the genuine original let-local int-loop install->Normal and either
+  install->Normal/Bail or actual reject for each other original body. A rejected
+  body cannot simultaneously emit installation/execution. Exhaustion markers,
+  unknown return kind, missing fields, changed prefixes, out-of-span events,
+  unrelated original source scope and timed/error/done rows all fail closed.
+  Unrelated internal Worker option rows never establish original-body Worker
+  evidence; this byte-identical original fixture contains no Worker.
+
+Adoption does not establish runtime acceptance. Actual Firefox native eval, lexical access,
+WindowGlobal semantics, filesystem/proc/API availability, original native
+install/Normal, otherbody disposition, target-before-timer destruction, complete
+raw acquisition/terminal receipts and independent actual review remain pending.
+Original fixture has NO Worker. Separate broad main/Worker option/TLS/cache,
+GC/debug/coverage/interrupt and full eight-case diagnostics-off ABBAAB timing
+remain unchanged required gates.

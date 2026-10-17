@@ -1,16 +1,15 @@
-// Immutable system images and mutable home use separate browser stores.
-const CACHE = 'linuxonweb.system.v1';
+import { downloadFile } from './download-progress.mjs';
+// Immutable system images are kept in IndexedDB, one record per verified image
+// keyed by its sha256, with the server's Last-Modified time. Mutable home uses
+// its own storage.
+const DB = 'linuxonweb.system', STORE = 'images', LEGACY_CACHE = 'linuxonweb.system.v1';
 const ACTIVE = 'linuxonweb.system.active.v1';
 const PREVIOUS = 'linuxonweb.system.previous.v1';
 const manifestURL = new URL('./boot-manifest.json', import.meta.url);
-// Bound each browser-storage transfer independently of the 88+ MiB image.
-// Large Cache.put failures in QA were traced to a nearly full host /tmp,
-// not a documented CacheStorage size limit; keep conservative transfer sizes.
-export const SYSTEM_CHUNK_BYTES = 1024 * 1024;
 let selected;
 let cacheOnlyBoot = new Set();
 let notice = () => {};
-const diagnostics = { hits: 0, downloads: 0, writes: 0, chunkWrites: 0, failures: [] };
+const diagnostics = { hits: 0, checks: 0, refreshes: 0, downloads: 0, writes: 0, failures: [] };
 export function assetCacheDiagnostics() { return { ...diagnostics, failures: diagnostics.failures.slice() }; }
 export function onAssetNotice(callback) { notice = callback; }
 function validate(manifest) {
@@ -53,77 +52,92 @@ export async function activeManifest() {
   })().catch(error => { selected = null; throw error; });
   return selected;
 }
-const assetKey = asset => new URL(`./.system-cache/${asset.sha256}/${encodeURIComponent(asset.url.split('/').pop())}`, manifestURL).href;
-const partKey = (key, index) => `${key}.part/${index}`;
 const responseHeaders = asset => ({ 'Content-Type': asset.url.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream', 'Content-Length': String(asset.bytes), 'X-System-SHA256': asset.sha256 });
-async function cache() { try { return await caches.open(CACHE); } catch { return null; } }
-async function cachedResponse(asset, store, key) {
-  const index = await store?.match(key);
-  if (!index || index.headers.get('X-System-SHA256') !== asset.sha256) return null;
-  const count = Number(index.headers.get('X-System-Parts') || 0);
-  // Existing verified monolithic kernel/images remain readable across upgrade.
-  if (!count) return Number(index.headers.get('Content-Length')) === asset.bytes ? index : null;
-  if (count !== Math.ceil(asset.bytes / SYSTEM_CHUNK_BYTES) || Number(index.headers.get('X-System-Bytes')) !== asset.bytes) return null;
-  const parts = [];
-  for (let part = 0; part < count; part++) {
-    const response = await store.match(partKey(key, part));
-    const expected = Math.min(SYSTEM_CHUNK_BYTES, asset.bytes - part * SYSTEM_CHUNK_BYTES);
-    if (!response || Number(response.headers.get('Content-Length')) !== expected || response.headers.get('X-System-SHA256') !== asset.sha256 || response.headers.get('X-System-Part') !== String(part)) return null;
-    parts.push(response);
-  }
-  let position = 0, reader;
-  const body = new ReadableStream({
-    async pull(controller) {
-      try {
-        for (;;) {
-          if (!reader) {
-            if (position === parts.length) { controller.close(); return; }
-            reader = parts[position++].body.getReader();
-          }
-          const chunk = await reader.read();
-          if (!chunk.done) { controller.enqueue(chunk.value); return; }
-          reader.releaseLock(); reader = null;
-        }
-      } catch (error) { controller.error(error); }
-    },
-    async cancel(reason) {
-      await reader?.cancel(reason);
-      for (; position < parts.length; position++) await parts[position].body.cancel(reason);
-    },
-  });
-  return new Response(body, { headers: responseHeaders(asset) });
+
+// --- IndexedDB image store ---
+// Tests replace the browser database with an in-memory store through this hook.
+let imageOverride = null;
+export function setImageStoreForTest(store) { imageOverride = store; }
+const request = req => new Promise((resolve, reject) => {
+  req.onsuccess = () => resolve(req.result);
+  req.onerror = () => reject(req.error);
+});
+let database = null;
+function openDatabase() {
+  database ??= new Promise((resolve, reject) => {
+    const open = indexedDB.open(DB, 1);
+    open.onupgradeneeded = () => open.result.createObjectStore(STORE, { keyPath: 'sha256' });
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error);
+  }).catch(error => { database = null; throw error; });
+  return database;
 }
-async function fetchVerified(asset, store, { requireCache = false, cachedOnly = false } = {}) {
-  const key = assetKey(asset);
-  const cached = await cachedResponse(asset, store, key);
-  if (cached) { diagnostics.hits++; return cached; }
-  if (cachedOnly) throw new Error('The cached system is no longer complete. Start again and choose Update.');
-  // An incomplete or evicted chunk set is not a cache hit. The old index is
-  // removed before repair, and a new complete index is committed last.
-  await store?.delete(key);
+async function images() {
+  if (imageOverride) return imageOverride;
+  try {
+    const db = await openDatabase();
+    const store = mode => db.transaction(STORE, mode).objectStore(STORE);
+    return {
+      get: sha256 => request(store('readonly').get(sha256)),
+      all: () => request(store('readonly').getAll()),
+      keys: () => request(store('readonly').getAllKeys()),
+      put: record => request(store('readwrite').put(record)),
+      delete: sha256 => request(store('readwrite').delete(sha256)),
+      clear: () => request(store('readwrite').clear()),
+    };
+  } catch { return null; }
+}
+// The stored copy counts only if its checksum, size and blob match the manifest.
+async function localCopy(asset, store) {
+  const record = await store?.get(asset.sha256).catch(() => null);
+  return record && record.sha256 === asset.sha256 && record.bytes === asset.bytes && record.blob?.size === asset.bytes ? record : null;
+}
+const localResponse = (record, asset) => new Response(record.blob, { headers: responseHeaders(asset) });
+async function deleteLegacyCache() {
+  try { await caches.delete(LEGACY_CACHE); } catch { /* No CacheStorage in this browser. */ }
+}
+// The server's current Last-Modified time and size, from a HEAD request.
+// null when the server cannot be reached, so the stored copy is kept.
+async function serverCopy(url) {
+  let response;
+  try { response = await fetch(url, { method: 'HEAD', cache: 'no-cache' }); }
+  catch { return null; }
+  if (!response.ok) return null;
+  return { lastModified: response.headers.get('Last-Modified'), bytes: Number(response.headers.get('Content-Length')) };
+}
+// Every boot: a stored image is used only while the server's modified time and
+// size still match it. A changed or missing stored copy is downloaded again.
+async function fetchVerified(asset, { requireCache = false, cachedOnly = false } = {}) {
+  const store = await images();
   const url = new URL(asset.url, manifestURL);
   url.searchParams.set('sha256', asset.sha256);
-  notice(`Downloading ${asset.label || 'system image'}…`);
-  const response = await fetch(url, { cache: 'no-cache' });
+  const local = await localCopy(asset, store);
+  if (local && cachedOnly) { diagnostics.hits++; return localResponse(local, asset); }
+  if (cachedOnly) throw new Error('The cached system is no longer complete. Start again and choose Update.');
+  if (local) {
+    diagnostics.checks++;
+    const server = await serverCopy(url);
+    // Server unreachable: keep the stored copy rather than fail the boot.
+    if (!server) { diagnostics.hits++; return localResponse(local, asset); }
+    if (server.lastModified && server.lastModified === local.lastModified && server.bytes === asset.bytes) {
+      diagnostics.hits++;
+      return localResponse(local, asset);
+    }
+    diagnostics.refreshes++;
+    notice(`Updating ${asset.label || 'system image'} from the server…`);
+  } else {
+    notice(`Downloading ${asset.label || 'system image'}…`);
+  }
+  const { bytes, lastModified } = await downloadFile(url, { id: asset.sha256, label: asset.label || 'System image', total: asset.bytes, failure: 'System image download failed' });
   diagnostics.downloads++;
-  if (!response.ok) throw new Error(`System image download failed (${response.status})`);
-  const bytes = await response.arrayBuffer();
   if (bytes.byteLength !== asset.bytes) throw new Error('System image is incomplete or has changed on the server. Choose Update & restart to verify the current release. Your home is unchanged.');
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), byte => byte.toString(16).padStart(2, '0')).join('');
   if (digest !== asset.sha256) throw new Error('The server has a newer system image. Choose Update & restart to verify it. Your home is unchanged.');
+  const blob = new Blob([bytes]);
   try {
     if (!store) throw new Error('Browser image cache is unavailable');
-    const count = Math.ceil(bytes.byteLength / SYSTEM_CHUNK_BYTES);
-    for (let part = 0; part < count; part++) {
-      const data = bytes.slice(part * SYSTEM_CHUNK_BYTES, Math.min(bytes.byteLength, (part + 1) * SYSTEM_CHUNK_BYTES));
-      await store.put(partKey(key, part), new Response(data, { headers: {
-        'Content-Length': String(data.byteLength), 'X-System-SHA256': digest, 'X-System-Part': String(part),
-      } }));
-      diagnostics.chunkWrites++;
-    }
-    await store.put(key, new Response(null, { headers: {
-      ...responseHeaders(asset), 'Content-Length': '0', 'X-System-Bytes': String(bytes.byteLength), 'X-System-Parts': String(count),
-    } }));
+    // The record replaces any older copy of this image and carries the modified time to compare next boot.
+    await store.put({ sha256: asset.sha256, bytes: asset.bytes, lastModified, blob, savedAt: Date.now() });
     diagnostics.writes++;
   } catch (error) {
     diagnostics.failures.push(`${asset.label || asset.url}: ${error.name}: ${error.message}`);
@@ -131,26 +145,22 @@ async function fetchVerified(asset, store, { requireCache = false, cachedOnly = 
     if (requireCache) throw error;
     notice(`System image is ready, but could not be cached: ${error.message}`, true);
   }
-  return new Response(bytes, { headers: responseHeaders(asset) });
+  return new Response(blob, { headers: responseHeaders(asset) });
 }
 export async function systemAsset(key) {
   const manifest = await activeManifest();
-  return fetchVerified(manifest.assets[key], await cache(), { cachedOnly: cacheOnlyBoot.has(key) });
+  return fetchVerified(manifest.assets[key], { cachedOnly: cacheOnlyBoot.has(key) });
 }
 const withSystemLock = operation => globalThis.navigator?.locks
-  ? navigator.locks.request(CACHE, { mode: 'exclusive' }, operation) : operation();
-// Only the small manifest and cache metadata are read before the user chooses.
+  ? navigator.locks.request(LEGACY_CACHE, { mode: 'exclusive' }, operation) : operation();
+// Only the small manifest and stored metadata are read before the user chooses.
 // A declined update must never fall through to downloading a replaced URL.
 export async function prepareSystemBoot(imageKey, choose) {
   if (!['plain', 'firefox'].includes(imageKey)) throw new Error('Invalid boot image');
-  const current = await activeManifest(), store = await cache();
+  const current = await activeManifest(), store = await images();
   const keys = ['kernel', imageKey];
   async function completeCache() {
-    for (const key of keys) {
-      const response = await cachedResponse(current.assets[key], store, assetKey(current.assets[key]));
-      if (!response) return false;
-      await response.body?.cancel();
-    }
+    for (const key of keys) if (!await localCopy(current.assets[key], store)) return false;
     return true;
   }
   let candidate;
@@ -175,7 +185,7 @@ export async function prepareSystemBoot(imageKey, choose) {
   await withSystemLock(async () => {
     if (!store) throw new Error('Browser image cache is unavailable; update was not activated.');
     // Verify the selected kernel/image together before activating one pointer.
-    for (const key of keys) await fetchVerified(candidate.assets[key], store, { requireCache: true });
+    await Promise.all(keys.map(key => fetchVerified(candidate.assets[key], { requireCache: true })));
     const record = { ...snapshot(candidate), previous: snapshot(current) };
     localStorage.setItem(ACTIVE, JSON.stringify(record));
     selected = Promise.resolve(record);
@@ -184,14 +194,13 @@ export async function prepareSystemBoot(imageKey, choose) {
   return true;
 }
 export function updateSystem(onProgress = () => {}) { return withSystemLock(async () => {
-  const candidate = await latest(), current = await activeManifest(), store = await cache();
+  const candidate = await latest(), current = await activeManifest(), store = await images();
   if (!store) throw new Error('Browser image cache is unavailable; system update was not activated');
   // Stage every mode before the single active-pointer write. Network, integrity,
   // quota or preference failures leave the current release and home untouched.
-  for (const key of ['kernel', 'plain', 'firefox']) {
-    onProgress(`Preparing ${candidate.assets[key].label || key}…`);
-    await fetchVerified(candidate.assets[key], store, { requireCache: true });
-  }
+  // The three images download side by side; each one is verified and stored on its own.
+  onProgress('Preparing system images…');
+  await Promise.all(['kernel', 'plain', 'firefox'].map(key => fetchVerified(candidate.assets[key], { requireCache: true })));
   // Active + rollback are one atomic localStorage record. A quota failure
   // cannot replace one pointer while leaving the other partially updated.
   const changed = !sameImages(candidate, current);
@@ -205,33 +214,37 @@ export function updateSystem(onProgress = () => {}) { return withSystemLock(asyn
 export function restorePreviousSystem() { return withSystemLock(async () => {
   const current = saved(ACTIVE), previous = previousManifest(current);
   if (!previous) throw new Error('No previous system version is available');
-  const store = await cache();
+  const store = await images();
   if (!store) throw new Error('Browser image cache is unavailable');
-  for (const key of ['kernel', 'plain', 'firefox']) await fetchVerified(previous.assets[key], store, { requireCache: true });
+  await Promise.all(['kernel', 'plain', 'firefox'].map(key => fetchVerified(previous.assets[key], { requireCache: true })));
   localStorage.setItem(ACTIVE, JSON.stringify({ ...snapshot(previous), ...(current ? { previous: snapshot(current) } : {}) }));
 }); }
 export async function systemUsage() {
-  const store = await cache();
+  const store = await images();
   let bytes = 0;
-  if (store) for (const key of await store.keys()) bytes += Number((await store.match(key))?.headers.get('Content-Length') || 0);
+  if (store) for (const record of await store.all()) bytes += Number(record.bytes || 0);
   const manifest = await activeManifest().catch(() => null);
   return { bytes, version: manifest?.version || 'unavailable', previous: Boolean(previousManifest()) };
 }
 export async function clearSystemCache() {
-  await withSystemLock(() => caches.delete(CACHE));
+  await withSystemLock(async () => {
+    await (await images())?.clear();
+    await deleteLegacyCache();
+  });
   // Keep the pinned manifest so reload cannot silently switch versions.
 }
 export async function confirmSystemBoot() {
   // Only prune after the guest has actually mounted its durable home. Retain
-  // the active release and one rollback release, including every cached mode.
+  // the active release and one rollback release, including every stored mode.
   const booted = await activeManifest();
   await withSystemLock(async () => {
     const active = saved(ACTIVE);
     if (active?.version !== booted.version) return;
-    const keep = new Set([active, previousManifest(active)].filter(Boolean).flatMap(manifest => Object.values(manifest.assets).map(assetKey)));
-    const store = await cache();
-    if (store) for (const key of await store.keys()) {
-      if (![...keep].some(base => key.url === base || key.url.startsWith(`${base}.part/`))) await store.delete(key);
+    const keep = new Set([active, previousManifest(active)].filter(Boolean).flatMap(manifest => Object.values(manifest.assets).map(asset => asset.sha256)));
+    const store = await images();
+    if (store) for (const sha256 of await store.keys()) {
+      if (!keep.has(sha256)) await store.delete(sha256);
     }
+    await deleteLegacyCache();
   });
 }

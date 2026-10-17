@@ -262,6 +262,12 @@
         background: #000;
         box-shadow: 0 22px 65px rgba(0, 0, 0, 0.3);
       }
+      .download-panel { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; display: grid; gap: 6px; padding: 10px 12px; background: rgba(5, 10, 10, 0.86); color: var(--fg); font: 0.8rem var(--font-mono); }
+      .download-panel[hidden] { display: none; }
+      .download-row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) minmax(0, 15rem); gap: 10px; align-items: center; }
+      .download-row progress { width: 100%; height: 8px; accent-color: var(--accent); }
+      .download-size { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .download-row[data-state="error"] { color: #ff8a8a; }
       canvas#fb {
         display: block;
         width: auto;
@@ -438,6 +444,8 @@
             <div class="field">
               <label for="resolution">Display resolution</label>
               <select id="resolution">
+                <option value="window-500">Browser window width × 500</option>
+                <option value="window">Browser window width × height</option>
                 <option value="400x300">400 × 300</option>
                 <option value="400x800">400 × 800 (portrait)</option>
                 <option value="512x960">512 × 960 (portrait)</option>
@@ -465,8 +473,8 @@
                 <option value="128">128 MB</option>
                 <option value="256">256 MB</option>
                 <option value="512">512 MB</option>
-                <option value="1024" selected>1 GB</option>
-                <option value="2048">2 GB</option>
+                <option value="1024">1 GB</option>
+                <option value="2048" selected>2 GB</option>
                 <option value="4096">4 GB (maximum)</option>
               </select>
             </div>

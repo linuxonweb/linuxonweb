@@ -331,7 +331,16 @@ export function createFramebufferHost(memory, options) {
             snapshot();
             if (overlaySupport && overlays.size) applyOverlays();
             if (holesChanged && renderer?.setHoles) { const list = holes(); renderer.setHoles(list); holeCount = list.length; holesChanged = false; }
-            if (!staging || (bottom <= top && pbottom <= ptop))
+            if (!staging)
+                return;
+            // A backing-store resize clears the canvas even when guest bytes
+            // have not changed. Restore its mode and repaint before deciding
+            // that this frame can be skipped.
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width; canvas.height = height;
+                mark(0, height, 0, width);
+            }
+            if (bottom <= top && pbottom <= ptop)
                 return;
             let from = top, to = bottom, x0 = left, x1 = right, upload = bottom > top;
             // Shown: the uploaded rows plus where holes changed.
@@ -340,12 +349,6 @@ export function createFramebufferHost(memory, options) {
             ptop = height; pbottom = 0; pleft = width; pright = 0;
             // Convert at most once per animation frame even if the guest queued
             // many presents while the main thread was busy.
-            // A CSS/backing-store resize must not crop or scale the guest mode;
-            // it also clears the canvas, so the whole frame is drawn again.
-            if (canvas.width !== width || canvas.height !== height) {
-                canvas.width = width; canvas.height = height;
-                from = 0; to = height; x0 = 0; x1 = width; upload = true;
-            }
             if (upload) { pfrom = Math.min(pfrom, from); pto = Math.max(pto, to); px0 = Math.min(px0, x0); px1 = Math.max(px1, x1); }
             try {
                 if (renderer) {

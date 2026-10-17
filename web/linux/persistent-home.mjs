@@ -9,6 +9,7 @@ export const BLOCK_SIZE = 4096;
 // Version 2 marks homes that may hold 4 KiB-block files; an older page asks
 // for version 1 and fails to open instead of misreading them.
 const HOME_VERSION = 2;
+const WRITE_BATCH_BLOCKS = 32;
 const DIRECTORY = 0o040000, FILE = 0o100000, SYMLINK = 0o120000;
 const request = req => new Promise((resolve, reject) => {
   req.onsuccess = () => resolve(req.result);
@@ -187,13 +188,19 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
         // Linux has already selected the offset for O_APPEND under inode lock.
         const start = offsetNumber(offset), block = blockOf(value);
         if (!Number.isSafeInteger(start + bytes.length)) throw new FSError('EINVAL');
-        for (let done = 0; done < bytes.length;) {
-          const position = start + done, index = Math.floor(position / block), within = position % block;
-          const amount = Math.min(bytes.length - done, block - within);
-          // A whole-chunk write needs no read of the old bytes.
-          const chunk = (amount < block && await request(chunks.get([node.id, index]))) || { inode: node.id, index, data: new Uint8Array(block) };
-          chunk.data.set(bytes.subarray(done, done + amount), within);
-          await request(chunks.put(chunk)); done += amount;
+        const first = Math.floor(start / block), end = start + bytes.length;
+        const last = Math.ceil(end / block);
+        for (let batch = first; bytes.length && batch < last; batch += WRITE_BATCH_BLOCKS) {
+          const writes = [];
+          for (let index = batch; index < Math.min(last, batch + WRITE_BATCH_BLOCKS); index++) {
+            writes.push((async () => {
+              const from = Math.max(start, index * block), to = Math.min(end, (index + 1) * block);
+              const chunk = (to - from < block && await request(chunks.get([node.id, index]))) || { inode: node.id, index, data: new Uint8Array(block) };
+              chunk.data.set(bytes.subarray(from - start, to - start), from - index * block);
+              await request(chunks.put(chunk));
+            })());
+          }
+          await Promise.all(writes);
         }
         value.size = Math.max(value.size, start + bytes.length);
         value.mtime = value.ctime = timestamp(); await request(nodes.put(value));
@@ -211,7 +218,10 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
       if (count) opens.set(node.id, count);
       else {
         opens.delete(node.id);
-        if (!readOnly) await transaction(true, async (nodes, chunks) => { const value = await request(nodes.get(node.id)); if (value && value.parent === null) await removeNode(nodes, chunks, value); });
+        if (!readOnly) {
+          const orphaned = await transaction(false, async nodes => (await request(nodes.get(node.id)))?.parent === null);
+          if (orphaned) await transaction(true, async (nodes, chunks) => { const value = await request(nodes.get(node.id)); if (value && value.parent === null) await removeNode(nodes, chunks, value); });
+        }
       }
     },
     opendir(node) { return transaction(false, async nodes => { await directory(nodes, node); return {}; }); },
