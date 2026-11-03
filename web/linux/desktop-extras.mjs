@@ -3,6 +3,23 @@ import { downloadFile } from './download-progress.mjs';
 import { validateFirefoxCacheLifecycle, assertFirefoxDesktopExtras, firefoxCacheProof } from './firefox-cache-lifecycle.mjs';
 const CACHE_PROOF_PATH = 'etc/linuxonweb-firefox-cache-verified';
 const CACHE_VERIFIED = Symbol('verified Firefox desktop composition');
+// This exact protocol is emitted by overlay-persistence.py. The recovery exec
+// must occur before the agent can ever open hvc0; unknown layouts fail closed.
+const PACKAGE_RECOVERY_BLOCK = "\n# Signed package generations are restored before desktop processes can run.\n# Recovery is explicit; an incompatible/corrupt generation never silently falls back.\nif grep -qw 'home.persistent=1' /proc/cmdline; then\n  if grep -qw 'packages.base=1' /proc/cmdline; then\n    echo 'apk-persist: explicit base-only boot; saved generations retained' >&2\n  elif ! /usr/sbin/apk-persist restore; then\n    echo 'apk-persist: RESTORE FAILED; desktop startup stopped' >&2\n    echo 'Recovery: apk-persist disable; then Stop and Start. Saved generations are retained.' >&2\n    exec setsid cttyhack sh\n  fi\nfi\n\n";
+const PACKAGE_AGENT_ANCHOR = "# Give the guest desktop account access to the devices used by TinyX/input.\n";
+const RUN_AGENT = '/bin/busybox sh /bin/linuxonweb-run-agent &\n';
+function packageAgentInit(original, packageImage) {
+  const text = archiveNameDecoder.decode(original);
+  const markers = ['apk-persist: RESTORE FAILED; desktop startup stopped', '/usr/sbin/apk-persist restore'];
+  if (!packageImage && !markers.some(marker => text.includes(marker))) return { original, outerAgent: RUN_AGENT };
+  const count = value => text.split(value).length - 1;
+  if (markers.some(marker => count(marker) !== 1) || count(PACKAGE_AGENT_ANCHOR) !== 1 ||
+      count(PACKAGE_RECOVERY_BLOCK) !== 1 || !text.includes(PACKAGE_RECOVERY_BLOCK + PACKAGE_AGENT_ANCHOR)) {
+    throw new Error('Package recovery init has an unsupported or ambiguous agent activation hook.');
+  }
+  return { original: encoder.encode(text.replace(PACKAGE_AGENT_ANCHOR, RUN_AGENT + PACKAGE_AGENT_ANCHOR)), outerAgent: '' };
+}
+
 const encoder = new TextEncoder();
 const archiveNameDecoder = new TextDecoder('utf-8', { fatal: true });
 function archiveName(bytes) {
@@ -42,7 +59,7 @@ function archiveReader(archive) {
   return { length, slice };
 }
 export function desktopInitOverlay(source) { return makeDesktopInitOverlay(source, ''); }
-function makeDesktopInitOverlay(source, proof) {
+function makeDesktopInitOverlay(source, proof, packageImage = false) {
   const archive = archiveReader(source);
   const decoder = new TextDecoder(); let original = null, offset = 0;
   while (offset < archive.length) {
@@ -56,11 +73,13 @@ function makeDesktopInitOverlay(source, proof) {
     if (end > archive.length) throw new Error('Desktop rootfs CPIO is truncated.');
     const name = archiveName(archive.slice(offset + 110, offset + 110 + namesize));
     if (name === CACHE_PROOF_PATH) throw new Error('System image contains a reserved Firefox cache proof.');
+    if (name === 'usr/sbin/apk-persist' || name.startsWith('etc/linuxonweb-packages/')) packageImage = true;
     if (name === 'init') original = archive.slice(dataOffset, end);
     offset = (end + 3) & ~3;
   }
   if (!original || !decoder.decode(original.subarray(0, 128)).startsWith('#!')) throw new Error('Desktop rootfs has no supported /init script.');
-  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\n/bin/busybox sh /bin/linuxonweb-run-agent &\nexec /init.desktop-original "$@"\n');
+  const activation = packageAgentInit(original, packageImage); original = activation.original;
+  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\n' + activation.outerAgent + 'exec /init.desktop-original "$@"\n');
   const entries = [cpioEntry('init.desktop-original', original), cpioEntry('init', wrapper),
     cpioEntry('bin/linuxonweb-run-agent', encoder.encode(guestRunAgent())), cpioEntry('bin/linuxonweb-run-shell', encoder.encode(guestRunShell())),
     // init's boot-time wget/curl self-tests compete with desktop and Firefox startup.
@@ -152,7 +171,7 @@ function assembleInitramfs(parts, extras, overlay) {
   return out;
 }
 async function scanInitOverlay(reader, signal) {
-  let chunk = new Uint8Array(), cursor = 0, position = 0, original = null;
+  let chunk = new Uint8Array(), cursor = 0, position = 0, original = null, packageImage = false;
   const decoder = new TextDecoder();
   async function take(length, collect = true, optional = false) {
     const output = collect ? new Uint8Array(length) : null;
@@ -189,6 +208,7 @@ async function scanInitOverlay(reader, signal) {
     const name = archiveName(nameBytes);
     await take((4 - position % 4) % 4, false);
     if (name === CACHE_PROOF_PATH) throw new Error('System image contains a reserved Firefox cache proof.');
+    if (name === 'usr/sbin/apk-persist' || name.startsWith('etc/linuxonweb-packages/')) packageImage = true;
     if (name === 'init') {
       if (size > 1024 * 1024) throw new Error('Desktop rootfs init script exceeds 1 MiB.');
       original = await take(size);
@@ -198,7 +218,7 @@ async function scanInitOverlay(reader, signal) {
     await take((4 - position % 4) % 4, false);
   }
   if (!original) throw new Error('Desktop rootfs has no supported /init script.');
-  return { bytes: position, original };
+  return { bytes: position, original, packageImage };
 }
 export function useCompressedInitramfs(mode, search, rawRequired = false) {
   const choice = new URLSearchParams(search).get('compressed-initramfs');
@@ -247,7 +267,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
       onImage(scanned.bytes);
       const extraBytes = await wait(extrasReady);
       signal?.throwIfAborted();
-      const overlay = makeDesktopInitOverlay(cpioEntry('init', scanned.original), extraBytes?.[CACHE_VERIFIED] ?? '');
+      const overlay = makeDesktopInitOverlay(cpioEntry('init', scanned.original), extraBytes?.[CACHE_VERIFIED] ?? '', scanned.packageImage);
       let archive;
       if (extraBytes?.encoding === 'gzip') {
         const payload = extraBytes.bytes;

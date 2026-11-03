@@ -1,0 +1,108 @@
+{
+  "start": "2026-11-03T16:32:28.901Z",
+  "end": "2026-11-03T16:33:06.624Z",
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-production=recover&input-check=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        2867.016,
+        3980.491
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "packageNegativeFixture": null,
+  "productionPackage": {
+    "stage": "recover",
+    "command": "echo PACKAGE_RECOVERY_TYPED && apk-persist disable",
+    "startedLaunchMs": 20561.162,
+    "rootfsUntouched": true,
+    "route": "Actual GUI restore-failure console; physical keyboard reaches native hvc0 recovery shell",
+    "recoveryUi": {
+      "status": "package restore failed \u00b7 recovery console",
+      "visible": true,
+      "focused": true,
+      "textarea": true,
+      "body": "hvc0 \u00b7 interactive console \u00b7 click below to type\nvirtiofs virtio4: discovered new tag: home\nConsole: switching to colour frame buffer device 160x45\n[host] gputest: connect retry (guest reset vsock connection)\nfb0: wasm framebuffer 1280x720-32 at 55554cf8\nFreeing initrd memory: 131648K\nThis architecture does not have kernel memory protection.\nRun /init as init process\nhome: persistent storage mounted\napk-persist: saved file checksum mismatch: packages/gzip-1.14-r0.apk\napk-persist: RESTORE FAILED; desktop startup stopped\nPackage restore failed. Type apk-persist disable, then Stop and Start.\nRecovery: apk-persist disable; then Stop and Start. Saved generations are retained.\n/ #  \npackage restore failed \u00b7 recovery console\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n18.4 MB \u00b7 145 entries\nCached system images\n116.9 MB\nBrowser usage / quota estimate\n238.8 MB / 10.23 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved packages could not be restored. Desktop startup is blocked. In the recovery console, type apk-persist disable, then use Stop and Start. Saved generations and home files are retained."
+    },
+    "commandEnteredLaunchMs": 22898.725,
+    "acknowledgment": {
+      "marker": "APK_PERSIST_DISABLED",
+      "observedLaunchMs": 23021.022,
+      "observedUtc": "2026-11-03T16:32:57.642Z"
+    },
+    "recoveryEcho": true
+  },
+  "stops": [
+    {
+      "label": "recovery-disable",
+      "before": {
+        "timeOrigin": 1793723553252.91,
+        "status": "package restore failed \u00b7 recovery console"
+      },
+      "workerCountBefore": 50,
+      "dialogRequestedLaunchMs": 23194.909,
+      "confirmationRequestedLaunchMs": 23213.204999999998,
+      "dispatch": {
+        "requestedAt": 1793723577836.615,
+        "afterDispatchAt": 1793723577837.91,
+        "statusAfterDispatch": "stopping\u2026"
+      },
+      "idle": {
+        "timeOrigin": 1793723577869.785,
+        "ready": "complete",
+        "status": "idle",
+        "stopHidden": true,
+        "terminalPresent": false
+      },
+      "idleObservedLaunchMs": 23859.752,
+      "workerCountAfter": 48,
+      "oldGuestWorkerTargetsRemaining": 48
+    }
+  ],
+  "errors": [
+    {
+      "ms": 29584.103,
+      "error": "Error: Guest workers remain after UI Stop/reload",
+      "stack": "Error: Guest workers remain after UI Stop/reload\n    at stopProductionGuest (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:205:68)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:399:18"
+    }
+  ],
+  "remainingOwned": [],
+  "schema": 1,
+  "source": "../../../codex-build/lwc/pkgprod-recover1",
+  "durationSeconds": 37.723,
+  "score": "44/100 provisional; accepted baseline42; no new completion claim",
+  "resourceProof": {
+    "samples": 27,
+    "groups": [
+      "0::/cpulimit.slice/cpulimit-70.slice"
+    ],
+    "sharedAncestorsEverySample": true,
+    "membershipChanged": false,
+    "cpuRssRamIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": {
+    "nativeChecksumFailure": true,
+    "desktopBlocked": true,
+    "visibleFocusedRecoveryConsole": true,
+    "physicalTypedDisable": true,
+    "nativeAcknowledgment": true,
+    "realStopHandlerEntered": true,
+    "samePageReloadIdle": true,
+    "recoveryUiGone": true,
+    "workerCleanup": "Not accepted:48 of50 old CDP worker targets immediately afterreload; bounded lifecycle diagnosis pending",
+    "sameTabRestart": "Not reached after fail-closed worker check"
+  }
+}

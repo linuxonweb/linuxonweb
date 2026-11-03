@@ -5,6 +5,7 @@ import {parentPort, workerData} from 'node:worker_threads';
 
 const {rootPid, rootStart, run, startedAtMonotonic, clockTicks, pssIntervalMs=5000} = workerData;
 const tracked = new Map([[rootPid, rootStart]]);
+const observedGroups = new Map();
 let lastProcesses, lastSample, timer, lastPssSample=-Infinity;
 const now = () => +(performance.now() - startedAtMonotonic).toFixed(3);
 
@@ -77,8 +78,12 @@ function sample() {
     const count = affinityCount(p.affinity), quota = quotaByGroup[p.cgroup].capacity;
     p.effectiveCpus = count === null ? null : Math.min(count, quota ?? Infinity);
   }
+  const groupValues=Object.values(quotaByGroup);
+  const capPaths=q=>q.limits.filter(l=>{const [v,p]=l.raw.split(/\s+/);return v!=='max'&&Number(v)>0&&Number(p)>0&&Number(v)/Number(p)<=3;}).map(l=>l.path);
+  const commonCpuAncestors=groupValues.length?capPaths(groupValues[0]).filter(file=>groupValues.every(q=>capPaths(q).includes(file))):[];
+  const changedMembership=[];for(const p of list){const key=p.pid+':'+p.start;const previous=observedGroups.get(key);if(previous&&previous!==p.cgroup&&stat(p.pid)?.start===p.start)changedMembership.push(p.pid);observedGroups.set(key,p.cgroup);}
   const disk = fs.statfsSync(run);
-  const row = {ms: started, completedMs: now(), quotaByGroup,
+  const row = {ms: started, completedMs: now(), quotaByGroup, commonCpuAncestors, changedMembership,
     cpuPercent: lastProcesses === undefined ? null : ticks / clockTicks / ((started - lastSample) / 1000) * 100,
     cpuAccounting:'per-PID/start counter deltas; CPU after a final sample before process exit may be missed',
     pssBytes: pssSampled&&complete ? pss : null, pssSampled, pssIntervalMs, pssAgeMs:started-lastPssSample,
@@ -88,6 +93,10 @@ function sample() {
   lastProcesses = new Map(list.map(p => [p.pid+':'+p.start,p.ticks])); lastSample = started;
   fs.appendFileSync(path.join(run, 'resource-samples.jsonl'), JSON.stringify(row) + '\n');
   parentPort.postMessage({sample: row});
+  const escaped=list.filter(p=>stat(p.pid)?.start===p.start&&(!Number.isFinite(quotaByGroup[p.cgroup]?.capacity)||quotaByGroup[p.cgroup].capacity<=0||quotaByGroup[p.cgroup].capacity>3));
+  if(!commonCpuAncestors.length)parentPort.postMessage({fatal:'Owned processes lack one shared ancestor CPU quota <=3'});
+  if(changedMembership.length)parentPort.postMessage({fatal:'Owned process changed cgroup during observation: '+changedMembership.join(',')});
+  if(escaped.length)parentPort.postMessage({fatal:'Owned process lacks an effective ancestor CPU quota <=3: '+escaped.map(p=>p.pid+' '+p.cgroup).join('; ')});
   if (available < 2 * 1024 ** 3) parentPort.postMessage({fatal: 'Host available RAM below 2 GiB'});
 }
 function guardedSample() {

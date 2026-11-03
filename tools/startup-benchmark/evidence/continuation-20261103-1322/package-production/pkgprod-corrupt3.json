@@ -1,0 +1,84 @@
+{
+  "start": "2026-11-03T16:03:17.004Z",
+  "end": "2026-11-03T16:06:54.836Z",
+  "elapsedMs": 217832.783,
+  "milestones": {
+    "system image": 17095.184,
+    "machine started": 17095.216,
+    "home: persistent storage mounted": 37595.691,
+    "display: starting Xfbdev": 42647.015,
+    "starting /bin/aurora-wm": 42647.068999999996,
+    "[wm-ready]": 42647.081999999995,
+    "starting /bin/firefox": 42647.094,
+    "gl context 2 open": 74152.194
+  },
+  "productionPackage": {
+    "stage": "corrupt",
+    "command": "sudo /bin/busybox sh -c '/usr/sbin/apk-persist status >/dev/console 2>&1 && g=$(/bin/busybox cut -d \" \" -f 1 /home/.linuxonweb-packages/active) && /bin/busybox cp \"/home/.linuxonweb-packages/$g/packages/gzip-1.14-r0.apk\" /home/admin/.package-recovery-original.apk && /bin/busybox printf \"recovery-fixture-corruption\\n\" >> \"/home/.linuxonweb-packages/$g/packages/gzip-1.14-r0.apk\" && echo PACKAGE_CORRUPTION_FIXTURE_READY >/dev/console'",
+    "startedLaunchMs": 92130.997,
+    "rootfsUntouched": true,
+    "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command",
+    "commandEnteredLaunchMs": 138687.90899999999
+  },
+  "stops": null,
+  "errors": [
+    {
+      "ms": 212201.21,
+      "error": "Error: Production package native acknowledgment deadline",
+      "stack": "Error: Production package native acknowledgment deadline\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:363:57"
+    }
+  ],
+  "remainingOwned": [],
+  "resourceSummary": {
+    "pssPeakBytes": 4505904128,
+    "rssSumPeakBytes": 5328457728,
+    "minAvailableBytes": 25317081088,
+    "samples": 205,
+    "pssSamples": 42,
+    "pssIntervalMs": 5000
+  },
+  "accepted": false,
+  "reviewed90SecondScreenshot": "Desktop only; Firefox window not yet visible. Fixed90s did not establish a settled terminal input target.",
+  "causalAttribution": "Unresolved slowdown; removing pre-X polling does not establish its cause.",
+  "cpuPercentMean": 176.34778614134683,
+  "quotaExample": {
+    "0::/cpulimit.slice/cpulimit-70.slice": {
+      "capacity": 3,
+      "limits": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+          "raw": "560000 100000"
+        },
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+          "raw": "300000 100000"
+        }
+      ]
+    },
+    "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-176269.scope": {
+      "capacity": null,
+      "limits": [
+        {
+          "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-176269.scope/cpu.max",
+          "raw": "max 100000"
+        },
+        {
+          "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/cpu.max",
+          "raw": "max 100000"
+        },
+        {
+          "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/cpu.max",
+          "raw": "max 100000"
+        },
+        {
+          "path": "/sys/fs/cgroup/user.slice/user-1000.slice/cpu.max",
+          "raw": "max 100000"
+        },
+        {
+          "path": "/sys/fs/cgroup/user.slice/cpu.max",
+          "raw": "max 100000"
+        }
+      ]
+    }
+  }
+}

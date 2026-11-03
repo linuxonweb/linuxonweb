@@ -1,0 +1,61 @@
+{
+  "start": "2026-11-03T16:31:47.281Z",
+  "end": "2026-11-03T16:31:59.080Z",
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "owned-proxy=1&update=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        4271.227,
+        5277.459
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "packageNegativeFixture": {
+    "scope": "Controlled negative-fixture preparation only; no guest recovery action performed",
+    "origin": "http://127.0.0.1:38082",
+    "generation": "generation-GbJNeA",
+    "activePointerSha256": "41245d4e017f4b2ba0f2d2ef30f6afb7e466c01daf005822a31df7569d8894d7",
+    "manifestSha256": "b24a6e76a62846b331e0c73bc044647269f92d09e6971fae5d966b370c10cbfe",
+    "packagePath": "/home/.linuxonweb-packages/generation-GbJNeA/packages/gzip-1.14-r0.apk",
+    "beforeSha256": "751ab17c88614079fe14c0156639c02061c84df3f6a052ba97a6c223048addd8",
+    "afterSha256": "a9b3b74891f8adb3e76dc3475a40420ab4f87b567bd11357e9af5020d9608584",
+    "beforeBytes": 83859,
+    "afterBytes": 83887,
+    "originalBackup": "/home/admin/.package-recovery-original.apk",
+    "userMarkerVerified": true,
+    "rootOwnershipVerified": true,
+    "durableSettleAwaited": true,
+    "closedReopenedHashVerified": true
+  },
+  "productionPackage": null,
+  "stops": null,
+  "errors": [],
+  "remainingOwned": [],
+  "schema": 1,
+  "source": "../../../codex-build/lwc/pkg-negative-setup3",
+  "durationSeconds": 11.799,
+  "score": "44/100 provisional; accepted baseline42; no new completion claim",
+  "resourceProof": {
+    "samples": 6,
+    "groups": [
+      "0::/cpulimit.slice/cpulimit-70.slice"
+    ],
+    "sharedAncestorsEverySample": true,
+    "membershipChanged": false,
+    "cpuRssRamIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Controlled negative fixture preparation only, not native package/recovery acceptance"
+}

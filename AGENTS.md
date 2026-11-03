@@ -28,8 +28,12 @@ pause instructions. Keep this file concise and put detailed work in agent logs.
 - Set task-specific TMPDIR,TMP,TEMP and child caches before jobs. Keep socket
   paths short. Bound finite jobs and track exact owned PID/start identities.
 - Preserve unrelated processes, phone/browser data, displays and preview services.
-- Measure effective CPU affinity/quota for every runtime owner; bind guest CPU
-  setting to actual browser capacity. Do not spoof hardwareConcurrency.
+- Verify every live owned browser/driver/proxy descendant shares one capped3CPU
+  ancestor before workload and continuously; affinity3 or separate3CPU groups
+  are insufficient. Fail closed on unknown/unlimited/migrated groups. Use only
+  the reviewed owned-child nonexistent D-Bus socket setting to avoid Chromium
+  desktop scope migration; never move groups or change user/global bus settings.
+  Bind guest CPU setting to actual browser capacity; do not spoof hardwareConcurrency.
 - Sample CPU/RAM at1s during tests. Record build/test times and investigate tasks
   >5min if unexpectedly slow. Serialize all host guest runtime gates under the shared3CPU quota; overlapping
   guests have stalled at SMP bringup. Keep timed runs free of builds/uploads.
