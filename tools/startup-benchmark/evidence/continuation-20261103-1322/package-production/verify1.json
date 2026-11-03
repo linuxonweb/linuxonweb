@@ -1,0 +1,113 @@
+{
+  "start": "2026-11-03T15:16:01.331Z",
+  "end": "2026-11-03T15:18:08.958Z",
+  "elapsedMs": 127627.398,
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&input-check=1&package-production=verify",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0
+  },
+  "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&update=1&input-check=1&package-production=verify",
+  "beforeLaunchProfile": {
+    "atMs": 3570.927,
+    "nodes": 135,
+    "files": 135,
+    "truncated": false
+  },
+  "retainedOrigin": "http://127.0.0.1:38082",
+  "launchRequest": {
+    "kind": "production Start Firefox menu",
+    "hostMs": 3575.34,
+    "utc": "2026-11-03T15:16:04.906Z",
+    "page": {
+      "requestAtMs": 1018.375,
+      "pageTimeOrigin": 1793718963894.495
+    }
+  },
+  "productionPackage": {
+    "stage": "verify",
+    "command": "sudo /bin/busybox sh -c '/usr/sbin/apk-persist status >/dev/console 2>&1 && /sbin/apk info --installed gzip tar >/dev/console 2>&1 && cmp /etc/apk/world /home/admin/.package-world.ref && sha256sum -c /home/admin/.package-files.sha256 >/dev/console 2>&1 && grep -qx package-production-20261103 /home/admin/.package-persistence-production && echo package-production-verified >/dev/console'",
+    "startedLaunchMs": 91293.997,
+    "rootfsUntouched": true,
+    "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command",
+    "commandEnteredLaunchMs": 112570.257,
+    "acknowledgment": {
+      "marker": "package-production-verified",
+      "observedLaunchMs": 113632.803,
+      "observedUtc": "2026-11-03T15:17:58.539Z"
+    }
+  },
+  "stopRequestedLaunchMs": 113721.12700000001,
+  "stopConfirmedLaunchMs": 114165.36600000001,
+  "stopKeyRelease": {
+    "pass": true,
+    "events": [
+      {
+        "phase": "enqueued",
+        "type": 1,
+        "code": 42,
+        "value": 1,
+        "ms": 1793719078543.5,
+        "pending": 0
+      },
+      {
+        "phase": "enqueued",
+        "type": 1,
+        "code": 42,
+        "value": 0,
+        "ms": 1793719078628.37,
+        "pending": 0
+      }
+    ]
+  },
+  "stopState": "idle\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n18.4 MB \u00b7 144 entries\nCached system images\n116.9 MB\nBrowser usage / quota estimate\n127.8 MB / 10.12 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved files persist after refresh. Save work before Update & restart; browser data clearing removes this home.",
+  "errors": [],
+  "remainingOwned": [],
+  "resourceSummary": {
+    "pssPeakBytes": 3764844544,
+    "rssSumPeakBytes": 4749520896,
+    "minAvailableBytes": 25997332480,
+    "samples": 122,
+    "pssSamples": 25,
+    "pssIntervalMs": 5000
+  },
+  "pending": "Interactive corrupt-generation GUI recovery before promotion",
+  "rootfsManifest": {
+    "schema": 1,
+    "version": "1a3951f0c48d",
+    "assets": {
+      "kernel": {
+        "url": "./vmlinux.wasm",
+        "bytes": 6281750,
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "label": "Linux kernel"
+      },
+      "plain": {
+        "url": "./initramfs.cpio",
+        "bytes": 40495556,
+        "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "label": "Desktop system"
+      },
+      "firefox": {
+        "url": "./initramfs-firefox.cpio.gz",
+        "bytes": 116265893,
+        "sha256": "4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c",
+        "label": "Firefox with explicit signed package persistence"
+      }
+    }
+  },
+  "nativeMarkers": [
+    "APK_PERSIST_RESTORED generation=generation-GbJNeA optional=2 elapsed=1.114 offline=1 exactWorld=1",
+    "display: starting Xfbdev as admin at 1280x720x32",
+    "[wm-ready] Aurora handshake ready after 533 ms",
+    "APK_PERSIST_ACTIVE generation=generation-GbJNeA optional=2 verified=1",
+    "/usr/bin/gzip: OK",
+    "/usr/bin/tar: OK",
+    "package-production-verified"
+  ]
+}

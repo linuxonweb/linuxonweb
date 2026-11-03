@@ -1,0 +1,48 @@
+{
+  "start": "2026-11-03T15:25:56.555Z",
+  "end": "2026-11-03T15:26:23.254Z",
+  "elapsedMs": 26699.577,
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-desktop-only=1&package-production=corrupt",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0
+  },
+  "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&update=1&package-desktop-only=1&package-production=corrupt",
+  "launchRequest": {
+    "kind": "production Start desktop WM menu",
+    "hostMs": 2841.327,
+    "utc": "2026-11-03T15:25:59.396Z",
+    "page": {
+      "requestAtMs": 632.6850000023842,
+      "pageTimeOrigin": 1793719558767.3
+    }
+  },
+  "finalState": {
+    "text": "running \u00b7 startx \u00b7 initramfs\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n18.4 MB \u00b7 144 entries\nCached system images\n155.5 MB\nBrowser usage / quota estimate\n166.4 MB / 10.16 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nHome mounted \u00b7 saved files persist across refresh and system updates.",
+    "cores": 3,
+    "status": "running \u00b7 startx \u00b7 initramfs"
+  },
+  "errors": [
+    {
+      "ms": 23420.776,
+      "error": "Error: Native restore acknowledgment absent before desktop verification",
+      "stack": "Error: Native restore acknowledgment absent before desktop verification\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:330:91"
+    }
+  ],
+  "remainingOwned": [],
+  "resourceSummary": {
+    "pssPeakBytes": 1719389184,
+    "rssSumPeakBytes": 2542256128,
+    "minAvailableBytes": 28773576704,
+    "samples": 23,
+    "pssSamples": 5,
+    "pssIntervalMs": 5000
+  },
+  "accepted": false,
+  "cause": "Start desktop WM selected the unchanged plain image, not the candidate Firefox image. Restore marker was absent before the command; no corruption command executed."
+}

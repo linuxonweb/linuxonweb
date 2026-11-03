@@ -1,0 +1,56 @@
+{
+  "start": "2026-11-03T15:22:45.591Z",
+  "end": "2026-11-03T15:24:58.727Z",
+  "elapsedMs": 133135.978,
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-production=corrupt",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0
+  },
+  "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&update=1&package-production=corrupt",
+  "launchRequest": {
+    "kind": "production Start Firefox menu",
+    "hostMs": 2532.649,
+    "utc": "2026-11-03T15:22:48.123Z",
+    "page": {
+      "requestAtMs": 594.7300000190735,
+      "pageTimeOrigin": 1793719367532.235
+    }
+  },
+  "productionPackage": {
+    "stage": "corrupt",
+    "command": "sudo /bin/busybox sh -c '/usr/sbin/apk-persist status >/dev/console 2>&1 && g=$(/bin/busybox cut -d \" \" -f 1 /home/.linuxonweb-packages/active) && /bin/busybox cp \"/home/.linuxonweb-packages/$g/packages/gzip-1.14-r0.apk\" /home/admin/.package-recovery-original.apk && /bin/busybox printf \"recovery-fixture-corruption\\n\" >> \"/home/.linuxonweb-packages/$g/packages/gzip-1.14-r0.apk\" && echo PACKAGE_CORRUPTION_FIXTURE_READY >/dev/console'",
+    "startedLaunchMs": 31778.208000000002,
+    "rootfsUntouched": true,
+    "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command",
+    "commandEnteredLaunchMs": 65928.341
+  },
+  "finalState": {
+    "text": "running \u00b7 firefox \u00b7 initramfs\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n18.4 MB \u00b7 144 entries\nCached system images\n116.9 MB\nBrowser usage / quota estimate\n127.8 MB / 10.12 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nHome mounted \u00b7 saved files persist across refresh and system updates.",
+    "cores": 3,
+    "status": "running \u00b7 firefox \u00b7 initramfs"
+  },
+  "errors": [
+    {
+      "ms": 129348.344,
+      "error": "Error: Production package native acknowledgment deadline",
+      "stack": "Error: Production package native acknowledgment deadline\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:344:57"
+    }
+  ],
+  "remainingOwned": [],
+  "resourceSummary": {
+    "pssPeakBytes": 3350033408,
+    "rssSumPeakBytes": 4170055680,
+    "minAvailableBytes": 26193338368,
+    "samples": 128,
+    "pssSamples": 26,
+    "pssIntervalMs": 5000
+  },
+  "accepted": false,
+  "cause": "Terminal opened while Firefox was still starting; the later Firefox window took focus, and the corruption command never acknowledged."
+}

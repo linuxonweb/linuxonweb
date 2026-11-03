@@ -1,3 +1,21 @@
+# Continuation checkpoint — 2026-11-03 15:32 UTC, 44/100
+
+This leading status supersedes frozen-task statements below without changing their evidence. Active branch: `gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322`. The original parent `81103b2ec04a8a4f8453617ca128448e831645bc` remains tagged. Normal deadline: **18:22:11 UTC**; final recovery reserve begins 17:40.
+
+Host-owned keyboard repeat and release before Stop are production defaults (3c7709c). Explicit `input-repeat=guest` remains diagnostic. Two native keyboard/navigation runs and production Stop passed. Signed GNU tar 1.35-r1, wget 1.25.0-r0 and findutils 4.10.0-r1 are public after 71 native checks and exact signed-index readback. Accepted score: desktop 7, startup 10, JIT 4, graphics 9, packages 8, mobile 2, preview 4 = **44/100**. Node.js remains absent.
+
+Native C package persistence is still a candidate: `out/pkp3/persistence-image1`, Firefox archive SHA256 `4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c`. Actual production Firefox save followed by normal Stop 88.631 ms after acknowledgment passed. Fresh same-origin/profile restart restored exact world, signed generation, gzip/tar binary hashes and user data. Native replay took 1.114 s before X; the whole 127.627 s test includes 90 s Firefox observation, terminal typing and cleanup. Separate native five-boot and negative/interruption fixtures passed. **Interactive GUI failure recovery is pending**, so do not promote the helper image yet.
+
+Two recovery preparation failures are retained. An early terminal command lost focus when Firefox opened later (133.136 s). Start desktop WM selected the unchanged plain image rather than the candidate Firefox image (26.700 s, failed before command). Reuse the known-good closed `pkgprod-verify1/profile`, never either failed profile, for the next attempt. The recovery watcher opens a real hvc0 terminal and the desktop command agent waits for X before claiming stdin. A later same-page Stop/Start must also close a recovery-only terminal before the normal desktop agent resumes stdin ownership. Package agent owns explicit small plain/console helper composition; do not alias images without validated base identities.
+
+Strict cache lifecycle source binds immutable app generation, exact extras, native/platform and pre-generation base/init identities. A verified final proof enables the wrapper; missing proof retains original native invalidation. LastAppDir activation passed on a private candidate. Same-generation code-cache reads, changed-image and alternate-profile safety remain unaccepted. Native Quit exceeded 20 s while home I/O progressed; one bounded 60–90 s graceful-Quit diagnostic is approved. Native Restart remains unsupported, protected full-build inputs remain unreadable, and blanket exit-code respawn is forbidden. Cache seeding, write buffering and packed resources stay disabled.
+
+Firefox agent owns the serialized matched 50→10→200→50 method-threshold/host matrix. Active web runtime is frozen during that lane. Its explicit WebGPU CPU-readback/2D diagnostic is unexecuted and is not full Vulkan acceptance. Package agent rechecked one authorized MI8; iOS hardware is absent. Keep CPU/RSS/available RAM sampling every second and PSS every five seconds. A brief connector outage at about 15:29–15:31 returned errors after one fixture had actually completed; resolve receipts before rerunning any uncertain command.
+
+Next checkpoint uses the original encrypted 80a52d1 base, a new cumulative encrypted increment, the same public recipient, and separately pinned runtime artifacts. Midpoint encryption is queued for the first quiet slot after JIT. Never publish private keys, access grants, cookies or device identifiers.
+
+---
+
 # Continue LinuxOnWeb from the verified 2026-11-03 checkpoint
 
 You are continuing an unfinished engineering task in

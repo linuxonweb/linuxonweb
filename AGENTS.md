@@ -93,3 +93,12 @@ hour only for important bugs. Frozen parent81103b2 remains unchanged and is
 tagged checkpoint-linuxonweb-20261103-1322-81103b2. Baseline42/100.
 Read current agent/task.md and agent/continue.md; retain all disabled experiments
 and acceptance limitations until new actual production-browser evidence passes.
+
+### Active continuation checkpoint (15:32 UTC, 44/100)
+
+Read the newest leading status in agent/continue.md before older frozen status.
+Host-owned keyboard repeat is default; signed GNU tar/wget/findutils are public.
+Production Firefox package save/restart passed, but helper-image publication
+requires actual interactive failure recovery. Start desktop WM currently selects
+the unchanged plain image, while this helper candidate changes only Firefox.
+Keep cache/seed/writeback/packed experiments disabled until their own gates pass.
