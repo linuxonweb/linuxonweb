@@ -1,0 +1,39 @@
+{
+  "name": "python3",
+  "version": "3.14.6-r0",
+  "description": "CPython for wasm32 Linux with static modules and compact standard library",
+  "url": "https://www.python.org/",
+  "license": "PSF-2.0",
+  "depends": [
+    "ca-certificates"
+  ],
+  "files": {
+    "usr/bin/python3.14": {
+      "path": "python3.14",
+      "mode": "755",
+      "sha256": "11d1d1365a6a4690ac0befdd987e4036a6b705921b432fdc1c784f2ed6d70ecc"
+    },
+    "usr/bin/python3": {
+      "symlink": "python3.14"
+    },
+    "usr/lib/python314.zip": {
+      "path": "python314.zip",
+      "sha256": "5d2c5ee148b61fc1dab7986110e56da137c00c278c92e18ec22ce43465311f69"
+    },
+    "usr/share/licenses/python3/LICENSE": {
+      "path": "python-LICENSE",
+      "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+    }
+  },
+  "provenance": {
+    "sourceUrl": "https://www.python.org/ftp/python/3.14.6/Python-3.14.6.tar.xz",
+    "sourceSha256": "143b1dddefaec3bd2e21e3b839b34a2b7fb9842272883c576420d605e9f30c63",
+    "rebuiltThisTask": true,
+    "guestRuntime": "16 checks pass; out/pm-py-smoke2/run1/result.json",
+    "limits": [
+      "no mmap or ctypes",
+      "no remote debugger",
+      "subprocess adaptation pending; real os.posix_spawn works"
+    ]
+  }
+}

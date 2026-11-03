@@ -1,0 +1,137 @@
+{
+  "date": "2026-11-03",
+  "scope": "component real guest DNS/TCP/HTTP and signed repository integration; normal desktop publication is separate",
+  "accepted": true,
+  "durationSeconds": 29.048,
+  "memoryBytes": 536870912,
+  "cpus": 3,
+  "packages": [
+    "busybox",
+    "apk-tools",
+    "ca-certificates",
+    "curl",
+    "python3"
+  ],
+  "basePackages": [
+    "busybox",
+    "apk-tools",
+    "ca-certificates",
+    "curl"
+  ],
+  "databaseExports": [
+    {
+      "name": "installed",
+      "bytes": 1397,
+      "sha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580"
+    },
+    {
+      "name": "world",
+      "bytes": 39,
+      "sha256": "73e9f36cde3f8594c9b3fc5d1ae39edeca8c7eb3d6c14dd5a4727aa332d57622"
+    },
+    {
+      "name": "scripts.tar",
+      "bytes": 1024,
+      "sha256": "5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+    },
+    {
+      "name": "triggers",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "checks": [
+    "signed index update using guest libfetch",
+    "all five packages fetched and signature verified",
+    "16 Python runtime checks",
+    "curl actual native binary and HTTP request",
+    "Python and curl package removal deletes both usr/bin/curl and original bin/curl",
+    "curl reinstall and base package lookup",
+    "canonical base database exported by actual apk install",
+    "browser process exited cleanly"
+  ],
+  "requestLog": [
+    {
+      "path": "/repo/wasm32/APKINDEX.tar.gz",
+      "bytes": 1101,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/wasm32/apk-tools-2.14.12-r0.apk",
+      "bytes": 1251478,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/wasm32/busybox-1.38.0_git-r0.apk",
+      "bytes": 555780,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/wasm32/ca-certificates-20261103-r0.apk",
+      "bytes": 154588,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/wasm32/curl-8.21.0-r1.apk",
+      "bytes": 1445897,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/wasm32/python3-3.14.6-r0.apk",
+      "bytes": 6309739,
+      "userAgent": "libfetch/2.0"
+    },
+    {
+      "path": "/repo/repository-marker.txt",
+      "bytes": 30,
+      "userAgent": "curl/8.21.0"
+    },
+    {
+      "path": "/repo/wasm32/curl-8.21.0-r1.apk",
+      "bytes": 1445897,
+      "userAgent": "libfetch/2.0"
+    }
+  ],
+  "nativeRuntimeInputs": {
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/index.js": "f524c50502983a9ae39662910b94d92a96cbc376c6d35c8d45cfed8a5cbacfa5",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/persistent-home.mjs": "73922989ccafaa6bb6ecd68cc484b00db45baf6dd70c8a8184c091384b5e0a75",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/audio.js": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/wasm_binary.js": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/devicetree.js": "6a5ac56197c61941ec40847c7145a2d5b7822bea9dda18a9663b0ed156461dba",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/platform.js": "8f0da1d12b136cf53ff06d0afb4bb1d1a13b705beaa029bb49c6812bd4069ce9",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/worker-pool.mjs": "38eac0f2f8a88359ad7344ae20e3dc27f6b394c8bca4b2fde191eff1e5a1ff98",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/util.js": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/core.js": "4a92a76da0701f506f5fa0368636ad340f92d3d06d335cc0a001d1d632305459",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/wasm.js": "79ad8b3ce6b60811d98cea72bf01539b4a2c3d935d16fdc037fb8852932a4b6e",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/framebuffer.js": "2e45a93a43fb9e28aecd70b173013c4d09528652adfa5018ff5408832373cd8d",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/guest-gpu-hostcall.js": "e6c684c8fc29d4c36f58c40dec513af9dfd850026e33cdd4d98c13160c2aedab",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/block.js": "87af5551c38a6c1e786e585475fe296a240501d2ec07c120696252b17956ea4e",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/console.js": "9de7ffef6f0396dcb4725fcc03a3205b8ecdee11af67adb136981d735b837ef5",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/entropy.js": "527ac8103305e0572e1c0f0598431966b6ef50eb4e32b4c8982d3fd83da8b484",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/fs.js": "f0f6e6af0fa3d41f433cf56922bb4a6510266977918f196a621156ae680b3a40",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/net.js": "87febbb9d02d0b3c047d97b92c9c2f1a6f3ecaa49f241358846f9d47bc8c9b83",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/vsock.js": "4c83483f6866165e5bc8a28b576cf0d17da7b59b31c0176d6a629a7a9d6d7ced",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/virtio/input.js": "29c7d7df90b24747a4a2ab1cce1d1ef3696870d58fd65f44bd835e76e25051a1",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/network/index.js": "e1aa93214acbe987abaf8a09f57651ceb975b7424c0122190231e1b32864db52",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/bytes.js": "692a3827bcfd8f2ac3a7ca728be7455b1666d3b525adbf21b7593c56dc85bbe5",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/framebuffer-presenter.js": "9962757a80bac27d6a6bd14458a050e456629ee5672a16b1ec7345af964c2f01",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/network/gateway.js": "ff346b436e8e4aefeaeda0ab2b211958b93365e01cc2611f3b39a89bc09bf1ba",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/network/ws-tcp.js": "5d2ca5f5aaa6974792cc4fa794d58053fd2e5185edbca2cd160eee5f2951b3f8",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/boot-assets.mjs": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/download-progress.mjs": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/boot-manifest.json": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/vmlinux.wasm": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/worker.js": "4fc3e6e547825c0a3ebc25a5166e6c519d4dae5c337c9409667235beb4daad99",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/user-memory-growth-adapter.js": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/firefox-callback-adapter.mjs": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+    "/mnt/p3/project/linux/linuxonweb/web/linux/dist/guest-jit.js": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/APKINDEX.tar.gz": "a54f845e5db978a7ccff5301fd67dfb294d95f04f5453c6624fd630ed820fa16",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/apk-tools-2.14.12-r0.apk": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/busybox-1.38.0_git-r0.apk": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/ca-certificates-20261103-r0.apk": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/curl-8.21.0-r1.apk": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/wasm32/python3-3.14.6-r0.apk": "76ebbb6bd71af3bad202b37bbd01b5784fbadab32c27c7850bd794595e754644",
+    "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/repo/repository-marker.txt": "46a3c96b097d7ae8fc50367a471523d863a98d626feaa10d82653a51eecd99d4"
+  },
+  "ownerRaceFix": "An independent read-only observer reads the isolated persisted test database. Any owner export/cleanup error fails acceptance. Earlier run3 guest success with export failure was not accepted."
+}

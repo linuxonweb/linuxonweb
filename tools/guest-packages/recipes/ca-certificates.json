@@ -1,0 +1,20 @@
+{
+  "name": "ca-certificates",
+  "version": "20261103-r0",
+  "description": "Trusted CA bundle reused from the reviewed Linux on Web distribution",
+  "url": "https://www.mozilla.org/en-US/about/governance/policies/security-group/certs/",
+  "license": "MPL-2.0",
+  "files": {
+    "etc/ssl/certs/ca-certificates.crt": {
+      "path": "ca-certificates.crt",
+      "sha256": "a511a02daa6829d3f3e47fe0098c23d071b9752b6695fa79a2796403c6a38fb7"
+    },
+    "etc/ssl/cert.pem": {
+      "symlink": "certs/ca-certificates.crt"
+    }
+  },
+  "provenance": {
+    "sourceDistributionSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+    "rebuiltThisTask": false
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "curl",
+  "version": "8.21.0-r1",
+  "description": "Real static curl for wasm32 Linux, reused from the current distribution",
+  "url": "https://curl.se/",
+  "license": "curl",
+  "depends": [
+    "ca-certificates"
+  ],
+  "files": {
+    "bin/curl": {
+      "path": "curl",
+      "mode": "755",
+      "sha256": "4418dea15cc5591d08467bd4f973d09ed9e10dbc4d0d3d7b6d8dee7987099bab"
+    },
+    "usr/bin/curl": {
+      "symlink": "../../bin/curl"
+    }
+  },
+  "provenance": {
+    "sourceDistributionSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+    "binarySha256": "4418dea15cc5591d08467bd4f973d09ed9e10dbc4d0d3d7b6d8dee7987099bab",
+    "nixDerivation": "l265kwhylq7jf4kzn0zfdc99qbpbv6c6-curl-static-wasm32-unknown-linux-musl-8.21.0.drv",
+    "rebuiltThisTask": false
+  }
+}

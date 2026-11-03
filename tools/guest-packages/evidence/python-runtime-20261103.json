@@ -1,0 +1,49 @@
+{
+  "pass": true,
+  "durationSeconds": 13.615,
+  "startedAt": "2026-11-03T08:43:36.361Z",
+  "browserCpus": 3,
+  "memoryMiB": 512,
+  "guest": {
+    "done": true,
+    "pass": true,
+    "lines": [
+      "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0",
+      "Console: switching to colour frame buffer device 80x30",
+      "fb0: wasm framebuffer 640x480-32 at 1a67ccec",
+      "This architecture does not have kernel memory protection.",
+      "Run /init as init process",
+      "PACKAGE_SMOKE_BEGIN",
+      "PYTHON_CHECK_PASS version",
+      "PYTHON_CHECK_PASS arithmetic",
+      "PYTHON_CHECK_PASS unicode",
+      "PYTHON_CHECK_PASS file-read-write",
+      "PYTHON_CHECK_PASS file-rename-stat",
+      "PYTHON_CHECK_PASS json",
+      "PYTHON_CHECK_PASS compression",
+      "PYTHON_CHECK_PASS sha256",
+      "PYTHON_CHECK_PASS secure-random",
+      "PYTHON_CHECK_PASS ssl-context",
+      "PYTHON_CHECK_PASS ssl-trust-store",
+      "PYTHON_CHECK_PASS name-resolution",
+      "PYTHON_CHECK_PASS threads-and-tcp",
+      "PYTHON_CHECK_PASS posix-spawn-available",
+      "PYTHON_CHECK_PASS real-spawn-wait-status",
+      "PYTHON_CHECK_PASS real-spawn-file",
+      "PYTHON_SMOKE_RESULT {\"checks\": [\"version\", \"arithmetic\", \"unicode\", \"file-read-write\", \"file-rename-stat\", \"json\", \"compression\", \"sha256\", \"secure-random\", \"ssl-context\", \"ssl-trust-store\", \"name-resolution\", \"threads-and-tcp\", \"posix-spawn-available\", \"real-spawn-wait-status\", \"real-spawn-file\"], \"version\": \"3.14.6 (main, Nov  3 2026, 00:31:27) [Clang 22.1.8 ]\", \"platform\": \"linux\", \"spawnMissingBehavior\": \"ENOENT\", \"subprocessMode\": \"not yet adapted; explicit unsupported operation\", \"unavailableExtensions\": [\"mmap\", \"_ctypes\", \"_curses\", \"_curses_panel\", \"_tkinter\", \"readline\", \"_dbm\", \"_gdbm\", \"_remote_debugging\", \"_posixsubprocess\"], \"sysPath\": [\"/\", \"/usr/lib/python314.zip\", \"/usr/lib/python3.14\", \"/usr/lib/python3.14/lib-dynload\"]}",
+      "PACKAGE_SMOKE_EXIT status=0"
+    ],
+    "errors": [],
+    "isolated": true,
+    "startedAt": "2026-11-03T08:43:39.258Z",
+    "configuration": {
+      "cpus": 3,
+      "memoryBytes": 536870912,
+      "hardwareConcurrency": 3,
+      "imageSha256": "094c8b94f3701c9f485e61644edc67ff57d1f6f3386d40b4654b800e5cd7ad4e"
+    },
+    "bootLog": "random: crng init done\nprintk: legacy bootconsole [earlycon0] enabled\nLinux version 7.1.5 (a@acachy) (clang version 22.1.6, LLD 22.1.6) # SMP \nHeap:\t(ptrval) -> (ptrval) = 14928\nStack:\t00000000 -> (ptrval) = 65536\nCore count: 3\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000001fffffff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000001fffffff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000001fffffff]\npercpu: max_distance=0x30000 too large for vmalloc space 0x0\npercpu: Embedded 1 pages/cpu s17972 r0 d47564 u65536\npercpu: wasting 1 pages per chunk\nKernel command line: console=hvc0 console=hvc0 rdinit=/init\nprintk: log buffer data + meta data: 131072 + 409600 = 540672 bytes\nDentry cache hash table entries: 65536 (order: 2, 262144 bytes, linear)\nInode-cache hash table entries: 32768 (order: 1, 131072 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping off.  Total pages: 8192\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=3, Nodes=1\nrcu: Hierarchical RCU implementation.\nrcu: \tRCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=3.\nrcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.\nrcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=3\nNR_IRQS: 256\nIRQs enabled\nrcu: srcu_init: Setting srcu_struct sizes based on contention.\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nclocksource: wasm: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns\nConsole: colour dummy device 80x25\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)\nMountpoint-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)\nVFS: Finished mounting rootfs on nullfs\nrcu: Hierarchical SRCU implementation.\nrcu: \tMax phase no-delay instances is 1000.\nTimer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level\nsmp: Bringing up secondary CPUs ...\nHello from cpu 1!\nHello from cpu 2!\nsmp: Brought up 1 node, 3 CPUs\nMemory: 500160K/524288K available (17728K reserved, 0K cma-reserved)\ndevtmpfs: initialized\nposixtimers hash table entries: 2048 (order: 0, 24576 bytes, linear)\nfutex hash table entries: 1024 (65536 bytes on 1 NUMA nodes, total 64 KiB, linear).\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource wasm\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 8192 (order: 0, 65536 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 8192 (order: 1, 98304 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 2, 262144 bytes, linear)\nTCP established hash table entries: 16384 (order: 0, 65536 bytes, linear)\nTCP bind hash table entries: 16384 (order: 3, 393216 bytes, linear)\nTCP: Hash tables configured (established 16384 bind 16384)\nUDP hash table entries: 2048 (order: 1, 114688 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nworkingset: timestamp_bits=30 (anon: 26) max_order=13 bucket_order=0 (anon: 0)\nsquashfs: version 4.0 (2009/01/31) Phillip Lougher\nfuse: init (API version 7.45)\nUnpacking initramfs...\nio scheduler mq-deadline registered\nio scheduler kyber registered\nFreeing initrd memory: 15296K\nNET: Registered PF_VSOCK protocol family\nprintk: legacy console [hvc0] enabled\nprintk: legacy bootconsole [earlycon0] disabled\n",
+    "exitCode": 0
+  },
+  "scope": "actual guest interpreter/runtime component; not yet installed from APK in normal desktop"
+}

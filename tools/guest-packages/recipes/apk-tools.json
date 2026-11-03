@@ -1,0 +1,23 @@
+{
+  "name": "apk-tools",
+  "version": "2.14.12-r0",
+  "description": "Alpine package manager port for actual wasm32 Linux",
+  "url": "https://gitlab.alpinelinux.org/alpine/apk-tools",
+  "license": "GPL-2.0-only",
+  "files": {
+    "sbin/apk": {
+      "path": "apk",
+      "mode": "755",
+      "sha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2"
+    },
+    "usr/libexec/apk-script": {
+      "path": "apk-script",
+      "mode": "755",
+      "sha256": "3548644870f5b5a41ed4fe5f68fecef0da84166eef52b4cdd9a7067557087eb0"
+    }
+  },
+  "provenance": {
+    "rebuiltThisTask": true,
+    "sourceSha256": "62dcb1951108ba24c7478bbca402ea9a34b3bb09baa161b220d0a18e15645e35"
+  }
+}

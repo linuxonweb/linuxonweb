@@ -2,10 +2,22 @@
 """Configure CPython for the actual Linux/Wasm musl ABI, not WASI/Emscripten."""
 import argparse,hashlib,json,os,pathlib
 from bounded import run
-q=argparse.ArgumentParser();q.add_argument('--source',type=pathlib.Path,required=True);q.add_argument('--out',type=pathlib.Path,required=True);q.add_argument('--cc',required=True);q.add_argument('--ar',required=True);q.add_argument('--openssl',type=pathlib.Path,required=True);q.add_argument('--zlib',type=pathlib.Path,required=True);q.add_argument('--build-python',default='/usr/bin/python3');a=q.parse_args();a.out.mkdir(parents=True,exist_ok=False);ssl=a.openssl.resolve();zlib=a.zlib.resolve()
-env={'CC':a.cc,'AR':a.ar,'RANLIB':str(pathlib.Path(a.ar).with_name('ranlib')),'CFLAGS':'-O2 -g0 -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections','LDFLAGS':'-pthread -matomics -mbulk-memory -static -Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576','ZLIB_CFLAGS':f'-I{zlib}/include','ZLIB_LIBS':f'{zlib}/lib/libz.a','OPENSSL_INCLUDES':f'-I{ssl}/include','OPENSSL_LDFLAGS':f'-L{ssl}/lib','OPENSSL_LIBS':f'{ssl}/lib/libssl.a {ssl}/lib/libcrypto.a -ldl -pthread','ac_cv_file__dev_ptmx':'yes','ac_cv_file__dev_ptc':'no','ac_cv_buggy_getaddrinfo':'no','ac_cv_func_fork':'no','ac_cv_func_vfork':'no','ac_cv_func_mmap':'no','ac_cv_func_mremap':'no','py_cv_module_mmap':'disabled','py_cv_module__ctypes':'disabled','py_cv_module__curses':'disabled','py_cv_module__curses_panel':'disabled','py_cv_module__tkinter':'disabled','py_cv_module_readline':'disabled','py_cv_module__dbm':'disabled','py_cv_module__gdbm':'disabled'}
+q=argparse.ArgumentParser();q.add_argument('--source',type=pathlib.Path,required=True);q.add_argument('--out',type=pathlib.Path,required=True);q.add_argument('--cc',required=True);q.add_argument('--ar',required=True);q.add_argument('--openssl',type=pathlib.Path,required=True);q.add_argument('--zlib',type=pathlib.Path,required=True);q.add_argument('--build-python',default='/usr/bin/python3');q.add_argument('--reconfigure',action='store_true');a=q.parse_args();a.out.mkdir(parents=True,exist_ok=a.reconfigure);ssl=a.openssl.resolve();zlib=a.zlib.resolve()
+env={'CC':a.cc,'AR':a.ar,'RANLIB':str(pathlib.Path(a.ar).with_name('ranlib')),'CFLAGS':'-O2 -g0 -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections','LDFLAGS':'-pthread -matomics -mbulk-memory -static -Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576','ZLIB_CFLAGS':f'-I{zlib}/include','ZLIB_LIBS':f'{zlib}/lib/libz.a','OPENSSL_INCLUDES':f'-I{ssl}/include','OPENSSL_LDFLAGS':f'-L{ssl}/lib','OPENSSL_LIBS':f'{ssl}/lib/libssl.a {ssl}/lib/libcrypto.a -ldl -pthread','ac_cv_file__dev_ptmx':'yes','ac_cv_file__dev_ptc':'no','ac_cv_buggy_getaddrinfo':'no','ac_cv_func_fork':'no','ac_cv_func_vfork':'no','ac_cv_func_mmap':'no','ac_cv_func_mremap':'no','py_cv_module__remote_debugging':'disabled','py_cv_module_mmap':'disabled','py_cv_module__ctypes':'disabled','py_cv_module__curses':'disabled','py_cv_module__curses_panel':'disabled','py_cv_module__tkinter':'disabled','py_cv_module_readline':'disabled','py_cv_module__dbm':'disabled','py_cv_module__gdbm':'disabled'}
+# Detect unavailable fork honestly in the standard library; do not emulate it.
+subprocess_source=a.source/'Lib/subprocess.py'
+subprocess_text=subprocess_source.read_text()
+old='_can_fork_exec = sys.platform not in {"emscripten", "wasi", "ios", "tvos", "watchos"}'
+new=old+' and (_mswindows or hasattr(os, "fork"))'
+if new not in subprocess_text:
+ if old not in subprocess_text:raise RuntimeError('unexpected subprocess feature guard')
+ subprocess_source.write_text(subprocess_text.replace(old,new,1))
+(a.out/'Modules').mkdir(exist_ok=True)
+(a.out/'Modules/Setup.local').write_text('*disabled*\n_remote_debugging _posixsubprocess mmap _ctypes _curses _curses_panel _tkinter readline _dbm _gdbm\n')
 os.environ.update(env)
-cmd=[str((a.source/'configure').resolve()),'--host=wasm32-unknown-linux-musl','--build=x86_64-pc-linux-gnu','--with-build-python='+a.build_python,'--prefix=/usr','--disable-shared','--without-mimalloc','--without-ensurepip','--disable-test-modules','--without-readline','--with-pkg-config=no','--with-openssl='+str(ssl),'--with-openssl-rpath=no']
+cmd=[str((a.source/'configure').resolve()),'--host=wasm32-unknown-linux-musl','--build=x86_64-pc-linux-gnu','--with-build-python='+a.build_python,'--prefix=/usr','--disable-shared','--without-mimalloc','--without-remote-debug','--without-ensurepip','--disable-test-modules','--without-readline','--with-pkg-config=no','--with-openssl='+str(ssl),'--with-openssl-rpath=no']
 (a.out/'cross-environment.json').write_text(json.dumps(env,indent=2)+'\n')
-r=run(cmd,a.out,a.out/'configure-log',240)
+log=a.out/'configure-log';n=1
+while log.exists():n+=1;log=a.out/('configure-log-'+str(n))
+r=run(cmd,a.out,log,240)
 raise SystemExit(0 if r['pass'] else 1)
