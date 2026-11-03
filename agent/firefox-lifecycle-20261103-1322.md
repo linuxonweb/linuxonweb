@@ -209,3 +209,35 @@ entry snapshots must not be extrapolated into final counts. Existing broad
 GC/guard acceptance requires a reviewed full native build/observer binding that
 is still unavailable; an improved threshold FPS alone cannot promote JIT.
 No threshold benchmark or WebGPU readback presentation test has run yet.
+
+## Threshold diagnostic stopped without an accepted native sample
+
+Recorded 2026-11-03T15:49:55.563371+00:00. Overall score remains44/100.
+The predeclared50→10→200→50 experiment is **incomplete**. Fixture composition
+passed13.009s; the first host control passed37.258s and measured59.948831fps
+(1,199 callbacks /20,000.390ms, full wall20,001ms) on the exact pinned scene.
+The first native50 owner completed181.367s with no remaining processes, but
+its150s observation showed only21 total scene frames and no finished20s sample.
+The instantaneous2fps label is not an accepted FPS result. Automatic follow-up
+arms stopped at the completion predicate; thresholds10/200, second50, and final
+host control were not run. No threshold or native performance promotion occurred.
+
+The native source/header/artifact identities passed. Absolute log timings from
+pageTimeOrigin were WM36.575s, PBLBC60.938s, page script135.625s and WebGL142.224s.
+Comparable earlier APK4 absolute WM/PBLBC times were18.041/33.826s; actual WM
+handshake durations were536ms versus1025ms, a separate metric. Current log55,019
+characters is smaller than the earlier successful readiness run's59,589; minimum
+available RAM was25.788GB. Source hypotheses include the new pre-X agent waiter,
+which repeatedly spawns BusyBox sleep, and observer/configuration differences.
+Actual native wait-loop/spawn counts were not captured, so causality is unproven.
+The outer bounded owner also sampled resources in addition to the existing
+startup monitor; this difference is retained as a potential observer confound.
+
+Root authorized only a targeted waiter rollback/event hook after all benchmark
+owners ended. The existing native wait-for-aurora helper cannot directly govern
+recovery input: both a real handshake and its10s timeout return0. Integration
+owns a post-successful-restore event hook and its subsequent production tests.
+No active test process remains owned by this agent. Curated receipts and retained
+screenshot: `tools/firefox-lifecycle/evidence/method-threshold-incomplete-20261103-1322.json`
+and `method50-incomplete-20261103-1322.png`. Required broad JIT guard/GC/build
+binding gates remain unchanged and unmet.

@@ -81,10 +81,11 @@ def prepare(args):
         combined = raw + padding + overlay
         if len(combined) > 64 * 1024**2:
             raise ValueError('Experiment extras exceed frontend size bound')
-        # Preserve a verified compressed prefix where available; the loader
-        # explicitly supports concatenated gzip members and validates raw bytes.
-        compressed = ((encoded + gzip.compress(padding + overlay, compresslevel=1, mtime=0))
-                      if encoded is not None else gzip.compress(combined, compresslevel=1, mtime=0))
+        # Preserve the raw workload prefix, but emit one gzip member. Chromium's
+        # DecompressionStream rejects concatenated members even though the guest
+        # kernel's preserved-compressed path accepts them. Do not depend on that
+        # path-specific exception for an otherwise reusable diagnostic overlay.
+        compressed = gzip.compress(combined, compresslevel=1, mtime=0)
         if gzip.decompress(compressed) != combined:
             raise ValueError('Threshold extras gzip composition failed')
         metadata = copy.deepcopy(extras_manifest)

@@ -1,0 +1,673 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T15:48:11.794844+00:00",
+  "scope": "Off-default supported PBLBC threshold diagnostic on original native Firefox159",
+  "predeclaredOrder": [
+    50,
+    10,
+    200,
+    50
+  ],
+  "metric": "Full native-page requestAnimationFrame callback rate; every measured interval and overrun included",
+  "physicalPresentationRateMeasured": false,
+  "sameSceneSha256": "e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0",
+  "sceneSettings": {
+    "width": 320,
+    "height": 240,
+    "warmupMs": 10000,
+    "sampleMs": 20000,
+    "webglVersion": 2,
+    "webgpu": false,
+    "media": false
+  },
+  "experiment": {
+    "schema": 1,
+    "testOnly": true,
+    "startedUtc": "2026-11-03T15:28:47.009563+00:00",
+    "finishedUtc": "2026-11-03T15:28:58.209827+00:00",
+    "durationSeconds": 11.2,
+    "systemArchiveSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+    "nativeFirefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+    "baseLauncherSha256": "62f10e7bc81c02205d0961631ce19d6c1577d0cf5bba1b674f96154faba52978",
+    "matchedExtrasSha256": "e5a3450e6ed15cb81e480ca51dcf1d06a90b5f9c391091283fe4dfc878a5ca39",
+    "sharedDiagnosticPrefSha256": "f69cde8c26a5783ad7a223c4522650fd09a621eadb76ee6b25238a5d9df17d3c",
+    "arms": [
+      {
+        "threshold": 50,
+        "directory": "/mnt/p3/codex-build/f3l/method1/hits-50",
+        "extrasSha256": "d8ca34e0ac7e276da8c944dc60c300441297ac4afa5bdefe7c40f56e19d9889d",
+        "gzipSha256": "e1ba40d13dfe4bee14acc36af0dd88d0706183a270b58a383993692c070fedbe",
+        "launcherSha256": "611e297f0982fa29904e6ec5c0d2f152fc9d05fb0cd057d8e205f7ce83dd54b5",
+        "nativeChanged": false,
+        "expectedNativeHeader": "PBLBC enabled (threshold=50 ic=1 loopexit=0 loopjit=1)"
+      },
+      {
+        "threshold": 10,
+        "directory": "/mnt/p3/codex-build/f3l/method1/hits-10",
+        "extrasSha256": "88307f730a8bbc2cbc4a3ef0a7519b076de2dbb1284a45fb9911a1c974d6ca53",
+        "gzipSha256": "2f31559ce724a8d01015394bb46d0106abbcbdfa649903a78279ea69b14934bc",
+        "launcherSha256": "d63fb4ceadea40c691e567fe538371865a73457d0ec33a023a994e9686edbd67",
+        "nativeChanged": false,
+        "expectedNativeHeader": "PBLBC enabled (threshold=10 ic=1 loopexit=0 loopjit=1)"
+      },
+      {
+        "threshold": 200,
+        "directory": "/mnt/p3/codex-build/f3l/method1/hits-200",
+        "extrasSha256": "e92b705a467324ac0fb57cca8961da6c84ecc133a0e4f2d71327c8b07d88bc4d",
+        "gzipSha256": "2e2a9d62fd4a8f81c1d84751bd8dafed41e61420833f4530fc0c1bdf6dd88697",
+        "launcherSha256": "f22fbc44118d5924e2ed87f8da9e8231eed6475633ebf22c8223cd5695ec4ac7",
+        "nativeChanged": false,
+        "expectedNativeHeader": "PBLBC enabled (threshold=200 ic=1 loopexit=0 loopjit=1)"
+      }
+    ],
+    "changesBetweenArms": [
+      "PBLBC_HITS supported method compiler threshold only"
+    ],
+    "unchanged": [
+      "native Firefox bytes",
+      "matched scene bytes",
+      "PBLIC/PBLJIT thresholds",
+      "coverage admission flags",
+      "guard and GC policies",
+      "original purge-marker cache policy"
+    ],
+    "runtimeAccepted": false,
+    "guardGcAcceptancePassed": false,
+    "publicDefaultChanged": false,
+    "required": [
+      "verify selected original APK4 manifest and native threshold header for every run",
+      "same CPU/RAM/resolution/backend and fresh profiles or matched closed-profile copies",
+      "untraced full-scene wall-clock FPS, frame intervals including stalls and correctness pixel",
+      "real usable readiness and keyboard/navigation separately from process-start markers",
+      "retain sparse native tier snapshots as observations, never final-total estimates",
+      "existing native guard/GC/session gates before any broad JIT acceptance",
+      "monitor CPU/RSS/available RAM each second and PSS every five seconds; owned Stop cleanup"
+    ]
+  },
+  "nativeArms": [
+    {
+      "label": "baseline-before",
+      "threshold": 50,
+      "directory": "/mnt/p3/codex-build/f3l/method50a",
+      "startedUtc": "2026-11-03T15:34:52.552Z",
+      "finishedUtc": "2026-11-03T15:37:51.394Z",
+      "elapsedMs": 178842.015,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "owned-proxy=1&compressed-initramfs=1&input-repeat=host&observe-after-seconds=150",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 150
+      },
+      "browserVersion": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/150.0.7871.114",
+        "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+        "jsVersion": "15.0.245.15"
+      },
+      "quietObservation": {
+        "startBootMs": 373.9300000000003,
+        "startUtc": "2026-11-03T15:34:59.173Z",
+        "requestedEndBootMs": 150000,
+        "excludes": [
+          "screenshots",
+          "Runtime.evaluate",
+          "log polling",
+          "tracing"
+        ],
+        "resourceMonitor": "CPU/RSS/quota1s; PSS5s; separateworker",
+        "passiveConsoleEvents": true,
+        "endBootMs": 150055.685,
+        "endUtc": "2026-11-03T15:37:28.854Z"
+      },
+      "identity": {
+        "base": true,
+        "extrasRaw": true,
+        "extrasGzip": true,
+        "threshold": true
+      },
+      "observedThresholds": [
+        50
+      ],
+      "uniqueCompletedSceneRecords": 0,
+      "measurement": null,
+      "ownerCleanupPassed": true,
+      "ownerErrors": [],
+      "remainingOwned": [],
+      "tierObservations": [
+        "PBLIC enabled (threshold=200)",
+        "PBLBC enabled (threshold=50 ic=1 loopexit=0 loopjit=1)",
+        "PBLJIT enabled (threshold=1000, logBudget=24)",
+        "PBLIC compile #1 len=3 inline=1 step=0 wasm=251 idx=224491",
+        "PBLIC stats(compiles) compiles=1 rejects=0 installs=1 entries=0 fails=0 steps=0 top:",
+        "PBLBC compile #1 self-hosted:354 ops=174 inline=156 ic=37 exit=18 wasm=13281 idx=224492",
+        "PBLBC compile #2 resource://gre/modules/ActorManagerParent.sys.mjs:884 ops=18 inline=8 ic=1 exit=10 wasm=824 idx=224493",
+        "PBLIC compile #2 len=12 inline=3 step=0 wasm=398 idx=224494",
+        "PBLIC stats(compiles) compiles=2 rejects=0 installs=2 entries=336 fails=0 steps=0 top:",
+        "PBLIC compile #3 len=11 inline=3 step=0 wasm=305 idx=224495",
+        "PBLBC compile #3 resource://gre/modules/Console.sys.mjs:609 ops=128 inline=89 ic=23 exit=39 wasm=8204 idx=224496",
+        "PBLIC compile #4 len=7 inline=2 step=0 wasm=283 idx=224497",
+        "PBLIC stats(compiles) compiles=4 rejects=0 installs=4 entries=1551 fails=0 steps=0 top:",
+        "PBLBC compile #4 self-hosted:2826 ops=15 inline=12 ic=2 exit=3 wasm=1088 idx=224498",
+        "PBLIC compile #5 len=15 inline=4 step=0 wasm=365 idx=224499",
+        "PBLIC compile #6 len=14 inline=4 step=0 wasm=325 idx=224500",
+        "PBLIC compile #7 len=12 inline=3 step=0 wasm=305 idx=224501",
+        "PBLIC compile #8 len=10 inline=3 step=0 wasm=322 idx=224502",
+        "PBLIC stats(compiles) compiles=8 rejects=0 installs=8 entries=2409 fails=0 steps=0 top:",
+        "PBLIC compile #9 len=20 inline=5 step=0 wasm=334 idx=224503",
+        "PBLIC compile #10 len=14 inline=4 step=0 wasm=314 idx=224504",
+        "PBLIC compile #11 len=16 inline=3 step=1 wasm=429 idx=224505",
+        "PBLIC compile #12 len=11 inline=3 step=0 wasm=304 idx=224506",
+        "PBLBC compile #5 self-hosted:2524 ops=112 inline=100 ic=21 exit=12 wasm=7428 idx=224507",
+        "PBLBC compile #6 self-hosted:402 ops=38 inline=35 ic=10 exit=3 wasm=3201 idx=224508",
+        "PBLIC compile #13 len=26 inline=7 step=0 wasm=373 idx=224509",
+        "PBLBC compile #7 self-hosted:2761 ops=304 inline=286 ic=57 exit=18 wasm=22929 idx=224510",
+        "PBLBC compile #8 self-hosted:107 ops=92 inline=83 ic=18 exit=9 wasm=7093 idx=224511",
+        "PBLIC compile #14 len=17 inline=5 step=0 wasm=342 idx=224512",
+        "PBLBC compile #9 resource://gre/modules/addons/XPIDatabase.sys.mjs:1565 ops=16 inline=12 ic=6 exit=4 wasm=1701 idx=224513",
+        "PBLBC compile #10 resource://gre/modules/addons/XPIProvider.sys.mjs:239 ops=4 inline=0 ic=0 exit=4 wasm=213 idx=224514",
+        "PBLIC compile #15 len=11 inline=3 step=0 wasm=343 idx=224515",
+        "PBLIC compile #16 len=10 inline=3 step=0 wasm=339 idx=224516",
+        "PBLIC stats(compiles) compiles=16 rejects=0 installs=16 entries=10650 fails=274 steps=31 top: StoreFixedSlotUndefinedResult=31",
+        "PBLBC compile #11 resource://gre/modules/XPCOMUtils.sys.mjs:229 ops=18 inline=12 ic=6 exit=6 wasm=1705 idx=224517",
+        "PBLBC compile #12 resource://gre/modules/XPCOMUtils.sys.mjs:176 ops=150 inline=99 ic=29 exit=51 wasm=10738 idx=224518",
+        "PBLBC compile #13 resource://gre/modules/Extension.sys.mjs:307 ops=167 inline=139 ic=19 exit=28 wasm=11489 idx=224519",
+        "PBLIC compile #17 len=6 inline=2 step=0 wasm=302 idx=224520",
+        "PBLIC compile #18 len=10 inline=3 step=0 wasm=305 idx=224521",
+        "PBLBC compile #14 resource://gre/modules/ExtensionCommon.sys.mjs:1200 ops=44 inline=34 ic=10 exit=10 wasm=3228 idx=224522",
+        "PBLIC compile #19 len=16 inline=4 step=0 wasm=408 idx=224523",
+        "PBLBC compile #15 resource://gre/modules/Schemas.sys.mjs:4015 ops=28 inline=22 ic=9 exit=6 wasm=2697 idx=224524",
+        "PBLIC compile #20 len=11 inline=3 step=0 wasm=313 idx=224525",
+        "PBLBC compile #16 resource://gre/modules/ExtensionParent.sys.mjs:2517 ops=20 inline=17 ic=5 exit=3 wasm=1684 idx=224526",
+        "PBLIC compile #21 len=12 inline=3 step=0 wasm=300 idx=224527",
+        "PBLIC compile #22 len=18 inline=5 step=0 wasm=330 idx=224528",
+        "PBLBC compile #17 resource://gre/modules/NetUtil.sys.mjs:222 ops=281 inline=239 ic=78 exit=42 wasm=22847 idx=224529",
+        "PBLBC compile #18 resource://gre/modules/NetUtil.sys.mjs:170 ops=49 inline=40 ic=18 exit=9 wasm=4958 idx=224530",
+        "PBLBC compile #19 resource://gre/modules/Schemas.sys.mjs:37 ops=10 inline=3 ic=1 exit=7 wasm=488 idx=224531",
+        "PBLBC compile #20 resource://gre/modules/Schemas.sys.mjs:38 ops=21 inline=11 ic=5 exit=10 wasm=1536 idx=224532",
+        "PBLBC compile #21 resource://gre/modules/ExtensionParent.sys.mjs:2477 ops=42 inline=27 ic=12 exit=15 wasm=3593 idx=224533",
+        "PBLIC compile #23 len=19 inline=5 step=0 wasm=344 idx=224534",
+        "PBLBC compile #22 resource://gre/modules/NetUtil.sys.mjs:120 ops=17 inline=12 ic=5 exit=5 wasm=1648 idx=224535",
+        "PBLBC compile #23 self-hosted:4567 ops=109 inline=103 ic=23 exit=6 wasm=9136 idx=224536",
+        "PBLBC compile #24 resource://gre/modules/ExtensionParent.sys.mjs:2447 ops=33 inline=28 ic=12 exit=5 wasm=3348 idx=224537",
+        "PBLBC compile #25 resource://gre/modules/DeferredTask.sys.mjs:277 ops=52 inline=37 ic=6 exit=15 wasm=2940 idx=224538",
+        "PBLBC compile #26 resource://gre/modules/Schemas.sys.mjs:101 ops=15 inline=9 ic=2 exit=6 wasm=946 idx=224539",
+        "PBLBC compile #27 resource://gre/modules/Schemas.sys.mjs:4027 ops=69 inline=61 ic=11 exit=8 wasm=4173 idx=224540",
+        "PBLBC compile #28 resource://gre/modules/Schemas.sys.mjs:3264 ops=159 inline=119 ic=27 exit=40 wasm=9817 idx=224541",
+        "PBLIC compile #24 len=41 inline=8 step=1 wasm=536 idx=224542",
+        "PBLBC compile #29 resource://gre/modules/Schemas.sys.mjs:3638 ops=122 inline=103 ic=15 exit=19 wasm=6960 idx=224543",
+        "PBLBC compile #30 resource://gre/modules/Schemas.sys.mjs:3815 ops=13 inline=8 ic=2 exit=5 wasm=906 idx=224544",
+        "PBLIC compile #25 len=36 inline=8 step=1 wasm=546 idx=224545",
+        "PBLIC compile #26 len=22 inline=3 step=1 wasm=435 idx=224546",
+        "PBLIC compile #27 len=36 inline=8 step=1 wasm=563 idx=224547",
+        "PBLIC compile #28 len=11 inline=3 step=0 wasm=313 idx=224548",
+        "PBLBC compile #31 resource://gre/modules/Schemas.sys.mjs:3262 ops=8 inline=6 ic=1 exit=2 wasm=469 idx=224549",
+        "PBLBC compile #32 resource://gre/modules/ExtensionUtils.sys.mjs:102 ops=54 inline=45 ic=8 exit=9 wasm=3548 idx=224550",
+        "PBLIC compile #29 len=34 inline=8 step=1 wasm=548 idx=224551",
+        "PBLIC compile #30 len=31 inline=7 step=1 wasm=533 idx=224552",
+        "PBLIC compile #31 len=50 inline=10 step=1 wasm=582 idx=224553",
+        "PBLBC compile #33 resource://gre/modules/Schemas.sys.mjs:1415 ops=90 inline=78 ic=16 exit=12 wasm=5506 idx=224554",
+        "PBLBC compile #34 resource://gre/modules/Schemas.sys.mjs:2052 ops=111 inline=85 ic=18 exit=26 wasm=6739 idx=224555",
+        "PBLIC compile #32 len=7 inline=1 step=1 wasm=399 idx=224556",
+        "PBLIC stats(compiles) compiles=32 rejects=0 installs=32 entries=477657 fails=16874 steps=811 top: AddAndStoreDynamicSlot=451 AddAndStoreFixedSlot=137 MapSetResult=105 CallScriptedFunction=36 StoreFixedSlotUndefinedResult=31 MapGetStringResult=27 MapGetResult=24",
+        "PBLIC compile #33 len=26 inline=3 step=2 wasm=579 idx=224557",
+        "PBLIC compile #34 len=8 inline=1 step=1 wasm=399 idx=224558",
+        "PBLBC compile #35 resource://gre/modules/Schemas.sys.mjs:3819 ops=146 inline=107 ic=20 exit=39 wasm=8499 idx=224559",
+        "PBLBC compile #36 resource://gre/modules/Schemas.sys.mjs:1554 ops=24 inline=14 ic=0 exit=10 wasm=580 idx=224560",
+        "PBLIC compile #35 len=14 inline=2 step=1 wasm=413 idx=224561",
+        "PBLBC compile #37 self-hosted:125 ops=118 inline=109 ic=25 exit=9 wasm=9296 idx=224562",
+        "PBLBC compile #38 resource://gre/modules/Schemas.sys.mjs:1905 ops=51 inline=36 ic=6 exit=15 wasm=2417 idx=224563",
+        "PBLIC compile #36 len=9 inline=1 step=1 wasm=399 idx=224564",
+        "PBLIC compile #37 len=50 inline=10 step=1 wasm=582 idx=224565",
+        "PBLIC compile #38 len=18 inline=5 step=0 wasm=356 idx=224566",
+        "PBLIC compile #39 len=18 inline=5 step=0 wasm=347 idx=224567",
+        "PBLBC compile #39 resource://gre/modules/Schemas.sys.mjs:1820 ops=36 inline=24 ic=3 exit=12 wasm=1466 idx=224568",
+        "PBLBC compile #40 resource://gre/modules/Schemas.sys.mjs:1807 ops=219 inline=193 ic=25 exit=26 wasm=11356 idx=224569",
+        "PBLIC compile #40 len=16 inline=4 step=0 wasm=313 idx=224571",
+        "PBLIC stats(compiles) compiles=64 rejects=0 installs=64 entries=660961 fails=30720 steps=19938 top: MegamorphicLoadSlotResult=4860 CallNativeFunction=2429 MegamorphicHasPropResult=1498 CallScriptedFunction=1447 MegamorphicStoreSlot=1301 CallScriptedGetterResult=1252 ArrayJoinResult=1115 GuardFunctionScript=1025",
+        "PBLIC stats(compiles) compiles=128 rejects=0 installs=128 entries=1317729 fails=86507 steps=114595 top: MegamorphicLoadSlotResult=19417 CallNativeFunction=15364 MegamorphicHasPropResult=12396 CallScriptedFunction=7456 AddAndStoreFixedSlot=6454 CallScriptedGetterResult=5659 MegamorphicLoadSlotByValueResult=5151 GuardFunctionScript=4729",
+        "PBLIC stats(compiles) compiles=256 rejects=0 installs=256 entries=2884452 fails=211471 steps=329876 top: MegamorphicLoadSlotResult=76154 CallNativeFunction=46152 LoadStringCharResult=22971 MegamorphicHasPropResult=19889 StoreDenseElementHole=18226 AddAndStoreFixedSlot=16132 CallScriptedFunction=16045 CallScriptedGetterResult=12088",
+        "PBLJIT compile #1 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225198 attempts=2 gcEpoch=1",
+        "PBLJIT stats compiles=1 rejects=8 runs=0 bails=0"
+      ],
+      "tierObservationLimit": "Sparse bounded log snapshots; not complete final compile/entry totals.",
+      "resourceSummary": {
+        "pssPeakBytes": 3289600000,
+        "rssSumPeakBytes": 4000014336,
+        "minAvailableBytes": 25787650048,
+        "samples": 160,
+        "pssSamples": 33,
+        "pssIntervalMs": 5000
+      },
+      "resourceSamples": 160,
+      "artifacts": [
+        {
+          "path": "/mnt/p3/codex-build/f3l/method50a/report.json",
+          "bytes": 846218,
+          "sha256": "b45a0398ac6b6c956afdeedfde13cf224d037343b9a4b1cb07e9152334d07867"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/method50a/guest.log",
+          "bytes": 55019,
+          "sha256": "5b271b514e67738118f804558aa921409f39601ed8d5023975bdafe7704d6946"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/method50a/final.png",
+          "bytes": 454998,
+          "sha256": "89e6d46d3fcb7011617163d33855ddda373d0f9d37ee3964d89c8e460188f6b5"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/method50a/home-timings.json",
+          "bytes": 112235,
+          "sha256": "4d8dc5b635b9c33ef57b7ff0baacbe7c2c447b5d7119b9a74de4f703c25d7d26"
+        }
+      ],
+      "measurementAccepted": false
+    },
+    {
+      "label": "candidate-10",
+      "threshold": 10,
+      "status": "not-run",
+      "directory": "../../../codex-build/f3l/method10"
+    },
+    {
+      "label": "candidate-200",
+      "threshold": 200,
+      "status": "not-run",
+      "directory": "../../../codex-build/f3l/method200"
+    },
+    {
+      "label": "baseline-after",
+      "threshold": 50,
+      "status": "not-run",
+      "directory": "../../../codex-build/f3l/method50b"
+    }
+  ],
+  "hostControls": [
+    {
+      "label": "before",
+      "directory": "/mnt/p3/codex-build/f3l/method-host-before",
+      "measurementAccepted": true,
+      "measurement": {
+        "pass": true,
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "hardwareConcurrency": 3,
+        "sampleFrames": 1199,
+        "fps": 59.94883099783842,
+        "elapsedMs": 20000.389999985695,
+        "wallElapsedMs": 20001,
+        "firstFrameEpochMs": 1793719902908,
+        "sampleStartEpochMs": 1793719912916,
+        "sampleEndEpochMs": 1793719932917,
+        "sampleStartUTC": "2026-11-03T15:31:52.916Z",
+        "sampleEndUTC": "2026-11-03T15:32:12.917Z",
+        "frameMs": {
+          "min": 9.025000035762787,
+          "p50": 16.680000007152557,
+          "p95": 18.314999997615814,
+          "p99": 20.3299999833107,
+          "max": 39.12999999523163,
+          "mean": 16.68089241033002
+        },
+        "histogram": [
+          {
+            "upToMs": 8,
+            "count": 0
+          },
+          {
+            "upToMs": 16.7,
+            "count": 617
+          },
+          {
+            "upToMs": 25,
+            "count": 580
+          },
+          {
+            "upToMs": 33.4,
+            "count": 1
+          },
+          {
+            "upToMs": 50,
+            "count": 1
+          },
+          {
+            "upToMs": 100,
+            "count": 0
+          },
+          {
+            "upToMs": 200,
+            "count": 0
+          },
+          {
+            "upToMs": 500,
+            "count": 0
+          },
+          {
+            "upToMs": 1000,
+            "count": 0
+          },
+          {
+            "upToMs": null,
+            "count": 0
+          }
+        ],
+        "finalPixel": [
+          242,
+          204,
+          76,
+          255
+        ],
+        "glError": 0,
+        "webglState": "ok",
+        "renderer": [
+          "context: webgl2",
+          "version: WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "shading language: WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+          "vendor: WebKit",
+          "renderer: WebKit WebGL",
+          "unmasked vendor: Google Inc. (NVIDIA Corporation)",
+          "unmasked renderer: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+          "max texture size: 16384",
+          "extensions: 31"
+        ],
+        "browser": {
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+          "firefoxVersion": null,
+          "buildID": null
+        },
+        "errors": [],
+        "actualWarmupWallMs": 10008,
+        "firstFrameToSampleEndWallMs": 30009
+      },
+      "quietObservation": {
+        "startedUtc": "2026-11-03T15:31:42.264Z",
+        "requestedMs": 35000,
+        "excludes": [
+          "page polling",
+          "screenshots",
+          "tracing"
+        ],
+        "resourceMonitor": "CPU/RSS/RAM1s and PSS5s",
+        "note": "This outer observation delay does not change scene warmup or sample timing.",
+        "finishedUtc": "2026-11-03T15:32:17.276Z",
+        "elapsedMs": 35012.605317
+      },
+      "afterQuietScene": {
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "frames": {
+          "webgl": 1793,
+          "webgpu": 0
+        },
+        "firstFrameEpochMs": 1793719902908,
+        "sampleStartEpochMs": 1793719912916,
+        "sampleEndEpochMs": 1793719932917,
+        "cpus": 3,
+        "viewport": [
+          1280,
+          720,
+          1
+        ]
+      },
+      "flags": [
+        "--ignore-gpu-blocklist",
+        "--use-angle=gl",
+        "--use-gl=angle",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-sync",
+        "--remote-debugging-address=127.0.0.1",
+        "--remote-debugging-port=0",
+        "--user-data-dir=/mnt/p3/codex-build/f3l/br-e5l6lV/p",
+        "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-e5l6lV/c",
+        "--window-size=1280,720",
+        "about:blank"
+      ],
+      "pageIdentity": {
+        "sha256": "e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0",
+        "override": "/mnt/p3/codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+        "bytes": 36031,
+        "requests": 1
+      },
+      "startedUtc": "2026-11-03T15:31:41.487Z",
+      "finishedUtc": "2026-11-03T15:32:17.385Z",
+      "ownerErrors": [],
+      "monitor": {
+        "startedUtc": "2026-11-03T15:31:41.122255+00:00",
+        "finishedUtc": "2026-11-03T15:32:18.380487+00:00",
+        "durationSeconds": 37.258,
+        "argv": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_CPUS=3",
+          "GRAPHICS_VIEWPORT=1280x720",
+          "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+          "GRAPHICS_TEST_HOOK=tools/firefox-lifecycle/host-scene-quiet.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/f3l",
+          "http://localhost/linux/tests/guest-glremote/firefox-benchmark.html",
+          "gpuCheckBenchmark"
+        ],
+        "cwd": ".",
+        "exitCode": 0,
+        "stopReason": null,
+        "ownedProcessesRemaining": 0,
+        "ownerPeakRssBytes": 77914112,
+        "ownedTreePeakRssBytes": 1101090816,
+        "ownedTreePeakPssBytes": 473829376,
+        "resourceSamples": 37,
+        "pssSamples": 8,
+        "quotaReadySeconds": 0.251,
+        "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+        "sampling": {
+          "cpuRssAvailableRamQuotaSeconds": 1,
+          "pssSeconds": 5,
+          "pssPeakIsSampledLowerBound": true
+        },
+        "pass": true
+      },
+      "artifacts": [
+        {
+          "path": "/mnt/p3/codex-build/f3l/br-e5l6lV/result.json",
+          "bytes": 41254,
+          "sha256": "90538282eb864bfbad9c834b7153d4cc8f70d116260152a16a025945d72da26f"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/method-host-before/result.json",
+          "bytes": 1195,
+          "sha256": "35858b776b35469362b9d0063792bc5c9d2e3d6c945c41e5a4fe777176e8ede4"
+        }
+      ]
+    },
+    {
+      "label": "after",
+      "status": "not-run",
+      "directory": "../../../codex-build/f3l/method-host-after"
+    }
+  ],
+  "meanMatchedHostFps": 59.94883099783842,
+  "baseline50Fps": [],
+  "meanBaseline50Fps": null,
+  "allRequestedMeasurementsAccepted": false,
+  "publicDefaultsChanged": false,
+  "broadGuardGcAcceptance": false,
+  "fullJitAcceptance": false,
+  "limitations": [
+    "One run per candidate threshold; baseline is bracketed, not a statistically powered throughput study.",
+    "Host is approximately display-refresh capped; physical presentation is not measured.",
+    "Outer quiet observation delays do not change the identical scene warmup/sample window.",
+    "No complete final native compile/entry counters are exposed by this build.",
+    "Existing broad native build-binding/guard/GC requirements remain unmet; no threshold promotion is authorized."
+  ],
+  "failureDiagnosis": {
+    "firstNativeArm": "baseline-before",
+    "causeEstablished": false,
+    "retainedScreenshot": "tools/firefox-lifecycle/evidence/method50-incomplete-20261103-1322.png",
+    "screenshotSha256": "89e6d46d3fcb7011617163d33855ddda373d0f9d37ee3964d89c8e460188f6b5",
+    "observedScreenshot": "Only21 total scene frames and no completed benchmark panel at the fixed150s observation; instantaneous2fps is not an accepted measured result.",
+    "absoluteLogMilestonesSeconds": {
+      "priorApk4": {
+        "wmReady": 18.041,
+        "pblbcHeader": 33.826,
+        "sceneLoopCompile": 80.32
+      },
+      "current": {
+        "wmReady": 36.575,
+        "pblbcHeader": 60.938,
+        "pageScript": 135.625,
+        "webglReady": 142.224,
+        "sceneLoopCompile": 146.537
+      }
+    },
+    "nativeWmHandshakeDurationMs": {
+      "priorApk4": 536,
+      "current": 1025
+    },
+    "logCharacters": {
+      "priorApk4": 21195,
+      "readinessBase2": 59589,
+      "current": 55019
+    },
+    "knownDifferentDiagnosticInputs": [
+      "Shared content-console stdout preference",
+      "Single gzip member for composed extras",
+      "Additional outer bounded monitor alongside existing startup monitor",
+      "New pre-X desktop Test-menu agent wait; actual sleep-spawn count not instrumented"
+    ],
+    "hypothesis": "Repeated native BusyBox sleep spawns in the new pre-X agent waiter may delay boot; not causally established. The team authorized its targeted rollback or event-driven replacement.",
+    "memoryFloorFailure": false,
+    "sceneSampleCompleted": false,
+    "nativeMatchedFps": null,
+    "subsequentArmsLaunched": false
+  },
+  "executionOwners": {
+    "method-fixture-owner1": {
+      "startedUtc": "2026-11-03T15:28:45.928865+00:00",
+      "finishedUtc": "2026-11-03T15:28:58.937556+00:00",
+      "durationSeconds": 13.009,
+      "argv": [
+        "python3",
+        "tools/firefox-lifecycle/prepare-method-threshold.py",
+        "--base-dir",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4",
+        "--extras-dir",
+        "../../../codex-build/g3g/fx-overlay5",
+        "--output",
+        "../../../codex-build/f3l/method1"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "ownerPeakRssBytes": 257474560,
+      "ownedTreePeakRssBytes": 257474560,
+      "ownedTreePeakPssBytes": 246773760,
+      "resourceSamples": 12,
+      "pssSamples": 3,
+      "quotaReadySeconds": 1.004,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "method-host-before": {
+      "startedUtc": "2026-11-03T15:31:41.122255+00:00",
+      "finishedUtc": "2026-11-03T15:32:18.380487+00:00",
+      "durationSeconds": 37.258,
+      "argv": [
+        "env",
+        "GRAPHICS_ISOLATED=1",
+        "GRAPHICS_ANGLE=gl",
+        "GRAPHICS_CPUS=3",
+        "GRAPHICS_VIEWPORT=1280x720",
+        "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+        "GRAPHICS_TEST_HOOK=tools/firefox-lifecycle/host-scene-quiet.mjs",
+        "node",
+        "tools/graphics-benchmark/browser-check.mjs",
+        "../../../codex-build/f3l",
+        "http://localhost/linux/tests/guest-glremote/firefox-benchmark.html",
+        "gpuCheckBenchmark"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "ownerPeakRssBytes": 77914112,
+      "ownedTreePeakRssBytes": 1101090816,
+      "ownedTreePeakPssBytes": 473829376,
+      "resourceSamples": 37,
+      "pssSamples": 8,
+      "quotaReadySeconds": 0.251,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "method50a-owner": {
+      "startedUtc": "2026-11-03T15:34:51.110370+00:00",
+      "finishedUtc": "2026-11-03T15:37:52.477496+00:00",
+      "durationSeconds": 181.367,
+      "argv": [
+        "env",
+        "LINUXONWEB_BOOT_PACKAGE=/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4",
+        "LINUXONWEB_TEST_EXTRAS=/mnt/p3/codex-build/f3l/method1/hits-50",
+        "LINUXONWEB_TEST_PORT=38082",
+        "node",
+        "tools/startup-benchmark/gpt6-astra-current.mjs",
+        "../../../codex-build/f3l/method50a",
+        "firefox",
+        "150",
+        "owned-proxy=1&compressed-initramfs=1&input-repeat=host&observe-after-seconds=150"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "ownerPeakRssBytes": 102256640,
+      "ownedTreePeakRssBytes": 3926978560,
+      "ownedTreePeakPssBytes": 3278265344,
+      "resourceSamples": 180,
+      "pssSamples": 36,
+      "quotaReadySeconds": 1.256,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    }
+  },
+  "runtimeSourcePinsBefore": "/mnt/p3/codex-build/f3l/method1/runtime-source-before.json",
+  "runtimeFreeze": "265 source files pinned before controls; integration confirmed no active runtime changes until native owner ended; targeted waiter unfreeze authorized afterward."
+}
