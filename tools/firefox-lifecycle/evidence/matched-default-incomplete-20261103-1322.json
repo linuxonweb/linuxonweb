@@ -1,0 +1,819 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T17:39:52.417125+00:00",
+  "scope": "One current default-threshold native Firefox sample bracketed by host controls; no threshold tuning",
+  "predeclaredOrder": [
+    "host-before",
+    "native-default50",
+    "host-after"
+  ],
+  "experiment": {
+    "schema": 1,
+    "testOnly": true,
+    "startedUtc": "2026-11-03T17:25:34.012901+00:00",
+    "finishedUtc": "2026-11-03T17:25:43.314518+00:00",
+    "durationSeconds": 9.302,
+    "manifestSha256": "9da17bf944a4d25d8f4c4811e93a0dc9ca76b7b37f52579544959c7ae18a4bd5",
+    "manifestVersion": "1a3951f0c48d",
+    "systemArchiveSha256": "4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c",
+    "nativeFirefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+    "baseInitSha256": "74a5af5da55ed65113b5f678b8dfa8fe182359cb160b48474334244b06082f83",
+    "baseLauncherSha256": "62f10e7bc81c02205d0961631ce19d6c1577d0cf5bba1b674f96154faba52978",
+    "productionExtrasSha256": "5b624dd8325b4cbc717c114c3eb7592cc3ca67e257b06aa1e41ddb73c7f070d8",
+    "matchedSceneSha256": "e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0",
+    "diagnosticPrefSha256": "fd2e04ea488f3281cbe2da19bc79870c0eb3f8088d5dd53cb29362b138c116e2",
+    "nativeChanged": false,
+    "launcherChanged": false,
+    "initChanged": false,
+    "cacheLifecycleEnabled": false,
+    "thresholdOverridden": false,
+    "expectedDefaultMethodThreshold": 50,
+    "extrasSha256": "310eb2d11c55696ee989b13c279b9ca0693239fa3de32d155ac9a87ccecac922",
+    "gzipSha256": "505688ba0dab43e317dbb762798a5034f8737ee21de54e191f054e7ba285bdb5",
+    "productionExtrasPrefixUnchanged": true,
+    "onlyAddedRegularFiles": [
+      "opt/firefox/gpu-check/gpu-check.html",
+      "opt/firefox/defaults/pref/zz-matched-scene-test.js"
+    ],
+    "instrumentation": "Only result stdout preference and sparse log-row timestamps; no HomeFS/input/worker rewrites; one external resource monitor per browser",
+    "sample": {
+      "width": 320,
+      "height": 240,
+      "warmupMs": 10000,
+      "sampleMs": 20000,
+      "metric": "page requestAnimationFrame callback intervals, every stall and overrun included"
+    },
+    "arms": [
+      {
+        "threshold": 50,
+        "directory": "/mnt/p3/codex-build/f3l/matched-current1",
+        "extrasSha256": "310eb2d11c55696ee989b13c279b9ca0693239fa3de32d155ac9a87ccecac922",
+        "gzipSha256": "505688ba0dab43e317dbb762798a5034f8737ee21de54e191f054e7ba285bdb5",
+        "launcherSha256": "62f10e7bc81c02205d0961631ce19d6c1577d0cf5bba1b674f96154faba52978",
+        "nativeChanged": false
+      }
+    ],
+    "matchedExtrasSha256": "5b624dd8325b4cbc717c114c3eb7592cc3ca67e257b06aa1e41ddb73c7f070d8",
+    "performanceAccepted": false,
+    "physicalPresentationRateMeasured": false,
+    "publicDefaultChanged": false
+  },
+  "sameObservedHardwareRenderer": true,
+  "hostRendererStrings": [
+    "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+    "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)"
+  ],
+  "native": {
+    "label": "current-default",
+    "threshold": 50,
+    "directory": "/mnt/p3/codex-build/f3l/matched-native1",
+    "startedUtc": "2026-11-03T17:28:21.522Z",
+    "finishedUtc": "2026-11-03T17:29:44.226Z",
+    "elapsedMs": 82704.276,
+    "configuration": {
+      "cpus": 3,
+      "ramMiB": 2048,
+      "resolution": "1280x720",
+      "renderer": "webgl",
+      "query": "owned-proxy=1&compressed-initramfs=1&observe-after-seconds=151",
+      "monitorIntervalMs": 1000,
+      "pssIntervalMs": 5000,
+      "browserObserverStartsAfterSeconds": 151,
+      "descendantQuotaGate": {
+        "samples": [
+          2678.348,
+          3757.732
+        ],
+        "beforeNavigation": true,
+        "allEffectiveAncestorCapsAtMostThree": true,
+        "commonSharedAncestors": [
+          "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+        ]
+      }
+    },
+    "browserVersion": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/150.0.7871.114",
+      "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "jsVersion": "15.0.245.15"
+    },
+    "quietObservation": {
+      "startBootMs": 95.45499999999993,
+      "startUtc": "2026-11-03T17:28:25.767Z",
+      "requestedEndBootMs": 151000,
+      "excludes": [
+        "screenshots",
+        "Runtime.evaluate",
+        "log polling",
+        "tracing"
+      ],
+      "resourceMonitor": "CPU/RSS/quota1s; PSS5s; separateworker",
+      "passiveConsoleEvents": true,
+      "endBootMs": 73964.277,
+      "endUtc": "2026-11-03T17:29:39.636Z"
+    },
+    "identity": {
+      "base": true,
+      "extrasRaw": true,
+      "extrasGzip": true,
+      "threshold": true
+    },
+    "observedThresholds": [
+      50
+    ],
+    "uniqueCompletedSceneRecords": 0,
+    "measurement": null,
+    "ownerCleanupPassed": false,
+    "ownerErrors": [
+      "Owned processes lack one shared ancestor CPU quota <=3",
+      {
+        "ms": 78138.536,
+        "error": "Error: Resource monitor stopped quiet observation",
+        "stack": "Error: Resource monitor stopped quiet observation\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:298:486"
+      }
+    ],
+    "remainingOwned": [],
+    "tierObservations": [
+      "PBLIC enabled (threshold=200)",
+      "PBLBC enabled (threshold=50 ic=1 loopexit=0 loopjit=1)",
+      "PBLJIT enabled (threshold=1000, logBudget=24)",
+      "PBLIC compile #1 len=3 inline=1 step=0 wasm=251 idx=224491",
+      "PBLIC stats(compiles) compiles=1 rejects=0 installs=1 entries=0 fails=0 steps=0 top:",
+      "PBLBC compile #1 self-hosted:354 ops=174 inline=156 ic=37 exit=18 wasm=13281 idx=224492",
+      "PBLBC compile #2 resource://gre/modules/ActorManagerParent.sys.mjs:884 ops=18 inline=8 ic=1 exit=10 wasm=824 idx=224493",
+      "PBLIC compile #2 len=12 inline=3 step=0 wasm=398 idx=224494",
+      "PBLIC stats(compiles) compiles=2 rejects=0 installs=2 entries=336 fails=0 steps=0 top:",
+      "PBLIC compile #3 len=11 inline=3 step=0 wasm=305 idx=224495",
+      "PBLBC compile #3 resource://gre/modules/Console.sys.mjs:609 ops=128 inline=89 ic=23 exit=39 wasm=8204 idx=224496",
+      "PBLIC compile #4 len=7 inline=2 step=0 wasm=283 idx=224497",
+      "PBLIC stats(compiles) compiles=4 rejects=0 installs=4 entries=1551 fails=0 steps=0 top:",
+      "PBLBC compile #4 self-hosted:2826 ops=15 inline=12 ic=2 exit=3 wasm=1088 idx=224498",
+      "PBLIC compile #5 len=15 inline=4 step=0 wasm=365 idx=224499",
+      "PBLIC compile #6 len=14 inline=4 step=0 wasm=325 idx=224500",
+      "PBLIC compile #7 len=12 inline=3 step=0 wasm=305 idx=224501",
+      "PBLIC compile #8 len=10 inline=3 step=0 wasm=322 idx=224502",
+      "PBLIC stats(compiles) compiles=8 rejects=0 installs=8 entries=2409 fails=0 steps=0 top:",
+      "PBLIC compile #9 len=20 inline=5 step=0 wasm=334 idx=224503",
+      "PBLIC compile #10 len=14 inline=4 step=0 wasm=314 idx=224504",
+      "PBLIC compile #11 len=16 inline=3 step=1 wasm=429 idx=224505",
+      "PBLIC compile #12 len=11 inline=3 step=0 wasm=304 idx=224506",
+      "PBLBC compile #5 self-hosted:2524 ops=112 inline=100 ic=21 exit=12 wasm=7428 idx=224507",
+      "PBLBC compile #6 self-hosted:402 ops=38 inline=35 ic=10 exit=3 wasm=3201 idx=224508",
+      "PBLIC compile #13 len=26 inline=7 step=0 wasm=373 idx=224509",
+      "PBLBC compile #7 self-hosted:2761 ops=304 inline=286 ic=57 exit=18 wasm=22929 idx=224510",
+      "PBLBC compile #8 self-hosted:107 ops=92 inline=83 ic=18 exit=9 wasm=7093 idx=224511",
+      "PBLIC compile #14 len=17 inline=5 step=0 wasm=342 idx=224512",
+      "PBLBC compile #9 resource://gre/modules/addons/XPIDatabase.sys.mjs:1565 ops=16 inline=12 ic=6 exit=4 wasm=1701 idx=224513",
+      "PBLBC compile #10 resource://gre/modules/addons/XPIProvider.sys.mjs:239 ops=4 inline=0 ic=0 exit=4 wasm=213 idx=224514",
+      "PBLIC compile #15 len=11 inline=3 step=0 wasm=343 idx=224515",
+      "PBLIC compile #16 len=10 inline=3 step=0 wasm=339 idx=224516",
+      "PBLIC stats(compiles) compiles=16 rejects=0 installs=16 entries=10650 fails=274 steps=31 top: StoreFixedSlotUndefinedResult=31",
+      "PBLBC compile #11 resource://gre/modules/XPCOMUtils.sys.mjs:229 ops=18 inline=12 ic=6 exit=6 wasm=1705 idx=224517",
+      "PBLBC compile #12 resource://gre/modules/XPCOMUtils.sys.mjs:176 ops=150 inline=99 ic=29 exit=51 wasm=10738 idx=224518",
+      "PBLBC compile #13 resource://gre/modules/Extension.sys.mjs:307 ops=167 inline=139 ic=19 exit=28 wasm=11489 idx=224519",
+      "PBLIC compile #17 len=6 inline=2 step=0 wasm=302 idx=224520",
+      "PBLIC compile #18 len=10 inline=3 step=0 wasm=305 idx=224521",
+      "PBLBC compile #14 resource://gre/modules/ExtensionCommon.sys.mjs:1200 ops=44 inline=34 ic=10 exit=10 wasm=3228 idx=224522",
+      "PBLIC compile #19 len=16 inline=4 step=0 wasm=408 idx=224523",
+      "PBLBC compile #15 resource://gre/modules/Schemas.sys.mjs:4015 ops=28 inline=22 ic=9 exit=6 wasm=2697 idx=224524",
+      "PBLIC compile #20 len=11 inline=3 step=0 wasm=313 idx=224525",
+      "PBLBC compile #16 resource://gre/modules/ExtensionParent.sys.mjs:2517 ops=20 inline=17 ic=5 exit=3 wasm=1684 idx=224526",
+      "PBLIC compile #21 len=12 inline=3 step=0 wasm=300 idx=224527",
+      "PBLIC compile #22 len=18 inline=5 step=0 wasm=330 idx=224528",
+      "PBLBC compile #17 resource://gre/modules/NetUtil.sys.mjs:222 ops=281 inline=239 ic=78 exit=42 wasm=22847 idx=224529",
+      "PBLBC compile #18 resource://gre/modules/NetUtil.sys.mjs:170 ops=49 inline=40 ic=18 exit=9 wasm=4958 idx=224530",
+      "PBLBC compile #19 resource://gre/modules/Schemas.sys.mjs:37 ops=10 inline=3 ic=1 exit=7 wasm=488 idx=224531",
+      "PBLBC compile #20 resource://gre/modules/Schemas.sys.mjs:38 ops=21 inline=11 ic=5 exit=10 wasm=1536 idx=224532",
+      "PBLBC compile #21 resource://gre/modules/ExtensionParent.sys.mjs:2477 ops=42 inline=27 ic=12 exit=15 wasm=3593 idx=224533",
+      "PBLIC compile #23 len=19 inline=5 step=0 wasm=344 idx=224534",
+      "PBLBC compile #22 resource://gre/modules/NetUtil.sys.mjs:120 ops=17 inline=12 ic=5 exit=5 wasm=1648 idx=224535",
+      "PBLBC compile #23 self-hosted:4567 ops=109 inline=103 ic=23 exit=6 wasm=9136 idx=224536",
+      "PBLBC compile #24 resource://gre/modules/ExtensionParent.sys.mjs:2447 ops=33 inline=28 ic=12 exit=5 wasm=3348 idx=224537",
+      "PBLBC compile #25 resource://gre/modules/DeferredTask.sys.mjs:277 ops=52 inline=37 ic=6 exit=15 wasm=2940 idx=224538",
+      "PBLBC compile #26 resource://gre/modules/Schemas.sys.mjs:101 ops=15 inline=9 ic=2 exit=6 wasm=946 idx=224539",
+      "PBLBC compile #27 resource://gre/modules/Schemas.sys.mjs:4027 ops=69 inline=61 ic=11 exit=8 wasm=4173 idx=224540",
+      "PBLBC compile #28 resource://gre/modules/Schemas.sys.mjs:3264 ops=159 inline=119 ic=27 exit=40 wasm=9817 idx=224541",
+      "PBLIC compile #24 len=41 inline=8 step=1 wasm=536 idx=224542",
+      "PBLBC compile #29 resource://gre/modules/Schemas.sys.mjs:3638 ops=122 inline=103 ic=15 exit=19 wasm=6960 idx=224543",
+      "PBLBC compile #30 resource://gre/modules/Schemas.sys.mjs:3815 ops=13 inline=8 ic=2 exit=5 wasm=906 idx=224544",
+      "PBLIC compile #25 len=36 inline=8 step=1 wasm=546 idx=224545",
+      "PBLIC compile #26 len=22 inline=3 step=1 wasm=435 idx=224546",
+      "PBLIC compile #27 len=36 inline=8 step=1 wasm=563 idx=224547",
+      "PBLIC compile #28 len=11 inline=3 step=0 wasm=313 idx=224548",
+      "PBLBC compile #31 resource://gre/modules/Schemas.sys.mjs:3262 ops=8 inline=6 ic=1 exit=2 wasm=469 idx=224549",
+      "PBLBC compile #32 resource://gre/modules/ExtensionUtils.sys.mjs:102 ops=54 inline=45 ic=8 exit=9 wasm=3548 idx=224550",
+      "PBLIC compile #29 len=34 inline=8 step=1 wasm=548 idx=224551",
+      "PBLIC compile #30 len=31 inline=7 step=1 wasm=533 idx=224552",
+      "PBLIC compile #31 len=50 inline=10 step=1 wasm=582 idx=224553",
+      "PBLBC compile #33 resource://gre/modules/Schemas.sys.mjs:1415 ops=90 inline=78 ic=16 exit=12 wasm=5506 idx=224554",
+      "PBLBC compile #34 resource://gre/modules/Schemas.sys.mjs:2052 ops=111 inline=85 ic=18 exit=26 wasm=6739 idx=224555",
+      "PBLIC compile #32 len=7 inline=1 step=1 wasm=399 idx=224556",
+      "PBLIC stats(compiles) compiles=32 rejects=0 installs=32 entries=477761 fails=16975 steps=820 top: AddAndStoreDynamicSlot=451 AddAndStoreFixedSlot=137 MapSetResult=114 CallScriptedFunction=36 StoreFixedSlotUndefinedResult=31 MapGetStringResult=27 MapGetResult=24",
+      "PBLIC compile #33 len=26 inline=3 step=2 wasm=579 idx=224557",
+      "PBLIC compile #34 len=8 inline=1 step=1 wasm=399 idx=224558",
+      "PBLBC compile #35 resource://gre/modules/Schemas.sys.mjs:3819 ops=146 inline=107 ic=20 exit=39 wasm=8499 idx=224559",
+      "PBLBC compile #36 resource://gre/modules/Schemas.sys.mjs:1554 ops=24 inline=14 ic=0 exit=10 wasm=580 idx=224560",
+      "PBLIC compile #35 len=14 inline=2 step=1 wasm=413 idx=224561",
+      "PBLBC compile #37 self-hosted:125 ops=118 inline=109 ic=25 exit=9 wasm=9296 idx=224562",
+      "PBLBC compile #38 resource://gre/modules/Schemas.sys.mjs:1905 ops=51 inline=36 ic=6 exit=15 wasm=2417 idx=224563",
+      "PBLIC compile #36 len=9 inline=1 step=1 wasm=399 idx=224564",
+      "PBLIC compile #37 len=50 inline=10 step=1 wasm=582 idx=224565",
+      "PBLIC compile #38 len=18 inline=5 step=0 wasm=356 idx=224566",
+      "PBLIC compile #39 len=18 inline=5 step=0 wasm=347 idx=224567",
+      "PBLBC compile #39 resource://gre/modules/Schemas.sys.mjs:1820 ops=36 inline=24 ic=3 exit=12 wasm=1466 idx=224568",
+      "PBLBC compile #40 resource://gre/modules/Schemas.sys.mjs:1807 ops=219 inline=193 ic=25 exit=26 wasm=11356 idx=224569",
+      "PBLIC compile #40 len=16 inline=4 step=0 wasm=313 idx=224571",
+      "PBLIC stats(compiles) compiles=64 rejects=0 installs=64 entries=662478 fails=31000 steps=20106 top: MegamorphicLoadSlotResult=4890 CallNativeFunction=2440 MegamorphicHasPropResult=1498 CallScriptedFunction=1457 MegamorphicStoreSlot=1301 CallScriptedGetterResult=1276 ArrayJoinResult=1139 GuardFunctionScript=1030"
+    ],
+    "tierObservationLimit": "Sparse bounded log snapshots; not complete final compile/entry totals.",
+    "resourceSummary": {
+      "pssPeakBytes": 3559641088,
+      "rssSumPeakBytes": 4221677568,
+      "minAvailableBytes": 26280112128,
+      "samples": 76,
+      "pssSamples": 16,
+      "pssIntervalMs": 5000
+    },
+    "resourceSamples": 76,
+    "artifacts": [
+      {
+        "path": "/mnt/p3/codex-build/f3l/matched-native1/report.json",
+        "bytes": 417777,
+        "sha256": "8de6714564acd7698e20d0bff8847fceda370650a2337c20be9646c801e73c7d"
+      },
+      {
+        "path": "/mnt/p3/codex-build/f3l/matched-native1/guest.log",
+        "bytes": 15363,
+        "sha256": "bf26d973916967c59f195779f2947b5a0fd47161cf5a255d51e6271b470ec5da"
+      },
+      {
+        "path": "/mnt/p3/codex-build/f3l/matched-native1/failure.png",
+        "bytes": 986140,
+        "sha256": "42b27206f8c7b9566afa39d5244d171ff7a330501907ffb6614edd4ce9a7440a"
+      },
+      {
+        "path": "/mnt/p3/codex-build/f3l/matched-native1/failure-startup-timings.json",
+        "bytes": 4,
+        "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    ],
+    "measurementAccepted": false,
+    "unmodifiedRuntimeHotPaths": true,
+    "manifestIdentity": true,
+    "soleBlankInitialPage": true,
+    "quotaAcceptance": false,
+    "commonQuotaAncestors": [],
+    "oneResourceMonitor": true,
+    "watchdog": {
+      "schema": 1,
+      "kind": "lifecycle-only-startup-watchdog",
+      "startedUtc": "2026-11-03T17:28:21.161731+00:00",
+      "finishedUtc": "2026-11-03T17:29:44.414843+00:00",
+      "durationSeconds": 83.253,
+      "argv": [
+        "env",
+        "LINUXONWEB_BOOT_PACKAGE=/mnt/p3/project/linux/linuxonweb/out/pkp3/persistence-image1",
+        "LINUXONWEB_TEST_EXTRAS=/mnt/p3/codex-build/f3l/matched-current1",
+        "LINUXONWEB_TEST_DIAGNOSTIC_MODE=performance",
+        "LINUXONWEB_TEST_PORT=38082",
+        "node",
+        "tools/startup-benchmark/gpt6-astra-current.mjs",
+        "../../../codex-build/f3l/matched-native1",
+        "firefox",
+        "151",
+        "owned-proxy=1&compressed-initramfs=1&observe-after-seconds=151"
+      ],
+      "exitCode": 1,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "remainingIdentities": [],
+      "cleanupInventoryErrors": [],
+      "resourceMonitor": "Delegated solely to the owned startup harness: CPU/RSS/RAM1s, PSS5s",
+      "watchdogSamplesPss": false,
+      "watchdogProducesCpuRssSamples": false,
+      "pass": false
+    },
+    "requestedOuterObservationSeconds": 151,
+    "unverifiedQuotaSamples": [
+      {
+        "ms": 77475.004,
+        "commonCpuAncestors": [],
+        "changedMembership": [],
+        "unknownProcesses": [
+          {
+            "pid": 585181,
+            "ppid": 580591,
+            "group": 580568,
+            "session": 580568,
+            "start": "44337491",
+            "ticks": 63,
+            "rss": 0,
+            "cgroup": "",
+            "effectiveCpus": null
+          }
+        ]
+      }
+    ],
+    "nativeSceneVisuallyReviewed": false,
+    "observedHostGlRenderers": [
+      "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)"
+    ]
+  },
+  "hosts": [
+    {
+      "label": "before",
+      "directory": "/mnt/p3/codex-build/f3l/matched-host-before1",
+      "measurementAccepted": true,
+      "measurement": {
+        "pass": true,
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "hardwareConcurrency": 3,
+        "sampleFrames": 1192,
+        "fps": 59.55040939648279,
+        "elapsedMs": 20016.655000030994,
+        "wallElapsedMs": 20017,
+        "firstFrameEpochMs": 1793726759917,
+        "sampleStartEpochMs": 1793726769921,
+        "sampleEndEpochMs": 1793726789938,
+        "sampleStartUTC": "2026-11-03T17:26:09.921Z",
+        "sampleEndUTC": "2026-11-03T17:26:29.938Z",
+        "frameMs": {
+          "min": 4.2049999833106995,
+          "p50": 16.67500001192093,
+          "p95": 19.775000035762787,
+          "p99": 26.735000014305115,
+          "max": 68.05500000715256,
+          "mean": 16.79249580539513
+        },
+        "histogram": [
+          {
+            "upToMs": 8,
+            "count": 8
+          },
+          {
+            "upToMs": 16.7,
+            "count": 594
+          },
+          {
+            "upToMs": 25,
+            "count": 574
+          },
+          {
+            "upToMs": 33.4,
+            "count": 11
+          },
+          {
+            "upToMs": 50,
+            "count": 4
+          },
+          {
+            "upToMs": 100,
+            "count": 1
+          },
+          {
+            "upToMs": 200,
+            "count": 0
+          },
+          {
+            "upToMs": 500,
+            "count": 0
+          },
+          {
+            "upToMs": 1000,
+            "count": 0
+          },
+          {
+            "upToMs": null,
+            "count": 0
+          }
+        ],
+        "finalPixel": [
+          242,
+          204,
+          76,
+          255
+        ],
+        "glError": 0,
+        "webglState": "ok",
+        "renderer": [
+          "context: webgl2",
+          "version: WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "shading language: WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+          "vendor: WebKit",
+          "renderer: WebKit WebGL",
+          "unmasked vendor: Google Inc. (NVIDIA Corporation)",
+          "unmasked renderer: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+          "max texture size: 16384",
+          "extensions: 31"
+        ],
+        "browser": {
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+          "firefoxVersion": null,
+          "buildID": null
+        },
+        "errors": [],
+        "actualWarmupWallMs": 10004,
+        "firstFrameToSampleEndWallMs": 30021
+      },
+      "quietObservation": {
+        "startedUtc": "2026-11-03T17:25:59.471Z",
+        "requestedMs": 35000,
+        "excludes": [
+          "page polling",
+          "screenshots",
+          "tracing"
+        ],
+        "resourceMonitor": "CPU/RSS/RAM1s and PSS5s",
+        "note": "This outer observation delay does not change scene warmup or sample timing.",
+        "finishedUtc": "2026-11-03T17:26:34.522Z",
+        "elapsedMs": 35051.425373
+      },
+      "afterQuietScene": {
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "frames": {
+          "webgl": 1766,
+          "webgpu": 0
+        },
+        "firstFrameEpochMs": 1793726759917,
+        "sampleStartEpochMs": 1793726769921,
+        "sampleEndEpochMs": 1793726789938,
+        "cpus": 3,
+        "viewport": [
+          1280,
+          720,
+          1
+        ]
+      },
+      "flags": [
+        "--ignore-gpu-blocklist",
+        "--use-angle=gl",
+        "--use-gl=angle",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-sync",
+        "--remote-debugging-address=127.0.0.1",
+        "--remote-debugging-port=0",
+        "--user-data-dir=/mnt/p3/codex-build/f3l/br-CNVg6r/p",
+        "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-CNVg6r/c",
+        "--window-size=1280,720",
+        "about:blank"
+      ],
+      "pageIdentity": {
+        "sha256": "e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0",
+        "override": "/mnt/p3/codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+        "bytes": 36031,
+        "requests": 1
+      },
+      "startedUtc": "2026-11-03T17:25:56.756Z",
+      "finishedUtc": "2026-11-03T17:26:34.643Z",
+      "ownerErrors": [],
+      "monitor": {
+        "startedUtc": "2026-11-03T17:25:55.285570+00:00",
+        "finishedUtc": "2026-11-03T17:26:45.358305+00:00",
+        "durationSeconds": 50.073,
+        "argv": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_CPUS=3",
+          "GRAPHICS_VIEWPORT=1280x720",
+          "GRAPHICS_PAGE_OVERRIDE=/mnt/p3/codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+          "GRAPHICS_TEST_HOOK=/mnt/p3/project/linux/linuxonweb/tools/firefox-lifecycle/host-scene-quiet.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/f3l",
+          "http://localhost/linux/tests/guest-glremote/firefox-benchmark.html",
+          "gpuCheckBenchmark"
+        ],
+        "cwd": ".",
+        "exitCode": 0,
+        "stopReason": null,
+        "ownedProcessesRemaining": 0,
+        "cleanupInventoryErrors": [],
+        "ownerPeakRssBytes": 78008320,
+        "ownedTreePeakRssBytes": 1174843392,
+        "ownedTreePeakPssBytes": 488589312,
+        "resourceSamples": 49,
+        "pssSamples": 10,
+        "quotaReadySeconds": 1.004,
+        "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+        "quotaFailure": null,
+        "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+        "sampling": {
+          "cpuRssAvailableRamQuotaSeconds": 1,
+          "pssSeconds": 5,
+          "pssPeakIsSampledLowerBound": true
+        },
+        "pass": true
+      },
+      "artifacts": [
+        {
+          "path": "/mnt/p3/codex-build/f3l/br-CNVg6r/result.json",
+          "bytes": 44242,
+          "sha256": "e76d4cca8beaf52fc48a74ec39b875d84ca8a158c7da2051fe6ffdeb89c47822"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/matched-host-before1/result.json",
+          "bytes": 1435,
+          "sha256": "4a1b9786e736cfd2a92b942033ce931d1034554273c9ffe2829488e78748f5a0"
+        }
+      ],
+      "quotaAcceptance": true,
+      "quotaSamples": 49,
+      "commonQuotaAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "soleBlankInitialPage": true,
+      "oneResourceMonitor": true
+    },
+    {
+      "label": "after",
+      "directory": "/mnt/p3/codex-build/f3l/matched-host-after1",
+      "measurementAccepted": true,
+      "measurement": {
+        "pass": true,
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "hardwareConcurrency": 3,
+        "sampleFrames": 1071,
+        "fps": 53.52941793880891,
+        "elapsedMs": 20007.689999997616,
+        "wallElapsedMs": 20007,
+        "firstFrameEpochMs": 1793727075608,
+        "sampleStartEpochMs": 1793727085610,
+        "sampleEndEpochMs": 1793727105617,
+        "sampleStartUTC": "2026-11-03T17:31:25.610Z",
+        "sampleEndUTC": "2026-11-03T17:31:45.617Z",
+        "frameMs": {
+          "min": 0.4750000238418579,
+          "p50": 17.040000021457672,
+          "p95": 29.310000002384186,
+          "p99": 54.935000002384186,
+          "max": 129.2750000357628,
+          "mean": 18.68131652660842
+        },
+        "histogram": [
+          {
+            "upToMs": 8,
+            "count": 6
+          },
+          {
+            "upToMs": 16.7,
+            "count": 427
+          },
+          {
+            "upToMs": 25,
+            "count": 563
+          },
+          {
+            "upToMs": 33.4,
+            "count": 38
+          },
+          {
+            "upToMs": 50,
+            "count": 24
+          },
+          {
+            "upToMs": 100,
+            "count": 11
+          },
+          {
+            "upToMs": 200,
+            "count": 2
+          },
+          {
+            "upToMs": 500,
+            "count": 0
+          },
+          {
+            "upToMs": 1000,
+            "count": 0
+          },
+          {
+            "upToMs": null,
+            "count": 0
+          }
+        ],
+        "finalPixel": [
+          242,
+          204,
+          76,
+          255
+        ],
+        "glError": 0,
+        "webglState": "ok",
+        "renderer": [
+          "context: webgl2",
+          "version: WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "shading language: WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+          "vendor: WebKit",
+          "renderer: WebKit WebGL",
+          "unmasked vendor: Google Inc. (NVIDIA Corporation)",
+          "unmasked renderer: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+          "max texture size: 16384",
+          "extensions: 31"
+        ],
+        "browser": {
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+          "firefoxVersion": null,
+          "buildID": null
+        },
+        "errors": [],
+        "actualWarmupWallMs": 10002,
+        "firstFrameToSampleEndWallMs": 30009
+      },
+      "quietObservation": {
+        "startedUtc": "2026-11-03T17:31:15.092Z",
+        "requestedMs": 35000,
+        "excludes": [
+          "page polling",
+          "screenshots",
+          "tracing"
+        ],
+        "resourceMonitor": "CPU/RSS/RAM1s and PSS5s",
+        "note": "This outer observation delay does not change scene warmup or sample timing.",
+        "finishedUtc": "2026-11-03T17:31:50.109Z",
+        "elapsedMs": 35017.736595999995
+      },
+      "afterQuietScene": {
+        "done": true,
+        "settings": {
+          "width": 320,
+          "height": 240,
+          "warmupMs": 10000,
+          "sampleMs": 20000,
+          "webglVersion": 2,
+          "webgpu": false,
+          "media": false
+        },
+        "frames": {
+          "webgl": 1664,
+          "webgpu": 0
+        },
+        "firstFrameEpochMs": 1793727075608,
+        "sampleStartEpochMs": 1793727085610,
+        "sampleEndEpochMs": 1793727105617,
+        "cpus": 3,
+        "viewport": [
+          1280,
+          720,
+          1
+        ]
+      },
+      "flags": [
+        "--ignore-gpu-blocklist",
+        "--use-angle=gl",
+        "--use-gl=angle",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-sync",
+        "--remote-debugging-address=127.0.0.1",
+        "--remote-debugging-port=0",
+        "--user-data-dir=/mnt/p3/codex-build/f3l/br-6jDOce/p",
+        "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-6jDOce/c",
+        "--window-size=1280,720",
+        "about:blank"
+      ],
+      "pageIdentity": {
+        "sha256": "e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0",
+        "override": "/mnt/p3/codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+        "bytes": 36031,
+        "requests": 1
+      },
+      "startedUtc": "2026-11-03T17:31:13.419Z",
+      "finishedUtc": "2026-11-03T17:31:50.275Z",
+      "ownerErrors": [],
+      "monitor": {
+        "startedUtc": "2026-11-03T17:31:12.274215+00:00",
+        "finishedUtc": "2026-11-03T17:32:01.304561+00:00",
+        "durationSeconds": 49.03,
+        "argv": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_CPUS=3",
+          "GRAPHICS_VIEWPORT=1280x720",
+          "GRAPHICS_PAGE_OVERRIDE=/mnt/p3/codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html",
+          "GRAPHICS_TEST_HOOK=/mnt/p3/project/linux/linuxonweb/tools/firefox-lifecycle/host-scene-quiet.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/f3l",
+          "http://localhost/linux/tests/guest-glremote/firefox-benchmark.html",
+          "gpuCheckBenchmark"
+        ],
+        "cwd": ".",
+        "exitCode": 0,
+        "stopReason": null,
+        "ownedProcessesRemaining": 0,
+        "cleanupInventoryErrors": [],
+        "ownerPeakRssBytes": 77369344,
+        "ownedTreePeakRssBytes": 1170436096,
+        "ownedTreePeakPssBytes": 494630912,
+        "resourceSamples": 48,
+        "pssSamples": 10,
+        "quotaReadySeconds": 1.004,
+        "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+        "quotaFailure": null,
+        "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+        "sampling": {
+          "cpuRssAvailableRamQuotaSeconds": 1,
+          "pssSeconds": 5,
+          "pssPeakIsSampledLowerBound": true
+        },
+        "pass": true
+      },
+      "artifacts": [
+        {
+          "path": "/mnt/p3/codex-build/f3l/br-6jDOce/result.json",
+          "bytes": 41004,
+          "sha256": "da0dbc061cea3d3cdec756529926fb7aa181c9948d1339154607517c2c4db6aa"
+        },
+        {
+          "path": "/mnt/p3/codex-build/f3l/matched-host-after1/result.json",
+          "bytes": 1434,
+          "sha256": "5a3cade984e6fe666db702202b0baaf1348b7c3da7b97e99d0012b09d372daa8"
+        }
+      ],
+      "quotaAcceptance": true,
+      "quotaSamples": 48,
+      "commonQuotaAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "soleBlankInitialPage": true,
+      "oneResourceMonitor": true
+    }
+  ],
+  "allMeasurementsAccepted": false,
+  "hostMeanFps": 56.53991366764585,
+  "nativePercentOfHostMean": null,
+  "nativePercentOfEachHost": null,
+  "atLeastHalfOfBothHostControls": false,
+  "broadGuardGcAcceptance": false,
+  "fullJitAcceptance": false,
+  "physicalPresentationRateMeasured": false,
+  "startupReadinessAcceptanceFromThisRun": false,
+  "limits": [
+    "Single native sample; host bracketing is not a statistically powered study",
+    "Same 320x240 render canvas, workload and settings; guest framebuffer and host viewport 1280x720; host DPR 1",
+    "Native content-area innerWidth/innerHeight was not measured and is not claimed equal",
+    "Metric is completed page rAF intervals including stalls and overruns, not physical displayed frames",
+    "Scene 10s warmup and 20s sample are independent of the pre-launch bounded outer quiet observation recorded in the native receipt",
+    "Current observer uses one resource monitor and omits HomeFS call instrumentation; earlier double-monitored failed run is not a throughput baseline",
+    "Sparse native compile/entry logs are not complete final tier counters; broad native guard/GC gates remain unmet"
+  ],
+  "failureInterpretation": {
+    "acceptedNativeMeasurement": false,
+    "failedGuardReceiptRetained": true,
+    "sampleMillis": 77475.004,
+    "observedUnlimitedMigration": false,
+    "unknownIdentity": {
+      "pid": 585181,
+      "startTicks": "44337491",
+      "rssBytes": 0,
+      "cgroup": ""
+    },
+    "evidence": "Same exact PID/start was in the common capped group at76441.739ms, became an empty unreadable group at77475.004ms, and was absent at78483.424ms. No changedMembership was recorded.",
+    "sourceCause": "The then-current monitor retained failed status/cgroup reads as an empty-group row and included it in the common intersection without exact identity revalidation. The later fix does not change this failed run.",
+    "sourceBeforeFixCommit": "fbc7620",
+    "sourceBeforeFixSha256": "2cca2b7069d9122ef0f52a18cc58a58733a4de659f91dc1f8ff67db579aa45fa",
+    "noRerun": true,
+    "nativeSceneVisibleInFailureScreenshot": false,
+    "failureScreenshotDescription": "Desktop and display settings visible; no completed native Firefox benchmark scene."
+  },
+  "lease": {
+    "startedUtc": "2026-11-03T17:25:28Z",
+    "finishedUtc": "2026-11-03T17:32:01.304561Z",
+    "hardDeadlineUtc": "2026-11-03T17:32:28Z",
+    "allOwnersCleanupZero": true,
+    "fixtureBuildSeconds": 11.297
+  }
+}

@@ -66,6 +66,11 @@ def main(args):
     native['commonQuotaAncestors'] = sorted(common or [])
     native['oneResourceMonitor'] = watchdog.get('kind') == 'lifecycle-only-startup-watchdog' and watchdog.get('watchdogSamplesPss') is False and watchdog.get('watchdogProducesCpuRssSamples') is False
     native['watchdog'] = watchdog
+    native['requestedOuterObservationSeconds'] = owner.get('configuration',{}).get('browserObserverStartsAfterSeconds')
+    native['unverifiedQuotaSamples'] = [{'ms': row.get('ms'), 'commonCpuAncestors': row.get('commonCpuAncestors'), 'changedMembership': row.get('changedMembership'), 'unknownProcesses': [p for p in row.get('processes',[]) if not isinstance(p.get('effectiveCpus'),(int,float)) or not p.get('cgroup')]} for row in samples if not row.get('commonCpuAncestors') or row.get('changedMembership')]
+    for name in ['failure.png','failure-startup-timings.json']:
+        artifact = pathlib.Path(args.native)/name
+        if artifact.exists(): native['artifacts'].append(metric.pin(artifact))
     native['nativeSceneVisuallyReviewed'] = args.visible_scene_reviewed
     logs = (pathlib.Path(args.native)/'guest.log').read_text()
     native['observedHostGlRenderers'] = sorted(set(re.findall(r'gpu-owner: gl context \d+ open: ([^\n]+)', logs)))
@@ -89,10 +94,10 @@ def main(args):
               'atLeastHalfOfBothHostControls':bool(accepted and native['measurement']['fps']>=max(host_fps)*.5),
               'broadGuardGcAcceptance':False,'fullJitAcceptance':False,'physicalPresentationRateMeasured':False,'startupReadinessAcceptanceFromThisRun':False,
               'limits':['Single native sample; host bracketing is not a statistically powered study',
-                        'Same320x240 render canvas/workload/settings; guest framebuffer and host viewport1280x720; hostDPR1',
+                        'Same 320x240 render canvas, workload and settings; guest framebuffer and host viewport 1280x720; host DPR 1',
                         'Native content-area innerWidth/innerHeight was not measured and is not claimed equal',
                         'Metric is completed page rAF intervals including stalls and overruns, not physical displayed frames',
-                        'Scene10s warmup and20s sample are independent of240s outer quiet observation',
+                        'Scene 10s warmup and 20s sample are independent of the pre-launch bounded outer quiet observation recorded in the native receipt',
                         'Current observer uses one resource monitor and omits HomeFS call instrumentation; earlier double-monitored failed run is not a throughput baseline',
                         'Sparse native compile/entry logs are not complete final tier counters; broad native guard/GC gates remain unmet']}
     args.output.write_text(json.dumps(report,indent=2)+'\n')

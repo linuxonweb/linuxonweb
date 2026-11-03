@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T17:44:27.285574+00:00",
+  "pass": true,
+  "cases": 6,
+  "scope": "Synthetic private HTTPS navigation identity, no-secret-return, strict-file, cancellation and wrong-manifest cases; no actual browser authentication acceptance",
+  "helperSha256": "dd65eb4befbf1652cd419216d6fe835ddac1e05b5834faed00c622ba76f51268",
+  "testSha256": "90423f1fe66d48adf74c65b13966d3f65ac7b924f29af6d0fb809911acb6e2cc",
+  "owner": {
+    "startedUtc": "2026-11-03T17:42:38.559325+00:00",
+    "finishedUtc": "2026-11-03T17:42:40.315033+00:00",
+    "durationSeconds": 1.756,
+    "argv": [
+      "node",
+      "--test",
+      "tools/startup-benchmark/test-production-https-auth.mjs"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 630784,
+    "ownedTreePeakRssBytes": 630784,
+    "ownedTreePeakPssBytes": 1592320,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.754,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "commandLogSha256": "ba5677755e5ce0cc950c3917787d1ae0f06c3c1d90528e9453ce54cf2512acc6"
+}
