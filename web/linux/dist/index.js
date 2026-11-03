@@ -108,6 +108,15 @@ function merge_devicetree(target, source) {
  */
 export async function spawnMachine(options) {
     const devices = options.devices;
+    // Optional, content-addressed browser worker. The normal desktop URL is unchanged.
+    let workerScriptURL = options.workerScriptURL == null ? undefined : new URL(options.workerScriptURL, import.meta.url);
+    if (workerScriptURL && (workerScriptURL.origin !== new URL(import.meta.url).origin ||
+        !/^https?:$/.test(workerScriptURL.protocol) || workerScriptURL.username || workerScriptURL.password || workerScriptURL.search || workerScriptURL.hash ||
+        workerScriptURL.pathname !== new URL(`./immutable/${workerScriptURL.pathname.split('/').pop()}`, import.meta.url).pathname ||
+        !/\/immutable\/worker-[a-f0-9]{64}\.mjs$/.test(workerScriptURL.pathname))) {
+        throw new TypeError('workerScriptURL must be a same-origin content-addressed worker module');
+    }
+    let ownedWorkerBlobURL;
     const workers = new Set();
     let closed = false;
     let failed = false;
@@ -172,12 +181,21 @@ export async function spawnMachine(options) {
                     finish_error = termination_error;
                 }
             }
+            if (ownedWorkerBlobURL) {
+                URL.revokeObjectURL(ownedWorkerBlobURL);
+                ownedWorkerBlobURL = undefined;
+            }
             boot_console_close();
             if (failed)
                 closed_promise.reject(finish_error);
             else
                 closed_promise.resolve();
-        })();
+        })().finally(() => {
+            if (ownedWorkerBlobURL) {
+                URL.revokeObjectURL(ownedWorkerBlobURL);
+                ownedWorkerBlobURL = undefined;
+            }
+        });
         return finish_promise;
     };
     const fail = (error) => {
@@ -189,6 +207,49 @@ export async function spawnMachine(options) {
     };
     const close = () => void finish();
     try {
+        if (workerScriptURL) {
+            const controller = new AbortController();
+            const signal = options.workerScriptSignal;
+            const abort = () => controller.abort(signal.reason);
+            signal?.addEventListener('abort', abort, { once: true });
+            if (signal?.aborted) abort();
+            const timeout = setTimeout(() => controller.abort(), 30000);
+            let bytes;
+            try {
+                const response = await fetch(workerScriptURL, { signal: controller.signal });
+                if (!response.ok) throw new Error(`Worker bundle HTTP ${response.status}`);
+                const declared = Number(response.headers.get('content-length') || 0);
+                if (declared > 4 * 1024 * 1024) { controller.abort(); await response.body?.cancel().catch(() => {}); throw new Error('Worker bundle is too large'); }
+                if (!response.body) throw new Error('Worker bundle body is missing');
+                const reader = response.body.getReader(), chunks = [];
+                let length = 0;
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        if (length + value.byteLength > 4 * 1024 * 1024) {
+                            controller.abort();
+                            await reader.cancel().catch(() => {});
+                            throw new Error('Worker bundle is too large');
+                        }
+                        chunks.push(value); length += value.byteLength;
+                    }
+                } finally { reader.releaseLock(); }
+                bytes = new Uint8Array(length);
+                let offset = 0;
+                for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+            } finally { clearTimeout(timeout); signal?.removeEventListener('abort', abort); }
+            const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+                value => value.toString(16).padStart(2, '0')).join('');
+            if (!workerScriptURL.pathname.endsWith(`worker-${digest}.mjs`))
+                throw new Error('Worker bundle integrity check failed');
+            signal?.throwIfAborted();
+            // The generated bundle has no imports and preserves each source module's
+            // original asset base. One verified Blob serves every worker in this machine.
+            const bootstrap = `globalThis.__linuxonwebExecutionURL=${JSON.stringify(globalThis.location.href)};\n`;
+            ownedWorkerBlobURL = URL.createObjectURL(new Blob([bootstrap, bytes], { type: 'text/javascript' }));
+            workerScriptURL = new URL(ownedWorkerBlobURL);
+        }
         const { sections, vmlinux, initramfs, memory: memory_type } = await load_resources();
         const initcpio = options.initcpio ? await options.initcpio : undefined;
         const module_pages = Number(memory_type.minimum);
@@ -270,7 +331,7 @@ export async function spawnMachine(options) {
                     else
                         slot.error = error;
                 },
-            });
+            }, workerScriptURL);
             workers.add(worker);
             return { worker, slot };
         };

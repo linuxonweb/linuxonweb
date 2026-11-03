@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "image": {
+    "url": "./package-console.cpio.gz",
+    "bytes": 3425102,
+    "sha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912"
+  },
+  "guestMemoryBytes": 536870912,
+  "rootfsPayloadBytes": 9658880,
+  "packages": [
+    {
+      "name": "apk-tools",
+      "version": "2.14.12-r0",
+      "sha256": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa"
+    },
+    {
+      "name": "busybox",
+      "version": "1.38.0_git-r0",
+      "sha256": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd"
+    },
+    {
+      "name": "ca-certificates",
+      "version": "20261103-r0",
+      "sha256": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6"
+    },
+    {
+      "name": "curl",
+      "version": "8.21.0-r1",
+      "sha256": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819"
+    }
+  ],
+  "persistence": "home only; installed files and APK database reset together",
+  "normalDesktop": false,
+  "androidAccepted": false,
+  "iosAccepted": false
+}

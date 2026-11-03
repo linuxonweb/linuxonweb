@@ -4,8 +4,10 @@
 // only ever see the web path and never try to resolve node builtins.
 import { assert } from "./util.js";
 /** @internal */
-export function worker_script_url(module_url, execution_url) {
-    const url = new URL("./worker.js", module_url);
+export function worker_script_url(module_url, execution_url, override_url) {
+    const url = new URL(override_url ?? "./worker.js", module_url);
+    // Verified bundles inherit the execution URL in their bootstrap; changing a Blob URL invalidates it.
+    if (url.protocol === "blob:") return url;
     if (!execution_url) {
         try {
             execution_url = globalThis.location?.href;
@@ -58,8 +60,8 @@ const web = {
         const bytes = new Uint8Array(await response.arrayBuffer());
         return { bytes, module };
     },
-    spawn_worker(name, handlers) {
-        const worker = new Worker(worker_script_url(import.meta.url, current_execution_url()), {
+    spawn_worker(name, handlers, script_url) {
+        const worker = new Worker(worker_script_url(import.meta.url, current_execution_url(), script_url), {
             type: "module",
             name,
         });
@@ -107,8 +109,8 @@ function node(getBuiltinModule, process) {
             const bytes = await readFile(url);
             return { bytes, module: await WebAssembly.compile(bytes) };
         },
-        spawn_worker(name, handlers) {
-            const worker = new Worker(worker_script_url(import.meta.url), {
+        spawn_worker(name, handlers, script_url) {
+            const worker = new Worker(worker_script_url(import.meta.url, undefined, script_url), {
                 name,
             });
             worker.on("message", handlers.on_message);

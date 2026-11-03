@@ -1,0 +1,461 @@
+{
+  "schema": 1,
+  "agent": "GPT-6 Astra Pro / built-in graphics_jit / rubywebterm",
+  "overallScoreFromCTO": 42,
+  "mobileAcceptancePoints": "2/5",
+  "postTestDisplayOnlyChange": "Initial HTML acceptance badge updated to42; historical screenshots preserved. Runtime bundles and guest image unchanged.",
+  "onScreenKeyboardVisibleInScreenshot": true,
+  "scope": "Authenticated HTTPS 512MiB Linux package console on the actual MI8; full Firefox/mobile keyboard/iOS excluded",
+  "run": "android14",
+  "device": {
+    "model": "MI 8",
+    "android": "15",
+    "browserPackage": "com.brave.browser",
+    "browser": "Chrome/148.0.7778.217",
+    "abi": "arm64-v8a (separately observed from Android package metadata)"
+  },
+  "configuration": {
+    "guestMemoryBytes": 536870912,
+    "guestCpus": 1,
+    "crossOriginIsolated": true,
+    "sharedArrayBuffer": true,
+    "imageSha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912",
+    "freshDedicatedTestHome": true,
+    "defaultExistingHomesCleared": false
+  },
+  "timing": {
+    "ownerStarted": "2026-11-03T12:06:01.729Z",
+    "ownerEnded": "2026-11-03T12:06:35.931Z",
+    "ownerElapsedMs": 34202.00154,
+    "imageFetchMs": 6669.335000038147,
+    "imageVerifiedAt": "2026-11-03T12:06:28.332Z",
+    "nativePromptAt": "2026-11-03T12:06:31.933Z",
+    "postImageVerificationToPromptMs": 3601.0,
+    "fullNavigationToReadyMeasured": false,
+    "kernelCacheCleared": false,
+    "note": "Image fetch and post-image phase are separate; owner includes ADB/auth setup. This is not a full Firefox startup measurement. Existing origin kernel cache may be reused; this is not a cleared-cache cold run."
+  },
+  "nativeSteps": [
+    {
+      "command": "id",
+      "method": "physical Android input text and Enter",
+      "physical": {
+        "x": 1006,
+        "y": 624
+      },
+      "elapsedMs": 987.2419060000029,
+      "pass": true,
+      "output": [
+        "linux:/home/admin # id",
+        "uid=0(root) gid=0(root)"
+      ]
+    },
+    {
+      "command": "apk info",
+      "method": "physical Android input text and Enter",
+      "physical": {
+        "x": 1006,
+        "y": 615
+      },
+      "elapsedMs": 768.0729419999989,
+      "pass": true,
+      "output": [
+        "linux:/home/admin # apk info",
+        "WARNING: opening from cache https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz: No such file or directory",
+        "apk-tools",
+        "busybox",
+        "ca-certificates",
+        "curl"
+      ]
+    },
+    {
+      "action": "physical Stop",
+      "physical": {
+        "x": 324,
+        "y": 344
+      }
+    }
+  ],
+  "repositoryUpdate": {
+    "run": "android13",
+    "completedSteps": [
+      {
+        "command": "apk update",
+        "method": "physical Android input text and Enter",
+        "physical": {
+          "x": 1006,
+          "y": 615
+        },
+        "elapsedMs": 10831.258331999998,
+        "pass": true,
+        "output": [
+          "linux:/home/admin # apk update",
+          "fetch https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz/wasm32/APKINDEX.tar.gz",
+          "OK: 10 distinct packages available"
+        ]
+      }
+    ],
+    "pythonInstallAccepted": false,
+    "pythonInstallFailure": "apk add python3 reached Installing3.14.6-r1 but did not finish within45s; the owned guest was stopped. No Python version command completed on phone."
+  },
+  "workerLifecycle": {
+    "workerCount": 28,
+    "verifiedWorkerFetches": 1,
+    "blobCreated": 1,
+    "blobRevoked": 1,
+    "exactOwnedUrlRevoked": true,
+    "workerErrors": 0,
+    "authProxyRestarted": false,
+    "mutableRoutesCachePolicyChanged": false,
+    "workerBytes": 103608,
+    "workerSha256": "d4ffec4ec28122798e730b4db2797ecb2df9983a71a260190299c93c72e59f15",
+    "consoleBytes": 222188,
+    "consoleSha256": "49b2d792ea611e68e64449488906719e3b518bab6a4b5b8f16c4ff0c8c809558"
+  },
+  "resources": {
+    "sampleCadenceSeconds": 1,
+    "samples": 26,
+    "minimumAvailableBytes": 1772552192,
+    "availableRamFloorBytes": 1073741824,
+    "totalDeviceCpuBusyMedianPercent": 12.672521957340022,
+    "totalDeviceCpuBusyMaximumPercent": 26.912928759894463,
+    "note": "CPU samples cover the whole phone, not only this guest."
+  },
+  "cleanup": {
+    "physicalStop": true,
+    "phase": "stopped",
+    "ownedTabClosed": true,
+    "ownedForwardRemoved": true,
+    "unrelatedTabsClosed": false,
+    "existing8888ServiceChanged": false,
+    "errors": []
+  },
+  "browserCorrectnessGate": {
+    "passed": 29,
+    "total": 29,
+    "checks": [
+      {
+        "name": "Served worker length and digest match source receipt",
+        "pass": true
+      },
+      {
+        "name": "URL guard",
+        "pass": true
+      },
+      {
+        "name": "Invalid URL rejected before network request",
+        "pass": true
+      },
+      {
+        "name": "URL guard",
+        "pass": true
+      },
+      {
+        "name": "Invalid URL rejected before network request",
+        "pass": true
+      },
+      {
+        "name": "URL guard",
+        "pass": true
+      },
+      {
+        "name": "Invalid URL rejected before network request",
+        "pass": true
+      },
+      {
+        "name": "URL guard",
+        "pass": true
+      },
+      {
+        "name": "Invalid URL rejected before network request",
+        "pass": true
+      },
+      {
+        "name": "URL guard",
+        "pass": true
+      },
+      {
+        "name": "Invalid URL rejected before network request",
+        "pass": true
+      },
+      {
+        "name": "integrity check failed",
+        "pass": true
+      },
+      {
+        "name": "Digest failure creates no worker Blob",
+        "pass": true
+      },
+      {
+        "name": "too large",
+        "pass": true
+      },
+      {
+        "name": "Unknown-length stream cancelled at bounded read",
+        "pass": true
+      },
+      {
+        "name": "Oversize response creates no worker Blob",
+        "pass": true
+      },
+      {
+        "name": "too large",
+        "pass": true
+      },
+      {
+        "name": "Unknown-length stream cancelled at bounded read",
+        "pass": true
+      },
+      {
+        "name": "Oversize response creates no worker Blob",
+        "pass": true
+      },
+      {
+        "name": "Caller abort rejects bundle download",
+        "pass": true
+      },
+      {
+        "name": "Aborted download creates no Blob",
+        "pass": true
+      },
+      {
+        "name": "intentional worker fetch failure",
+        "pass": true
+      },
+      {
+        "name": "Fetch failure creates no Blob",
+        "pass": true
+      },
+      {
+        "name": "intentional kernel request failure",
+        "pass": true
+      },
+      {
+        "name": "Verified bundle created once",
+        "pass": true
+      },
+      {
+        "name": "Kernel failure revokes the exact owned URL",
+        "pass": true
+      },
+      {
+        "name": "Failure actually reached kernel resource fetch",
+        "pass": true
+      },
+      {
+        "name": "Default worker path and diagnostics preserved",
+        "pass": true
+      },
+      {
+        "name": "Owned Blob URL is not modified by query propagation",
+        "pass": true
+      }
+    ],
+    "durationSeconds": 6.478,
+    "resourceSamples": 7,
+    "remainingOwnedProcesses": 0
+  },
+  "limitations": [
+    "Commands used trusted Android text injection and Enter; no on-screen keyboard key was tapped, so soft-keyboard acceptance remains open.",
+    "Full Firefox on Android was deferred for memory/performance limits.",
+    "iOS was not tested.",
+    "Mobile Python package installation did not complete its bounded test.",
+    "The original unbundled HTTPS route stalled; only the bundled console opts into the new worker loader.",
+    "Performance figures are single bounded device runs, not general mobile benchmarks."
+  ],
+  "previousBoundedRuns": [
+    {
+      "run": "android1",
+      "start": "2026-11-03T10:53:18.724Z",
+      "end": "2026-11-03T10:53:31.718Z",
+      "elapsedMs": 12993.999996,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "setup-error",
+      "errorCount": 1,
+      "ownedTargetClosed": false,
+      "ownedForwardRemoved": false
+    },
+    {
+      "run": "android2",
+      "start": "2026-11-03T10:59:12.986Z",
+      "end": "2026-11-03T10:59:18.531Z",
+      "elapsedMs": 5544.6703019999995,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "stdin-ended",
+      "errorCount": 0,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android3",
+      "start": "2026-11-03T11:00:44.559Z",
+      "end": "2026-11-03T11:04:42.558Z",
+      "elapsedMs": 237998.568251,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android4",
+      "start": "2026-11-03T11:09:18.617Z",
+      "end": "2026-11-03T11:10:54.876Z",
+      "elapsedMs": 96259.007095,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 45000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android5",
+      "start": "2026-11-03T11:21:12.049Z",
+      "end": "2026-11-03T11:23:35.462Z",
+      "elapsedMs": 143413.79757,
+      "guestReady": true,
+      "configuredGuestDeadlineMs": 45000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android6",
+      "start": "2026-11-03T11:28:35.532Z",
+      "end": "2026-11-03T11:33:50.054Z",
+      "elapsedMs": 314522.57031900005,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "requested",
+      "errorCount": 0,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android7",
+      "start": "2026-11-03T11:38:54.181Z",
+      "end": "2026-11-03T11:39:10.525Z",
+      "elapsedMs": 16343.639965999999,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 30000,
+      "stopReason": "setup-error",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android8",
+      "start": "2026-11-03T11:39:42.535Z",
+      "end": "2026-11-03T11:40:36.801Z",
+      "elapsedMs": 54265.712457,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 30000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android9",
+      "start": "2026-11-03T11:43:07.557Z",
+      "end": "2026-11-03T11:44:25.675Z",
+      "elapsedMs": 78117.654551,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 45000,
+      "stopReason": "requested",
+      "errorCount": 0,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android10",
+      "start": "2026-11-03T11:50:08.059Z",
+      "end": "2026-11-03T11:52:16.401Z",
+      "elapsedMs": 128341.79567,
+      "guestReady": true,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android11",
+      "start": "2026-11-03T11:56:50.225Z",
+      "end": "2026-11-03T11:56:54.815Z",
+      "elapsedMs": 4589.8859090000005,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "setup-error",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android12",
+      "start": "2026-11-03T11:57:24.832Z",
+      "end": "2026-11-03T11:59:32.995Z",
+      "elapsedMs": 128162.79641800001,
+      "guestReady": true,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "guest-deadline",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    },
+    {
+      "run": "android13",
+      "start": "2026-11-03T12:02:27.201Z",
+      "end": "2026-11-03T12:04:01.914Z",
+      "elapsedMs": 94712.399275,
+      "guestReady": false,
+      "configuredGuestDeadlineMs": 120000,
+      "stopReason": "setup-error",
+      "errorCount": 1,
+      "ownedTargetClosed": true,
+      "ownedForwardRemoved": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "web/linux/packages/v1/package-shell.html",
+      "bytes": 5089,
+      "sha256": "d117af55de7c369815efe3d6d797d37b11adafed034bc2f639285390684b42e4"
+    },
+    {
+      "path": "web/linux/packages/v1/package-shell.mjs",
+      "bytes": 9104,
+      "sha256": "7fce19bcb9503a5590af484d2714967b7403953aeff4acddc7824f8141cee926"
+    },
+    {
+      "path": "web/linux/packages/v1/package-console.cpio.gz",
+      "bytes": 3425102,
+      "sha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912"
+    },
+    {
+      "path": "web/linux/packages/v1/console-manifest.json",
+      "bytes": 1040,
+      "sha256": "9d3c668792d42fd0ca21f863404e7c2d0a41274e7589744b9bae6aa03a3d0b11"
+    },
+    {
+      "path": "web/linux/packages/v1/runtime-bundles.json",
+      "bytes": 7533,
+      "sha256": "8131b9001c46fbe2bd5bfc9f891e6f6c06dcf5a3935ec1a1ba37b8f642efe731"
+    },
+    {
+      "path": "web/linux/dist/immutable/worker-d4ffec4ec28122798e730b4db2797ecb2df9983a71a260190299c93c72e59f15.mjs",
+      "bytes": 103608,
+      "sha256": "d4ffec4ec28122798e730b4db2797ecb2df9983a71a260190299c93c72e59f15"
+    },
+    {
+      "path": "web/linux/dist/immutable/console-49b2d792ea611e68e64449488906719e3b518bab6a4b5b8f16c4ff0c8c809558.mjs",
+      "bytes": 222188,
+      "sha256": "49b2d792ea611e68e64449488906719e3b518bab6a4b5b8f16c4ff0c8c809558"
+    }
+  ]
+}

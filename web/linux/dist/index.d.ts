@@ -15,6 +15,10 @@ export { attach_guest, connectTcpOverWebSocket, createNetwork, resolveDnsOverPro
 type MaybePromise<T> = T | PromiseLike<T>;
 /** The resources and boot configuration of a Linux machine. */
 export interface SpawnMachineOptions {
+    /** Optional same-origin /immutable/worker-<sha256>.mjs browser bundle. */
+    workerScriptURL?: string | URL;
+    /** Cancels the optional verified worker bundle download before boot. */
+    workerScriptSignal?: AbortSignal;
     /** Kernel command line arguments, appended after `console=hvc0`. */
     cmdline?: string;
     /** Virtual CPUs to boot, one Web Worker each. Defaults to four, capped at the host's hardware concurrency. */

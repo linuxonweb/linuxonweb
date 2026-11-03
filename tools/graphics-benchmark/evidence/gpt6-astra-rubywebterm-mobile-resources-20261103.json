@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "sampleCadenceSeconds": 1,
+  "scope": "Whole-device CPU and RAM during the owned final phone run",
+  "samples": [
+    {
+      "ms": 398.705375,
+      "utc": "2026-11-03T12:06:02.251Z",
+      "availableBytes": 2009845760,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": null,
+      "sampleDurationMs": 123.205739
+    },
+    {
+      "ms": 9939.440241,
+      "utc": "2026-11-03T12:06:11.755Z",
+      "availableBytes": 1990656000,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 11.049946294307201,
+      "sampleDurationMs": 86.15827399999944
+    },
+    {
+      "ms": 10943.136332,
+      "utc": "2026-11-03T12:06:12.748Z",
+      "availableBytes": 1989214208,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 14.414414414414411,
+      "sampleDurationMs": 75.98509299999932
+    },
+    {
+      "ms": 11948.336186,
+      "utc": "2026-11-03T12:06:13.773Z",
+      "availableBytes": 1988591616,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 7.512315270935965,
+      "sampleDurationMs": 95.36104299999897
+    },
+    {
+      "ms": 12953.306224,
+      "utc": "2026-11-03T12:06:14.773Z",
+      "availableBytes": 1987923968,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 6.281407035175879,
+      "sampleDurationMs": 90.83057700000063
+    },
+    {
+      "ms": 13956.294275,
+      "utc": "2026-11-03T12:06:15.787Z",
+      "availableBytes": 1987526656,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 5.987261146496814,
+      "sampleDurationMs": 101.69511099999909
+    },
+    {
+      "ms": 14956.972931,
+      "utc": "2026-11-03T12:06:16.784Z",
+      "availableBytes": 1984675840,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 19.974226804123706,
+      "sampleDurationMs": 98.77263399999902
+    },
+    {
+      "ms": 15958.314924,
+      "utc": "2026-11-03T12:06:17.786Z",
+      "availableBytes": 1983500288,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 17.1875,
+      "sampleDurationMs": 98.16295499999978
+    },
+    {
+      "ms": 16959.254273,
+      "utc": "2026-11-03T12:06:18.807Z",
+      "availableBytes": 1982652416,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 12.672521957340022,
+      "sampleDurationMs": 118.59019400000398
+    },
+    {
+      "ms": 17959.798860000003,
+      "utc": "2026-11-03T12:06:19.792Z",
+      "availableBytes": 1983299584,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 5.927835051546393,
+      "sampleDurationMs": 102.99350599999889
+    },
+    {
+      "ms": 18959.527605000003,
+      "utc": "2026-11-03T12:06:20.798Z",
+      "availableBytes": 1981173760,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 7.2060682680151755,
+      "sampleDurationMs": 109.80626800000027
+    },
+    {
+      "ms": 19960.009565,
+      "utc": "2026-11-03T12:06:21.797Z",
+      "availableBytes": 1978830848,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 8.481012658227849,
+      "sampleDurationMs": 107.5939240000007
+    },
+    {
+      "ms": 20959.726914,
+      "utc": "2026-11-03T12:06:22.788Z",
+      "availableBytes": 1976287232,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 14.777070063694264,
+      "sampleDurationMs": 99.08010099999956
+    },
+    {
+      "ms": 21960.193708,
+      "utc": "2026-11-03T12:06:23.786Z",
+      "availableBytes": 1976246272,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 9.68152866242038,
+      "sampleDurationMs": 96.42449299999862
+    },
+    {
+      "ms": 22960.797728999998,
+      "utc": "2026-11-03T12:06:24.792Z",
+      "availableBytes": 1975173120,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 10.466582597730135,
+      "sampleDurationMs": 102.38638500000525
+    },
+    {
+      "ms": 23961.129963,
+      "utc": "2026-11-03T12:06:25.786Z",
+      "availableBytes": 1974341632,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 5.859872611464967,
+      "sampleDurationMs": 95.33928100000048
+    },
+    {
+      "ms": 24963.171659,
+      "utc": "2026-11-03T12:06:26.798Z",
+      "availableBytes": 1974845440,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 5.6390977443609,
+      "sampleDurationMs": 105.31206299999758
+    },
+    {
+      "ms": 25965.157073000002,
+      "utc": "2026-11-03T12:06:27.804Z",
+      "availableBytes": 1976541184,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 15.628970775095297,
+      "sampleDurationMs": 109.4469489999974
+    },
+    {
+      "ms": 26966.228014,
+      "utc": "2026-11-03T12:06:28.792Z",
+      "availableBytes": 1969659904,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 15.09677419354839,
+      "sampleDurationMs": 96.54914399999689
+    },
+    {
+      "ms": 27967.113929,
+      "utc": "2026-11-03T12:06:29.791Z",
+      "availableBytes": 1968648192,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 7.760814249363868,
+      "sampleDurationMs": 94.63038300000335
+    },
+    {
+      "ms": 28968.227207000004,
+      "utc": "2026-11-03T12:06:30.759Z",
+      "availableBytes": 1917583360,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 14.834437086092711,
+      "sampleDurationMs": 61.537257999996655
+    },
+    {
+      "ms": 29969.250503000003,
+      "utc": "2026-11-03T12:06:31.754Z",
+      "availableBytes": 1834610688,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 26.912928759894463,
+      "sampleDurationMs": 55.72751900000003
+    },
+    {
+      "ms": 30970.725154,
+      "utc": "2026-11-03T12:06:32.765Z",
+      "availableBytes": 1777528832,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 17.43589743589744,
+      "sampleDurationMs": 64.81581200000073
+    },
+    {
+      "ms": 31970.81555,
+      "utc": "2026-11-03T12:06:33.799Z",
+      "availableBytes": 1795231744,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 20.050125313283207,
+      "sampleDurationMs": 98.74614000000292
+    },
+    {
+      "ms": 32970.932317,
+      "utc": "2026-11-03T12:06:34.789Z",
+      "availableBytes": 1772552192,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 19.58762886597938,
+      "sampleDurationMs": 89.06197299999621
+    },
+    {
+      "ms": 33970.849044999995,
+      "utc": "2026-11-03T12:06:35.753Z",
+      "availableBytes": 1788837888,
+      "totalBytes": 5904957440,
+      "cpuBusyPercent": 22.97476759628154,
+      "sampleDurationMs": 53.01791300000332
+    }
+  ]
+}

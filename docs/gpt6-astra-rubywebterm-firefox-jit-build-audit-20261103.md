@@ -152,3 +152,7 @@ Likewise, a native GL transport microbenchmark or a simple JIT fixture does not
 establish 50% of host-browser performance. The exact same-page Firefox versus
 Chromium comparison is recorded separately with clock endpoints and all stalls
 included.
+
+## Native Restart normally gap
+
+The readable159 export calls `LaunchChild(true)` from `xpcom/base/AppShutdown.cpp:150–180` and ignores its result. `toolkit/xre/nsAppRunner.h:168` defaults `aTryExec=false`, selecting `PR_CreateProcessDetached`. In `nsprpub/pr/src/md/unix/uxproces.c:237–245`, the Wasm/Linux branch explicitly returns `PR_NOT_IMPLEMENTED_ERROR` because independent fork is unavailable. This is consistent with the observed Restart normally action exiting status0 without a replacement process. The Unix `execv` route exists when `aTryExec=true`. The native binary was unchanged by the rejected Omni experiment; the old-image runtime comparison remains untested, so this is a source-supported likely existing limitation, not a proven resource-packing regression. A scoped exec/posix_spawn restart change requires a legitimate native rebuild and restart/ordinary-Close acceptance. An unconditional shell restart on exit0 would break normal Close and is inappropriate.

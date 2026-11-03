@@ -16,7 +16,7 @@ interface Platform {
         bytes: Uint8Array<ArrayBuffer>;
         module: WebAssembly.Module;
     }>;
-    spawn_worker(name: string, handlers: WorkerHandlers): WorkerHandle;
+    spawn_worker(name: string, handlers: WorkerHandlers, scriptURL?: string | URL): WorkerHandle;
     worker_channel(): WorkerChannel;
     quit(): void;
 }
