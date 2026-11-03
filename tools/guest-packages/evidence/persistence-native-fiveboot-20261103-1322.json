@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T14:54:55.928074+00:00",
+  "scope": "real signed native APK transaction on exact APK4 base package files/database with persistent HomeFS; new guest root on every phase",
+  "productionDesktopAccepted": false,
+  "actualProductionStopAccepted": false,
+  "fixture": {
+    "testOnly": true,
+    "productionAccepted": false,
+    "pinnedImageVersion": "d258203daee8",
+    "pinnedImageSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+    "archiveSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+    "archiveBytes": 9816576,
+    "nativeHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+    "basePackages": [
+      {
+        "name": "apk-tools",
+        "version": "2.14.12-r0",
+        "sha256": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa"
+      },
+      {
+        "name": "busybox",
+        "version": "1.38.0_git-r0",
+        "sha256": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd"
+      },
+      {
+        "name": "ca-certificates",
+        "version": "20261103-r0",
+        "sha256": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6"
+      },
+      {
+        "name": "curl",
+        "version": "8.21.0-r1",
+        "sha256": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819"
+      }
+    ],
+    "baseInstalledDbSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+    "scriptSha256": "c51996a93e5711daa838c53dc468346d7e0d559396527ef66833b95011e68817"
+  },
+  "phases": [
+    {
+      "durationSeconds": 9.708,
+      "pass": true,
+      "checks": [
+        "PERSIST_CHECK_PASS pristine-base",
+        "PERSIST_CHECK_PASS signed-repository-update",
+        "PERSIST_CHECK_PASS signed-add-and-save",
+        "PERSIST_CHECK_PASS installed-native-packages",
+        "PERSIST_CHECK_PASS genuine-tar",
+        "PERSIST_CHECK_PASS generation-verification",
+        "PERSIST_CHECK_PASS save-exact-world-reference",
+        "PERSIST_CHECK_PASS native-gzip-data"
+      ],
+      "failures": [],
+      "nativeMarkers": [
+        "APK_PERSIST_BASE no active generation; native apk is session-only",
+        "APK_PERSIST_SAVED generation=generation-mfFlBP optional=2 elapsed=2.608 manifest=b24a6e76a62846b331e0c73bc044647269f92d09e6971fae5d966b370c10cbfe",
+        "APK_PERSIST_ACTIVE generation=generation-mfFlBP optional=2 verified=1",
+        "PERSIST_CHECK_DONE phase=0 checks=8 failures=0"
+      ],
+      "networkDeviceAttached": true,
+      "networkEvents": [
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "tcp",
+          "host": "198.51.100.100",
+          "port": 80
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "tcp",
+          "host": "198.51.100.100",
+          "port": 80
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "tcp",
+          "host": "198.51.100.100",
+          "port": 80
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "dns",
+          "name": "packages.test"
+        },
+        {
+          "type": "tcp",
+          "host": "198.51.100.100",
+          "port": 80
+        }
+      ]
+    },
+    {
+      "durationSeconds": 12.648,
+      "pass": true,
+      "checks": [
+        "PERSIST_CHECK_PASS physically-offline",
+        "PERSIST_CHECK_PASS offline-restore",
+        "PERSIST_CHECK_PASS exact-world-restored",
+        "PERSIST_CHECK_PASS installed-after-reboot",
+        "PERSIST_CHECK_PASS genuine-tar-after-reboot",
+        "PERSIST_CHECK_PASS native-gzip-after-reboot",
+        "PERSIST_CHECK_PASS offline-delete-and-save",
+        "PERSIST_CHECK_PASS deleted-file",
+        "PERSIST_CHECK_PASS preserved-native-gzip",
+        "PERSIST_CHECK_PASS save-removal-world"
+      ],
+      "failures": [],
+      "nativeMarkers": [
+        "APK_PERSIST_RESTORED generation=generation-mfFlBP optional=2 elapsed=1.977 offline=1 exactWorld=1",
+        "APK_PERSIST_SAVED generation=generation-kpCKIp optional=1 elapsed=3.242 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+        "PERSIST_CHECK_DONE phase=1 checks=10 failures=0"
+      ],
+      "networkDeviceAttached": false,
+      "networkEvents": []
+    },
+    {
+      "durationSeconds": 9.413,
+      "pass": true,
+      "checks": [
+        "PERSIST_CHECK_PASS physically-offline",
+        "PERSIST_CHECK_PASS offline-restore-removal",
+        "PERSIST_CHECK_PASS removal-world-exact",
+        "PERSIST_CHECK_PASS deleted-package-stays-deleted",
+        "PERSIST_CHECK_PASS native-gzip-stays-installed",
+        "PERSIST_CHECK_PASS generation-verification",
+        "PERSIST_CHECK_PASS owned-generation-present"
+      ],
+      "failures": [],
+      "nativeMarkers": [
+        "APK_PERSIST_RESTORED generation=generation-kpCKIp optional=1 elapsed=1.373 offline=1 exactWorld=1",
+        "APK_PERSIST_ACTIVE generation=generation-kpCKIp optional=1 verified=1",
+        "PERSIST_CHECK_DONE phase=2 checks=7 failures=0"
+      ],
+      "networkDeviceAttached": false,
+      "networkEvents": []
+    },
+    {
+      "durationSeconds": 8.216,
+      "pass": true,
+      "checks": [
+        "PERSIST_CHECK_PASS physically-offline",
+        "PERSIST_CHECK_PASS corrupt-generation-rejected",
+        "PERSIST_CHECK_PASS corruption-diagnostic",
+        "PERSIST_CHECK_PASS no-payload-replayed-before-validation",
+        "PERSIST_CHECK_PASS pristine-world-retained",
+        "PERSIST_CHECK_PASS explicit-disable",
+        "PERSIST_CHECK_PASS active-pointer-removed",
+        "PERSIST_CHECK_PASS previous-generation-retained"
+      ],
+      "failures": [],
+      "nativeMarkers": [
+        "apk-persist: saved file checksum mismatch: packages/gzip-1.14-r0.apk",
+        "APK_PERSIST_DISABLED evidence=/home/.linuxonweb-packages/disabled-evidence-odBJpL; saved generations retained; Stop and Start for pristine base",
+        "PERSIST_CHECK_DONE phase=3 checks=8 failures=0"
+      ],
+      "networkDeviceAttached": false,
+      "networkEvents": []
+    },
+    {
+      "durationSeconds": 7.145,
+      "pass": true,
+      "checks": [
+        "PERSIST_CHECK_PASS physically-offline",
+        "PERSIST_CHECK_PASS disabled-base-boot",
+        "PERSIST_CHECK_PASS optional-payload-absent",
+        "PERSIST_CHECK_PASS base-database",
+        "PERSIST_CHECK_PASS base-world",
+        "PERSIST_CHECK_PASS saved-user-data"
+      ],
+      "failures": [],
+      "nativeMarkers": [
+        "APK_PERSIST_BASE no active generation; native apk changes remain session-only",
+        "PERSIST_CHECK_DONE phase=4 checks=6 failures=0"
+      ],
+      "networkDeviceAttached": false,
+      "networkEvents": []
+    }
+  ],
+  "owner": {
+    "startedUtc": "2026-11-03T14:52:51.333052+00:00",
+    "finishedUtc": "2026-11-03T14:53:43.341267+00:00",
+    "durationSeconds": 52.008,
+    "argv": [
+      "node",
+      "tools/guest-packages/run-smoke.mjs",
+      "out/pkp3/persistence-fixture2/persistence.cpio",
+      "out/pkp3/persistence-runtime2",
+      "out/pkp3/repo",
+      "out/pkp3/persistence-fixture2/config.json"
+    ],
+    "cwd": "/mnt/p3/project/linux/linuxonweb",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownerPeakRssBytes": 102068224,
+    "ownedTreePeakRssBytes": 1596936192,
+    "ownedTreePeakPssBytes": 913393664,
+    "resourceSamples": 52,
+    "pssSamples": 11,
+    "quotaReadySeconds": 0.0,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "receipts": {
+    "out/pkp3/persistence-runtime2/result.json": "ea8da61dd9c51787ca8632f084372fd2676abc67c5306542e88c742ca055ffa4",
+    "out/pkp3/persistence-owner2/result.json": "e3ec0299abb0ee449063d4535b06afc584e9f8d3ecf5f39df01bd487e447dcee",
+    "out/pkp3/persistence-build2/build.json": "7fa0197c394f1ee22bc5273248d19ec7173048b6db84ca028697b148201240f3",
+    "out/pkp3/persistence-fixture2/fixture.json": "b4b3e9baf3fe6397ff4c747cff303d251f754717b0dedaed28fbb64c80babaa5"
+  },
+  "retainedFailure": {
+    "receipt": "out/pkp3/persistence-runtime1/result.json",
+    "cause": "native apk2 default fetch is exact-name matching, so name=version failed closed; fixed fetch-name followed by installed filename+P/V/C exact verification. Fixture teardown also attempted settle after already-closed HomeFS, corrected to idempotent destroy."
+  },
+  "remainingGates": [
+    "actual production decompression/composition/desktop and Stop immediately after SAVED",
+    "signature tamper with recomputed manifest",
+    "same-P/V different signed-C replacement",
+    "ABI/trust mismatch",
+    "controlled interruption around active pointer boundaries",
+    "package maintainer script error/cancel group cleanup",
+    "larger Python restore duration/memory"
+  ]
+}

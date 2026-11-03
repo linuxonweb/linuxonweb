@@ -6,7 +6,8 @@ window.closePackageSmoke=async()=>{
  await window.packageMachine?.close();
  await window.packageNetwork?.close();
  for(const key of ['packageHome','packageExport']){
-  await window[key]?.settle();
+  // Machine filesystem teardown may already have closed the store. destroy
+  // is idempotent and itself awaits outstanding transactions when still open.
   await window[key]?.destroy();
   window[key]=null;
  }

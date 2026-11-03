@@ -1,0 +1,96 @@
+{
+  "published": true,
+  "startedUtc": "2026-11-03T15:00:03.869665+00:00",
+  "finishedUtc": "2026-11-03T15:00:04.753441+00:00",
+  "publicUrl": "https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz",
+  "destination": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/public-repository",
+  "previousIndexSha256": "f3135938ee289adde01134db647f0312b337df77576ea800f5a90daeec50bd91",
+  "indexSha256": "75cf2cd6089cb767fa842012750ac6d928de3913e5db138affbc6c6c0d6b9a46",
+  "liveLocalReadbackMatches": true,
+  "previousIndexRetained": "out/pkp3/public-before1/APKINDEX.tar.gz",
+  "selection": {
+    "candidateOnly": true,
+    "published": false,
+    "nativeEvidenceSha256": "b522b8bb363ecc85c09bd4f4fc31feb71eb9b08812b5c9667a73c831ca12626d",
+    "publicKeySha256": "529b0b2265917010de583b364d6b7e90b5c17a8c386bbe3cf1b00ec49015580a",
+    "files": [
+      {
+        "file": "apk-tools-2.14.12-r0.apk",
+        "sha256": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "busybox-1.38.0_git-r0.apk",
+        "sha256": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "ca-certificates-20261103-r0.apk",
+        "sha256": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "coreutils-9.11-r0.apk",
+        "sha256": "e784715ded15054861ca4513b99a39a00078681cea76566a7326c6d9b692c47a",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "curl-8.21.0-r1.apk",
+        "sha256": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "grep-3.12-r0.apk",
+        "sha256": "b430a6946d85cc2b4ffff42ae9283d8cb48275e3def133f5d547178ac098058a",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "gzip-1.14-r0.apk",
+        "sha256": "751ab17c88614079fe14c0156639c02061c84df3f6a052ba97a6c223048addd8",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "linuxonweb-vkgears-20261103-r0.apk",
+        "sha256": "7735f57fab46d9467e262e496610be7f597dd900c3c6a77f75c8b7b1e5588ccb",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "python3-3.14.6-r1.apk",
+        "sha256": "17dc996aa4492e8b283e8937d73ff575bbc98b291a2bf3b398d73802708ce2c1",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "sed-4.10-r0.apk",
+        "sha256": "a9cae194c8a47b83af9970cb13d917148227cb192e3d5de59e41670a8fdb0656",
+        "origin": "previously public immutable version"
+      },
+      {
+        "file": "findutils-4.10.0-r1.apk",
+        "sha256": "4c485eb661b7ee584d50374f83d66fa7f86ccaed7d8c1a88babb2e57905b30ac",
+        "origin": "exact native tested GNU candidate"
+      },
+      {
+        "file": "tar-1.35-r1.apk",
+        "sha256": "679e46386206961bf8279db6e24b8c5e4803f29f4699797c6cf3c97bf6580920",
+        "origin": "exact native tested GNU candidate"
+      },
+      {
+        "file": "wget-1.25.0-r0.apk",
+        "sha256": "9138700d0bed2052c28fe6e3f5a53f1a717169ed94c12fdb76f8facdb17d31f8",
+        "origin": "exact native tested GNU candidate"
+      }
+    ]
+  },
+  "nativeAcceptanceReceipt": "tools/guest-packages/evidence/findutils-native-spawn-20261103-1322.json",
+  "notClaimed": [
+    "full desktop package persistence",
+    "Node.js",
+    "newports Android/iOS acceptance"
+  ],
+  "publicHttpsReadback": {
+    "checkedUtc": "2026-11-03T15:00:36.435371+00:00",
+    "bytes": 1729,
+    "sha256": "75cf2cd6089cb767fa842012750ac6d928de3913e5db138affbc6c6c0d6b9a46",
+    "matches": true
+  }
+}
