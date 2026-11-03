@@ -1,0 +1,19 @@
+{
+  "pass": true,
+  "files": [
+    {
+      "file": "presentation.vert.spv",
+      "sourceSha256": "62f7c458b63fac2d7189c20375213f23b0899e8f8957cddf4ef10100fc1ff2fc",
+      "sha256": "4b445590ea92f323b857baded19b470847e4a25f78919624048af545f35681b5",
+      "bytes": 808,
+      "seconds": 0.32456040382385254
+    },
+    {
+      "file": "presentation.frag.spv",
+      "sourceSha256": "ccd3df743c3ed11e85ed2641e2974333e0de064d8f3c72d7ad6ce952fc13072f",
+      "sha256": "490f169d0072fa26b512c071eb242bbfd0a7f8d5e3abee46eab824d173559954",
+      "bytes": 500,
+      "seconds": 0.3280620574951172
+    }
+  ]
+}

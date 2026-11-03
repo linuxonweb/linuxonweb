@@ -1,13 +1,11 @@
-/* A6a: WSI plumbing for the experimental guest ICD (built only with
- * -DGUEST_VK_WSI plus VK_USE_PLATFORM_XLIB_KHR/VK_USE_PLATFORM_XCB_KHR).
- *
- * Scope: loader interface 3 driver-owned VkSurfaceKHR objects for Xlib/XCB
- * windows, surface support/capability/format/present-mode queries, and
- * VkSwapchainKHR objects whose images are ordinary graphics colour targets
- * (R8G8B8A8_UNORM, COLOR_ATTACHMENT|TRANSFER_SRC, <=128x128) owned by the
- * swapchain. Acquire and present are deliberately not implemented yet: both
- * return VK_ERROR_FEATURE_NOT_PRESENT (TODO(A6b)), so no presentation
- * capability is claimed. Handles are IDs, never guest addresses. */
+/* Bounded WSI for the experimental guest ICD (built with GUEST_VK_WSI plus
+ * VK_USE_PLATFORM_XLIB_KHR/VK_USE_PLATFORM_XCB_KHR). Loader interface 3 uses
+ * driver-owned Xlib/XCB surfaces and swapchain image IDs, never guest addresses.
+ * Acquire/present are available only after the host negotiates presentProfile.
+ * Swapchain images are ordinary colour targets; the renderer copies a stored
+ * target to a host canvas. This is not a conformant Vulkan WSI implementation:
+ * acquire does not wait for exhausted images, and presentation completion is
+ * command acceptance rather than physical display timing. */
 #define WSI_MAX_SURFACES 4
 #define WSI_MAX_SWAPCHAINS 4
 #define WSI_MAX_IMAGES 3

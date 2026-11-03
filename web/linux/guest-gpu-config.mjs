@@ -8,10 +8,11 @@ export function guestGpuOwnerConfig(search, gpuBackend = 'webgpu') {
 function vulkanOwnerConfig(search, gpuBackend) {
   if (new URLSearchParams(search).get('gpuruntime') !== 'rust') {
     // The direct WebGPU renderer has 512 colour/depth targets and direct presentation.
-    // Large sampled colour targets are enabled only after the renderer's actual probe passes.
+    // Large sampled colour targets require the direct WebGPU probe. The WebGL
+    // backend must not request them: it has neither that probe nor Rust resources.
     const options = new URLSearchParams(search), large = options.get('gpulargetargets') !== '0';
     return { vk: { backend: gpuBackend, ...(large ? { allowLargeColorTargets: true,
-      ...(options.get('gpulargesampledtargets') !== '0' ? { allowLargeSampledTargets: true } : {}) } : {}) } };
+      ...(gpuBackend === 'webgpu' && options.get('gpulargesampledtargets') !== '0' ? { allowLargeSampledTargets: true } : {}) } : {}) } };
   }
   const wgpuBackend = gpuBackend === 'webgl' ? 'webgl' : 'webgpu';
   const options = new URLSearchParams(search);

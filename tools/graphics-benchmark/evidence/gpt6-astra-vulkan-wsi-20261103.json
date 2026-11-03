@@ -1,0 +1,2071 @@
+{
+  "accepted": true,
+  "date": "2026-11-03",
+  "scope": "Experimental bounded public Vulkan WSI over explicitly selected WebGL2. Not conformance, full desktop OpenGL, Firefox hardware composition, or a performance-ratio acceptance.",
+  "changes": [
+    "Direct WebGL does not request WebGPU-only large sampled targets",
+    "Exclusive offscreen WebGL GPU blit and ImageBitmap/bitmaprenderer presentation with vertical orientation correction",
+    "PRESENT end messages accept the native target=0 form; actual frames still require a live target",
+    "Non-Zink SDK compilation restores required mip-level field and guards Zink-only helper/debug variables"
+  ],
+  "pixelAcceptance": {
+    "path": "/mnt/p3/codex-build/g3g/br-iRdQ46/result.json",
+    "pass": true,
+    "errors": [],
+    "flags": [
+      "--ignore-gpu-blocklist",
+      "--use-angle=gl",
+      "--use-gl=angle",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-iRdQ46/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-iRdQ46/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/presentation.html": {
+        "sha256": "ad77b788a4f74eb603e227922a389aed24f2de27e28cb60cc12aa94b097033c3",
+        "bytes": 8047,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/renderer.mjs": {
+        "sha256": "1792ab4f50ec87d8a44f5a7c30e0c868095b0b8ccbabdd5cead8267bc11463f3",
+        "bytes": 47695,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/index.mjs": {
+        "sha256": "94b9d44caa462493177d80d4ef08a1eb502c6c63c8f4d578a3dd4591e4dbe8a4",
+        "bytes": 3446,
+        "requests": 1
+      },
+      "/linux/gputest.mjs": {
+        "sha256": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+        "bytes": 8892,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "06ce3a3dc2f83c2ca1ad14211b50f1173e6581cc5822737c6595d202df6a8817",
+        "bytes": 87106,
+        "requests": 1
+      },
+      "/linux/gpu/glsl.wasm": {
+        "sha256": "5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5",
+        "bytes": 927118,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/worker.mjs": {
+        "sha256": "291f367210e9dda9f05a2f17beaebc14680f2bd2db33dde863d39b72f2f28ef9",
+        "bytes": 1127,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/abi.mjs": {
+        "sha256": "a2bb9c21f9aaeb1ebffe454c15a322dab93a3a0c0ecdb6e7f42785c6e9b454fe",
+        "bytes": 6654,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/presentation.vert.spv": {
+        "sha256": "4b445590ea92f323b857baded19b470847e4a25f78919624048af545f35681b5",
+        "bytes": 808,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/presentation.frag.spv": {
+        "sha256": "490f169d0072fa26b512c071eb242bbfd0a7f8d5e3abee46eab824d173559954",
+        "bytes": 500,
+        "requests": 1
+      }
+    },
+    "result": {
+      "pass": true,
+      "checks": 32,
+      "cases": [
+        "offscreen WebGL2",
+        "required APIs negotiate presentation",
+        "asymmetric top and bottom oracle",
+        "initial ImageBitmap",
+        "initial bitmap exact asymmetric orientation",
+        "attached canvas signal",
+        "attached bitmaprenderer exact pixels",
+        "present preserves source target",
+        "presentation restores scissor enable",
+        "surface resize dimensions",
+        "resized surface exact pixels",
+        "another surface after drawing-buffer resize",
+        "replacement attached canvas",
+        "replaced canvas released and cleared",
+        "uninitialized target rejected: present requires a successfully stored target",
+        "invalid surface rejected: invalid presentation surface",
+        "foreign output type rejected: invalid presentation canvas",
+        "destroyed target rejected: stale, foreign or wrong-type target handle",
+        "surface entries released",
+        "forgotten output cleared",
+        "closed renderer resources balanced",
+        "offscreen WebGL2",
+        "close rejects queued presentation: renderer closed",
+        "queued close leaks no surface",
+        "offscreen WebGL2",
+        "sink failure is terminal: WebGL execution failed: sink rejected",
+        "failed sink closes bitmap and resources",
+        "offscreen WebGL2",
+        "context loss releases presentation and native resources",
+        "context loss clears attached canvas",
+        "lost renderer rejects presentation: WebGL context lost",
+        "HTML canvas does not advertise unavailable transfer API"
+      ],
+      "errors": [],
+      "adapter": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)",
+      "closed": {
+        "state": "closed",
+        "resources": 0,
+        "nativeObjects": 0,
+        "allocatedBytes": 0,
+        "presentSurfaces": 0,
+        "recordingDraws": 0,
+        "pendingWaits": 0,
+        "passes": 2,
+        "draws": 2,
+        "uploads": 1,
+        "uniformUploads": 0,
+        "readbacks": 3,
+        "fences": 5,
+        "indexDraws": 0,
+        "presents": 5,
+        "ownership": {
+          "Buffer": {
+            "created": 4,
+            "deleted": 4
+          },
+          "Texture": {
+            "created": 3,
+            "deleted": 3
+          },
+          "Framebuffer": {
+            "created": 3,
+            "deleted": 3
+          },
+          "VertexArray": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Program": {
+            "created": 1,
+            "deleted": 1
+          },
+          "Shader": {
+            "created": 2,
+            "deleted": 2
+          },
+          "Sync": {
+            "created": 5,
+            "deleted": 5
+          }
+        }
+      },
+      "configuration": null,
+      "package": null,
+      "ownerEvents": null,
+      "presentKinds": null,
+      "overlay": null,
+      "exitStatus": null,
+      "durationMs": null
+    },
+    "nativeMarkers": []
+  },
+  "nativeAcceptance": {
+    "path": "/mnt/p3/codex-build/g3g/br-QkRrUz/result.json",
+    "pass": true,
+    "errors": [],
+    "flags": [
+      "--ignore-gpu-blocklist",
+      "--use-angle=gl",
+      "--use-gl=angle",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-QkRrUz/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-QkRrUz/c",
+      "--window-size=1000,800",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/vulkan-wsi.html": {
+        "sha256": "8e3df4db56257714dd1d694fb285f13f3e4df07ec6682524e4c7475ad32ecf33",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/vulkan-wsi.html",
+        "bytes": 4402,
+        "requests": 1
+      },
+      "/linux/dist/index.js": {
+        "sha256": "f524c50502983a9ae39662910b94d92a96cbc376c6d35c8d45cfed8a5cbacfa5",
+        "bytes": 21120,
+        "requests": 1
+      },
+      "/linux/gpu-present-overlay.mjs": {
+        "sha256": "f4791d691f22fa362cf0b3a1853ec0f9b876996d22b218b3c60a0eb916b00881",
+        "bytes": 3782,
+        "requests": 1
+      },
+      "/linux/guest-gpu-config.mjs": {
+        "sha256": "57cec94ede526e63967d770aef8a34adbf8894d142bd149cd0a6eda20a9402e7",
+        "bytes": 2349,
+        "requests": 1
+      },
+      "/linux/dist/wasm_binary.js": {
+        "sha256": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+        "bytes": 7036,
+        "requests": 55
+      },
+      "/linux/dist/audio.js": {
+        "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+        "bytes": 6134,
+        "requests": 55
+      },
+      "/linux/dist/virtio/core.js": {
+        "sha256": "4a92a76da0701f506f5fa0368636ad340f92d3d06d335cc0a001d1d632305459",
+        "bytes": 13386,
+        "requests": 1
+      },
+      "/linux/dist/wasm.js": {
+        "sha256": "79ad8b3ce6b60811d98cea72bf01539b4a2c3d935d16fdc037fb8852932a4b6e",
+        "bytes": 6677,
+        "requests": 55
+      },
+      "/linux/dist/devicetree.js": {
+        "sha256": "6a5ac56197c61941ec40847c7145a2d5b7822bea9dda18a9663b0ed156461dba",
+        "bytes": 5332,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer.js": {
+        "sha256": "2e45a93a43fb9e28aecd70b173013c4d09528652adfa5018ff5408832373cd8d",
+        "bytes": 22257,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-hostcall.js": {
+        "sha256": "e6c684c8fc29d4c36f58c40dec513af9dfd850026e33cdd4d98c13160c2aedab",
+        "bytes": 21520,
+        "requests": 56
+      },
+      "/linux/dist/virtio/block.js": {
+        "sha256": "87af5551c38a6c1e786e585475fe296a240501d2ec07c120696252b17956ea4e",
+        "bytes": 4335,
+        "requests": 1
+      },
+      "/linux/dist/platform.js": {
+        "sha256": "8f0da1d12b136cf53ff06d0afb4bb1d1a13b705beaa029bb49c6812bd4069ce9",
+        "bytes": 5912,
+        "requests": 55
+      },
+      "/linux/dist/virtio/console.js": {
+        "sha256": "9de7ffef6f0396dcb4725fcc03a3205b8ecdee11af67adb136981d735b837ef5",
+        "bytes": 4813,
+        "requests": 1
+      },
+      "/linux/dist/virtio/entropy.js": {
+        "sha256": "527ac8103305e0572e1c0f0598431966b6ef50eb4e32b4c8982d3fd83da8b484",
+        "bytes": 817,
+        "requests": 1
+      },
+      "/linux/dist/worker-pool.mjs": {
+        "sha256": "38eac0f2f8a88359ad7344ae20e3dc27f6b394c8bca4b2fde191eff1e5a1ff98",
+        "bytes": 1228,
+        "requests": 1
+      },
+      "/linux/dist/util.js": {
+        "sha256": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+        "bytes": 244,
+        "requests": 55
+      },
+      "/linux/dist/virtio/fs.js": {
+        "sha256": "f0f6e6af0fa3d41f433cf56922bb4a6510266977918f196a621156ae680b3a40",
+        "bytes": 37428,
+        "requests": 1
+      },
+      "/linux/dist/virtio/net.js": {
+        "sha256": "87febbb9d02d0b3c047d97b92c9c2f1a6f3ecaa49f241358846f9d47bc8c9b83",
+        "bytes": 6534,
+        "requests": 1
+      },
+      "/linux/dist/virtio/vsock.js": {
+        "sha256": "4c83483f6866165e5bc8a28b576cf0d17da7b59b31c0176d6a629a7a9d6d7ced",
+        "bytes": 12220,
+        "requests": 1
+      },
+      "/linux/dist/virtio/input.js": {
+        "sha256": "29c7d7df90b24747a4a2ab1cce1d1ef3696870d58fd65f44bd835e76e25051a1",
+        "bytes": 9878,
+        "requests": 1
+      },
+      "/linux/dist/network/index.js": {
+        "sha256": "e1aa93214acbe987abaf8a09f57651ceb975b7424c0122190231e1b32864db52",
+        "bytes": 189,
+        "requests": 1
+      },
+      "/linux/dist/bytes.js": {
+        "sha256": "692a3827bcfd8f2ac3a7ca728be7455b1666d3b525adbf21b7593c56dc85bbe5",
+        "bytes": 7290,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer-presenter.js": {
+        "sha256": "9962757a80bac27d6a6bd14458a050e456629ee5672a16b1ec7345af964c2f01",
+        "bytes": 9876,
+        "requests": 1
+      },
+      "/linux/dist/network/gateway.js": {
+        "sha256": "ff346b436e8e4aefeaeda0ab2b211958b93365e01cc2611f3b39a89bc09bf1ba",
+        "bytes": 42698,
+        "requests": 1
+      },
+      "/linux/dist/network/ws-tcp.js": {
+        "sha256": "5d2ca5f5aaa6974792cc4fa794d58053fd2e5185edbca2cd160eee5f2951b3f8",
+        "bytes": 4877,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/build.json": {
+        "sha256": "f02ffe296108f8a8c4cd09a591edd9d992b7b1e032bdb0c7d6a5efe90595173c",
+        "bytes": 658,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/initramfs.cpio": {
+        "sha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "bytes": 41867716,
+        "requests": 1
+      },
+      "/linux/boot-assets.mjs": {
+        "sha256": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6",
+        "bytes": 13602,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/boot-manifest.json": {
+        "sha256": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd",
+        "bytes": 662,
+        "requests": 1
+      },
+      "/linux/vmlinux.wasm": {
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "bytes": 6281750,
+        "requests": 1
+      },
+      "/linux/dist/worker.js": {
+        "sha256": "4fc3e6e547825c0a3ebc25a5166e6c519d4dae5c337c9409667235beb4daad99",
+        "bytes": 40824,
+        "requests": 54
+      },
+      "/linux/dist/user-memory-growth-adapter.js": {
+        "sha256": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+        "bytes": 4842,
+        "requests": 54
+      },
+      "/linux/dist/firefox-callback-adapter.mjs": {
+        "sha256": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+        "bytes": 6242,
+        "requests": 54
+      },
+      "/linux/dist/guest-jit.js": {
+        "sha256": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+        "bytes": 26544,
+        "requests": 54
+      },
+      "/linux/dist/guest-gpu-owner.js": {
+        "sha256": "7f5ee4cc800d45288cf1f1bab0aab6b53e87b7e8d5e39616b0fea3bbc80e1fe7",
+        "bytes": 19219,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-wgpu.js": {
+        "sha256": "bc89607dd8c8da3357aae1b1e72a00f1b31e4e4243ff342689e8ce5dde7e41ea",
+        "bytes": 41304,
+        "requests": 1
+      },
+      "/linux/dist/guest-gl-remote.js": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-vk.js": {
+        "sha256": "e555dab252a3b2b0a56797767f8a2e61758bc1af40aed1b72b14334c9fc15e4b",
+        "bytes": 12470,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/host.mjs": {
+        "sha256": "25cfe516296351f7f7a86215f553fa56ca05bd1bc3c5470d899bcfd10b155851",
+        "bytes": 50563,
+        "requests": 1
+      },
+      "/linux/gputest.mjs": {
+        "sha256": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+        "bytes": 8892,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/readback-range.mjs": {
+        "sha256": "1b167fdb2c21371a81b2c49ce8bdebea0597d1f225857b59dfd81dcd84a6fc8e",
+        "bytes": 4247,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/index.mjs": {
+        "sha256": "94b9d44caa462493177d80d4ef08a1eb502c6c63c8f4d578a3dd4591e4dbe8a4",
+        "bytes": 3446,
+        "requests": 1
+      },
+      "/linux/gpu/glsl.wasm": {
+        "sha256": "5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5",
+        "bytes": 927118,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/worker.mjs": {
+        "sha256": "291f367210e9dda9f05a2f17beaebc14680f2bd2db33dde863d39b72f2f28ef9",
+        "bytes": 1127,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/abi.mjs": {
+        "sha256": "a2bb9c21f9aaeb1ebffe454c15a322dab93a3a0c0ecdb6e7f42785c6e9b454fe",
+        "bytes": 6654,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/renderer.mjs": {
+        "sha256": "1792ab4f50ec87d8a44f5a7c30e0c868095b0b8ccbabdd5cead8267bc11463f3",
+        "bytes": 47695,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "06ce3a3dc2f83c2ca1ad14211b50f1173e6581cc5822737c6595d202df6a8817",
+        "bytes": 87106,
+        "requests": 1
+      }
+    },
+    "result": {
+      "pass": true,
+      "checks": null,
+      "cases": null,
+      "errors": [],
+      "adapter": null,
+      "closed": null,
+      "configuration": {
+        "cpus": 3,
+        "memoryBytes": 1073741824,
+        "framebuffer": [
+          640,
+          480
+        ],
+        "backend": "webgl",
+        "guestPersistentHome": false
+      },
+      "package": {
+        "pass": true,
+        "testOnly": true,
+        "trace": true,
+        "archiveBytes": 41867716,
+        "archiveSha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "baseSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "binarySha256": "cc4a4c6c26d6469f3973af424b9f7cf3e6056127ee8f11e4920de368c90b8add",
+        "overlaySha256": "aaf7fb66a3f42939a7a9588ee204d3f44255b3d781c75674317051a55b306492",
+        "cmdline": "console=hvc0 rdinit=/gpt6-astra-vulkan-init",
+        "boundedSeconds": 6,
+        "xserverDeadlineSeconds": 40,
+        "scope": "Fresh guest Vulkan public acquire/render/present WSI smoke; not conformance or throughput comparison"
+      },
+      "ownerEvents": [
+        {
+          "kind": "owner-spawned",
+          "gen": 1
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 backend=webgl2 adapter={\"vendor\":\"WebKit\",\"description\":\"ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)\",\"wgpuBackend\":\"webgl2\"}"
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 closed commands=702 passes=170 draws=510"
+        },
+        {
+          "kind": "owner-dead",
+          "reason": 4,
+          "gen": 1
+        }
+      ],
+      "presentKinds": {
+        "request": 1,
+        "bitmap": 1,
+        "attached": 1,
+        "end": 1,
+        "reset": 1
+      },
+      "overlay": {
+        "frames": 1,
+        "shown": 1,
+        "dropped": 0,
+        "attached": 1,
+        "moves": 1
+      },
+      "exitStatus": 0,
+      "durationMs": 16446.364999949932
+    },
+    "nativeMarkers": [
+      "VKGEARS_START present=1 size=128x128 seconds=6",
+      "VKGEARS_GEOMETRY vertices=2640 gear1=0+1320 gear2=1320+660 gear3=1980+660 stride=24",
+      "VKGEARS_X11_OPEN display=:0 screen=640x480 window=128x128+480+48 depth=24 bpp=32 direct_rgb=1",
+      "VKGEARS_DEPTH format=126 render=128x128",
+      "VKGEARS_SWAPCHAIN images=2 mode=immediate extent=128x128",
+      "VKGEARS_READY device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" backend=webgl2 present=1 wsi=1 size=128x128 render=128x128",
+      "VKGEARS_FPS backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=24.636 frames=50 seconds=2.03 present=1 size=128x128 render=128x128",
+      "VKGEARS_PHASES_MS render=40.481 convert=0.000 put=0.000 sync=0.000 frames=50",
+      "VKGEARS_FPS backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=33.088 frames=67 seconds=2.02 present=1 size=128x128 render=128x128",
+      "VKGEARS_PHASES_MS render=30.006 convert=0.000 put=0.000 sync=0.000 frames=67",
+      "VKGEARS_DONE backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" frames=170 seconds=6.02 avg_fps=28.260 present=1 size=128x128 render=128x128 status=0 reason=seconds",
+      "GUEST_VK_WSI_LIVE swapchains=0 leaked=0",
+      "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+      "GUEST_VK_WSI_SURFACES live=0 leaked=0",
+      "GUEST_VK_CLOSE status=0"
+    ]
+  },
+  "sample": {
+    "bytes": 1371077,
+    "sha256": "cc4a4c6c26d6469f3973af424b9f7cf3e6056127ee8f11e4920de368c90b8add",
+    "binary": "/mnt/p3/codex-build/g3g/vulkan-wsi-build3/vkgears-wsi.wasm",
+    "sourceInputs": {
+      "guest-vulkan/build.py": "a6975620af67c5372b3f3023df63e32a1a9139308954049823f033a19a6e1e21",
+      "guest-vulkan/clear-test.inc": "511a83994dcf38b604d1e8717bce5bc787f4d094de06dc8bb812c7ac9337d934",
+      "guest-vulkan/color-range-policy.h": "97fefa401b4e2e8d433747aa79674435696a9a73b853882302f81af1b01d965c",
+      "guest-vulkan/compute.inc": "f93743225d1a1178b97ddc5f071b41a850ecd2fb69edd450719792a6f478b0ff",
+      "guest-vulkan/exhaustion-test.inc": "3a5cf10b024482994410057e859821d593e80d17eec042f9b257b8cbcf0bee66",
+      "guest-vulkan/gen-zink-stubs.py": "fcf8c571bfff038ddcf1031ddbd3257a1782b3cb89b1c7d98bb454197005b13c",
+      "guest-vulkan/graphics-commands.inc": "952403e14449636cdbe7a5427973ad0583e2f4f4390ea3e32405bd93a1e6f5c6",
+      "guest-vulkan/graphics.inc": "9a9791477af8e17da8b0977e67f2390409dd08c53c9e87457c9dfbedae0b424a",
+      "guest-vulkan/header-provenance.json": "a59c13745e44ab32b7b779beef5abec09bc650623381e8e115a41fc50e03da91",
+      "guest-vulkan/icd.c": "5d6f91596ee58c08556807b0f6827dc811eeca370031dd8389bff9b520bb0e83",
+      "guest-vulkan/icd.h": "9bbd918f8ebe855babbc998f00a435d0dc643cb79e6741451b7e76f33ef03a19",
+      "guest-vulkan/lifecycle.c": "50394ed1edbe1472b6df79be4219306c46656dbd14b723e924d2c84a6b84c818",
+      "guest-vulkan/package.py": "60342c5a127e01225c337866e5b49c22947bc13f73d67ed5a42c7f7e7da82575",
+      "guest-vulkan/primitive-assembly.h": "8323096376cfd3bfd9848090da778b03b81650445ef531afd392b8e5e56a7b92",
+      "guest-vulkan/stencil-policy.h": "a26d80ff33db68e28b8ada135d4042b18ac24991a5a0015df5121179add86383",
+      "guest-vulkan/storage.py": "5179af8725f6057aece4708bcefdec72bda8094def6883e048c5cfe483f4e3bf",
+      "guest-vulkan/texture.inc": "1575703b27598ab2118141a311a2d211a42508f02d729a128131d6653e75eaf1",
+      "guest-vulkan/transfer.inc": "2f5abb2ccdcad617d9e43e6eb60682df10f504e0a0ae28f916aa142a909f5991",
+      "guest-vulkan/uniform.inc": "9e327df14f6069cb91afef52ad5fa14a88d807f96957885a83f14d0276ecb6b7",
+      "guest-vulkan/wsi.inc": "83d0f8921b60ae9cd1eb887d234a15060fe2c138764abf2d91926c9e41271d0e",
+      "guest-vulkan/zink-ext.h": "25fc979f7f111ad60ed10b7ce84adbce176b43393222be12cc8d66c5008ac484",
+      "guest-vulkan/zink-stubs.inc": "aa2baac97dd6482a65f65838938f021cabcdbb4d8f04aa4ce8307df5eb218ba8",
+      "guest-vulkan/zink.inc": "9c42c06cc28dd049e6b89affda677210e2f18c060b50997edaca8fcd6b4d2461",
+      "guest-gpu/build.py": "603894eee8acdb604f98b7d9fcac6099edad3c9ce959f6cbb8bb9e3f741c4d08",
+      "guest-gpu/guest-gpu.c": "c45cc364e8d7d8df8349ce141a8361ca707aac34ac28e35337fa166be3e3d137",
+      "guest-gpu/guest-gpu.h": "f990f195885de667c67cb1842806c937cb4f1d717075baadfd21d9f652781f73",
+      "guest-gpu/package.py": "66de5be3355f10ae0f9ba1ddf5ed7fa3bf63fa940f63b2965af7b9a08bf902fb",
+      "guest-gpu/triangle.c": "11a009653416dd116b1cd153d18ced7cb01e38e8e8147f19e9ab14a2b5f7c585",
+      "guest-vulkan-loader/build.py": "2a08858f1debb46d848797ea0d0c250e47b55c7f02275b6e05bda44477700837",
+      "guest-vulkan-loader/client.c": "312016bad21c99d096da0ad81422b60ad91d21354c3118d4fdf2161a3cf88333",
+      "guest-vulkan-loader/fetch.py": "a44c211c66a6662c591dd4af6993e12af36494264bb3988fd5ceca2d4df7f2f5",
+      "guest-vulkan-loader/package.py": "0a36ff64fad76930a3a98476c4b6d179807f3415d231911e3af8e36ffb203cf5",
+      "guest-vulkan-loader/port.py": "2f6aa513dbcece0afa5e535a2a151364711a490373bcceef0c792141abdd9d84",
+      "guest-vulkan-loader/source-lock.json": "0014124c208f080c55597f7bf842fa5fe64c5a2b912b92b0f3f14ea84ff73ca4",
+      "guest-vulkan-loader/static-provider.inc": "a37554141a67655c4888749d61ab5f663156ceddade3c4430cf2368822c3ff2a",
+      "guest-vulkan-loader/storage.py": "9c276c295c9a4a17fe6d9f7ceff1e8ac81796437d235036c1f9e549f4f058558",
+      "guest-vulkan-loader/unknown-disabled.c": "e4353e12eeb472f3e5c581c26cfe4802a048b2374c14387cf98fc79b0bbb9cfb",
+      "vkgears/build.py": "604d98f4d3886790d24039d10dc496abc4c59a842db7a3feb3b91fe058646f0a",
+      "vkgears/vkgears.c": "2c258ef3da858199b39e6e70b53d8c8af605239831d6fb96f14daa9a57eeeba5"
+    },
+    "upstream": {
+      "loaderCommit": "61187c40845c92a80bcd2216089dd01badcda7ac",
+      "headersCommit": "98f440ce6868c94f5ec6e198cc1adda4760e8849",
+      "files": [
+        {
+          "group": "loader-source",
+          "path": "CMakeLists.txt",
+          "sha256": "c304141c6b98601b49399a2041a58620db82b069931997e35b8c40bdaa4261cd",
+          "bytes": 23115,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/CMakeLists.txt"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/CMakeLists.txt",
+          "sha256": "574f3296ac29b9f2f1710355fcdf7259b19c56366eb4b5d75ced29fe5d0017cb",
+          "bytes": 16210,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/CMakeLists.txt"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/loader.c",
+          "sha256": "2a83bcae69ac6dd2f8b20a76bac0acc49a4b5d50fbcab93dfb7d8d75fe92ba2f",
+          "bytes": 320315,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/loader.h",
+          "sha256": "4d51cd34d32a49e612a0838bc81847febbf1ac7d8fe549b9e4768f537233229d",
+          "bytes": 11016,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/vk_loader_platform.h",
+          "sha256": "f578d8b617bcdc69b2c23eb310319f6ad216b2407b1f57e9651f6fc11afafd44",
+          "bytes": 18455,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/vk_loader_platform.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/allocation.c",
+          "sha256": "62e9ba12f58a54d2dc15c9de8d869d74d9ccd82dcf76387a408dff3e7a7c72b2",
+          "bytes": 6743,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/allocation.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/cJSON.c",
+          "sha256": "a40032035ce4b767e7a839c5f158fec57291085e3b4e83a33525c1575c2ce13a",
+          "bytes": 39227,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/cJSON.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/debug_utils.c",
+          "sha256": "7bddf91f0cafb90d372729328b1371c331043f3d2b693a248bf6716b660bfee8",
+          "bytes": 31609,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/debug_utils.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/extension_manual.c",
+          "sha256": "ec8e7c35d76683a1a6f6839ef4e1ad83fff3a73e25d67a4606168e5ae9cd9532",
+          "bytes": 21288,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/extension_manual.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/get_environment.c",
+          "sha256": "6688339e9d68daa78c7f0d08a8e79900df477856d1a2100a47b3d2ccdc43f47a",
+          "bytes": 6466,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/get_environment.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/gpa_helper.c",
+          "sha256": "012a5fb578f998bd8162e918bfad80f3bcdb382f196b4d1f66e6d91157e37223",
+          "bytes": 20405,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/gpa_helper.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/log.c",
+          "sha256": "a152673e4825f062c7a3f407811cc6f2203e398f16ef3f4e1d261cbd8c943e22",
+          "bytes": 8445,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/log.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/terminator.c",
+          "sha256": "6c5a659c1fa23a473aff0286b0a4321be346ea6ba9ceaaa531b2d74a0359fc5a",
+          "bytes": 37248,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/terminator.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/trampoline.c",
+          "sha256": "a6f495f87f980087e2269e19f6d11f20129ee13a1d7453c62a1410302832bc00",
+          "bytes": 178033,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/trampoline.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/unknown_function_handling.c",
+          "sha256": "5d43fd133cf9657e7d160726923c7af62a56e79d7a95280f57162f1ecf65064c",
+          "bytes": 16536,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_function_handling.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/wsi.c",
+          "sha256": "8918e84d16827adfe2b08cdc86b375cf9586275a67d6219a4abb76d8010c1cfd",
+          "bytes": 161472,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/wsi.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/loader_linux.c",
+          "sha256": "50e4f9dfecae0083fba9ed4298f8e3ca79931ddc3bc35e28ab2c15e20b260eba",
+          "bytes": 22313,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_linux.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/dev_ext_trampoline.c",
+          "sha256": "7080a79242330856ca817c772d28b07cb15602c6c2b697e123efe87f7cf3b7b4",
+          "bytes": 21919,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/dev_ext_trampoline.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/phys_dev_ext.c",
+          "sha256": "bfb320d5a2e19106dae75779c0ab33e2b783b79589c13bac0e04c2ef3f9f6c0b",
+          "bytes": 50865,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/phys_dev_ext.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/unknown_ext_chain.c",
+          "sha256": "8b8b1da8ef5a57f7b73b51fd5e75ed44e26a1f3bff966006695c2799d34be055",
+          "bytes": 18611,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_ext_chain.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/allocation.h",
+          "sha256": "77e5f1f385e25acac58e32c7160a2165fe4496c5f314e220e0076dd18d3eacef",
+          "bytes": 3824,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/allocation.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/cJSON.h",
+          "sha256": "ce9f228d587509e4ae865d8d849def04e3544ddb0460224a9c7c9a38a69bb41c",
+          "bytes": 7545,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/cJSON.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/debug_utils.h",
+          "sha256": "e75adf408e9cf5fd0be750ea0129e2d8c3dedd06b0ba382e8cdc3fdaed86d998",
+          "bytes": 5441,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/debug_utils.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/get_environment.h",
+          "sha256": "adcbda1033815422829d880cfcd28c731b5cd3c34fd6738273087b025cbff530",
+          "bytes": 1606,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/get_environment.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/gpa_helper.h",
+          "sha256": "15406eff38578cf009177b94a5359842f22cca368262dbbca6ce81764dd6f260",
+          "bytes": 1018,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/gpa_helper.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/log.h",
+          "sha256": "0f2abbb683c3391d6a9c0d36acf03a65f0758ea152fa67aa833416c6ee6188ac",
+          "bytes": 1955,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/log.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/unknown_function_handling.h",
+          "sha256": "381d031f98f978cd47dc086a8da05730b2a7c3407cff2f4002e6e203bcac856e",
+          "bytes": 1528,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/unknown_function_handling.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/wsi.h",
+          "sha256": "7dac31eea296808c7c732fb0523cb27a50b4dab874ad3ec233bad132ebae8b84",
+          "bytes": 16987,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/wsi.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/loader_linux.h",
+          "sha256": "4c04f48ef8fd4598633ce7fc96f5e6f0cfb4a5d4c8e52d9349ea9e99f8a0e624",
+          "bytes": 1531,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_linux.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/loader_common.h",
+          "sha256": "faf99a47b8626e21e3058c27d3e9fd9c0a16b1c8de02907bd94553ae79686892",
+          "bytes": 16100,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/loader_common.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/stack_allocation.h",
+          "sha256": "42cd49d7fe2e45703338df4a424537727f99d9355ecf2eb1be58af5aa3becaf9",
+          "bytes": 1474,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/stack_allocation.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/generated/vk_loader_extensions.c",
+          "sha256": "ccbd8e8f3fb3c083194c38e3aa7af05d57e418953d2852c67eb383a0bde6dea9",
+          "bytes": 535609,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_loader_extensions.c"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/generated/loader_generated_header_version.cmake",
+          "sha256": "0f30c8a0877a00a8385c8d3a48aa10ddb36ffb14852ffef921fc6419a590a1dd",
+          "bytes": 1055,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/loader_generated_header_version.cmake"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/extension_manual.h",
+          "sha256": "fa052846756d397480d0037344599fb987e4ed175be4ca3aed8d1be8d55df85a",
+          "bytes": 5387,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/extension_manual.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/vk_loader_layer.h",
+          "sha256": "e45b1577bd034e821ffc46f912c71f98928af9dcc471dc7ebef19a81c31d1d6f",
+          "bytes": 1631,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/vk_loader_layer.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/generated/vk_layer_dispatch_table.h",
+          "sha256": "e0e2c1ca61fd4fb120c140362bdca8cf2b88a958ecf537221537c9d01e16fb34",
+          "bytes": 52385,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_layer_dispatch_table.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/generated/vk_loader_extensions.h",
+          "sha256": "d4379a8ac3635afcc417b0797b961d7bfdf870f419b1c139167e20a4a033f4d5",
+          "bytes": 26531,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_loader_extensions.h"
+        },
+        {
+          "group": "loader-source",
+          "path": "loader/generated/vk_object_types.h",
+          "sha256": "21a11d48fa9d27f151ead0e2860e0121ddafd49a90ff176a109a8c04d96962c0",
+          "bytes": 24316,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Loader/61187c40845c92a80bcd2216089dd01badcda7ac/loader/generated/vk_object_types.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vk_sdk_platform.h",
+          "sha256": "a4fce20b4c86dedc9e2c5f1796c42b9ee5a1f29b528a6b481cb60ae7a523db31",
+          "bytes": 1913,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_sdk_platform.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vk_layer.h",
+          "sha256": "5cb6ca5adb5ed3f260d01a1320580962371b768c61fc625dd69e3922949a5299",
+          "bytes": 7878,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_layer.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vk_platform.h",
+          "sha256": "6103e0dd164567caaf887a18ea0f8c267e227ad4afaf94437bd9919b8d50d050",
+          "bytes": 2828,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_platform.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vulkan.h",
+          "sha256": "3271c3f271bcef2efe7543a36e44034527d321fafbcb5aaaeb076f6862ce98b0",
+          "bytes": 1449,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vulkan_core.h",
+          "sha256": "e1e9f44f50badaba436bd5d48be7c98b905133fec12c2a422b759044e40a846a",
+          "bytes": 805447,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_core.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vk_icd.h",
+          "sha256": "63000862162527b85a2c8b339e469d46725b40f8ca2e09c853643a27322752dc",
+          "bytes": 7980,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vk_icd.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vulkan_beta.h",
+          "sha256": "4705b3b81c193682253cbae3f58bd3b8f1cebcac779758ac04bd385b76e144f2",
+          "bytes": 49271,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_beta.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h264std.h",
+          "sha256": "4f1df89f0d1a580348270c56ab2f67884d34607fb8e213c7f739c2fb20eff4f4",
+          "bytes": 13700,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h264std_encode.h",
+          "sha256": "57f020e7eedaeddad5f446cafd80832ed96e6b0ac4713b97c41dbfddd4d1edf7",
+          "bytes": 6015,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std_encode.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h265std.h",
+          "sha256": "321e15b0ced4e5e89ba7eb3f343b9472ee52c792e61564750381e56945f257af",
+          "bytes": 23243,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h265std_encode.h",
+          "sha256": "b4caedbaca04fa70712369bc0a00a231d22a56e385f11039c72386b83e60f54a",
+          "bytes": 7143,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std_encode.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h264std_decode.h",
+          "sha256": "87455be954d747f70b258d46297caa83b860fefb9d94408332fd8caaa59ab871",
+          "bytes": 2718,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h264std_decode.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vk_video/vulkan_video_codec_h265std_decode.h",
+          "sha256": "9700a1607532c1f7d807d18688afb4e717433251882f6b34addeb2ae3688db94",
+          "bytes": 2424,
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vk_video/vulkan_video_codec_h265std_decode.h"
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vulkan_xlib.h",
+          "sha256": "e2efd24ada4479131f932dea1cd2f4dad9b3aad44aae60330fde9679a70f3d52",
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_xlib.h",
+          "bytes": 1784
+        },
+        {
+          "group": "headers-source",
+          "path": "include/vulkan/vulkan_xcb.h",
+          "sha256": "972d6d7f2ff66bc3d8f627bd66cffcc75ba9fb1d16a7acec7fd9d93dd85c243c",
+          "url": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/98f440ce6868c94f5ec6e198cc1adda4760e8849/include/vulkan/vulkan_xcb.h",
+          "bytes": 1804
+        }
+      ],
+      "seconds": 30.071816205978394
+    },
+    "x11Inputs": {
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xlib-xcb.h": "8682b048aa73c7448845b90b92de2cda848c09348a9c9342b5fe7ea15d37152b",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xlib.h": "7430c535c4e2b0a31d002d5f9d8f21c6b9f7232e9aad2e297662b90c2591f64d",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/XKBlib.h": "cbe504dea1d417d4998337f094cf195b839d3f2f8fe5db0e2a1e348aed9abd41",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xresource.h": "b752bc271822119a3cdea3227d2567c30a433bbaa8e34a9342c6207e6f2cbb68",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xlocale.h": "495af37793404fc1f8e6635e851f9084acbe19a0c84cb1bbfcb76c626a0c578e",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/XlibConf.h": "2456e8ad48c1f0efe1e95432fe86f1dabbde89a6b0b1fd1c526ebb44c1a31b81",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xutil.h": "cb4d55a41d9fa470f780d747b65ef6ef1df28f79334b5d2ed9c1b673a41708e4",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/ImUtil.h": "6bca9278c649cf1c3613f0f71842c18961db5630b7cc3289c27ed9a1985dc452",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xregion.h": "a99673530fb4f7d063b4acb03be8acdb79e11eb9d2e37cc310788f32a292c7c2",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xcms.h": "d9befc6d194ee322c3dec61649c94130b44a725dd000f089b2721447541eb04d",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/cursorfont.h": "aaf570a10ee79c3ab9df5c5b611d98d1c08dd7c6584e4491b03bc802c05a1a77",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/Xlibint.h": "a43a3031ec6ae9da153c061fabe3b816a97785f0fd372a06ac92e78f7a56cb86",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include/X11/extensions/XKBgeom.h": "420d8335306aad84fde239eba310e7da5ffaecb572111ce78e42736fba77828f",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/GL/glxint.h": "3dcd6b79b13cc985e513e28e3369bc9e068dc4c6367d4b090a1193f35b5f0baa",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/GL/glxproto.h": "89ffdb6a325e33cee77686e44d2c6a13e419af8cf1c417690e907b5dd0a094a4",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/GL/glxmd.h": "2bb5fe1a31ad2389b33129831c616c3a496b9f85ec3a5afedd6e740aa8d19097",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/GL/glxtokens.h": "8c86b8b9d24ea06d7563012c8099971aa9d4e3db37930abede5dddb294c0d8a9",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xos_r.h": "43bbccf037dfad389ef742c382725c05235ccae31c3142591b78fe4622de966b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xfuncproto.h": "e3459a7b7ea05634666daabd0fb37351c3cb0090df5aa8fea3d4b92281c42c60",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xprotostr.h": "f3ea6f07d8f7e740da7dadab37d0ef8f6101658e52efab871460a1abc883c292",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/keysym.h": "1a6abb208e617e38ee069f8b014518c3c2815f6a4e46e0fb384a7bfff64405c4",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xos.h": "c7ecf4e4648478b00d031bc5aca9cc595dd9b5b85653cee1a763536a23e8da3b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xthreads.h": "1d1f3d598e0066d2e7efe133a8568d34fd670730bc9f1eb8dd9f5094ded4b6a9",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xatom.h": "4da0ace354f86d5ad38fd24b4bcdb2e28e17432e0637c3eb25ecddb444f89486",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/XF86keysym.h": "d0bbb8c30541e1b85c05af25551d40e82ea9f6166ca367f5330bf9ce760fe97e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/X.h": "3f3ce079a71d26784ea298a75a29fb8add6f0f409cf36850bea7d428fdb1a9fb",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/DECkeysym.h": "9610df489e4dc4082ab74b0b5007309fb1ed7286e47634f039272bbf4a99b720",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xarch.h": "e5d6c520a7f79d69e183f96a1450d6f21063c7298662265b93a404dac3981145",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/HPkeysym.h": "cd157ef21f5bd6833f4b82937de93504fecc1e368ded3e4a908244817b785ea5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/keysymdef.h": "4ba0724695c817a08b4ea3a79c5e8a52e0798cc8d5906281b10f89dc6225208d",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xfuncs.h": "f2d087fb703bcd883bca0f53b2c6896004d9a78cf35e43f4305b7c1f53cc27c7",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xw32defs.h": "aea48b3eb9f3195863f5286b4c7b790f57651b87bdaac58e159a16cce000a3fc",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xpoll.h": "5a2033e35f6b02df2b2eb654685667bdc50589518774b59e4c3d1f6d0311cff4",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/XWDFile.h": "8383b2a444394f6748d0c3c770880acedb015357222040bbcb28791b6b309a7f",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/ap_keysym.h": "0959cf896b2aadb430b83a6a28668f6253ccb1533cbb2a594bb08d52a86d2d85",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xwindows.h": "f325abc2e6e77e3a747bc89c45d5dbb4b8ba6c473793a6aa0bd28dddc64d327b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Sunkeysym.h": "eb20cdc24a3fb9d8f43d18e50615ed44fc37006d704a42a4da1d2a7c2cfeb035",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xalloca.h": "7fc35f8e17d6e342bd0cf07284e08c0216c66ee45affc8aa935570e142bfdc54",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xmd.h": "f9a844b749286102b9f5acb8d0ff62fad3a697f9b5d39f1a525ea087865a13be",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xosdefs.h": "cab0a2d64c7d75dcc07718bbd07a6046be254cd9150fb810c1134ab551532b5b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xwinsock.h": "8b782cf21f6b1cc1f0b190a73061144c75a1ce5519ffa46302e291d87a83f212",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xproto.h": "ae2c275f8b7bf4705ef993b50a34ce7418fbbc4789bcb841237116b7c0271c82",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/Xdefs.h": "33aeef747e6b1fac465abca1f2c4d233cef2adbad7271f755ba92fe564bf2207",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/GL/internal/glcore.h": "3b715ad3957914f560a23fa31cfc835676ba65fb4ea62b36f7030cda7a41dbfa",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shmproto.h": "f4f57a83fb76630c3353436ef45697951b98f44a6a584ab0580b98b1d7d65f5c",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xcmiscstr.h": "57d1c363ab65868094f6d27d81d7e2aeab57f2442abd9bec9003c3025ebaef11",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dgastr.h": "ab0a295adf7cd4291bd3be78114fa20834063144bf966cf09373797ae8a1cbc0",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/mitmiscproto.h": "6a96defa0e524702d3a2b82f4e83758ebf1d49b50cab19ab48092ea77c9b41b9",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xcmiscproto.h": "379daae208ad4ce1aca4063bf4a00207b5da74c128ba10437c07ed06f0c94127",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dri2proto.h": "6ea4a4ec24777e9d56b7033aac475a850619704a18493104eb894c1c4e340322",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dpmsconst.h": "90e503d50d8bf9a7b4ab4f59557f1aa533c38670f4ea6a6b8f7795b350fc53be",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shmstr.h": "574babc1d2c5d10c2d0b96b60266d783cf29941808d17701728dd3015896e159",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86bigfstr.h": "2ea0f6a31a4a885728da10660e2192439edf0c6e158248466e7507b716820681",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XKBproto.h": "8e63ddc0011cff9f473a51c3423febf4788a9563f3f384c826db1186723e5e74",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xfixeswire.h": "83ad3d3fe09e5bfd723f73b3038a0de671f6c0d526a6d95c7dba576df0918a39",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dga1str.h": "7a43d28c46fde05e8544c31a76fe1b2b7f6e268ba99b91d4d2cd7edf7f412823",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shapeproto.h": "284ff667072c0e69f78787adc8b103de04ba0cfc0ff47c33e459b93e61dbf884",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/securproto.h": "61eb0a9b69254e116a94344f81fba183262013f0a28d9ccae9c0c14700f0e280",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/applewmproto.h": "c47efc1e4ae60c30dd144fb2dd51b4a18231ea71bf90edd36455851483a77436",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/saver.h": "9536761cd417a944c7e8bf1c86adf7b49747dfe4fea0d10f7a0d7966e5e69658",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XKBstr.h": "37e7f96d1c6baa97fe7a3fde4c0de4685b886ad2b83aec252218cc757c3da46c",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/multibufconst.h": "0673f0f1e98f5a1221d26b6dddce42d774dc54533fdf3f474af1faae97e5d708",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/lbxproto.h": "5cb30949b8c2488d13b0fcc80b9e6f276475e54d7c53d92a410a94b24fa781f6",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dgaproto.h": "a5a9f6dfa25ceba4c16725e4947e7d9477f1fb81c9d8a15d6321fdb9e9f8f1f5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/agproto.h": "ee57f6bbb34865f14733196f4f45de87943564e947925c47af3dbd9b141664f9",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shm.h": "7698fc62925c431a769eb71807e3ecfcd2686b1d010fb65c124e55483cc617b4",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xtestext1const.h": "087021647a7f93be9f780b531e29221a9885d191f878138fcc2cbb6563b08b40",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/cup.h": "222ea6974547ca941a73ef80f33b87eea6e8f8f2326889ad86774009c50a887d",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/render.h": "68d86876464cfe3137b980d033d742e73e38f477eeaab8bb3d2830864cc424ca",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XI2proto.h": "b419ceee6265f5e1b31ae4f09ad611c27dfc350be7daee0b16d9eb3fc69b62a5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/recordstr.h": "5c503dc572b8ff89c9f7734175db253af35d3b70da7ff3a1592ddd2e095846cb",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shapeconst.h": "41e65d51df6976c3a3a2650052043de9080830b9519aa1d8f7fde073d831ffa6",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/shapestr.h": "a2cb83fc43b2d4b4a27571061ab600889e75ca9d8759893bb24c22accd12d45f",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XKB.h": "fe1ad789175ca423f5ba8a9797853b076d9fe887c93912ec59dd371ea8ab78bd",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86vmproto.h": "b86a00b97241ddf4b827c298d3165afb63de06d54829d4212fc8192f11b890cc",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/presenttokens.h": "bf885155fe280d44e9ce8a987f3b9f907f1a5515b98a35e89ebeaa3cd7599ea6",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dmxproto.h": "d0d98a46a4c6ac933cfaf399187553f220cd85c2ccf90f915efdd31437cfb5ac",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/recordproto.h": "1572d360f49327192887869a5ca5532a0841b69d45a970c0b7fb73b8f0ed8168",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/syncproto.h": "e1e5169e4c82cd186ccc55004106cbebf1bc8216a655198849116be227e883f7",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/applewmconst.h": "c0f42e2e231bc5e6a2a97dc277e4cc3e3ee2925669050a47005e189bd4fa5754",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/Xvproto.h": "d05fe6fbf2545804911be29b2dbac60065d2c23e7156d962a17c9c58787a478c",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/Xv.h": "c7918121196caf28257d441bfd53a8d7a63cf6002f840f991a195d98de72b13c",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dbe.h": "fccc5aad978437552fefdc8f17cf4634dc6795b202bbc511ae30385f4d975a60",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dga.h": "af912f0989ba2a8f6900b34c7b80853a9efbbd57e8e7fc7d52c13c71b90bf487",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/ge.h": "eebf3ac0a163aa23e2f9e75864639eae276d8d71516840b5b3458cf3414ccfed",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XvMC.h": "aa0c708ce394aedb18f72f6382ff7bd08734e25eace1a52f778cec5cf6aa5420",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xtestproto.h": "8fb8a7075f991e292346dd837f5abc243cbe0160a2c16b8f8227151483562059",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dri2tokens.h": "8d0522d35d28259bdb099fba9e5351e94f46fee1f0a5fda640aab5037012a37e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/multibufproto.h": "6d7d0af5207799874ba8df995a2d1fe9740bc519d996a3eca78c6ab8b90f28ec",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/mitmiscconst.h": "51a1ce94842dbd1d1804787d2b08497c66b0ab0823d8ccad18eab82b0b5031eb",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xtestconst.h": "52735cf666baf73492e71c40f9a509156c9e3b4344a63fef39f5889db984d984",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/composite.h": "4ae957edf4cbc648f6c3d79985b5990f1f8b59baea8c0925ce87e824b994efb6",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dga1const.h": "f4fe2d2c79b4a40760b6977b3233aac364f63820446d09cfbe8a289073921ed4",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XKBsrv.h": "3647e1913b8a5611db225b0d2999e293b7b3bc9029c13ab53e5c5ad150e2d19f",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XI2.h": "a9533c6407ebadb3871911abde60a33c8e04fd4fa6ee0d94cb46dba9d897cd46",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/randrproto.h": "1958398c76e9c6a52e6c039749921c36388deb6c3ccd9e9e6f0aa6fc451469f5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/randr.h": "cf25cc300807b0728ac1880f221f57a6f94c2757cf890eacf5e8c59bac729bf8",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XResproto.h": "7ebe2398f4eed157e0de1dcce51ebddad81c50b06137b18b5389fb594bee7ab3",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/renderproto.h": "b69c9a5e0b0a691ded3757d2fc39b84ed8acfda159070b92e7014d9459a4c45a",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XvMCproto.h": "15cb788db04696fe14f7c51b030df695d7f6ae72f907477a2b6c38ea3fb85656",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dmx.h": "0c7a2b2fad12ce2a2e4cbc5abbb3352bb818c474c9ae2293f3111d277d26a2c5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/recordconst.h": "a3f004dca681551fa9d1f2941b857b2b6705aab45b62a81c46d4934971fad8af",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/syncstr.h": "e52b25a54eeb192ef452ceece0038b2056a63c06d3158f03b1adec6217653a28",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dga1proto.h": "0ba9065e24a625d904817ab5327ad97594ab0ebbed00a210afd7f49de1fc5586",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/lbx.h": "92a918d6978fcc31a277c35d977a7fe8160897c592962df84a4023f523e9c06f",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86dgaconst.h": "9ef9c5908ecc39e1167f8f05351395cf4f9993ade3622b120ae0b06691c38c1e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/bigreqsproto.h": "161ccbc4c6edb751b4f0c59155e194e719d29a3543e157159c065a9988feccd0",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/geproto.h": "b831b2d821249670d8ed60a05f9f0dd85caa2c2ef101dbb6989bca5ea7ad02f1",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/ag.h": "2026eaa8774cce32108f7c785eaa4503c7fddc65451b91de21b299079f077e34",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dri3proto.h": "9c30e8b62204677c4eb1c2babeb776fede9a6b35966f5750ef9d6f55f92ce66b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/bigreqstr.h": "a01646c7ce3d2ca4f93a1393cb730c755399966bf74585c7b889b4b67c7be7b5",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86vmstr.h": "1c03a84d3f615c57b3b8ebbf028354ea5714c8f305ee51ac6478b406e4aba7bc",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/presentproto.h": "2a96502bcd195831be9f625275f3c83c3f02ea318721b2f3e9a49fc87e22fd5e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dpmsproto.h": "e1739aec5af2d719319cfcec31fcfc83bcd5fe6eae344c225a2237ff63fb1d76",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/EVI.h": "44df84d26993330980047b643ced1ff0fa22ebe7f165b98d33eb0d7e831119a6",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xwaylandproto.h": "006374cc83aec12bf77057376d6c691b427c09ca1c361a5fae8da8f794f95627",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/secur.h": "6ea2702a7a3f83bc5c9e9b8250142b2765e80850cd7863d060b2b2a04e33bdc8",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86vm.h": "7fc9762fa61735daffb69833b91bd031486aa375cc8eb2a02c3978ad81ccd327",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XI.h": "c456e8e0f6a03f7f5bf505d7626791f97856db7edc42fa806876b63356e0e272",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/damagewire.h": "d25fc9e418c6a90dbf9c6d70df42e027fbabc2ee34412ce93fb68cedeede18b9",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/damageproto.h": "851fbfa9105d39a4cc28f3b357f7a8112ab3e245fc702a69d80f5ad62610bc3c",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xtestext1proto.h": "43d9e5e32b532bddc9e0c5fc2ba5c55404f5b35ca14f4e905e008fa61d8d5112",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/EVIproto.h": "c4840aea1b12c0a0cc0c9bd393c80f5096e69132fe827f0210a0b77c966ce013",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/saverproto.h": "0e69e246eb004163c8c5db7bb52697614d1a4fae6d33fe7e8ae9e1cf0e08a27e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/XIproto.h": "32852fe9a4dfe74f84fd5573bd3342180dd74a4464e2d99950f4977e7d57eb90",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/cupproto.h": "39a8b0c8012991e73e7296b0144dd2b438696bb333714a555990c67494188c1e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/panoramiXproto.h": "95ddf60b563ca29aa12a213de8b02f030a45266318acdd26ad933955f2482eaf",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xfixesproto.h": "1f49db640e00e73185ee0fbeac337729f8723008dd3bf6c41a891b1ced3b593b",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/compositeproto.h": "50d751cd8d8dcf78ed6f8ee795f1701e29d57a4e8db734617d9c0704e4e9a973",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/dbeproto.h": "eea867f4ed3b7c1fb8b092989c835125333f68b628ddfbbfa120cef60a99e502",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86bigfont.h": "cf37ed3052f7eb7063390d3d279cbe2b68cc7d61bc5eec540fdfc502a9abef7e",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/xf86bigfproto.h": "266b83b83286049f31e9722c3ddc35ba24055b79b2e99583bc13c014a6cb18d8",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/extensions/syncconst.h": "d1fe4e40fe978867730ec3ae0b799d94868256178fc358232ffed26cf7f22717",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/fsmasks.h": "0db16266f62d0c74f7fa344b99b9c155a3886f6f411f4d410e8ef0f09e2e5abf",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/fontproto.h": "1560309501298e0a4279ba942069349be0f0dadebe25943a1abcec4563dd25cb",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/FS.h": "a939fe23e62fffb130759d91cdccdaefaa8eb15597b07fd04578bd6d527f8149",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/FSproto.h": "5138b931490addeb40fc3876bdfda1f62f7345c2838ce9c46d6f9a0b0e61bc7d",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/fontstruct.h": "9aa84499496ef26316b84bccfa6d91453f1a466b7ff9163241ec9dbad43137bb",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/fonts/font.h": "42b2166ad9a03d7bbf29c0e5e6193cdbf83d578ff5fa1b36fa09092d242e35b8",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/dri/xf86dri.h": "d2e8a5ad7a99f6fcb2afa21b367532ed1bfb6afd765ae443d14c7be63b090141",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/dri/xf86dristr.h": "57580e9cbcd6ff7d73a086bc53efb861b7e196cb3d636a9f6e4939ae566c2417",
+      "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include/X11/dri/xf86driproto.h": "847e039fd2b38731fd78b7a7afc96286209ce2b137b756f526a25412e4d58ecf",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/res.h": "4a8e3e6d31ed3315a82c97428e791757a508daea7ae2f3ddc629a7e418bb381d",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/bigreq.h": "bbc4c19af6fca3cf9bf284ca97457712e6c44f3532d9935eb2fbca59e27d3a25",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/dri3.h": "825f1ffd6eaaee9db2585f10982689ffa4f265bd04a7765e58c13c5458c9b719",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/shape.h": "cde14f4e8d82d1183054c30fb8176d7740e34c662eaa47f73924de2329b31e90",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/damage.h": "2559f45c771fd82eb20f67b788e258deadd6613af341b91510dd584606577896",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/dpms.h": "aa3d525123e0b1978aa5b6a1787a0ed09e6cae7c27945ded40c36b294a688d60",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xtest.h": "9864ef03fc9f77e5bcf737aefc98b446af1f1c27c540aedd8ef68cc49b9bfe3d",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/shm.h": "a95ebf5a7d7c84951678b5fe7f48e4b8e9343901190a375a19bd3db69599da7a",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/present.h": "67c7909705a210cd04966ca751599e1e6645b92bc614e5e8b6ecd5a69b4caab6",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/render.h": "e5f76a9183896af58921da80be3dbe6ac33ff549009f41e125fdadf57f418126",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/record.h": "717bffacab552ba6ead0b4e077bdc2845bb00a84468c018fb11679e1e4b16133",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/glx.h": "99924e8abe6daa54f6e13cbf6e059ae116dabf862576309fdf6ec7fc7801ecc0",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xinerama.h": "7d09cb8b743f8a92e206816c464393fdd42ce032fd73e90b7a3fe92233aedfa8",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/dbe.h": "5584a5179b7b274f89ac02bac9db457351da3945f200b8287aec7dd40980003f",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/ge.h": "43415614975435d3ce9385534d12c33c384a8bd3c8de775a8a8c9eb6fb7a428f",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xselinux.h": "448c417a42ba653941c67779cab38941202d2494668e0fe0cbf698c4e83451f8",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xinput.h": "ece203736670ed2a9f2f47e9931aa9175c1165fec0a9d8a0f23b8bf788d67ecd",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xkb.h": "91583e0ccc11c7e017cfb48d2b9faa7a6cad556491934087c9f055306da8d55d",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xevie.h": "0f23f3be2239688249e1abc61005a761e0ad2e22810ae05a07ecf75af915106e",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/sync.h": "31b26960aa01aad3abd55d772ea645878ded314238b2378c0a3b5ba069f3781a",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/composite.h": "ca519efcf513541ae516b95b38c9f04b46da82a56fd65e713965a6e9bfb947fb",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xv.h": "5e612c45d1bda49c4fda8b5d87c97bae9f5988421af3400444843f38fe3d2dd9",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xfixes.h": "2c0608c444293f064ecfd385f8e0fd4235a3d09c7397a11970eae4fc96f8aff8",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/randr.h": "910646163feeb1695d6f2e0b5bc49fe9fe9d80f815064c2fb10059a56b6b6bfc",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xproto.h": "6f45223c52dc24621e7b307b26d39e4d7c884dc08900be619361e076fcac40ec",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xprint.h": "08dfb8dec1d5461c5478f1b2f7cd23b92e4f1cb25100d45355069b002080dc2d",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xc_misc.h": "489f7db5d4d8d92ffe70fdcca0a8f5773ad5f4c9a7531383c85dad4d6f1afe9d",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/screensaver.h": "0c5537a8af3be2686cb5b7a24423727bb724ebe1567ea7925ae66592d26d6ed8",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xf86dri.h": "4b373191f3f9514dfd21a677ecc89b8044e6c169a8bcac1c9257eeaf64f7a4dc",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xcb.h": "70218365dcfd8b2e9202b145e9bafbaba042872eae046888680bf58c38cf30e6",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/dri2.h": "30b96a825b28e11e65f1529a3986d241c5cde298be0b224315d96a4d14cfac03",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xvmc.h": "5c85ffb29d0bf2eebaa6e66bcd003a8b72c023e6be003a99c9c0d16d6c9baadd",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include/xcb/xcbext.h": "b101d53f1bed75e659e7469f0b7a3eb213bf1cf228f821580c7020b8e70be647",
+      "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11.a": "d6bf79c42ae5211c1cef4545eae45657c03859bb22fba43f8db827e6e7747359",
+      "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb.a": "9d07d4705501e80b9e59817c5cb036cb467af3ba2fc50784233801a909b68a5d",
+      "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/libXau.a": "c7a81d9dc7303694fd23b7fdb9d0e9f853e1680a0a6c1701ad43822f7226a6f5"
+    },
+    "publicSymbols": [
+      "vkAcquireNextImageKHR",
+      "vkAllocateCommandBuffers",
+      "vkAllocateDescriptorSets",
+      "vkAllocateMemory",
+      "vkBeginCommandBuffer",
+      "vkBindBufferMemory",
+      "vkBindImageMemory",
+      "vkCmdBeginRenderPass",
+      "vkCmdBindDescriptorSets",
+      "vkCmdBindPipeline",
+      "vkCmdBindVertexBuffers",
+      "vkCmdCopyImageToBuffer",
+      "vkCmdDraw",
+      "vkCmdEndRenderPass",
+      "vkCmdPipelineBarrier",
+      "vkCreateBuffer",
+      "vkCreateCommandPool",
+      "vkCreateDescriptorPool",
+      "vkCreateDescriptorSetLayout",
+      "vkCreateDevice",
+      "vkCreateFramebuffer",
+      "vkCreateGraphicsPipelines",
+      "vkCreateImage",
+      "vkCreateImageView",
+      "vkCreateInstance",
+      "vkCreatePipelineLayout",
+      "vkCreateRenderPass",
+      "vkCreateSemaphore",
+      "vkCreateShaderModule",
+      "vkCreateSwapchainKHR",
+      "vkCreateXlibSurfaceKHR",
+      "vkDestroyBuffer",
+      "vkDestroyCommandPool",
+      "vkDestroyDescriptorPool",
+      "vkDestroyDescriptorSetLayout",
+      "vkDestroyDevice",
+      "vkDestroyFramebuffer",
+      "vkDestroyImage",
+      "vkDestroyImageView",
+      "vkDestroyInstance",
+      "vkDestroyPipeline",
+      "vkDestroyPipelineLayout",
+      "vkDestroyRenderPass",
+      "vkDestroySemaphore",
+      "vkDestroyShaderModule",
+      "vkDestroySurfaceKHR",
+      "vkDestroySwapchainKHR",
+      "vkDeviceWaitIdle",
+      "vkEndCommandBuffer",
+      "vkEnumeratePhysicalDevices",
+      "vkFreeCommandBuffers",
+      "vkFreeMemory",
+      "vkGetBufferMemoryRequirements",
+      "vkGetDeviceQueue",
+      "vkGetImageMemoryRequirements",
+      "vkGetPhysicalDeviceImageFormatProperties",
+      "vkGetPhysicalDeviceProperties",
+      "vkGetPhysicalDeviceSurfaceCapabilitiesKHR",
+      "vkGetPhysicalDeviceSurfacePresentModesKHR",
+      "vkGetPhysicalDeviceSurfaceSupportKHR",
+      "vkGetSwapchainImagesKHR",
+      "vkMapMemory",
+      "vkQueuePresentKHR",
+      "vkQueueSubmit",
+      "vkQueueWaitIdle",
+      "vkResetCommandBuffer",
+      "vkUnmapMemory",
+      "vkUpdateDescriptorSets"
+    ],
+    "imports": [
+      "env.memory",
+      "linux.syscall",
+      "linux.get_thread_area",
+      "linux.copy_siginfo"
+    ]
+  },
+  "timing": {
+    "vulkan-fetch1": {
+      "started_unix": 1793696172.01182,
+      "ended_unix": 1793696203.4616764,
+      "duration_s": 31.45,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 31576064,
+      "resource_samples": 32,
+      "remaining": []
+    },
+    "vulkan-build1": {
+      "started_unix": 1793697644.5160317,
+      "ended_unix": 1793697652.9428515,
+      "duration_s": 8.427,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 140005376,
+      "resource_samples": 9,
+      "remaining": []
+    },
+    "vulkan-build2": {
+      "started_unix": 1793697724.1527746,
+      "ended_unix": 1793697732.5834944,
+      "duration_s": 8.431,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 122568704,
+      "resource_samples": 9,
+      "remaining": []
+    },
+    "vulkan-build3": {
+      "started_unix": 1793697788.8988152,
+      "ended_unix": 1793697801.3480277,
+      "duration_s": 12.449,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 129794048,
+      "resource_samples": 13,
+      "remaining": []
+    },
+    "vulkan-zink-compile1": {
+      "started_unix": 1793699283.1351132,
+      "ended_unix": 1793699303.6956441,
+      "duration_s": 20.561,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 228548608,
+      "resource_samples": 21,
+      "remaining": []
+    },
+    "presentation-fixture-build1": {
+      "started_unix": 1793699064.0515983,
+      "ended_unix": 1793699065.4580724,
+      "duration_s": 1.406,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 5976064,
+      "resource_samples": 2,
+      "remaining": []
+    },
+    "presentation-check1": {
+      "started_unix": 1793699076.3566425,
+      "ended_unix": 1793699089.8510494,
+      "duration_s": 13.494,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1093455872,
+      "resource_samples": 14,
+      "remaining": []
+    },
+    "presentation-check2": {
+      "started_unix": 1793699773.8756096,
+      "ended_unix": 1793699789.717408,
+      "duration_s": 15.842,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1087705088,
+      "resource_samples": 16,
+      "remaining": []
+    },
+    "vulkan-wsi-webgl3": {
+      "started_unix": 1793699098.0677028,
+      "ended_unix": 1793699132.381648,
+      "duration_s": 34.314,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 2076573696,
+      "resource_samples": 34,
+      "remaining": []
+    },
+    "vulkan-wsi-webgl4": {
+      "started_unix": 1793699362.2661018,
+      "ended_unix": 1793699382.5297801,
+      "duration_s": 20.264,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 2057060352,
+      "resource_samples": 20,
+      "remaining": []
+    },
+    "vulkan-wsi-webgl5": {
+      "started_unix": 1793699506.0306187,
+      "ended_unix": 1793699536.1544685,
+      "duration_s": 30.124,
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 2155343872,
+      "resource_samples": 30,
+      "remaining": []
+    },
+    "vulkan-wsi-webgpu1": {
+      "started_unix": 1793698156.5711677,
+      "ended_unix": 1793698163.0521302,
+      "duration_s": 6.481,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1858592768,
+      "resource_samples": 7,
+      "remaining": []
+    },
+    "vulkan-wsi-webgpu2": {
+      "started_unix": 1793699577.8407998,
+      "ended_unix": 1793699589.589393,
+      "duration_s": 11.749,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1964339200,
+      "resource_samples": 12,
+      "remaining": []
+    }
+  },
+  "failedNativeTeardownBeforeHostFix": {
+    "path": "/mnt/p3/codex-build/g3g/br-eEEjNo/result.json",
+    "pass": false,
+    "errors": [],
+    "flags": [
+      "--ignore-gpu-blocklist",
+      "--use-angle=gl",
+      "--use-gl=angle",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-eEEjNo/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-eEEjNo/c",
+      "--window-size=1000,800",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/vulkan-wsi.html": {
+        "sha256": "8e3df4db56257714dd1d694fb285f13f3e4df07ec6682524e4c7475ad32ecf33",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/vulkan-wsi.html",
+        "bytes": 4402,
+        "requests": 1
+      },
+      "/linux/dist/index.js": {
+        "sha256": "f524c50502983a9ae39662910b94d92a96cbc376c6d35c8d45cfed8a5cbacfa5",
+        "bytes": 21120,
+        "requests": 1
+      },
+      "/linux/dist/audio.js": {
+        "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+        "bytes": 6134,
+        "requests": 54
+      },
+      "/linux/gpu-present-overlay.mjs": {
+        "sha256": "f4791d691f22fa362cf0b3a1853ec0f9b876996d22b218b3c60a0eb916b00881",
+        "bytes": 3782,
+        "requests": 1
+      },
+      "/linux/guest-gpu-config.mjs": {
+        "sha256": "57cec94ede526e63967d770aef8a34adbf8894d142bd149cd0a6eda20a9402e7",
+        "bytes": 2349,
+        "requests": 1
+      },
+      "/linux/dist/util.js": {
+        "sha256": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+        "bytes": 244,
+        "requests": 54
+      },
+      "/linux/dist/wasm_binary.js": {
+        "sha256": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+        "bytes": 7036,
+        "requests": 54
+      },
+      "/linux/dist/devicetree.js": {
+        "sha256": "6a5ac56197c61941ec40847c7145a2d5b7822bea9dda18a9663b0ed156461dba",
+        "bytes": 5332,
+        "requests": 1
+      },
+      "/linux/dist/platform.js": {
+        "sha256": "8f0da1d12b136cf53ff06d0afb4bb1d1a13b705beaa029bb49c6812bd4069ce9",
+        "bytes": 5912,
+        "requests": 54
+      },
+      "/linux/dist/worker-pool.mjs": {
+        "sha256": "38eac0f2f8a88359ad7344ae20e3dc27f6b394c8bca4b2fde191eff1e5a1ff98",
+        "bytes": 1228,
+        "requests": 1
+      },
+      "/linux/dist/virtio/core.js": {
+        "sha256": "4a92a76da0701f506f5fa0368636ad340f92d3d06d335cc0a001d1d632305459",
+        "bytes": 13386,
+        "requests": 1
+      },
+      "/linux/dist/virtio/entropy.js": {
+        "sha256": "527ac8103305e0572e1c0f0598431966b6ef50eb4e32b4c8982d3fd83da8b484",
+        "bytes": 817,
+        "requests": 1
+      },
+      "/linux/dist/wasm.js": {
+        "sha256": "79ad8b3ce6b60811d98cea72bf01539b4a2c3d935d16fdc037fb8852932a4b6e",
+        "bytes": 6677,
+        "requests": 54
+      },
+      "/linux/dist/framebuffer.js": {
+        "sha256": "2e45a93a43fb9e28aecd70b173013c4d09528652adfa5018ff5408832373cd8d",
+        "bytes": 22257,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-hostcall.js": {
+        "sha256": "e6c684c8fc29d4c36f58c40dec513af9dfd850026e33cdd4d98c13160c2aedab",
+        "bytes": 21520,
+        "requests": 55
+      },
+      "/linux/dist/virtio/block.js": {
+        "sha256": "87af5551c38a6c1e786e585475fe296a240501d2ec07c120696252b17956ea4e",
+        "bytes": 4335,
+        "requests": 1
+      },
+      "/linux/dist/virtio/console.js": {
+        "sha256": "9de7ffef6f0396dcb4725fcc03a3205b8ecdee11af67adb136981d735b837ef5",
+        "bytes": 4813,
+        "requests": 1
+      },
+      "/linux/dist/virtio/fs.js": {
+        "sha256": "f0f6e6af0fa3d41f433cf56922bb4a6510266977918f196a621156ae680b3a40",
+        "bytes": 37428,
+        "requests": 1
+      },
+      "/linux/dist/virtio/net.js": {
+        "sha256": "87febbb9d02d0b3c047d97b92c9c2f1a6f3ecaa49f241358846f9d47bc8c9b83",
+        "bytes": 6534,
+        "requests": 1
+      },
+      "/linux/dist/virtio/vsock.js": {
+        "sha256": "4c83483f6866165e5bc8a28b576cf0d17da7b59b31c0176d6a629a7a9d6d7ced",
+        "bytes": 12220,
+        "requests": 1
+      },
+      "/linux/dist/virtio/input.js": {
+        "sha256": "29c7d7df90b24747a4a2ab1cce1d1ef3696870d58fd65f44bd835e76e25051a1",
+        "bytes": 9878,
+        "requests": 1
+      },
+      "/linux/dist/network/index.js": {
+        "sha256": "e1aa93214acbe987abaf8a09f57651ceb975b7424c0122190231e1b32864db52",
+        "bytes": 189,
+        "requests": 1
+      },
+      "/linux/dist/bytes.js": {
+        "sha256": "692a3827bcfd8f2ac3a7ca728be7455b1666d3b525adbf21b7593c56dc85bbe5",
+        "bytes": 7290,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer-presenter.js": {
+        "sha256": "9962757a80bac27d6a6bd14458a050e456629ee5672a16b1ec7345af964c2f01",
+        "bytes": 9876,
+        "requests": 1
+      },
+      "/linux/dist/network/ws-tcp.js": {
+        "sha256": "5d2ca5f5aaa6974792cc4fa794d58053fd2e5185edbca2cd160eee5f2951b3f8",
+        "bytes": 4877,
+        "requests": 1
+      },
+      "/linux/dist/network/gateway.js": {
+        "sha256": "ff346b436e8e4aefeaeda0ab2b211958b93365e01cc2611f3b39a89bc09bf1ba",
+        "bytes": 42698,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/build.json": {
+        "sha256": "f02ffe296108f8a8c4cd09a591edd9d992b7b1e032bdb0c7d6a5efe90595173c",
+        "bytes": 658,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/initramfs.cpio": {
+        "sha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "bytes": 41867716,
+        "requests": 1
+      },
+      "/linux/boot-assets.mjs": {
+        "sha256": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6",
+        "bytes": 13602,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/boot-manifest.json": {
+        "sha256": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd",
+        "bytes": 662,
+        "requests": 1
+      },
+      "/linux/vmlinux.wasm": {
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "bytes": 6281750,
+        "requests": 1
+      },
+      "/linux/dist/worker.js": {
+        "sha256": "4fc3e6e547825c0a3ebc25a5166e6c519d4dae5c337c9409667235beb4daad99",
+        "bytes": 40824,
+        "requests": 53
+      },
+      "/linux/dist/user-memory-growth-adapter.js": {
+        "sha256": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+        "bytes": 4842,
+        "requests": 53
+      },
+      "/linux/dist/firefox-callback-adapter.mjs": {
+        "sha256": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+        "bytes": 6242,
+        "requests": 53
+      },
+      "/linux/dist/guest-jit.js": {
+        "sha256": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+        "bytes": 26544,
+        "requests": 53
+      },
+      "/linux/dist/guest-gpu-owner.js": {
+        "sha256": "7f5ee4cc800d45288cf1f1bab0aab6b53e87b7e8d5e39616b0fea3bbc80e1fe7",
+        "bytes": 19219,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-wgpu.js": {
+        "sha256": "bc89607dd8c8da3357aae1b1e72a00f1b31e4e4243ff342689e8ce5dde7e41ea",
+        "bytes": 41304,
+        "requests": 1
+      },
+      "/linux/dist/guest-gl-remote.js": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-vk.js": {
+        "sha256": "e555dab252a3b2b0a56797767f8a2e61758bc1af40aed1b72b14334c9fc15e4b",
+        "bytes": 12470,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/host.mjs": {
+        "sha256": "9268ae748389aae891c9b21be11876f9df6369d0a5d654218f9876e98f8ba184",
+        "bytes": 50454,
+        "requests": 1
+      },
+      "/linux/gputest.mjs": {
+        "sha256": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+        "bytes": 8892,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/readback-range.mjs": {
+        "sha256": "1b167fdb2c21371a81b2c49ce8bdebea0597d1f225857b59dfd81dcd84a6fc8e",
+        "bytes": 4247,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/index.mjs": {
+        "sha256": "94b9d44caa462493177d80d4ef08a1eb502c6c63c8f4d578a3dd4591e4dbe8a4",
+        "bytes": 3446,
+        "requests": 1
+      },
+      "/linux/gpu/glsl.wasm": {
+        "sha256": "5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5",
+        "bytes": 927118,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/worker.mjs": {
+        "sha256": "291f367210e9dda9f05a2f17beaebc14680f2bd2db33dde863d39b72f2f28ef9",
+        "bytes": 1127,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/translator/abi.mjs": {
+        "sha256": "a2bb9c21f9aaeb1ebffe454c15a322dab93a3a0c0ecdb6e7f42785c6e9b454fe",
+        "bytes": 6654,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-webgl/renderer.mjs": {
+        "sha256": "1792ab4f50ec87d8a44f5a7c30e0c868095b0b8ccbabdd5cead8267bc11463f3",
+        "bytes": 47695,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "06ce3a3dc2f83c2ca1ad14211b50f1173e6581cc5822737c6595d202df6a8817",
+        "bytes": 87106,
+        "requests": 1
+      }
+    },
+    "result": {
+      "pass": false,
+      "checks": null,
+      "cases": null,
+      "errors": [],
+      "adapter": null,
+      "closed": null,
+      "configuration": {
+        "cpus": 3,
+        "memoryBytes": 1073741824,
+        "framebuffer": [
+          640,
+          480
+        ],
+        "backend": "webgl",
+        "guestPersistentHome": false
+      },
+      "package": {
+        "pass": true,
+        "testOnly": true,
+        "trace": true,
+        "archiveBytes": 41867716,
+        "archiveSha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "baseSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "binarySha256": "cc4a4c6c26d6469f3973af424b9f7cf3e6056127ee8f11e4920de368c90b8add",
+        "overlaySha256": "aaf7fb66a3f42939a7a9588ee204d3f44255b3d781c75674317051a55b306492",
+        "cmdline": "console=hvc0 rdinit=/gpt6-astra-vulkan-init",
+        "boundedSeconds": 6,
+        "xserverDeadlineSeconds": 40,
+        "scope": "Fresh guest Vulkan public acquire/render/present WSI smoke; not conformance or throughput comparison"
+      },
+      "ownerEvents": [
+        {
+          "kind": "owner-spawned",
+          "gen": 1
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 backend=webgl2 adapter={\"vendor\":\"WebKit\",\"description\":\"ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)\",\"wgpuBackend\":\"webgl2\"}"
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 closed commands=506 passes=123 draws=369"
+        },
+        {
+          "kind": "owner-dead",
+          "reason": 4,
+          "gen": 1
+        }
+      ],
+      "presentKinds": {
+        "request": 1,
+        "bitmap": 1,
+        "attached": 1,
+        "end": 1,
+        "reset": 1
+      },
+      "overlay": {
+        "frames": 1,
+        "shown": 1,
+        "dropped": 0,
+        "attached": 1,
+        "moves": 1
+      },
+      "exitStatus": 0,
+      "durationMs": 15510.764999985695
+    },
+    "nativeMarkers": [
+      "VKGEARS_START present=1 size=128x128 seconds=6",
+      "VKGEARS_GEOMETRY vertices=2640 gear1=0+1320 gear2=1320+660 gear3=1980+660 stride=24",
+      "VKGEARS_X11_OPEN display=:0 screen=640x480 window=128x128+480+48 depth=24 bpp=32 direct_rgb=1",
+      "VKGEARS_DEPTH format=126 render=128x128",
+      "VKGEARS_SWAPCHAIN images=2 mode=immediate extent=128x128",
+      "VKGEARS_READY device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" backend=webgl2 present=1 wsi=1 size=128x128 render=128x128",
+      "VKGEARS_FPS backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=22.894 frames=46 seconds=2.01 present=1 size=128x128 render=128x128",
+      "VKGEARS_PHASES_MS render=43.571 convert=0.000 put=0.000 sync=0.000 frames=46",
+      "VKGEARS_FPS backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=17.960 frames=36 seconds=2.00 present=1 size=128x128 render=128x128",
+      "VKGEARS_PHASES_MS render=55.186 convert=0.000 put=0.000 sync=0.000 frames=36",
+      "VKGEARS_DONE backend=webgl2 device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" frames=123 seconds=6.00 avg_fps=20.499 present=1 size=128x128 render=128x128 status=0 reason=seconds",
+      "GUEST_GPU_TRANSPORT_ERROR session=1 op=30 seq=506 result=-28",
+      "GUEST_VK_WSI_LIVE swapchains=0 leaked=0",
+      "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+      "GUEST_VK_WSI_SURFACES live=0 leaked=0",
+      "GUEST_VK_CLOSE status=-1"
+    ]
+  },
+  "explicitWebGPU": {
+    "path": "/mnt/p3/codex-build/g3g/br-BTh81x/result.json",
+    "pass": false,
+    "errors": [],
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-BTh81x/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-BTh81x/c",
+      "--window-size=1000,800",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/vulkan-wsi.html": {
+        "sha256": "8e3df4db56257714dd1d694fb285f13f3e4df07ec6682524e4c7475ad32ecf33",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/vulkan-wsi.html",
+        "bytes": 4402,
+        "requests": 1
+      },
+      "/linux/dist/index.js": {
+        "sha256": "f524c50502983a9ae39662910b94d92a96cbc376c6d35c8d45cfed8a5cbacfa5",
+        "bytes": 21120,
+        "requests": 1
+      },
+      "/linux/gpu-present-overlay.mjs": {
+        "sha256": "f4791d691f22fa362cf0b3a1853ec0f9b876996d22b218b3c60a0eb916b00881",
+        "bytes": 3782,
+        "requests": 1
+      },
+      "/linux/guest-gpu-config.mjs": {
+        "sha256": "57cec94ede526e63967d770aef8a34adbf8894d142bd149cd0a6eda20a9402e7",
+        "bytes": 2349,
+        "requests": 1
+      },
+      "/linux/dist/audio.js": {
+        "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+        "bytes": 6134,
+        "requests": 53
+      },
+      "/linux/dist/devicetree.js": {
+        "sha256": "6a5ac56197c61941ec40847c7145a2d5b7822bea9dda18a9663b0ed156461dba",
+        "bytes": 5332,
+        "requests": 1
+      },
+      "/linux/dist/platform.js": {
+        "sha256": "8f0da1d12b136cf53ff06d0afb4bb1d1a13b705beaa029bb49c6812bd4069ce9",
+        "bytes": 5912,
+        "requests": 53
+      },
+      "/linux/dist/worker-pool.mjs": {
+        "sha256": "38eac0f2f8a88359ad7344ae20e3dc27f6b394c8bca4b2fde191eff1e5a1ff98",
+        "bytes": 1228,
+        "requests": 1
+      },
+      "/linux/dist/util.js": {
+        "sha256": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+        "bytes": 244,
+        "requests": 53
+      },
+      "/linux/dist/wasm_binary.js": {
+        "sha256": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+        "bytes": 7036,
+        "requests": 53
+      },
+      "/linux/dist/framebuffer.js": {
+        "sha256": "2e45a93a43fb9e28aecd70b173013c4d09528652adfa5018ff5408832373cd8d",
+        "bytes": 22257,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-hostcall.js": {
+        "sha256": "e6c684c8fc29d4c36f58c40dec513af9dfd850026e33cdd4d98c13160c2aedab",
+        "bytes": 21520,
+        "requests": 54
+      },
+      "/linux/dist/virtio/block.js": {
+        "sha256": "87af5551c38a6c1e786e585475fe296a240501d2ec07c120696252b17956ea4e",
+        "bytes": 4335,
+        "requests": 1
+      },
+      "/linux/dist/virtio/console.js": {
+        "sha256": "9de7ffef6f0396dcb4725fcc03a3205b8ecdee11af67adb136981d735b837ef5",
+        "bytes": 4813,
+        "requests": 1
+      },
+      "/linux/dist/virtio/core.js": {
+        "sha256": "4a92a76da0701f506f5fa0368636ad340f92d3d06d335cc0a001d1d632305459",
+        "bytes": 13386,
+        "requests": 1
+      },
+      "/linux/dist/wasm.js": {
+        "sha256": "79ad8b3ce6b60811d98cea72bf01539b4a2c3d935d16fdc037fb8852932a4b6e",
+        "bytes": 6677,
+        "requests": 53
+      },
+      "/linux/dist/virtio/entropy.js": {
+        "sha256": "527ac8103305e0572e1c0f0598431966b6ef50eb4e32b4c8982d3fd83da8b484",
+        "bytes": 817,
+        "requests": 1
+      },
+      "/linux/dist/virtio/fs.js": {
+        "sha256": "f0f6e6af0fa3d41f433cf56922bb4a6510266977918f196a621156ae680b3a40",
+        "bytes": 37428,
+        "requests": 1
+      },
+      "/linux/dist/virtio/net.js": {
+        "sha256": "87febbb9d02d0b3c047d97b92c9c2f1a6f3ecaa49f241358846f9d47bc8c9b83",
+        "bytes": 6534,
+        "requests": 1
+      },
+      "/linux/dist/virtio/vsock.js": {
+        "sha256": "4c83483f6866165e5bc8a28b576cf0d17da7b59b31c0176d6a629a7a9d6d7ced",
+        "bytes": 12220,
+        "requests": 1
+      },
+      "/linux/dist/virtio/input.js": {
+        "sha256": "29c7d7df90b24747a4a2ab1cce1d1ef3696870d58fd65f44bd835e76e25051a1",
+        "bytes": 9878,
+        "requests": 1
+      },
+      "/linux/dist/network/index.js": {
+        "sha256": "e1aa93214acbe987abaf8a09f57651ceb975b7424c0122190231e1b32864db52",
+        "bytes": 189,
+        "requests": 1
+      },
+      "/linux/dist/bytes.js": {
+        "sha256": "692a3827bcfd8f2ac3a7ca728be7455b1666d3b525adbf21b7593c56dc85bbe5",
+        "bytes": 7290,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer-presenter.js": {
+        "sha256": "9962757a80bac27d6a6bd14458a050e456629ee5672a16b1ec7345af964c2f01",
+        "bytes": 9876,
+        "requests": 1
+      },
+      "/linux/dist/network/gateway.js": {
+        "sha256": "ff346b436e8e4aefeaeda0ab2b211958b93365e01cc2611f3b39a89bc09bf1ba",
+        "bytes": 42698,
+        "requests": 1
+      },
+      "/linux/dist/network/ws-tcp.js": {
+        "sha256": "5d2ca5f5aaa6974792cc4fa794d58053fd2e5185edbca2cd160eee5f2951b3f8",
+        "bytes": 4877,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/build.json": {
+        "sha256": "f02ffe296108f8a8c4cd09a591edd9d992b7b1e032bdb0c7d6a5efe90595173c",
+        "bytes": 658,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/initramfs.cpio": {
+        "sha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "bytes": 41867716,
+        "requests": 1
+      },
+      "/linux/boot-assets.mjs": {
+        "sha256": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6",
+        "bytes": 13602,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/boot-manifest.json": {
+        "sha256": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd",
+        "bytes": 662,
+        "requests": 1
+      },
+      "/linux/vmlinux.wasm": {
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "bytes": 6281750,
+        "requests": 1
+      },
+      "/linux/dist/worker.js": {
+        "sha256": "4fc3e6e547825c0a3ebc25a5166e6c519d4dae5c337c9409667235beb4daad99",
+        "bytes": 40824,
+        "requests": 52
+      },
+      "/linux/dist/user-memory-growth-adapter.js": {
+        "sha256": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+        "bytes": 4842,
+        "requests": 52
+      },
+      "/linux/dist/firefox-callback-adapter.mjs": {
+        "sha256": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+        "bytes": 6242,
+        "requests": 52
+      },
+      "/linux/dist/guest-jit.js": {
+        "sha256": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+        "bytes": 26544,
+        "requests": 52
+      },
+      "/linux/dist/guest-gpu-owner.js": {
+        "sha256": "7f5ee4cc800d45288cf1f1bab0aab6b53e87b7e8d5e39616b0fea3bbc80e1fe7",
+        "bytes": 19219,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-wgpu.js": {
+        "sha256": "bc89607dd8c8da3357aae1b1e72a00f1b31e4e4243ff342689e8ce5dde7e41ea",
+        "bytes": 41304,
+        "requests": 1
+      },
+      "/linux/dist/guest-gl-remote.js": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-vk.js": {
+        "sha256": "e555dab252a3b2b0a56797767f8a2e61758bc1af40aed1b72b14334c9fc15e4b",
+        "bytes": 12470,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/host.mjs": {
+        "sha256": "25cfe516296351f7f7a86215f553fa56ca05bd1bc3c5470d899bcfd10b155851",
+        "bytes": 50563,
+        "requests": 1
+      },
+      "/linux/gputest.mjs": {
+        "sha256": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+        "bytes": 8892,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/readback-range.mjs": {
+        "sha256": "1b167fdb2c21371a81b2c49ce8bdebea0597d1f225857b59dfd81dcd84a6fc8e",
+        "bytes": 4247,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/index.mjs": {
+        "sha256": "2efd5613c60cf6aa3fec742950570e30be8acfa77aad19b374ef9bae2bd6db1e",
+        "bytes": 3441,
+        "requests": 1
+      },
+      "/linux/gpu/wgsl.wasm": {
+        "sha256": "5b78ad4937a5f04011fdc8000207009a5fb4d51f41fc1c7af6ce6a303e67fca5",
+        "bytes": 824299,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/worker.mjs": {
+        "sha256": "0a289be10ff900c0d01d3c743a3637e8c1a4da5a7b3706842136d641ae75167e",
+        "bytes": 1117,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/abi.mjs": {
+        "sha256": "1979a124ba4e1be476632be74de3247c6b4ca917185272f989083f9f03f88273",
+        "bytes": 4963,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "06ce3a3dc2f83c2ca1ad14211b50f1173e6581cc5822737c6595d202df6a8817",
+        "bytes": 87106,
+        "requests": 1
+      }
+    },
+    "result": {
+      "pass": false,
+      "checks": null,
+      "cases": null,
+      "errors": [],
+      "adapter": null,
+      "closed": null,
+      "configuration": {
+        "cpus": 3,
+        "memoryBytes": 1073741824,
+        "framebuffer": [
+          640,
+          480
+        ],
+        "backend": "webgpu",
+        "guestPersistentHome": false
+      },
+      "package": {
+        "pass": true,
+        "testOnly": true,
+        "trace": true,
+        "archiveBytes": 41867716,
+        "archiveSha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "baseSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "binarySha256": "cc4a4c6c26d6469f3973af424b9f7cf3e6056127ee8f11e4920de368c90b8add",
+        "overlaySha256": "aaf7fb66a3f42939a7a9588ee204d3f44255b3d781c75674317051a55b306492",
+        "cmdline": "console=hvc0 rdinit=/gpt6-astra-vulkan-init",
+        "boundedSeconds": 6,
+        "xserverDeadlineSeconds": 40,
+        "scope": "Fresh guest Vulkan public acquire/render/present WSI smoke; not conformance or throughput comparison"
+      },
+      "ownerEvents": [
+        {
+          "kind": "owner-spawned",
+          "gen": 1
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 backend=webgpu adapter={\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"wgpuBackend\":\"webgpu\"}"
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 closed commands=31 passes=4 draws=12 error=\"device lost: vkAllocateMemory failed with VK_ERROR_OUT_OF_DEVICE_MEMORY\\n - While handling unexpected error type Internal when allowed errors are Validation.\\n    at CheckVkSuccessImpl (../../third_party/dawn/src/dawn/native/vulkan/VulkanError.cpp:106)\\n\""
+        },
+        {
+          "kind": "owner-dead",
+          "reason": 4,
+          "gen": 1
+        }
+      ],
+      "presentKinds": {
+        "request": 1,
+        "bitmap": 1,
+        "attached": 1,
+        "end": 1,
+        "reset": 1
+      },
+      "overlay": {
+        "frames": 1,
+        "shown": 1,
+        "dropped": 0,
+        "attached": 1,
+        "moves": 1
+      },
+      "exitStatus": 3,
+      "durationMs": 7845.324999988079
+    },
+    "nativeMarkers": [
+      "VKGEARS_START present=1 size=128x128 seconds=6",
+      "VKGEARS_GEOMETRY vertices=2640 gear1=0+1320 gear2=1320+660 gear3=1980+660 stride=24",
+      "VKGEARS_X11_OPEN display=:0 screen=640x480 window=128x128+480+48 depth=24 bpp=32 direct_rgb=1",
+      "VKGEARS_DEPTH format=126 render=128x128",
+      "VKGEARS_SWAPCHAIN images=2 mode=immediate extent=128x128",
+      "VKGEARS_READY device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" backend=webgpu present=1 wsi=1 size=128x128 render=128x128",
+      "GUEST_GPU_TRANSPORT_ERROR session=1 op=21 seq=32 result=-19",
+      "VKGEARS_ERROR vulkan line=593 result=-4 call=vkQueueSubmit(queue, 1, &submit, VK_NULL_HANDLE)",
+      "VKGEARS_ERROR gpu frames=4 status=3 (host GPU session closed or device lost)",
+      "VKGEARS_DONE backend=webgpu device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" frames=4 seconds=0.10 avg_fps=42.052 present=1 size=128x128 render=128x128 status=3 reason=gpu-session-lost",
+      "GUEST_VK_WSI_LIVE swapchains=0 leaked=1",
+      "GUEST_VK_RESOURCES live=0 allocated_bytes=0",
+      "GUEST_VK_WSI_SURFACES live=0 leaked=1",
+      "GUEST_VK_CLOSE status=-1"
+    ]
+  },
+  "limitations": [
+    "WebGL WSI acceptance used128x128 native depth/color demo, real NVIDIA MX110,3 effective browser/guest CPUs; functional tests may overlap package builds and are not throughput comparisons",
+    "Initial28-check renderer run passed; final32-check run added context-loss cleanup",
+    "No CPU readPixels/getBufferSubData is called by the accepted present method; test temporarily makes both methods throw while presenting",
+    "Original WebGPU attempt had no adapter. Explicit isolated Linux experimental flags acquired NVIDIA Maxwell but Dawn lost device with VK_ERROR_OUT_OF_DEVICE_MEMORY after4 frames; no WebGL fallback occurred",
+    "Acquisition does not wait for exhausted images; physical presentation timing and full Vulkan conformance are not established",
+    "Zink profile compiles with-Werror but runtime Zink/full desktop OpenGL is not accepted",
+    "Existing Firefox native archive is unchanged; this new sample is separately built and packaged"
+  ],
+  "peerReview": "startup_io independently reviewed configuration, renderer ownership/capability gating, host end-message order, and native macro guards; required context-loss gate subsequently passed",
+  "officialDiagnosticReference": "https://developer.chrome.com/docs/web-platform/webgpu/troubleshooting-tips",
+  "sourceSha256": {
+    "web/linux/guest-gpu-config.mjs": "57cec94ede526e63967d770aef8a34adbf8894d142bd149cd0a6eda20a9402e7",
+    "web/linux/tests/guest-gpu/host.mjs": "25cfe516296351f7f7a86215f553fa56ca05bd1bc3c5470d899bcfd10b155851",
+    "web/linux/tests/guest-vulkan-webgl/renderer.mjs": "1792ab4f50ec87d8a44f5a7c30e0c868095b0b8ccbabdd5cead8267bc11463f3",
+    "web/linux/tests/guest-vulkan/transfer.inc": "2f5abb2ccdcad617d9e43e6eb60682df10f504e0a0ae28f916aa142a909f5991",
+    "web/linux/tests/guest-vulkan/graphics.inc": "9a9791477af8e17da8b0977e67f2390409dd08c53c9e87457c9dfbedae0b424a"
+  }
+}

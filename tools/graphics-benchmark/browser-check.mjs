@@ -24,9 +24,11 @@ const browser=process.env.CHROMIUM??'/home/a/.local/archpkg/pacman/usr/bin/chrom
 const prime=process.env.PRIME_RUN??'/usr/bin/prime-run';
 const angle=process.env.GRAPHICS_ANGLE??'vulkan';
 if(!['vulkan','gl'].includes(angle))throw Error('GRAPHICS_ANGLE must be explicit vulkan or gl');
+const experimentalWebGPU=process.env.GRAPHICS_WEBGPU_DIAGNOSTIC==='1';
+if(experimentalWebGPU&&(angle!=='vulkan'||process.env.GRAPHICS_ISOLATED!=='1'))throw Error('WebGPU diagnostic requires isolated Vulkan-backed browser');
 const viewport=process.env.GRAPHICS_VIEWPORT?.split('x').map(Number)??null;
 if(viewport&&(viewport.length!==2||viewport.some((n,i)=>!Number.isInteger(n)||n<(i?240:320)||n>4096)))throw Error('invalid GRAPHICS_VIEWPORT');
-const args=['--ignore-gpu-blocklist',`--use-angle=${angle}`,'--use-gl=angle',...(angle==='vulkan'?['--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan']:[]),'--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-sync','--remote-debugging-address=127.0.0.1','--remote-debugging-port=0',`--user-data-dir=${run}/p`,`--disk-cache-dir=${run}/c`,`--window-size=${(viewport??[800,600]).join(',')}`,'about:blank'];
+const args=[...(experimentalWebGPU?['--enable-unsafe-webgpu']:[]),'--ignore-gpu-blocklist',`--use-angle=${angle}`,'--use-gl=angle',...(angle==='vulkan'?['--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan']:[]),'--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-sync','--remote-debugging-address=127.0.0.1','--remote-debugging-port=0',`--user-data-dir=${run}/p`,`--disk-cache-dir=${run}/c`,`--window-size=${(viewport??[800,600]).join(',')}`,'about:blank'];
 const observedOwnerCpus=readHostNproc();
 // The host controller caps browser owners at 3 CPUs; never bypass that policy.
 const cpus=Math.min(observedOwnerCpus,Number(process.env.GRAPHICS_CPUS??3));

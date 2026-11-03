@@ -12,6 +12,17 @@ test('guest Vulkan requires an explicit WebGL choice in both services',()=>{
  assert.equal(guestGpuOwnerConfig('','webgl').vk.backend,'webgl');
  assert.equal(guestGpuOwnerConfig('?gpuruntime=rust','webgl').vk.wgpuBackend,'webgl');
 });
+test('direct WebGL does not request the WebGPU-only sampled-target capability',()=>{
+ for(const query of ['', '?gpulargesampledtargets=1']) {
+  const direct=guestGpuOwnerConfig(query,'webgl').vk;
+  assert.equal(direct.backend,'webgl');assert.equal(direct.allowLargeColorTargets,true);
+  assert.equal(direct.allowLargeSampledTargets,undefined);
+ }
+ assert.equal(guestGpuOwnerConfig('','webgpu').vk.allowLargeSampledTargets,true);
+ assert.equal(guestGpuOwnerConfig('?gpulargesampledtargets=0','webgpu').vk.allowLargeSampledTargets,undefined);
+ assert.equal(guestGpuOwnerConfig('?gpulargetargets=0','webgpu').vk.allowLargeColorTargets,undefined);
+ assert.equal(guestGpuOwnerConfig('?gpuruntime=rust&gpulargetargets=1&gpulargesampledtargets=1','webgl').vk.allowLargeSampledTargets,true);
+});
 test('guest backend URLs preserve unrelated settings',()=>{
  const url=new URL(guestGpuUrl('https://example.test/linux/?firefox=1&renderer=webgl&gpuruntime=rust','webgpu'));
  assert.equal(url.searchParams.get('firefox'),'1');assert.equal(url.searchParams.get('renderer'),'webgl');assert.equal(url.searchParams.get('gpuruntime'),'rust');assert.equal(url.searchParams.get('gpubackend'),'webgpu');

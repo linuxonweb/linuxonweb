@@ -2,8 +2,8 @@
   "agent": "graphics_jit",
   "model": "GPT-6 Astra Pro",
   "tool": "builtin agents + rubywebterm",
-  "scope_score": 32,
-  "scope_score_note": "Local graphics/JIT progress only; root owns weighted whole-goal score. Full graphics, Firefox30s and nativeJIT gates remain unmet.",
+  "scope_score": 34,
+  "scope_score_note": "Graphics/JIT scope only; not the whole user goal. FullGL/conformance, Firefox30s and50% host target remain unmet.",
   "task_start_utc": "2026-11-03T07:06:00Z",
   "iterations": [
     {
@@ -16,7 +16,8 @@
       "resource_samples": 22,
       "remaining_owned_processes": 0,
       "finding": "Legacy launch: Unix socket path too long",
-      "receipt": "/mnt/p3/codex-build/gpt6-graphics-nov03/swizzle-baseline/receipt.json"
+      "receipt": "/mnt/p3/codex-build/gpt6-graphics-nov03/swizzle-baseline/receipt.json",
+      "iteration": 1
     },
     {
       "name": "b1",
@@ -28,7 +29,8 @@
       "resource_samples": 33,
       "remaining_owned_processes": 0,
       "finding": "Legacy page probe: no result; preview server timing",
-      "receipt": "/mnt/p3/codex-build/g3g/b1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/b1/receipt.json",
+      "iteration": 2
     },
     {
       "name": "s1",
@@ -40,7 +42,8 @@
       "resource_samples": 3,
       "remaining_owned_processes": 0,
       "finding": "Real GPU sync:22/23; GLES error mapping expectation corrected",
-      "receipt": "/mnt/p3/codex-build/g3g/s1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/s1/receipt.json",
+      "iteration": 3
     },
     {
       "name": "compile1",
@@ -52,7 +55,8 @@
       "resource_samples": 2,
       "remaining_owned_processes": 0,
       "finding": "Guest compile blocked by historical inaccessible Mesa headers",
-      "receipt": "/mnt/p3/codex-build/g3g/compile1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/compile1/receipt.json",
+      "iteration": 4
     },
     {
       "name": "s2",
@@ -64,7 +68,8 @@
       "resource_samples": 3,
       "remaining_owned_processes": 0,
       "finding": "Real GPU sync:23/23",
-      "receipt": "/mnt/p3/codex-build/g3g/s2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/s2/receipt.json",
+      "iteration": 5
     },
     {
       "name": "compile2",
@@ -76,7 +81,8 @@
       "resource_samples": 5,
       "remaining_owned_processes": 0,
       "finding": "Native GL library/test compile pass with portable staged Khronos headers",
-      "receipt": "/mnt/p3/codex-build/g3g/compile2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/compile2/receipt.json",
+      "iteration": 6
     },
     {
       "name": "g1",
@@ -88,7 +94,8 @@
       "resource_samples": 13,
       "remaining_owned_processes": 0,
       "finding": "Native guest ANGLE/Vulkan: final readback context-loss failure",
-      "receipt": "/mnt/p3/codex-build/g3g/g1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/g1/receipt.json",
+      "iteration": 7
     },
     {
       "name": "g2",
@@ -100,7 +107,8 @@
       "resource_samples": 14,
       "remaining_owned_processes": 0,
       "finding": "Native guest ANGLE/OpenGL: same failure",
-      "receipt": "/mnt/p3/codex-build/g3g/g2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/g2/receipt.json",
+      "iteration": 8
     },
     {
       "name": "abcompile1",
@@ -112,7 +120,8 @@
       "resource_samples": 8,
       "remaining_owned_processes": 0,
       "finding": "Isolated identical-fixture old/new native compile pass",
-      "receipt": "/mnt/p3/codex-build/g3g/abcompile1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/abcompile1/receipt.json",
+      "iteration": 9
     },
     {
       "name": "old1",
@@ -124,7 +133,8 @@
       "resource_samples": 14,
       "remaining_owned_processes": 0,
       "finding": "Old driver + complete TF/readback/fence fixture passes",
-      "receipt": "/mnt/p3/codex-build/g3g/old1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/old1/receipt.json",
+      "iteration": 10
     },
     {
       "name": "new1",
@@ -136,7 +146,8 @@
       "resource_samples": 14,
       "remaining_owned_processes": 0,
       "finding": "New driver same fixture fails; regression isolated",
-      "receipt": "/mnt/p3/codex-build/g3g/new1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/new1/receipt.json",
+      "iteration": 11
     },
     {
       "name": "glfix1",
@@ -149,7 +160,8 @@
       "remaining_owned_processes": 0,
       "finding": "Full native OpenGL backend still fails final fenced pixels; same-context waitSync ruled out",
       "receipt": "/mnt/p3/codex-build/g3g/glfix1/receipt.json",
-      "scope_score": 15
+      "scope_score": 15,
+      "iteration": 12
     },
     {
       "name": "vkfix1",
@@ -162,7 +174,8 @@
       "remaining_owned_processes": 0,
       "finding": "Full native Vulkan backend still fails final fenced pixels",
       "receipt": "/mnt/p3/codex-build/g3g/vkfix1/receipt.json",
-      "scope_score": 15
+      "scope_score": 15,
+      "iteration": 13
     },
     {
       "name": "tfdiag1",
@@ -175,7 +188,8 @@
       "remaining_owned_processes": 0,
       "finding": "Temporary TF binding isolation failed, diagnostic code reverted",
       "receipt": "/mnt/p3/codex-build/g3g/tfdiag1/receipt.json",
-      "scope_score": 15
+      "scope_score": 15,
+      "iteration": 14
     },
     {
       "name": "perfcompile1",
@@ -188,7 +202,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/perfcompile1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 15
     },
     {
       "name": "perfhost1",
@@ -201,7 +216,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/perfhost1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 16
     },
     {
       "name": "perfguest1",
@@ -214,7 +230,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/perfguest1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 17
     },
     {
       "name": "dispatch-scalar-1",
@@ -227,7 +244,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-scalar-1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 18
     },
     {
       "name": "dispatch-swizzle-1",
@@ -240,7 +258,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-swizzle-1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 19
     },
     {
       "name": "dispatch-a1",
@@ -253,7 +272,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-a1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 20
     },
     {
       "name": "dispatch-b1",
@@ -266,7 +286,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-b1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 21
     },
     {
       "name": "dispatch-b2",
@@ -279,7 +300,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-b2/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 22
     },
     {
       "name": "dispatch-a2",
@@ -292,7 +314,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/dispatch-a2/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 23
     },
     {
       "name": "perfhost-pooled1",
@@ -305,7 +328,8 @@
       "remaining_owned_processes": 0,
       "receipt": "/mnt/p3/codex-build/g3g/perfhost-pooled1/receipt.json",
       "scope_score": 30,
-      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+      "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary",
+      "iteration": 24
     },
     {
       "name": "ui-unit1",
@@ -318,7 +342,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "26/27 passed; old default-fallback expectation requires explicit new WebGPU policy",
-      "receipt": "/mnt/p3/codex-build/g3g/ui-unit1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit1/receipt.json",
+      "iteration": 25
     },
     {
       "name": "jit-check1",
@@ -331,7 +356,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Seven real-Wasm lifecycle groups passed on isolated candidate",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-check1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-check1/receipt.json",
+      "iteration": 26
     },
     {
       "name": "ui-unit2",
@@ -344,7 +370,50 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "27/27 explicit backend settings/status unit tests passed",
-      "receipt": "/mnt/p3/codex-build/g3g/ui-unit2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit2/receipt.json",
+      "iteration": 27
+    },
+    {
+      "name": "fx-overlay-build1",
+      "start_utc": "2026-11-03T08:41:57.364414+00:00",
+      "end_utc": "2026-11-03T08:41:58.768692+00:00",
+      "seconds": 1.404,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1175552,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-overlay-build1/receipt.json",
+      "iteration": 28
+    },
+    {
+      "name": "fx-overlay-build2",
+      "start_utc": "2026-11-03T08:42:30.898569+00:00",
+      "end_utc": "2026-11-03T08:42:32.302924+00:00",
+      "seconds": 1.404,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1298432,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-overlay-build2/receipt.json",
+      "iteration": 29
+    },
+    {
+      "name": "fx-overlay-build3",
+      "start_utc": "2026-11-03T08:43:01.546268+00:00",
+      "end_utc": "2026-11-03T08:43:04.953130+00:00",
+      "seconds": 3.407,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 173826048,
+      "resource_samples": 4,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-overlay-build3/receipt.json",
+      "iteration": 30
     },
     {
       "name": "ui-browser1",
@@ -357,7 +426,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "10 real-browser settings checks passed; no guest started; contention allowed for correctness",
-      "receipt": "/mnt/p3/codex-build/g3g/ui-browser1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/ui-browser1/receipt.json",
+      "iteration": 31
     },
     {
       "name": "jit-retain-base1",
@@ -370,7 +440,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Synthetic baseline retains4224 images/17985728 sourcebytes; not Firefox measurement",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-base1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-base1/receipt.json",
+      "iteration": 32
     },
     {
       "name": "jit-retain-new1",
@@ -383,7 +454,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Synthetic candidate retains64 images/8386688 sourcebytes; not native-code budget",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-new1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-new1/receipt.json",
+      "iteration": 33
     },
     {
       "name": "jit-compile1",
@@ -396,7 +468,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Unchanged historical native JIT fixture compiled with accessible toolchain",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-compile1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile1/receipt.json",
+      "iteration": 34
     },
     {
       "name": "jit-check2",
@@ -409,7 +482,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Seven lifecycle groups passed after peer-review counter hardening",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-check2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-check2/receipt.json",
+      "iteration": 35
     },
     {
       "name": "jit-guest1",
@@ -422,7 +496,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Candidate original fixture61/62; stale flag1 rejection fails",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-guest1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest1/receipt.json",
+      "iteration": 36
     },
     {
       "name": "jit-guest-base1",
@@ -435,7 +510,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Baseline original fixture61/62; identical stale flag1 rejection fails",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-base1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-base1/receipt.json",
+      "iteration": 37
     },
     {
       "name": "jit-compile2",
@@ -448,7 +524,22 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Additional current-ABI fixture compiled",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-compile2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile2/receipt.json",
+      "iteration": 38
+    },
+    {
+      "name": "vulkan-fetch1",
+      "start_utc": "2026-11-03T08:56:12.011820+00:00",
+      "end_utc": "2026-11-03T08:56:43.461676+00:00",
+      "seconds": 31.45,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 31576064,
+      "resource_samples": 32,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-fetch1/receipt.json",
+      "iteration": 39
     },
     {
       "name": "ui-unit3",
@@ -461,7 +552,36 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "28/28 final backend settings/status unit tests passed",
-      "receipt": "/mnt/p3/codex-build/g3g/ui-unit3/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit3/receipt.json",
+      "iteration": 40
+    },
+    {
+      "name": "fx-overlay-build4",
+      "start_utc": "2026-11-03T09:04:52.521939+00:00",
+      "end_utc": "2026-11-03T09:04:55.932825+00:00",
+      "seconds": 3.411,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 203390976,
+      "resource_samples": 4,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-overlay-build4/receipt.json",
+      "iteration": 41
+    },
+    {
+      "name": "fx-host1",
+      "start_utc": "2026-11-03T09:04:56.056829+00:00",
+      "end_utc": "2026-11-03T09:05:28.949194+00:00",
+      "seconds": 32.892,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1085997056,
+      "resource_samples": 33,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Exact cube host diagnostic59.901fps; guest comparison documented separately",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-host1/receipt.json",
+      "iteration": 42
     },
     {
       "name": "jit-guest-current1",
@@ -474,7 +594,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Candidate67/68; added private-free expectation contradicted current contract",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current1/receipt.json",
+      "iteration": 43
     },
     {
       "name": "jit-guest-current-base1",
@@ -487,7 +608,50 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Baseline67/68; identical existing private-free refusal",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current-base1/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current-base1/receipt.json",
+      "iteration": 44
+    },
+    {
+      "name": "vulkan-build1",
+      "start_utc": "2026-11-03T09:20:44.516032+00:00",
+      "end_utc": "2026-11-03T09:20:52.942852+00:00",
+      "seconds": 8.427,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 140005376,
+      "resource_samples": 9,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Failed non-Zink compile: recorded.level absent",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-build1/receipt.json",
+      "iteration": 45
+    },
+    {
+      "name": "vulkan-build2",
+      "start_utc": "2026-11-03T09:22:04.152775+00:00",
+      "end_utc": "2026-11-03T09:22:12.583494+00:00",
+      "seconds": 8.431,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 122568704,
+      "resource_samples": 9,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Failed-Werror on Zink-only unused helper",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-build2/receipt.json",
+      "iteration": 46
+    },
+    {
+      "name": "vulkan-build3",
+      "start_utc": "2026-11-03T09:23:08.898815+00:00",
+      "end_utc": "2026-11-03T09:23:21.348028+00:00",
+      "seconds": 12.449,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 129794048,
+      "resource_samples": 13,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Fresh current native SDK/sample compile+validate PASS",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-build3/receipt.json",
+      "iteration": 47
     },
     {
       "name": "jit-compile3",
@@ -500,7 +664,8 @@
       "remaining_owned_processes": 0,
       "scope_score": 30,
       "finding": "Explicit current-contract fixture compiled, original source preserved",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-compile3/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile3/receipt.json",
+      "iteration": 48
     },
     {
       "name": "jit-guest-current2",
@@ -513,11 +678,208 @@
       "remaining_owned_processes": 0,
       "scope_score": 32,
       "finding": "Current-contract native fixture69/69 PASS; private1 supported, unknown2 rejected, privatefree refuses without invalidation; fork/exec/globalfree replay pass",
-      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current2/receipt.json"
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current2/receipt.json",
+      "iteration": 49
+    },
+    {
+      "name": "vulkan-package1",
+      "start_utc": "2026-11-03T09:29:15.044122+00:00",
+      "end_utc": "2026-11-03T09:29:16.448085+00:00",
+      "seconds": 1.404,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 851968,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-package1/receipt.json",
+      "iteration": 50
+    },
+    {
+      "name": "vulkan-wsi-webgpu1",
+      "start_utc": "2026-11-03T09:29:16.571168+00:00",
+      "end_utc": "2026-11-03T09:29:23.052130+00:00",
+      "seconds": 6.481,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1858592768,
+      "resource_samples": 7,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Explicit WebGPU no adapter; no fallback",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgpu1/receipt.json",
+      "iteration": 51
+    },
+    {
+      "name": "vulkan-wsi-webgl1",
+      "start_utc": "2026-11-03T09:30:00.240119+00:00",
+      "end_utc": "2026-11-03T09:30:07.776205+00:00",
+      "seconds": 7.536,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1912864768,
+      "resource_samples": 8,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Unsupported sampled-target option rejected before session",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgl1/receipt.json",
+      "iteration": 52
+    },
+    {
+      "name": "vulkan-wsi-webgl2",
+      "start_utc": "2026-11-03T09:38:28.207004+00:00",
+      "end_utc": "2026-11-03T09:38:36.750593+00:00",
+      "seconds": 8.544,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 2018738176,
+      "resource_samples": 9,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Session opens; presentation capability not yet implemented",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgl2/receipt.json",
+      "iteration": 53
+    },
+    {
+      "name": "presentation-fixture-build1",
+      "start_utc": "2026-11-03T09:44:24.051598+00:00",
+      "end_utc": "2026-11-03T09:44:25.458072+00:00",
+      "seconds": 1.406,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 5976064,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/presentation-fixture-build1/receipt.json",
+      "iteration": 54
+    },
+    {
+      "name": "presentation-check1",
+      "start_utc": "2026-11-03T09:44:36.356642+00:00",
+      "end_utc": "2026-11-03T09:44:49.851049+00:00",
+      "seconds": 13.494,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1093455872,
+      "resource_samples": 14,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "28 actual GPU pixel/lifecycle checks PASS",
+      "receipt": "/mnt/p3/codex-build/g3g/presentation-check1/receipt.json",
+      "iteration": 55
+    },
+    {
+      "name": "vulkan-wsi-webgl3",
+      "start_utc": "2026-11-03T09:44:58.067703+00:00",
+      "end_utc": "2026-11-03T09:45:32.381648+00:00",
+      "seconds": 34.314,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 2076573696,
+      "resource_samples": 34,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Visible native WSI rendering passes; later inspected CLOSE=-1 prevents strict acceptance",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgl3/receipt.json",
+      "iteration": 56
+    },
+    {
+      "name": "vulkan-zink-compile1",
+      "start_utc": "2026-11-03T09:48:03.135113+00:00",
+      "end_utc": "2026-11-03T09:48:23.695644+00:00",
+      "seconds": 20.561,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 228548608,
+      "resource_samples": 21,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Zink profile compiles with-Werror; runtime support not implied",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-zink-compile1/receipt.json",
+      "iteration": 57
+    },
+    {
+      "name": "vulkan-wsi-package2-owner",
+      "start_utc": "2026-11-03T09:48:58.153438+00:00",
+      "end_utc": "2026-11-03T09:49:00.574622+00:00",
+      "seconds": 2.421,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 104136704,
+      "resource_samples": 3,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-package2-owner/receipt.json",
+      "iteration": 58
+    },
+    {
+      "name": "vulkan-wsi-package3-owner",
+      "start_utc": "2026-11-03T09:49:20.729914+00:00",
+      "end_utc": "2026-11-03T09:49:22.137793+00:00",
+      "seconds": 1.408,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1183744,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Bounded build/package/fixture receipt; result retained",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-package3-owner/receipt.json",
+      "iteration": 59
+    },
+    {
+      "name": "vulkan-wsi-webgl4",
+      "start_utc": "2026-11-03T09:49:22.266102+00:00",
+      "end_utc": "2026-11-03T09:49:42.529780+00:00",
+      "seconds": 20.264,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 2057060352,
+      "resource_samples": 20,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Strict gate fails: target0 end message poisons transport; preserved",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgl4/receipt.json",
+      "iteration": 60
+    },
+    {
+      "name": "vulkan-wsi-webgl5",
+      "start_utc": "2026-11-03T09:51:46.030619+00:00",
+      "end_utc": "2026-11-03T09:52:16.154469+00:00",
+      "seconds": 30.124,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 2155343872,
+      "resource_samples": 30,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Strict native acquire/render/present+close0+zero resources PASS",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgl5/receipt.json",
+      "iteration": 61
+    },
+    {
+      "name": "vulkan-wsi-webgpu2",
+      "start_utc": "2026-11-03T09:52:57.840800+00:00",
+      "end_utc": "2026-11-03T09:53:09.589393+00:00",
+      "seconds": 11.749,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1964339200,
+      "resource_samples": 12,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Explicit experimental Linux WebGPU reaches NVIDIA then device OOM; retained failure",
+      "receipt": "/mnt/p3/codex-build/g3g/vulkan-wsi-webgpu2/receipt.json",
+      "iteration": 62
+    },
+    {
+      "name": "presentation-check2",
+      "start_utc": "2026-11-03T09:56:13.875610+00:00",
+      "end_utc": "2026-11-03T09:56:29.717408+00:00",
+      "seconds": 15.842,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1087705088,
+      "resource_samples": 16,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "32 actual GPU checks PASS including context loss",
+      "receipt": "/mnt/p3/codex-build/g3g/presentation-check2/receipt.json",
+      "iteration": 63
     }
   ],
-  "total_owned_build_test_seconds": 254.22899999999998,
-  "last_work_state": "Prepared spec-correct private-context server wait; full old/new regression retest pending. No Firefox native relink yet.",
+  "total_owned_build_test_seconds": 586.011,
+  "last_work_state": "WebGL native WSI and32pixel/lifecycle checks accepted; explicit WebGPU device loss retained; original Firefox cube diagnostic2.73% host, endpoint correlation pending.",
   "jit_current_candidate": {
     "archive": "60847fb85339",
     "native": "26e380d20f7a",
@@ -536,6 +898,6 @@
   },
   "overall_provisional_score": 26,
   "elapsed_wall_seconds": 4422.892398,
-  "elapsed_to_last_seconds": 8365.693318,
-  "owned_build_test_seconds": 307.188
+  "elapsed_to_last_seconds": 10408.306,
+  "owned_build_test_seconds": 586.011
 }

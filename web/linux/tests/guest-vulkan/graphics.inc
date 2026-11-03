@@ -211,9 +211,11 @@ static int graphics_topology_mode(VkPrimitiveTopology t) {
 }
 static unsigned graphics_topology_vertices(VkPrimitiveTopology t) {return graphics_topology_mode(t)>=3?2u:3u;}
 static int graphics_topology_gathered(VkPrimitiveTopology t) {int m=graphics_topology_mode(t);return m==1||m==2||m==4;}
+#ifdef GUEST_VK_ZINK
 static uint32_t graphics_topology_total(VkPrimitiveTopology t,uint32_t count) {
     int m=graphics_topology_mode(t);return m==1||m==2?3u*(count-2u):m==4?2u*(count-1u):count;
 }
+#endif
 static void graphics_json_release(struct graphics_json *j) {if(j->bytes&&j->bytes!=j->inline_bytes)free(j->bytes);j->bytes=NULL;j->cap=0;}
 static void graphics_json_append(struct graphics_json *j,const char *format,...) {
     if(!graphics_json_reserve(j,0))return;

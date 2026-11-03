@@ -112,6 +112,17 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
   const glCompare = Object.freeze({ never: gl.NEVER, less: gl.LESS, equal: gl.EQUAL, 'less-equal': gl.LEQUAL, greater: gl.GREATER,
     'not-equal': gl.NOTEQUAL, 'greater-equal': gl.GEQUAL, always: gl.ALWAYS });
   const resources = new Map(), native = new Map(), waiters = new Set();
+  const presentSurfaces = new Map();
+  // An exclusive offscreen, single-sample drawing buffer can receive a GPU blit.
+  // HTML canvas contexts and multisampled defaults keep presentation unavailable.
+  const presentable = typeof OffscreenCanvas === 'function' &&
+    typeof gl.canvas.transferToImageBitmap === 'function' &&
+    gl.getContextAttributes()?.antialias === false &&
+    !!new OffscreenCanvas(1, 1).getContext('bitmaprenderer');
+  const forgetPresent = entry => {
+    if (entry?.context) try { entry.context.transferFromImageBitmap(null); } catch { /* context may be gone */ }
+  };
+
   let state = 'open', cause = '', bytes = 0, recording = null, tail = Promise.resolve();
   const counters = { passes: 0, draws: 0, uploads: 0, uniformUploads: 0, readbacks: 0, fences: 0, indexDraws: 0,
     ...(allowTextures ? { textureUploads: 0 } : {}) };
@@ -136,6 +147,8 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
   const dispose = (next, reason) => {
     if (state !== 'open') return;
     state = next; cause = reason; recording = null; resources.clear();
+    for (const entry of presentSurfaces.values()) forgetPresent(entry);
+    presentSurfaces.clear();
     gl.canvas.removeEventListener('webglcontextlost', lost);
     for (const cancel of [...waiters]) cancel();
     try { unbind(); } catch { /* context may already be lost */ }
@@ -257,6 +270,7 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
     /** Declared pipeline uniforms: [{group,binding,stages,minSize}] in binding order. */
     pipelineUniforms(handle) { return get(handle, 'pipeline').descriptor.uniforms; },
     getStats() { return freeze({ state, resources: resources.size, nativeObjects: native.size, allocatedBytes: bytes,
+      presentSurfaces: presentSurfaces.size,
       recordingDraws: recording?.draws.length ?? 0, pendingWaits: waiters.size, ...counters,
       ownership: Object.fromEntries(Object.entries(ownership).map(([kind, counts]) => [kind, { ...counts }])) }); },
     createPipeline(input) {
@@ -570,6 +584,65 @@ export function createWebGLRenderer(gl, { onEvent = () => {}, fenceTimeoutMs = 1
           release(vao); release(indexBuffer);
         }
       });
+    },
+    presentable,
+    /** Present logical guest row zero at the top of the page. No CPU pixel readback:
+     *  GPU blit -> ImageBitmap -> transferred page canvas (or initial bitmap sink).
+     *  The caller exclusively owns this WebGL context; every pass establishes state.
+     */
+    present(handle, surface, output, sink) {
+      get(handle, 'target');
+      if (!presentable) fail('offscreen WebGL presentation unavailable', 'unavailable');
+      integer(surface, 1, 0xffffffff, 'presentation surface');
+      if (output !== null && output !== undefined && !(output instanceof OffscreenCanvas)) fail('invalid presentation canvas');
+      if (typeof sink !== 'function') fail('presentation sink required');
+      return enqueue(() => {
+        const target = get(handle, 'target');
+        if (!target.initialized) fail('present requires a successfully stored target');
+        const { width, height } = target.descriptor;
+        let entry = presentSurfaces.get(surface);
+        if (!entry && presentSurfaces.size >= WEBGL_LIMITS.maxResources) fail('presentation surface budget exceeded', 'budget');
+        if (!entry || entry.canvas !== (output ?? null) || entry.width !== width || entry.height !== height) {
+          if (entry) forgetPresent(entry);
+          let context = null;
+          if (output) {
+            if (output.width !== width) output.width = width;
+            if (output.height !== height) output.height = height;
+            context = output.getContext('bitmaprenderer');
+            if (!context) fail('presentation canvas lacks bitmaprenderer', 'unavailable');
+          }
+          entry = { canvas: output ?? null, context, width, height };
+          presentSurfaces.set(surface, entry);
+        }
+        let bitmap;
+        const scissor = gl.isEnabled(gl.SCISSOR_TEST);
+        try {
+          if (gl.canvas.width !== width) gl.canvas.width = width;
+          if (gl.canvas.height !== height) gl.canvas.height = height;
+          gl.disable(gl.SCISSOR_TEST);
+          gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.objects[0]);
+          gl.readBuffer(gl.COLOR_ATTACHMENT0);
+          gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+          // Native Vulkan row zero is GL bottom after shader adjustment. A canvas
+          // bitmap starts at its top, so reverse the destination Y coordinates.
+          gl.blitFramebuffer(0, 0, width, height, 0, height, width, 0, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+          checkGL(); gl.flush();
+          bitmap = gl.canvas.transferToImageBitmap(); checkGL();
+          if (entry.context) { entry.context.transferFromImageBitmap(bitmap); bitmap = null; sink(null); }
+          else { sink(bitmap); bitmap = null; }
+          counters.presents = (counters.presents ?? 0) + 1;
+        } catch (error) { terminal(error); }
+        finally {
+          bitmap?.close();
+          gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+          if (scissor) gl.enable(gl.SCISSOR_TEST); else gl.disable(gl.SCISSOR_TEST);
+        }
+      });
+    },
+    // serveGPU serializes requests and calls this after the corresponding present.
+    forgetSurface(surface) {
+      const entry = presentSurfaces.get(surface); if (!entry) return;
+      presentSurfaces.delete(surface); forgetPresent(entry);
     },
     readback(handle) {
       get(handle, 'target');

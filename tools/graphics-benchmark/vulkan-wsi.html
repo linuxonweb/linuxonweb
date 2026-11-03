@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Current public Vulkan WSI smoke</title>
+<style>body{margin:12px;background:#dceffc;color:#102029;font:14px monospace}.stage{position:relative;width:640px;height:480px}canvas#display{width:640px;height:480px}pre{white-space:pre-wrap;max-height:200px;overflow:auto}</style>
+<h1>Public Vulkan acquire / render / present</h1><div class="stage"><canvas id="display" width="640" height="480"></canvas></div><pre id="out">RUNNING</pre>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice,inputDevice} from '/linux/dist/index.js';
+import {createPresentOverlay} from '/linux/gpu-present-overlay.mjs';
+import {guestGpuHostcallOptions} from '/linux/guest-gpu-config.mjs';
+const backend=new URLSearchParams(location.search).get('backend')||'webgpu';if(!['webgpu','webgl'].includes(backend))throw Error('explicit backend required');
+const report=window.graphicsResults={kind:'current public guest Vulkan WSI smoke',done:false,pass:false,backend,logs:'',bootLogs:'',ownerEvents:[],errors:[],presents:0,presentKinds:{},isolated:crossOriginIsolated};
+const canvas=document.getElementById('display'),overlay=createPresentOverlay({canvas}),start=performance.now(),decoder=new TextDecoder();let machine,timer,partial='';
+function finish(){if(report.done)return;report.done=true;clearTimeout(timer);report.durationMs=performance.now()-start;report.overlay={...overlay.counters};report.pass=report.errors.length===0&&report.exitStatus===0&&/VKGEARS_READY .*wsi=1/.test(report.logs)&&/VKGEARS_SWAPCHAIN images=/.test(report.logs)&&/VKGEARS_DONE .*status=0/.test(report.logs)&&/GUEST_VK_CLOSE status=0/.test(report.logs)&&/GUEST_VK_RESOURCES live=0 allocated_bytes=0/.test(report.logs)&&/GUEST_VK_WSI_LIVE swapchains=0 leaked=0/.test(report.logs)&&/GUEST_VK_WSI_SURFACES live=0 leaked=0/.test(report.logs)&&report.presents>1&&(report.overlay.shown>0||report.overlay.attached>0);document.getElementById('out').textContent=(report.pass?'ALL PASSED':'FAILED')+'\n'+report.logs;machine?.close();}
+function log(bytes){const text=decoder.decode(new Uint8Array(bytes),{stream:true});report.logs=(report.logs+text).slice(-262144);const lines=(partial+text).split('\n');partial=lines.pop().slice(-8192);for(const line of lines){const m=/VULKAN_WSI_SMOKE_EXIT status=(\d+)/.exec(line);if(m){report.exitStatus=Number(m[1]);finish();}}document.getElementById('out').textContent=report.logs.slice(-12000);}
+try{
+ if(!crossOriginIsolated)throw Error('cross-origin isolation required');
+ const meta=await(await fetch('./current-wsi-candidate/build.json')).json(),archive=new Uint8Array(await(await fetch('./current-wsi-candidate/initramfs.cpio')).arrayBuffer());const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',archive))].map(x=>x.toString(16).padStart(2,'0')).join('');if(!meta.pass||!meta.testOnly||hash!==meta.archiveSha256||archive.length!==meta.archiveBytes)throw Error('package integrity');report.package=meta;
+ report.configuration={cpus:navigator.hardwareConcurrency,memoryBytes:1073741824,framebuffer:[640,480],backend,guestPersistentHome:false};
+ timer=setTimeout(()=>{report.errors.push('bounded70s WSI deadline');finish();},70000);
+ machine=await spawnMachine({cpus:report.configuration.cpus,devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}},initcpio:archive,cmdline:meta.cmdline,devices:[consoleDevice(null,new WritableStream({write:log})),entropyDevice(),inputDevice()],framebuffer:{canvas,width:640,height:480,backend:'canvas2d'},gpuHostcall:{...guestGpuHostcallOptions('',backend),log(event){if(report.ownerEvents.length<256)report.ownerEvents.push(event);},onPresent(frame,reply){report.presents++;const kind=frame.request?'request':frame.attached?'attached':frame.bitmap?'bitmap':frame.end?'end':frame.reset?'reset':'other';report.presentKinds[kind]=(report.presentKinds[kind]||0)+1;overlay.present(frame,reply);}}});window.graphicsMachine=machine;
+ void(async()=>{const reader=machine.bootConsole.getReader(),d=new TextDecoder();try{for(;;){const{value,done}=await reader.read();if(done)break;report.bootLogs=(report.bootLogs+d.decode(new Uint8Array(value),{stream:true})).slice(-32768);}}catch(e){report.bootError=String(e);}finally{reader.releaseLock();}})();
+ machine.closed.catch(error=>{if(!report.done){report.errors.push(String(error));finish();}});
+}catch(error){report.errors.push(String(error));finish();}
+</script>

@@ -557,10 +557,12 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
           case OP.PRESENT: {
             if (!allowPresent) fail('present not negotiated');
             // target, surface, window x, y (guest root coordinates), width, height, flags (bit0: last frame).
-            exact(28); const target = get(v.getUint32(0,true), 'graphics-target'), surface = v.getUint32(4,true), flags = v.getUint32(24,true);
+            exact(28); const surface = v.getUint32(4,true), flags = v.getUint32(24,true);
             const rect = { x: v.getInt32(8,true), y: v.getInt32(12,true), width: v.getUint32(16,true), height: v.getUint32(20,true) };
             if (flags & ~1) fail('invalid present flags');
             if (flags & 1) { presentSurfaces.delete(surface); graphicsRenderer.forgetSurface?.(surface); presentSink({ surface, end: true }); break; }
+            // End messages deliberately carry target=0; only a frame needs a live target.
+            const target = get(v.getUint32(0,true), 'graphics-target');
             presentSurfaces.add(surface); report.presents = (report.presents ?? 0) + 1;
             await graphicsRenderer.present(target.object, surface, presentSink.canvas?.(surface) ?? null, bitmap => presentSink({ surface, bitmap, ...rect }));
             break;

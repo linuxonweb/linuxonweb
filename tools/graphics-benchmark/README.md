@@ -70,3 +70,20 @@ native regression. It is not loaded by production and does not establish sync
 correctness. Full desktop OpenGL/GLX, complete Vulkan/WSI, Firefox native JIT
 GC/guard acceptance, hardware video and the overall host-performance target
 remain separate outstanding work.
+
+## Current native Vulkan presentation
+
+`docs/gpt6-astra-rubywebterm-vulkan-wsi-20261103.md` describes the accepted bounded
+WebGL2 WSI path and its failures/limits. `fetch-vulkan-sdk.py` verifies pinned
+upstream inputs; `build-vulkan-wsi.py` produces a fresh native public-Vulkan
+sample; `package-vulkan-wsi.py` appends it to a verified plain-rootfs fixture.
+Use `vulkan-wsi.html` as the isolated page override and `vulkan-wsi-hook.mjs` to
+capture a real frame before teardown. The acceptance gate requires successful
+acquire/render/present, native CLOSE=0, and no guest resources left alive.
+`presentation.html` separately tests asymmetric pixels, GPU-only copying,
+resize, state preservation, and lifecycle/device-loss behavior.
+
+`GRAPHICS_WEBGPU_DIAGNOSTIC=1` is allowed only with the isolated test server and
+`GRAPHICS_ANGLE=vulkan`. It adds Chrome's experimental Linux WebGPU flag to that
+fresh developer browser only. It does not alter product settings or switch
+backends; the retained NVIDIA device-allocation failure is not a passed gate.

@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><title>WebGL Vulkan presentation acceptance</title><style>body{background:#b7d9ed;color:#14283b;font:14px monospace}canvas{border:1px solid #123}</style><h1>GPU presentation correctness</h1><pre id="out">Running</pre><script type="module">
+import {createWebGLRenderer} from '../guest-vulkan-webgl/renderer.mjs';
+import {createWebGLGraphicsTranslator} from '../guest-vulkan-webgl/translator/index.mjs';
+import {GPUTEST_TRANSLATORS} from '../../gputest.mjs';
+const report=window.graphicsResults={done:false,pass:false,checks:0,cases:[],errors:[],scope:'Real WebGL GPU blit presentation; no full Vulkan conformance or throughput claim'};
+const check=(ok,label)=>{report.checks++;if(!ok)throw Error(label);report.cases.push(label);};
+const reject=async(action,label,code='validation')=>{let error;try{await action();}catch(e){error=e;}check(error?.code===code,label+': '+(error?.message??'unexpected success'));};
+const contexts=[],renderers=[];let translator;
+function context(){const canvas=new OffscreenCanvas(1,1),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,premultipliedAlpha:false});check(!!gl,'offscreen WebGL2');contexts.push(gl);const r=createWebGLRenderer(gl);renderers.push(r);return {r,gl};}
+function canvasPixels(canvas,width,height){const c=new OffscreenCanvas(width,height),cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(canvas,0,0);return cx.getImageData(0,0,width,height).data;}
+function same(actual,expected,label){check(actual.length===expected.length&&actual.every((b,i)=>Math.abs(b-expected[i])<=1),label);}
+try{
+ const {r,gl}=context();const debug=gl.getExtension('WEBGL_debug_renderer_info');report.adapter=gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER);check(r.presentable===true,'required APIs negotiate presentation');
+ translator=await createWebGLGraphicsTranslator(GPUTEST_TRANSLATORS.glsl);const shaders={};for(const [ext,stage]of[['vert','vertex'],['frag','fragment']]){const bytes=new Uint8Array(await(await fetch('./presentation.'+ext+'.spv')).arrayBuffer());shaders[stage]=await translator.translate(bytes,{stage,entryPoint:'main'});}
+ const pipeline=await r.createPipeline({...shaders,vertexBuffers:[{stride:20,attributes:[{location:0,offset:0,format:'float32x2'},{location:1,offset:8,format:'float32x3'}]}]});
+ const data=new Float32Array([-1,-1,1,0,0, 1,-1,0,1,0, -1,1,0,0,1]),buffer=await r.createVertexBuffer({size:data.byteLength});await r.uploadVertexBuffer(buffer,0,new Uint8Array(data.buffer));
+ async function draw(width,height){const t=await r.createTarget({width,height});r.begin({target:t,loadOp:'clear',storeOp:'store',clearColor:[.1,.2,.3,1]});r.draw({pipeline,vertexBuffers:[{buffer}],vertexCount:3,scissor:{x:2,y:2,width:width-4,height:height-4}});await r.end();return t;}
+ const target=await draw(73,51),oracle=await r.readback(target);check(oracle.pixels[(4*73+4)*4]>oracle.pixels[(4*73+4)*4+2]&&oracle.pixels[(45*73+4)*4+2]>oracle.pixels[(45*73+4)*4],'asymmetric top and bottom oracle');
+ const original={readPixels:gl.readPixels,getBufferSubData:gl.getBufferSubData};const prohibit=()=>{throw Error('CPU readback forbidden during presentation');};
+ async function present(t,surface,output){let bitmap='unset';gl.readPixels=prohibit;gl.getBufferSubData=prohibit;try{await r.present(t,surface,output,b=>{bitmap=b;});}finally{Object.assign(gl,original);}return bitmap;}
+ let bitmap=await present(target,11,null);check(bitmap instanceof ImageBitmap,'initial ImageBitmap');same(canvasPixels(bitmap,73,51),oracle.pixels,'initial bitmap exact asymmetric orientation');bitmap.close();
+ const output=new OffscreenCanvas(1,1);check(await present(target,11,output)===null,'attached canvas signal');same(canvasPixels(output,73,51),oracle.pixels,'attached bitmaprenderer exact pixels');
+ same((await r.readback(target)).pixels,oracle.pixels,'present preserves source target');check(gl.isEnabled(gl.SCISSOR_TEST),'presentation restores scissor enable');
+ const resized=await draw(91,29),oracle2=await r.readback(resized);await present(resized,11,output);check(output.width===91&&output.height===29,'surface resize dimensions');same(canvasPixels(output,91,29),oracle2.pixels,'resized surface exact pixels');
+ bitmap=await present(target,12,null);same(canvasPixels(bitmap,73,51),oracle.pixels,'another surface after drawing-buffer resize');bitmap.close();
+ const replacement=new OffscreenCanvas(1,1);await present(target,11,replacement);same(canvasPixels(replacement,73,51),oracle.pixels,'replacement attached canvas');
+ check(canvasPixels(output,91,29).every(x=>x===0),'replaced canvas released and cleared');
+ const empty=await r.createTarget({width:4,height:4});await reject(()=>r.present(empty,15,null,()=>{}),'uninitialized target rejected');await r.destroy(empty);
+ await reject(()=>r.present(target,0,null,()=>{}),'invalid surface rejected');await reject(()=>r.present(target,15,document.createElement('canvas'),()=>{}),'foreign output type rejected');
+ await r.destroy(resized);await reject(()=>r.present(resized,11,null,()=>{}),'destroyed target rejected');
+ r.forgetSurface(11);r.forgetSurface(12);check(r.getStats().presentSurfaces===0,'surface entries released');check(canvasPixels(replacement,73,51).every(x=>x===0),'forgotten output cleared');
+ await r.destroy(buffer);await r.destroy(pipeline);await r.destroy(target);r.close();const closed=r.getStats();check(closed.resources===0&&closed.nativeObjects===0&&closed.allocatedBytes===0&&closed.presentSurfaces===0,'closed renderer resources balanced');report.closed=closed;
+ const pending=context(),pt=await pending.r.createTarget({width:2,height:2});pending.r.begin({target:pt,loadOp:'clear',storeOp:'store',clearColor:[1,0,0,1]});await pending.r.end();const promise=pending.r.present(pt,1,null,()=>{throw Error('closed presentation must not emit');});pending.r.close();await reject(()=>promise,'close rejects queued presentation','unavailable');check(pending.r.getStats().presentSurfaces===0,'queued close leaks no surface');
+ const failure=context(),ft=await failure.r.createTarget({width:2,height:2});failure.r.begin({target:ft,loadOp:'clear',storeOp:'store',clearColor:[1,0,0,1]});await failure.r.end();let failedBitmap;await reject(()=>failure.r.present(ft,1,null,b=>{failedBitmap=b;throw Error('sink rejected');}),'sink failure is terminal','gpu');check(failedBitmap.width===0&&failure.r.getStats().presentSurfaces===0&&failure.r.getStats().nativeObjects===0,'failed sink closes bitmap and resources');
+ const loss=context(),lt=await loss.r.createTarget({width:3,height:2}),lostOutput=new OffscreenCanvas(3,2);loss.r.begin({target:lt,loadOp:'clear',storeOp:'store',clearColor:[1,0,0,1]});await loss.r.end();await loss.r.present(lt,1,lostOutput,()=>{});const lostEvent=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('context loss deadline')),1500);loss.gl.canvas.addEventListener('webglcontextlost',()=>{clearTimeout(timer);resolve();},{once:true});});loss.gl.getExtension('WEBGL_lose_context').loseContext();await lostEvent;const lostStats=loss.r.getStats();check(lostStats.state==='lost'&&lostStats.presentSurfaces===0&&lostStats.nativeObjects===0,'context loss releases presentation and native resources');check(canvasPixels(lostOutput,3,2).every(x=>x===0),'context loss clears attached canvas');await reject(()=>loss.r.present(lt,1,lostOutput,()=>{}),'lost renderer rejects presentation','unavailable');
+ const dom=document.createElement('canvas'),domgl=dom.getContext('webgl2',{antialias:false});contexts.push(domgl);const domr=createWebGLRenderer(domgl);renderers.push(domr);check(domr.presentable===false,'HTML canvas does not advertise unavailable transfer API');domr.close();
+ report.pass=true;
+}catch(error){report.errors.push(String(error.stack??error));}
+finally{translator?.close();for(const r of renderers)r.close();for(const gl of contexts)gl.getExtension('WEBGL_lose_context')?.loseContext();report.done=true;document.getElementById('out').textContent=JSON.stringify(report,null,2);}
+</script>

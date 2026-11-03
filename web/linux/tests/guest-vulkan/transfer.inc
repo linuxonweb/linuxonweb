@@ -95,8 +95,9 @@ struct recorded { unsigned op; uint64_t image, buffer, pipeline, set; VkDeviceSi
 #ifdef GUEST_VK_ZINK
     VkBufferImageCopy region; unsigned has_region; /* B2f: sub-rectangle image->buffer copy */
     VkBufferCopy copy; uint64_t dst; /* C_BUFFER_COPY: one region, src in `buffer`; C_BLIT: dst image */
-    VkImageBlit blit; VkFilter filter; unsigned level; /* C_BLIT region; C_TEXTURE_COPY level */
+    VkImageBlit blit; VkFilter filter; /* C_BLIT region */
 #endif
+    unsigned level; /* C_TEXTURE_COPY mip level is used by every graphics profile. */
     union { struct graphics_begin_record begin; struct graphics_draw_record draw; } graphics;
 };
 struct graphics_command_state { unsigned in_pass; uint64_t pipeline; struct graphics_vertex_ref vertices[8]; uint64_t sets[4];
@@ -792,7 +793,10 @@ static VkResult execute_submit(void) {
     memset(used_vertices,0,sizeof(used_vertices));memset(used_uniforms,0,sizeof(used_uniforms));memset(readback,0,sizeof(readback));
     memset(written,0,sizeof(written));memset(ready,0,sizeof(ready));memset(dirty,0,sizeof(dirty));
     struct resource *pass_image=NULL,*pass_depth=NULL;const struct graphics_pass *pass=NULL;
-    unsigned pass_start=0,pass_draws=0,validation_index=0,validation_kind=0;
+    unsigned pass_start=0,pass_draws=0;
+#ifdef GUEST_VK_ZINK
+    unsigned validation_index=0,validation_kind=0;
+#endif
 #define SUBMIT_REJECT() do { \
     ZREJ("submit_validate REJECT command=%u/%u kind=%u predicate=transfer.inc:%u\n",validation_index,command.count,validation_kind,(unsigned)__LINE__); \
     ZINK_TRACE("submit_validate pass color=%u actualLayout=%d expectedLayout=%d initialized=%u load=%d depth=%u actualDepthLayout=%d expectedDepthLayout=%d depthInitialized=%u depthLoad=%d stencilInitialized=%u stencilLoad=%d\n", \
@@ -806,7 +810,9 @@ static VkResult execute_submit(void) {
     zink_ring_reset();
     for(unsigned n=0;n<command.count;n++) {
         struct recorded *c=&command.commands[n];struct resource *i=resource_get(c->image,R_IMAGE),*b=resource_get(c->buffer,R_BUFFER);
+#ifdef GUEST_VK_ZINK
         validation_index=n;validation_kind=c->op;
+#endif
         if(pass_image&&c->op!=C_GRAPHICS_DRAW&&c->op!=C_GRAPHICS_END)SUBMIT_REJECT();
         switch(c->op) {
         case 1: case 2: case 3:
@@ -937,7 +943,9 @@ static VkResult execute_submit(void) {
         default:SUBMIT_REJECT();
         }
     }
+#ifdef GUEST_VK_ZINK
     validation_index=command.count;validation_kind=0;
+#endif
     if(pass_image)SUBMIT_REJECT();
     for(unsigned i=0;i<MAX_RES;i++)if(written[i]||dirty[i])SUBMIT_REJECT();
 #undef SUBMIT_REJECT

@@ -54,3 +54,19 @@ The product defaults guest Vulkan to WebGPU and requires an explicit WebGL choic
 ## Bounded host JIT cache
 
 The reviewed per-worker cache now retains at most1024 compiled-module references and8MiB of immutable Wasm source images. LRU eviction leaves installed callable code intact; the12-word native stats ABI is unchanged. Seven real-Wasm lifecycle groups and the explicit current native contract69/69 pass. Historical fixture failures are retained: flag1 is now supported PRIVATE, and private allocations cannot be freed through the shared-log free API. The fixture asserts that refusal and continued callability rather than inventing a new lifetime contract. This cap does not bound installed private code or engine-native compiled memory and does not establish Firefox native GC safety or faster startup. Evidence: `tools/graphics-benchmark/evidence/gpt6-astra-jit-cache-20261103.json`.
+
+## 2026-11-03 — bounded Vulkan WSI accepted, scope score 34/100
+
+The scope score is not the overall project score. The final native sample
+passes acquire/render/present, close0, and zero guest resources/swapchains/
+surfaces. The real-GPU renderer fixture passes32 checks including context loss.
+The host end-message target0 bug is fixed, and explicit WebGL no longer asks
+for a WebGPU-only capability. Both native SDK profiles compile with warnings
+as errors. Fresh sample SHA and all receipts are in the WSI evidence JSON.
+
+All earlier failures remain: unsupported owner configuration, missing WebGL
+presentation, the native end-message rejection, and explicit WebGPU device
+OOM after four frames. No automatic backend fallback, conformance, fullGL,
+whole-Firefox acceleration, or50% performance claim is made. The iteration
+JSON now includes all owned build/test receipts through the32-check gate,
+with one-second resource samples and exact cleanup outcomes.
