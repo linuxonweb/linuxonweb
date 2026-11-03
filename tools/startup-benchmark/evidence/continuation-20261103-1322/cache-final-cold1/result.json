@@ -1,0 +1,562 @@
+{
+  "schema": 1,
+  "scope": "Actual production frontend Launch and native Firefox with test-only nonce panel appended after original GPU workload; strict cache candidate, fresh owned browser profile, three CPUs, 2048MiB, WebGL. Per-HomeFS I/O instrumentation active.",
+  "start": "2026-11-03T17:20:44.305Z",
+  "end": "2026-11-03T17:24:21.492Z",
+  "elapsedMs": 217187.757,
+  "launchRequest": {
+    "kind": "production Start Firefox menu",
+    "hostMs": 5938.072,
+    "utc": "2026-11-03T17:20:50.243Z",
+    "page": {
+      "requestAtMs": 927.2699999809265,
+      "pageTimeOrigin": 1793726449322.51
+    }
+  },
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&readiness-nonce=readinessevidence&input-sequence=rapid&readiness-autostop=1&input-check=1&input-check-after-ready=1&close-firefox=1&close-bound-seconds=90",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        3460.757,
+        4524.757
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "milestones": {
+    "system image": 6122.012999999999,
+    "machine started": 6122.035,
+    "home: persistent storage mounted": 17120.665,
+    "display: starting Xfbdev": 19317.764,
+    "starting /bin/aurora-wm": 20351.683,
+    "[wm-ready]": 21364.663,
+    "starting /bin/firefox": 21364.688,
+    "gl context 2 open": 47919.715
+  },
+  "readiness": {
+    "nonce": "readinessevidence",
+    "paint": {
+      "schema": 1,
+      "nonce": "readinessevidence",
+      "phase": "paint",
+      "epochMs": 1793726543418,
+      "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+      "innerScreenX": 16,
+      "innerScreenY": 133,
+      "dpr": 1,
+      "input": {
+        "x": 35,
+        "y": 125,
+        "width": 456,
+        "height": 44
+      },
+      "viewport": {
+        "width": 1152,
+        "height": 489
+      },
+      "webgl": "ok"
+    },
+    "paintObservedLaunchMs": 95946.844,
+    "observations": [
+      {
+        "phase": "focus",
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "focus",
+          "epochMs": 1793726546055,
+          "value": ""
+        },
+        "observedLaunchMs": 98257.218,
+        "observedUtc": "2026-11-03T17:22:28.500Z"
+      },
+      {
+        "phase": "typed",
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "typed",
+          "epochMs": 1793726548651,
+          "value": "readinessevidence"
+        },
+        "observedLaunchMs": 100660.438,
+        "observedUtc": "2026-11-03T17:22:30.903Z"
+      },
+      {
+        "phase": "complete",
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "complete",
+          "epochMs": 1793726552693,
+          "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+          "title": "READINESS COMPLETE",
+          "value": "readinessevidence"
+        },
+        "observedLaunchMs": 104807.269,
+        "observedUtc": "2026-11-03T17:22:35.050Z"
+      },
+      {
+        "phase": "regression-paint",
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "regression-paint",
+          "epochMs": 1793726552697,
+          "dpr": 1,
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "input": {
+            "x": 35,
+            "y": 358.16668701171875,
+            "width": 458,
+            "height": 39
+          }
+        },
+        "observedLaunchMs": 105606.436,
+        "observedUtc": "2026-11-03T17:22:35.849Z"
+      }
+    ],
+    "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+    "accepted": true,
+    "inputLocation": {
+      "canvas": {
+        "left": 51.5,
+        "top": 0,
+        "width": 1280,
+        "height": 720,
+        "bufferWidth": 1280,
+        "bufferHeight": 720
+      },
+      "guestX": 279,
+      "guestY": 280,
+      "x": 330.5,
+      "y": 280
+    },
+    "inputStartLaunchMs": 97007.465,
+    "focus": {
+      "phase": "focus",
+      "signal": {
+        "schema": 1,
+        "nonce": "readinessevidence",
+        "phase": "focus",
+        "epochMs": 1793726546055,
+        "value": ""
+      },
+      "observedLaunchMs": 98257.218,
+      "observedUtc": "2026-11-03T17:22:28.500Z"
+    },
+    "typingProtocol": "Physical rapid key sequence, each intended hold20ms and gap20ms; exact native text required",
+    "inputAcknowledgments": [],
+    "keysSentLaunchMs": 100436.033,
+    "typed": {
+      "phase": "typed",
+      "signal": {
+        "schema": 1,
+        "nonce": "readinessevidence",
+        "phase": "typed",
+        "epochMs": 1793726548651,
+        "value": "readinessevidence"
+      },
+      "observedLaunchMs": 100660.438,
+      "observedUtc": "2026-11-03T17:22:30.903Z"
+    },
+    "enterLaunchMs": 101683.704,
+    "complete": {
+      "phase": "complete",
+      "signal": {
+        "schema": 1,
+        "nonce": "readinessevidence",
+        "phase": "complete",
+        "epochMs": 1793726552693,
+        "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+        "title": "READINESS COMPLETE",
+        "value": "readinessevidence"
+      },
+      "observedLaunchMs": 104807.269,
+      "observedUtc": "2026-11-03T17:22:35.050Z"
+    },
+    "completeScreenshotLaunchMs": 105437.977,
+    "completeScreenshotNavigationMs": 106378.47,
+    "keyboardNavigationPassed": true,
+    "thirtySecondGate": false,
+    "acceptance": "Independent visual review confirmed exact nonce, distinct file navigation and visible READINESS COMPLETE at105437.977ms after Launch. This is an upper bound on demonstrated usable readiness, not an earliest-render claim.",
+    "postReadinessInput": {
+      "startedLaunchMs": 105711.038,
+      "readinessTimestampUnchanged": true,
+      "priorFocusEpochMs": 1793726546055,
+      "nativeFocus": {
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "focus",
+          "epochMs": 1793726554313,
+          "value": ""
+        },
+        "observedLaunchMs": 106361.967
+      },
+      "completedLaunchMs": 114499.323
+    },
+    "inputChecks": [
+      {
+        "label": "held-key-no-invented-repeat",
+        "expected": "a",
+        "observedLaunchMs": 107219.774
+      },
+      {
+        "label": "explicit-host-repeat-2",
+        "expected": "aa",
+        "observedLaunchMs": 107267.568
+      },
+      {
+        "label": "explicit-host-repeat-3",
+        "expected": "aaa",
+        "observedLaunchMs": 107639.165
+      },
+      {
+        "label": "explicit-host-repeat-4",
+        "expected": "aaaa",
+        "observedLaunchMs": 108012.689
+      },
+      {
+        "label": "modifier-select-all-and-delete",
+        "expected": "",
+        "observedLaunchMs": 108567.864
+      },
+      {
+        "label": "shift-combination",
+        "expected": "A",
+        "observedLaunchMs": 109752.745
+      },
+      {
+        "label": "modifier-select-all-and-delete",
+        "expected": "",
+        "observedLaunchMs": 110651.167
+      },
+      {
+        "label": "rapid-taps",
+        "expected": "taptest",
+        "observedLaunchMs": 112327.153
+      },
+      {
+        "label": "modifier-select-all-and-delete",
+        "expected": "",
+        "observedLaunchMs": 112630.996
+      },
+      {
+        "label": "focus-loss-start",
+        "expected": "b",
+        "observedLaunchMs": 112915.28
+      },
+      {
+        "label": "focus-loss-releases-held-key",
+        "expected": "b",
+        "observedLaunchMs": 113882.916
+      },
+      {
+        "label": "modifier-select-all-and-delete",
+        "expected": "",
+        "observedLaunchMs": 114472.784
+      }
+    ]
+  },
+  "nativeClose": {
+    "kind": "Firefox Ctrl+Q, followed by native init exit observation from this launch after request",
+    "requestedLaunchMs": 115244.704,
+    "expectedExitStatus": 0,
+    "exitLogFloorId": 384,
+    "confirmation": {
+      "kind": "Observed native Quit Nightly dialog",
+      "reference": "input-host1/native-close.png",
+      "guestX": 718.5,
+      "guestY": 229
+    },
+    "boundSeconds": 90,
+    "progress": [
+      {
+        "observedLaunchMs": 116959.036,
+        "io": {
+          "active": 1,
+          "busyMs": 36343.60499662161,
+          "writeCalls": 1743,
+          "writeBytes": 17066413,
+          "fsyncCalls": 1829
+        }
+      },
+      {
+        "observedLaunchMs": 122036.364,
+        "io": {
+          "active": 1,
+          "busyMs": 40994.13499838114,
+          "writeCalls": 2233,
+          "writeBytes": 19058590,
+          "fsyncCalls": 2312
+        }
+      },
+      {
+        "observedLaunchMs": 127210.17899999999,
+        "io": {
+          "active": 1,
+          "busyMs": 45575.664998829365,
+          "writeCalls": 2924,
+          "writeBytes": 22022110,
+          "fsyncCalls": 2958
+        }
+      },
+      {
+        "observedLaunchMs": 132558.03999999998,
+        "io": {
+          "active": 1,
+          "busyMs": 48786.8999992609,
+          "writeCalls": 3134,
+          "writeBytes": 25015082,
+          "fsyncCalls": 3143
+        }
+      },
+      {
+        "observedLaunchMs": 137671.49,
+        "io": {
+          "active": 1,
+          "busyMs": 53101.11999964714,
+          "writeCalls": 3385,
+          "writeBytes": 27849639,
+          "fsyncCalls": 3378
+        }
+      },
+      {
+        "observedLaunchMs": 142780.01299999998,
+        "io": {
+          "active": 1,
+          "busyMs": 57979.77500015497,
+          "writeCalls": 3793,
+          "writeBytes": 33560343,
+          "fsyncCalls": 3724
+        }
+      },
+      {
+        "observedLaunchMs": 147843.83500000002,
+        "io": {
+          "active": 1,
+          "busyMs": 62762.18499928713,
+          "writeCalls": 4132,
+          "writeBytes": 37135939,
+          "fsyncCalls": 4014
+        }
+      },
+      {
+        "observedLaunchMs": 153086.99699999997,
+        "io": {
+          "active": 1,
+          "busyMs": 67739.60999935865,
+          "writeCalls": 4492,
+          "writeBytes": 40102015,
+          "fsyncCalls": 4335
+        }
+      },
+      {
+        "observedLaunchMs": 158168.229,
+        "io": {
+          "active": 1,
+          "busyMs": 72051.94500082731,
+          "writeCalls": 4741,
+          "writeBytes": 40457942,
+          "fsyncCalls": 4580
+        }
+      },
+      {
+        "observedLaunchMs": 163336.005,
+        "io": {
+          "active": 0,
+          "busyMs": 74542.75999987125,
+          "writeCalls": 4881,
+          "writeBytes": 40760917,
+          "fsyncCalls": 4719
+        }
+      },
+      {
+        "observedLaunchMs": 168371.821,
+        "io": {
+          "active": 1,
+          "busyMs": 78152.18000024557,
+          "writeCalls": 5401,
+          "writeBytes": 41795061,
+          "fsyncCalls": 5222
+        }
+      },
+      {
+        "observedLaunchMs": 173403.76799999998,
+        "io": {
+          "active": 0,
+          "busyMs": 81308.31999999285,
+          "writeCalls": 5718,
+          "writeBytes": 42437512,
+          "fsyncCalls": 5532
+        }
+      },
+      {
+        "observedLaunchMs": 178620.684,
+        "io": {
+          "active": 0,
+          "busyMs": 84310.63499987125,
+          "writeCalls": 6073,
+          "writeBytes": 43146152,
+          "fsyncCalls": 5876
+        }
+      },
+      {
+        "observedLaunchMs": 183729.76899999997,
+        "io": {
+          "active": 1,
+          "busyMs": 88521.39999997616,
+          "writeCalls": 6494,
+          "writeBytes": 44006081,
+          "fsyncCalls": 6283
+        }
+      },
+      {
+        "observedLaunchMs": 189064.72600000002,
+        "io": {
+          "active": 1,
+          "busyMs": 92281.72000020742,
+          "writeCalls": 6815,
+          "writeBytes": 44731407,
+          "fsyncCalls": 6597
+        }
+      },
+      {
+        "observedLaunchMs": 194150.501,
+        "io": {
+          "active": 1,
+          "busyMs": 96403.8949995637,
+          "writeCalls": 7382,
+          "writeBytes": 47066607,
+          "fsyncCalls": 7164
+        }
+      },
+      {
+        "observedLaunchMs": 199179.79499999998,
+        "io": {
+          "active": 1,
+          "busyMs": 100546.41500025988,
+          "writeCalls": 7911,
+          "writeBytes": 49233391,
+          "fsyncCalls": 7693
+        }
+      },
+      {
+        "observedLaunchMs": 204312.15399999998,
+        "io": {
+          "active": 1,
+          "busyMs": 104594.7300003171,
+          "writeCalls": 8427,
+          "writeBytes": 51247487,
+          "fsyncCalls": 8206
+        }
+      }
+    ]
+  },
+  "classification": {
+    "readinessVisibleReviewed": true,
+    "thirtySecondGate": false,
+    "twelveNativeKeyboardChecksPassed": true,
+    "nativeQuitConfirmed": false,
+    "nativeQuitFailure": "Confirmation click raced native dialog rendering: screenshot before click showed no dialog, final screenshot shows Quit Nightly still pending. This does not establish a 90-second native shutdown failure.",
+    "normalHostStopTested": false,
+    "warmStarted": false,
+    "cacheReuseAccepted": false,
+    "productionCachePromoted": false
+  },
+  "resourceSummary": {
+    "pssPeakBytes": 3029913600,
+    "rssSumPeakBytes": 3813457920,
+    "minAvailableBytes": 25943597056,
+    "samples": 209,
+    "pssSamples": 42,
+    "pssIntervalMs": 5000
+  },
+  "ownerCleanup": {
+    "remainingOwned": 0,
+    "finishedNormally": false,
+    "errors": [
+      {
+        "ms": 213392.084,
+        "error": "Error: Native Firefox Close did not report successful exit",
+        "stack": "Error: Native Firefox Close did not report successful exit\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:387:78"
+      }
+    ]
+  },
+  "image": {
+    "archiveSha256": "890c5d64578056c34588aa77dd4c27a00294bd1ecab5de4971c511ffd3063dcb",
+    "archiveBytes": 116278838,
+    "generation": "68e41f1cedaa95b1c4bda3cafb793968b19bd76d19c0b57006c07fa7a4e94922",
+    "sourceArchiveSha256": "76ad0151688eb09514fd1300df4fe80e73f08eb2909bb2c3215adf2fbe728a19",
+    "sourceInitSha256": "74a5af5da55ed65113b5f678b8dfa8fe182359cb160b48474334244b06082f83"
+  },
+  "cacheIoAtFailure": {
+    "compatibility.ini": {
+      "reads": 0,
+      "writes": 9,
+      "readBytes": 0,
+      "writeBytes": 216,
+      "readMs": 0,
+      "writeMs": 47.62999999523163
+    },
+    "startupCache.4.little": {
+      "reads": 0,
+      "writes": 610,
+      "readBytes": 0,
+      "writeBytes": 4144078,
+      "readMs": 0,
+      "writeMs": 4796.214999914169
+    },
+    "scriptCache.bin": {
+      "reads": 0,
+      "writes": 608,
+      "readBytes": 0,
+      "writeBytes": 14246548,
+      "readMs": 0,
+      "writeMs": 7841.72500026226
+    },
+    "scriptCache-child.bin": {
+      "reads": 0,
+      "writes": 7,
+      "readBytes": 0,
+      "writeBytes": 1764,
+      "readMs": 0,
+      "writeMs": 71.25000005960464
+    }
+  },
+  "screenshots": [
+    {
+      "name": "readiness-complete.png",
+      "bytes": 444121,
+      "sha256": "3dc22284a86706eee22288824333ace8fcd5f0ff0275121841111f023aaee1b8"
+    },
+    {
+      "name": "post-readiness-keyboard.png",
+      "bytes": 444417,
+      "sha256": "7be408828a6d0aeac675b7b7adb511fe09b8228a17b93fe28d0834fcdf3832ed"
+    },
+    {
+      "name": "native-quit-dialog.png",
+      "bytes": 444417,
+      "sha256": "7be408828a6d0aeac675b7b7adb511fe09b8228a17b93fe28d0834fcdf3832ed"
+    },
+    {
+      "name": "native-close.png",
+      "bytes": 449788,
+      "sha256": "81ff40e5550c50b4655eaee2fcde15870a3bb84df7aa0f72d88525c275772b0e"
+    }
+  ]
+}

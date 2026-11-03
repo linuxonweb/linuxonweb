@@ -1,0 +1,70 @@
+{
+  "startedUtc": "2026-11-03T17:18:07.127597+00:00",
+  "finishedUtc": "2026-11-03T17:19:41.182486+00:00",
+  "durationSeconds": 94.055,
+  "argv": [
+    "python3",
+    "tools/startup-benchmark/build-final-cache-fixture.py",
+    "../../../codex-build/lwc/final-cache-build2",
+    "out/pkp3/persistence-image1"
+  ],
+  "cwd": "/mnt/p3/project/linux/linuxonweb",
+  "exitCode": 0,
+  "stopReason": null,
+  "ownedProcessesRemaining": 0,
+  "cleanupInventoryErrors": [],
+  "ownerPeakRssBytes": 20758528,
+  "ownedTreePeakRssBytes": 212606976,
+  "ownedTreePeakPssBytes": 194086912,
+  "resourceSamples": 94,
+  "pssSamples": 19,
+  "quotaReadySeconds": 0.001,
+  "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+  "quotaFailure": null,
+  "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+  "sampling": {
+    "cpuRssAvailableRamQuotaSeconds": 1,
+    "pssSeconds": 5,
+    "pssPeakIsSampledLowerBound": true
+  },
+  "pass": true,
+  "phases": {
+    "startedUtc": "2026-11-03T17:18:07.402242+00:00",
+    "diagnosticOnly": true,
+    "phases": [
+      {
+        "command": [
+          "python3",
+          "tools/startup-benchmark/prepare-readiness.py",
+          "--output",
+          "../../../codex-build/lwc/final-cache-build2/readiness",
+          "--nonce",
+          "readinessevidence",
+          "--base-dir",
+          "out/pkp3/persistence-image1"
+        ],
+        "durationSeconds": 43.126,
+        "exitCode": 0
+      },
+      {
+        "command": [
+          "python3",
+          "tools/firefox-lifecycle/build-cache-image.py",
+          "--base-dir",
+          "../../../codex-build/lwc/final-cache-build2/readiness",
+          "--output",
+          "../../../codex-build/lwc/final-cache-build2/cache",
+          "--desktop-extras-manifest",
+          "../../../codex-build/lwc/final-cache-build2/readiness/desktop-extras.cpio.json",
+          "--desktop-extras-file",
+          "../../../codex-build/lwc/final-cache-build2/readiness/desktop-extras.cpio"
+        ],
+        "durationSeconds": 49.739,
+        "exitCode": 0
+      }
+    ],
+    "finishedUtc": "2026-11-03T17:19:40.267946+00:00",
+    "durationSeconds": 92.866,
+    "passBuild": true
+  }
+}

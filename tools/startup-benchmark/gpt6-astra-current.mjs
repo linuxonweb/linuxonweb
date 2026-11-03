@@ -86,6 +86,26 @@ async function typeGuestCommand(command) {
  }
  await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
 }
+const packageBaseCheckScript = `#!/bin/busybox sh
+BB=/bin/busybox
+failures=0
+check() { label="$1"; shift; if "$@" >/dev/console 2>&1; then echo "PACKAGE_BASE_CHECK $label PASS" >/dev/console; else echo "PACKAGE_BASE_CHECK $label FAIL" >/dev/console; failures=$((failures+1)); fi; }
+check helper-status /usr/sbin/apk-persist status
+check optional-gzip-absent "$BB" test ! -e /usr/bin/gzip
+check optional-tar-absent "$BB" test ! -e /usr/bin/tar
+check protected-native-database /sbin/apk info --installed apk-tools busybox ca-certificates curl
+check protected-world "$BB" cmp /etc/apk/world /etc/linuxonweb-packages/base-world
+check user-marker "$BB" grep -qx package-production-20261103 /home/admin/.package-persistence-production
+check corruption-evidence "$BB" test -s /home/admin/.package-recovery-original.apk
+if "$BB" test "$failures" = 0; then echo PACKAGE_BASE_RECOVERY_VERIFIED >/dev/console; else echo "PACKAGE_BASE_RECOVERY_FAILED failures=$failures" >/dev/console; fi
+exit "$failures"
+`;
+async function preparePackageBaseCheck(script) {
+ if(location.origin!=='http://127.0.0.1:38082'||!document.querySelector('#power-stop')?.hidden)throw Error('Base fixture origin or idle state differs');
+ const h=await(await import('./persistent-home.mjs')).openPersistentHome();
+ try {const admin=await h.lookup(h.root,'admin');if(!admin)throw Error('Owned admin home absent');const marker=await h.lookup(admin,'.package-persistence-production');if(!marker)throw Error('Owned user marker absent');const f=await h.open(marker,0);let value;try{value=new TextDecoder().decode(await h.read(marker,f,0n,128));}finally{await h.release(marker,f);}if(value!=='package-production-20261103\n')throw Error('Owned marker differs');if(await h.lookup(admin,'.package-base-check.sh'))throw Error('Base fixture path already exists');const node=await h.create(admin,'.package-base-check.sh',2,{mode:0o700,uid:1000,gid:1000});const bytes=new TextEncoder().encode(script);await h.write(node.node,node.handle,0n,bytes);await h.release(node.node,node.handle);await h.settle();return {scope:'Owned-clone native assertion fixture, not product payload',path:'/home/admin/.package-base-check.sh',bytes:bytes.length,sha256:[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join(''),settled:true};}finally{await h.destroy();}
+}
+
 async function preparePackageNegativeFixture(expectedGzip) {
    if(location.origin!=='http://127.0.0.1:38082'||!document.querySelector('#power-stop')?.hidden)throw Error('Fixture origin or idle state differs');
    const module=await import('./persistent-home.mjs'),h=await module.openPersistentHome();
@@ -112,7 +132,7 @@ async function preparePackageNegativeFixture(expectedGzip) {
 async function guestLogs(){return await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");}
 
 function readinessSignals(logs, nonce) {
- const found=[];for(const line of String(logs).split('\n')){const match=/LOW_READY (\{.*\})/.exec(line);if(!match)continue;try{let value;try{value=JSON.parse(match[1]);}catch{value=JSON.parse(JSON.parse('"'+match[1]+'"'));}if(value.schema===1&&value.nonce===nonce&&['paint','focus','keydown','keyup','input','typed','navigate','complete'].includes(value.phase))found.push(value);}catch{}}
+ const found=[];for(const line of String(logs).split('\n')){const match=/LOW_READY (\{.*\})/.exec(line);if(!match)continue;try{let value;try{value=JSON.parse(match[1]);}catch{value=JSON.parse(JSON.parse('"'+match[1]+'"'));}if(value.schema===1&&value.nonce===nonce&&['paint','focus','keydown','keyup','input','typed','navigate','complete','regression-paint'].includes(value.phase))found.push(value);}catch{}}
  return found;
 }
 async function readinessProbe(paint,nonce) {
@@ -130,7 +150,7 @@ async function readinessProbe(paint,nonce) {
  let lastInputSignature=null;
  const exactValue=async(expected,label,boundMs=5000)=>{const until=time()+boundMs;while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'guest.log'),logs);const signal=readinessSignals(logs,nonce).filter(v=>v.phase==='input').at(-1);const signature=signal?String(signal.epochMs)+':'+signal.value:null;if(signal?.value===expected){lastInputSignature=signature;return {label,expected,observedLaunchMs:time()-bootAt};}if(signature!==lastInputSignature&&signal?.value&&!expected.startsWith(signal.value)&&signal.value.length>=expected.length)throw Error('Input '+label+' differs: '+JSON.stringify({expected,actual:signal.value}));await delay(100);}throw Error('Input '+label+' deadline');};
  const clearInput=async()=>{const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});try{await pressKey({key:'a',code:'KeyA',windowsVirtualKeyCode:65,nativeVirtualKeyCode:65},2);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...control,modifiers:0});}await pressKey({key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8,nativeVirtualKeyCode:8});return exactValue('','modifier-select-all-and-delete');};
- if(options.get('input-check')==='1'){
+ const runInputChecks=async()=>{
   gate.inputChecks=[];
   await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('a')});await delay(650);gate.inputChecks.push(await exactValue('a','held-key-no-invented-repeat'));
   for(let n=2;n<=4;n++){await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('a'),autoRepeat:true});gate.inputChecks.push(await exactValue('a'.repeat(n),'explicit-host-repeat-'+n));}
@@ -138,7 +158,8 @@ async function readinessProbe(paint,nonce) {
   const shift={key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16};await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...shift,modifiers:8});try{await pressKey({...keyInfo('a'),key:'A',text:'A'},8);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...shift,modifiers:0});}gate.inputChecks.push(await exactValue('A','shift-combination'));gate.inputChecks.push(await clearInput());
   for(const c of 'taptest'){await pressKey(keyInfo(c));await delay(20);}gate.inputChecks.push(await exactValue('taptest','rapid-taps'));gate.inputChecks.push(await clearInput());
   await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('b')});gate.inputChecks.push(await exactValue('b','focus-loss-start'));await evaluate("document.querySelector('#settings-toggle').focus({preventScroll:true})");await delay(650);gate.inputChecks.push(await exactValue('b','focus-loss-releases-held-key'));await send('Input.dispatchKeyEvent',{type:'keyUp',key:'b',code:'KeyB',windowsVirtualKeyCode:66,nativeVirtualKeyCode:66});await evaluate("document.querySelector('canvas').focus({preventScroll:true})");gate.inputChecks.push(await clearInput());save();
- }
+ };
+ if(options.get('input-check')==='1'&&options.get('input-check-after-ready')!=='1')await runInputChecks();
  gate.typingProtocol=options.get('input-sequence')==='rapid'?'Physical rapid key sequence, each intended hold20ms and gap20ms; exact native text required':'Controlled pacing: one physical keypress followed by exact native input acknowledgment';gate.inputAcknowledgments=[];
  if(options.get('input-sequence')==='rapid'){
   for(const c of nonce){await pressKey(keyInfo(c));await delay(20);}
@@ -159,6 +180,14 @@ async function readinessProbe(paint,nonce) {
  gate.enterLaunchMs=time()-bootAt;await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
  gate.complete=await waitPhase('complete',30000);if(gate.complete.signal.value!==nonce||gate.complete.signal.title!=='READINESS COMPLETE'||gate.complete.signal.href!=='file:///opt/firefox/gpu-check/readiness-complete.html?nonce='+nonce)throw Error('Readiness navigation identity differs');
  await shot('readiness-complete');gate.completeScreenshotLaunchMs=time()-bootAt;gate.completeScreenshotNavigationMs=gate.completeScreenshotLaunchMs+bootAt-report.navigationAtMs;gate.keyboardNavigationPassed=true;gate.thirtySecondGate=gate.completeScreenshotLaunchMs<=30000;gate.acceptance='Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review';save();
+ if(options.get('input-check')==='1'&&options.get('input-check-after-ready')==='1'){
+  const observed=await waitPhase('regression-paint',10000),position=observed.signal;if(position.dpr!==1||![position.innerScreenX,position.innerScreenY,position.input?.x,position.input?.y,position.input?.width,position.input?.height].every(Number.isFinite))throw Error('Post-readiness input coordinates absent');
+  const nativeX=position.innerScreenX+position.input.x+position.input.width/2,nativeY=position.innerScreenY+position.input.y+position.input.height/2;if(nativeX<0||nativeX>1280||nativeY<0||nativeY>720)throw Error('Post-readiness input outside display');
+  const priorFocus=readinessSignals(await guestLogs(),nonce).filter(v=>v.phase==='focus').at(-1);gate.postReadinessInput={startedLaunchMs:time()-bootAt,readinessTimestampUnchanged:true,priorFocusEpochMs:priorFocus?.epochMs??null};await clickGuest(canvas.left+nativeX*canvas.width/1280,canvas.top+nativeY*canvas.height/720);
+  const focusDeadline=time()+10000;let regressionFocused=false;while(time()<focusDeadline){const focus=readinessSignals(await guestLogs(),nonce).filter(v=>v.phase==='focus').at(-1);if(focus&&focus.epochMs>(priorFocus?.epochMs??0)&&focus.epochMs>=gate.complete.signal.epochMs&&focus.value===''){gate.postReadinessInput.nativeFocus={signal:focus,observedLaunchMs:time()-bootAt};regressionFocused=true;break;}await delay(100);}if(!regressionFocused)throw Error('Distinct native post-readiness focus acknowledgment absent');
+  const previous=readinessSignals(await guestLogs(),nonce).filter(v=>v.phase==='input').at(-1);lastInputSignature=previous?String(previous.epochMs)+':'+previous.value:null;
+  await runInputChecks();gate.postReadinessInput.completedLaunchMs=time()-bootAt;await shot('post-readiness-keyboard');save();
+ }
 }
 async function profileSnapshot(label,includeAll=false){
  const snapshot=await evaluate(`new Promise((resolve,reject)=>{const request=indexedDB.open('linuxonweb.home.v1');request.onupgradeneeded=()=>request.transaction.abort();request.onerror=()=>reject(request.error);request.onsuccess=()=>{const db=request.result,tx=db.transaction('nodes','readonly'),r=tx.objectStore('nodes').getAll(undefined,10000);r.onerror=()=>reject(r.error);r.onsuccess=()=>{const nodes=r.result,map=new Map(nodes.map(n=>[n.id,n]));const pathname=n=>{const parts=[];for(let depth=0;n&&n.parent&&depth<32;depth++){parts.push(n.name);n=map.get(n.parent);}return '/home/'+parts.reverse().join('/');};resolve({nodes:nodes.length,truncated:nodes.length===10000,files:nodes.map(n=>({id:n.id,path:pathname(n),bytes:n.size,mode:n.mode})).filter(n=>${includeAll}||/startupcache|startupCache|\.cache|prefs\.js|user\.js|profiles\.ini|sessionstore/i.test(n.path))});};tx.oncomplete=()=>db.close();};})`);
@@ -241,7 +270,7 @@ function child(command,args,log){const fd=fs.openSync(path.join(run,log),'a');co
 try{
  if(options.get('owned-proxy')==='1'){
   if(!env.LINUXONWEB_BOOT_PACKAGE||testPort===3000)throw Error('Owned candidate proxy requires explicit image and nonproduction port');
-  const proxy=child(process.execPath,['tools/startup-benchmark/gpt6-astra-timing-proxy.mjs',path.join(run,'proxy'),String(testPort),env.LINUXONWEB_INPUT_DIAGNOSTIC==='1'?'input':'home',...(env.LINUXONWEB_TEST_EXTRAS?[path.resolve(env.LINUXONWEB_TEST_EXTRAS)]:[])],'proxy.log');
+  const proxy=child(process.execPath,['tools/startup-benchmark/gpt6-astra-timing-proxy.mjs',path.join(run,'proxy'),String(testPort),env.LINUXONWEB_TEST_DIAGNOSTIC_MODE==='performance'?'performance':env.LINUXONWEB_INPUT_DIAGNOSTIC==='1'?'input':'home',...(env.LINUXONWEB_TEST_EXTRAS?[path.resolve(env.LINUXONWEB_TEST_EXTRAS)]:[])],'proxy.log');
   let ready=false;for(let i=0;i<200;i++){if(proxy.exitCode!==null)throw Error('Owned candidate proxy exited '+proxy.exitCode);if(fs.existsSync(path.join(run,'proxy','ready.json'))){ready=true;break;}await delay(100);}if(!ready)throw Error('Owned candidate proxy readiness deadline');
   report.ownedProxy=JSON.parse(fs.readFileSync(path.join(run,'proxy','ready.json'),'utf8'));
  }
@@ -270,6 +299,7 @@ try{
  for(let i=0;i<200;i++){try{if(await evaluate("document.readyState==='complete' && !!document.querySelector('#cpu-cores')"))break;}catch{}await delay(100);}
  report.initial=await evaluate("({cores:navigator.hardwareConcurrency,crossOriginIsolated,settings:localStorage.getItem('linuxonweb.machine-settings.v1'),url:location.href,pageTimeOrigin:performance.timeOrigin,pageNow:performance.now()})");if(report.initial.cores!==report.configuration.cpus)throw Error('Native browser CPU count differs from test affinity');save();
  if(mode==='firefox'&&reusedTestProfile){report.beforeLaunchProfile=await profileSnapshot('before-launch',true);report.retainedOrigin=await evaluate('location.origin');if(report.retainedOrigin!==`http://127.0.0.1:${testPort}`)throw Error('Retained profile origin differs');if(!JSON.parse(fs.readFileSync(path.join(run,'before-launch-profile.json'),'utf8')).files.some(f=>f.path==='/home/admin/.mozilla/firefox/http1-profile/user.js'))throw Error('Retained Firefox profile marker absent at fixed origin');save();}
+ if(mode==='firefox'&&options.get('package-production')==='base'&&options.get('base-script')==='1'){if(!reusedTestProfile)throw Error('Native base assertion requires owned closed profile clone');report.packageBaseFixture=await evaluate('('+preparePackageBaseCheck.toString()+')('+JSON.stringify(packageBaseCheckScript)+')');fs.writeFileSync(path.join(run,'package-base-check.sh'),packageBaseCheckScript);save();}
  if(mode==='firefox'&&options.get('manual-launch')==='1'){if(observeAfter>0)throw Error('Manual launch cannot use quiet startup pre-wait');const desktopOnly=options.get('package-desktop-only')==='1';report.launchRequest={kind:desktopOnly?'production Start desktop WM menu':'production Start Firefox menu',hostMs:time(),utc:new Date().toISOString()};bootAt=report.launchRequest.hostMs;report.launchRequest.page=await evaluate(`(()=>{document.querySelector('#boot').click();const button=document.querySelector('${desktopOnly?'#start-x':'#start-firefox'}');if(!button||button.disabled||button.closest('[hidden]'))throw Error('Production launch menu unavailable');const requestAtMs=performance.now();button.click();return {requestAtMs,pageTimeOrigin:performance.timeOrigin};})()`);save();}
  if(mode==='package-corrupt-setup'){
   if(!reusedTestProfile?.sourceRun.endsWith('/pkgprod-verify1'))throw Error('Negative fixture requires the exact known-good closed owned profile clone');
@@ -340,7 +370,8 @@ try{
  const inputDiagnostics=await evaluate('({dom:globalThis.__gpt6InputDom??[],queue:globalThis.__gpt6InputQueue??null})');fs.writeFileSync(path.join(run,'input-diagnostics.json'),JSON.stringify(inputDiagnostics));
  report.finalState=await evaluate("({text:document.body.innerText.slice(-6000),cores:navigator.hardwareConcurrency,status:document.querySelector('#status')?.textContent})");await shot('final');
  if(mode==='firefox'&&options.get('close-firefox')==='1'){
-  report.nativeClose={kind:'Firefox Ctrl+Q, followed by native init exit observation',requestedLaunchMs:time()-bootAt,expectedExitStatus:0};
+  const exitLogFloorId=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.at(-1)?.id??-1)");
+  report.nativeClose={kind:'Firefox Ctrl+Q, followed by native init exit observation from this launch after request',requestedLaunchMs:time()-bootAt,expectedExitStatus:0,exitLogFloorId};
   await evaluate("document.querySelector('canvas').focus({preventScroll:true})");
   const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
   await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});
@@ -351,8 +382,8 @@ try{
   const quitRect=await evaluate("(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {left:r.left,top:r.top,width:r.width,height:r.height};})()");
   report.nativeClose.confirmation={kind:'Observed native Quit Nightly dialog',reference:'input-host1/native-close.png',guestX:718.5,guestY:229};
   await clickGuest(quitRect.left+718.5*quitRect.width/1280,quitRect.top+229*quitRect.height/720);
-  const until=time()+20000;let exited=false;
-  while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'closed-guest.log'),logs);const match=/firefox exited with status (\d+)/.exec(logs);if(match){report.nativeClose.status=Number(match[1]);report.nativeClose.observedLaunchMs=time()-bootAt;exited=true;break;}await delay(250);}
+  const closeSeconds=Number(options.get('close-bound-seconds')||20);if(![20,60,90].includes(closeSeconds))throw Error('Unsupported native close bound');report.nativeClose.boundSeconds=closeSeconds;report.nativeClose.progress=[];let nextProgress=0;const until=time()+closeSeconds*1000;let exited=false;
+  while(time()<until){if(time()>=nextProgress){const io=await evaluate('(()=>{const t=globalThis.__gpt6HomeTimings;return t?{active:t.active,busyMs:t.busyMs,writeCalls:t.methods.write?.calls,writeBytes:t.methods.write?.bytes,fsyncCalls:t.methods.fsync?.calls}:null})()');report.nativeClose.progress.push({observedLaunchMs:time()-bootAt,io});nextProgress=time()+5000;save();}const logs=await guestLogs();fs.writeFileSync(path.join(run,'closed-guest.log'),logs);const exitRows=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.filter(r=>r.id>"+exitLogFloorId+").map(r=>({id:r.id,text:r.text})))");const exitLine=exitRows.find(r=>/firefox exited with status (\d+)/.test(r.text));const match=exitLine&&/firefox exited with status (\d+)/.exec(exitLine.text);if(match){report.nativeClose.exitLogRow=exitLine;report.nativeClose.status=Number(match[1]);report.nativeClose.observedLaunchMs=time()-bootAt;exited=true;break;}await delay(250);}
   await shot('native-close');if(!exited||report.nativeClose.status!==0)throw Error('Native Firefox Close did not report successful exit');
   report.nativeClose.profile=await profileSnapshot('closed',true);save();
  }
@@ -383,6 +414,7 @@ try{
   if(!Object.hasOwn(commands,stage))throw Error('Unknown production package stage');
   const before=await guestLogs();
   if(['verify','corrupt'].includes(stage)&&!before.includes('APK_PERSIST_RESTORED'))throw Error('Native restore acknowledgment absent before desktop verification');
+  if(stage==='base'&&options.get('base-script')==='1')commands.base='sudo /bin/busybox sh /home/admin/.package-base-check.sh';
   report.productionPackage={stage,command:commands[stage],startedLaunchMs:time()-bootAt,rootfsUntouched:true,route:stage==='recover'?'Actual GUI restore-failure console; physical keyboard reaches native hvc0 recovery shell':'Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command'};save();
   if(stage==='recover'){
    if(!before.includes('apk-persist: RESTORE FAILED; desktop startup stopped')||before.includes('display: starting Xfbdev'))throw Error('Corrupt generation did not stop desktop before X');
@@ -390,7 +422,7 @@ try{
    const ui=report.productionPackage.recoveryUi;if(!ui.visible||!ui.textarea||!ui.focused||!ui.status.includes('package restore failed'))throw Error('Recovery console missing, hidden, unfocused, or status incorrect');
    await shot('package-recovery-before');
   }else{
-   if(!before.includes('[wm-ready]'))throw Error('Production package command requires native desktop readiness');
+   const desktopAttemptReady=before.includes('[wm-ready]')||(options.get('package-desktop-only')==='1'&&before.includes('aurora-wm: light compositor disabled by setting')&&before.includes('clipboard: X11 bridge ready'));if(!desktopAttemptReady)throw Error('Production package command lacks native desktop initialization evidence');
    await evaluate("document.querySelector('[data-test=uname]').click()");await delay(4000);await shot('package-terminal-before');await evaluate("document.querySelector('canvas').focus({preventScroll:true})");
   }
   await typeGuestCommand(commands[stage]);report.productionPackage.commandEnteredLaunchMs=time()-bootAt;save();

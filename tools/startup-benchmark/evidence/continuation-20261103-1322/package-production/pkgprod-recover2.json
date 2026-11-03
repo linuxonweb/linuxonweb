@@ -1,0 +1,149 @@
+{
+  "start": "2026-11-03T16:43:41.484Z",
+  "end": "2026-11-03T16:46:18.352Z",
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-production=recover&input-check=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        1680.366,
+        2724.228
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "productionPackage": {
+    "stage": "recover",
+    "command": "echo PACKAGE_RECOVERY_TYPED && apk-persist disable",
+    "startedLaunchMs": 15514.928999999998,
+    "rootfsUntouched": true,
+    "route": "Actual GUI restore-failure console; physical keyboard reaches native hvc0 recovery shell",
+    "recoveryUi": {
+      "status": "package restore failed \u00b7 recovery console",
+      "visible": true,
+      "focused": true,
+      "textarea": true,
+      "body": "hvc0 \u00b7 interactive console \u00b7 click below to type\nvirtiofs virtio4: discovered new tag: home\n[host] gputest: connect retry (guest reset vsock connection)\nConsole: switching to colour frame buffer device 160x45\nfb0: wasm framebuffer 1280x720-32 at 9598fc1a\nFreeing initrd memory: 131648K\nThis architecture does not have kernel memory protection.\nRun /init as init process\nhome: persistent storage mounted\napk-persist: saved file checksum mismatch: packages/gzip-1.14-r0.apk\napk-persist: RESTORE FAILED; desktop startup stopped\nPackage restore failed. Type apk-persist disable, then Stop and Start.\nRecovery: apk-persist disable; then Stop and Start. Saved generations are retained.\n/ #  \npackage restore failed \u00b7 recovery console\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n18.4 MB \u00b7 145 entries\nCached system images\n116.9 MB\nBrowser usage / quota estimate\n127.9 MB / 10.12 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved packages could not be restored. Desktop startup is blocked. In the recovery console, type apk-persist disable, then use Stop and Start. Saved generations and home files are retained."
+    },
+    "commandEnteredLaunchMs": 18340.004,
+    "acknowledgment": {
+      "marker": "APK_PERSIST_DISABLED",
+      "observedLaunchMs": 18655.408000000003,
+      "observedUtc": "2026-11-03T16:44:03.916Z"
+    },
+    "recoveryEcho": true,
+    "restart": {
+      "kind": "same tab, actual Stop reload then Start Firefox",
+      "requestedLaunchMs": 21582.464,
+      "contentContextObservedLaunchMs": 75798.04000000001,
+      "ui": {
+        "status": "running \u00b7 firefox \u00b7 initramfs",
+        "terminalPresent": false
+      },
+      "input": {
+        "startedMs": 82579.158,
+        "text": "about:blank",
+        "typedMs": 85336.645,
+        "enterMs": 87900.092,
+        "observedMs": 91216.594,
+        "acceptance": "Requires independent visible exact address and completed blank-page review; real physical virtio keyboard path, no synthetic DOM input"
+      }
+    }
+  },
+  "packageBaseFixture": null,
+  "errors": [
+    {
+      "ms": 152910.588,
+      "error": "Error: Same-tab pristine base and user-data verification failed",
+      "stack": "Error: Same-tab pristine base and user-data verification failed\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:410:321"
+    }
+  ],
+  "remainingOwned": [],
+  "schema": 1,
+  "durationSeconds": 156.868,
+  "sourceReportSha256": "e6a2c76f7b25c0910b2bdab105106396a400b20fcd587d4df2a6fc2a240072fc",
+  "soleBlankInitialPage": true,
+  "stops": [
+    {
+      "label": "recovery-disable",
+      "before": {
+        "timeOrigin": 1793724224330.155,
+        "status": "package restore failed \u00b7 recovery console"
+      },
+      "dispatch": {
+        "requestedAt": 1793724244373.75,
+        "afterDispatchAt": 1793724244378.12,
+        "statusAfterDispatch": "stopping\u2026"
+      },
+      "idle": {
+        "timeOrigin": 1793724244532.57,
+        "ready": "complete",
+        "status": "idle",
+        "stopHidden": true,
+        "terminalPresent": false
+      },
+      "idleObservedLaunchMs": 20245.452,
+      "workerCountBefore": 49,
+      "workerCountAfter": 0,
+      "oldGuestWorkerTargetsRemaining": 0,
+      "workerTeardownObservations": [
+        {
+          "observedLaunchMs": 20250.440000000002,
+          "count": 47,
+          "oldRemaining": 47
+        },
+        {
+          "observedLaunchMs": 20503.341,
+          "count": 47,
+          "oldRemaining": 47
+        },
+        {
+          "observedLaunchMs": 20756.757,
+          "count": 47,
+          "oldRemaining": 47
+        },
+        {
+          "observedLaunchMs": 21010.445,
+          "count": 47,
+          "oldRemaining": 47
+        },
+        {
+          "observedLaunchMs": 21320.002,
+          "count": 40,
+          "oldRemaining": 40
+        },
+        {
+          "observedLaunchMs": 21572.416,
+          "count": 0,
+          "oldRemaining": 0
+        }
+      ],
+      "workerTeardownObservedLaunchMs": 21573.157000000003,
+      "keyRelease": null,
+      "pass": true,
+      "allWorkersBelongToSolePage": true,
+      "targetDestroyedNotifications": 49
+    }
+  ],
+  "resources": {
+    "samples": 151,
+    "allSharedCap": true,
+    "membershipChanged": false,
+    "groups": [
+      "0::/cpulimit.slice/cpulimit-70.slice"
+    ],
+    "cpuRssRamQuotaSeconds": 1,
+    "pssSeconds": 5
+  },
+  "acceptance": "Partial: checksum rejection, visible native typed disable, real Stop/reload/allworkers destroyed and same-tab normal WM passed; early Firefox input not visiblyaccepted and finalnativebase markerabsent. No Firefox readinessclaim."
+}

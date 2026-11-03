@@ -1,3 +1,17 @@
+# Continuation status — 2026-11-03 17:30 UTC,44/100 confirmed
+
+This status supersedes historical notes below. Active branch `gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322`, frozen parent81103b2ec04a8a4f8453617ca128448e831645bc preserved. Session13:22:11–18:22:11UTC; artifact freeze17:40. Final gates and publication receipts are recorded in `docs/gpt6-astra-pro_builtin-agents_rubywebterm_continuation-20261103-1322.md` and agent/devsummary.md.
+
+Root confirmed44/100: desktop7/15, startup10/20, JIT4/20, graphics9/20, packages8/10, mobile2/10, preview/recovery4/5. Do not claim completion or95/100. Signed GNU ports and default host-owned repeat passed representative native tests under the enforced common3CPU ancestor. Original startup30s/50%performance/fullAPI/Node.js/iOS gates remain unmet or unproved. Latest strict-cache cold visible usable Firefox105.438s from real Start;12 native input assertions passed after the readiness timestamp. Quit confirmation raced native rendering; the final dialog stayed open. No90s shutdown-deadlock claim and no warm acceptance.
+
+Use rubywebterm exclusively for remote work. All guests/heavy builds/benchmarks serialized; sample every owned descendant CPU/RSS/RAM/common ancestor every1s and PSS5s. Owned Chromium must use a nonexistent private D-Bus socket to prevent desktop migration, then require every process shares /cpulimit.slice at3CPU before workload; no cgroup placement changes. Old affinity-only observations are not full quota proof.
+
+Default host-repeat remains on; guestrepeat is explicitdiagnostic. Write buffering, cache seeding, packed Firefox resources and strict generation cache candidate remain disabled. Native restart still needs inaccessible protected historical Firefox build inputs; do not bypass permissions or use blanket exit respawn. Final approved Firefox image is persistence-image1 SHA4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c, publication pending the active benchmark freeze. Old plain image stays until no-force signed install/ordinary nonroot command-resolution/two-boot replay passes. Mobile console depends on final physical-device acceptance; do not infer completion from APK progress containing '# '.
+
+Original encrypted base80a52d1 + final cumulative increment + exact runtime artifacts + original private recipient key are the recovery chain. Only the PUBLIC recipient certificate is available here; local bundle prerequisites/fetch/fsck and hash reconstruction are verifiable, full encrypted end-to-end decryption is not performed. Never publish signing keys, grants, cookies, device IDs, raw profiles or private owner directories. Midpoint recovery link and original manifests remain in tracked evidence.
+
+---
+
 # Continuation checkpoint — 2026-11-03 16:42 UTC, 44/100 provisional
 
 Active branch: `gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322`. Frozen parent `81103b2ec04a8a4f8453617ca128448e831645bc` remains tagged. Start13:22:11 UTC, normal deadline18:22:11; final artifact reserve17:40. This leading status supersedes historical state below.

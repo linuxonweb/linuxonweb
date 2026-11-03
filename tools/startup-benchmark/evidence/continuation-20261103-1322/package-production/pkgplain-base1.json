@@ -1,0 +1,63 @@
+{
+  "start": "2026-11-03T16:54:04.916Z",
+  "end": "2026-11-03T16:54:37.756Z",
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-desktop-only=1&package-production=base&base-script=1&input-check=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        3680.589,
+        4818.935
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "productionPackage": {
+    "stage": "base",
+    "command": "sudo /bin/busybox sh /home/admin/.package-base-check.sh",
+    "startedLaunchMs": 21782.864999999998,
+    "rootfsUntouched": true,
+    "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command"
+  },
+  "packageBaseFixture": {
+    "scope": "Owned-clone native assertion fixture, not product payload",
+    "path": "/home/admin/.package-base-check.sh",
+    "bytes": 962,
+    "sha256": "669d590886944d553127bb504f929936345b66057af2f88d17bd61c7ee7bf1da",
+    "settled": true
+  },
+  "errors": [
+    {
+      "ms": 28895.618,
+      "error": "Error: Production package command requires native desktop readiness",
+      "stack": "Error: Production package command requires native desktop readiness\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:415:44"
+    }
+  ],
+  "remainingOwned": [],
+  "schema": 1,
+  "durationSeconds": 32.84,
+  "sourceReportSha256": "8584501ba428fa04842e0360e72172a1ae6321bb763d81ed30609e9c7353ecde",
+  "soleBlankInitialPage": true,
+  "stops": [],
+  "resources": {
+    "samples": 26,
+    "allSharedCap": true,
+    "membershipChanged": false,
+    "groups": [
+      "0::/cpulimit.slice/cpulimit-70.slice"
+    ],
+    "cpuRssRamQuotaSeconds": 1,
+    "pssSeconds": 5
+  },
+  "acceptance": "Harnessprecondition failure: plainmode lacksFirefox-only wm-ready marker. Nocommandexecuted; preserved andcorrected beforebase3."
+}

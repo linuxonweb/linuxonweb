@@ -1,0 +1,164 @@
+{
+  "start": "2026-11-03T16:57:08.602Z",
+  "end": "2026-11-03T16:57:48.124Z",
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&owned-proxy=1&update=1&package-desktop-only=1&package-production=base&base-script=1&input-check=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        2176.93,
+        3253.008
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "productionPackage": {
+    "stage": "base",
+    "command": "sudo /bin/busybox sh /home/admin/.package-base-check.sh",
+    "startedLaunchMs": 20996.635000000002,
+    "rootfsUntouched": true,
+    "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command",
+    "commandEnteredLaunchMs": 28135.352999999996,
+    "acknowledgment": {
+      "marker": "PACKAGE_BASE_RECOVERY_VERIFIED",
+      "observedLaunchMs": 28688.366,
+      "observedUtc": "2026-11-03T16:57:42.445Z"
+    }
+  },
+  "packageBaseFixture": {
+    "scope": "Owned-clone native assertion fixture, not product payload",
+    "path": "/home/admin/.package-base-check.sh",
+    "bytes": 962,
+    "sha256": "669d590886944d553127bb504f929936345b66057af2f88d17bd61c7ee7bf1da",
+    "settled": true
+  },
+  "errors": [],
+  "remainingOwned": [],
+  "schema": 1,
+  "durationSeconds": 39.522,
+  "sourceReportSha256": "70bc56cb244e57421a2c158af350553653cf594246c609e26351ccda7edec6a4",
+  "soleBlankInitialPage": true,
+  "stops": [
+    {
+      "label": "final",
+      "before": {
+        "timeOrigin": 1793725032289.21,
+        "status": "running \u00b7 startx \u00b7 initramfs"
+      },
+      "dispatch": {
+        "requestedAt": 1793725062775.68,
+        "afterDispatchAt": 1793725062776.755,
+        "statusAfterDispatch": "stopping\u2026"
+      },
+      "idle": {
+        "timeOrigin": 1793725062823.925,
+        "ready": "complete",
+        "status": "idle",
+        "stopHidden": true,
+        "terminalPresent": false
+      },
+      "idleObservedLaunchMs": 29568.993000000002,
+      "workerCountBefore": 59,
+      "workerCountAfter": 0,
+      "oldGuestWorkerTargetsRemaining": 0,
+      "workerTeardownObservations": [
+        {
+          "observedLaunchMs": 29571.983,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 29828.015999999996,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 30082.528999999995,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 30337.214999999997,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 30590.254,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 30844.307999999997,
+          "count": 54,
+          "oldRemaining": 54
+        },
+        {
+          "observedLaunchMs": 31151.244,
+          "count": 26,
+          "oldRemaining": 26
+        },
+        {
+          "observedLaunchMs": 31402.123999999996,
+          "count": 0,
+          "oldRemaining": 0
+        }
+      ],
+      "workerTeardownObservedLaunchMs": 31403.106999999996,
+      "keyRelease": {
+        "pass": true,
+        "events": [
+          {
+            "phase": "enqueued",
+            "type": 1,
+            "code": 42,
+            "value": 1,
+            "ms": 1793725062470.94,
+            "pending": 0
+          },
+          {
+            "phase": "enqueued",
+            "type": 1,
+            "code": 42,
+            "value": 0,
+            "ms": 1793725062557.445,
+            "pending": 0
+          }
+        ]
+      },
+      "pass": true,
+      "allWorkersBelongToSolePage": true,
+      "targetDestroyedNotifications": 59
+    }
+  ],
+  "resources": {
+    "samples": 35,
+    "allSharedCap": true,
+    "membershipChanged": false,
+    "groups": [
+      "0::/cpulimit.slice/cpulimit-70.slice"
+    ],
+    "cpuRssRamQuotaSeconds": 1,
+    "pssSeconds": 5
+  },
+  "nativeAssertions": [
+    "PACKAGE_BASE_CHECK helper-status PASS",
+    "PACKAGE_BASE_CHECK optional-gzip-absent PASS",
+    "PACKAGE_BASE_CHECK optional-tar-absent PASS",
+    "PACKAGE_BASE_CHECK protected-native-database PASS",
+    "PACKAGE_BASE_CHECK protected-world PASS",
+    "PACKAGE_BASE_CHECK user-marker PASS",
+    "PACKAGE_BASE_CHECK corruption-evidence PASS"
+  ],
+  "nativeBaseMarker": true,
+  "acceptance": "Actual plainStartdesktopWM, realAuroraterminal native7assertions and normalStop/keyrelease/workerdestruction passed. Cross-mode recoveryproof; plain signedinstall/replay remainsseparate."
+}

@@ -7,7 +7,7 @@ import net from 'node:net';
 import crypto from 'node:crypto';
 import { instrumentStartupSource } from './gpt6-codex-timing.mjs';
 const [outArg,portArg='38082',diagnosticMode='full',overlayArg] = process.argv.slice(2);
-if(!['full','home','seed','input'].includes(diagnosticMode))throw Error('diagnostic mode must be full, home or seed');
+if(!['full','home','seed','input','performance'].includes(diagnosticMode))throw Error('invalid diagnostic mode');
 const port=Number(portArg),out=path.resolve(outArg||'');
 if(!outArg||!Number.isInteger(port)||port<1024||port>65535||fs.existsSync(out))throw Error('Fresh diagnostic directory and valid port required');
 fs.mkdirSync(out,{recursive:true,mode:0o700});
@@ -36,7 +36,8 @@ if(diagnosticMode==='full'||diagnosticMode==='input'){
 }
 // Preserve filesystem semantics; gather counts and async wall durations only.
 // In-flight union time prevents summing concurrent operations as serial delay.
-{
+// Matched performance mode leaves the filesystem API completely unchanged.
+if(diagnosticMode!=='performance'){
  const raw=fs.readFileSync(process.env.LINUXONWEB_LOOKUP_FIXTURE ? path.join(path.resolve(process.env.LINUXONWEB_LOOKUP_FIXTURE),'persistent-home.mjs') : 'web/linux/persistent-home.mjs','utf8');
  const marker='  return api;';
  if(raw.split(marker).length!==2)throw Error('Home API return anchor changed');
@@ -134,10 +135,17 @@ if(process.env.LINUXONWEB_BARRIER_FIXTURE==='1'){
 }
 const overrideFiles=new Map();
 if(process.env.LINUXONWEB_BOOT_PACKAGE){
- const directory=path.resolve(process.env.LINUXONWEB_BOOT_PACKAGE),manifestBytes=fs.readFileSync(path.join(directory,'boot-manifest.json')),manifest=JSON.parse(manifestBytes),asset=manifest.assets?.firefox;
- if(!asset||!Number.isSafeInteger(asset.bytes)||asset.bytes<1||!(/^[0-9a-f]{64}$/).test(asset.sha256)||path.basename(asset.url)!=='initramfs-firefox.cpio.gz')throw Error('Invalid candidate Firefox manifest');
- const file=path.join(directory,'initramfs-firefox.cpio.gz'),stat=fs.statSync(file),digest=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))digest.update(chunk);if(stat.size!==asset.bytes||digest.digest('hex')!==asset.sha256)throw Error('Candidate Firefox archive identity differs');
- const route='/linux/initramfs-firefox.cpio.gz';overrideFiles.set(route,{file,bytes:asset.bytes,sha256:asset.sha256});pins[route]={overrideFile:file,bytes:asset.bytes,sha256:asset.sha256};sources.set('/linux/boot-manifest.json',manifestBytes);mimeTypes.set('/linux/boot-manifest.json','application/json');pins['/linux/boot-manifest.json']={overrideFile:path.join(directory,'boot-manifest.json'),version:manifest.version,sha256:crypto.createHash('sha256').update(manifestBytes).digest('hex')};
+ const directory=path.resolve(process.env.LINUXONWEB_BOOT_PACKAGE),manifestBytes=fs.readFileSync(path.join(directory,'boot-manifest.json')),manifest=JSON.parse(manifestBytes);
+ const directories=[directory,...(process.env.LINUXONWEB_BOOT_FALLBACK_PACKAGE?[path.resolve(process.env.LINUXONWEB_BOOT_FALLBACK_PACKAGE)]:[])];
+ let upstreamManifest;
+ for(const [name,asset] of Object.entries(manifest.assets??{})){
+  if(!['kernel','plain','firefox'].includes(name)||!Number.isSafeInteger(asset.bytes)||asset.bytes<1||!(/^[0-9a-f]{64}$/).test(asset.sha256)||typeof asset.url!=='string'||!/^\.\/[A-Za-z0-9_.-]+$/.test(asset.url))throw Error('Invalid candidate asset manifest');
+  const basename=asset.url.slice(2),route='/linux/'+basename,file=directories.map(d=>path.join(d,basename)).find(f=>fs.existsSync(f));
+  if(file){const stat=fs.statSync(file),digest=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))digest.update(chunk);if(!stat.isFile()||stat.size!==asset.bytes||digest.digest('hex')!==asset.sha256)throw Error('Candidate '+name+' asset identity differs');overrideFiles.set(route,{file,bytes:asset.bytes,sha256:asset.sha256});pins[route]={overrideFile:file,bytes:asset.bytes,sha256:asset.sha256};}
+  else {if(!upstreamManifest){const response=await fetch('http://127.0.0.1:3000/linux/boot-manifest.json');if(!response.ok)throw Error('Upstream manifest unavailable');upstreamManifest=await response.json();}const upstream=upstreamManifest.assets?.[name];if(!upstream||upstream.url!==asset.url||upstream.bytes!==asset.bytes||upstream.sha256!==asset.sha256)throw Error('Candidate '+name+' is absent and differs from actual upstream');pins[route]={upstream:true,bytes:asset.bytes,sha256:asset.sha256};}
+ }
+ if(!manifest.assets?.kernel||!manifest.assets?.plain||!manifest.assets?.firefox)throw Error('Candidate boot manifest lacks required assets');
+ sources.set('/linux/boot-manifest.json',manifestBytes);mimeTypes.set('/linux/boot-manifest.json','application/json');pins['/linux/boot-manifest.json']={overrideFile:path.join(directory,'boot-manifest.json'),version:manifest.version,sha256:crypto.createHash('sha256').update(manifestBytes).digest('hex')};
 }
 // Isolated same-image diagnostic, never a public cache invalidation policy.
 if(process.env.LINUXONWEB_REMOVE_PURGE_MARKER==='1'){
