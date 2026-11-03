@@ -651,9 +651,19 @@ export function fileSystemDevice(filesystem, options) {
                 break;
             }
             case FuseOpcode.LOOKUP: {
-                let record;
+                let record, attributes;
                 try {
-                    record = await lookup(node, body.cstring());
+                    const name = body.cstring();
+                    if (filesystem.lookupWithAttributes) {
+                        const entry = await filesystem.lookupWithAttributes(node.node, validate_name(name));
+                        if (!entry)
+                            throw new FSError("ENOENT");
+                        record = record_for_node(entry.node, node);
+                        record.lookups += 1n;
+                        attributes = entry.attributes;
+                    } else {
+                        record = await lookup(node, name);
+                    }
                 }
                 catch (error) {
                     if (!(error instanceof FSError && error.errno === Errno.ENOENT && validity > 0n))
@@ -667,7 +677,7 @@ export function fileSystemDevice(filesystem, options) {
                     };
                     break;
                 }
-                write_entry(payload, record, await filesystem.getattr(record.node), validity);
+                write_entry(payload, record, attributes ?? await filesystem.getattr(record.node), validity);
                 break;
             }
             case FuseOpcode.FORGET: {

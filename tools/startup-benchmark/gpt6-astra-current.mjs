@@ -10,7 +10,7 @@ import {Worker} from 'node:worker_threads';
 const [runArg,mode='firefox',secondsArg='150',query=''] = process.argv.slice(2);
 const seconds=Number(secondsArg);
 const testPort=Number(process.env.LINUXONWEB_TEST_PORT||3000);
-if(!runArg || !['firefox','io','idle','home-tests','io-compare','input-timing','home-inventory','cache-export','seed-tests','mount-tests','writeback-tests','compat-export','barrier-tests'].includes(mode) || !Number.isInteger(seconds) || seconds<20 || seconds>240) throw Error('usage: RUN_DIRECTORY firefox|io|idle SECONDS [QUERY]');
+if(!runArg || !['firefox','io','idle','home-tests','io-compare','input-timing','home-inventory','cache-export','seed-tests','mount-tests','writeback-tests','compat-export','barrier-tests','lookup-tests'].includes(mode) || !Number.isInteger(seconds) || seconds<20 || seconds>240) throw Error('usage: RUN_DIRECTORY firefox|io|idle SECONDS [QUERY]');
 const run=path.resolve(runArg);
 if(fs.existsSync(run))throw Error('fresh run required');
 fs.mkdirSync(run,{recursive:true,mode:0o700});
@@ -104,12 +104,12 @@ async function warmRestart(){
  report.warmRestart={kind:'visible-about-profiles-restart',expectedProfile:'/home/admin/.mozilla/firefox/http1-profile',beforePids,preparationAtMs:time()};
  report.warmRestart.beforeProfile=await profileSnapshot('cold');
  report.warmRestart.prepare=await typeGuestAddress('about:profiles','warm-prepare');
- await delay(4000);await shot('warm-about-profiles');save();
+ await delay(options.get('warm-restart')==='auto'?10000:4000);await shot('warm-about-profiles');save();
  console.log(JSON.stringify({phase:'awaiting-visible-restart-click',run,controlFile:path.join(run,'warm-control.json'),deadlineMs:90000}));
- const deadline=time()+90000;let action;
- while(time()<deadline){try{action=JSON.parse(fs.readFileSync(path.join(run,'warm-control.json'),'utf8'));break;}catch{}await delay(100);}
+ const deadline=time()+90000;let action=options.get('warm-restart')==='auto'?{action:'restart-click',x:952,y:370,reference:'Reviewed warm1/warm-about-profiles.png at identical1280x720 guest and1400x960 host viewport',automatic:true}:null;
+ while(!action&&time()<deadline){try{action=JSON.parse(fs.readFileSync(path.join(run,'warm-control.json'),'utf8'));break;}catch{}await delay(100);}
  if(action?.action!=='restart-click'||!Number.isFinite(action.x)||!Number.isFinite(action.y)||action.x<0||action.x>1400||action.y<0||action.y>960)throw Error('Visible restart click missing or invalid within90s');
- report.warmRestart.requestAtMs=time();await clickGuest(action.x,action.y);save();
+ report.warmRestart.action=action;report.warmRestart.requestAtMs=time();report.warmRestart.requestAtUtc=new Date().toISOString();await clickGuest(action.x,action.y);save();
  let nextShot=0,probed=false,secondProbed=false;
  const newPids=new Set();
  while(time()-report.warmRestart.requestAtMs<90000&&!closed){
@@ -117,7 +117,7 @@ async function warmRestart(){
   const logs=await guestLogs();fs.writeFileSync(path.join(run,'warm-guest.log'),String(logs));
   for(const match of String(logs).matchAll(/\[(\d+), Main Thread\]/g)){const pid=Number(match[1]);if(!beforePids.includes(pid)&&!newPids.has(pid)){newPids.add(pid);(report.warmRestart.newPidObservations??=[]).push({pid,requestElapsedMs:time()-report.warmRestart.requestAtMs});}}
   if(elapsed>=nextShot){await shot('warm-at'+Math.round(elapsed)+'s');nextShot+=10;}
-  if(elapsed>=25&&!probed){probed=true;report.warmRestart.input25=await typeGuestAddress('about:blank','warm-input25');}
+  if(elapsed>=20&&!probed){probed=true;report.warmRestart.input20=await typeGuestAddress('about:blank','warm-input20');}
   if(elapsed>=60&&!secondProbed){secondProbed=true;report.warmRestart.input60=await typeGuestAddress('about:blank','warm-input60');}
   await delay(500);
  }
@@ -173,9 +173,9 @@ try{
  if(report.inputTiming.value!==expected||dom.length!==expected.length*2)throw Error('Input text/event count differs');
  if(report.inputTiming.dispatchHoldMaxMs>100||Math.max(...report.inputTiming.domHoldsMs)>100)throw Error('Input holds exceeded100ms for intended20ms');
  report.inputTiming.pass=true;
- }else if(mode==='home-tests'||mode==='seed-tests'||mode==='mount-tests'||mode==='writeback-tests'||mode==='barrier-tests'){
+ }else if(mode==='home-tests'||mode==='seed-tests'||mode==='mount-tests'||mode==='writeback-tests'||mode==='barrier-tests'||mode==='lookup-tests'){
  report.homeTests=[];
- for(const page of (mode==='barrier-tests'?['home-barrier.html']:mode==='writeback-tests'?['home-writeback.html']:mode==='mount-tests'?['home-mount.html']:mode==='seed-tests'?['startup-cache-seed.html','startup-cache-seed-v2.html']:['persistent-home.html','persistent-home-write.html'])){
+ for(const page of (mode==='lookup-tests'?['home-lookup.html','home-lookup-native.html']:mode==='barrier-tests'?['home-barrier.html']:mode==='writeback-tests'?['home-writeback.html']:mode==='mount-tests'?['home-mount.html']:mode==='seed-tests'?['startup-cache-seed.html','startup-cache-seed-v2.html']:['persistent-home.html','persistent-home-write.html'])){
    await send('Page.navigate',{url:'http://127.0.0.1:'+testPort+'/linux/tests/'+page});
    let state;for(let i=0;i<seconds*5;i++){state=await evaluate("({result:document.documentElement?.dataset.result,text:document.body?.innerText})");if(state.result)break;await delay(200);}
    report.homeTests.push({page,...state});if(state?.result!=='pass')throw Error('Home test failed: '+page+' '+state?.text);save();
@@ -215,7 +215,7 @@ try{
  const homeTimings=await evaluate('globalThis.__gpt6HomeTimings??null');if(homeTimings)fs.writeFileSync(path.join(run,'home-timings.json'),JSON.stringify(homeTimings,null,2));
  const inputDiagnostics=await evaluate('({dom:globalThis.__gpt6InputDom??[],queue:globalThis.__gpt6InputQueue??null})');fs.writeFileSync(path.join(run,'input-diagnostics.json'),JSON.stringify(inputDiagnostics));
  report.finalState=await evaluate("({text:document.body.innerText.slice(-6000),cores:navigator.hardwareConcurrency,status:document.querySelector('#status')?.textContent})");await shot('final');
- if(mode==='firefox'&&options.get('warm-restart')==='1')await warmRestart();
+ if(mode==='firefox'&&['1','auto'].includes(options.get('warm-restart')))await warmRestart();
  if(mode==='firefox'&&(options.get('post-apk-check')==='1'||options.get('desktop-apk-check')==='1')){
   report.postApkCheck={startedBootMs:time()-bootAt,afterFixedGraphicsObservation:options.get('post-apk-check')==='1',dedicatedDesktopAcceptance:options.get('desktop-apk-check')==='1'};
   const gate=path.join(run,'allow-post-apk.json');let reviewed=options.get('desktop-apk-check')==='1';for(let i=0;!reviewed&&i<150;i++){if(fs.existsSync(gate)){report.postApkCheck.visualGate=JSON.parse(fs.readFileSync(gate,'utf8'));reviewed=true;break;}await delay(200);}if(!reviewed)throw Error('Post-APK check requires observed completed GPU benchmark before typing');

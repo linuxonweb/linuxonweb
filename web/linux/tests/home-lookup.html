@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8"><title>Atomic lookup snapshot regression</title><pre id="result">Running…</pre>
+<script type="module">
+import {openPersistentHome} from '../persistent-home.mjs';
+const result=document.querySelector('#result'),checks=[],benchmark=[],name='linuxonweb.lookup.'+crypto.randomUUID();
+const check=(pass,label)=>{checks.push({pass:!!pass,label});if(!pass)throw Error(label)};
+const expectError=async(operation,errno,label)=>{try{await operation();throw Error('missing expected error')}catch(e){check(e.errno===errno,label)}};
+let h,observer;
+try{
+ h=await openPersistentHome({name});check(typeof h.lookupWithAttributes==='function','optional atomic lookup is available');
+ const context={mode:0o710,uid:1000,gid:1001},d=await h.mkdir(h.root,'d',context),f=await h.create(d,'f',2,{...context,mode:0o640});
+ await h.write(f.node,f.handle,0n,new TextEncoder().encode('snapshot metadata'));
+ let row=await h.lookupWithAttributes(d,'f'),stat=await h.getattr(f.node);
+ check(row.node.id===f.node.id,'lookup returns the requested inode');
+ for(const key of ['mode','uid','gid','size','blocks','nlink','blockSize'])check(row.attributes[key]===stat[key],'snapshot preserves '+key);
+ check(row.attributes.mtime.seconds===stat.mtime.seconds,'snapshot preserves timestamp');
+ check((await h.lookupWithAttributes(d,'missing'))===undefined,'missing entry remains absent');
+ await expectError(()=>h.lookupWithAttributes({id:987654321},'f'),2,'missing parent returns ENOENT');
+ await expectError(()=>h.lookupWithAttributes(f.node,'f'),20,'regular-file parent returns ENOTDIR');
+ const link=await h.symlink(d,'link','f',context),linked=await h.lookupWithAttributes(d,'link');
+ check(linked.node.id===link.id&&(linked.attributes.mode&0o170000)===0o120000&&linked.attributes.size===1n,'symlink metadata describes the link without following it');
+ observer=await openPersistentHome({name,readOnly:true});
+ await h.setattr(f.node,{mode:0o600,uid:42,gid:43});
+ row=await observer.lookupWithAttributes(d,'f');
+ check(row.attributes.uid===42&&row.attributes.gid===43&&row.attributes.mode===0o100600,'fresh read-only connection observes committed ownership and permissions');
+ row.attributes.uid=999;
+ check((await h.lookupWithAttributes(d,'f')).attributes.uid===42,'returned metadata mutation cannot alter the store');
+ const snapshot=h.lookupWithAttributes(d,'f'),rename=h.rename(d,'f',d,'renamed');const [before]=await Promise.all([snapshot,rename]);
+ check(before.node.id===f.node.id&&before.attributes.nlink===1&&before.attributes.size===17n,'lookup/rename race retains one consistent namespace snapshot');
+ check(await h.lookupWithAttributes(d,'f')===undefined&&(await h.lookupWithAttributes(d,'renamed')).node.id===f.node.id,'subsequent lookup observes rename without stale cache');
+ const lookup=h.lookupWithAttributes(d,'renamed'),unlink=h.unlink(d,'renamed');const [removed]=await Promise.all([lookup,unlink]);
+ check(removed.attributes.nlink===1&&await h.lookupWithAttributes(d,'renamed')===undefined,'lookup/unlink snapshot is coherent and subsequent lookup is fresh');
+ check((await h.getattr(f.node)).nlink===0,'open-unlinked inode metadata remains independently current');
+ await h.release(f.node,f.handle);
+ const b=await h.create(d,'bench',2,context);await h.write(b.node,b.handle,0n,new Uint8Array(17));
+ const originalTransaction=IDBDatabase.prototype.transaction;let readonlyCount=0;
+ IDBDatabase.prototype.transaction=function(...args){if(args[1]==='readonly')readonlyCount++;return originalTransaction.apply(this,args)};
+ try{
+  await h.lookupWithAttributes(d,'bench');check(readonlyCount===1,'atomic lookup completes in one readonly transaction');
+  readonlyCount=0;await h.getattr(await h.lookup(d,'bench'));check(readonlyCount===2,'legacy lookup plus getattr uses two readonly transactions');
+  for(const variant of ['legacy','atomic','atomic','legacy']){
+   const at=performance.now();readonlyCount=0;
+   for(let i=0;i<64;i++){const a=variant==='atomic'?(await h.lookupWithAttributes(d,'bench')).attributes:await h.getattr(await h.lookup(d,'bench'));if(a.size!==17n)throw Error('benchmark stat mismatch')}
+   benchmark.push({variant,count:64,elapsedMs:performance.now()-at,readonlyTransactions:readonlyCount});
+  }
+ }finally{IDBDatabase.prototype.transaction=originalTransaction}
+ const originalGet=IDBObjectStore.prototype.get;let injected=false;
+ IDBObjectStore.prototype.get=function(...args){if(this.name==='nodes'&&!injected){injected=true;throw new DOMException('Injected read failure','UnknownError')}return originalGet.apply(this,args)};
+ try{await expectError(()=>h.lookupWithAttributes(d,'bench'),5,'real IndexedDB read failure propagates EIO')}finally{IDBObjectStore.prototype.get=originalGet}
+ check((await h.lookupWithAttributes(d,'bench')).attributes.size===17n,'subsequent lookup recovers after aborted read');
+ await h.release(b.node,b.handle);
+ result.dataset.result='pass';result.textContent=JSON.stringify({pass:true,checks,benchmark},null,2);
+}catch(e){result.dataset.result='fail';result.textContent=JSON.stringify({pass:false,checks,benchmark,error:String(e),stack:e.stack},null,2)}
+finally{await observer?.destroy();await h?.destroy();indexedDB.deleteDatabase(name);document.documentElement.dataset.result=result.dataset.result}
+</script>

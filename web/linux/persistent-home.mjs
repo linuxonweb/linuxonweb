@@ -121,6 +121,15 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     async lookup(parent, name) {
       return transaction(false, async nodes => { await directory(nodes, parent); const node = await entry(nodes, parent, name); return node ? ref(node.id) : undefined; });
     },
+    // Return the entry and its metadata from one readonly transaction. This
+    // is a request snapshot, never a cross-request metadata cache.
+    lookupWithAttributes(parent, name) {
+      return transaction(false, async nodes => {
+        await directory(nodes, parent);
+        const node = await entry(nodes, parent, name);
+        return node ? { node: ref(node.id), attributes: attrs(node) } : undefined;
+      });
+    },
     getattr(node) { return transaction(false, async nodes => attrs(await get(nodes, node))); },
     setattr(node, attributes) {
       return transaction(true, async (nodes, chunks) => {

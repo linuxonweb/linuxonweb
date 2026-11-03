@@ -182,3 +182,16 @@ At10:12:48UTC the verified publisher restored immutable60847fb85339 (SHA60847fb8
 - Isolated barrier fixture2026-11-03T10:31:01.655Z→10:31:29.029Z,27.374s,16checksPASS,0owned; fixture512MiB, actual guestLinux/native syscalls/strictIDB. Open acknowledged writes and activewriter durable before genuine quiesce+syncfs ACK; exactnonce Stop/reopen retained bytes. Real quota error and timeout resume running guest, no false shutdown.
 - Barrier remains experimental/off-public: current real desktop PID1 can spawn/respawn writers and cannot be safely stopped. A supervisor/full-desktop lifecycle gate is not implemented; no production writeback exposure.
 - Elapsed walltime from07:06:26 through10:31:29.029 is3h25m03.029s. Parallel durations remain separate.
+
+## Iteration8 — version2 code-cache functional experiment
+
+-2026-11-03T10:37:51.463Z→10:40:21.459Z,149.996s. Native archive remains old60847fb85339; fetch/decode/import are inside page-to-boot time. Concurrent package activity means no controlled timing comparison.
+- Import exceeded its cooperative15s deadline after first4,926,718B cache file was strictly committed; pristine readdir alone took9.353s and firstwrite1.821s. Compatibility metadata and remaining caches were not installed. Native normalboot continued. No cache reuse/efficacy accepted, no input acceptance because the fixed110s probe occurred before observed readiness.
+- Same page origin throughout; effective3CPU ancestor quota captured in142samples; minimum availableRAM23.77GB. Owner cleaned all descendants. Seed stays disabled, no overall score change(35/100).
+- Wall elapsed from07:06:26 through10:40:21.459=3h33m55.459s. No extra fullseedrun without a concretefix and quietlane.
+
+## Iteration9 — atomic lookup metadata
+
+- Isolatedsourcepinstart2026-11-03T10:47:44.297938+00:00, acceptance/landingrecord2026-11-03T11:02:03.728411+00:00, wall859.430s. Nativebuild2.006s, host/nativepassingowner37.541s; priorfixturecompletionselectorfailure120.025s preserved.
+-24hostcorrectnesschecks andactualnative stat/lstat/uid/gid/mode/ENOENT/fallback checks passed. ABBA128statbaseline2307.330/2288.055ms vsatomic2056.060/1992.705ms(~11.9% lower median inthisworkload);262LOOKUPs each, separategetattr785→526. Thispercentage isseparate fromcreate9.4%microbenchmark andisnotanoverallstartupclaim.
+- Independentgraphics_jit reviewPASS; onlyoptional atomicreadonlysnapshotAPI andFUSEuse added, existinglegacyfallback preserved. No crossrequestcache orwrite/fsyncdurability change. Overall35/100 pendingparentrubricupdate andAPKpublication.

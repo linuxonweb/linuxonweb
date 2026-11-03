@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T10:37:51.463Z",
+  "mode": "firefox",
+  "seconds": 120,
+  "run": "/mnt/p3/codex-build/s3n/seed2",
+  "errors": [],
+  "screenshots": [
+    {
+      "name": "at10s.png",
+      "ms": 27513.65,
+      "bootMs": 19697.24,
+      "requestedAtMs": 18103.872,
+      "completedAtMs": 27513.65,
+      "durationMs": 9409.778000000002,
+      "requestedAtUtc": "2026-11-03T10:38:09.567Z",
+      "completedAtUtc": "2026-11-03T10:38:18.977Z"
+    },
+    {
+      "name": "at30s.png",
+      "ms": 38613.581,
+      "bootMs": 30797.171,
+      "requestedAtMs": 38163.377,
+      "completedAtMs": 38613.581,
+      "durationMs": 450.2039999999979,
+      "requestedAtUtc": "2026-11-03T10:38:29.627Z",
+      "completedAtUtc": "2026-11-03T10:38:30.077Z"
+    },
+    {
+      "name": "at50s.png",
+      "ms": 58343.898,
+      "bootMs": 50527.488,
+      "requestedAtMs": 57836.323,
+      "completedAtMs": 58343.898,
+      "durationMs": 507.57500000000437,
+      "requestedAtUtc": "2026-11-03T10:38:49.300Z",
+      "completedAtUtc": "2026-11-03T10:38:49.807Z"
+    },
+    {
+      "name": "at70s.png",
+      "ms": 80214.711,
+      "bootMs": 72398.30099999999,
+      "requestedAtMs": 77931.935,
+      "completedAtMs": 80214.711,
+      "durationMs": 2282.775999999998,
+      "requestedAtUtc": "2026-11-03T10:39:09.395Z",
+      "completedAtUtc": "2026-11-03T10:39:11.678Z"
+    },
+    {
+      "name": "at90s.png",
+      "ms": 105379.959,
+      "bootMs": 97563.549,
+      "requestedAtMs": 98082.737,
+      "completedAtMs": 105379.959,
+      "durationMs": 7297.222000000009,
+      "requestedAtUtc": "2026-11-03T10:39:29.546Z",
+      "completedAtUtc": "2026-11-03T10:39:36.843Z"
+    },
+    {
+      "name": "at110s.png",
+      "ms": 119970.405,
+      "bootMs": 112153.995,
+      "requestedAtMs": 117837.053,
+      "completedAtMs": 119970.405,
+      "durationMs": 2133.351999999999,
+      "requestedAtUtc": "2026-11-03T10:39:49.300Z",
+      "completedAtUtc": "2026-11-03T10:39:51.434Z"
+    },
+    {
+      "name": "input-before.png",
+      "ms": 123022.78,
+      "bootMs": 115206.37,
+      "requestedAtMs": 120039.313,
+      "completedAtMs": 123022.78,
+      "durationMs": 2983.467000000004,
+      "requestedAtUtc": "2026-11-03T10:39:51.503Z",
+      "completedAtUtc": "2026-11-03T10:39:54.486Z"
+    },
+    {
+      "name": "input-typed.png",
+      "ms": 128241.031,
+      "bootMs": 120424.621,
+      "requestedAtMs": 125761.953,
+      "completedAtMs": 128241.031,
+      "durationMs": 2479.0780000000086,
+      "requestedAtUtc": "2026-11-03T10:39:57.225Z",
+      "completedAtUtc": "2026-11-03T10:39:59.704Z"
+    },
+    {
+      "name": "input-navigation.png",
+      "ms": 135270.885,
+      "bootMs": 127454.475,
+      "requestedAtMs": 130321.932,
+      "completedAtMs": 135270.885,
+      "durationMs": 4948.953000000009,
+      "requestedAtUtc": "2026-11-03T10:40:01.785Z",
+      "completedAtUtc": "2026-11-03T10:40:06.734Z"
+    },
+    {
+      "name": "final.png",
+      "ms": 138927.44,
+      "bootMs": 131111.03,
+      "requestedAtMs": 136045.886,
+      "completedAtMs": 138927.44,
+      "durationMs": 2881.5540000000037,
+      "requestedAtUtc": "2026-11-03T10:40:07.509Z",
+      "completedAtUtc": "2026-11-03T10:40:10.391Z"
+    }
+  ],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "compressed-initramfs=1&startup-cache-seed=2&probe-input=1&probe-after-seconds=110",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0
+  },
+  "acceptance": {
+    "seedReuse": false,
+    "productionAccepted": false,
+    "inputAccepted": false,
+    "reason": "Cooperative15s import deadline expired afterpartial strictlycommitted cache creation; normalboot continued. Concurrent packagework means no timing comparison; timedinput was beforeproven readiness.",
+    "samePageTimeOrigin": true,
+    "hostWriteBytes": 4929055,
+    "longestReaddirMs": 9353.469999969006
+  },
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38092/linux/index.html?renderer=webgl&gpubackend=webgl&firefox=1&compressed-initramfs=1&startup-cache-seed=2&probe-input=1&probe-after-seconds=110",
+  "navigationAtMs": 7816.41,
+  "navigation": {
+    "frameId": "1CEA674BF9D0D5CF4C7F924D32802250",
+    "loaderId": "51AE6B0981DC2F1A90543A8C37FB5D8F",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38092/linux/index.html?renderer=webgl&gpubackend=webgl&firefox=1&compressed-initramfs=1&startup-cache-seed=2&probe-input=1&probe-after-seconds=110",
+    "pageTimeOrigin": 1793702279292.705,
+    "pageNow": 4172.485000014305
+  },
+  "milestones": {
+    "system image": 19732.067,
+    "machine started": 25284.827999999998,
+    "home: persistent storage mounted": 78274.514,
+    "display: starting Xfbdev": 83588.26999999999,
+    "starting /bin/aurora-wm": 88710.447,
+    "[wm-ready]": 98113.662,
+    "starting /bin/firefox": 98113.693
+  },
+  "lastLogAtMs": 116325.909,
+  "inputProbe": {
+    "startBootMs": 112222.849,
+    "typedBootMs": 116944.516,
+    "enterBootMs": 120502.716,
+    "observedBootMs": 127472.655
+  },
+  "seedReceipt": {
+    "status": "failed",
+    "error": "Error: Code-cache import exceeded 15 seconds"
+  },
+  "finalState": {
+    "text": "running \u00b7 firefox \u00b7 initramfs\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n4.7 MB \u00b7 7 entries\nCached system images\n115.4 MB\nBrowser usage / quota estimate\n120.5 MB / 10.12 GB\n\nSystem 60847fb85339 \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nHome mounted \u00b7 saved files persist across refresh and system updates.",
+    "cores": 3,
+    "status": "running \u00b7 firefox \u00b7 initramfs"
+  },
+  "stopState": "idle\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nChecking server build\u2026\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nChecking storage\u2026\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n\u2014\nCached system images\n\u2014\nBrowser usage / quota estimate\n\u2014\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved files persist after refresh. Save work before Update & restart; browser data clearing removes this home.",
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T10:40:21.459Z",
+  "elapsedMs": 149995.627,
+  "resourceSummary": {
+    "pssPeakBytes": 2765404160,
+    "rssSumPeakBytes": 3545157632,
+    "minAvailableBytes": 23772418048,
+    "samples": 142,
+    "pssSamples": 29,
+    "pssIntervalMs": 5000
+  }
+}

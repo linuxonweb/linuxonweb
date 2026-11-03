@@ -37,7 +37,7 @@ if(diagnosticMode==='full'){
 // Preserve filesystem semantics; gather counts and async wall durations only.
 // In-flight union time prevents summing concurrent operations as serial delay.
 {
- const raw=fs.readFileSync('web/linux/persistent-home.mjs','utf8');
+ const raw=fs.readFileSync(process.env.LINUXONWEB_LOOKUP_FIXTURE ? path.join(path.resolve(process.env.LINUXONWEB_LOOKUP_FIXTURE),'persistent-home.mjs') : 'web/linux/persistent-home.mjs','utf8');
  const marker='  return api;';
  if(raw.split(marker).length!==2)throw Error('Home API return anchor changed');
  const instrumentation=`
@@ -110,6 +110,13 @@ if(process.env.LINUXONWEB_WRITEBACK_FIXTURE==='1'){
  sources.set('/linux/dist/virtio/fs.js',Buffer.from(code));fs.writeFileSync(path.join(out,'fs-writeback-candidate.js'),code);pins['/linux/dist/virtio/fs.js']={originalSha256:crypto.createHash('sha256').update(raw).digest('hex'),instrumentedSha256:crypto.createHash('sha256').update(code).digest('hex'),testOnlyWritebackTag:'writeback'};
 }
 const mimeTypes=new Map();
+if(process.env.LINUXONWEB_LOOKUP_FIXTURE){
+ if(process.env.LINUXONWEB_WRITEBACK_FIXTURE)throw Error('Lookup and writeback experiments must stay separate');
+ const directory=path.resolve(process.env.LINUXONWEB_LOOKUP_FIXTURE),route='/linux/dist/virtio/fs.js',body=fs.readFileSync(path.join(directory,'fs.js'));
+ sources.set(route,body);pins[route]={testOnly:true,overrideFile:path.join(directory,'fs.js'),sha256:crypto.createHash('sha256').update(body).digest('hex')};
+ for(const name of ['home-lookup.html','home-lookup-native.html']){const file=path.join(directory,name);if(fs.existsSync(file)){const route='/linux/tests/'+name,body=fs.readFileSync(file);sources.set(route,body);mimeTypes.set(route,'text/html; charset=utf-8');pins[route]={testOnly:true,sha256:crypto.createHash('sha256').update(body).digest('hex')};}}
+}
+
 if(overlayArg){
  const overlay=path.resolve(overlayArg);
  for(const name of ['desktop-extras.cpio.json','desktop-extras.cpio','desktop-extras.cpio.gz']){

@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T10:54:21.646Z",
+  "mode": "lookup-tests",
+  "seconds": 60,
+  "run": "/mnt/p3/codex-build/s3n/lookup2",
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38094/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 5114.842,
+  "navigation": {
+    "frameId": "E0EA866E3FA6ACA9A37A336C50F5F96E",
+    "loaderId": "13D8E5FBB50FB3704D6FF45EF7962A2F",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38094/linux/index.html?renderer=webgl&gpubackend=webgl",
+    "pageTimeOrigin": 1793703266806.635,
+    "pageNow": 3386.9049999713898
+  },
+  "homeTests": [
+    {
+      "page": "home-lookup.html",
+      "result": "pass",
+      "text": "{\n  \"pass\": true,\n  \"checks\": [\n    {\n      \"pass\": true,\n      \"label\": \"optional atomic lookup is available\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup returns the requested inode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves mode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves uid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves gid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves size\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blocks\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves nlink\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blockSize\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves timestamp\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing entry remains absent\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing parent returns ENOENT\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"regular-file parent returns ENOTDIR\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"symlink metadata describes the link without following it\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"fresh read-only connection observes committed ownership and permissions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"returned metadata mutation cannot alter the store\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/rename race retains one consistent namespace snapshot\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup observes rename without stale cache\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/unlink snapshot is coherent and subsequent lookup is fresh\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"open-unlinked inode metadata remains independently current\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"atomic lookup completes in one readonly transaction\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"legacy lookup plus getattr uses two readonly transactions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"real IndexedDB read failure propagates EIO\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup recovers after aborted read\"\n    }\n  ],\n  \"benchmark\": [\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 578.1549999713898,\n      \"readonlyTransactions\": 128\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 223.0250000357628,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 289.31999999284744,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 425.81999999284744,\n      \"readonlyTransactions\": 128\n    }\n  ]\n}"
+    },
+    {
+      "page": "home-lookup-native.html",
+      "result": "pass",
+      "text": "{\n  \"pass\": true,\n  \"checks\": [\n    {\n      \"pass\": true,\n      \"label\": \"native fixture bytes match pinned hash\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"actual guest stat/lstat/mode/owner/ENOENT checks pass\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"native FUSE actually uses atomic lookup\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"native legacy fallback remains exercised\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"balanced native ABBA benchmark completed\"\n    }\n  ],\n  \"calls\": {\n    \"baseline\": {\n      \"getattr\": 785,\n      \"lookup\": 262,\n      \"create\": 1,\n      \"write\": 1,\n      \"setattr\": 2,\n      \"fsync\": 1,\n      \"flush\": 1,\n      \"release\": 1,\n      \"symlink\": 1,\n      \"readlink\": 1\n    },\n    \"candidate\": {\n      \"getattr\": 526,\n      \"lookupWithAttributes\": 262,\n      \"create\": 1,\n      \"write\": 1,\n      \"setattr\": 2,\n      \"fsync\": 1,\n      \"flush\": 1,\n      \"release\": 1,\n      \"symlink\": 1,\n      \"readlink\": 1\n    }\n  },\n  \"benchmark\": [\n    \"LOOKUP_BENCH baseline count=128 ms=2307.330\",\n    \"LOOKUP_BENCH candidate count=128 ms=2056.060\",\n    \"LOOKUP_BENCH candidate count=128 ms=1992.705\",\n    \"LOOKUP_BENCH baseline count=128 ms=2288.055\"\n  ],\n  \"lines\": [\n    \"input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\",\n    \"virtiofs virtio3: discovered new tag: baseline\",\n    \"virtiofs virtio4: discovered new tag: candidate\",\n    \"Console: switching to colour frame buffer device 80x30\",\n    \"fb0: wasm framebuffer 640x480-32 at 3e4417a4\",\n    \"This architecture does not have kernel memory protection.\",\n    \"Run /init as init process\",\n    \"LOOKUP_BENCH baseline count=128 ms=2307.330\",\n    \"LOOKUP_BENCH candidate count=128 ms=2056.060\",\n    \"LOOKUP_BENCH candidate count=128 ms=1992.705\",\n    \"LOOKUP_BENCH baseline count=128 ms=2288.055\",\n    \"LOOKUP_DONE failures=0\"\n  ]\n}"
+    }
+  ],
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T10:54:59.187Z",
+  "elapsedMs": 37541.1,
+  "resourceSummary": {
+    "pssPeakBytes": 799019008,
+    "rssSumPeakBytes": 1541218304,
+    "minAvailableBytes": 23666704384,
+    "samples": 33,
+    "pssSamples": 6,
+    "pssIntervalMs": 5000
+  },
+  "sourcePins": {
+    "persistent-home.mjs": {
+      "baseline": "73922989ccafaa6bb6ecd68cc484b00db45baf6dd70c8a8184c091384b5e0a75",
+      "candidate": "a95dad5f5dc769c9c3f8b0649a1d089ed7e2926c8199c56eee1ea7a3cb4251a5"
+    },
+    "fs.js": {
+      "baseline": "f0f6e6af0fa3d41f433cf56922bb4a6510266977918f196a621156ae680b3a40",
+      "candidate": "ba1cae001f6a78586d8ba35943058c10746f9450528a6c9fbdcb4ecfbdbf1e6a"
+    },
+    "fs.d.ts": {
+      "baseline": "3a51ffb5c44e89d2bbb93d532d836fb512e67699e170e07ecbf400223d58d94b",
+      "candidate": "e3e6157d77a20791752bfabcbaaada5a0270e8d63fb5855d36981b33729a36d4"
+    }
+  },
+  "peerReview": "graphics_jit: independent source review PASS; same request snapshot and legacy fallback, no cross-request cache or durability change.",
+  "nativeBenchmark": {
+    "baseline128StatMs": [
+      2307.33,
+      2288.055
+    ],
+    "candidate128StatMs": [
+      2056.06,
+      1992.705
+    ],
+    "medianReductionPercent": 11.894977243473626,
+    "scope": "balanced ABBA actual guest metadata microbenchmark, not overall Firefox startup"
+  }
+}

@@ -88,6 +88,14 @@ export interface FSCreateContext {
 export interface FS<TNode, THandle> {
     readonly root: TNode;
     lookup(parent: TNode, name: string): MaybePromise<TNode | undefined>;
+    /** Optional atomic entry/metadata snapshot for one LOOKUP request.
+     * The returned attributes must describe the returned node at lookup time.
+     * The device does not retain them beyond that response.
+     */
+    lookupWithAttributes?(parent: TNode, name: string): MaybePromise<{
+        node: TNode;
+        attributes: FSAttributes;
+    } | undefined>;
     getattr(node: TNode, handle?: THandle): MaybePromise<FSAttributes>;
     setattr?(node: TNode, attributes: FSSetAttributes, handle?: THandle): MaybePromise<FSAttributes>;
     readlink?(node: TNode): MaybePromise<string>;

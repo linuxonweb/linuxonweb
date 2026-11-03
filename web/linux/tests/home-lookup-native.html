@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Native atomic lookup gate</title><pre id="result">Running…</pre><canvas id="fb" width="640" height="480"></canvas>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice,inputDevice} from '../dist/index.js';
+import {fileSystemDevice} from '../dist/virtio/fs.js';
+import {openPersistentHome} from '../persistent-home.mjs';
+const result=document.querySelector('#result'),lines=[],calls={baseline:{},candidate:{}},homes=[],names=[],checks=[];let machine;
+const check=(pass,label)=>{checks.push({pass:!!pass,label});if(!pass)throw Error(label)};
+try{
+ const manifest=await fetch('./home-mount.json').then(r=>r.json()),image=new Uint8Array(await fetch('./home-mount.cpio').then(r=>r.arrayBuffer()));
+ const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',image)),x=>x.toString(16).padStart(2,'0')).join('');check(hash===manifest.archiveSha256,'native fixture bytes match pinned hash');
+ const devices=[];for(const tag of ['baseline','candidate']){const name='linuxonweb.lookup.native.'+tag+'.'+crypto.randomUUID();names.push(name);const h=await openPersistentHome({name});homes.push(h);const api={...h};if(tag==='baseline')delete api.lookupWithAttributes;for(const [key,method]of Object.entries(api))if(typeof method==='function')api[key]=async(...args)=>{calls[tag][key]=(calls[tag][key]||0)+1;return method(...args)};devices.push(fileSystemDevice(api,{tag,cache:false}))}
+ const decoder=new TextDecoder();let pending='';let doneResolve;const done=new Promise(resolve=>doneResolve=resolve);
+ const consoleWrite=bytes=>{pending+=decoder.decode(new Uint8Array(bytes),{stream:true});for(;;){const n=pending.indexOf('\n');if(n<0)break;const line=pending.slice(0,n).replace(/\r/g,'');pending=pending.slice(n+1);lines.push(line);if(line.startsWith('LOOKUP_DONE'))doneResolve(line)}};
+ machine=await spawnMachine({initcpio:image,cpus:navigator.hardwareConcurrency,devicetree:{memory:{reg:[0,536870912]}},cmdline:'console=hvc0 rdinit=/init',framebuffer:{canvas:document.querySelector('#fb'),width:640,height:480,backend:'canvas2d'},devices:[consoleDevice(null,new WritableStream({write:consoleWrite})),entropyDevice(),inputDevice(),...devices]});
+ const finished=await Promise.race([done,new Promise((_,reject)=>setTimeout(()=>reject(Error('native metadata fixture timeout')),45000))]);check(finished==='LOOKUP_DONE failures=0','actual guest stat/lstat/mode/owner/ENOENT checks pass');
+ check((calls.candidate.lookupWithAttributes||0)>256,'native FUSE actually uses atomic lookup');
+ check((calls.baseline.lookup||0)>256&&!calls.baseline.lookupWithAttributes,'native legacy fallback remains exercised');
+ const benchmark=lines.filter(x=>x.startsWith('LOOKUP_BENCH'));check(benchmark.length===4,'balanced native ABBA benchmark completed');
+ result.dataset.result='pass';result.textContent=JSON.stringify({pass:true,checks,calls,benchmark,lines},null,2);
+}catch(e){result.dataset.result='fail';result.textContent=JSON.stringify({pass:false,checks,calls,lines,error:String(e),stack:e.stack},null,2)}
+finally{machine?.close();await machine?.closed.catch(()=>{});for(const h of homes)await h.destroy();for(const n of names)indexedDB.deleteDatabase(n);document.documentElement.dataset.result=result.dataset.result}
+</script>

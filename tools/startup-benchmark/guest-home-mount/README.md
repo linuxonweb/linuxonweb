@@ -18,3 +18,10 @@ Build with the project's wasm32-linux-musl compiler and its static/shared-memory
 On 2026-11-03 the actual guest barrier fixture passed16 checks in27.374s: active writer and acknowledged still-open data were durable before PREPARED; wrong nonce could not commit; exact acknowledgement followed by Stop/reopen retained bytes. A real IndexedDB quota failure propagated as ENOSPC from native syncfs and left the guest running; a5s timeout restored the active writer without a false shutdown. Source and exact generated-payload hashes are recorded in `../evidence/barrier1-20261103.json`.
 
 **Production remains unaccepted and disabled.** The current desktop PID1 may spawn/respawn writers, and namespace PID1 cannot be safely stopped by this helper. A production supervisor and complete desktop/APK/home/error/Stop/reopen acceptance are not implemented. This protocol experiment is not a product durability guarantee.
+
+
+## Atomic lookup metadata
+
+The optional `lookupWithAttributes` HomeFS API returns an entry and its attributes from one readonly IndexedDB transaction. The virtio-fs LOOKUP handler uses that snapshot for its response, preserving the legacy lookup/getattr fallback for other backends. It does not cache metadata across requests or change writes, fsync, permissions, or open-handle ownership.
+
+The actual-browser fixture passed24 checks, including rename/unlink races, read-only cross-connection freshness, symlink metadata, ownership/permissions, ENOENT/ENOTDIR and an injected IndexedDB read failure. The actual native guest exercised stat/lstat, symlink following, ownership/mode and absent paths. Balanced128-stat runs took2307.330/2288.055ms on the legacy path and2056.060/1992.705ms on the atomic path (~11.9% lower median in this workload). LOOKUP calls stayed262 per variant; separate getattr calls dropped785→526. This is a metadata microbenchmark, not a general filesystem or Firefox startup percentage. The independent source review found no durability or reference-count regression. See `../evidence/atomic-lookup-20261103.json`.
