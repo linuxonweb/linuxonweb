@@ -74,6 +74,30 @@ async function typeGuestAddress(text,label){
  result.enterMs=time();await delay(2000);await shot(label+'-navigation');result.observedMs=time();return result;
 }
 async function guestLogs(){return await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");}
+
+function readinessSignals(logs, nonce) {
+ const found=[];for(const line of String(logs).split('\n')){const match=/LOW_READY (\{.*\})/.exec(line);if(!match)continue;try{let value;try{value=JSON.parse(match[1]);}catch{value=JSON.parse(JSON.parse('"'+match[1]+'"'));}if(value.schema===1&&value.nonce===nonce&&['paint','focus','input','typed','navigate','complete'].includes(value.phase))found.push(value);}catch{}}
+ return found;
+}
+async function readinessProbe(paint,nonce) {
+ if(!/^[a-z]{12,32}$/.test(nonce))throw Error('Invalid readiness nonce');
+ const gate=report.readiness={nonce,paint,paintObservedLaunchMs:time()-bootAt,observations:[],scope:'Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation',accepted:false};save();
+ const waitPhase=async(phase,boundMs)=>{const until=time()+boundMs;while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'guest.log'),logs);const signal=readinessSignals(logs,nonce).find(v=>v.phase===phase);if(signal){const observation={phase,signal,observedLaunchMs:time()-bootAt,observedUtc:new Date().toISOString()};gate.observations.push(observation);save();return observation;}await delay(250);}throw Error('Readiness '+phase+' acknowledgement deadline '+boundMs+'ms');};
+ if(paint.dpr!==1||![paint.innerScreenX,paint.innerScreenY,paint.input?.x,paint.input?.y,paint.input?.width,paint.input?.height].every(Number.isFinite))throw Error('Readiness coordinate contract unavailable');
+ await shot('readiness-painted');
+ const canvas=await evaluate("(()=>{const c=document.querySelector('canvas'),r=c.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width,height:r.height,bufferWidth:c.width,bufferHeight:c.height};})()");
+ const guestX=paint.innerScreenX+paint.input.x+paint.input.width/2,guestY=paint.innerScreenY+paint.input.y+paint.input.height/2;
+ if(!(guestX>0&&guestX<1280&&guestY>0&&guestY<720))throw Error('Readiness input outside guest display');
+ const x=canvas.left+guestX*canvas.width/1280,y=canvas.top+guestY*canvas.height/720;gate.inputLocation={canvas,guestX,guestY,x,y};
+ gate.inputStartLaunchMs=time()-bootAt;await clickGuest(x,y);gate.focus=await waitPhase('focus',20000);await shot('readiness-focused');
+ for(const c of nonce){await pressKey({key:c,code:'Key'+c.toUpperCase(),windowsVirtualKeyCode:c.toUpperCase().charCodeAt(0),nativeVirtualKeyCode:c.toUpperCase().charCodeAt(0),text:c,unmodifiedText:c});await delay(20);}
+ gate.keysSentLaunchMs=time()-bootAt;save();
+
+ gate.typed=await waitPhase('typed',20000);if(gate.typed.signal.value!==nonce)throw Error('Readiness typed value differs');await shot('readiness-typed');
+ gate.enterLaunchMs=time()-bootAt;await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+ gate.complete=await waitPhase('complete',30000);if(gate.complete.signal.value!==nonce||gate.complete.signal.title!=='READINESS COMPLETE'||gate.complete.signal.href!=='file:///opt/firefox/gpu-check/readiness-complete.html?nonce='+nonce)throw Error('Readiness navigation identity differs');
+ await shot('readiness-complete');gate.completeScreenshotLaunchMs=time()-bootAt;gate.keyboardNavigationPassed=true;gate.thirtySecondGate=gate.completeScreenshotLaunchMs<=30000;gate.acceptance='Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review';save();
+}
 async function profileSnapshot(label,includeAll=false){
  const snapshot=await evaluate(`new Promise((resolve,reject)=>{const request=indexedDB.open('linuxonweb.home.v1');request.onupgradeneeded=()=>request.transaction.abort();request.onerror=()=>reject(request.error);request.onsuccess=()=>{const db=request.result,tx=db.transaction('nodes','readonly'),r=tx.objectStore('nodes').getAll(undefined,10000);r.onerror=()=>reject(r.error);r.onsuccess=()=>{const nodes=r.result,map=new Map(nodes.map(n=>[n.id,n]));const pathname=n=>{const parts=[];for(let depth=0;n&&n.parent&&depth<32;depth++){parts.push(n.name);n=map.get(n.parent);}return '/home/'+parts.reverse().join('/');};resolve({nodes:nodes.length,truncated:nodes.length===10000,files:nodes.map(n=>({id:n.id,path:pathname(n),bytes:n.size,mode:n.mode})).filter(n=>${includeAll}||/startupcache|startupCache|\.cache|prefs\.js|user\.js|profiles\.ini|sessionstore/i.test(n.path))});};tx.oncomplete=()=>db.close();};})`);
  fs.writeFileSync(path.join(run,label+'-profile.json'),JSON.stringify(snapshot,null,2));
@@ -131,6 +155,12 @@ async function warmRestart(){
 async function shot(name){const requestedAtMs=time(),requestedAtUtc=new Date().toISOString();const r=await send('Page.captureScreenshot',{format:'png'});const completedAtMs=time(),completedAtUtc=new Date().toISOString();fs.writeFileSync(path.join(run,name+'.png'),Buffer.from(r.data,'base64'));report.screenshots.push({name:name+'.png',ms:completedAtMs,bootMs:bootAt===undefined?null:completedAtMs-bootAt,requestedAtMs,completedAtMs,durationMs:completedAtMs-requestedAtMs,requestedAtUtc,completedAtUtc});save();}
 function child(command,args,log){const fd=fs.openSync(path.join(run,log),'a');const p=spawn(command,args,{env,stdio:['ignore',fd,fd],detached:true});fs.closeSync(fd);p.on('error',e=>report.errors.push(String(e)));return p;}
 try{
+ if(options.get('owned-proxy')==='1'){
+  if(!env.LINUXONWEB_BOOT_PACKAGE||testPort===3000)throw Error('Owned candidate proxy requires explicit image and nonproduction port');
+  const proxy=child(process.execPath,['tools/startup-benchmark/gpt6-astra-timing-proxy.mjs',path.join(run,'proxy'),String(testPort),'home'],'proxy.log');
+  let ready=false;for(let i=0;i<200;i++){if(proxy.exitCode!==null)throw Error('Owned candidate proxy exited '+proxy.exitCode);if(fs.existsSync(path.join(run,'proxy','ready.json'))){ready=true;break;}await delay(100);}if(!ready)throw Error('Owned candidate proxy readiness deadline');
+  report.ownedProxy=JSON.parse(fs.readFileSync(path.join(run,'proxy','ready.json'),'utf8'));
+ }
  const displayNumber=Array.from({length:40},(_,i)=>90+i).find(n=>!fs.existsSync(`/tmp/.X${n}-lock`));if(displayNumber===undefined)throw Error('No free owned X display');
  env.DISPLAY=':'+displayNumber;env.XAUTHORITY=path.join(run,'xauth');fs.writeFileSync(env.XAUTHORITY,'',{mode:0o600});
  const auth=spawnSync('xauth',['-f',env.XAUTHORITY,'add',env.DISPLAY,'.',crypto.randomBytes(16).toString('hex')],{env,encoding:'utf8'});if(auth.status!==0)throw Error('xauth: '+auth.stderr);
@@ -149,11 +179,12 @@ try{
  if(options.get('trace-startup')==='1'){await send('Tracing.start',{transferMode:'ReturnAsStream',categories:'v8,disabled-by-default-v8.wasm,disabled-by-default-v8.runtime_stats'});tracing=true;}
  await send('Page.addScriptToEvaluateOnNewDocument',{source:`globalThis.__gpt6InputDom=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{if(e.target?.tagName==='CANVAS'&&__gpt6InputDom.length<2048)__gpt6InputDom.push({type,code:e.code,key:e.key,repeat:e.repeat,ms:performance.timeOrigin+performance.now()});},true);`});
  await send('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:')localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({cpus:${report.configuration.cpus},ram:${report.configuration.ramMiB},resolution:'1280x720',backend:'webgl'}));`});
- const url=new URL(`http://127.0.0.1:${testPort}/linux/index.html`);url.searchParams.set('renderer','webgl');url.searchParams.set('gpubackend','webgl');if(mode==='firefox')url.searchParams.set('firefox','1');for(const[k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
+ const url=new URL(`http://127.0.0.1:${testPort}/linux/index.html`);url.searchParams.set('renderer','webgl');url.searchParams.set('gpubackend','webgl');if(mode==='firefox'&&options.get('manual-launch')!=='1')url.searchParams.set('firefox','1');for(const[k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  report.url=url.href;bootAt=time();report.navigationAtMs=bootAt;report.navigation=await send('Page.navigate',{url:url.href});if(report.navigation.errorText)throw Error('Navigation: '+report.navigation.errorText);
  if(observeAfter>0){report.quietObservation={startBootMs:time()-bootAt,startUtc:new Date().toISOString(),requestedEndBootMs:observeAfter*1000,excludes:['screenshots','Runtime.evaluate','log polling','tracing'],resourceMonitor:'CPU/RSS/quota1s; PSS5s; separateworker',passiveConsoleEvents:true};save();while(time()-bootAt<observeAfter*1000&&!closed)await delay(200);report.quietObservation.endBootMs=time()-bootAt;report.quietObservation.endUtc=new Date().toISOString();if(closed)throw Error('Resource monitor stopped quiet observation');}
  for(let i=0;i<200;i++){try{if(await evaluate("document.readyState==='complete' && !!document.querySelector('#cpu-cores')"))break;}catch{}await delay(100);}
  report.initial=await evaluate("({cores:navigator.hardwareConcurrency,crossOriginIsolated,settings:localStorage.getItem('linuxonweb.machine-settings.v1'),url:location.href,pageTimeOrigin:performance.timeOrigin,pageNow:performance.now()})");if(report.initial.cores!==report.configuration.cpus)throw Error('Native browser CPU count differs from test affinity');save();
+ if(mode==='firefox'&&options.get('manual-launch')==='1'){if(observeAfter>0)throw Error('Manual launch cannot use quiet startup pre-wait');report.launchRequest={kind:'production Start Firefox menu',hostMs:time(),utc:new Date().toISOString()};bootAt=report.launchRequest.hostMs;report.launchRequest.page=await evaluate("(()=>{document.querySelector('#boot').click();const button=document.querySelector('#start-firefox');if(!button||button.disabled||button.closest('[hidden]'))throw Error('Firefox launch menu unavailable');const requestAtMs=performance.now();button.click();return {requestAtMs,pageTimeOrigin:performance.timeOrigin};})()");save();}
  if(mode==='compat-export'){
  const text=await evaluate(`(async()=>{const h=await(await import('./persistent-home.mjs')).openPersistentHome({readOnly:true});try{let n=h.root;for(const part of ['admin','.mozilla','firefox','http1-profile','compatibility.ini']){n=await h.lookup(n,part);if(!n)throw Error('Controlled fixture compatibility file absent');}if(Number((await h.getattr(n)).size)>2048)throw Error('Compatibility file outside bounded generated metadata size');const bytes=await h.read(n,{},0n,2048);return new TextDecoder().decode(bytes);}finally{await h.destroy();}})()`);
  const keys=['LastVersion','LastOSABI','LastPlatformDir','LastAppDir'],fields={};
@@ -192,8 +223,8 @@ try{
  const result=await evaluate(`(async()=>(${ioWorkload})(await import('./persistent-home.mjs')))()`,Math.min(180000,seconds*1000));
  report.io=result;save();
  }else{
- let nextShot=10,lastLogs=0;report.milestones={};while(time()-bootAt<seconds*1000&&!closed){const bootSeconds=(time()-bootAt)/1000;if(bootSeconds<observeAfter){await delay(500);continue;}if(bootSeconds>=nextShot){await shot('at'+Math.round(bootSeconds)+'s');nextShot+=20;}if(bootSeconds-lastLogs>=5){try{const logs=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");fs.writeFileSync(path.join(run,'guest.log'),String(logs));report.lastLogAtMs=time();for(const marker of ['system image','machine started','home: persistent storage mounted','display: starting Xfbdev','starting /bin/aurora-wm','[wm-ready]','starting /bin/firefox','gl context 2 open','PBLJIT compile'])if(String(logs).includes(marker)&&report.milestones[marker]===undefined)report.milestones[marker]=time()-bootAt;}catch(e){report.errors.push({ms:time(),log:String(e)});}lastLogs=bootSeconds;const status=await evaluate("document.querySelector('#status')?.textContent??''");if(/^boot failed/.test(status))throw Error('Actual frontend boot failed; see retained guest.log');}if(options.get('probe-input')==='1'&&!inputProbed&&bootSeconds>=Math.max(20,Math.min(seconds-10,Number(options.get('probe-after-seconds')||110)))){
- inputProbed=true;report.inputProbe={startBootMs:time()-bootAt};await shot('input-before');
+ let nextShot=10,lastLogs=0;report.milestones={};while(time()-bootAt<seconds*1000&&!closed){const bootSeconds=(time()-bootAt)/1000;if(bootSeconds<observeAfter){await delay(500);continue;}if(bootSeconds>=nextShot){await shot('at'+Math.round(bootSeconds)+'s');nextShot+=20;}if(bootSeconds-lastLogs>=(options.has('readiness-nonce')?1:5)){try{const logs=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");fs.writeFileSync(path.join(run,'guest.log'),String(logs));report.lastLogAtMs=time();for(const marker of ['system image','machine started','home: persistent storage mounted','display: starting Xfbdev','starting /bin/aurora-wm','[wm-ready]','starting /bin/firefox','gl context 2 open','PBLJIT compile'])if(String(logs).includes(marker)&&report.milestones[marker]===undefined)report.milestones[marker]=time()-bootAt;}catch(e){report.errors.push({ms:time(),log:String(e)});}lastLogs=bootSeconds;const status=await evaluate("document.querySelector('#status')?.textContent??''");if(/^boot failed/.test(status))throw Error('Actual frontend boot failed; see retained guest.log');if(options.has('readiness-nonce')&&!report.readiness){const nonce=options.get('readiness-nonce'),paint=readinessSignals(fs.readFileSync(path.join(run,'guest.log'),'utf8'),nonce).find(v=>v.phase==='paint');if(paint){await readinessProbe(paint,nonce);if(options.get('readiness-autostop')==='1')break;}}}if(options.get('probe-input')==='1'&&!inputProbed&&(options.get('probe-control')==='1'?fs.existsSync(path.join(run,'probe-now.json')):bootSeconds>=Math.max(20,Math.min(seconds-10,Number(options.get('probe-after-seconds')||110))))){
+ inputProbed=true;report.inputProbe={startBootMs:time()-bootAt};if(options.get('probe-control')==='1')report.inputProbe.visualTrigger=JSON.parse(fs.readFileSync(path.join(run,'probe-now.json'),'utf8'));await shot('input-before');
  await send('Input.dispatchMouseEvent',{type:'mousePressed',x:500,y:110,button:'left',clickCount:1});await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:500,y:110,button:'left',clickCount:1});
  const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
  await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});
@@ -209,6 +240,7 @@ try{
  await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13},0);report.inputProbe.enterBootMs=time()-bootAt;await delay(2000);await shot('input-navigation');report.inputProbe.observedBootMs=time()-bootAt;
  }
  await delay(500);}
+ if(options.has('readiness-nonce')&&!report.readiness?.keyboardNavigationPassed)throw Error('Readiness protocol did not complete inside observation deadline');
  if(tracing){await send('Tracing.end');for(let i=0;i<100&&!traceStream;i++)await delay(100);if(!traceStream)throw Error('Trace completion absent');const fd=fs.openSync(path.join(run,'startup-trace.json'),'wx');let total=0;try{for(;;){const part=await send('IO.read',{handle:traceStream,size:1048576});const b=Buffer.from(part.data,part.base64Encoded?'base64':'utf8');total+=b.length;if(total>67108864)throw Error('Trace exceeds64MiB');fs.writeSync(fd,b);if(part.eof)break;}}finally{fs.closeSync(fd);await send('IO.close',{handle:traceStream});}report.traceBytes=total;tracing=false;}
  if(observeAfter>0)fs.writeFileSync(path.join(run,'guest.log'),await guestLogs());
  const startupTimings=await evaluate('globalThis.__gpt6StartupTimings ?? []');if(startupTimings.length){fs.writeFileSync(path.join(run,'startup-timings.json'),JSON.stringify(startupTimings));report.startupTimingEvents=startupTimings.length;}
@@ -242,7 +274,7 @@ try{
  }
  if(closed)throw Error('Resource monitor stopped the run');
  report.finishedNormally=true;
-}catch(e){report.errors.push({ms:time(),error:String(e),stack:e.stack});report.finishedNormally=false;}
+}catch(e){report.errors.push({ms:time(),error:String(e),stack:e.stack});report.finishedNormally=false;if(ws?.readyState===WebSocket.OPEN)try{await shot('failure');}catch{}}
 finally{
  if(monitor){monitor.postMessage('stop');await Promise.race([new Promise(resolve=>monitor.once('exit',resolve)),delay(3000).then(()=>monitor.terminate())]);}
  try{if(ws?.readyState===WebSocket.OPEN){await send('Browser.close',{},5000).catch(()=>{});ws.close();}}catch{}await delay(1500);

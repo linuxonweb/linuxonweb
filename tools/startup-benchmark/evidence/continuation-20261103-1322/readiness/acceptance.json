@@ -1,0 +1,470 @@
+{
+  "schema": 1,
+  "score": 42,
+  "reviewedAt": "2026-11-03T14:07:01.178463+00:00",
+  "runs": [
+    {
+      "start": "2026-11-03T13:55:56.311Z",
+      "end": "2026-11-03T13:57:22.562Z",
+      "elapsedMs": 86250.257,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&update=1",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 2535.876,
+        "utc": "2026-11-03T13:55:58.847Z",
+        "page": {
+          "requestAtMs": 661.6549999713898,
+          "pageTimeOrigin": 1793714158193.09
+        }
+      },
+      "readiness": {
+        "nonce": "readinessevidence",
+        "paint": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "paint",
+          "epochMs": 1793714214997,
+          "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "dpr": 1,
+          "input": {
+            "x": 35,
+            "y": 125,
+            "width": 456,
+            "height": 44
+          },
+          "viewport": {
+            "width": 1152,
+            "height": 489
+          },
+          "webgl": "ok"
+        },
+        "paintObservedLaunchMs": 59094.515,
+        "observations": [],
+        "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+        "accepted": false,
+        "inputLocation": {
+          "canvas": {
+            "left": 51.5,
+            "top": 0,
+            "width": 1280,
+            "height": 720,
+            "bufferWidth": 1280,
+            "bufferHeight": 720
+          },
+          "guestX": 279,
+          "guestY": 280,
+          "x": 330.5,
+          "y": 280
+        },
+        "inputStartLaunchMs": 59552.266,
+        "keysSentLaunchMs": 60646.985
+      },
+      "errors": [
+        {
+          "ms": 83396.676,
+          "error": "Error: Readiness typed acknowledgement deadline 20000ms",
+          "stack": "Error: Readiness typed acknowledgement deadline 20000ms\n    at waitPhase (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:94:433)\n    at async readinessProbe (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:95:13)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:225:1336"
+        }
+      ],
+      "resourceSummary": {
+        "pssPeakBytes": 3883622400,
+        "rssSumPeakBytes": 4710117376,
+        "minAvailableBytes": 26252640256,
+        "samples": 82,
+        "pssSamples": 17,
+        "pssIntervalMs": 5000
+      },
+      "remainingOwned": [],
+      "finishedNormally": false,
+      "screenshots": [
+        {
+          "name": "at10s.png",
+          "ms": 12862.334,
+          "bootMs": 10326.458,
+          "requestedAtMs": 12742.717,
+          "completedAtMs": 12862.334,
+          "durationMs": 119.61700000000019,
+          "requestedAtUtc": "2026-11-03T13:56:09.054Z",
+          "completedAtUtc": "2026-11-03T13:56:09.174Z"
+        },
+        {
+          "name": "at30s.png",
+          "ms": 33520.535,
+          "bootMs": 30984.659000000003,
+          "requestedAtMs": 32646.877,
+          "completedAtMs": 33520.535,
+          "durationMs": 873.6580000000031,
+          "requestedAtUtc": "2026-11-03T13:56:28.958Z",
+          "completedAtUtc": "2026-11-03T13:56:29.832Z"
+        },
+        {
+          "name": "at50s.png",
+          "ms": 53035.128,
+          "bootMs": 50499.25199999999,
+          "requestedAtMs": 52629.909,
+          "completedAtMs": 53035.128,
+          "durationMs": 405.2189999999973,
+          "requestedAtUtc": "2026-11-03T13:56:48.941Z",
+          "completedAtUtc": "2026-11-03T13:56:49.347Z"
+        },
+        {
+          "name": "readiness-painted.png",
+          "ms": 62067.991,
+          "bootMs": 59532.115000000005,
+          "requestedAtMs": 61688.733,
+          "completedAtMs": 62067.991,
+          "durationMs": 379.25800000000163,
+          "requestedAtUtc": "2026-11-03T13:56:58.000Z",
+          "completedAtUtc": "2026-11-03T13:56:58.379Z"
+        }
+      ],
+      "name": "ready-base1",
+      "nativeArchive": {
+        "overrideFile": "/mnt/p3/codex-build/lwc/readiness-base/initramfs-firefox.cpio.gz",
+        "bytes": 116208722,
+        "sha256": "63930e83b4e8b35249c1790e2ca0cbfa44a69c5516a37fa9f2bd4bdac70d14b8"
+      }
+    },
+    {
+      "start": "2026-11-03T14:03:24.003Z",
+      "end": "2026-11-03T14:04:43.598Z",
+      "elapsedMs": 79595.242,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&update=1",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 2740.928,
+        "utc": "2026-11-03T14:03:26.744Z",
+        "page": {
+          "requestAtMs": 598.4399999976158,
+          "pageTimeOrigin": 1793714606155.56
+        }
+      },
+      "readiness": {
+        "nonce": "readinessevidence",
+        "paint": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "paint",
+          "epochMs": 1793714666001,
+          "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "dpr": 1,
+          "input": {
+            "x": 35,
+            "y": 125,
+            "width": 456,
+            "height": 44
+          },
+          "viewport": {
+            "width": 1152,
+            "height": 489
+          },
+          "webgl": "ok"
+        },
+        "paintObservedLaunchMs": 61127.795,
+        "observations": [
+          {
+            "phase": "focus",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "focus",
+              "epochMs": 1793714667650,
+              "value": ""
+            },
+            "observedLaunchMs": 62607.208,
+            "observedUtc": "2026-11-03T14:04:29.351Z"
+          },
+          {
+            "phase": "typed",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "typed",
+              "epochMs": 1793714669274,
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 64045.845,
+            "observedUtc": "2026-11-03T14:04:30.789Z"
+          },
+          {
+            "phase": "complete",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "complete",
+              "epochMs": 1793714669998,
+              "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+              "title": "READINESS COMPLETE",
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 64824.277,
+            "observedUtc": "2026-11-03T14:04:31.568Z"
+          }
+        ],
+        "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+        "accepted": false,
+        "inputLocation": {
+          "canvas": {
+            "left": 51.5,
+            "top": 0,
+            "width": 1280,
+            "height": 720,
+            "bufferWidth": 1280,
+            "bufferHeight": 720
+          },
+          "guestX": 279,
+          "guestY": 280,
+          "x": 330.5,
+          "y": 280
+        },
+        "inputStartLaunchMs": 61717.831,
+        "focus": {
+          "phase": "focus",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "focus",
+            "epochMs": 1793714667650,
+            "value": ""
+          },
+          "observedLaunchMs": 62607.208,
+          "observedUtc": "2026-11-03T14:04:29.351Z"
+        },
+        "keysSentLaunchMs": 64016.373999999996,
+        "typed": {
+          "phase": "typed",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "typed",
+            "epochMs": 1793714669274,
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 64045.845,
+          "observedUtc": "2026-11-03T14:04:30.789Z"
+        },
+        "enterLaunchMs": 64399.185,
+        "complete": {
+          "phase": "complete",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "complete",
+            "epochMs": 1793714669998,
+            "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+            "title": "READINESS COMPLETE",
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 64824.277,
+          "observedUtc": "2026-11-03T14:04:31.568Z"
+        },
+        "completeScreenshotLaunchMs": 65743.489,
+        "keyboardNavigationPassed": true,
+        "thirtySecondGate": false,
+        "acceptance": "Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review"
+      },
+      "errors": [],
+      "resourceSummary": {
+        "pssPeakBytes": 4504142848,
+        "rssSumPeakBytes": 5445210112,
+        "minAvailableBytes": 26187575296,
+        "samples": 76,
+        "pssSamples": 16,
+        "pssIntervalMs": 5000
+      },
+      "remainingOwned": [],
+      "finishedNormally": true,
+      "screenshots": [
+        {
+          "name": "at10s.png",
+          "ms": 13148.527,
+          "bootMs": 10407.599,
+          "requestedAtMs": 13023.763,
+          "completedAtMs": 13148.527,
+          "durationMs": 124.76399999999921,
+          "requestedAtUtc": "2026-11-03T14:03:37.026Z",
+          "completedAtUtc": "2026-11-03T14:03:37.151Z"
+        },
+        {
+          "name": "at30s.png",
+          "ms": 33741.591,
+          "bootMs": 31000.663,
+          "requestedAtMs": 33091.253,
+          "completedAtMs": 33741.591,
+          "durationMs": 650.3380000000034,
+          "requestedAtUtc": "2026-11-03T14:03:57.094Z",
+          "completedAtUtc": "2026-11-03T14:03:57.744Z"
+        },
+        {
+          "name": "at50s.png",
+          "ms": 53426.519,
+          "bootMs": 50685.591,
+          "requestedAtMs": 52976.626,
+          "completedAtMs": 53426.519,
+          "durationMs": 449.89300000000367,
+          "requestedAtUtc": "2026-11-03T14:04:16.979Z",
+          "completedAtUtc": "2026-11-03T14:04:17.429Z"
+        },
+        {
+          "name": "readiness-painted.png",
+          "ms": 64423.551,
+          "bootMs": 61682.623,
+          "requestedAtMs": 63881.328,
+          "completedAtMs": 64423.551,
+          "durationMs": 542.2229999999981,
+          "requestedAtUtc": "2026-11-03T14:04:27.884Z",
+          "completedAtUtc": "2026-11-03T14:04:28.426Z"
+        },
+        {
+          "name": "readiness-focused.png",
+          "ms": 65759.081,
+          "bootMs": 63018.153000000006,
+          "requestedAtMs": 65358.34,
+          "completedAtMs": 65759.081,
+          "durationMs": 400.7410000000091,
+          "requestedAtUtc": "2026-11-03T14:04:29.361Z",
+          "completedAtUtc": "2026-11-03T14:04:29.762Z"
+        },
+        {
+          "name": "readiness-typed.png",
+          "ms": 67133.681,
+          "bootMs": 64392.753,
+          "requestedAtMs": 66797.595,
+          "completedAtMs": 67133.681,
+          "durationMs": 336.0859999999957,
+          "requestedAtUtc": "2026-11-03T14:04:30.800Z",
+          "completedAtUtc": "2026-11-03T14:04:31.136Z"
+        },
+        {
+          "name": "readiness-complete.png",
+          "ms": 68406.146,
+          "bootMs": 65665.218,
+          "requestedAtMs": 67638.415,
+          "completedAtMs": 68406.146,
+          "durationMs": 767.7309999999998,
+          "requestedAtUtc": "2026-11-03T14:04:31.641Z",
+          "completedAtUtc": "2026-11-03T14:04:32.409Z"
+        },
+        {
+          "name": "final.png",
+          "ms": 69218.443,
+          "bootMs": 66477.515,
+          "requestedAtMs": 68854.362,
+          "completedAtMs": 69218.443,
+          "durationMs": 364.0810000000056,
+          "requestedAtUtc": "2026-11-03T14:04:32.857Z",
+          "completedAtUtc": "2026-11-03T14:04:33.221Z"
+        }
+      ],
+      "name": "ready-base2",
+      "nativeArchive": {
+        "overrideFile": "/mnt/p3/codex-build/lwc/readiness-base2/initramfs-firefox.cpio.gz",
+        "bytes": 116208747,
+        "sha256": "7e8856ab92094f3cdec06e0160b36d5822d9f037bdce97fb1a6533fc96faec96"
+      }
+    }
+  ],
+  "builds": [
+    {
+      "startedUtc": "2026-11-03T13:53:46.471241+00:00",
+      "finishedUtc": "2026-11-03T13:54:19.228590+00:00",
+      "durationSeconds": 32.757,
+      "argv": [
+        "python3",
+        "tools/startup-benchmark/prepare-readiness.py",
+        "--output",
+        "../../../codex-build/lwc/readiness-base",
+        "--nonce",
+        "readinessevidence",
+        "--base-dir",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "ownerPeakRssBytes": 188899328,
+      "ownedTreePeakRssBytes": 188899328,
+      "ownedTreePeakPssBytes": 178192384,
+      "resourceSamples": 32,
+      "pssSamples": 7,
+      "quotaReadySeconds": 0.752,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    {
+      "startedUtc": "2026-11-03T13:59:53.905445+00:00",
+      "finishedUtc": "2026-11-03T14:00:27.416842+00:00",
+      "durationSeconds": 33.511,
+      "argv": [
+        "python3",
+        "tools/startup-benchmark/prepare-readiness.py",
+        "--output",
+        "../../../codex-build/lwc/readiness-base2",
+        "--nonce",
+        "readinessevidence",
+        "--base-dir",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "ownerPeakRssBytes": 189358080,
+      "ownedTreePeakRssBytes": 189358080,
+      "ownedTreePeakPssBytes": 178083840,
+      "resourceSamples": 33,
+      "pssSamples": 7,
+      "quotaReadySeconds": 0.503,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    }
+  ],
+  "visualReview": {
+    "passedRun": "ready-base2",
+    "reviewer": "integration_acceptance",
+    "paintedScreenshot": "ready-base2-readiness-painted.png",
+    "typedScreenshot": "ready-base2-readiness-typed.png",
+    "completeScreenshot": "ready-base2-final.png",
+    "actualVisibleCompletionLaunchMs": 66477.515,
+    "firstCompleteSignalScreenshotStillOldFrame": true,
+    "thirtySecondTargetPassed": false,
+    "scope": "Original GPU workload with test-only nonce panel+content stdout enabled before rootfs cache generation; nativeFirefox/init unchanged. Functional input/navigation proof, not matched FPS benchmark."
+  },
+  "failures": [
+    "ready-base1 emittedpaint but typed-ack timed out; waiting for actual input focus before typing resolved the harness race",
+    "early completion signal and double-rAF did not prove compositor delivery; actual final screenshot supplies bound"
+  ]
+}

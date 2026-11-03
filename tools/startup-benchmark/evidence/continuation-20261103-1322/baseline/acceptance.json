@@ -1,0 +1,566 @@
+{
+  "schema": 1,
+  "score": 42,
+  "recordedAt": "2026-11-03T13:49:09.277595+00:00",
+  "runs": [
+    {
+      "start": "2026-11-03T13:28:46.474Z",
+      "end": "2026-11-03T13:30:59.433Z",
+      "elapsedMs": 132958.877,
+      "finishedNormally": true,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&probe-input=1&probe-after-seconds=95",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "reusedTestProfile": null,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 2064.791,
+        "utc": "2026-11-03T13:28:48.539Z",
+        "page": {
+          "requestAtMs": 653.9399999976158,
+          "pageTimeOrigin": 1793712527889.235
+        }
+      },
+      "inputProbe": {
+        "startBootMs": 95130.639,
+        "typedBootMs": 96012.668,
+        "enterBootMs": 97287.993,
+        "observedBootMs": 99518.11200000001
+      },
+      "milestones": {
+        "system image": 5041.623,
+        "machine started": 5041.63,
+        "home: persistent storage mounted": 15213.381999999998,
+        "display: starting Xfbdev": 15213.401999999998,
+        "starting /bin/aurora-wm": 15213.41,
+        "[wm-ready]": 15213.421999999999,
+        "starting /bin/firefox": 15213.43
+      },
+      "resourceSummary": {
+        "pssPeakBytes": 4412822528,
+        "rssSumPeakBytes": 5139001344,
+        "minAvailableBytes": 25840685056,
+        "samples": 129,
+        "pssSamples": 25,
+        "pssIntervalMs": 5000
+      },
+      "remainingOwned": [],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "at10s.png",
+          "ms": 12247.307,
+          "bootMs": 10182.516,
+          "requestedAtMs": 12125.716,
+          "completedAtMs": 12247.307,
+          "durationMs": 121.59100000000035,
+          "requestedAtUtc": "2026-11-03T13:28:58.600Z",
+          "completedAtUtc": "2026-11-03T13:28:58.721Z"
+        },
+        {
+          "name": "at30s.png",
+          "ms": 33094.475,
+          "bootMs": 31029.683999999997,
+          "requestedAtMs": 32347.482,
+          "completedAtMs": 33094.475,
+          "durationMs": 746.9929999999986,
+          "requestedAtUtc": "2026-11-03T13:29:18.821Z",
+          "completedAtUtc": "2026-11-03T13:29:19.568Z"
+        },
+        {
+          "name": "at50s.png",
+          "ms": 52602.195,
+          "bootMs": 50537.404,
+          "requestedAtMs": 52234.603,
+          "completedAtMs": 52602.195,
+          "durationMs": 367.5919999999969,
+          "requestedAtUtc": "2026-11-03T13:29:38.708Z",
+          "completedAtUtc": "2026-11-03T13:29:39.076Z"
+        },
+        {
+          "name": "at70s.png",
+          "ms": 72729.085,
+          "bootMs": 70664.29400000001,
+          "requestedAtMs": 72250.542,
+          "completedAtMs": 72729.085,
+          "durationMs": 478.5430000000051,
+          "requestedAtUtc": "2026-11-03T13:29:58.724Z",
+          "completedAtUtc": "2026-11-03T13:29:59.203Z"
+        },
+        {
+          "name": "at90s.png",
+          "ms": 92661.981,
+          "bootMs": 90597.19,
+          "requestedAtMs": 92353.486,
+          "completedAtMs": 92661.981,
+          "durationMs": 308.49499999999534,
+          "requestedAtUtc": "2026-11-03T13:30:18.827Z",
+          "completedAtUtc": "2026-11-03T13:30:19.136Z"
+        },
+        {
+          "name": "input-before.png",
+          "ms": 97420.505,
+          "bootMs": 95355.714,
+          "requestedAtMs": 97195.449,
+          "completedAtMs": 97420.505,
+          "durationMs": 225.0560000000114,
+          "requestedAtUtc": "2026-11-03T13:30:23.669Z",
+          "completedAtUtc": "2026-11-03T13:30:23.894Z"
+        },
+        {
+          "name": "input-typed.png",
+          "ms": 99317.804,
+          "bootMs": 97253.013,
+          "requestedAtMs": 99078.44,
+          "completedAtMs": 99317.804,
+          "durationMs": 239.3640000000014,
+          "requestedAtUtc": "2026-11-03T13:30:25.552Z",
+          "completedAtUtc": "2026-11-03T13:30:25.792Z"
+        },
+        {
+          "name": "input-navigation.png",
+          "ms": 101570.023,
+          "bootMs": 99505.232,
+          "requestedAtMs": 101353.473,
+          "completedAtMs": 101570.023,
+          "durationMs": 216.5500000000029,
+          "requestedAtUtc": "2026-11-03T13:30:27.827Z",
+          "completedAtUtc": "2026-11-03T13:30:28.044Z"
+        },
+        {
+          "name": "at110s.png",
+          "ms": 112401.205,
+          "bootMs": 110336.414,
+          "requestedAtMs": 112176.582,
+          "completedAtMs": 112401.205,
+          "durationMs": 224.62300000000687,
+          "requestedAtUtc": "2026-11-03T13:30:38.650Z",
+          "completedAtUtc": "2026-11-03T13:30:38.875Z"
+        },
+        {
+          "name": "final.png",
+          "ms": 122780.974,
+          "bootMs": 120716.183,
+          "requestedAtMs": 122509.303,
+          "completedAtMs": 122780.974,
+          "durationMs": 271.6710000000021,
+          "requestedAtUtc": "2026-11-03T13:30:48.983Z",
+          "completedAtUtc": "2026-11-03T13:30:49.255Z"
+        }
+      ],
+      "role": "Rejected hardware baseline: direct Chromium owner omitted NVIDIA offload",
+      "thirtySecondGate": false,
+      "notes": [
+        "Firefox absent at30s; rendered70s; about:blank navigation visually confirmed at99.518s",
+        "Host WebGL2 unavailable; not comparable with hardware FPS or memory baseline"
+      ],
+      "run": "cold1",
+      "quotaLimits": [
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-3683276.scope/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+          "560000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/lowc-cold1-20261103.service/cpu.max",
+          "300000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+          "300000 100000"
+        ]
+      ]
+    },
+    {
+      "start": "2026-11-03T13:32:04.794Z",
+      "end": "2026-11-03T13:34:17.577Z",
+      "elapsedMs": 132782.126,
+      "finishedNormally": true,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&probe-input=1&probe-after-seconds=95",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "reusedTestProfile": null,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 2069.642,
+        "utc": "2026-11-03T13:32:06.864Z",
+        "page": {
+          "requestAtMs": 606.3100000023842,
+          "pageTimeOrigin": 1793712726265.84
+        }
+      },
+      "inputProbe": {
+        "startBootMs": 95031.31099999999,
+        "typedBootMs": 96388.92300000001,
+        "enterBootMs": 97765.264,
+        "observedBootMs": 100059.78899999999
+      },
+      "milestones": {
+        "system image": 5440.329,
+        "machine started": 5440.338,
+        "home: persistent storage mounted": 15679.503,
+        "display: starting Xfbdev": 15679.521,
+        "starting /bin/aurora-wm": 15679.526000000002,
+        "[wm-ready]": 15679.529999999999,
+        "starting /bin/firefox": 15679.535,
+        "gl context 2 open": 36531.55,
+        "PBLJIT compile": 67108.80600000001
+      },
+      "resourceSummary": {
+        "pssPeakBytes": 3639029760,
+        "rssSumPeakBytes": 4315598848,
+        "minAvailableBytes": 27057860608,
+        "samples": 129,
+        "pssSamples": 26,
+        "pssIntervalMs": 5000
+      },
+      "remainingOwned": [],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "at10s.png",
+          "ms": 12679.989,
+          "bootMs": 10610.347,
+          "requestedAtMs": 12536.927,
+          "completedAtMs": 12679.989,
+          "durationMs": 143.0619999999999,
+          "requestedAtUtc": "2026-11-03T13:32:17.331Z",
+          "completedAtUtc": "2026-11-03T13:32:17.474Z"
+        },
+        {
+          "name": "at30s.png",
+          "ms": 33010.685,
+          "bootMs": 30941.042999999998,
+          "requestedAtMs": 32378.011,
+          "completedAtMs": 33010.685,
+          "durationMs": 632.6739999999991,
+          "requestedAtUtc": "2026-11-03T13:32:37.173Z",
+          "completedAtUtc": "2026-11-03T13:32:37.805Z"
+        },
+        {
+          "name": "at50s.png",
+          "ms": 52797.891,
+          "bootMs": 50728.249,
+          "requestedAtMs": 52287.802,
+          "completedAtMs": 52797.891,
+          "durationMs": 510.08899999999994,
+          "requestedAtUtc": "2026-11-03T13:32:57.082Z",
+          "completedAtUtc": "2026-11-03T13:32:57.592Z"
+        },
+        {
+          "name": "at70s.png",
+          "ms": 72785.409,
+          "bootMs": 70715.76699999999,
+          "requestedAtMs": 72204.025,
+          "completedAtMs": 72785.409,
+          "durationMs": 581.3840000000055,
+          "requestedAtUtc": "2026-11-03T13:33:16.999Z",
+          "completedAtUtc": "2026-11-03T13:33:17.580Z"
+        },
+        {
+          "name": "at91s.png",
+          "ms": 93042.495,
+          "bootMs": 90972.853,
+          "requestedAtMs": 92571.939,
+          "completedAtMs": 93042.495,
+          "durationMs": 470.55599999999686,
+          "requestedAtUtc": "2026-11-03T13:33:37.366Z",
+          "completedAtUtc": "2026-11-03T13:33:37.837Z"
+        },
+        {
+          "name": "input-before.png",
+          "ms": 97457.466,
+          "bootMs": 95387.824,
+          "requestedAtMs": 97101.011,
+          "completedAtMs": 97457.466,
+          "durationMs": 356.45500000000175,
+          "requestedAtUtc": "2026-11-03T13:33:41.895Z",
+          "completedAtUtc": "2026-11-03T13:33:42.252Z"
+        },
+        {
+          "name": "input-typed.png",
+          "ms": 99788.947,
+          "bootMs": 97719.305,
+          "requestedAtMs": 99460.197,
+          "completedAtMs": 99788.947,
+          "durationMs": 328.75,
+          "requestedAtUtc": "2026-11-03T13:33:44.255Z",
+          "completedAtUtc": "2026-11-03T13:33:44.583Z"
+        },
+        {
+          "name": "input-navigation.png",
+          "ms": 102117.294,
+          "bootMs": 100047.652,
+          "requestedAtMs": 101837.801,
+          "completedAtMs": 102117.294,
+          "durationMs": 279.49299999998766,
+          "requestedAtUtc": "2026-11-03T13:33:46.632Z",
+          "completedAtUtc": "2026-11-03T13:33:46.912Z"
+        },
+        {
+          "name": "at110s.png",
+          "ms": 112700.681,
+          "bootMs": 110631.03899999999,
+          "requestedAtMs": 112186.823,
+          "completedAtMs": 112700.681,
+          "durationMs": 513.8579999999929,
+          "requestedAtUtc": "2026-11-03T13:33:56.981Z",
+          "completedAtUtc": "2026-11-03T13:33:57.495Z"
+        },
+        {
+          "name": "final.png",
+          "ms": 122604.981,
+          "bootMs": 120535.339,
+          "requestedAtMs": 122349.056,
+          "completedAtMs": 122604.981,
+          "durationMs": 255.9250000000029,
+          "requestedAtUtc": "2026-11-03T13:34:07.144Z",
+          "completedAtUtc": "2026-11-03T13:34:07.399Z"
+        }
+      ],
+      "role": "Hardware cold baseline via actual production Start Firefox",
+      "thirtySecondGate": false,
+      "notes": [
+        "Fresh browser profile/home/system image cache",
+        "Firefox absent30s; rendered GPU-check/cube by70s",
+        "Exact about:blank text at96.389s; navigation pending100.060s; final120s screen confirms New Tab",
+        "Observation bounds, not exact first-ready times; scheduled probe was late"
+      ],
+      "run": "cold2",
+      "quotaLimits": [
+        [
+          "/sys/fs/cgroup/user.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-3696622.scope/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/lowc-cold2-20261103.service/cpu.max",
+          "300000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+          "300000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+          "560000 100000"
+        ]
+      ]
+    },
+    {
+      "start": "2026-11-03T13:34:57.851Z",
+      "end": "2026-11-03T13:37:10.656Z",
+      "elapsedMs": 132805.663,
+      "finishedNormally": true,
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&probe-input=1&probe-control=1",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "reusedTestProfile": {
+        "source": "/mnt/p3/codex-build/lwc/cold2/profile",
+        "sourceRun": "/mnt/p3/codex-build/lwc/cold2",
+        "start": "2026-11-03T13:32:04.794Z",
+        "end": "2026-11-03T13:34:17.577Z",
+        "copyMs": 400.153865
+      },
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 2037.809,
+        "utc": "2026-11-03T13:34:59.889Z",
+        "page": {
+          "requestAtMs": 639.5699999928474,
+          "pageTimeOrigin": 1793712899259.135
+        }
+      },
+      "inputProbe": null,
+      "milestones": {
+        "system image": 5040.5199999999995,
+        "machine started": 5040.532,
+        "home: persistent storage mounted": 15256.314,
+        "display: starting Xfbdev": 15256.338000000002,
+        "starting /bin/aurora-wm": 15256.349,
+        "[wm-ready]": 15256.396999999999,
+        "starting /bin/firefox": 15256.408000000001,
+        "gl context 2 open": 35878.126,
+        "PBLJIT compile": 56439.767
+      },
+      "resourceSummary": {
+        "pssPeakBytes": 3479967744,
+        "rssSumPeakBytes": 4196659200,
+        "minAvailableBytes": 28114001920,
+        "samples": 129,
+        "pssSamples": 26,
+        "pssIntervalMs": 5000
+      },
+      "remainingOwned": [],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "at10s.png",
+          "ms": 12253.664,
+          "bootMs": 10215.855000000001,
+          "requestedAtMs": 12103.638,
+          "completedAtMs": 12253.664,
+          "durationMs": 150.02599999999984,
+          "requestedAtUtc": "2026-11-03T13:35:09.954Z",
+          "completedAtUtc": "2026-11-03T13:35:10.104Z"
+        },
+        {
+          "name": "at30s.png",
+          "ms": 33350.865,
+          "bootMs": 31313.055999999997,
+          "requestedAtMs": 32422.587,
+          "completedAtMs": 33350.865,
+          "durationMs": 928.2779999999984,
+          "requestedAtUtc": "2026-11-03T13:35:30.273Z",
+          "completedAtUtc": "2026-11-03T13:35:31.202Z"
+        },
+        {
+          "name": "at50s.png",
+          "ms": 52826.006,
+          "bootMs": 50788.197,
+          "requestedAtMs": 52213.751,
+          "completedAtMs": 52826.006,
+          "durationMs": 612.2550000000047,
+          "requestedAtUtc": "2026-11-03T13:35:50.064Z",
+          "completedAtUtc": "2026-11-03T13:35:50.677Z"
+        },
+        {
+          "name": "at70s.png",
+          "ms": 72374.513,
+          "bootMs": 70336.70400000001,
+          "requestedAtMs": 72140.563,
+          "completedAtMs": 72374.513,
+          "durationMs": 233.95000000001164,
+          "requestedAtUtc": "2026-11-03T13:36:09.991Z",
+          "completedAtUtc": "2026-11-03T13:36:10.225Z"
+        },
+        {
+          "name": "at90s.png",
+          "ms": 92506.233,
+          "bootMs": 90468.424,
+          "requestedAtMs": 92054.605,
+          "completedAtMs": 92506.233,
+          "durationMs": 451.627999999997,
+          "requestedAtUtc": "2026-11-03T13:36:29.905Z",
+          "completedAtUtc": "2026-11-03T13:36:30.357Z"
+        },
+        {
+          "name": "at110s.png",
+          "ms": 112694.211,
+          "bootMs": 110656.402,
+          "requestedAtMs": 112235.936,
+          "completedAtMs": 112694.211,
+          "durationMs": 458.2749999999942,
+          "requestedAtUtc": "2026-11-03T13:36:50.087Z",
+          "completedAtUtc": "2026-11-03T13:36:50.545Z"
+        },
+        {
+          "name": "final.png",
+          "ms": 122602.983,
+          "bootMs": 120565.174,
+          "requestedAtMs": 122315.367,
+          "completedAtMs": 122602.983,
+          "durationMs": 287.61599999999453,
+          "requestedAtUtc": "2026-11-03T13:37:00.166Z",
+          "completedAtUtc": "2026-11-03T13:37:00.454Z"
+        }
+      ],
+      "role": "Warm retained profile plus cached image baseline; input gate incomplete",
+      "thirtySecondGate": false,
+      "notes": [
+        "Closed cold2 profile cloned before timing, preserving durable home and system cache",
+        "Firefox absent30s; chrome/content blank50s; rendered GPU-check/cube70s",
+        "Manual input trigger missed120s owner deadline; no warm keyboard/navigation acceptance",
+        "Automatic nonce protocol replaces this fragile handoff in subsequent gates"
+      ],
+      "run": "warm1",
+      "quotaLimits": [
+        [
+          "/sys/fs/cgroup/user.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+          "300000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/cpu.max",
+          "max 100000"
+        ],
+        [
+          "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+          "560000 100000"
+        ],
+        [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.chromium.Chromium-3706625.scope/cpu.max",
+          "max 100000"
+        ]
+      ]
+    }
+  ],
+  "durationSumSeconds": 398.54666599999996,
+  "interpretation": "Sequential owner runtime, not total task elapsed/model time. No FPS claim from instantaneous page counters. All Stop/owned cleanup passed;30s goal fails; warm usability pending."
+}

@@ -1,0 +1,137 @@
+{
+  "at": "2026-11-03T13:50:27.899935+00:00",
+  "checks": [
+    {
+      "name": "completion",
+      "url": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/85337f77-8669-4c34-b004-c691237d91ba/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_complete/DELIVERY-COMPLETE.json",
+      "status": 200,
+      "bytes": 10006
+    },
+    {
+      "name": "finalManifest",
+      "url": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/eb169e3c-0f72-4036-8d1d-3d2db16e0a5d/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_81103b2/CHECKPOINT-MANIFEST.json",
+      "status": 200,
+      "bytes": 7057
+    },
+    {
+      "name": "originalBaseIndex",
+      "url": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/3378cc4f-3a2b-495e-880a-734fca1b9f18/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_80a52d1/index.html",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "runtimeManifest",
+      "url": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/f26dad37-c632-4ccf-b123-5180fb22fa05/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_runtime/RUNTIME-MANIFEST.json",
+      "status": 200,
+      "bytes": 8635
+    }
+  ],
+  "verification": "Small public manifest GET only; archive redownload/decryption remains separate",
+  "originalBaseRoot": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/3378cc4f-3a2b-495e-880a-734fca1b9f18/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_80a52d1/",
+  "originalBaseIndexCorrection": "Original upload has no index.html; use RESTORE.md and MANIFEST.json links",
+  "originalBaseFiles": [
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part000",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part001",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part002",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part003",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part004",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part005",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part006",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part007",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part008",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part009",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part010",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part011",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part012",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part013",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part014",
+      "status": 200,
+      "bytes": "96000000"
+    },
+    {
+      "name": "linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part015",
+      "status": 200,
+      "bytes": "39690578"
+    },
+    {
+      "name": "MANIFEST.json",
+      "status": 200,
+      "bytes": "6132"
+    },
+    {
+      "name": "RESTORE.md",
+      "status": 200,
+      "bytes": "1241"
+    },
+    {
+      "name": "recipient-public.crt",
+      "status": 200,
+      "bytes": "1517"
+    },
+    {
+      "name": "restore-checkpoint.py",
+      "status": 200,
+      "bytes": "581"
+    }
+  ],
+  "originalBaseManifest": {
+    "sha256": "96ca6429519be9c43ca8827fb1bced712f6af5df87abafbbcbca402d7948fde7",
+    "matchesLocal": true
+  }
+}

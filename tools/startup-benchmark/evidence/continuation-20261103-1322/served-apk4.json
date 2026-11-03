@@ -1,0 +1,14 @@
+{
+  "start": "2026-11-03T14:05:36.023308+00:00",
+  "end": "2026-11-03T14:05:36.373692+00:00",
+  "servedVersion": "d258203daee8",
+  "actualBytes": 116197223,
+  "actualSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "expected": {
+    "url": "./initramfs-firefox.cpio.gz",
+    "bytes": 116197223,
+    "sha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+    "label": "Firefox system with verified native APK base; package install files reset at reboot"
+  },
+  "pass": true
+}
