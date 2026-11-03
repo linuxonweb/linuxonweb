@@ -1,0 +1,129 @@
+{
+  "name": "tar",
+  "version": "1.35-r1",
+  "description": "GNU tar native Linux/Wasm",
+  "url": "https://www.gnu.org/software/tar/",
+  "license": "GPL-3.0-or-later",
+  "depends": [],
+  "files": {
+    "usr/bin/tar": {
+      "path": "tar",
+      "mode": "755",
+      "sha256": "9bc2ca02c7cc77efc8a983184df616829e0fd6d9636636b0b9c6e3e939625c3f"
+    },
+    "usr/share/licenses/tar/COPYING": {
+      "path": "tar-COPYING",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "usr/share/doc/tar/README.linuxonweb": {
+      "path": "tar-README.txt",
+      "sha256": "6fa9b3f2441344afe26c3184128cc60bc75627593913ccc48642dc8640fd43d3"
+    }
+  },
+  "provenance": {
+    "source": {
+      "name": "tar",
+      "version": "1.35",
+      "url": "https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz",
+      "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/tar-1.35.tar.xz",
+      "bytes": 2317208,
+      "sha256": "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16",
+      "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+    },
+    "nativeSha256": "9bc2ca02c7cc77efc8a983184df616829e0fd6d9636636b0b9c6e3e939625c3f",
+    "rebuiltThisTask": true,
+    "runtimeAccepted": false,
+    "scope": "GNU uncompressed archives plus native posix_spawn compression/decompression of local regular archives (including compressed stdout creation). Remote rmt, devices, compressed stdin extraction, compressed backup and other fork-dependent hooks remain unsupported.",
+    "spawnAdapter": {
+      "sourceVersion": "tar-1.35",
+      "sourceSha256": "505b0ff19bd12b372d966acc3df5107f311f70249964edb5ea40d31b57effa65",
+      "patchedSha256": "5cb4fe6d5efe7c2b99e92f19fb5e1ec11660588bb4acdf34cf0386311b2aca67",
+      "mechanism": "native posix_spawn with pipe/fd and SIGPIPE file actions",
+      "nativeBuilt": false,
+      "runtimeAccepted": false,
+      "scope": [
+        "local regular-file compression",
+        "local regular-file decompression",
+        "compressed stdout creation"
+      ],
+      "notSupported": [
+        "remote rmt",
+        "special archive devices",
+        "compressed stdin extraction",
+        "compressed backup mode",
+        "other fork-dependent tar command hooks"
+      ],
+      "gates": [
+        "gzip compressed create/list/extract",
+        "content/mode/symlink roundtrip",
+        "corrupt/truncated gzip rejection",
+        "missing/failing compressor status",
+        "no owned child/fd leaks"
+      ]
+    },
+    "targetBuild": {
+      "source": {
+        "name": "tar",
+        "version": "1.35",
+        "url": "https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz",
+        "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/tar-1.35.tar.xz",
+        "bytes": 2317208,
+        "sha256": "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16",
+        "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+      },
+      "environment": {
+        "CC": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+        "AR": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar",
+        "RANLIB": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ranlib",
+        "NM": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/nm",
+        "CFLAGS": "-O2 -g0 -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections",
+        "LDFLAGS": "-static -pthread -Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576",
+        "ac_cv_c_stack_direction": "-1",
+        "sv_cv_stack_direction": "-1",
+        "sv_cv_stack_direction_msg": "grows down (actual guest probe)",
+        "ac_cv_func_fork": "no",
+        "ac_cv_func_vfork": "no",
+        "ac_cv_func_mmap": "no",
+        "ac_cv_func_mmap_fixed_mapped": "no",
+        "ac_cv_func_mremap": "no",
+        "ac_cv_func_mprotect": "no",
+        "ac_cv_func_posix_madvise": "no",
+        "ac_cv_func_madvise": "no",
+        "LC_ALL": "C",
+        "CPPFLAGS": "-include /mnt/p3/project/linux/linuxonweb/tools/guest-packages/no-fork.h ",
+        "LIBS": "/mnt/p3/codex-build/pkp3/tar-spawn1/compat/liblinuxonweb-nofork.a"
+      },
+      "configureOptions": [],
+      "target": "wasm32-unknown-linux-musl",
+      "guestRuntimeValidated": false,
+      "spawnAdapter": {
+        "sourceVersion": "tar-1.35",
+        "sourceSha256": "505b0ff19bd12b372d966acc3df5107f311f70249964edb5ea40d31b57effa65",
+        "patchedSha256": "5cb4fe6d5efe7c2b99e92f19fb5e1ec11660588bb4acdf34cf0386311b2aca67",
+        "mechanism": "native posix_spawn with pipe/fd and SIGPIPE file actions",
+        "nativeBuilt": false,
+        "runtimeAccepted": false,
+        "scope": [
+          "local regular-file compression",
+          "local regular-file decompression",
+          "compressed stdout creation"
+        ],
+        "notSupported": [
+          "remote rmt",
+          "special archive devices",
+          "compressed stdin extraction",
+          "compressed backup mode",
+          "other fork-dependent tar command hooks"
+        ],
+        "gates": [
+          "gzip compressed create/list/extract",
+          "content/mode/symlink roundtrip",
+          "corrupt/truncated gzip rejection",
+          "missing/failing compressor status",
+          "no owned child/fd leaks"
+        ]
+      }
+    },
+    "forkBehavior": "ENOSYS, never simulated success"
+  }
+}

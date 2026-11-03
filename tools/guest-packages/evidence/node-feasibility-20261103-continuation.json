@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-11-03T13:35:15.159889+00:00",
+  "sourceURLs": [
+    "https://github.com/nodejs/node/blob/main/configure.py",
+    "https://github.com/nodejs/node/blob/main/deps/v8/include/v8config.h",
+    "https://github.com/wasmerio/edgejs",
+    "https://github.com/wasmerio/edgejs/blob/main/wasmer.toml"
+  ],
+  "sourceHashes": {
+    "configure.py": "953a96e4d56d5452600ae9489eca7235cddb78e72aaf563b3284e14399374195",
+    "v8config.h": "f01019e7923c5ed64b64ae1b31f6b9e6e9ef1a9b725e3db95503306274620ba3"
+  },
+  "configureArchitectures": [
+    "arm",
+    "arm64",
+    "ia32",
+    "mips",
+    "mipsel",
+    "mips64el",
+    "ppc64",
+    "x64",
+    "x86",
+    "x86_64",
+    "s390x",
+    "riscv64",
+    "loong64"
+  ],
+  "wasm32Configured": false,
+  "v8TargetWasmMacro": false,
+  "result": "No compatible maintained upstream wasm32-linux-musl Node/V8 target found. Edge.js source is a separate WASIX/QuickJS or host-NAPI ABI route and is not substituted as genuine guest Node.js. A new V8 code generation/builtins/platform port, or independently accepted compatible guest implementation, remains required. This is a bounded audit, not universal impossibility proof."
+}

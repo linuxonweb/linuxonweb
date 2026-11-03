@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T14:28:19.261602+00:00",
+  "component": "real native signed GNU tar and Wget command gate",
+  "productionDesktopAcceptance": false,
+  "publicRepositoryChanged": false,
+  "runtimeReceipt": "out/pkp3/native-ports-runtime1/result.json",
+  "runtimeReceiptSha256": "d333e772a15e9fc48d537c929f6d938f351837bae21683c0e2228c9c377aae69",
+  "ownerReceipt": {
+    "startedUtc": "2026-11-03T14:12:03.256986+00:00",
+    "finishedUtc": "2026-11-03T14:12:30.522002+00:00",
+    "durationSeconds": 27.265,
+    "argv": [
+      "node",
+      "tools/guest-packages/run-smoke.mjs",
+      "out/pkp3/native-ports-fixture1/native-ports.cpio",
+      "out/pkp3/native-ports-runtime1",
+      "out/pkp3/repo",
+      "out/pkp3/native-ports-fixture1/config.json"
+    ],
+    "cwd": ".",
+    "exitCode": 1,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownerPeakRssBytes": 97894400,
+    "ownedTreePeakRssBytes": 1754955776,
+    "ownedTreePeakPssBytes": 1012442112,
+    "resourceSamples": 26,
+    "pssSamples": 6,
+    "quotaReadySeconds": 1.255,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": false
+  },
+  "packages": [
+    {
+      "file": "tar-1.35-r1.apk",
+      "bytes": 336354,
+      "sha256": "679e46386206961bf8279db6e24b8c5e4803f29f4699797c6cf3c97bf6580920",
+      "nativeSha256": "9bc2ca02c7cc77efc8a983184df616829e0fd6d9636636b0b9c6e3e939625c3f",
+      "scope": "GNU uncompressed archives plus native posix_spawn compression/decompression of local regular archives (including compressed stdout creation). Remote rmt, devices, compressed stdin extraction, compressed backup and other fork-dependent hooks remain unsupported."
+    },
+    {
+      "file": "wget-1.25.0-r0.apk",
+      "bytes": 1325799,
+      "sha256": "9138700d0bed2052c28fe6e3f5a53f1a717169ed94c12fdb76f8facdb17d31f8",
+      "nativeSha256": "fc8120c27db27d38c4afd974122f112bb6941ec004857726c77289b85ab1e35e",
+      "scope": "GNU HTTP/HTTPS client using the native static OpenSSL build and system CA paths."
+    }
+  ],
+  "nativePassedChecks": [
+    "NATIVE_TOOLS_PASS genuine-gnu-tar-version",
+    "NATIVE_TOOLS_PASS genuine-gnu-wget-version",
+    "NATIVE_TOOLS_PASS tar-create-uncompressed",
+    "NATIVE_TOOLS_PASS tar-list-uncompressed",
+    "NATIVE_TOOLS_PASS tar-extract-uncompressed",
+    "NATIVE_TOOLS_PASS tar-file-roundtrip",
+    "NATIVE_TOOLS_PASS tar-binary-roundtrip",
+    "NATIVE_TOOLS_PASS tar-mode-roundtrip",
+    "NATIVE_TOOLS_PASS tar-symlink-roundtrip",
+    "NATIVE_TOOLS_PASS tar-create-native-gzip",
+    "NATIVE_TOOLS_PASS tar-gzip-integrity",
+    "NATIVE_TOOLS_PASS tar-list-native-gzip",
+    "NATIVE_TOOLS_PASS tar-extract-native-gzip",
+    "NATIVE_TOOLS_PASS tar-compressed-file-roundtrip",
+    "NATIVE_TOOLS_PASS tar-compressed-binary-roundtrip",
+    "NATIVE_TOOLS_PASS tar-short-option-z-create",
+    "NATIVE_TOOLS_PASS tar-short-option-z-list",
+    "NATIVE_TOOLS_PASS tar-compressed-stdout",
+    "NATIVE_TOOLS_PASS tar-compressed-stdout-integrity",
+    "NATIVE_TOOLS_PASS tar-closed-stdout-fails-without-aliasing",
+    "NATIVE_TOOLS_PASS tar-truncated-gzip-rejected",
+    "NATIVE_TOOLS_PASS tar-missing-compressor-rejected",
+    "NATIVE_TOOLS_PASS tar-compressor-failure-propagated",
+    "NATIVE_TOOLS_PASS tar-compressed-stdin-explicitly-unsupported",
+    "NATIVE_TOOLS_PASS tar-create-parent-path-test",
+    "NATIVE_TOOLS_PASS tar-parent-traversal-rejected",
+    "NATIVE_TOOLS_PASS tar-parent-path-no-write",
+    "NATIVE_TOOLS_PASS wget-http-output",
+    "NATIVE_TOOLS_PASS wget-http-exact-bytes",
+    "NATIVE_TOOLS_PASS wget-http-redirect",
+    "NATIVE_TOOLS_PASS wget-http-redirect-bytes",
+    "NATIVE_TOOLS_PASS wget-http-404-exit-eight"
+  ],
+  "nativeFailedChecks": [],
+  "signedApkInstallAndRemovalChecks": [
+    "PACKAGE_CHECK_PASS /sbin/apk --initdb add",
+    "PACKAGE_CHECK_PASS /sbin/apk update",
+    "PACKAGE_CHECK_PASS /sbin/apk add gzip tar wget findutils",
+    "PACKAGE_CHECK_PASS /sbin/apk info --installed gzip tar wget findutils",
+    "PACKAGE_CHECK_PASS /bin/busybox test 0 = 0",
+    "PACKAGE_CHECK_FAIL /bin/busybox test 2 = 0",
+    "PACKAGE_CHECK_PASS /sbin/apk del gzip tar wget findutils",
+    "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/gzip",
+    "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/tar",
+    "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/wget",
+    "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/find",
+    "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/xargs"
+  ],
+  "trustSha256": "529b0b2265917010de583b364d6b7e90b5c17a8c386bbe3cf1b00ec49015580a",
+  "candidateIndexSha256": "f4d2935dd5b1404b5b63024b327c17a43f0bbdc11b78d513caf6146ce3c91a7f",
+  "nativeTlsVerified": false,
+  "pendingWgetGates": [
+    "valid HTTPS using CA verification",
+    "self-signed certificate rejection without bypass"
+  ],
+  "overallCombinedGatePassed": false,
+  "combinedFailure": "findutils xargs exit255 and signalled child caused native recursive-exit trap; those APK bytes are not accepted",
+  "shellContractFailure": {
+    "invocation": "direct /bin/busybox sh /tests/*.sh from native init; no frontend console parser",
+    "observations": [
+      "set -u rejected",
+      "EXIT trap observed zero despite final exit2 correctly reaching native caller"
+    ],
+    "consequence": "shell persistence draft rejected, not enabled; native checked transaction helper is being authored"
+  }
+}

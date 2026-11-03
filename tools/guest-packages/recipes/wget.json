@@ -1,0 +1,41 @@
+{
+  "name": "wget",
+  "version": "1.25.0-r0",
+  "description": "GNU wget native Linux/Wasm",
+  "url": "https://www.gnu.org/software/wget/",
+  "license": "GPL-3.0-or-later",
+  "depends": [
+    "ca-certificates"
+  ],
+  "files": {
+    "usr/bin/wget": {
+      "path": "wget",
+      "mode": "755",
+      "sha256": "fc8120c27db27d38c4afd974122f112bb6941ec004857726c77289b85ab1e35e"
+    },
+    "usr/share/licenses/wget/COPYING": {
+      "path": "wget-COPYING",
+      "sha256": "f7dc7522e7e1be9227f3dc8de8b39a4d1d2471968c893af15f00c1a2076a0eec"
+    },
+    "usr/share/doc/wget/README.linuxonweb": {
+      "path": "wget-README.txt",
+      "sha256": "2bc613c5e22ebe31af5e86448dd0af62e595b18e9cf7de5266d2c6d33b4e9aea"
+    }
+  },
+  "provenance": {
+    "source": {
+      "name": "wget",
+      "version": "1.25.0",
+      "url": "https://ftp.gnu.org/gnu/wget/wget-1.25.0.tar.gz",
+      "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/wget-1.25.0.tar.gz",
+      "bytes": 5263736,
+      "sha256": "766e48423e79359ea31e41db9e5c289675947a7fcf2efdcedb726ac9d0da3784",
+      "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+    },
+    "nativeSha256": "fc8120c27db27d38c4afd974122f112bb6941ec004857726c77289b85ab1e35e",
+    "rebuiltThisTask": true,
+    "runtimeAccepted": false,
+    "scope": "GNU HTTP/HTTPS client using the native static OpenSSL build and system CA paths.",
+    "forkBehavior": "ENOSYS, never simulated success"
+  }
+}
