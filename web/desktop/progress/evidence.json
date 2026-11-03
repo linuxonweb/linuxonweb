@@ -1,0 +1,87 @@
+{
+  "http": {
+    "receiptSha256": "617c69c1e2d9ddee5b87afb2fc69af574650abaaff20abf6b7acb4afe3e6a132",
+    "results": [
+      {
+        "name": "private root rejects unauthenticated access",
+        "pass": true
+      },
+      {
+        "name": "access grant is one time",
+        "pass": true
+      },
+      {
+        "name": "owner API rejects unauthenticated requests",
+        "pass": true
+      },
+      {
+        "name": "authenticated dashboard loads",
+        "pass": true
+      },
+      {
+        "name": "desktop isolation headers preserved",
+        "pass": true
+      },
+      {
+        "name": "archive range preserved",
+        "pass": true
+      },
+      {
+        "name": "resource metrics meaningful",
+        "pass": true
+      },
+      {
+        "name": "cross-origin message blocked",
+        "pass": true
+      },
+      {
+        "name": "plain message delivered",
+        "pass": true
+      }
+    ],
+    "durationSeconds": null,
+    "checkedAt": "2026-11-03T07:19:40.733Z",
+    "childExit": null
+  },
+  "browser": {
+    "receiptSha256": "0bdc08f17cd06005a788bf092ed5722fd35fd7477a81c19d43c13c2df8f3fec3",
+    "results": [
+      {
+        "name": "actual Chromium HTTPS dashboard, SAB and WebSocket latency",
+        "pass": true,
+        "evidence": {
+          "title": "Linux on Web \u00b7 Development",
+          "ready": "complete",
+          "isolated": true,
+          "sab": true,
+          "connected": true,
+          "latency": "252 ms",
+          "cpu": "95.2%",
+          "ram": "25.4 GB"
+        }
+      },
+      {
+        "name": "390px mobile dashboard has no horizontal overflow",
+        "pass": true,
+        "evidence": {
+          "viewport": 390,
+          "document": 390,
+          "button": 358
+        }
+      },
+      {
+        "name": "actual desktop document remains cross-origin isolated",
+        "pass": true,
+        "evidence": {
+          "isolated": true,
+          "sab": true,
+          "title": "Wasm Linux \u2014 X11 display",
+          "body": "idle\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\n"
+        }
+      }
+    ],
+    "durationSeconds": 8.755,
+    "checkedAt": "2026-11-03T07:20:40.034Z",
+    "childExit": 0
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "agent": "packages_mobile",
+  "model": "GPT-6 Astra Pro",
+  "agentTool": "builtin agents",
+  "keyTool": "Rubywebterm",
+  "records": [
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-build1/result.json",
+      "startedAt": "2026-11-03T07:13:15.809094+00:00",
+      "endedAt": "2026-11-03T07:13:16.812104+00:00",
+      "seconds": 1.003,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 1
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-build2/result.json",
+      "startedAt": "2026-11-03T07:13:48.811823+00:00",
+      "endedAt": "2026-11-03T07:13:49.814116+00:00",
+      "seconds": 1.002,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 2
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk3/build-log/result.json",
+      "startedAt": "2026-11-03T07:14:26.203019+00:00",
+      "endedAt": "2026-11-03T07:14:28.205734+00:00",
+      "seconds": 2.003,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 3
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk4/build-log/result.json",
+      "startedAt": "2026-11-03T07:14:51.020673+00:00",
+      "endedAt": "2026-11-03T07:14:54.024007+00:00",
+      "seconds": 3.003,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 4
+    },
+    {
+      "path": "out/pm-preview-check/owner/result.json",
+      "startedAt": "2026-11-03T07:20:39.919896+00:00",
+      "endedAt": "2026-11-03T07:20:48.948740+00:00",
+      "seconds": 9.029,
+      "pass": true,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 5
+    },
+    {
+      "path": "out/pm-preview-check/result.json",
+      "startedAt": "2026-11-03T07:20:40.034Z",
+      "endedAt": "2026-11-03T07:20:48.789000+00:00",
+      "seconds": 8.755,
+      "pass": null,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 6
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk5/build-log/result.json",
+      "startedAt": "2026-11-03T07:22:45.596266+00:00",
+      "endedAt": "2026-11-03T07:22:49.601750+00:00",
+      "seconds": 4.006,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 7
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk6/build-log/result.json",
+      "startedAt": "2026-11-03T07:23:19.699737+00:00",
+      "endedAt": "2026-11-03T07:23:28.709191+00:00",
+      "seconds": 9.009,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 8
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk7/build-log/result.json",
+      "startedAt": "2026-11-03T07:23:42.759732+00:00",
+      "endedAt": "2026-11-03T07:23:50.767304+00:00",
+      "seconds": 8.008,
+      "pass": true,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 9
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk7/helper-log/result.json",
+      "startedAt": "2026-11-03T07:23:50.768020+00:00",
+      "endedAt": "2026-11-03T07:23:51.769497+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 10
+    },
+    {
+      "path": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-host-build/result.json",
+      "startedAt": "2026-11-03T07:25:49.550273+00:00",
+      "endedAt": "2026-11-03T07:25:58.575010+00:00",
+      "seconds": 9.025,
+      "pass": true,
+      "ownedTreePeakRssBytes": 173428736,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 11
+    },
+    {
+      "path": "out/pm-smoke/owner1/result.json",
+      "startedAt": "2026-11-03T07:29:36.420075+00:00",
+      "endedAt": "2026-11-03T07:29:44.438935+00:00",
+      "seconds": 8.019,
+      "pass": true,
+      "ownedTreePeakRssBytes": 1171742720,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 12
+    },
+    {
+      "path": "out/pm-smoke/run1/result.json",
+      "startedAt": "2026-11-03T07:29:36.518Z",
+      "endedAt": "2026-11-03T07:29:43.528000+00:00",
+      "seconds": 7.01,
+      "pass": true,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 13
+    },
+    {
+      "path": "out/pm-smoke/owner2/result.json",
+      "startedAt": "2026-11-03T07:35:52.516227+00:00",
+      "endedAt": "2026-11-03T07:36:01.533838+00:00",
+      "seconds": 9.018,
+      "pass": false,
+      "ownedTreePeakRssBytes": 1318760448,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 14
+    },
+    {
+      "path": "out/pm-smoke/run2/result.json",
+      "startedAt": "2026-11-03T07:35:52.645Z",
+      "endedAt": "2026-11-03T07:36:00.746000+00:00",
+      "seconds": 8.101,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 15
+    },
+    {
+      "path": "out/pm-smoke/owner3/result.json",
+      "startedAt": "2026-11-03T07:43:44.928649+00:00",
+      "endedAt": "2026-11-03T07:43:52.942966+00:00",
+      "seconds": 8.014,
+      "pass": false,
+      "ownedTreePeakRssBytes": 1385197568,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 16
+    },
+    {
+      "path": "out/pm-smoke/run3/result.json",
+      "startedAt": "2026-11-03T07:43:45.133Z",
+      "endedAt": "2026-11-03T07:43:52.302000+00:00",
+      "seconds": 7.169,
+      "pass": false,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 17
+    },
+    {
+      "path": "out/pm-python1/configure-log/result.json",
+      "startedAt": "2026-11-03T07:44:58.334323+00:00",
+      "endedAt": "2026-11-03T07:46:25.445291+00:00",
+      "seconds": 87.111,
+      "pass": false,
+      "ownedTreePeakRssBytes": 107409408,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 18
+    },
+    {
+      "path": "out/pm-smoke/run5-owner/result.json",
+      "startedAt": "2026-11-03T07:52:54.209443+00:00",
+      "endedAt": "2026-11-03T07:53:02.225761+00:00",
+      "seconds": 8.016,
+      "pass": true,
+      "ownedTreePeakRssBytes": 1511628800,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 19
+    },
+    {
+      "path": "out/pm-smoke/run5/result.json",
+      "startedAt": "2026-11-03T07:52:54.376Z",
+      "endedAt": "2026-11-03T07:53:02.106000+00:00",
+      "seconds": 7.73,
+      "pass": true,
+      "ownedTreePeakRssBytes": null,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 20
+    },
+    {
+      "path": "out/pm-python2/configure-log/result.json",
+      "startedAt": "2026-11-03T07:53:15.981641+00:00",
+      "endedAt": "2026-11-03T07:54:51.118700+00:00",
+      "seconds": 95.137,
+      "pass": true,
+      "ownedTreePeakRssBytes": 151134208,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 21
+    },
+    {
+      "path": "out/pm-python2/build1-log/result.json",
+      "startedAt": "2026-11-03T07:55:03.905936+00:00",
+      "endedAt": "2026-11-03T07:55:27.950396+00:00",
+      "seconds": 24.044,
+      "pass": false,
+      "ownedTreePeakRssBytes": 220725248,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 22
+    },
+    {
+      "path": "out/pm-python3/configure-log/result.json",
+      "startedAt": "2026-11-03T07:57:11.925835+00:00",
+      "endedAt": "2026-11-03T07:58:50.101214+00:00",
+      "seconds": 98.175,
+      "pass": true,
+      "ownedTreePeakRssBytes": 179032064,
+      "scoreScope": "package/mobile/preview component, not overall desktop acceptance",
+      "iteration": 23
+    }
+  ],
+  "sumTaskSecondsNotWallTime": 423.389,
+  "note": "Overlapping owner/result records are retained for traceability; sum is not wall-clock duration. Failed attempts are retained. Overall acceptance is maintained by root."
+}
