@@ -1,4 +1,5 @@
 import { downloadFile } from './download-progress.mjs';
+import { validateFirefoxCacheLifecycle } from './firefox-cache-lifecycle.mjs';
 // Immutable system images are kept in IndexedDB, one record per verified image
 // keyed by its sha256, with the server's Last-Modified time. Mutable home uses
 // its own storage.
@@ -20,6 +21,7 @@ function validate(manifest) {
     const url = new URL(asset.url, manifestURL);
     if (url.origin !== manifestURL.origin || !url.pathname.startsWith(new URL('.', manifestURL).pathname)) throw new Error('System image must be served from this application');
   }
+  if (manifest.assets.firefox.cacheLifecycle !== undefined) validateFirefoxCacheLifecycle(manifest.assets.firefox.cacheLifecycle);
   return manifest;
 }
 function saved(key) {

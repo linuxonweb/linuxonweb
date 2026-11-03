@@ -76,7 +76,7 @@ async function typeGuestAddress(text,label){
 async function guestLogs(){return await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");}
 
 function readinessSignals(logs, nonce) {
- const found=[];for(const line of String(logs).split('\n')){const match=/LOW_READY (\{.*\})/.exec(line);if(!match)continue;try{let value;try{value=JSON.parse(match[1]);}catch{value=JSON.parse(JSON.parse('"'+match[1]+'"'));}if(value.schema===1&&value.nonce===nonce&&['paint','focus','input','typed','navigate','complete'].includes(value.phase))found.push(value);}catch{}}
+ const found=[];for(const line of String(logs).split('\n')){const match=/LOW_READY (\{.*\})/.exec(line);if(!match)continue;try{let value;try{value=JSON.parse(match[1]);}catch{value=JSON.parse(JSON.parse('"'+match[1]+'"'));}if(value.schema===1&&value.nonce===nonce&&['paint','focus','keydown','keyup','input','typed','navigate','complete'].includes(value.phase))found.push(value);}catch{}}
  return found;
 }
 async function readinessProbe(paint,nonce) {
@@ -90,13 +90,24 @@ async function readinessProbe(paint,nonce) {
  if(!(guestX>0&&guestX<1280&&guestY>0&&guestY<720))throw Error('Readiness input outside guest display');
  const x=canvas.left+guestX*canvas.width/1280,y=canvas.top+guestY*canvas.height/720;gate.inputLocation={canvas,guestX,guestY,x,y};
  gate.inputStartLaunchMs=time()-bootAt;await clickGuest(x,y);gate.focus=await waitPhase('focus',20000);await shot('readiness-focused');
- for(const c of nonce){await pressKey({key:c,code:'Key'+c.toUpperCase(),windowsVirtualKeyCode:c.toUpperCase().charCodeAt(0),nativeVirtualKeyCode:c.toUpperCase().charCodeAt(0),text:c,unmodifiedText:c});await delay(20);}
+ gate.typingProtocol='One physical keypress followed by exact native input acknowledgment; no text insertion, correction, or ignored duplicates';gate.inputAcknowledgments=[];
+ for(let index=0;index<nonce.length;index++){
+  const c=nonce[index],expected=nonce.slice(0,index+1);
+  await pressKey({key:c,code:'Key'+c.toUpperCase(),windowsVirtualKeyCode:c.toUpperCase().charCodeAt(0),nativeVirtualKeyCode:c.toUpperCase().charCodeAt(0),text:c,unmodifiedText:c});
+  const until=time()+5000;let acknowledged=false;
+  while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'guest.log'),logs);const actual=readinessSignals(logs,nonce).filter(v=>v.phase==='input').at(-1);
+   if(actual?.value===expected){gate.inputAcknowledgments.push({index,value:actual.value,observedLaunchMs:time()-bootAt});acknowledged=true;break;}
+   if(actual?.value&&!expected.startsWith(actual.value))throw Error('Readiness exact input mismatch: '+JSON.stringify({index,expected,actual:actual.value}));
+   await delay(250);
+  }
+  if(!acknowledged)throw Error('Readiness character acknowledgment deadline: '+index);await delay(20);
+ }
  gate.keysSentLaunchMs=time()-bootAt;save();
 
  gate.typed=await waitPhase('typed',20000);if(gate.typed.signal.value!==nonce)throw Error('Readiness typed value differs');await shot('readiness-typed');
  gate.enterLaunchMs=time()-bootAt;await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
  gate.complete=await waitPhase('complete',30000);if(gate.complete.signal.value!==nonce||gate.complete.signal.title!=='READINESS COMPLETE'||gate.complete.signal.href!=='file:///opt/firefox/gpu-check/readiness-complete.html?nonce='+nonce)throw Error('Readiness navigation identity differs');
- await shot('readiness-complete');gate.completeScreenshotLaunchMs=time()-bootAt;gate.keyboardNavigationPassed=true;gate.thirtySecondGate=gate.completeScreenshotLaunchMs<=30000;gate.acceptance='Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review';save();
+ await shot('readiness-complete');gate.completeScreenshotLaunchMs=time()-bootAt;gate.completeScreenshotNavigationMs=gate.completeScreenshotLaunchMs+bootAt-report.navigationAtMs;gate.keyboardNavigationPassed=true;gate.thirtySecondGate=gate.completeScreenshotLaunchMs<=30000;gate.acceptance='Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review';save();
 }
 async function profileSnapshot(label,includeAll=false){
  const snapshot=await evaluate(`new Promise((resolve,reject)=>{const request=indexedDB.open('linuxonweb.home.v1');request.onupgradeneeded=()=>request.transaction.abort();request.onerror=()=>reject(request.error);request.onsuccess=()=>{const db=request.result,tx=db.transaction('nodes','readonly'),r=tx.objectStore('nodes').getAll(undefined,10000);r.onerror=()=>reject(r.error);r.onsuccess=()=>{const nodes=r.result,map=new Map(nodes.map(n=>[n.id,n]));const pathname=n=>{const parts=[];for(let depth=0;n&&n.parent&&depth<32;depth++){parts.push(n.name);n=map.get(n.parent);}return '/home/'+parts.reverse().join('/');};resolve({nodes:nodes.length,truncated:nodes.length===10000,files:nodes.map(n=>({id:n.id,path:pathname(n),bytes:n.size,mode:n.mode})).filter(n=>${includeAll}||/startupcache|startupCache|\.cache|prefs\.js|user\.js|profiles\.ini|sessionstore/i.test(n.path))});};tx.oncomplete=()=>db.close();};})`);
@@ -184,12 +195,13 @@ try{
  if(observeAfter>0){report.quietObservation={startBootMs:time()-bootAt,startUtc:new Date().toISOString(),requestedEndBootMs:observeAfter*1000,excludes:['screenshots','Runtime.evaluate','log polling','tracing'],resourceMonitor:'CPU/RSS/quota1s; PSS5s; separateworker',passiveConsoleEvents:true};save();while(time()-bootAt<observeAfter*1000&&!closed)await delay(200);report.quietObservation.endBootMs=time()-bootAt;report.quietObservation.endUtc=new Date().toISOString();if(closed)throw Error('Resource monitor stopped quiet observation');}
  for(let i=0;i<200;i++){try{if(await evaluate("document.readyState==='complete' && !!document.querySelector('#cpu-cores')"))break;}catch{}await delay(100);}
  report.initial=await evaluate("({cores:navigator.hardwareConcurrency,crossOriginIsolated,settings:localStorage.getItem('linuxonweb.machine-settings.v1'),url:location.href,pageTimeOrigin:performance.timeOrigin,pageNow:performance.now()})");if(report.initial.cores!==report.configuration.cpus)throw Error('Native browser CPU count differs from test affinity');save();
+ if(mode==='firefox'&&reusedTestProfile){report.beforeLaunchProfile=await profileSnapshot('before-launch',true);report.retainedOrigin=await evaluate('location.origin');if(report.retainedOrigin!==`http://127.0.0.1:${testPort}`)throw Error('Retained profile origin differs');if(!JSON.parse(fs.readFileSync(path.join(run,'before-launch-profile.json'),'utf8')).files.some(f=>f.path==='/home/admin/.mozilla/firefox/http1-profile/user.js'))throw Error('Retained Firefox profile marker absent at fixed origin');save();}
  if(mode==='firefox'&&options.get('manual-launch')==='1'){if(observeAfter>0)throw Error('Manual launch cannot use quiet startup pre-wait');report.launchRequest={kind:'production Start Firefox menu',hostMs:time(),utc:new Date().toISOString()};bootAt=report.launchRequest.hostMs;report.launchRequest.page=await evaluate("(()=>{document.querySelector('#boot').click();const button=document.querySelector('#start-firefox');if(!button||button.disabled||button.closest('[hidden]'))throw Error('Firefox launch menu unavailable');const requestAtMs=performance.now();button.click();return {requestAtMs,pageTimeOrigin:performance.timeOrigin};})()");save();}
  if(mode==='compat-export'){
  const text=await evaluate(`(async()=>{const h=await(await import('./persistent-home.mjs')).openPersistentHome({readOnly:true});try{let n=h.root;for(const part of ['admin','.mozilla','firefox','http1-profile','compatibility.ini']){n=await h.lookup(n,part);if(!n)throw Error('Controlled fixture compatibility file absent');}if(Number((await h.getattr(n)).size)>2048)throw Error('Compatibility file outside bounded generated metadata size');const bytes=await h.read(n,{},0n,2048);return new TextDecoder().decode(bytes);}finally{await h.destroy();}})()`);
- const keys=['LastVersion','LastOSABI','LastPlatformDir','LastAppDir'],fields={};
+ const required=['LastVersion','LastOSABI','LastPlatformDir','LastAppDir'],keys=[...required,'InvalidateCaches'],fields={};
  for(const line of text.split(/\r?\n/)){if(!line||line==='[Compatibility]')continue;const at=line.indexOf('=');const key=line.slice(0,at),value=line.slice(at+1);if(!keys.includes(key)||Object.hasOwn(fields,key)||!value)throw Error('Unexpected compatibility metadata field');fields[key]=value;}
- if(keys.some(k=>!fields[k]))throw Error('Compatibility metadata field missing');
+ if(required.some(k=>!fields[k]))throw Error('Compatibility metadata field missing');
  report.compatibilityExport={fields,sourceTestProfile:reusedTestProfile,onlyBuildMetadata:true};fs.writeFileSync(path.join(run,'compatibility.json'),JSON.stringify(report.compatibilityExport,null,2));
  }else if(mode==='cache-export'){await exportCodeCaches();
  }else if(mode==='home-inventory'){report.inventory=await profileSnapshot('inventory',true);
@@ -249,6 +261,16 @@ try{
  const homeTimings=await evaluate('globalThis.__gpt6HomeTimings??null');if(homeTimings)fs.writeFileSync(path.join(run,'home-timings.json'),JSON.stringify(homeTimings,null,2));
  const inputDiagnostics=await evaluate('({dom:globalThis.__gpt6InputDom??[],queue:globalThis.__gpt6InputQueue??null})');fs.writeFileSync(path.join(run,'input-diagnostics.json'),JSON.stringify(inputDiagnostics));
  report.finalState=await evaluate("({text:document.body.innerText.slice(-6000),cores:navigator.hardwareConcurrency,status:document.querySelector('#status')?.textContent})");await shot('final');
+ if(mode==='firefox'&&options.get('close-firefox')==='1'){
+  report.nativeClose={kind:'Firefox Ctrl+Q, followed by native init exit observation',requestedLaunchMs:time()-bootAt,expectedExitStatus:0};
+  const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
+  await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});
+  try{await pressKey({key:'q',code:'KeyQ',windowsVirtualKeyCode:81,nativeVirtualKeyCode:81},2);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...control,modifiers:0});}
+  const until=time()+20000;let exited=false;
+  while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'closed-guest.log'),logs);const match=/firefox exited with status (\d+)/.exec(logs);if(match){report.nativeClose.status=Number(match[1]);report.nativeClose.observedLaunchMs=time()-bootAt;exited=true;break;}await delay(250);}
+  await shot('native-close');if(!exited||report.nativeClose.status!==0)throw Error('Native Firefox Close did not report successful exit');
+  report.nativeClose.profile=await profileSnapshot('closed',true);save();
+ }
  if(mode==='firefox'&&['1','auto'].includes(options.get('warm-restart')))await warmRestart();
  if(mode==='firefox'&&(options.get('post-apk-check')==='1'||options.get('desktop-apk-check')==='1')){
   report.postApkCheck={startedBootMs:time()-bootAt,afterFixedGraphicsObservation:options.get('post-apk-check')==='1',dedicatedDesktopAcceptance:options.get('desktop-apk-check')==='1'};
@@ -274,7 +296,11 @@ try{
  }
  if(closed)throw Error('Resource monitor stopped the run');
  report.finishedNormally=true;
-}catch(e){report.errors.push({ms:time(),error:String(e),stack:e.stack});report.finishedNormally=false;if(ws?.readyState===WebSocket.OPEN)try{await shot('failure');}catch{}}
+}catch(e){report.errors.push({ms:time(),error:String(e),stack:e.stack});report.finishedNormally=false;if(ws?.readyState===WebSocket.OPEN){
+ try{await shot('failure');}catch{}
+ try{fs.writeFileSync(path.join(run,'guest.log'),await guestLogs());}catch{}
+ for(const [filename,expression] of [['failure-input-diagnostics.json','({dom:globalThis.__gpt6InputDom??[],queue:globalThis.__gpt6InputQueue??null})'],['failure-home-timings.json','globalThis.__gpt6HomeTimings??null'],['failure-startup-timings.json','globalThis.__gpt6StartupTimings??null']])try{fs.writeFileSync(path.join(run,filename),JSON.stringify(await evaluate(expression),null,2));}catch{}
+}}
 finally{
  if(monitor){monitor.postMessage('stop');await Promise.race([new Promise(resolve=>monitor.once('exit',resolve)),delay(3000).then(()=>monitor.terminate())]);}
  try{if(ws?.readyState===WebSocket.OPEN){await send('Browser.close',{},5000).catch(()=>{});ws.close();}}catch{}await delay(1500);

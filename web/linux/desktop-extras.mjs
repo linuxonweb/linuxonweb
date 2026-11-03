@@ -1,6 +1,17 @@
 import { guestRunAgent, guestRunShell } from './test-commands.mjs';
 import { downloadFile } from './download-progress.mjs';
+import { validateFirefoxCacheLifecycle, assertFirefoxDesktopExtras, firefoxCacheProof } from './firefox-cache-lifecycle.mjs';
+const CACHE_PROOF_PATH = 'etc/linuxonweb-firefox-cache-verified';
+const CACHE_VERIFIED = Symbol('verified Firefox desktop composition');
 const encoder = new TextEncoder();
+const archiveNameDecoder = new TextDecoder('utf-8', { fatal: true });
+function archiveName(bytes) {
+  if (!bytes.length || bytes[bytes.length - 1] !== 0 || bytes.subarray(0, -1).includes(0)) throw new Error('Desktop archive has an invalid CPIO name.');
+  const name = archiveNameDecoder.decode(bytes.subarray(0, -1)).replace(/^(?:\.\/)+/, '');
+  if (name !== '.' && (!name || name.startsWith('/') || name.split('/').some(part => !part || part === '.' || part === '..'))) throw new Error('Desktop archive contains an unsafe CPIO path.');
+  return name;
+}
+
 export function cpioEntry(name, data, mode = 0o100755) {
   const filename = encoder.encode(name + '\0');
   const fields = [1, mode, 0, 0, 1, 0, data.length, 0, 0, 0, 0, filename.length, 0];
@@ -30,7 +41,8 @@ function archiveReader(archive) {
   }
   return { length, slice };
 }
-export function desktopInitOverlay(source) {
+export function desktopInitOverlay(source) { return makeDesktopInitOverlay(source, ''); }
+function makeDesktopInitOverlay(source, proof) {
   const archive = archiveReader(source);
   const decoder = new TextDecoder(); let original = null, offset = 0;
   while (offset < archive.length) {
@@ -42,7 +54,8 @@ export function desktopInitOverlay(source) {
     if (!namesize || namesize > 4096) throw new Error('Desktop rootfs has an invalid CPIO name.');
     const dataOffset = (offset + 110 + namesize + 3) & ~3, end = dataOffset + size;
     if (end > archive.length) throw new Error('Desktop rootfs CPIO is truncated.');
-    const name = decoder.decode(archive.slice(offset + 110, offset + 110 + namesize - 1)).replace(/^\.\//, '');
+    const name = archiveName(archive.slice(offset + 110, offset + 110 + namesize));
+    if (name === CACHE_PROOF_PATH) throw new Error('System image contains a reserved Firefox cache proof.');
     if (name === 'init') original = archive.slice(dataOffset, end);
     offset = (end + 3) & ~3;
   }
@@ -51,20 +64,60 @@ export function desktopInitOverlay(source) {
   const entries = [cpioEntry('init.desktop-original', original), cpioEntry('init', wrapper),
     cpioEntry('bin/linuxonweb-run-agent', encoder.encode(guestRunAgent())), cpioEntry('bin/linuxonweb-run-shell', encoder.encode(guestRunShell())),
     // init's boot-time wget/curl self-tests compete with desktop and Firefox startup.
-    cpioEntry('network-smoke-skip', new Uint8Array(), 0o100644), cpioEntry('TRAILER!!!', new Uint8Array(), 0)];
+    cpioEntry('network-smoke-skip', new Uint8Array(), 0o100644),
+    // Always overwrite earlier data: legacy/unverified compositions disable caching.
+    cpioEntry(CACHE_PROOF_PATH, encoder.encode(proof), 0o100644), cpioEntry('TRAILER!!!', new Uint8Array(), 0)];
   const overlay = new Uint8Array(entries.reduce((sum, entry) => sum + entry.length, 0));
   let at = 0; for (const entry of entries) { overlay.set(entry, at); at += entry.length; }
   return overlay;
 }
+// This extra decoding only applies to cache-enabled images. It proves the raw
+// identity as well as the compressed body and rejects a prepackaged proof file.
+async function decodePinnedExtras(compressed, expectedBytes) {
+  const reader = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+  const parts = []; let bytes = 0;
+  try {
+    for (;;) {
+      const item = await reader.read(); if (item.done) break;
+      bytes += item.value.length;
+      if (bytes > expectedBytes) throw new Error('Decoded Firefox desktop extras exceed their pinned size.');
+      parts.push(item.value);
+    }
+    if (bytes !== expectedBytes) throw new Error('Decoded Firefox desktop extras are incomplete.');
+  } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  const raw = new Uint8Array(bytes); let offset = 0;
+  for (const part of parts) { raw.set(part, offset); offset += part.length; }
+  return raw;
+}
+function assertNoReservedProof(source) {
+  const archive = archiveReader(source), decoder = new TextDecoder(); let offset = 0;
+  while (offset < archive.length) {
+    while (offset < archive.length && archive.slice(offset, offset + 1)[0] === 0) offset++;
+    if (offset === archive.length) break;
+    const header = decoder.decode(archive.slice(offset, offset + 110));
+    if (!/^07070[12][0-9a-fA-F]{104}$/.test(header)) throw new Error('Pinned desktop extras have an invalid CPIO header.');
+    const size = parseInt(header.slice(54, 62), 16), namesize = parseInt(header.slice(94, 102), 16);
+    if (!namesize || namesize > 4096) throw new Error('Pinned desktop extras have an invalid CPIO name.');
+    const at = (offset + 110 + namesize + 3) & ~3, end = at + size;
+    if (end > archive.length) throw new Error('Pinned desktop extras CPIO is truncated.');
+    const bytes = archive.slice(offset + 110, offset + 110 + namesize);
+    if (bytes[namesize - 1] !== 0 || bytes.subarray(0, -1).includes(0)) throw new Error('Pinned desktop extras have an invalid CPIO name.');
+    const name = archiveName(bytes);
+    if (name === CACHE_PROOF_PATH) throw new Error('Desktop extras contain a reserved Firefox cache proof.');
+    offset = (end + 3) & ~3;
+  }
+}
 // Starts at boot, alongside system image decompression. The manifest is always
 // fresh; the archive may come from the HTTP cache after revalidation because
 // its checksum is verified against that manifest.
-export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = false } = {}) {
+export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = false, cacheLifecycle } = {}) {
+  const cachePolicy = validateFirefoxCacheLifecycle(cacheLifecycle);
   const progress = { id: 'desktop-extras', label: 'Desktop extras' };
   const manifestResponse = await fetchImpl(new URL('./desktop-extras.cpio.json', import.meta.url), { cache: 'no-store' });
   if (!manifestResponse.ok) throw new Error(`Desktop extras manifest unavailable: HTTP ${manifestResponse.status}.`);
   const manifest = await manifestResponse.json();
   if (manifest.schema !== 1 || !Number.isSafeInteger(manifest.bytes) || manifest.bytes < 1 || manifest.bytes > 64 * 1024 ** 2 || !/^[0-9a-f]{64}$/.test(manifest.sha256)) throw new Error('Invalid desktop extras manifest.');
+  if (cachePolicy) assertFirefoxDesktopExtras(cachePolicy, manifest);
   const compressed = preserveGzip && manifest.gzip !== undefined;
   const metadata = compressed ? manifest.gzip : manifest;
   if (compressed && (!metadata || !Number.isSafeInteger(metadata.bytes) || metadata.bytes < 18 || metadata.bytes > manifest.bytes + 65536 || !/^[0-9a-f]{64}$/.test(metadata.sha256))) throw new Error('Invalid desktop extras gzip manifest.');
@@ -73,13 +126,21 @@ export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = fals
   if (extras.length !== metadata.bytes) throw new Error('Desktop extras download is incomplete.');
   const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', extras))].map(x => x.toString(16).padStart(2, '0')).join('');
   if (hash !== metadata.sha256) throw new Error('Desktop extras checksum mismatch.');
-  return compressed ? { encoding: 'gzip', bytes: extras } : extras;
+  const result = compressed ? { encoding: 'gzip', bytes: extras } : extras;
+  if (cachePolicy) {
+    const raw = compressed ? await decodePinnedExtras(extras, cachePolicy.desktopExtras.bytes) : extras;
+    const rawHash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', raw))].map(x => x.toString(16).padStart(2, '0')).join('');
+    if (raw.length !== cachePolicy.desktopExtras.bytes || rawHash !== cachePolicy.desktopExtras.sha256) throw new Error('Decoded Firefox desktop extras identity differs.');
+    assertNoReservedProof(raw);
+    Object.defineProperty(result, CACHE_VERIFIED, { value: firefoxCacheProof(cachePolicy) });
+  }
+  return result;
 }
 // System archive (one array or its chunks), then extras, then the init overlay,
 // each starting 4-byte aligned, assembled with a single allocation.
 export function desktopInitramfs(system, extras) {
   const parts = system instanceof Uint8Array ? [system] : system;
-  const overlay = desktopInitOverlay(parts);
+  const overlay = makeDesktopInitOverlay(parts, extras?.[CACHE_VERIFIED] ?? '');
   return assembleInitramfs(parts, extras, overlay);
 }
 function assembleInitramfs(parts, extras, overlay) {
@@ -125,8 +186,9 @@ async function scanInitOverlay(reader, signal) {
     if (!namesize || namesize > 4096) throw new Error('Desktop rootfs has an invalid CPIO name.');
     const nameBytes = await take(namesize);
     if (nameBytes[namesize - 1] !== 0 || nameBytes.subarray(0, -1).includes(0)) throw new Error('Desktop rootfs has an invalid CPIO name.');
-    const name = decoder.decode(nameBytes.subarray(0, -1)).replace(/^\.\//, '');
+    const name = archiveName(nameBytes);
     await take((4 - position % 4) % 4, false);
+    if (name === CACHE_PROOF_PATH) throw new Error('System image contains a reserved Firefox cache proof.');
     if (name === 'init') {
       if (size > 1024 * 1024) throw new Error('Desktop rootfs init script exceeds 1 MiB.');
       original = await take(size);
@@ -136,7 +198,7 @@ async function scanInitOverlay(reader, signal) {
     await take((4 - position % 4) % 4, false);
   }
   if (!original) throw new Error('Desktop rootfs has no supported /init script.');
-  return { bytes: position, overlay: desktopInitOverlay(cpioEntry('init', original)) };
+  return { bytes: position, original };
 }
 export function useCompressedInitramfs(mode, search, rawRequired = false) {
   const choice = new URLSearchParams(search).get('compressed-initramfs');
@@ -185,11 +247,12 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
       onImage(scanned.bytes);
       const extraBytes = await wait(extrasReady);
       signal?.throwIfAborted();
+      const overlay = makeDesktopInitOverlay(cpioEntry('init', scanned.original), extraBytes?.[CACHE_VERIFIED] ?? '');
       let archive;
       if (extraBytes?.encoding === 'gzip') {
         const payload = extraBytes.bytes;
         if (!(payload instanceof Uint8Array) || payload.length < 18 || payload[0] !== 0x1f || payload[1] !== 0x8b || payload[2] !== 8) throw new Error('Invalid desktop gzip extras.');
-        archive = assembleInitramfs(parts, payload, scanned.overlay);
+        archive = assembleInitramfs(parts, payload, overlay);
       } else if (compressExtras) {
         reader.releaseLock();
         reader = null;
@@ -197,7 +260,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
           controller.enqueue(extraBytes);
           const padding = (4 - extraBytes.length % 4) % 4;
           if (padding) controller.enqueue(new Uint8Array(padding));
-          controller.enqueue(scanned.overlay);
+          controller.enqueue(overlay);
           controller.close();
         } }).pipeThrough(new CompressionStream('gzip'));
         reader = tail.getReader();
@@ -211,7 +274,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
         }
         archive = assembleInitramfs(parts, new Uint8Array(), new Uint8Array());
       } else {
-        archive = assembleInitramfs(parts, extraBytes, scanned.overlay);
+        archive = assembleInitramfs(parts, extraBytes, overlay);
       }
       onReady();
       return archive;

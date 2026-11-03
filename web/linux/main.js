@@ -18,7 +18,7 @@ import { createLogViewer } from "./log-viewer.mjs";
 import { createPresentOverlay } from "./gpu-present-overlay.mjs";
 import { createMobileKeyboard } from "./mobile-keyboard.mjs";
 import { openPersistentHome, acquireHomeLock, deletePersistentHome } from './persistent-home.mjs';
-import { systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
+import { activeManifest, systemAsset, prepareSystemBoot, updateSystem, clearSystemCache, systemUsage, onAssetNotice, restorePreviousSystem, confirmSystemBoot } from './boot-assets.mjs';
 import { createStoragePanel } from './storage-panel.mjs';
 import { createMoreMenu } from './more-menu.mjs';
 import { installDownloadPanel } from './download-panel.mjs';
@@ -1029,7 +1029,11 @@ async function boot(mode) {
     });
     hostLog(`boot timing: home ready at ${bootTime()}`);
     const compressedInitramfs = useCompressedInitramfs(mode, location.search, gputestMode || selectedGpuTest === 'software');
-    initramfs = loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs }), {
+    // Diagnostic CPIO appended below is outside the pinned final composition.
+    // Keep native purge-marker invalidation for those explicit test modes.
+    const cacheLifecycle = mode === 'firefox' && !gputestMode && selectedGpuTest !== 'software'
+      ? (await activeManifest()).assets.firefox.cacheLifecycle : undefined;
+    initramfs = loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs, cacheLifecycle }), {
       gzip: mode === 'firefox',
       preserveGzip: compressedInitramfs,
       compressExtras: compressedInitramfs,

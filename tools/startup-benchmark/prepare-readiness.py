@@ -21,6 +21,7 @@ script=r'''
  const input=document.createElement('input');input.id=label.htmlFor;input.autocomplete='off';input.spellcheck=false;input.style.cssText='box-sizing:border-box;width:100%;font:22px monospace;color:#001b18;background:white;padding:5px;border:2px solid #00b48b';
  panel.append(label,token,input);document.body.append(panel);
  input.addEventListener('focus',()=>signal('focus',{value:input.value}));
+ for(const type of ['keydown','keyup'])input.addEventListener(type,e=>signal(type,{key:e.key,code:e.code,repeat:e.repeat,eventTimeStamp:e.timeStamp,value:input.value}));
  input.addEventListener('input',()=>{if(input.value.length<=64)signal('input',{value:input.value});if(input.value===nonce)signal('typed',{value:input.value});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&input.value===nonce){e.preventDefault();signal('navigate',{value:input.value});location.assign('file:///opt/firefox/gpu-check/readiness-complete.html?nonce='+nonce);}});
  const painted=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const r=input.getBoundingClientRect();signal('paint',{href:location.href,innerScreenX:window.mozInnerScreenX,innerScreenY:window.mozInnerScreenY,dpr:devicePixelRatio,input:{x:r.x,y:r.y,width:r.width,height:r.height},viewport:{width:innerWidth,height:innerHeight},webgl:typeof state==='object'?state.webgl:null});}));

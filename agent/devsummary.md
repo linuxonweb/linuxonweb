@@ -54,3 +54,11 @@ Production route verified after owner cleanup14:05:36UTC:servedAPK4d258203daee8,
 116197223bytes, SHA2564675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771.
 Rawweb/linux manifests are legacy; immutable published-build overrides are the
 actual production assets. Recovery must use the verified publisher.
+
+## Iteration 3 — strict cache composition and rejected input (42/100)
+
+- Strict cache/extras identity tests passed at 14:16:05 UTC in 3.256 s; reserved-path aliases and raw/gzip identity mismatches fail closed. Candidate composition started 14:16:08.694 UTC, completed in 37.024 s. Native Firefox unchanged; final extras raw SHA pinned. Candidate remains isolated and unaccepted.
+- First upgrade owner ran 14:20:11.944–14:21:34.443 UTC (82.499 s). Native content paint observed at 52.307 s, focus 53.888 s. Exact physical input failed: visible `readinessevidencce` contained an extra c. Gate correctly rejected; no 30-second, cache-activation, or speed claim. Host KeyC hold was 22.024 ms. Failure screenshot retained.
+- Owner ended with zero owned children; exception used Browser.close, so this is not a clean native Close/warm profile acceptance. Next harness captures failure I/O and input, records inner key events in a newly hashed fixture, and uses explicitly controlled per-character acknowledgments for isolation. The normal-speed duplicate-input defect remains open.
+- Shared rubywebterm transport returned internal -32603 approximately 14:22–14:26 UTC. A single read-only probe owner recovered retained output and verified dead unit/no children before handing heavy lane back to native package work. No permissions bypass or duplicate launch.
+- Evidence: tools/startup-benchmark/evidence/continuation-20261103-1322/cache-first-upgrade/acceptance.json and failure.png. Score remains 42/100.

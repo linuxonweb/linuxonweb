@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "score": 42,
+  "scope": "Strict cache image first migration; usability failed exact typing, activation not yet established",
+  "start": "2026-11-03T14:20:11.944Z",
+  "end": "2026-11-03T14:21:34.443Z",
+  "ownerDurationMs": 82498.844,
+  "fixture": {
+    "url": "./initramfs-firefox.cpio.gz",
+    "bytes": 116210135,
+    "sha256": "cc42fd935c1b7e8a0c759508886190982167300b61fba86e0fdc14a4183ee2d4",
+    "label": "Firefox cache lifecycle testing image; native code unchanged",
+    "cacheLifecycle": {
+      "schema": 1,
+      "generation": "5c0ea00a25f77f0e2b4fccb865d98266067d91790d90e8c1b999426fbc438722",
+      "desktopExtras": {
+        "bytes": 59997184,
+        "sha256": "5b624dd8325b4cbc717c114c3eb7592cc3ca67e257b06aa1e41ddb73c7f070d8"
+      }
+    }
+  },
+  "origin": "http://127.0.0.1:38082",
+  "closedSourceRun": "ready-base2",
+  "readiness": {
+    "nonce": "readinessevidence",
+    "paint": {
+      "schema": 1,
+      "nonce": "readinessevidence",
+      "phase": "paint",
+      "epochMs": 1793715663900,
+      "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+      "innerScreenX": 16,
+      "innerScreenY": 133,
+      "dpr": 1,
+      "input": {
+        "x": 35,
+        "y": 125,
+        "width": 456,
+        "height": 44
+      },
+      "viewport": {
+        "width": 1152,
+        "height": 489
+      },
+      "webgl": "ok"
+    },
+    "paintObservedLaunchMs": 52306.939,
+    "observations": [
+      {
+        "phase": "focus",
+        "signal": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "focus",
+          "epochMs": 1793715666654,
+          "value": ""
+        },
+        "observedLaunchMs": 53888.066,
+        "observedUtc": "2026-11-03T14:21:08.526Z"
+      }
+    ],
+    "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+    "accepted": false,
+    "inputLocation": {
+      "canvas": {
+        "left": 51.5,
+        "top": 0,
+        "width": 1280,
+        "height": 720,
+        "bufferWidth": 1280,
+        "bufferHeight": 720
+      },
+      "guestX": 279,
+      "guestY": 280,
+      "x": 330.5,
+      "y": 280
+    },
+    "inputStartLaunchMs": 53113.716,
+    "focus": {
+      "phase": "focus",
+      "signal": {
+        "schema": 1,
+        "nonce": "readinessevidence",
+        "phase": "focus",
+        "epochMs": 1793715666654,
+        "value": ""
+      },
+      "observedLaunchMs": 53888.066,
+      "observedUtc": "2026-11-03T14:21:08.526Z"
+    },
+    "keysSentLaunchMs": 56302.292
+  },
+  "keyDispatches": [
+    {
+      "code": "KeyR",
+      "sentDownMs": 57416.4,
+      "sentUpMs": 57444.682,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyE",
+      "sentDownMs": 57504.239,
+      "sentUpMs": 57538.14,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyA",
+      "sentDownMs": 57579.152,
+      "sentUpMs": 57599.425,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyD",
+      "sentDownMs": 57626.993,
+      "sentUpMs": 57655.676,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyI",
+      "sentDownMs": 57702.977,
+      "sentUpMs": 57734.461,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyN",
+      "sentDownMs": 57883.232,
+      "sentUpMs": 57920.122,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyE",
+      "sentDownMs": 57986.409,
+      "sentUpMs": 58014.128,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyS",
+      "sentDownMs": 58101.278,
+      "sentUpMs": 58183.813,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyS",
+      "sentDownMs": 58277.818,
+      "sentUpMs": 58320.115,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyE",
+      "sentDownMs": 58401.971,
+      "sentUpMs": 58436.207,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyV",
+      "sentDownMs": 58540.111,
+      "sentUpMs": 58570.169,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyI",
+      "sentDownMs": 58621.962,
+      "sentUpMs": 58648.542,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyD",
+      "sentDownMs": 58677.688,
+      "sentUpMs": 58700.337,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyE",
+      "sentDownMs": 58751.74,
+      "sentUpMs": 58777.174,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyN",
+      "sentDownMs": 58823.878,
+      "sentUpMs": 58853.58,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyC",
+      "sentDownMs": 58888.201,
+      "sentUpMs": 58910.225,
+      "intendedHoldMs": 20
+    },
+    {
+      "code": "KeyE",
+      "sentDownMs": 58948.36,
+      "sentUpMs": 58971.159,
+      "intendedHoldMs": 20
+    }
+  ],
+  "errors": [
+    {
+      "ms": 79300.676,
+      "error": "Error: Readiness typed acknowledgement deadline 20000ms",
+      "stack": "Error: Readiness typed acknowledgement deadline 20000ms\n    at waitPhase (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:85:433)\n    at async readinessProbe (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:96:13)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:226:1336"
+    }
+  ],
+  "remainingOwned": [],
+  "resources": {
+    "pssPeakBytes": 4431455232,
+    "rssSumPeakBytes": 5198348288,
+    "minAvailableBytes": 26392653824,
+    "samples": 78,
+    "pssSamples": 16,
+    "pssIntervalMs": 5000
+  },
+  "visualReview": {
+    "image": "failure.png",
+    "actualTyped": "readinessevidencce",
+    "expected": "readinessevidence",
+    "result": "reject exact-input gate; focused input and cube visibly rendered"
+  },
+  "limitations": [
+    "No keyboard/navigation acceptance",
+    "No normal native Close before Browser.close on exception",
+    "No cache activation or reuse claim from paint time",
+    "Failure owner omitted home timing collection; harness corrected for next run"
+  ],
+  "outage": {
+    "firstObservedApproxUtc": "2026-11-03T14:22:00Z",
+    "recoveredApproxUtc": "2026-11-03T14:26:10Z",
+    "symptom": "MCP internal -32603 for read/run/ls",
+    "response": "Single read-only probe owner; no rerun or new mutation until exact owner state recovered"
+  }
+}
