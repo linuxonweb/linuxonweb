@@ -14,6 +14,8 @@ import {
 } from "./dist/index.js";
 import { createTouchGestureAdapter } from "./touch-gesture.mjs";
 import { compositionEvents, mapKeyboardEvent } from "./keyboard.mjs";
+import { createPhysicalKeyboard } from "./physical-keyboard.mjs";
+import { createPackageRecoveryWatch } from "./package-recovery.mjs";
 import { createLogViewer } from "./log-viewer.mjs";
 import { createPresentOverlay } from "./gpu-present-overlay.mjs";
 import { createMobileKeyboard } from "./mobile-keyboard.mjs";
@@ -353,8 +355,8 @@ let FB_W = 1280;
 let FB_H = 720;
 let consoleInputWriter = null;
 
-// Only an explicit console boot creates an interactive terminal. GUI boot logs
-// use a lazy, bounded plain-text viewer and never instantiate xterm.
+// Ordinary GUI boot logs use a bounded plain-text viewer. Explicit console
+// boots and blocked package-restore recovery open the native hvc0 terminal.
 let terminal = null;
 function openConsole() {
   if (terminal) return;
@@ -405,6 +407,15 @@ function openConsole() {
   });
 }
 
+const packageRecovery = createPackageRecoveryWatch(() => {
+  setStatus('package restore failed · recovery console', 'error');
+  storagePanel.message('Saved packages could not be restored. Desktop startup is blocked. In the recovery console, type apk-persist disable, then use Stop and Start. Saved generations and home files are retained.', true);
+  openConsole();
+  const previous = guestLogs.history.rows.slice(-100).map(row => row.text).join('\r\n');
+  terminal.write(previous + '\r\nPackage restore failed. Type apk-persist disable, then Stop and Start.\r\n');
+  document.getElementById('terminal').scrollIntoView({ block: 'center' });
+  terminal.focus();
+});
 let gpuHost = null;
 let gpuLogTail = '';
 function writeConsole(value, source = "guest") {
@@ -412,6 +423,7 @@ function writeConsole(value, source = "guest") {
   guestLogs.write(value, source);
   terminal?.write(value);
   const text = typeof value === 'string' ? value : new TextDecoder().decode(value);
+  packageRecovery.write(text, source);
   if (gpuHost && source === 'guest') {
     gpuLogTail = (gpuLogTail + text).slice(-64);
     if (gpuLogTail.includes('GUEST_GPU_LISTENING')) { gpuLogTail = ''; gpuHost.wake(); }
@@ -747,22 +759,25 @@ function bindGuestCanvasInput(pointer) {
     listener(ev);
   }, { ...options, signal: inputEvents.signal });
   let composing = false;
+  const hostRepeat = new URLSearchParams(location.search).get('input-repeat') !== 'guest';
+  const physicalKeyboard = createPhysicalKeyboard((code, down, repeat) => pointer.key(code, down, repeat), { hostRepeat });
+  const releasePhysicalKeys = () => physicalKeyboard.releaseAll();
+  onCanvas('blur', releasePhysicalKeys);
+  window.addEventListener('blur', releasePhysicalKeys, { signal: inputEvents.signal });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) releasePhysicalKeys(); }, { signal: inputEvents.signal });
+  inputEvents.signal.addEventListener('abort', releasePhysicalKeys, { once: true });
 
   onCanvas("keydown", (ev) => {
     if (composing || ev.isComposing || ev.key === "Process") return;
-    const code = mapKeyboardEvent(ev);
-    if (code == null) return;
+    if (!physicalKeyboard.down(ev)) return;
     ev.preventDefault();
-    pointer.key(code, true);
   });
   onCanvas("keyup", (ev) => {
     if (composing || ev.isComposing || ev.key === "Process") return;
-    const code = mapKeyboardEvent(ev);
-    if (code == null) return;
+    if (!physicalKeyboard.up(ev)) return;
     ev.preventDefault();
-    pointer.key(code, false);
   });
-  onCanvas("compositionstart", () => { composing = true; });
+  onCanvas("compositionstart", () => { releasePhysicalKeys(); composing = true; });
   onCanvas("compositionend", (ev) => {
     composing = false;
     for (const [code, down] of compositionEvents(ev.data)) pointer.key(code, down);
@@ -795,6 +810,7 @@ function bindGuestCanvasInput(pointer) {
     press: (down) => pointer.button(Key.BTN_LEFT, down),
   });
   cancelGuestGesture = () => {
+    releasePhysicalKeys();
     if (pointerRaf) cancelAnimationFrame(pointerRaf);
     pointerRaf = 0;
     pendingPointer = null;
@@ -974,6 +990,7 @@ async function boot(mode) {
     try { localStorage.setItem(settingsKey, JSON.stringify(settingsRecord(activeConfiguration))); } catch { /* This boot still uses the choice. */ }
   }
   currentMode = mode;
+  packageRecovery.start();
   displayStage.hidden = mode === 'console';
   // Only confirmed configuration reaches the guest, never uncommitted drafts.
   showConfiguration(activeConfiguration);
@@ -1061,6 +1078,7 @@ async function boot(mode) {
   consoleInputWriter = input.writable.getWriter();
   const pointer = inputDevice({
     name: "wasm keyboard/mouse",
+    repeatOwner: new URLSearchParams(location.search).get("input-repeat") !== "guest" ? "host" : "guest",
     absXMax: FB_W - 1,
     absYMax: FB_H - 1,
   });
@@ -1262,6 +1280,10 @@ document.getElementById("stop-yes").addEventListener("click", () => {
 async function stopGuest() {
   if (!activeMachine || restarting) return;
   restarting = true;
+  packageRecovery.stop();
+  // Release physical and virtual held keys while the input device still runs.
+  cancelGuestGesture();
+  mobileKeyboard.setKeyHandler(null);
   lockConfiguration(true);
   setStatus("stopping…", "booting");
   await persistentHome?.settle().catch(() => {});

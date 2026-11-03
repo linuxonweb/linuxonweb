@@ -73,6 +73,14 @@ async function typeGuestAddress(text,label){
  await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
  result.enterMs=time();await delay(2000);await shot(label+'-navigation');result.observedMs=time();return result;
 }
+async function typeGuestCommand(command) {
+ const unshifted={' ':['Space',32],'-':['Minus',189],'=':['Equal',187],'[':['BracketLeft',219],']':['BracketRight',221],';':['Semicolon',186],"'":['Quote',222],'`':['Backquote',192],'\\':['Backslash',220],',':['Comma',188],'.':['Period',190],'/':['Slash',191]};
+ const shifted={'~':'`','!':'1','@':'2','#':'3','$':'4','%':'5','^':'6','&':'7','*':'8','(':'9',')':'0','_':'-','+':'=','{':'[','}':']',':':';','"':"'",'|':'\\','<':',','>':'.','?':'/'};
+ for(const c of command){const upper=/^[A-Z]$/.test(c),base=shifted[c]??(upper?c.toLowerCase():c),mod=upper||shifted[c]?8:0;let pair=unshifted[base];if(!pair)pair=/^[a-z]$/.test(base)?['Key'+base.toUpperCase(),base.toUpperCase().charCodeAt(0)]:/^[0-9]$/.test(base)?['Digit'+base,base.charCodeAt(0)]:null;if(!pair)throw Error('Unsupported native command character');
+  const shift={key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16};if(mod)await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...shift,modifiers:8});try{await pressKey({key:c,code:pair[0],windowsVirtualKeyCode:pair[1],nativeVirtualKeyCode:pair[1],text:c,unmodifiedText:base},mod);}finally{if(mod)await send('Input.dispatchKeyEvent',{type:'keyUp',...shift,modifiers:0});}await delay(10);
+ }
+ await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+}
 async function guestLogs(){return await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");}
 
 function readinessSignals(logs, nonce) {
@@ -90,8 +98,23 @@ async function readinessProbe(paint,nonce) {
  if(!(guestX>0&&guestX<1280&&guestY>0&&guestY<720))throw Error('Readiness input outside guest display');
  const x=canvas.left+guestX*canvas.width/1280,y=canvas.top+guestY*canvas.height/720;gate.inputLocation={canvas,guestX,guestY,x,y};
  gate.inputStartLaunchMs=time()-bootAt;await clickGuest(x,y);gate.focus=await waitPhase('focus',20000);await shot('readiness-focused');
- gate.typingProtocol='One physical keypress followed by exact native input acknowledgment; no text insertion, correction, or ignored duplicates';gate.inputAcknowledgments=[];
- for(let index=0;index<nonce.length;index++){
+ const keyInfo=c=>({key:c,code:'Key'+c.toUpperCase(),windowsVirtualKeyCode:c.toUpperCase().charCodeAt(0),nativeVirtualKeyCode:c.toUpperCase().charCodeAt(0),text:c,unmodifiedText:c});
+ let lastInputSignature=null;
+ const exactValue=async(expected,label,boundMs=5000)=>{const until=time()+boundMs;while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'guest.log'),logs);const signal=readinessSignals(logs,nonce).filter(v=>v.phase==='input').at(-1);const signature=signal?String(signal.epochMs)+':'+signal.value:null;if(signal?.value===expected){lastInputSignature=signature;return {label,expected,observedLaunchMs:time()-bootAt};}if(signature!==lastInputSignature&&signal?.value&&!expected.startsWith(signal.value)&&signal.value.length>=expected.length)throw Error('Input '+label+' differs: '+JSON.stringify({expected,actual:signal.value}));await delay(100);}throw Error('Input '+label+' deadline');};
+ const clearInput=async()=>{const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});try{await pressKey({key:'a',code:'KeyA',windowsVirtualKeyCode:65,nativeVirtualKeyCode:65},2);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...control,modifiers:0});}await pressKey({key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8,nativeVirtualKeyCode:8});return exactValue('','modifier-select-all-and-delete');};
+ if(options.get('input-check')==='1'){
+  gate.inputChecks=[];
+  await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('a')});await delay(650);gate.inputChecks.push(await exactValue('a','held-key-no-invented-repeat'));
+  for(let n=2;n<=4;n++){await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('a'),autoRepeat:true});gate.inputChecks.push(await exactValue('a'.repeat(n),'explicit-host-repeat-'+n));}
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key:'a',code:'KeyA',windowsVirtualKeyCode:65,nativeVirtualKeyCode:65});gate.inputChecks.push(await clearInput());
+  const shift={key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16};await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...shift,modifiers:8});try{await pressKey({...keyInfo('a'),key:'A',text:'A'},8);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...shift,modifiers:0});}gate.inputChecks.push(await exactValue('A','shift-combination'));gate.inputChecks.push(await clearInput());
+  for(const c of 'taptest'){await pressKey(keyInfo(c));await delay(20);}gate.inputChecks.push(await exactValue('taptest','rapid-taps'));gate.inputChecks.push(await clearInput());
+  await send('Input.dispatchKeyEvent',{type:'keyDown',...keyInfo('b')});gate.inputChecks.push(await exactValue('b','focus-loss-start'));await evaluate("document.querySelector('#settings-toggle').focus({preventScroll:true})");await delay(650);gate.inputChecks.push(await exactValue('b','focus-loss-releases-held-key'));await send('Input.dispatchKeyEvent',{type:'keyUp',key:'b',code:'KeyB',windowsVirtualKeyCode:66,nativeVirtualKeyCode:66});await evaluate("document.querySelector('canvas').focus({preventScroll:true})");gate.inputChecks.push(await clearInput());save();
+ }
+ gate.typingProtocol=options.get('input-sequence')==='rapid'?'Physical rapid key sequence, each intended hold20ms and gap20ms; exact native text required':'Controlled pacing: one physical keypress followed by exact native input acknowledgment';gate.inputAcknowledgments=[];
+ if(options.get('input-sequence')==='rapid'){
+  for(const c of nonce){await pressKey(keyInfo(c));await delay(20);}
+ }else for(let index=0;index<nonce.length;index++){
   const c=nonce[index],expected=nonce.slice(0,index+1);
   await pressKey({key:c,code:'Key'+c.toUpperCase(),windowsVirtualKeyCode:c.toUpperCase().charCodeAt(0),nativeVirtualKeyCode:c.toUpperCase().charCodeAt(0),text:c,unmodifiedText:c});
   const until=time()+5000;let acknowledged=false;
@@ -168,7 +191,7 @@ function child(command,args,log){const fd=fs.openSync(path.join(run,log),'a');co
 try{
  if(options.get('owned-proxy')==='1'){
   if(!env.LINUXONWEB_BOOT_PACKAGE||testPort===3000)throw Error('Owned candidate proxy requires explicit image and nonproduction port');
-  const proxy=child(process.execPath,['tools/startup-benchmark/gpt6-astra-timing-proxy.mjs',path.join(run,'proxy'),String(testPort),'home'],'proxy.log');
+  const proxy=child(process.execPath,['tools/startup-benchmark/gpt6-astra-timing-proxy.mjs',path.join(run,'proxy'),String(testPort),env.LINUXONWEB_INPUT_DIAGNOSTIC==='1'?'input':'home',...(env.LINUXONWEB_TEST_EXTRAS?[path.resolve(env.LINUXONWEB_TEST_EXTRAS)]:[])],'proxy.log');
   let ready=false;for(let i=0;i<200;i++){if(proxy.exitCode!==null)throw Error('Owned candidate proxy exited '+proxy.exitCode);if(fs.existsSync(path.join(run,'proxy','ready.json'))){ready=true;break;}await delay(100);}if(!ready)throw Error('Owned candidate proxy readiness deadline');
   report.ownedProxy=JSON.parse(fs.readFileSync(path.join(run,'proxy','ready.json'),'utf8'));
  }
@@ -188,7 +211,7 @@ try{
  await send('Runtime.enable');await send('Page.enable');report.browserVersion=await send('Browser.getVersion');
  if(observeAfter>0&&(mode!=='firefox'||options.get('trace-startup')==='1'))throw Error('Quiet observation requires Firefox mode without tracing');
  if(options.get('trace-startup')==='1'){await send('Tracing.start',{transferMode:'ReturnAsStream',categories:'v8,disabled-by-default-v8.wasm,disabled-by-default-v8.runtime_stats'});tracing=true;}
- await send('Page.addScriptToEvaluateOnNewDocument',{source:`globalThis.__gpt6InputDom=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{if(e.target?.tagName==='CANVAS'&&__gpt6InputDom.length<2048)__gpt6InputDom.push({type,code:e.code,key:e.key,repeat:e.repeat,ms:performance.timeOrigin+performance.now()});},true);`});
+ await send('Page.addScriptToEvaluateOnNewDocument',{source:`globalThis.__gpt6InputDom=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{if(e.target?.tagName==='CANVAS'&&__gpt6InputDom.length<2048)__gpt6InputDom.push({type,code:e.code,key:e.key,repeat:e.repeat,eventTimeStamp:e.timeStamp,eventEpochMs:performance.timeOrigin+e.timeStamp,ms:performance.timeOrigin+performance.now()});},true);`});
  await send('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:')localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({cpus:${report.configuration.cpus},ram:${report.configuration.ramMiB},resolution:'1280x720',backend:'webgl'}));`});
  const url=new URL(`http://127.0.0.1:${testPort}/linux/index.html`);url.searchParams.set('renderer','webgl');url.searchParams.set('gpubackend','webgl');if(mode==='firefox'&&options.get('manual-launch')!=='1')url.searchParams.set('firefox','1');for(const[k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  report.url=url.href;bootAt=time();report.navigationAtMs=bootAt;report.navigation=await send('Page.navigate',{url:url.href});if(report.navigation.errorText)throw Error('Navigation: '+report.navigation.errorText);
@@ -206,7 +229,7 @@ try{
  }else if(mode==='cache-export'){await exportCodeCaches();
  }else if(mode==='home-inventory'){report.inventory=await profileSnapshot('inventory',true);
  }else if(mode==='input-timing'){
- await evaluate(`document.body.innerHTML='<textarea id="timing-target" autofocus></textarea>';globalThis.__timingEvents=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>__timingEvents.push({type,code:e.code,key:e.key,repeat:e.repeat,ms:performance.timeOrigin+performance.now()}),true);document.querySelector('#timing-target').focus()`);
+ await evaluate(`document.body.innerHTML='<textarea id="timing-target" autofocus></textarea>';globalThis.__timingEvents=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>__timingEvents.push({type,code:e.code,key:e.key,repeat:e.repeat,eventTimeStamp:e.timeStamp,eventEpochMs:performance.timeOrigin+e.timeStamp,ms:performance.timeOrigin+performance.now()}),true);document.querySelector('#timing-target').focus()`);
  const expected='about:blank'.repeat(16);
  for(const c of expected){const shifted=c===':',code=shifted?'Semicolon':'Key'+c.toUpperCase(),vk=shifted?186:c.toUpperCase().charCodeAt(0);await pressKey({key:c,code,windowsVirtualKeyCode:vk,nativeVirtualKeyCode:vk,text:c,unmodifiedText:c},shifted?8:0);await delay(10);}
  report.inputTiming=await evaluate(`({value:document.querySelector('#timing-target').value,events:__timingEvents})`);
@@ -235,7 +258,7 @@ try{
  const result=await evaluate(`(async()=>(${ioWorkload})(await import('./persistent-home.mjs')))()`,Math.min(180000,seconds*1000));
  report.io=result;save();
  }else{
- let nextShot=10,lastLogs=0;report.milestones={};while(time()-bootAt<seconds*1000&&!closed){const bootSeconds=(time()-bootAt)/1000;if(bootSeconds<observeAfter){await delay(500);continue;}if(bootSeconds>=nextShot){await shot('at'+Math.round(bootSeconds)+'s');nextShot+=20;}if(bootSeconds-lastLogs>=(options.has('readiness-nonce')?1:5)){try{const logs=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");fs.writeFileSync(path.join(run,'guest.log'),String(logs));report.lastLogAtMs=time();for(const marker of ['system image','machine started','home: persistent storage mounted','display: starting Xfbdev','starting /bin/aurora-wm','[wm-ready]','starting /bin/firefox','gl context 2 open','PBLJIT compile'])if(String(logs).includes(marker)&&report.milestones[marker]===undefined)report.milestones[marker]=time()-bootAt;}catch(e){report.errors.push({ms:time(),log:String(e)});}lastLogs=bootSeconds;const status=await evaluate("document.querySelector('#status')?.textContent??''");if(/^boot failed/.test(status))throw Error('Actual frontend boot failed; see retained guest.log');if(options.has('readiness-nonce')&&!report.readiness){const nonce=options.get('readiness-nonce'),paint=readinessSignals(fs.readFileSync(path.join(run,'guest.log'),'utf8'),nonce).find(v=>v.phase==='paint');if(paint){await readinessProbe(paint,nonce);if(options.get('readiness-autostop')==='1')break;}}}if(options.get('probe-input')==='1'&&!inputProbed&&(options.get('probe-control')==='1'?fs.existsSync(path.join(run,'probe-now.json')):bootSeconds>=Math.max(20,Math.min(seconds-10,Number(options.get('probe-after-seconds')||110))))){
+ let nextShot=10,lastLogs=0;report.milestones={};while(time()-bootAt<seconds*1000&&!closed){const bootSeconds=(time()-bootAt)/1000;if(bootSeconds<observeAfter){await delay(500);continue;}if(bootSeconds>=nextShot){await shot('at'+Math.round(bootSeconds)+'s');nextShot+=20;}if(bootSeconds-lastLogs>=(options.has('readiness-nonce')?1:5)){try{const logs=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.map(r=>r.text).join('\\n'))");fs.writeFileSync(path.join(run,'guest.log'),String(logs));report.lastLogAtMs=time();for(const marker of ['system image','machine started','home: persistent storage mounted','display: starting Xfbdev','starting /bin/aurora-wm','[wm-ready]','starting /bin/firefox','gl context 2 open','PBLJIT compile'])if(String(logs).includes(marker)&&report.milestones[marker]===undefined)report.milestones[marker]=time()-bootAt;}catch(e){report.errors.push({ms:time(),log:String(e)});}lastLogs=bootSeconds;const status=await evaluate("document.querySelector('#status')?.textContent??''");if(/^boot failed/.test(status))throw Error('Actual frontend boot failed; see retained guest.log');if(options.has('readiness-nonce')&&!report.readiness){const nonce=options.get('readiness-nonce'),paint=readinessSignals(fs.readFileSync(path.join(run,'guest.log'),'utf8'),nonce).find(v=>v.phase==='paint');if(paint){if(options.get('cache-lifecycle-only')==='1'){report.readiness={nonce,paint,paintObservedLaunchMs:time()-bootAt,scope:'Cache lifecycle only; no keyboard/navigation usability acceptance',accepted:false};await shot('cache-lifecycle-painted');break;}await readinessProbe(paint,nonce);if(options.get('readiness-autostop')==='1')break;}}}if(options.get('probe-input')==='1'&&!inputProbed&&(options.get('probe-control')==='1'?fs.existsSync(path.join(run,'probe-now.json')):bootSeconds>=Math.max(20,Math.min(seconds-10,Number(options.get('probe-after-seconds')||110))))){
  inputProbed=true;report.inputProbe={startBootMs:time()-bootAt};if(options.get('probe-control')==='1')report.inputProbe.visualTrigger=JSON.parse(fs.readFileSync(path.join(run,'probe-now.json'),'utf8'));await shot('input-before');
  await send('Input.dispatchMouseEvent',{type:'mousePressed',x:500,y:110,button:'left',clickCount:1});await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:500,y:110,button:'left',clickCount:1});
  const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
@@ -252,7 +275,7 @@ try{
  await pressKey({key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13},0);report.inputProbe.enterBootMs=time()-bootAt;await delay(2000);await shot('input-navigation');report.inputProbe.observedBootMs=time()-bootAt;
  }
  await delay(500);}
- if(options.has('readiness-nonce')&&!report.readiness?.keyboardNavigationPassed)throw Error('Readiness protocol did not complete inside observation deadline');
+ if(options.has('readiness-nonce')&&options.get('cache-lifecycle-only')!=='1'&&!report.readiness?.keyboardNavigationPassed)throw Error('Readiness protocol did not complete inside observation deadline');
  if(tracing){await send('Tracing.end');for(let i=0;i<100&&!traceStream;i++)await delay(100);if(!traceStream)throw Error('Trace completion absent');const fd=fs.openSync(path.join(run,'startup-trace.json'),'wx');let total=0;try{for(;;){const part=await send('IO.read',{handle:traceStream,size:1048576});const b=Buffer.from(part.data,part.base64Encoded?'base64':'utf8');total+=b.length;if(total>67108864)throw Error('Trace exceeds64MiB');fs.writeSync(fd,b);if(part.eof)break;}}finally{fs.closeSync(fd);await send('IO.close',{handle:traceStream});}report.traceBytes=total;tracing=false;}
  if(observeAfter>0)fs.writeFileSync(path.join(run,'guest.log'),await guestLogs());
  const startupTimings=await evaluate('globalThis.__gpt6StartupTimings ?? []');if(startupTimings.length){fs.writeFileSync(path.join(run,'startup-timings.json'),JSON.stringify(startupTimings));report.startupTimingEvents=startupTimings.length;}
@@ -263,9 +286,16 @@ try{
  report.finalState=await evaluate("({text:document.body.innerText.slice(-6000),cores:navigator.hardwareConcurrency,status:document.querySelector('#status')?.textContent})");await shot('final');
  if(mode==='firefox'&&options.get('close-firefox')==='1'){
   report.nativeClose={kind:'Firefox Ctrl+Q, followed by native init exit observation',requestedLaunchMs:time()-bootAt,expectedExitStatus:0};
+  await evaluate("document.querySelector('canvas').focus({preventScroll:true})");
   const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
   await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});
   try{await pressKey({key:'q',code:'KeyQ',windowsVirtualKeyCode:81,nativeVirtualKeyCode:81},2);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...control,modifiers:0});}
+  await delay(1200);await shot('native-quit-dialog');
+  // The exact native Ctrl+Q confirmation was visually reviewed at this fixed
+  // 1280x720 guest geometry in input-host1/native-close.png.
+  const quitRect=await evaluate("(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {left:r.left,top:r.top,width:r.width,height:r.height};})()");
+  report.nativeClose.confirmation={kind:'Observed native Quit Nightly dialog',reference:'input-host1/native-close.png',guestX:718.5,guestY:229};
+  await clickGuest(quitRect.left+718.5*quitRect.width/1280,quitRect.top+229*quitRect.height/720);
   const until=time()+20000;let exited=false;
   while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'closed-guest.log'),logs);const match=/firefox exited with status (\d+)/.exec(logs);if(match){report.nativeClose.status=Number(match[1]);report.nativeClose.observedLaunchMs=time()-bootAt;exited=true;break;}await delay(250);}
   await shot('native-close');if(!exited||report.nativeClose.status!==0)throw Error('Native Firefox Close did not report successful exit');
@@ -292,7 +322,23 @@ try{
   report.postApkCheck.finishedBootMs=time()-bootAt;report.postApkCheck.acceptance='Requires visual review of native terminal output; no automatic pass from keystrokes';fs.writeFileSync(path.join(run,'post-apk-guest.log'),await guestLogs());
  }
 
- if(mode==='firefox'){try{await evaluate("document.querySelector('#power-stop').click()");await delay(300);await evaluate("document.querySelector('#stop-yes').click()");await delay(7000);report.stopState=await evaluate("document.body.innerText.slice(-1500)");}catch(e){report.errors.push('Stop guest: '+e);}}
+ if(mode==='firefox'&&options.has('package-production')){
+  const stage=options.get('package-production');if(!['save','verify'].includes(stage))throw Error('Unknown production package stage');
+  const commands={save:"sudo /bin/busybox sh -c 'echo package-production-20261103 > /home/admin/.package-persistence-production && /sbin/apk update >/dev/console 2>&1 && /sbin/apk add gzip tar >/dev/console 2>&1 && cp /etc/apk/world /home/admin/.package-world.ref && sha256sum /usr/bin/gzip /usr/bin/tar > /home/admin/.package-files.sha256 && /usr/sbin/apk-persist save >/dev/console 2>&1'",verify:"sudo /bin/busybox sh -c '/usr/sbin/apk-persist status >/dev/console 2>&1 && /sbin/apk info --installed gzip tar >/dev/console 2>&1 && cmp /etc/apk/world /home/admin/.package-world.ref && sha256sum -c /home/admin/.package-files.sha256 >/dev/console 2>&1 && grep -qx package-production-20261103 /home/admin/.package-persistence-production && echo package-production-verified >/dev/console'"};
+  const before=await guestLogs();if(stage==='verify'&&!before.includes('APK_PERSIST_RESTORED'))throw Error('Native restore acknowledgment absent before desktop verification');
+  report.productionPackage={stage,command:commands[stage],startedLaunchMs:time()-bootAt,rootfsUntouched:true,route:'Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command'};save();
+  await evaluate("document.querySelector('[data-test=uname]').click()");await delay(4000);await shot('package-terminal-before');await evaluate("document.querySelector('canvas').focus({preventScroll:true})");
+  await typeGuestCommand(commands[stage]);report.productionPackage.commandEnteredLaunchMs=time()-bootAt;save();
+  const expected=stage==='save'?'APK_PERSIST_SAVED':'package-production-verified',until=time()+60000;let acknowledged=false;
+  while(time()<until){const logs=await guestLogs();fs.writeFileSync(path.join(run,'package-guest.log'),logs);if(logs.includes(expected)){report.productionPackage.acknowledgment={marker:expected,observedLaunchMs:time()-bootAt,observedUtc:new Date().toISOString()};acknowledged=true;break;}await delay(100);}
+  if(!acknowledged){await shot('package-failure');throw Error('Production package native acknowledgment deadline');}
+ }
+ if(mode==='firefox'){try{
+  if(options.get('input-check')==='1'){await evaluate("document.querySelector('canvas').focus({preventScroll:true})");await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16,modifiers:8});await delay(80);}
+  report.stopRequestedLaunchMs=time()-bootAt;await evaluate("document.querySelector('#power-stop').click()");await delay(300);
+  if(options.get('input-check')==='1'){const stopInput=await evaluate('({dom:globalThis.__gpt6InputDom??[],queue:globalThis.__gpt6InputQueue??null})');fs.writeFileSync(path.join(run,'stop-input-diagnostics.json'),JSON.stringify(stopInput));const last=stopInput.queue?.events?.filter(e=>e.phase==='enqueued'&&e.type===1&&e.code===42).slice(-2);if(!last||last.length!==2||last[0].value!==1||last[1].value!==0)throw Error('Stop focus did not enqueue held Shift release');report.stopKeyRelease={pass:true,events:last};await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16,modifiers:0});}
+  report.stopConfirmedLaunchMs=time()-bootAt;await evaluate("document.querySelector('#stop-yes').click()");await delay(7000);report.stopState=await evaluate("document.body.innerText.slice(-1500)");
+ }catch(e){report.errors.push('Stop guest: '+e);throw e;}}
  }
  if(closed)throw Error('Resource monitor stopped the run');
  report.finishedNormally=true;

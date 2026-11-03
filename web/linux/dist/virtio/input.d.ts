@@ -139,7 +139,7 @@ export interface InputDevice extends VirtioDevice {
     /** Queue a single input event (type/code/value). */
     send(type: number, code: number, value: number): void;
     /** Convenience: key/button press/release + SYN_REPORT. */
-    key(code: number, down: boolean): void;
+    key(code: number, down: boolean, repeat?: boolean): void;
     /** Convenience: relative mouse motion + SYN_REPORT. */
     move(dx: number, dy: number): void;
     /** Convenience: absolute pointer position + SYN_REPORT. */
@@ -152,6 +152,8 @@ export interface InputDevice extends VirtioDevice {
 export declare function inputDevice(options?: {
     name?: string;
     serial?: string;
+    /** Guest timer repeats by default; host mode accepts explicit key repeat events. */
+    repeatOwner?: "guest" | "host";
     /** Absolute X axis max (inclusive). Default 1023. */
     absXMax?: number;
     /** Absolute Y axis max (inclusive). Default 767. */

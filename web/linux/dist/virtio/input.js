@@ -170,6 +170,8 @@ function write_absinfo(config, min, max, fuzz = 0, flat = 0, res = 0) {
 }
 export function inputDevice(options) {
     const name = options?.name ?? "wasm keyboard/mouse";
+    const repeatOwner = options?.repeatOwner ?? "guest";
+    if (repeatOwner !== "guest" && repeatOwner !== "host") throw new Error("invalid keyboard repeat owner");
     const serial = options?.serial ?? "wasm0";
     const absXMax = options?.absXMax ?? 1023;
     const absYMax = options?.absYMax ?? 767;
@@ -226,8 +228,11 @@ export function inputDevice(options) {
                     guest[2] = absbits.length;
                 }
                 else if (subsel === Ev.REP) {
-                    guest[8] = 0xff;
-                    guest[2] = 1;
+                    // With host ownership, delayed delivery must not synthesize
+                    // guest repeats between a physical keydown and its keyup.
+                    // Intentional browser repeats arrive explicitly as EV_KEY=2.
+                    guest[8] = repeatOwner === "guest" ? 0xff : 0;
+                    guest[2] = repeatOwner === "guest" ? 1 : 0;
                 }
                 else {
                     guest[2] = 0;
@@ -307,8 +312,8 @@ export function inputDevice(options) {
         send(type, code, value) {
             enqueue(type, code, value);
         },
-        key(code, down) {
-            enqueue(Ev.KEY, code, down ? 1 : 0);
+        key(code, down, repeat = false) {
+            enqueue(Ev.KEY, code, down ? (repeat && repeatOwner === "host" ? 2 : 1) : 0);
             enqueue(Ev.SYN, Syn.REPORT, 0);
         },
         move(dx, dy) {

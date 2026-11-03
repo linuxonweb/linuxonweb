@@ -1,0 +1,3409 @@
+{
+  "schema": 1,
+  "scoreAfterPromotion": 44,
+  "scoreScope": "desktop 7/15 after real input fix and production Stop; packages 8/10, persistence restart/recovery pending",
+  "nativeFirefoxUnchanged": true,
+  "repeatOwnerDefault": "host",
+  "legacyDiagnostic": "?input-repeat=guest",
+  "tests": [
+    {
+      "start": "2026-11-03T14:36:46.490Z",
+      "end": "2026-11-03T14:38:15.542Z",
+      "elapsedMs": 89051.344,
+      "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1",
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "navigationAtMs": 2073.321,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 3032.145,
+        "utc": "2026-11-03T14:36:49.523Z",
+        "page": {
+          "requestAtMs": 960.0249999761581,
+          "pageTimeOrigin": 1793716608567.585
+        }
+      },
+      "readiness": {
+        "nonce": "readinessevidence",
+        "paint": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "paint",
+          "epochMs": 1793716683771,
+          "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "dpr": 1,
+          "input": {
+            "x": 35,
+            "y": 125,
+            "width": 456,
+            "height": 44
+          },
+          "viewport": {
+            "width": 1152,
+            "height": 489
+          },
+          "webgl": "ok"
+        },
+        "paintObservedLaunchMs": 76893.944,
+        "observations": [
+          {
+            "phase": "focus",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "focus",
+              "epochMs": 1793716685456,
+              "value": ""
+            },
+            "observedLaunchMs": 78151.809,
+            "observedUtc": "2026-11-03T14:38:07.674Z"
+          }
+        ],
+        "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+        "accepted": false,
+        "inputLocation": {
+          "canvas": {
+            "left": 51.5,
+            "top": 0,
+            "width": 1280,
+            "height": 720,
+            "bufferWidth": 1280,
+            "bufferHeight": 720
+          },
+          "guestX": 279,
+          "guestY": 280,
+          "x": 330.5,
+          "y": 280
+        },
+        "inputStartLaunchMs": 77435.20199999999,
+        "focus": {
+          "phase": "focus",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "focus",
+            "epochMs": 1793716685456,
+            "value": ""
+          },
+          "observedLaunchMs": 78151.809,
+          "observedUtc": "2026-11-03T14:38:07.674Z"
+        },
+        "typingProtocol": "One physical keypress followed by exact native input acknowledgment; no text insertion, correction, or ignored duplicates",
+        "inputAcknowledgments": [
+          {
+            "index": 0,
+            "value": "r",
+            "observedLaunchMs": 79154.193
+          },
+          {
+            "index": 1,
+            "value": "re",
+            "observedLaunchMs": 79285.503
+          },
+          {
+            "index": 2,
+            "value": "rea",
+            "observedLaunchMs": 79417.947
+          },
+          {
+            "index": 3,
+            "value": "read",
+            "observedLaunchMs": 79661.40999999999
+          },
+          {
+            "index": 4,
+            "value": "readi",
+            "observedLaunchMs": 80037.504
+          }
+        ]
+      },
+      "keyDispatches": [
+        {
+          "code": "KeyR",
+          "sentDownMs": 81650.07,
+          "sentUpMs": 81679.966,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 82206.888,
+          "sentUpMs": 82232.777,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 82344.888,
+          "sentUpMs": 82380.607,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 82470.366,
+          "sentUpMs": 82627.681,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 82714.082,
+          "sentUpMs": 82734.48,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 83097.185,
+          "sentUpMs": 83184.033,
+          "intendedHoldMs": 20
+        }
+      ],
+      "errors": [
+        {
+          "ms": 85709.911,
+          "error": "Error: Readiness exact input mismatch: {\"index\":5,\"expected\":\"readin\",\"actual\":\"readinnnnn\"}",
+          "stack": "Error: Readiness exact input mismatch: {\"index\":5,\"expected\":\"readin\",\"actual\":\"readinnnnn\"}\n    at readinessProbe (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:100:63)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:238:1336"
+        }
+      ],
+      "remainingOwned": [],
+      "resourceSummary": {
+        "pssPeakBytes": 4039116800,
+        "rssSumPeakBytes": 4753186816,
+        "minAvailableBytes": 26074861568,
+        "samples": 84,
+        "pssSamples": 17,
+        "pssIntervalMs": 5000
+      },
+      "name": "ready-base3",
+      "sourceDirectory": "../../../codex-build/lwc/ready-base3"
+    },
+    {
+      "start": "2026-11-03T14:47:07.832Z",
+      "end": "2026-11-03T14:49:10.157Z",
+      "elapsedMs": 122324.513,
+      "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1&input-repeat=host&input-check=1&input-sequence=rapid",
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1&input-repeat=host&input-check=1&input-sequence=rapid",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "navigationAtMs": 3441.938,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 5078.837,
+        "utc": "2026-11-03T14:47:12.911Z",
+        "page": {
+          "requestAtMs": 1644.8050000071526,
+          "pageTimeOrigin": 1793717231283.205
+        }
+      },
+      "readiness": {
+        "nonce": "readinessevidence",
+        "paint": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "paint",
+          "epochMs": 1793717303902,
+          "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "dpr": 1,
+          "input": {
+            "x": 35,
+            "y": 125,
+            "width": 456,
+            "height": 44
+          },
+          "viewport": {
+            "width": 1152,
+            "height": 489
+          },
+          "webgl": "ok"
+        },
+        "paintObservedLaunchMs": 73738.418,
+        "observations": [
+          {
+            "phase": "focus",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "focus",
+              "epochMs": 1793717306531,
+              "value": ""
+            },
+            "observedLaunchMs": 75533.043,
+            "observedUtc": "2026-11-03T14:48:28.444Z"
+          },
+          {
+            "phase": "typed",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "typed",
+              "epochMs": 1793717313947,
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 83039.714,
+            "observedUtc": "2026-11-03T14:48:35.951Z"
+          },
+          {
+            "phase": "complete",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "complete",
+              "epochMs": 1793717322347,
+              "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+              "title": "READINESS COMPLETE",
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 91476.878,
+            "observedUtc": "2026-11-03T14:48:44.388Z"
+          }
+        ],
+        "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+        "accepted": false,
+        "inputLocation": {
+          "canvas": {
+            "left": 51.5,
+            "top": 0,
+            "width": 1280,
+            "height": 720,
+            "bufferWidth": 1280,
+            "bufferHeight": 720
+          },
+          "guestX": 279,
+          "guestY": 280,
+          "x": 330.5,
+          "y": 280
+        },
+        "inputStartLaunchMs": 74651.35,
+        "focus": {
+          "phase": "focus",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "focus",
+            "epochMs": 1793717306531,
+            "value": ""
+          },
+          "observedLaunchMs": 75533.043,
+          "observedUtc": "2026-11-03T14:48:28.444Z"
+        },
+        "inputChecks": [
+          {
+            "label": "held-key-no-invented-repeat",
+            "expected": "a",
+            "observedLaunchMs": 77083.734
+          },
+          {
+            "label": "explicit-host-repeat-2",
+            "expected": "aa",
+            "observedLaunchMs": 77324.277
+          },
+          {
+            "label": "explicit-host-repeat-3",
+            "expected": "aaa",
+            "observedLaunchMs": 77512.137
+          },
+          {
+            "label": "explicit-host-repeat-4",
+            "expected": "aaaa",
+            "observedLaunchMs": 77906.741
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 78304.971
+          },
+          {
+            "label": "shift-combination",
+            "expected": "A",
+            "observedLaunchMs": 78530.954
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 78722.48
+          },
+          {
+            "label": "rapid-taps",
+            "expected": "taptest",
+            "observedLaunchMs": 79242.065
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 79685.16100000001
+          },
+          {
+            "label": "focus-loss-start",
+            "expected": "b",
+            "observedLaunchMs": 80360.351
+          },
+          {
+            "label": "focus-loss-releases-held-key",
+            "expected": "b",
+            "observedLaunchMs": 81058.135
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 81316.548
+          }
+        ],
+        "typingProtocol": "Physical rapid key sequence, each intended hold20ms and gap20ms; exact native text required",
+        "inputAcknowledgments": [],
+        "keysSentLaunchMs": 82824.924,
+        "typed": {
+          "phase": "typed",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "typed",
+            "epochMs": 1793717313947,
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 83039.714,
+          "observedUtc": "2026-11-03T14:48:35.951Z"
+        },
+        "enterLaunchMs": 83936.412,
+        "complete": {
+          "phase": "complete",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "complete",
+            "epochMs": 1793717322347,
+            "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+            "title": "READINESS COMPLETE",
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 91476.878,
+          "observedUtc": "2026-11-03T14:48:44.388Z"
+        },
+        "completeScreenshotLaunchMs": 92363.059,
+        "completeScreenshotNavigationMs": 93999.958,
+        "keyboardNavigationPassed": true,
+        "thirtySecondGate": false,
+        "acceptance": "Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review"
+      },
+      "keyDispatches": [
+        {
+          "code": "KeyA",
+          "sentDownMs": 83134.806,
+          "sentUpMs": 83156.114,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 83162.734,
+          "sentUpMs": 83185.316,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 83401.417,
+          "sentUpMs": 83423.475,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 83612.426,
+          "sentUpMs": 83634.164,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 83648.732,
+          "sentUpMs": 83669.75,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 83801.436,
+          "sentUpMs": 83830.237,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 83878.989,
+          "sentUpMs": 83902.323,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 83925.926,
+          "sentUpMs": 83950.667,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 83988.465,
+          "sentUpMs": 84012.399,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 84041.86,
+          "sentUpMs": 84063.371,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 84091.211,
+          "sentUpMs": 84111.553,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 84134.674,
+          "sentUpMs": 84158.166,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 84323.659,
+          "sentUpMs": 84345.171,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 84371.147,
+          "sentUpMs": 84393.153,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 86160.822,
+          "sentUpMs": 86180.732,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 86208.35,
+          "sentUpMs": 86230.181,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 86402.598,
+          "sentUpMs": 86426.163,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 86474.37,
+          "sentUpMs": 86510.031,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 86578.954,
+          "sentUpMs": 86635.532,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 86672.2,
+          "sentUpMs": 86699.219,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 86727.292,
+          "sentUpMs": 86748.175,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 86773.717,
+          "sentUpMs": 86794.259,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 86839.849,
+          "sentUpMs": 86859.568,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 86891.254,
+          "sentUpMs": 86921.234,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 86950.174,
+          "sentUpMs": 86971.229,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 87018.197,
+          "sentUpMs": 87045.487,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 87100.191,
+          "sentUpMs": 87121.353,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 87171.682,
+          "sentUpMs": 87220.665,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 87373.145,
+          "sentUpMs": 87396.201,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 87431.673,
+          "sentUpMs": 87463.156,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 87489.174,
+          "sentUpMs": 87512.079,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 87595.12,
+          "sentUpMs": 87627.708,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 87807.284,
+          "sentUpMs": 87855.054,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Enter",
+          "sentDownMs": 89015.309,
+          "sentUpMs": 89048.3,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyQ",
+          "sentDownMs": 97943.89,
+          "sentUpMs": 97969.191,
+          "intendedHoldMs": 20
+        }
+      ],
+      "nativeClose": {
+        "kind": "Firefox Ctrl+Q, followed by native init exit observation",
+        "requestedLaunchMs": 92853.7,
+        "expectedExitStatus": 0
+      },
+      "errors": [
+        {
+          "ms": 118720.329,
+          "error": "Error: Native Firefox Close did not report successful exit",
+          "stack": "Error: Native Firefox Close did not report successful exit\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:287:78"
+        }
+      ],
+      "remainingOwned": [],
+      "resourceSummary": {
+        "pssPeakBytes": 4070448128,
+        "rssSumPeakBytes": 4895662080,
+        "minAvailableBytes": 25968697344,
+        "samples": 117,
+        "pssSamples": 24,
+        "pssIntervalMs": 5000
+      },
+      "name": "input-host1",
+      "sourceDirectory": "../../../codex-build/lwc/input-host1"
+    },
+    {
+      "start": "2026-11-03T14:55:56.872Z",
+      "end": "2026-11-03T14:57:43.035Z",
+      "elapsedMs": 106163.021,
+      "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1&input-repeat=host&input-check=1&input-sequence=rapid",
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&readiness-nonce=readinessevidence&readiness-autostop=1&close-firefox=1&update=1&input-repeat=host&input-check=1&input-sequence=rapid",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "navigationAtMs": 3202.127,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 4670.249,
+        "utc": "2026-11-03T14:56:01.542Z",
+        "page": {
+          "requestAtMs": 1470.5400000214577,
+          "pageTimeOrigin": 1793717760079.35
+        }
+      },
+      "readiness": {
+        "nonce": "readinessevidence",
+        "paint": {
+          "schema": 1,
+          "nonce": "readinessevidence",
+          "phase": "paint",
+          "epochMs": 1793717820255,
+          "href": "file:///opt/firefox/gpu-check/gpu-check.html",
+          "innerScreenX": 16,
+          "innerScreenY": 133,
+          "dpr": 1,
+          "input": {
+            "x": 35,
+            "y": 125,
+            "width": 456,
+            "height": 44
+          },
+          "viewport": {
+            "width": 1152,
+            "height": 489
+          },
+          "webgl": "ok"
+        },
+        "paintObservedLaunchMs": 61192.113,
+        "observations": [
+          {
+            "phase": "focus",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "focus",
+              "epochMs": 1793717821732,
+              "value": ""
+            },
+            "observedLaunchMs": 62347.128,
+            "observedUtc": "2026-11-03T14:57:03.889Z"
+          },
+          {
+            "phase": "typed",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "typed",
+              "epochMs": 1793717828640,
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 69221.80200000001,
+            "observedUtc": "2026-11-03T14:57:10.764Z"
+          },
+          {
+            "phase": "complete",
+            "signal": {
+              "schema": 1,
+              "nonce": "readinessevidence",
+              "phase": "complete",
+              "epochMs": 1793717833819,
+              "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+              "title": "READINESS COMPLETE",
+              "value": "readinessevidence"
+            },
+            "observedLaunchMs": 74395.845,
+            "observedUtc": "2026-11-03T14:57:15.938Z"
+          }
+        ],
+        "scope": "Test-only nonce panel appended to original GPU workload; actual Firefox keyboard input/navigation",
+        "accepted": false,
+        "inputLocation": {
+          "canvas": {
+            "left": 51.5,
+            "top": 0,
+            "width": 1280,
+            "height": 720,
+            "bufferWidth": 1280,
+            "bufferHeight": 720
+          },
+          "guestX": 279,
+          "guestY": 280,
+          "x": 330.5,
+          "y": 280
+        },
+        "inputStartLaunchMs": 61724.65800000001,
+        "focus": {
+          "phase": "focus",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "focus",
+            "epochMs": 1793717821732,
+            "value": ""
+          },
+          "observedLaunchMs": 62347.128,
+          "observedUtc": "2026-11-03T14:57:03.889Z"
+        },
+        "inputChecks": [
+          {
+            "label": "held-key-no-invented-repeat",
+            "expected": "a",
+            "observedLaunchMs": 63918.458
+          },
+          {
+            "label": "explicit-host-repeat-2",
+            "expected": "aa",
+            "observedLaunchMs": 64263.32000000001
+          },
+          {
+            "label": "explicit-host-repeat-3",
+            "expected": "aaa",
+            "observedLaunchMs": 64414.132
+          },
+          {
+            "label": "explicit-host-repeat-4",
+            "expected": "aaaa",
+            "observedLaunchMs": 64529.263000000006
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 64716.114
+          },
+          {
+            "label": "shift-combination",
+            "expected": "A",
+            "observedLaunchMs": 64899.856
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 65104.484
+          },
+          {
+            "label": "rapid-taps",
+            "expected": "taptest",
+            "observedLaunchMs": 65502.867
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 65856.638
+          },
+          {
+            "label": "focus-loss-start",
+            "expected": "b",
+            "observedLaunchMs": 66047.93000000001
+          },
+          {
+            "label": "focus-loss-releases-held-key",
+            "expected": "b",
+            "observedLaunchMs": 66789.88
+          },
+          {
+            "label": "modifier-select-all-and-delete",
+            "expected": "",
+            "observedLaunchMs": 67903.89300000001
+          }
+        ],
+        "typingProtocol": "Physical rapid key sequence, each intended hold20ms and gap20ms; exact native text required",
+        "inputAcknowledgments": [],
+        "keysSentLaunchMs": 69135.782,
+        "typed": {
+          "phase": "typed",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "typed",
+            "epochMs": 1793717828640,
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 69221.80200000001,
+          "observedUtc": "2026-11-03T14:57:10.764Z"
+        },
+        "enterLaunchMs": 69724.595,
+        "complete": {
+          "phase": "complete",
+          "signal": {
+            "schema": 1,
+            "nonce": "readinessevidence",
+            "phase": "complete",
+            "epochMs": 1793717833819,
+            "href": "file:///opt/firefox/gpu-check/readiness-complete.html?nonce=readinessevidence",
+            "title": "READINESS COMPLETE",
+            "value": "readinessevidence"
+          },
+          "observedLaunchMs": 74395.845,
+          "observedUtc": "2026-11-03T14:57:15.938Z"
+        },
+        "completeScreenshotLaunchMs": 74784.29000000001,
+        "completeScreenshotNavigationMs": 76252.41200000001,
+        "keyboardNavigationPassed": true,
+        "thirtySecondGate": false,
+        "acceptance": "Keyboard and distinct-navigation protocol passed; visible complete screenshot requires independent review"
+      },
+      "keyDispatches": [
+        {
+          "code": "KeyA",
+          "sentDownMs": 69207.08,
+          "sentUpMs": 69228.818,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 69233.444,
+          "sentUpMs": 69254.53,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 69389.045,
+          "sentUpMs": 69410.128,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 69579.797,
+          "sentUpMs": 69600.098,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 69614.929,
+          "sentUpMs": 69636.033,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 69774.764,
+          "sentUpMs": 69796.732,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 69827.302,
+          "sentUpMs": 69847.031,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 69876.885,
+          "sentUpMs": 69898.786,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 69939.421,
+          "sentUpMs": 69960.502,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 69984.784,
+          "sentUpMs": 70005.101,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 70031.469,
+          "sentUpMs": 70052.811,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 70078.73,
+          "sentUpMs": 70099.738,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 70179.188,
+          "sentUpMs": 70200.107,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 70218.474,
+          "sentUpMs": 70239.218,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 71490.606,
+          "sentUpMs": 71514.746,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Backspace",
+          "sentDownMs": 71566.158,
+          "sentUpMs": 71598.781,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 72582.665,
+          "sentUpMs": 72604.752,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 72643.353,
+          "sentUpMs": 72664.049,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 72698.489,
+          "sentUpMs": 72725.906,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 72749.593,
+          "sentUpMs": 72779.421,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 72814.328,
+          "sentUpMs": 72846.454,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 72893.723,
+          "sentUpMs": 72914.431,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 72942.096,
+          "sentUpMs": 72971.978,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 72996.307,
+          "sentUpMs": 73022.084,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 73063.93,
+          "sentUpMs": 73084.791,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 73161.1,
+          "sentUpMs": 73197.077,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 73228.783,
+          "sentUpMs": 73253.862,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 73281.76,
+          "sentUpMs": 73302.91,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 73360.01,
+          "sentUpMs": 73402.341,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 73469.824,
+          "sentUpMs": 73500.785,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 73534.765,
+          "sentUpMs": 73564.553,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 73604.756,
+          "sentUpMs": 73640.743,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 73668.734,
+          "sentUpMs": 73705.759,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Enter",
+          "sentDownMs": 74394.885,
+          "sentUpMs": 74420.768,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyQ",
+          "sentDownMs": 80111.25,
+          "sentUpMs": 80131.717,
+          "intendedHoldMs": 20
+        }
+      ],
+      "nativeClose": {
+        "kind": "Firefox Ctrl+Q, followed by native init exit observation",
+        "requestedLaunchMs": 75437.16500000001,
+        "expectedExitStatus": 0,
+        "confirmation": {
+          "kind": "Observed native Quit Nightly dialog",
+          "reference": "input-host1/native-close.png",
+          "guestX": 718.5,
+          "guestY": 229
+        }
+      },
+      "errors": [
+        {
+          "ms": 102722.619,
+          "error": "Error: Native Firefox Close did not report successful exit",
+          "stack": "Error: Native Firefox Close did not report successful exit\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:293:78"
+        }
+      ],
+      "remainingOwned": [],
+      "resourceSummary": {
+        "pssPeakBytes": 4411259904,
+        "rssSumPeakBytes": 5224267776,
+        "minAvailableBytes": 25877925888,
+        "samples": 102,
+        "pssSamples": 21,
+        "pssIntervalMs": 5000
+      },
+      "name": "input-host2",
+      "sourceDirectory": "../../../codex-build/lwc/input-host2"
+    },
+    {
+      "start": "2026-11-03T15:04:09.626Z",
+      "end": "2026-11-03T15:06:34.176Z",
+      "elapsedMs": 144549.266,
+      "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl&manual-launch=1&owned-proxy=1&update=1&input-repeat=host&input-check=1&package-production=save",
+      "configuration": {
+        "cpus": 3,
+        "ramMiB": 2048,
+        "resolution": "1280x720",
+        "renderer": "webgl",
+        "query": "manual-launch=1&owned-proxy=1&update=1&input-repeat=host&input-check=1&package-production=save",
+        "monitorIntervalMs": 1000,
+        "pssIntervalMs": 5000,
+        "browserObserverStartsAfterSeconds": 0
+      },
+      "navigationAtMs": 2494.461,
+      "launchRequest": {
+        "kind": "production Start Firefox menu",
+        "hostMs": 3193.874,
+        "utc": "2026-11-03T15:04:12.820Z",
+        "page": {
+          "requestAtMs": 693.2549999952316,
+          "pageTimeOrigin": 1793718252133.8
+        }
+      },
+      "productionPackage": {
+        "stage": "save",
+        "command": "sudo /bin/busybox sh -c 'echo package-production-20261103 > /home/admin/.package-persistence-production && /sbin/apk update >/dev/console 2>&1 && /sbin/apk add gzip tar >/dev/console 2>&1 && cp /etc/apk/world /home/admin/.package-world.ref && sha256sum /usr/bin/gzip /usr/bin/tar > /home/admin/.package-files.sha256 && /usr/sbin/apk-persist save >/dev/console 2>&1'",
+        "startedLaunchMs": 90932.04000000001,
+        "rootfsUntouched": true,
+        "route": "Actual production test-command menu opens native Aurora terminal; physical keyboard sends native root shell command",
+        "commandEnteredLaunchMs": 114867.398,
+        "acknowledgment": {
+          "marker": "APK_PERSIST_SAVED",
+          "observedLaunchMs": 130804.366,
+          "observedUtc": "2026-11-03T15:06:23.625Z"
+        }
+      },
+      "keyDispatches": [
+        {
+          "code": "KeyS",
+          "sentDownMs": 98832.62,
+          "sentUpMs": 98879.357,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 99084.85,
+          "sentUpMs": 99118.509,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 99187.694,
+          "sentUpMs": 99249.437,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 99291.452,
+          "sentUpMs": 99312.542,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 99329.867,
+          "sentUpMs": 99352.509,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 99371.936,
+          "sentUpMs": 99394.902,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 99426.932,
+          "sentUpMs": 99449.531,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 99542.738,
+          "sentUpMs": 99564.386,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 99592.656,
+          "sentUpMs": 99617.347,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 99632.106,
+          "sentUpMs": 99652.353,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 99673.114,
+          "sentUpMs": 99708.885,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 99777.455,
+          "sentUpMs": 99821.391,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 99861.446,
+          "sentUpMs": 99918.701,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyY",
+          "sentDownMs": 99977.157,
+          "sentUpMs": 100057.627,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 100091.914,
+          "sentUpMs": 100127.191,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 100149.16,
+          "sentUpMs": 100172.975,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyX",
+          "sentDownMs": 100193.901,
+          "sentUpMs": 100214.356,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 100231.774,
+          "sentUpMs": 100253.048,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 100276.928,
+          "sentUpMs": 100298.122,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 100369.969,
+          "sentUpMs": 100401.371,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 100430.605,
+          "sentUpMs": 100455.312,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 100471.223,
+          "sentUpMs": 100493.016,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 100521.576,
+          "sentUpMs": 100543.317,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 100560.492,
+          "sentUpMs": 100583.774,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Quote",
+          "sentDownMs": 100606.352,
+          "sentUpMs": 100633.155,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 100645.916,
+          "sentUpMs": 100680.306,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 100696.985,
+          "sentUpMs": 100723.885,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 100744.947,
+          "sentUpMs": 100769.877,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 100794.049,
+          "sentUpMs": 100822.896,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 100859.676,
+          "sentUpMs": 100881.956,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 100935.927,
+          "sentUpMs": 100960.6,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 100989.808,
+          "sentUpMs": 101008.76,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 101023.084,
+          "sentUpMs": 101066.031,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 101127.025,
+          "sentUpMs": 101154.92,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 101172.977,
+          "sentUpMs": 101193.945,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 101233.908,
+          "sentUpMs": 101261.009,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 101287.078,
+          "sentUpMs": 101309.86,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 101356.132,
+          "sentUpMs": 101389.381,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 101410.05,
+          "sentUpMs": 101437.003,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 101472.07,
+          "sentUpMs": 101501.037,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 101530.255,
+          "sentUpMs": 101555.093,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 101571.021,
+          "sentUpMs": 101591.939,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 101617.978,
+          "sentUpMs": 101640.714,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 101657.769,
+          "sentUpMs": 101680.687,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 101714.929,
+          "sentUpMs": 101740.08,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 101759.69,
+          "sentUpMs": 101781.76,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 101809.093,
+          "sentUpMs": 101829.849,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 101862.959,
+          "sentUpMs": 101884.04,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 101906.546,
+          "sentUpMs": 101929.987,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 101953.157,
+          "sentUpMs": 101975.069,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit0",
+          "sentDownMs": 101999.751,
+          "sentUpMs": 102027.266,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 102044.943,
+          "sentUpMs": 102065.107,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit6",
+          "sentDownMs": 102079.256,
+          "sentUpMs": 102102.39,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit1",
+          "sentDownMs": 102126.881,
+          "sentUpMs": 102147.082,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit1",
+          "sentDownMs": 102162.138,
+          "sentUpMs": 102198.757,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit0",
+          "sentDownMs": 102239.147,
+          "sentUpMs": 102262.438,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit3",
+          "sentDownMs": 102290.124,
+          "sentUpMs": 102311.982,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 102333.738,
+          "sentUpMs": 102354.495,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 102423.062,
+          "sentUpMs": 102444.896,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 102512.66,
+          "sentUpMs": 102537.973,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 102569.017,
+          "sentUpMs": 102591.49,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 102619.843,
+          "sentUpMs": 102645.925,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 102670.414,
+          "sentUpMs": 102692.978,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 102707.025,
+          "sentUpMs": 102751.946,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 102783.732,
+          "sentUpMs": 102809.037,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 102824.365,
+          "sentUpMs": 102851.68,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 102884.947,
+          "sentUpMs": 102912.864,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 102933.245,
+          "sentUpMs": 102954.983,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 102973.496,
+          "sentUpMs": 102994.022,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 103022.053,
+          "sentUpMs": 103046.6,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 103066.593,
+          "sentUpMs": 103099.388,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 103144.942,
+          "sentUpMs": 103169.151,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 103188.765,
+          "sentUpMs": 103215.89,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 103236.557,
+          "sentUpMs": 103268.623,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 103285.903,
+          "sentUpMs": 103307.892,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 103324.345,
+          "sentUpMs": 103350.577,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 103374.669,
+          "sentUpMs": 103396.381,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 103431.398,
+          "sentUpMs": 103454.603,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 103483.732,
+          "sentUpMs": 103510.904,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 103559.652,
+          "sentUpMs": 103580.513,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 103596.014,
+          "sentUpMs": 103627.901,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 103653.513,
+          "sentUpMs": 103680.348,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 103723.165,
+          "sentUpMs": 103752.101,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 103765.974,
+          "sentUpMs": 103786.549,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 103807.51,
+          "sentUpMs": 103829.51,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 103845.21,
+          "sentUpMs": 103865.977,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 103881.208,
+          "sentUpMs": 103906.568,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 103937.023,
+          "sentUpMs": 103957.969,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 103986.848,
+          "sentUpMs": 104007.258,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 104026.09,
+          "sentUpMs": 104046.987,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 104067.966,
+          "sentUpMs": 104088.128,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 104109.058,
+          "sentUpMs": 104129.886,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 104162.521,
+          "sentUpMs": 104184.355,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 104197.954,
+          "sentUpMs": 104218.126,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 104231.918,
+          "sentUpMs": 104252.639,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 104268.506,
+          "sentUpMs": 104290.359,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 104310.109,
+          "sentUpMs": 104332.903,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 104358.258,
+          "sentUpMs": 104380.853,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 104398.443,
+          "sentUpMs": 104418.704,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 104432.838,
+          "sentUpMs": 104453.875,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 104486.909,
+          "sentUpMs": 104512.007,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 104529.548,
+          "sentUpMs": 104554.207,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 104571.022,
+          "sentUpMs": 104592.063,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 104619.974,
+          "sentUpMs": 104644.474,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 104674.368,
+          "sentUpMs": 104695.669,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 104725.348,
+          "sentUpMs": 104748.183,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 104786.001,
+          "sentUpMs": 104809.835,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 104825.207,
+          "sentUpMs": 104847.821,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 104873.225,
+          "sentUpMs": 104894.305,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 104910.752,
+          "sentUpMs": 104931.878,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 104945.9,
+          "sentUpMs": 104971.132,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 105009.888,
+          "sentUpMs": 105030.483,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 105054.915,
+          "sentUpMs": 105083.801,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 105104.663,
+          "sentUpMs": 105125.289,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 105167.915,
+          "sentUpMs": 105191.039,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 105220.069,
+          "sentUpMs": 105241.912,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 105261.92,
+          "sentUpMs": 105283.594,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 105306.107,
+          "sentUpMs": 105333.997,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 105349.973,
+          "sentUpMs": 105371.889,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 105396.357,
+          "sentUpMs": 105417.094,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 105430.593,
+          "sentUpMs": 105459.594,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 105483.898,
+          "sentUpMs": 105508.34,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 105557.958,
+          "sentUpMs": 105585.454,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 105631.931,
+          "sentUpMs": 105674.939,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 105705.401,
+          "sentUpMs": 105725.088,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 105740.966,
+          "sentUpMs": 105779.346,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 105798.94,
+          "sentUpMs": 105837.087,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 105856.843,
+          "sentUpMs": 105877.665,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 105897.447,
+          "sentUpMs": 105919.877,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 105939.724,
+          "sentUpMs": 105964.739,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 105978.535,
+          "sentUpMs": 105998.809,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 106037.598,
+          "sentUpMs": 106061.317,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 106077.338,
+          "sentUpMs": 106100.455,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 106121.281,
+          "sentUpMs": 106157.185,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 106195.043,
+          "sentUpMs": 106236.332,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 106252.731,
+          "sentUpMs": 106273.867,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 106294.956,
+          "sentUpMs": 106315.887,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 106330.133,
+          "sentUpMs": 106351.914,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 106366.155,
+          "sentUpMs": 106387.06,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 106408.362,
+          "sentUpMs": 106432.054,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 106485.04,
+          "sentUpMs": 106508.041,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit1",
+          "sentDownMs": 106531.105,
+          "sentUpMs": 106552.737,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 106577.891,
+          "sentUpMs": 106613.24,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 106633.689,
+          "sentUpMs": 106654.391,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 106714.273,
+          "sentUpMs": 106734.32,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 106761.124,
+          "sentUpMs": 106781.869,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 106797.536,
+          "sentUpMs": 106820.509,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 106837.363,
+          "sentUpMs": 106859.545,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 106877.367,
+          "sentUpMs": 106898.966,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 106913.753,
+          "sentUpMs": 106934.95,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 106958.095,
+          "sentUpMs": 106978.893,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 106995.956,
+          "sentUpMs": 107017.421,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 107039.415,
+          "sentUpMs": 107064.473,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 107099.946,
+          "sentUpMs": 107132.003,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 107154.198,
+          "sentUpMs": 107177.246,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 107195.907,
+          "sentUpMs": 107217.068,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 107229.898,
+          "sentUpMs": 107250.632,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 107301.542,
+          "sentUpMs": 107325.595,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 107345.125,
+          "sentUpMs": 107368.749,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 107431.322,
+          "sentUpMs": 107457.641,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 107486.264,
+          "sentUpMs": 107523.912,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyZ",
+          "sentDownMs": 107565.722,
+          "sentUpMs": 107598.49,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 107618.486,
+          "sentUpMs": 107641.475,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 107692.875,
+          "sentUpMs": 107714.674,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 107735.284,
+          "sentUpMs": 107755.947,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 107772.542,
+          "sentUpMs": 107795.726,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 107814.495,
+          "sentUpMs": 107834.398,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 107848.877,
+          "sentUpMs": 107870.485,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 107893.535,
+          "sentUpMs": 107917.368,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 107935.371,
+          "sentUpMs": 107955.978,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 107981.889,
+          "sentUpMs": 108002.472,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 108025.387,
+          "sentUpMs": 108045.365,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 108091.031,
+          "sentUpMs": 108111.852,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 108126.964,
+          "sentUpMs": 108152.923,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 108187.871,
+          "sentUpMs": 108215.452,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 108241.773,
+          "sentUpMs": 108265.844,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 108282.054,
+          "sentUpMs": 108303.901,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 108324.941,
+          "sentUpMs": 108346.519,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 108359.701,
+          "sentUpMs": 108381.802,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 108396.146,
+          "sentUpMs": 108422.287,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 108445.196,
+          "sentUpMs": 108466.358,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 108503.642,
+          "sentUpMs": 108525.772,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 108542.045,
+          "sentUpMs": 108562.284,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 108579.051,
+          "sentUpMs": 108604.203,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 108629.114,
+          "sentUpMs": 108652.871,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 108683.481,
+          "sentUpMs": 108703.695,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit1",
+          "sentDownMs": 108724.675,
+          "sentUpMs": 108751.865,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 108765.674,
+          "sentUpMs": 108789.001,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 108811.598,
+          "sentUpMs": 108831.148,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 108863.102,
+          "sentUpMs": 108902.141,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 108986.92,
+          "sentUpMs": 109014.048,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 109034.088,
+          "sentUpMs": 109059.911,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 109073.939,
+          "sentUpMs": 109099.719,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 109144.056,
+          "sentUpMs": 109170.88,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 109201.978,
+          "sentUpMs": 109242.98,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 109265.552,
+          "sentUpMs": 109288.194,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 109310.685,
+          "sentUpMs": 109332.316,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 109344.869,
+          "sentUpMs": 109365.1,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 109391.173,
+          "sentUpMs": 109411.918,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 109424.994,
+          "sentUpMs": 109445.52,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 109463.007,
+          "sentUpMs": 109484.969,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 109500.544,
+          "sentUpMs": 109522.902,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 109544.697,
+          "sentUpMs": 109568.838,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyW",
+          "sentDownMs": 109590.924,
+          "sentUpMs": 109614.211,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 109626.894,
+          "sentUpMs": 109647.157,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 109666.177,
+          "sentUpMs": 109686.37,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 109707.895,
+          "sentUpMs": 109731.863,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 109746.464,
+          "sentUpMs": 109768.026,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 109789.834,
+          "sentUpMs": 109812.345,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 109863.752,
+          "sentUpMs": 109885.046,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 109906.862,
+          "sentUpMs": 109931.482,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 109945.663,
+          "sentUpMs": 109974.559,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 109993.55,
+          "sentUpMs": 110021.843,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 110036.552,
+          "sentUpMs": 110059.918,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 110076.208,
+          "sentUpMs": 110097.468,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 110111.451,
+          "sentUpMs": 110133.609,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 110145.875,
+          "sentUpMs": 110170.521,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 110189.442,
+          "sentUpMs": 110219.837,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 110241.752,
+          "sentUpMs": 110262.568,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 110275.555,
+          "sentUpMs": 110297.496,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 110311.86,
+          "sentUpMs": 110332.446,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 110383.894,
+          "sentUpMs": 110405.432,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 110434.394,
+          "sentUpMs": 110454.058,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 110479.586,
+          "sentUpMs": 110499.709,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 110515.838,
+          "sentUpMs": 110537.889,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 110570.136,
+          "sentUpMs": 110590.469,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 110609.106,
+          "sentUpMs": 110629.889,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 110642.583,
+          "sentUpMs": 110663.793,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 110679.549,
+          "sentUpMs": 110699.997,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 110712.176,
+          "sentUpMs": 110732.662,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyW",
+          "sentDownMs": 110747.81,
+          "sentUpMs": 110768.347,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 110809.61,
+          "sentUpMs": 110831.894,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 110845.123,
+          "sentUpMs": 110866.88,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 110884.128,
+          "sentUpMs": 110913.411,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 110933.749,
+          "sentUpMs": 110954.558,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 110974.113,
+          "sentUpMs": 111002.503,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 111024.938,
+          "sentUpMs": 111046.99,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 111073.234,
+          "sentUpMs": 111093.351,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyF",
+          "sentDownMs": 111144.967,
+          "sentUpMs": 111170.054,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 111207.952,
+          "sentUpMs": 111230.895,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 111271.146,
+          "sentUpMs": 111295.433,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 111332.888,
+          "sentUpMs": 111362.151,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 111395.882,
+          "sentUpMs": 111416.87,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 111429.866,
+          "sentUpMs": 111450.714,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 111510.281,
+          "sentUpMs": 111565.49,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 111581.33,
+          "sentUpMs": 111604.21,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 111676.035,
+          "sentUpMs": 111704.393,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit5",
+          "sentDownMs": 111755.118,
+          "sentUpMs": 111777.049,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit6",
+          "sentDownMs": 111814.226,
+          "sentUpMs": 111877.989,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 111916.928,
+          "sentUpMs": 111949.442,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 111966.867,
+          "sentUpMs": 111989.197,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 112012.764,
+          "sentUpMs": 112064.829,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 112125.909,
+          "sentUpMs": 112149.405,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 112192.48,
+          "sentUpMs": 112223.393,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 112260.258,
+          "sentUpMs": 112295.603,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 112323.01,
+          "sentUpMs": 112343.869,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 112372.614,
+          "sentUpMs": 112399.77,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 112430.641,
+          "sentUpMs": 112454.354,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 112467.725,
+          "sentUpMs": 112489.919,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 112509.633,
+          "sentUpMs": 112530.917,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 112555.423,
+          "sentUpMs": 112583.104,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 112633.682,
+          "sentUpMs": 112655.97,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 112676.017,
+          "sentUpMs": 112696.68,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyZ",
+          "sentDownMs": 112713.856,
+          "sentUpMs": 112734.866,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 112769.38,
+          "sentUpMs": 112790.777,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 112822.171,
+          "sentUpMs": 112844.405,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 112883.51,
+          "sentUpMs": 112907.284,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 112933.425,
+          "sentUpMs": 112953.225,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 112994.566,
+          "sentUpMs": 113016.445,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 113041.155,
+          "sentUpMs": 113062.89,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 113099.292,
+          "sentUpMs": 113118.977,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 113146.926,
+          "sentUpMs": 113178.882,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 113206.762,
+          "sentUpMs": 113228.694,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 113241.364,
+          "sentUpMs": 113268.311,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 113288.35,
+          "sentUpMs": 113311,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 113325.914,
+          "sentUpMs": 113347.354,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 113362.877,
+          "sentUpMs": 113385.089,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 113403.859,
+          "sentUpMs": 113425.773,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 113450.127,
+          "sentUpMs": 113474.851,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 113488.24,
+          "sentUpMs": 113509.51,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 113528.132,
+          "sentUpMs": 113550.267,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 113573.727,
+          "sentUpMs": 113595.36,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 113614.632,
+          "sentUpMs": 113635.143,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 113646.998,
+          "sentUpMs": 113668.317,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 113692.883,
+          "sentUpMs": 113718.621,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 113731.883,
+          "sentUpMs": 113752.473,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 113765.439,
+          "sentUpMs": 113786.875,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 113816.119,
+          "sentUpMs": 113838.903,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 113859.986,
+          "sentUpMs": 113909.156,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 113929.58,
+          "sentUpMs": 113950.813,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyM",
+          "sentDownMs": 113963.659,
+          "sentUpMs": 113984.965,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 114009.933,
+          "sentUpMs": 114031.559,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 114046.518,
+          "sentUpMs": 114066.766,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 114088.297,
+          "sentUpMs": 114110.979,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 114134.889,
+          "sentUpMs": 114160.1,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 114188.534,
+          "sentUpMs": 114209.76,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 114231.299,
+          "sentUpMs": 114253.966,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 114273.712,
+          "sentUpMs": 114297.938,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 114311.431,
+          "sentUpMs": 114336.842,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 114370.508,
+          "sentUpMs": 114396.188,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyG",
+          "sentDownMs": 114411.201,
+          "sentUpMs": 114436.897,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 114452.314,
+          "sentUpMs": 114487.537,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 114534.929,
+          "sentUpMs": 114557.399,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyF",
+          "sentDownMs": 114590.871,
+          "sentUpMs": 114632.249,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 114653.519,
+          "sentUpMs": 114680.089,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 114739.989,
+          "sentUpMs": 114763.365,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 114816.155,
+          "sentUpMs": 114837.72,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 114872.928,
+          "sentUpMs": 114893.956,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 114912.685,
+          "sentUpMs": 114933.134,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 114949.971,
+          "sentUpMs": 114971.134,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyH",
+          "sentDownMs": 114988.636,
+          "sentUpMs": 115032.746,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 115063.344,
+          "sentUpMs": 115086.657,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 115110.75,
+          "sentUpMs": 115137.939,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit5",
+          "sentDownMs": 115177.566,
+          "sentUpMs": 115203.892,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit6",
+          "sentDownMs": 115239.726,
+          "sentUpMs": 115260.917,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 115283.903,
+          "sentUpMs": 115304.888,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 115339.016,
+          "sentUpMs": 115359.488,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 115433.22,
+          "sentUpMs": 115455.231,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 115499.279,
+          "sentUpMs": 115519.227,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 115533.893,
+          "sentUpMs": 115553.928,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyU",
+          "sentDownMs": 115575.453,
+          "sentUpMs": 115614.714,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 115650.203,
+          "sentUpMs": 115670.057,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 115694.898,
+          "sentUpMs": 115718.868,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 115783.362,
+          "sentUpMs": 115831.753,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 115849.915,
+          "sentUpMs": 115871.345,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyB",
+          "sentDownMs": 115892.907,
+          "sentUpMs": 115913.308,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 115939.18,
+          "sentUpMs": 115964.708,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 115983.72,
+          "sentUpMs": 116028.054,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 116085.056,
+          "sentUpMs": 116133.167,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 116168.051,
+          "sentUpMs": 116202.524,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 116230.917,
+          "sentUpMs": 116252.142,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyK",
+          "sentDownMs": 116269.271,
+          "sentUpMs": 116289.688,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Minus",
+          "sentDownMs": 116320.147,
+          "sentUpMs": 116354.555,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyP",
+          "sentDownMs": 116387.313,
+          "sentUpMs": 116408.883,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 116430.91,
+          "sentUpMs": 116451.891,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyR",
+          "sentDownMs": 116464.417,
+          "sentUpMs": 116485.252,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 116500.921,
+          "sentUpMs": 116529.014,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyI",
+          "sentDownMs": 116541.93,
+          "sentUpMs": 116567.024,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 116609.372,
+          "sentUpMs": 116629.864,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyT",
+          "sentDownMs": 116644.141,
+          "sentUpMs": 116665.668,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 116681.566,
+          "sentUpMs": 116715.01,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 116733.946,
+          "sentUpMs": 116757.999,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyA",
+          "sentDownMs": 116776.33,
+          "sentUpMs": 116796.599,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 116814.915,
+          "sentUpMs": 116838.035,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 116885.086,
+          "sentUpMs": 116906.771,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 116926.848,
+          "sentUpMs": 116948.862,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 116971.749,
+          "sentUpMs": 116996.945,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 117017.123,
+          "sentUpMs": 117037.085,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyD",
+          "sentDownMs": 117056.517,
+          "sentUpMs": 117077.722,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 117107.7,
+          "sentUpMs": 117128.961,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyV",
+          "sentDownMs": 117151.079,
+          "sentUpMs": 117171.488,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Slash",
+          "sentDownMs": 117200.593,
+          "sentUpMs": 117227.98,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyC",
+          "sentDownMs": 117246.287,
+          "sentUpMs": 117272.448,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 117311.435,
+          "sentUpMs": 117332.959,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyN",
+          "sentDownMs": 117352.12,
+          "sentUpMs": 117389.239,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyS",
+          "sentDownMs": 117406.833,
+          "sentUpMs": 117429.332,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyO",
+          "sentDownMs": 117491.756,
+          "sentUpMs": 117514.815,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyL",
+          "sentDownMs": 117536.977,
+          "sentUpMs": 117564.992,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "KeyE",
+          "sentDownMs": 117596.869,
+          "sentUpMs": 117621.717,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Space",
+          "sentDownMs": 117663.975,
+          "sentUpMs": 117687.168,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit2",
+          "sentDownMs": 117714.48,
+          "sentUpMs": 117740.973,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Period",
+          "sentDownMs": 117809.884,
+          "sentUpMs": 117831.905,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit7",
+          "sentDownMs": 117880.555,
+          "sentUpMs": 117900.68,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Digit1",
+          "sentDownMs": 117926.12,
+          "sentUpMs": 117950.126,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Quote",
+          "sentDownMs": 117972.909,
+          "sentUpMs": 118001.059,
+          "intendedHoldMs": 20
+        },
+        {
+          "code": "Enter",
+          "sentDownMs": 118033.464,
+          "sentUpMs": 118054.506,
+          "intendedHoldMs": 20
+        }
+      ],
+      "stopRequestedLaunchMs": 130892.99700000002,
+      "stopConfirmedLaunchMs": 131481.682,
+      "stopKeyRelease": {
+        "pass": true,
+        "events": [
+          {
+            "phase": "enqueued",
+            "type": 1,
+            "code": 42,
+            "value": 1,
+            "ms": 1793718383629.37,
+            "pending": 0
+          },
+          {
+            "phase": "enqueued",
+            "type": 1,
+            "code": 42,
+            "value": 0,
+            "ms": 1793718383724.5151,
+            "pending": 0
+          }
+        ]
+      },
+      "stopState": "idle\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n32.5 MB \u00b7 134 entries\nCached system images\n116.9 MB\nBrowser usage / quota estimate\n135.8 MB / 10.13 GB\n\nSystem 1a3951f0c48d \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved files persist after refresh. Save work before Update & restart; browser data clearing removes this home.",
+      "errors": [],
+      "remainingOwned": [],
+      "resourceSummary": {
+        "pssPeakBytes": 4322010112,
+        "rssSumPeakBytes": 5109215232,
+        "minAvailableBytes": 25455284224,
+        "samples": 139,
+        "pssSamples": 28,
+        "pssIntervalMs": 5000
+      },
+      "name": "pkgprod-save1",
+      "sourceDirectory": "../../../codex-build/lwc/pkgprod-save1"
+    }
+  ],
+  "sourceRegression": {
+    "startedUtc": "2026-11-03T15:15:27.156575+00:00",
+    "finishedUtc": "2026-11-03T15:15:28.910893+00:00",
+    "durationSeconds": 1.754,
+    "argv": [
+      "/home/a/.config/nvm/versions/node/v22.22.2/bin/node",
+      "--test",
+      "web/linux/physical-keyboard.test.mjs",
+      "web/linux/keyboard.test.mjs",
+      "web/linux/mobile-keyboard.test.mjs",
+      "web/linux/package-recovery.test.mjs",
+      "web/linux/test-commands.test.mjs",
+      "web/linux/desktop-startup.test.mjs"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownerPeakRssBytes": 638976,
+    "ownedTreePeakRssBytes": 638976,
+    "ownedTreePeakPssBytes": 1648640,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.753,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "limits": [
+    "Only browser events own repeat; guest EV_REP disabled, real client repeats use EV_KEY=2. No synthetic repeat timer.",
+    "Two native 12-assertion keyboard runs include held keys, explicit repeats, modifiers, focus loss and rapid typing/navigation; their duration is not startup acceptance.",
+    "Native Quit did not report exit in 20 seconds after confirmation; home IO showed ongoing flush work. Cache reuse remains unaccepted.",
+    "Production save ACK->Stop 88.631ms; idle 677.316ms; retained package restart and interactive failure recovery not yet accepted."
+  ]
+}

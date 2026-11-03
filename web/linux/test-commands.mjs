@@ -49,6 +49,12 @@ case " $(cat /proc/cmdline) " in
   *" demo.mode=startx "*|*" demo.mode=guest "*|*" demo.mode=firefox "*) ;;
   *) exit 0 ;;
 esac
+# Do not consume recovery-shell input when package restore blocked X startup.
+# Desktop command requests remain buffered until the native display is ready.
+i=0
+while [ ! -e /tmp/.X11-unix/X0 ]; do
+  i=$((i + 1)); [ "$i" -lt 600 ] || exit 0; nap
+done
 exec 3</dev/hvc0 || exit 0
 stty -echo <&3 2>/dev/null
 n=0

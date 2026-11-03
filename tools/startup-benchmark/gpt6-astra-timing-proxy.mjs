@@ -7,7 +7,7 @@ import net from 'node:net';
 import crypto from 'node:crypto';
 import { instrumentStartupSource } from './gpt6-codex-timing.mjs';
 const [outArg,portArg='38082',diagnosticMode='full',overlayArg] = process.argv.slice(2);
-if(!['full','home','seed'].includes(diagnosticMode))throw Error('diagnostic mode must be full, home or seed');
+if(!['full','home','seed','input'].includes(diagnosticMode))throw Error('diagnostic mode must be full, home or seed');
 const port=Number(portArg),out=path.resolve(outArg||'');
 if(!outArg||!Number.isInteger(port)||port<1024||port>65535||fs.existsSync(out))throw Error('Fresh diagnostic directory and valid port required');
 fs.mkdirSync(out,{recursive:true,mode:0o700});
@@ -17,7 +17,7 @@ for(const[kind,relative]of (diagnosticMode==='full' ? [['worker','web/linux/dist
  fs.writeFileSync(path.join(out,kind+'-original.js'),raw);fs.writeFileSync(path.join(out,kind+'-instrumented.js'),instrumented);
  sources.set(route,Buffer.from(instrumented));pins[route]={originalSha256:crypto.createHash('sha256').update(raw).digest('hex'),instrumentedSha256:crypto.createHash('sha256').update(instrumented).digest('hex')};
 }
-if(diagnosticMode==='full'){
+if(diagnosticMode==='full'||diagnosticMode==='input'){
  const raw=fs.readFileSync('web/linux/dist/virtio/input.js','utf8');
  let code=raw.replace('    const pending = [];',`    const diagnostic = globalThis.__gpt6InputQueue = {enqueued:0,delivered:0,dropped:0,highWater:0,events:[]};
     const pending = [];`);
