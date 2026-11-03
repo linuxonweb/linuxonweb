@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Resumable, bounded FileHarbor folder uploads. Tokens stay in private state."""
-import argparse,concurrent.futures,datetime,hashlib,json,os,pathlib,subprocess,tempfile,time
+import argparse,atexit,concurrent.futures,datetime,hashlib,json,os,pathlib,subprocess,tempfile,time
+HTTP_STATS={"calls":0,"activeSecondsSum":0.0}
+RUN_STATE=None
+RUN_START=time.monotonic()
+def record_run():
+ if RUN_STATE is not None:
+  with (RUN_STATE/"transfer-runs.jsonl").open("a") as f:f.write(json.dumps({"finishedAt":datetime.datetime.now(datetime.timezone.utc).isoformat(),"runWallSeconds":round(time.monotonic()-RUN_START,3),"httpRequestCount":HTTP_STATS["calls"],"activeHttpSecondsSum":round(HTTP_STATS["activeSecondsSum"],3),"pauseRequested":(RUN_STATE/"PAUSE").exists(),"pausePolicy":"finish current part request, then exit and resume from server state; no SIGSTOP"})+"\n")
+atexit.register(record_run)
 BASE='https://fileharbor-meak.basicgleam65.chatgpt.site'
 def sha(path):
  h=hashlib.sha256()
@@ -18,7 +25,7 @@ def request(state,path,method='GET',payload=None,headers=None,raw=None):
   if raw is not None:
    body=d/'body';body.write_bytes(raw);body.chmod(0o600);cmd+=['--data-binary','@'+str(body)]
   for attempt in range(4):
-   r=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+   started=time.monotonic();r=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE);HTTP_STATS["calls"]+=1;HTTP_STATS["activeSecondsSum"]+=time.monotonic()-started
    data,sep,status=r.stdout.rpartition(b'\n');code=int(status) if sep and status.isdigit() else 0
    if r.returncode==0 and 200<=code<300:
     return json.loads(data) if data else None
@@ -26,7 +33,8 @@ def request(state,path,method='GET',payload=None,headers=None,raw=None):
     time.sleep([2,5,10][attempt]);continue
    raise RuntimeError(f'{method} {path}: HTTP {code}, curl status {r.returncode}; response withheld to protect tokens')
 def main():
- q=argparse.ArgumentParser();q.add_argument('--root',type=pathlib.Path,required=True);q.add_argument('--state',type=pathlib.Path,required=True);q.add_argument('--username',required=True);q.add_argument('--name',required=True);q.add_argument('--parallel',type=int,choices=(1,2,3,4),default=2);a=q.parse_args();root=a.root.resolve();state=a.state.resolve();state.mkdir(parents=True,exist_ok=True);state.chmod(0o700)
+ global RUN_STATE
+ q=argparse.ArgumentParser();q.add_argument('--root',type=pathlib.Path,required=True);q.add_argument('--state',type=pathlib.Path,required=True);q.add_argument('--username',required=True);q.add_argument('--name',required=True);q.add_argument('--parallel',type=int,choices=(1,2,3,4),default=2);a=q.parse_args();root=a.root.resolve();state=a.state.resolve();state.mkdir(parents=True,exist_ok=True);state.chmod(0o700);RUN_STATE=state
  paths=sorted(p for p in root.rglob('*') if p.is_file())
  if not 1<=len(paths)<=100:raise ValueError('FileHarbor requires 1..100 files')
  for p in paths:
@@ -41,6 +49,7 @@ def main():
   resume={'identityHash':identity_hash,'folder':folder,'completed':{},'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()};save(sf,resume)
  folder=resume['folder'];fh={'X-Folder-Token':folder['token']};fp='/api/folders/'+folder['folderId']
  def transfer(f,p):
+  if (state/"PAUSE").exists():raise RuntimeError("pause requested at complete-part boundary")
   session=request(state,fp+'/uploads','POST',{'path':f['path']},fh)
   if session.get('completed'):file=session['file']
   else:
@@ -50,6 +59,7 @@ def main():
     have={int(part['partNumber']):int(part['size']) for part in remote.get('uploadedParts',[])}
     with p.open('rb') as src:
      for part in range(1,session['totalParts']+1):
+      if (state/"PAUSE").exists():raise RuntimeError("pause requested at complete-part boundary")
       expected=min(session['partSize'],f['size']-(part-1)*session['partSize'])
       if have.get(part)==expected:src.seek(expected,1);continue
       data=src.read(expected);request(state,up+'/parts/'+str(part),'PUT',headers={**uh,'Content-Type':'application/octet-stream'},raw=data)

@@ -1,0 +1,78 @@
+{
+  "accepted": true,
+  "date": "2026-11-03",
+  "durationSeconds": 70.58,
+  "imageSha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3",
+  "imageVersion": "4f6bf2d3a326",
+  "guestMemoryBytes": 2147483648,
+  "cpus": 3,
+  "initUnchanged": true,
+  "initSha256": "55d55013be46cb13541320943ef03c50a43580bf69dd5d4c425963a41a5d8803",
+  "nativeFirefoxUnchanged": [
+    {
+      "path": "opt/firefox/firefox",
+      "bytes": 208805368,
+      "sha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998"
+    }
+  ],
+  "repositoryUrl": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/cb6c19a1-0738-41ee-984f-0dd3183caeb9/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_b98b962",
+  "checks": [
+    "original /init in existing console mode",
+    "normal DNS/TCP bridge and actual HTTPS repository",
+    "default signature verification and signed index",
+    "desktop admin UID1000 sudo package install",
+    "native Python arithmetic, JSON, compression, file I/O, hashing, SSL/CA imports without PYTHONHOME override",
+    "package removal and reinstall",
+    "fresh rootfs loses Python files and installed database entry together",
+    "separate /home data survives reboot",
+    "browser exits cleanly"
+  ],
+  "phases": [
+    {
+      "pass": true,
+      "errors": [],
+      "checkLines": [
+        "PACKAGE_CHECK_PASS test 0 = 0",
+        "PACKAGE_CHECK_PASS /sbin/apk info --installed busybox apk-tools ca-certificates curl",
+        "PACKAGE_CHECK_PASS test ! -e /usr/bin/python3",
+        "PACKAGE_CHECK_PASS /sbin/apk update",
+        "PACKAGE_CHECK_PASS /bin/su -s /bin/sh -c sudo /sbin/apk add python3 admin",
+        "NORMAL_PYTHON_OK /usr/bin/python3 336154bf67f765f8f75d16a0accee61b5ee5f6a75b2a2905703df913bd550f3e",
+        "PACKAGE_CHECK_PASS /usr/bin/python3 -c import sys,json,zlib,hashlib,ssl,socket,pathlib; assert sys.version_info[:3]==(3,14,6); assert json.loads(json.dumps({\"ok\":37}))[\"ok\"]==37; assert zlib.decompress(zlib.compress(b\"wasm\"))==b\"wasm\"; p=pathlib.Path(\"/tmp/python-package-proof\");p.write_text(\"real Linux Python\");assert p.read_text()==\"real Linux Python\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"NORMAL_PYTHON_OK\",sys.executable,hashlib.sha256(b\"wasm\").hexdigest())",
+        "PACKAGE_CHECK_PASS /sbin/apk del python3",
+        "PACKAGE_CHECK_PASS test ! -e /usr/bin/python3",
+        "PACKAGE_CHECK_PASS /sbin/apk add python3",
+        "PACKAGE_CHECK_PASS /bin/busybox sh -c echo package-home-survives > /home/admin/package-persistence-test",
+        "PACKAGE_SMOKE_EXIT status=0"
+      ]
+    },
+    {
+      "pass": true,
+      "errors": [],
+      "checkLines": [
+        "PACKAGE_CHECK_PASS test ! -e /usr/bin/python3",
+        "PACKAGE_CHECK_PASS python-database-reset",
+        "PACKAGE_CHECK_PASS /sbin/apk info --installed busybox apk-tools ca-certificates curl",
+        "PACKAGE_CHECK_PASS /bin/busybox grep -F package-home-survives /home/admin/package-persistence-test",
+        "PACKAGE_CHECK_PASS /bin/busybox rm /home/admin/package-persistence-test",
+        "PACKAGE_SMOKE_EXIT status=0"
+      ]
+    }
+  ],
+  "sudoRepair": {
+    "source": "tools/guest-rootfs/sudo.c",
+    "sourceUnchanged": true,
+    "sourceSha256": "5aa4f8f14fd704d05d6147bc32ee477b688688aa8911aaae06199c58f6153162",
+    "executableSha256": "4edb1243495610789b21b266cf00f273282f3dd1b08d9b5ce343ed4c53a4a1e3",
+    "bytes": 33262,
+    "mode": "04755",
+    "reason": "existing guest sudo executable returned Exec format error; rebuilt existing source with the current functioning native Wasm Linux ABI",
+    "policy": "existing UID0/1000 restriction retained; no host privilege involved"
+  },
+  "limits": [
+    "2GiB full-image test;1GiB failed during original large-rootfs unpack",
+    "normal desktop GUI publication remains a separate step",
+    "no persistent package restore: files and database reset together",
+    "Firefox30s/fullGL/Vulkan/mobile targets not established by this test"
+  ]
+}

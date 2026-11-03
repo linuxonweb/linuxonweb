@@ -1,0 +1,9 @@
+{
+  "memoryBytes": 2147483648,
+  "timeoutSeconds": 180,
+  "cmdline": "console=hvc0 rdinit=/init demo.mode=console home.persistent=1",
+  "networkMode": "public",
+  "persistHome": true,
+  "consoleScript": "fail=0\ncheck() { if \"$@\"; then echo \"PACKAGE_CHECK_PASS $*\"; else echo \"PACKAGE_CHECK_FAIL $*\"; fail=$((fail+1)); fi; }\ncheck test \"$(id -u)\" = 0\ncheck /sbin/apk info --installed busybox apk-tools ca-certificates curl\ncheck test ! -e /usr/bin/python3\ncheck /sbin/apk update\ncheck /bin/su -s /bin/sh -c 'sudo /sbin/apk add python3' admin\ncheck /usr/bin/python3 -c 'import sys,json,zlib,hashlib,ssl,socket,pathlib; assert sys.version_info[:3]==(3,14,6); assert json.loads(json.dumps({\"ok\":37}))[\"ok\"]==37; assert zlib.decompress(zlib.compress(b\"wasm\"))==b\"wasm\"; p=pathlib.Path(\"/tmp/python-package-proof\");p.write_text(\"real Linux Python\");assert p.read_text()==\"real Linux Python\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"NORMAL_PYTHON_OK\",sys.executable,hashlib.sha256(b\"wasm\").hexdigest())'\ncheck /sbin/apk del python3\ncheck test ! -e /usr/bin/python3\ncheck /sbin/apk add python3\ncheck /bin/busybox sh -c 'echo package-home-survives > /home/admin/package-persistence-test'\nsync\necho PACKAGE_SMOKE_EXIT status=$fail\npoweroff -f\n",
+  "restartScript": "fail=0\ncheck() { if \"$@\"; then echo \"PACKAGE_CHECK_PASS $*\"; else echo \"PACKAGE_CHECK_FAIL $*\"; fail=$((fail+1)); fi; }\ncheck test ! -e /usr/bin/python3\nif /sbin/apk info --installed python3; then echo PACKAGE_CHECK_FAIL python-database-survived; fail=$((fail+1)); else echo PACKAGE_CHECK_PASS python-database-reset; fi\ncheck /sbin/apk info --installed busybox apk-tools ca-certificates curl\ncheck /bin/busybox grep -F package-home-survives /home/admin/package-persistence-test\ncheck /bin/busybox rm /home/admin/package-persistence-test\nsync\necho PACKAGE_SMOKE_EXIT status=$fail\npoweroff -f\n"
+}
