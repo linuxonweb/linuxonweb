@@ -38,6 +38,11 @@ export const JIT_MAX_MODULE_BYTES = 1 << 20;
 export const JIT_MAX_EXPORTS = 1024;
 export const JIT_INSTALL_PRIVATE = 1;
 
+// Cache references are independent of installed callable functions. These
+// bounds cap retained source images/module references, not live compiled code.
+export const JIT_CACHE_MAX_ENTRIES = 1024;
+export const JIT_CACHE_MAX_BYTES = 8 << 20;
+
 const E2BIG = 7, ENOEXEC = 8, ENOMEM = 12, EFAULT = 14, EINVAL = 22, ENOSPC = 28, ENOSYS = 38;
 
 // Control layout, in 32-bit words.
@@ -249,14 +254,25 @@ function sameBytes(a, b) {
 
 /** One per (Worker, user Instance). */
 export class JitThread {
-    constructor(control, memory, table) {
+    constructor(control, memory, table, cacheLimits = {}) {
         this.sab = control;
         this.ctl = new Int32Array(control); // length-tracking
         this.memory = memory;
         this.table = table instanceof WebAssembly.Table ? table : null;
         this.epoch = 0;
         this.cache = new Map();
-        this.stats = { compiles: 0, cacheHits: 0, replayedInstalls: 0, replayedFrees: 0, replayErrors: 0 };
+        this.cacheOrder = new Map();
+        this.cacheMaxEntries = cacheLimits.entries ?? JIT_CACHE_MAX_ENTRIES;
+        this.cacheMaxBytes = cacheLimits.bytes ?? JIT_CACHE_MAX_BYTES;
+        if (!Number.isInteger(this.cacheMaxEntries) || this.cacheMaxEntries < 0 || this.cacheMaxEntries > JIT_CACHE_MAX_ENTRIES ||
+            !Number.isInteger(this.cacheMaxBytes) || this.cacheMaxBytes < 0 || this.cacheMaxBytes > JIT_CACHE_MAX_BYTES)
+            throw new RangeError("invalid JIT compile-cache budget");
+        this.stats = { compiles: 0, cacheHits: 0, cacheMisses: 0, cacheEvictions: 0, cacheEntries: 0, cacheBytes: 0,
+            liveFunctions: 0, replayedInstalls: 0, replayedFrees: 0, replayErrors: 0 };
+        // A pooled Instance may already contain replayed JIT entries.
+        const firstJit = Atomics.load(this.ctl, W_TABLE_BASE) || this.table?.length || 0;
+        if (this.table) for (let i = firstJit; i < this.table.length; i++)
+            if (this.table.get(i) !== null) this.stats.liveFunctions++;
         this.slot = -1;
         for (let i = 0; i < MAX_SLOTS; i++) {
             const word = SLOT_WORD + i * 2;
@@ -270,6 +286,11 @@ export class JitThread {
             Atomics.store(this.ctl, W_NO_REUSE, 1);
     }
     release() {
+        // A pooled Worker can outlive this thread; drop compilation-cache
+        // ownership now. Functions installed in its table remain untouched.
+        this.cache.clear();
+        this.cacheOrder.clear();
+        this.stats.cacheEntries = this.stats.cacheBytes = 0;
         if (this.slot >= 0) {
             Atomics.store(this.ctl, SLOT_WORD + this.slot * 2, 0);
             this.slot = -1;
@@ -298,16 +319,34 @@ export class JitThread {
             for (const entry of bucket) {
                 if (sameBytes(entry.bytes, bytes)) {
                     this.stats.cacheHits++;
+                    this.cacheOrder.delete(entry);
+                    this.cacheOrder.set(entry, true);
                     return entry.module;
                 }
             }
         }
+        this.stats.cacheMisses++;
         const module = new WebAssembly.Module(bytes);
         this.stats.compiles++;
-        if (bucket)
-            bucket.push({ bytes, module });
-        else
-            this.cache.set(key, [{ bytes, module }]);
+        if (this.cacheMaxEntries && bytes.length <= this.cacheMaxBytes) {
+            // Own an immutable image even if the caller reuses its input view.
+            const entry = { key, bytes: bytes.slice(), module };
+            if (bucket) bucket.push(entry);
+            else this.cache.set(key, [entry]);
+            this.cacheOrder.set(entry, true);
+            this.stats.cacheEntries++;
+            this.stats.cacheBytes += bytes.length;
+            while (this.stats.cacheEntries > this.cacheMaxEntries || this.stats.cacheBytes > this.cacheMaxBytes) {
+                const oldest = this.cacheOrder.keys().next().value;
+                const entries = this.cache.get(oldest.key);
+                entries.splice(entries.indexOf(oldest), 1);
+                if (!entries.length) this.cache.delete(oldest.key);
+                this.cacheOrder.delete(oldest);
+                this.stats.cacheEntries--;
+                this.stats.cacheBytes -= oldest.bytes.length;
+                this.stats.cacheEvictions++;
+            }
+        }
         return module;
     }
     // Instantiates and fills [base, base + count) in this thread's table.
@@ -321,16 +360,22 @@ export class JitThread {
         const end = base + count;
         if (table.length < end)
             table.grow(end - table.length, null);
-        for (let i = 0; i < count; i++)
+        for (let i = 0; i < count; i++) {
+            const wasNull = table.get(base + i) === null;
             table.set(base + i, instance.exports["f" + i]);
+            if (wasNull) this.stats.liveFunctions++;
+        }
     }
     clear(base, count) {
         const table = this.table;
         if (!table)
             return;
         const end = Math.min(base + count, table.length);
-        for (let i = base; i < end; i++)
+        for (let i = base; i < end; i++) {
+            const wasLive = table.get(i) !== null;
             table.set(i, null);
+            if (wasLive) this.stats.liveFunctions--;
+        }
     }
     /** Applies every log entry published since this thread's last replay. */
     replay() {

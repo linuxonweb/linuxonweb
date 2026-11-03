@@ -2,8 +2,8 @@
   "agent": "graphics_jit",
   "model": "GPT-6 Astra Pro",
   "tool": "builtin agents + rubywebterm",
-  "scope_score": 30,
-  "scope_score_note": "Graphics/JIT work scope; parent overall provisional score26/100. Graphics rubric6/25; complete goal not achieved.",
+  "scope_score": 32,
+  "scope_score_note": "Local graphics/JIT progress only; root owns weighted whole-goal score. Full graphics, Firefox30s and nativeJIT gates remain unmet.",
   "task_start_utc": "2026-11-03T07:06:00Z",
   "iterations": [
     {
@@ -321,6 +321,19 @@
       "receipt": "/mnt/p3/codex-build/g3g/ui-unit1/receipt.json"
     },
     {
+      "name": "jit-check1",
+      "start_utc": "2026-11-03T08:26:47.386029+00:00",
+      "end_utc": "2026-11-03T08:26:48.790338+00:00",
+      "seconds": 1.404,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 3301376,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Seven real-Wasm lifecycle groups passed on isolated candidate",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-check1/receipt.json"
+    },
+    {
       "name": "ui-unit2",
       "start_utc": "2026-11-03T08:27:44.345476+00:00",
       "end_utc": "2026-11-03T08:27:45.749468+00:00",
@@ -347,6 +360,97 @@
       "receipt": "/mnt/p3/codex-build/g3g/ui-browser1/receipt.json"
     },
     {
+      "name": "jit-retain-base1",
+      "start_utc": "2026-11-03T08:44:40.552764+00:00",
+      "end_utc": "2026-11-03T08:44:41.956820+00:00",
+      "seconds": 1.404,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 0,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Synthetic baseline retains4224 images/17985728 sourcebytes; not Firefox measurement",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-base1/receipt.json"
+    },
+    {
+      "name": "jit-retain-new1",
+      "start_utc": "2026-11-03T08:44:42.032703+00:00",
+      "end_utc": "2026-11-03T08:44:43.437360+00:00",
+      "seconds": 1.405,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 446464,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Synthetic candidate retains64 images/8386688 sourcebytes; not native-code budget",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-retain-new1/receipt.json"
+    },
+    {
+      "name": "jit-compile1",
+      "start_utc": "2026-11-03T08:48:02.584447+00:00",
+      "end_utc": "2026-11-03T08:48:03.988204+00:00",
+      "seconds": 1.404,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 774144,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Unchanged historical native JIT fixture compiled with accessible toolchain",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile1/receipt.json"
+    },
+    {
+      "name": "jit-check2",
+      "start_utc": "2026-11-03T08:49:13.081039+00:00",
+      "end_utc": "2026-11-03T08:49:14.490609+00:00",
+      "seconds": 1.41,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 3792896,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Seven lifecycle groups passed after peer-review counter hardening",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-check2/receipt.json"
+    },
+    {
+      "name": "jit-guest1",
+      "start_utc": "2026-11-03T08:49:14.580777+00:00",
+      "end_utc": "2026-11-03T08:49:21.064308+00:00",
+      "seconds": 6.484,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1370128384,
+      "resource_samples": 7,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Candidate original fixture61/62; stale flag1 rejection fails",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest1/receipt.json"
+    },
+    {
+      "name": "jit-guest-base1",
+      "start_utc": "2026-11-03T08:49:47.572554+00:00",
+      "end_utc": "2026-11-03T08:49:56.133461+00:00",
+      "seconds": 8.561,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1374752768,
+      "resource_samples": 9,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Baseline original fixture61/62; identical stale flag1 rejection fails",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-base1/receipt.json"
+    },
+    {
+      "name": "jit-compile2",
+      "start_utc": "2026-11-03T08:51:20.809773+00:00",
+      "end_utc": "2026-11-03T08:51:23.216806+00:00",
+      "seconds": 2.407,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 20336640,
+      "resource_samples": 3,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Additional current-ABI fixture compiled",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile2/receipt.json"
+    },
+    {
       "name": "ui-unit3",
       "start_utc": "2026-11-03T09:02:21.810420+00:00",
       "end_utc": "2026-11-03T09:02:23.215033+00:00",
@@ -358,6 +462,58 @@
       "scope_score": 30,
       "finding": "28/28 final backend settings/status unit tests passed",
       "receipt": "/mnt/p3/codex-build/g3g/ui-unit3/receipt.json"
+    },
+    {
+      "name": "jit-guest-current1",
+      "start_utc": "2026-11-03T09:17:38.067749+00:00",
+      "end_utc": "2026-11-03T09:17:44.546515+00:00",
+      "seconds": 6.479,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1377435648,
+      "resource_samples": 7,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Candidate67/68; added private-free expectation contradicted current contract",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current1/receipt.json"
+    },
+    {
+      "name": "jit-guest-current-base1",
+      "start_utc": "2026-11-03T09:19:53.546883+00:00",
+      "end_utc": "2026-11-03T09:20:00.032814+00:00",
+      "seconds": 6.486,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1361178624,
+      "resource_samples": 7,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Baseline67/68; identical existing private-free refusal",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current-base1/receipt.json"
+    },
+    {
+      "name": "jit-compile3",
+      "start_utc": "2026-11-03T09:25:17.720307+00:00",
+      "end_utc": "2026-11-03T09:25:19.125832+00:00",
+      "seconds": 1.406,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1183744,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "Explicit current-contract fixture compiled, original source preserved",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-compile3/receipt.json"
+    },
+    {
+      "name": "jit-guest-current2",
+      "start_utc": "2026-11-03T09:25:19.234536+00:00",
+      "end_utc": "2026-11-03T09:25:25.693318+00:00",
+      "seconds": 6.459,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1371631616,
+      "resource_samples": 7,
+      "remaining_owned_processes": 0,
+      "scope_score": 32,
+      "finding": "Current-contract native fixture69/69 PASS; private1 supported, unknown2 rejected, privatefree refuses without invalidation; fork/exec/globalfree replay pass",
+      "receipt": "/mnt/p3/codex-build/g3g/jit-guest-current2/receipt.json"
     }
   ],
   "total_owned_build_test_seconds": 254.22899999999998,
@@ -380,6 +536,6 @@
   },
   "overall_provisional_score": 26,
   "elapsed_wall_seconds": 4422.892398,
-  "elapsed_to_last_seconds": 6983.215033,
-  "owned_build_test_seconds": 261.879
+  "elapsed_to_last_seconds": 8365.693318,
+  "owned_build_test_seconds": 307.188
 }

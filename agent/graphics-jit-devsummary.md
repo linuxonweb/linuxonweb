@@ -1,6 +1,6 @@
 # Graphics and JIT work — GPT-6 Astra Pro / built-in agents / rubywebterm
 
-Current graphics/JIT work-scope score: **30/100**. The verified host draw-dispatch optimization is shipped. The real-fence candidate failed native correctness and remains excluded. No full OpenGL/Vulkan, whole-Firefox JIT, or50%host performance acceptance is claimed.
+Current graphics/JIT work-scope score: **32/100**. The verified host draw-dispatch optimization is shipped. The real-fence candidate failed native correctness and remains excluded. No full OpenGL/Vulkan, whole-Firefox JIT, or50%host performance acceptance is claimed.
 
 ## Iteration / build / test ledger
 
@@ -50,3 +50,7 @@ blocked/unresolved respectively. Full test timing ledger is the companion JSON.
 ## Explicit guest backend controls — 2026-11-03
 
 The product defaults guest Vulkan to WebGPU and requires an explicit WebGL choice. Presenter, guest OpenGL and experimental Vulkan status are separate. The 900 × 1200 portrait option is available. Twenty-eight unit checks and ten real-browser functional checks pass, including cancellation, saved choice, reload and URL override. These checks do not establish full Vulkan/OpenGL or whole-Firefox hardware acceleration. Exact sources and resource receipts: `tools/graphics-benchmark/evidence/gpt6-astra-backend-ui-20261103.json`.
+
+## Bounded host JIT cache
+
+The reviewed per-worker cache now retains at most1024 compiled-module references and8MiB of immutable Wasm source images. LRU eviction leaves installed callable code intact; the12-word native stats ABI is unchanged. Seven real-Wasm lifecycle groups and the explicit current native contract69/69 pass. Historical fixture failures are retained: flag1 is now supported PRIVATE, and private allocations cannot be freed through the shared-log free API. The fixture asserts that refusal and continued callability rather than inventing a new lifetime contract. This cap does not bound installed private code or engine-native compiled memory and does not establish Firefox native GC safety or faster startup. Evidence: `tools/graphics-benchmark/evidence/gpt6-astra-jit-cache-20261103.json`.

@@ -1,0 +1,619 @@
+{
+  "kind": "bounded per-worker compiled-Wasm source cache",
+  "pass": true,
+  "sourceSha256": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+  "limits": {
+    "entries": 1024,
+    "sourceImageBytes": 8388608
+  },
+  "limitsScope": "Stored source images and module-reference count only. Installed private functions and engine-native compiled code are not bounded by this cache.",
+  "nativeStatsAbiWords": 12,
+  "nativeAbiUnchanged": true,
+  "nodeLifecycle": {
+    "pass": true,
+    "checks": [
+      {
+        "name": "immutable images, exact hits and LRU order",
+        "pass": true
+      },
+      {
+        "name": "byte budget and oversized modules remain callable without retention",
+        "pass": true
+      },
+      {
+        "name": "caller mutation never changes cached image identity",
+        "pass": true
+      },
+      {
+        "name": "eviction preserves active code and cross-thread replay/free rules",
+        "pass": true
+      },
+      {
+        "name": "existing populated tables have accurate live counters",
+        "pass": true
+      },
+      {
+        "name": "legacy12word stats ABI leaves caller sentinel intact",
+        "pass": true
+      },
+      {
+        "name": "disabled caching and budget admission stay bounded",
+        "pass": true
+      }
+    ],
+    "errors": [],
+    "started": "2026-11-03T08:49:13.161Z",
+    "ended": "2026-11-03T08:49:13.173Z"
+  },
+  "originalNativeFixture": [
+    {
+      "run": "jit-guest-base1",
+      "pass": false,
+      "checks": [
+        "GUEST_JIT FAIL reject flags (/mnt/p3/codex-build/g3g/jit-package1/jit-test.c:435)",
+        "GUEST_JIT stats epoch=11 local=11 compiles=10 cache_hits=2 replay_installs=1 replay_frees=1 replay_errors=0 table=29 base=17 next=29 free=0 slot=0",
+        "GUEST_JIT_RESULT pass=61 fail=1"
+      ],
+      "errors": [],
+      "receipt": {
+        "started_unix": 1793695787.5725536,
+        "ended_unix": 1793695796.1334612,
+        "duration_s": 8.561,
+        "command": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_JIT_OVERRIDE=../../../codex-build/g3g/jit-baseline.mjs",
+          "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/jit-package1/jit-runtime.html",
+          "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/jit-guest-hook.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/g3g",
+          "http://localhost/linux/tests/guest-glremote/jit-runtime.html",
+          "guestJitResults"
+        ],
+        "exit_code": 1,
+        "stop_reason": null,
+        "peak_sum_rss_bytes": 1374752768,
+        "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+        "resource_samples": 9,
+        "tracked_identities": [
+          {
+            "pid": 2169082,
+            "start_ticks": 41218448
+          },
+          {
+            "pid": 2169102,
+            "start_ticks": 41218460
+          },
+          {
+            "pid": 2169103,
+            "start_ticks": 41218461
+          },
+          {
+            "pid": 2169115,
+            "start_ticks": 41218467
+          },
+          {
+            "pid": 2169117,
+            "start_ticks": 41218473
+          },
+          {
+            "pid": 2169241,
+            "start_ticks": 41218539
+          },
+          {
+            "pid": 2169211,
+            "start_ticks": 41218519
+          },
+          {
+            "pid": 2169210,
+            "start_ticks": 41218518
+          },
+          {
+            "pid": 2169156,
+            "start_ticks": 41218493
+          },
+          {
+            "pid": 2169114,
+            "start_ticks": 41218467
+          },
+          {
+            "pid": 2169148,
+            "start_ticks": 41218485
+          },
+          {
+            "pid": 2169232,
+            "start_ticks": 41218536
+          }
+        ],
+        "remaining": []
+      }
+    },
+    {
+      "run": "jit-guest1",
+      "pass": false,
+      "checks": [
+        "GUEST_JIT FAIL reject flags (/mnt/p3/codex-build/g3g/jit-package1/jit-test.c:435)",
+        "GUEST_JIT stats epoch=11 local=11 compiles=10 cache_hits=2 replay_installs=1 replay_frees=1 replay_errors=0 table=29 base=17 next=29 free=0 slot=0",
+        "GUEST_JIT_RESULT pass=61 fail=1"
+      ],
+      "errors": [],
+      "receipt": {
+        "started_unix": 1793695754.5807772,
+        "ended_unix": 1793695761.064308,
+        "duration_s": 6.484,
+        "command": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_JIT_OVERRIDE=../../../codex-build/g3g/jit-candidate.mjs",
+          "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/jit-package1/jit-runtime.html",
+          "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/jit-guest-hook.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/g3g",
+          "http://localhost/linux/tests/guest-glremote/jit-runtime.html",
+          "guestJitResults"
+        ],
+        "exit_code": 1,
+        "stop_reason": null,
+        "peak_sum_rss_bytes": 1370128384,
+        "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+        "resource_samples": 7,
+        "tracked_identities": [
+          {
+            "pid": 2164664,
+            "start_ticks": 41215149
+          },
+          {
+            "pid": 2164705,
+            "start_ticks": 41215163
+          },
+          {
+            "pid": 2164708,
+            "start_ticks": 41215164
+          },
+          {
+            "pid": 2164720,
+            "start_ticks": 41215171
+          },
+          {
+            "pid": 2164729,
+            "start_ticks": 41215176
+          },
+          {
+            "pid": 2164855,
+            "start_ticks": 41215237
+          },
+          {
+            "pid": 2164817,
+            "start_ticks": 41215220
+          },
+          {
+            "pid": 2164816,
+            "start_ticks": 41215219
+          },
+          {
+            "pid": 2164773,
+            "start_ticks": 41215196
+          },
+          {
+            "pid": 2164719,
+            "start_ticks": 41215171
+          },
+          {
+            "pid": 2164757,
+            "start_ticks": 41215189
+          },
+          {
+            "pid": 2164834,
+            "start_ticks": 41215233
+          }
+        ],
+        "remaining": []
+      }
+    }
+  ],
+  "additionalIncorrectFreeAssumption": [
+    {
+      "run": "jit-guest-current-base1",
+      "pass": false,
+      "checks": [
+        "GUEST_JIT FAIL private free (/mnt/p3/codex-build/g3g/jit-package2/jit-test.c:441)",
+        "GUEST_JIT stats epoch=11 local=11 compiles=10 cache_hits=2 replay_installs=1 replay_frees=1 replay_errors=0 table=29 base=17 next=29 free=0 slot=0",
+        "GUEST_JIT_RESULT pass=67 fail=1"
+      ],
+      "errors": [],
+      "receipt": {
+        "started_unix": 1793697593.5468829,
+        "ended_unix": 1793697600.0328135,
+        "duration_s": 6.486,
+        "command": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_JIT_OVERRIDE=../../../codex-build/g3g/jit-baseline.mjs",
+          "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/jit-package2/jit-runtime.html",
+          "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/jit-guest-hook.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/g3g",
+          "http://localhost/linux/tests/guest-glremote/jit-runtime.html",
+          "guestJitResults"
+        ],
+        "exit_code": 1,
+        "stop_reason": null,
+        "peak_sum_rss_bytes": 1361178624,
+        "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+        "resource_samples": 7,
+        "tracked_identities": [
+          {
+            "pid": 2381303,
+            "start_ticks": 41399045
+          },
+          {
+            "pid": 2381320,
+            "start_ticks": 41399054
+          },
+          {
+            "pid": 2381321,
+            "start_ticks": 41399055
+          },
+          {
+            "pid": 2381333,
+            "start_ticks": 41399060
+          },
+          {
+            "pid": 2381335,
+            "start_ticks": 41399065
+          },
+          {
+            "pid": 2381457,
+            "start_ticks": 41399124
+          },
+          {
+            "pid": 2381419,
+            "start_ticks": 41399107
+          },
+          {
+            "pid": 2381417,
+            "start_ticks": 41399107
+          },
+          {
+            "pid": 2381379,
+            "start_ticks": 41399085
+          },
+          {
+            "pid": 2381332,
+            "start_ticks": 41399060
+          },
+          {
+            "pid": 2381360,
+            "start_ticks": 41399076
+          },
+          {
+            "pid": 2381443,
+            "start_ticks": 41399116
+          }
+        ],
+        "remaining": []
+      }
+    },
+    {
+      "run": "jit-guest-current1",
+      "pass": false,
+      "checks": [
+        "GUEST_JIT FAIL private free (/mnt/p3/codex-build/g3g/jit-package2/jit-test.c:441)",
+        "GUEST_JIT stats epoch=11 local=11 compiles=10 cache_hits=2 replay_installs=1 replay_frees=1 replay_errors=0 table=29 base=17 next=29 free=0 slot=0",
+        "GUEST_JIT_RESULT pass=67 fail=1"
+      ],
+      "errors": [],
+      "receipt": {
+        "started_unix": 1793697458.067749,
+        "ended_unix": 1793697464.5465145,
+        "duration_s": 6.479,
+        "command": [
+          "env",
+          "GRAPHICS_ISOLATED=1",
+          "GRAPHICS_ANGLE=gl",
+          "GRAPHICS_JIT_OVERRIDE=../../../codex-build/g3g/jit-candidate.mjs",
+          "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/jit-package2/jit-runtime.html",
+          "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/jit-guest-hook.mjs",
+          "node",
+          "tools/graphics-benchmark/browser-check.mjs",
+          "../../../codex-build/g3g",
+          "http://localhost/linux/tests/guest-glremote/jit-runtime.html",
+          "guestJitResults"
+        ],
+        "exit_code": 1,
+        "stop_reason": null,
+        "peak_sum_rss_bytes": 1377435648,
+        "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+        "resource_samples": 7,
+        "tracked_identities": [
+          {
+            "pid": 2370248,
+            "start_ticks": 41385497
+          },
+          {
+            "pid": 2370257,
+            "start_ticks": 41385506
+          },
+          {
+            "pid": 2370258,
+            "start_ticks": 41385506
+          },
+          {
+            "pid": 2370270,
+            "start_ticks": 41385511
+          },
+          {
+            "pid": 2370272,
+            "start_ticks": 41385515
+          },
+          {
+            "pid": 2370402,
+            "start_ticks": 41385563
+          },
+          {
+            "pid": 2370374,
+            "start_ticks": 41385549
+          },
+          {
+            "pid": 2370373,
+            "start_ticks": 41385548
+          },
+          {
+            "pid": 2370333,
+            "start_ticks": 41385532
+          },
+          {
+            "pid": 2370269,
+            "start_ticks": 41385511
+          },
+          {
+            "pid": 2370319,
+            "start_ticks": 41385526
+          },
+          {
+            "pid": 2370408,
+            "start_ticks": 41385565
+          }
+        ],
+        "remaining": []
+      }
+    }
+  ],
+  "currentContract": {
+    "run": "jit-guest-current2",
+    "pass": true,
+    "checks": [
+      "GUEST_JIT stats epoch=11 local=11 compiles=10 cache_hits=2 replay_installs=1 replay_frees=1 replay_errors=0 table=29 base=17 next=29 free=0 slot=0",
+      "GUEST_JIT_RESULT pass=69 fail=0"
+    ],
+    "errors": [],
+    "receipt": {
+      "started_unix": 1793697919.2345357,
+      "ended_unix": 1793697925.693318,
+      "duration_s": 6.459,
+      "command": [
+        "env",
+        "GRAPHICS_ISOLATED=1",
+        "GRAPHICS_ANGLE=gl",
+        "GRAPHICS_JIT_OVERRIDE=../../../codex-build/g3g/jit-candidate.mjs",
+        "GRAPHICS_PAGE_OVERRIDE=../../../codex-build/g3g/jit-package3/jit-runtime.html",
+        "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/jit-guest-hook.mjs",
+        "node",
+        "tools/graphics-benchmark/browser-check.mjs",
+        "../../../codex-build/g3g",
+        "http://localhost/linux/tests/guest-glremote/jit-runtime.html",
+        "guestJitResults"
+      ],
+      "exit_code": 0,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1371631616,
+      "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+      "resource_samples": 7,
+      "tracked_identities": [
+        {
+          "pid": 2410533,
+          "start_ticks": 41431614
+        },
+        {
+          "pid": 2410549,
+          "start_ticks": 41431625
+        },
+        {
+          "pid": 2410550,
+          "start_ticks": 41431626
+        },
+        {
+          "pid": 2410562,
+          "start_ticks": 41431631
+        },
+        {
+          "pid": 2410564,
+          "start_ticks": 41431635
+        },
+        {
+          "pid": 2410692,
+          "start_ticks": 41431687
+        },
+        {
+          "pid": 2410650,
+          "start_ticks": 41431673
+        },
+        {
+          "pid": 2410649,
+          "start_ticks": 41431672
+        },
+        {
+          "pid": 2410631,
+          "start_ticks": 41431665
+        },
+        {
+          "pid": 2410607,
+          "start_ticks": 41431652
+        },
+        {
+          "pid": 2410561,
+          "start_ticks": 41431631
+        },
+        {
+          "pid": 2410588,
+          "start_ticks": 41431646
+        },
+        {
+          "pid": 2410691,
+          "start_ticks": 41431687
+        }
+      ],
+      "remaining": []
+    }
+  },
+  "fixtureBuild": {
+    "testOnly": true,
+    "pass": true,
+    "sourceArchiveSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+    "busyboxSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+    "archiveSha256": "f752fa6053710040248995b410c5ca45ac0898727f7a154b287922c73043e73f",
+    "archiveBytes": 1286144,
+    "files": {
+      "bin/busybox": {
+        "bytes": 1230518,
+        "sha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+        "mode": "0o100755"
+      },
+      "bin/sh": {
+        "bytes": 7,
+        "sha256": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91",
+        "mode": "0o120777"
+      },
+      "init": {
+        "bytes": 243,
+        "sha256": "a0b5c4a4b2598e68d2b0698a160a0ec5beb59ce0ac4e75d56da610e1e90432d2",
+        "mode": "0o100755"
+      },
+      "etc/passwd": {
+        "bytes": 26,
+        "sha256": "5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb",
+        "mode": "0o100644"
+      },
+      "etc/group": {
+        "bytes": 10,
+        "sha256": "7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8",
+        "mode": "0o100644"
+      },
+      "bin/guest-jit-test": {
+        "bytes": 51791,
+        "sha256": "b30478c7d0fb814279ce161e92aee40acdb6d139a444bfc66fd5b29653af89c1",
+        "mode": "0o100755"
+      }
+    },
+    "sourceSha256": "7fd4f9c9f86554abc4cb225c4fc2933263ee9939965b7d99f714887cb723fb8f",
+    "binarySha256": "b30478c7d0fb814279ce161e92aee40acdb6d139a444bfc66fd5b29653af89c1",
+    "command": [
+      "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pthread",
+      "-matomics",
+      "-mbulk-memory",
+      "-static",
+      "/mnt/p3/codex-build/g3g/jit-package3/jit-test.c",
+      "-Wl,--import-memory,--export-table,--growable-table,--shared-memory",
+      "-Wl,--initial-memory=2097152,--max-memory=4294967296,-z,stack-size=262144",
+      "-o",
+      "/mnt/p3/codex-build/g3g/jit-package3/guest-jit-test.wasm"
+    ],
+    "currentAbiFixture": true,
+    "frozenSourceSha256": "2949356b603e76fb7eebed92cb9aef9785b7cdc2f076202f559caa5020bac053",
+    "seconds": 0.8708646297454834
+  },
+  "syntheticRetention": {
+    "baseline": {
+      "label": "synthetic compile-cache retention stress",
+      "seconds": 0.4979781770000001,
+      "smallModules": 4096,
+      "largeModules": 128,
+      "retainedEntries": 4224,
+      "retainedSourceBytes": 17985728,
+      "before": {
+        "rss": 65835008,
+        "heapTotal": 6918144,
+        "heapUsed": 4071776,
+        "external": 1715871,
+        "arrayBuffers": 10475
+      },
+      "small": {
+        "rss": 146169856,
+        "heapTotal": 16093184,
+        "heapUsed": 6874136,
+        "external": 3019944,
+        "arrayBuffers": 1222827
+      },
+      "after": {
+        "rss": 194666496,
+        "heapTotal": 16592896,
+        "heapUsed": 7083728,
+        "external": 30873150,
+        "arrayBuffers": 17996203
+      },
+      "stats": {
+        "compiles": 4224,
+        "cacheHits": 0,
+        "replayedInstalls": 0,
+        "replayedFrees": 0,
+        "replayErrors": 0
+      }
+    },
+    "candidate": {
+      "label": "synthetic compile-cache retention stress",
+      "seconds": 0.5560889849999999,
+      "smallModules": 4096,
+      "largeModules": 128,
+      "retainedEntries": 64,
+      "retainedSourceBytes": 8386688,
+      "before": {
+        "rss": 65781760,
+        "heapTotal": 6918144,
+        "heapUsed": 4076920,
+        "external": 1718530,
+        "arrayBuffers": 10475
+      },
+      "small": {
+        "rss": 136269824,
+        "heapTotal": 16093184,
+        "heapUsed": 5034128,
+        "external": 3166932,
+        "arrayBuffers": 313875
+      },
+      "after": {
+        "rss": 165105664,
+        "heapTotal": 14782464,
+        "heapUsed": 4343360,
+        "external": 25117817,
+        "arrayBuffers": 8528205
+      },
+      "stats": {
+        "compiles": 4224,
+        "cacheHits": 0,
+        "cacheMisses": 4224,
+        "cacheEvictions": 4160,
+        "cacheEntries": 64,
+        "cacheBytes": 8386688,
+        "liveFunctions": 0,
+        "replayedInstalls": 0,
+        "replayedFrees": 0,
+        "replayErrors": 0
+      }
+    },
+    "note": "Synthetic retention stress, not Firefox memory/startup/throughput. Endpoint RSS is a single process observation and not a compiled-native-code budget."
+  },
+  "peerReview": "startup_io: exact-byte key/immutable copy/eviction/live-function/nativeABI review passed; counter changes occur only after successful table.set.",
+  "remainingNativeFirefoxGates": "Existing original Firefox159 GC/guard coverage failures unchanged. No complete JIT cleanup or native compiler speed acceptance."
+}
