@@ -1,0 +1,561 @@
+{
+  "schema": 1,
+  "task": "Linuxonweb Firefox lifecycle packages 20261103",
+  "composition": {
+    "candidateOnly": true,
+    "productionAccepted": false,
+    "sourcePlainSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+    "archiveSha256": "cc46a1d00fa30dcce635c6d6d71a7489e661609b92eca21c3fae18f9c5eae1e0",
+    "archiveBytes": 44380160,
+    "version": "64c3b4f0c687",
+    "firefoxAssetUnchanged": true,
+    "packages": [
+      {
+        "name": "apk-tools",
+        "version": "2.14.12-r0",
+        "sha256": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa",
+        "nativeChecksum": "Q17Ve3P4N2t+E8UjxTS45kBs0pz00=",
+        "signatureVerified": true
+      },
+      {
+        "name": "busybox",
+        "version": "1.38.0_git-r0",
+        "sha256": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd",
+        "nativeChecksum": "Q1Fk/fmuBJSrjzuaun/0Nw2YLimOI=",
+        "signatureVerified": true
+      },
+      {
+        "name": "ca-certificates",
+        "version": "20261103-r0",
+        "sha256": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6",
+        "nativeChecksum": "Q1tuwX1UO0G62UEF42hmoNJ0NsPI0=",
+        "signatureVerified": true
+      },
+      {
+        "name": "curl",
+        "version": "8.21.0-r1",
+        "sha256": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819",
+        "nativeChecksum": "Q139a07w/tMvqOsYQq64axIixJbCc=",
+        "signatureVerified": true
+      }
+    ],
+    "compatibility": {
+      "apkNativeSha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2",
+      "baseInstalledDatabaseSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+      "baseInventorySha256": "5734f71ef1b5090f02d42b39a0fc24cb5516534a0f693c2ff42d2c6fe1852e31",
+      "busyboxNativeSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+      "kernelSha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+      "packageTarget": "wasm32-linux-musl",
+      "schema": 1,
+      "signingTrustSha256": "a3eeb9da5d7b3192a4e8665c917d5c73450e2088dc0abcb2d6525a861bca5291"
+    },
+    "nativeHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+    "nativeSudoSha256": "4edb1243495610789b21b266cf00f273282f3dd1b08d9b5ce343ed4c53a4a1e3",
+    "legacyMetadata": {
+      "bin/apk": {
+        "sha256": "f4e158588a83522d1cf060d07977218012c05e5c386ab4ffa73f4bc3ef2ec682",
+        "bytes": 4034394,
+        "mode": "0o100755",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/bin/apk"
+      },
+      "etc/apk/arch": {
+        "sha256": "9a17b77fb5fc22ef0c2ba1dbbcb56b5d0aabbcff5959d195a778b8b652369441",
+        "bytes": 7,
+        "mode": "0o100644",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/etc/apk/arch"
+      },
+      "etc/apk/world": {
+        "sha256": "468f48f8200692d25d2b2f8561ea70edfe75413da5d8a21f8e60df4d727879e3",
+        "bytes": 211,
+        "mode": "0o100644",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/etc/apk/world"
+      },
+      "lib/apk/db/installed": {
+        "sha256": "565074610e1c7d1a88eb43af66d047c6f4327bcbcf20148e8501bece2aed4f7c",
+        "bytes": 187475,
+        "mode": "0o100644",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/installed"
+      },
+      "lib/apk/db/scripts.tar.gz": {
+        "sha256": "deb230b21e0d7ef6a0a2d65a19599d4251b5f08888a5155882fbef2ef71e1e11",
+        "bytes": 29,
+        "mode": "0o100644",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/scripts.tar.gz"
+      },
+      "lib/apk/db/triggers": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "mode": "0o100644",
+        "archivedPath": "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/triggers"
+      }
+    },
+    "preservedUnmanagedRecords": 3834,
+    "preservedRecordsManifestSha256": "97d2b7e7abf2830b46073c4c7297934c42997e01e4377a6d19e8641a19e53e3b",
+    "managedFiles": {
+      "sbin/apk": {
+        "bytes": 3694719,
+        "sha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2",
+        "mode": "0o100755",
+        "packageOwner": "apk-tools",
+        "replacesExisting": false
+      },
+      "usr/libexec/apk-script": {
+        "bytes": 11040,
+        "sha256": "3548644870f5b5a41ed4fe5f68fecef0da84166eef52b4cdd9a7067557087eb0",
+        "mode": "0o100755",
+        "packageOwner": "apk-tools",
+        "replacesExisting": false
+      },
+      "bin/busybox": {
+        "bytes": 1230518,
+        "sha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+        "mode": "0o100755",
+        "packageOwner": "busybox",
+        "replacesExisting": true
+      },
+      "bin/sh": {
+        "bytes": 7,
+        "sha256": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91",
+        "mode": "0o120777",
+        "packageOwner": "busybox",
+        "replacesExisting": true
+      },
+      "etc/ssl/cert.pem": {
+        "bytes": 25,
+        "sha256": "4a76fad7a12c583912db78ad9924f7398999d0ef40cb8d56aa9b9f15d2dc5b78",
+        "mode": "0o120777",
+        "packageOwner": "ca-certificates",
+        "replacesExisting": true
+      },
+      "etc/ssl/certs/ca-certificates.crt": {
+        "bytes": 460226,
+        "sha256": "a511a02daa6829d3f3e47fe0098c23d071b9752b6695fa79a2796403c6a38fb7",
+        "mode": "0o100644",
+        "packageOwner": "ca-certificates",
+        "replacesExisting": false
+      },
+      "bin/curl": {
+        "bytes": 4245196,
+        "sha256": "4418dea15cc5591d08467bd4f973d09ed9e10dbc4d0d3d7b6d8dee7987099bab",
+        "mode": "0o100755",
+        "packageOwner": "curl",
+        "replacesExisting": true
+      },
+      "usr/bin/curl": {
+        "bytes": 14,
+        "sha256": "97db42c55a7b358fe9a9939a145ea226c21ad5ea198762b62f3d21d5e1e39e18",
+        "mode": "0o120777",
+        "packageOwner": "curl",
+        "replacesExisting": false
+      },
+      "etc/linuxonweb-packages/compatibility": {
+        "bytes": 612,
+        "sha256": "fecea4630d4581f82f33575b38c9206bb8ab550b035028bb31df5bad167c6d7e",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "etc/linuxonweb-packages/installed": {
+        "bytes": 210,
+        "sha256": "5734f71ef1b5090f02d42b39a0fc24cb5516534a0f693c2ff42d2c6fe1852e31",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "etc/linuxonweb-packages/trust.sha256": {
+        "bytes": 102,
+        "sha256": "a3eeb9da5d7b3192a4e8665c917d5c73450e2088dc0abcb2d6525a861bca5291",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "etc/linuxonweb-packages/base-world": {
+        "bytes": 39,
+        "sha256": "73e9f36cde3f8594c9b3fc5d1ae39edeca8c7eb3d6c14dd5a4727aa332d57622",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "etc/apk/world": {
+        "bytes": 39,
+        "sha256": "73e9f36cde3f8594c9b3fc5d1ae39edeca8c7eb3d6c14dd5a4727aa332d57622",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "etc/apk/repositories": {
+        "bytes": 53,
+        "sha256": "8e1d39ce0230cdf1bf48779dcbc0a4bd81c9990c87393275093d91f22f0ba384",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "lib/apk/db/installed": {
+        "bytes": 1397,
+        "sha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "lib/apk/db/scripts.tar": {
+        "bytes": 1024,
+        "sha256": "5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "lib/apk/db/triggers": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "etc/apk/keys/linuxonweb-dev.rsa.pub": {
+        "bytes": 451,
+        "sha256": "529b0b2265917010de583b364d6b7e90b5c17a8c386bbe3cf1b00ec49015580a",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "init": {
+        "bytes": 7495,
+        "sha256": "f3edfc6f5907f4559cbc1e7d8d36868b00826ba01ddae832f1e52c20fc2e0b47",
+        "mode": "0o100755",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "bin/apk": {
+        "bytes": 11,
+        "sha256": "59c84b180557ef0569d33204addd3b5a5b83bd490db27a8f159468619de371b0",
+        "mode": "0o120777",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "etc/apk/arch": {
+        "bytes": 7,
+        "sha256": "9a17b77fb5fc22ef0c2ba1dbbcb56b5d0aabbcff5959d195a778b8b652369441",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "usr/bin/sudo": {
+        "bytes": 33262,
+        "sha256": "4edb1243495610789b21b266cf00f273282f3dd1b08d9b5ce343ed4c53a4a1e3",
+        "mode": "0o104755",
+        "packageOwner": null,
+        "replacesExisting": true
+      },
+      "usr/sbin/apk-persist": {
+        "bytes": 158791,
+        "sha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+        "mode": "0o100755",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/doc/linuxonweb-packages/PERSISTENCE.txt": {
+        "bytes": 9526,
+        "sha256": "7f861f5f8e5b348bc13bd97e7a204b0e7a22f935267ed252d1c3e619f9aeec75",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/PACKAGE_OWNERSHIP.txt": {
+        "bytes": 511,
+        "sha256": "d03bf817f3300350bf824d9cb103ce0cb3f5e0f0f71f3cf7283a9dbb862b8c04",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/bin/apk": {
+        "bytes": 4034394,
+        "sha256": "f4e158588a83522d1cf060d07977218012c05e5c386ab4ffa73f4bc3ef2ec682",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/etc/apk/arch": {
+        "bytes": 7,
+        "sha256": "9a17b77fb5fc22ef0c2ba1dbbcb56b5d0aabbcff5959d195a778b8b652369441",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/etc/apk/world": {
+        "bytes": 211,
+        "sha256": "468f48f8200692d25d2b2f8561ea70edfe75413da5d8a21f8e60df4d727879e3",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/installed": {
+        "bytes": 187475,
+        "sha256": "565074610e1c7d1a88eb43af66d047c6f4327bcbcf20148e8501bece2aed4f7c",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/scripts.tar.gz": {
+        "bytes": 29,
+        "sha256": "deb230b21e0d7ef6a0a2d65a19599d4251b5f08888a5155882fbef2ef71e1e11",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      },
+      "usr/share/linuxonweb-image/legacy-apk/lib/apk/db/triggers": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o100644",
+        "packageOwner": null,
+        "replacesExisting": false
+      }
+    }
+  },
+  "optionalPathAudit": {
+    "optionalPackagePathCollisions": {
+      "python3": {
+        "declaredPackageFiles": 6,
+        "preexistingTargetPaths": []
+      },
+      "coreutils": {
+        "declaredPackageFiles": 23,
+        "preexistingTargetPaths": [
+          {
+            "path": "usr/bin/printf",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/wc",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/readlink",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/sort",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/uniq",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/sha256sum",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/test",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/head",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/tail",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/seq",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/id",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          }
+        ]
+      },
+      "gzip": {
+        "declaredPackageFiles": 5,
+        "preexistingTargetPaths": []
+      },
+      "grep": {
+        "declaredPackageFiles": 3,
+        "preexistingTargetPaths": []
+      },
+      "sed": {
+        "declaredPackageFiles": 3,
+        "preexistingTargetPaths": []
+      },
+      "tar": {
+        "declaredPackageFiles": 3,
+        "preexistingTargetPaths": []
+      },
+      "wget": {
+        "declaredPackageFiles": 3,
+        "preexistingTargetPaths": [
+          {
+            "path": "usr/bin/wget",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          }
+        ]
+      },
+      "findutils": {
+        "declaredPackageFiles": 4,
+        "preexistingTargetPaths": [
+          {
+            "path": "usr/bin/find",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          },
+          {
+            "path": "usr/bin/xargs",
+            "mode": "0o120777",
+            "bytes": 17,
+            "legacyOwner": "busybox",
+            "linkTarget": "../../bin/busybox"
+          }
+        ]
+      }
+    },
+    "baseCommandPathsInInitPathOrder": {
+      "apk": [
+        {
+          "path": "bin/apk",
+          "mode": "0o120777",
+          "bytes": 11,
+          "legacyOwner": "apk-tools",
+          "linkTarget": "../sbin/apk"
+        },
+        {
+          "path": "sbin/apk",
+          "mode": "0o100755",
+          "bytes": 3694719,
+          "legacyOwner": null,
+          "linkTarget": null
+        }
+      ],
+      "python3": [],
+      "coreutils": [],
+      "ls": [
+        {
+          "path": "bin/ls",
+          "mode": "0o120777",
+          "bytes": 7,
+          "legacyOwner": "busybox",
+          "linkTarget": "busybox"
+        }
+      ],
+      "tar": [
+        {
+          "path": "bin/tar",
+          "mode": "0o120777",
+          "bytes": 7,
+          "legacyOwner": "busybox",
+          "linkTarget": "busybox"
+        }
+      ],
+      "wget": [
+        {
+          "path": "usr/bin/wget",
+          "mode": "0o120777",
+          "bytes": 17,
+          "legacyOwner": "busybox",
+          "linkTarget": "../../bin/busybox"
+        }
+      ],
+      "find": [
+        {
+          "path": "usr/bin/find",
+          "mode": "0o120777",
+          "bytes": 17,
+          "legacyOwner": "busybox",
+          "linkTarget": "../../bin/busybox"
+        }
+      ],
+      "xargs": [
+        {
+          "path": "usr/bin/xargs",
+          "mode": "0o120777",
+          "bytes": 17,
+          "legacyOwner": "busybox",
+          "linkTarget": "../../bin/busybox"
+        }
+      ],
+      "gzip": [
+        {
+          "path": "bin/gzip",
+          "mode": "0o120777",
+          "bytes": 7,
+          "legacyOwner": "busybox",
+          "linkTarget": "busybox"
+        }
+      ],
+      "grep": [
+        {
+          "path": "bin/grep",
+          "mode": "0o120777",
+          "bytes": 7,
+          "legacyOwner": "busybox",
+          "linkTarget": "busybox"
+        }
+      ],
+      "sed": [
+        {
+          "path": "bin/sed",
+          "mode": "0o120777",
+          "bytes": 7,
+          "legacyOwner": "busybox",
+          "linkTarget": "busybox"
+        }
+      ]
+    },
+    "legacyRegisteredFiles": 3732,
+    "profileFiles": {}
+  },
+  "nativeOptionalInstallAccepted": false,
+  "ordinaryTerminalCommandResolutionAccepted": false,
+  "published": false,
+  "pending": [
+    "Native no-force install across optional package targets that currently contain unowned legacy BusyBox symlinks",
+    "Actual uid1000 normal terminal resolution and GNU branding, independent of sudo protected PATH",
+    "Exact-world/binary/installed-generation Stop and replay on the plain route"
+  ],
+  "build": {
+    "successfulOwnerSeconds": 2.505,
+    "sharedCpuAncestor": "/sys/fs/cgroup/cpulimit.slice",
+    "maxCpus": 3,
+    "ownedProcessesRemaining": 0,
+    "previousFailure": "First compositor invocation used a missing host apk verifier path. Corrected to the existing task build/apk-host path; the failed receipt was retained."
+  },
+  "scope": "Unmanaged desktop payloads remain image-managed, not claimed as current APK-installed packages. No force overwrite or unverified alias removal was used."
+}

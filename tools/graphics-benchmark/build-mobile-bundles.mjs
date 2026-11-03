@@ -34,7 +34,7 @@ async function bundle(entry,label,workerURL){
  await fs.writeFile(path.join(output,name),bytes,{flag:'wx'}).catch(async e=>{if(e.code!=='EEXIST'||sha(await fs.readFile(path.join(output,name)))!==digest)throw e;});
  const sources=[];for(const relative of Object.keys(result.metafile.inputs)){const bytes=await fs.readFile(path.join(root,relative));sources.push({path:relative,bytes:bytes.length,sha256:sha(bytes)});}
  sources.sort((a,b)=>a.path.localeCompare(b.path));
- return {url:(candidate?prefix+'immutable/':'/linux/dist/immutable/')+name,bytes:bytes.length,sha256:digest,sources};
+ return {url:'/linux/dist/immutable/'+name,bytes:bytes.length,sha256:digest,sources};
 }
 const worker=await bundle('web/linux/dist/worker.js','worker');
 const consoleEntry=await bundle('web/linux/packages/v1/package-shell.mjs','console',worker.url);

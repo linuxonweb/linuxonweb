@@ -1,0 +1,1403 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T16:47:10.229448+00:00",
+  "pass": true,
+  "totalFunctionalChecks": 164,
+  "nativeGuestBoots": 9,
+  "runs": [
+    {
+      "name": "shared-cap-gnu3",
+      "receiptSha256": "1ffdfebdc8f11686755d8e157806fa8c0462c9a586733cccf252a96405613e6b",
+      "pass": true,
+      "durationSeconds": 26.941,
+      "browserExit": 0,
+      "errors": [],
+      "quotaPreflights": [
+        {
+          "phase": "before-first-guest",
+          "utc": "2026-11-03T16:36:31.793Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 328420,
+                  "startTicks": 44018495,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328900,
+                  "startTicks": 44018855,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328526,
+                  "startTicks": 44018715,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328574,
+                  "startTicks": 44018739,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328538,
+                  "startTicks": 44018725,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328543,
+                  "startTicks": 44018732,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328699,
+                  "startTicks": 44018805,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328667,
+                  "startTicks": 44018779,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328666,
+                  "startTicks": 44018777,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328585,
+                  "startTicks": 44018753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328537,
+                  "startTicks": 44018725,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328572,
+                  "startTicks": 44018736,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "after-all-guests",
+          "utc": "2026-11-03T16:36:54.838Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 328420,
+                  "startTicks": 44018495,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331233,
+                  "startTicks": 44021161,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328526,
+                  "startTicks": 44018715,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328574,
+                  "startTicks": 44018739,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328538,
+                  "startTicks": 44018725,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328543,
+                  "startTicks": 44018732,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328699,
+                  "startTicks": 44018805,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328666,
+                  "startTicks": 44018777,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328585,
+                  "startTicks": 44018753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 328537,
+                  "startTicks": 44018725,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 329137,
+                  "startTicks": 44019022,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 329139,
+                  "startTicks": 44019025,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        }
+      ],
+      "phases": [
+        {
+          "pass": true,
+          "durationSeconds": 22.777,
+          "checks": 71,
+          "markers": [
+            "NATIVE_TOOLS_DONE checks=39 failures=0 status=0",
+            "FINDUTILS_SPAWN_DONE checks=32 failures=0 status=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "6f0d1d9910685f9f5f86da3ef8a44109de69ec8af0d9c4c9ced9ac65bc6438f3",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shared-cap-positive3",
+      "receiptSha256": "633f8d227ec0299d16540eae9eeb0fadfff4a00da8c00db0a7fa63364b6887d1",
+      "pass": true,
+      "durationSeconds": 50.757,
+      "browserExit": 0,
+      "errors": [],
+      "quotaPreflights": [
+        {
+          "phase": "before-first-guest",
+          "utc": "2026-11-03T16:36:59.211Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331574,
+                  "startTicks": 44021594,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331509,
+                  "startTicks": 44021509,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331438,
+                  "startTicks": 44021459,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-1",
+          "utc": "2026-11-03T16:37:14.734Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 333066,
+                  "startTicks": 44023154,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331654,
+                  "startTicks": 44021753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331656,
+                  "startTicks": 44021757,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-2",
+          "utc": "2026-11-03T16:37:26.422Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 334385,
+                  "startTicks": 44024322,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331654,
+                  "startTicks": 44021753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331656,
+                  "startTicks": 44021757,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-3",
+          "utc": "2026-11-03T16:37:34.714Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 335068,
+                  "startTicks": 44025147,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331654,
+                  "startTicks": 44021753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331656,
+                  "startTicks": 44021757,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-4",
+          "utc": "2026-11-03T16:37:39.892Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 335326,
+                  "startTicks": 44025666,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331654,
+                  "startTicks": 44021753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331656,
+                  "startTicks": 44021757,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "after-all-guests",
+          "utc": "2026-11-03T16:37:45.819Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 331272,
+                  "startTicks": 44021207,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 335591,
+                  "startTicks": 44026258,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331394,
+                  "startTicks": 44021433,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331440,
+                  "startTicks": 44021462,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331414,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331417,
+                  "startTicks": 44021454,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331538,
+                  "startTicks": 44021542,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331508,
+                  "startTicks": 44021508,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331456,
+                  "startTicks": 44021474,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331413,
+                  "startTicks": 44021445,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331654,
+                  "startTicks": 44021753,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 331656,
+                  "startTicks": 44021757,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        }
+      ],
+      "phases": [
+        {
+          "pass": true,
+          "durationSeconds": 15.166,
+          "checks": 8,
+          "markers": [
+            "APK_PERSIST_SAVED generation=generation-oGDfHP optional=2 elapsed=3.255 manifest=b24a6e76a62846b331e0c73bc044647269f92d09e6971fae5d966b370c10cbfe",
+            "PERSIST_CHECK_DONE phase=0 checks=8 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 11.528,
+          "checks": 10,
+          "markers": [
+            "APK_PERSIST_RESTORED generation=generation-oGDfHP optional=2 elapsed=2.636 offline=1 exactWorld=1",
+            "APK_PERSIST_SAVED generation=generation-nBNOMo optional=1 elapsed=2.312 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+            "PERSIST_CHECK_DONE phase=1 checks=10 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 7.921,
+          "checks": 7,
+          "markers": [
+            "APK_PERSIST_RESTORED generation=generation-nBNOMo optional=1 elapsed=1.678 offline=1 exactWorld=1",
+            "PERSIST_CHECK_DONE phase=2 checks=7 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 4.95,
+          "checks": 8,
+          "markers": [
+            "PERSIST_CHECK_DONE phase=3 checks=8 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 5.583,
+          "checks": 6,
+          "markers": [
+            "PERSIST_CHECK_DONE phase=4 checks=6 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "0b7db02ddc540a79f7f6dad94f447084407c0d998eb8f369cb6147d92c63c636",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shared-cap-negative3",
+      "receiptSha256": "aa5353489234201f4903953beb9895df0c0ef4c017b1f4cadf2b16aaf69eda3c",
+      "pass": true,
+      "durationSeconds": 49.066,
+      "browserExit": 0,
+      "errors": [],
+      "quotaPreflights": [
+        {
+          "phase": "before-first-guest",
+          "utc": "2026-11-03T16:37:50.041Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 335647,
+                  "startTicks": 44026307,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336455,
+                  "startTicks": 44026680,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336085,
+                  "startTicks": 44026539,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336207,
+                  "startTicks": 44026569,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336135,
+                  "startTicks": 44026553,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336156,
+                  "startTicks": 44026561,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336412,
+                  "startTicks": 44026639,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336376,
+                  "startTicks": 44026617,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336374,
+                  "startTicks": 44026616,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336266,
+                  "startTicks": 44026584,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336133,
+                  "startTicks": 44026552,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336186,
+                  "startTicks": 44026564,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-1",
+          "utc": "2026-11-03T16:38:04.941Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 335647,
+                  "startTicks": 44026307,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 338792,
+                  "startTicks": 44028171,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336085,
+                  "startTicks": 44026539,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336207,
+                  "startTicks": 44026569,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336135,
+                  "startTicks": 44026553,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336156,
+                  "startTicks": 44026561,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336412,
+                  "startTicks": 44026639,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336374,
+                  "startTicks": 44026616,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336266,
+                  "startTicks": 44026584,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336133,
+                  "startTicks": 44026552,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336633,
+                  "startTicks": 44026845,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336639,
+                  "startTicks": 44026847,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "before-restart-2",
+          "utc": "2026-11-03T16:38:25.762Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 335647,
+                  "startTicks": 44026307,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 341100,
+                  "startTicks": 44030254,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336085,
+                  "startTicks": 44026539,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336207,
+                  "startTicks": 44026569,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336135,
+                  "startTicks": 44026553,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336156,
+                  "startTicks": 44026561,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336412,
+                  "startTicks": 44026639,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336374,
+                  "startTicks": 44026616,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336266,
+                  "startTicks": 44026584,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336133,
+                  "startTicks": 44026552,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336633,
+                  "startTicks": 44026845,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336639,
+                  "startTicks": 44026847,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        },
+        {
+          "phase": "after-all-guests",
+          "utc": "2026-11-03T16:38:35.086Z",
+          "valid": true,
+          "groups": [
+            {
+              "membership": "/cpulimit.slice/cpulimit-70.slice",
+              "ancestors": [
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+                  "cpuMax": "560000 100000",
+                  "cpus": 5.6
+                },
+                {
+                  "path": "/sys/fs/cgroup/cpulimit.slice",
+                  "cpuMax": "300000 100000",
+                  "cpus": 3
+                },
+                {
+                  "path": "/sys/fs/cgroup",
+                  "cpuMax": null,
+                  "cpus": null,
+                  "readError": "FileNotFoundError"
+                }
+              ],
+              "ancestorCpuLimit": 3,
+              "processes": [
+                {
+                  "pid": 335647,
+                  "startTicks": 44026307,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 343024,
+                  "startTicks": 44031177,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336085,
+                  "startTicks": 44026539,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336207,
+                  "startTicks": 44026569,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336135,
+                  "startTicks": 44026553,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336156,
+                  "startTicks": 44026561,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336412,
+                  "startTicks": 44026639,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336374,
+                  "startTicks": 44026616,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336266,
+                  "startTicks": 44026584,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336133,
+                  "startTicks": 44026552,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336633,
+                  "startTicks": 44026845,
+                  "affinityCpus": 3
+                },
+                {
+                  "pid": 336639,
+                  "startTicks": 44026847,
+                  "affinityCpus": 3
+                }
+              ]
+            }
+          ],
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3
+            }
+          ],
+          "violations": []
+        }
+      ],
+      "phases": [
+        {
+          "pass": true,
+          "durationSeconds": 14.514,
+          "checks": 12,
+          "markers": [
+            "APK_PERSIST_SAVED generation=generation-eHHceN optional=1 elapsed=1.865 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+            "APK_PERSIST_SAVED generation=generation-fPokeJ optional=1 elapsed=2.417 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+            "PERSIST_NEGATIVE_DONE phase=0 checks=12 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "c2a0a11d1f808800be64c58d7d8e5c26e2eb3f46c71237b025532ffa7ba6bb78",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 20.509,
+          "checks": 37,
+          "markers": [
+            "APK_PERSIST_RESTORED generation=generation-eHHceN optional=1 elapsed=1.212 offline=1 exactWorld=1",
+            "PERSIST_NEGATIVE_DONE phase=1 checks=37 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "c2a0a11d1f808800be64c58d7d8e5c26e2eb3f46c71237b025532ffa7ba6bb78",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        },
+        {
+          "pass": true,
+          "durationSeconds": 8.901,
+          "checks": 5,
+          "markers": [
+            "APK_PERSIST_RESTORED generation=generation-eHHceN optional=1 elapsed=2.330 offline=1 exactWorld=1",
+            "PERSIST_NEGATIVE_DONE phase=2 checks=5 failures=0"
+          ],
+          "configuration": {
+            "cpus": 3,
+            "memoryBytes": 536870912,
+            "hardwareConcurrency": 3,
+            "imageSha256": "c2a0a11d1f808800be64c58d7d8e5c26e2eb3f46c71237b025532ffa7ba6bb78",
+            "cmdline": "console=hvc0 rdinit=/init"
+          }
+        }
+      ]
+    }
+  ],
+  "owner": {
+    "startedUtc": "2026-11-03T16:36:27.734392+00:00",
+    "finishedUtc": "2026-11-03T16:38:36.026523+00:00",
+    "durationSeconds": 128.292,
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownedTreePeakRssBytes": 1722822656,
+    "ownedTreePeakPssBytes": 1147224064,
+    "resourceSamples": 128,
+    "pssSamples": 26,
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed"
+  },
+  "quota": {
+    "allSamplesValid": true,
+    "commonSharedAncestors": [
+      "/sys/fs/cgroup/cpulimit.slice"
+    ],
+    "maximumQuotaScanSeconds": 0.026549,
+    "minimumAvailableRamBytes": 26890203136
+  },
+  "exactSignedPackages": {
+    "tar-1.35-r1.apk": "679e46386206961bf8279db6e24b8c5e4803f29f4699797c6cf3c97bf6580920",
+    "wget-1.25.0-r0.apk": "9138700d0bed2052c28fe6e3f5a53f1a717169ed94c12fdb76f8facdb17d31f8",
+    "findutils-4.10.0-r1.apk": "4c485eb661b7ee584d50374f83d66fa7f86ccaed7d8c1a88babb2e57905b30ac"
+  },
+  "defaultHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+  "limits": [
+    "Native signed package and helper behavior only; this does not establish Firefox startup/JIT/graphics targets.",
+    "Instrumented interruption22-check fixture was not repeated in this scoped resource recheck.",
+    "Actual Android and plain-mode production acceptance still pending."
+  ]
+}

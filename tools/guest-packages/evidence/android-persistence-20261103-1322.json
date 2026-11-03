@@ -1,0 +1,367 @@
+{
+  "schema": 1,
+  "task": "Linuxonweb Firefox lifecycle packages 20261103",
+  "scoreContext": "43/100 confirmed before final acceptance review; no automatic score increment from this receipt",
+  "candidateOnly": true,
+  "published": false,
+  "attempts": [
+    {
+      "attempt": 1,
+      "accepted": false,
+      "startedUtc": "2026-11-03T17:03:58.389262+00:00",
+      "finishedUtc": "2026-11-03T17:05:57.943629+00:00",
+      "durationSeconds": 119.554,
+      "device": {
+        "model": "MI 8",
+        "android": "15",
+        "browserApp": "com.brave.browser",
+        "browserProtocolVersion": "Chrome/148.0.7778.217"
+      },
+      "guest": {
+        "cpus": 1,
+        "memoryBytes": 536870912,
+        "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
+      },
+      "runtimeBundleAudit": [
+        {
+          "kind": "console",
+          "urlPath": "/linux/dist/immutable/console-5821fd6570e244d9e2e7d964e01fa199d328daa0e7aa9f5e1c3e2201b3c3e861.mjs",
+          "bytes": 225996,
+          "sha256": "5821fd6570e244d9e2e7d964e01fa199d328daa0e7aa9f5e1c3e2201b3c3e861",
+          "status": 200
+        },
+        {
+          "kind": "worker",
+          "urlPath": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+          "bytes": 105773,
+          "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445",
+          "status": 200
+        }
+      ],
+      "steps": [
+        {
+          "command": "id",
+          "elapsedMs": 945.3939669999963,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk info",
+          "elapsedMs": 752.6918420000002,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk update",
+          "elapsedMs": 5698.4048390000025,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk add python3",
+          "elapsedMs": 31122.541396,
+          "boundMs": 180000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "python3 --version",
+          "elapsedMs": 850.5499249999993,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "Python 3.14.6"
+          ]
+        },
+        {
+          "command": "python3 -c 'import json,zlib,hashlib,ssl;assert json.loads(json.dumps([1,2,3]))==[1,2,3];assert zlib.decompress(zlib.compress(b\"phone\"))==b\"phone\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"MOBILE_\"+\"PYTHON_OK\",2**20,hashlib.sha256(b\"phone\").hexdigest())'",
+          "elapsedMs": 4123.313808999999,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_PYTHON_OK 1048576 45569da57f4b7bf472d7a864ef4781451cae6383fee9fb0ae40c59aa1ce475b7"
+          ]
+        }
+      ],
+      "boots": 1,
+      "gatePass": false,
+      "errors": [
+        "Error: Native gate condition timed out",
+        "Required native Android gate did not complete"
+      ],
+      "savedGeneration": null,
+      "beforeHashes": null,
+      "afterHashes": null,
+      "restart": {},
+      "retainedFinalReplayAcknowledgments": [],
+      "offlineScope": "Native helper APK replay disables networking and precedes guest network interface configuration. The phone browser network remains available.",
+      "nativeCleanup": {},
+      "ownedWorkerTeardown": [],
+      "cleanup": {
+        "ownedTabClosed": true,
+        "ownedForwardRemoved": true,
+        "ownedHostProcessesRemaining": 0,
+        "hostCleanupErrors": []
+      },
+      "host": {
+        "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+        "quotaFailure": null,
+        "preflightChecks": 1,
+        "resourceSamples": 119,
+        "pssSamples": 24,
+        "peakRssBytes": 117178368,
+        "peakPssBytes": 67657728
+      },
+      "phoneResources": {
+        "scope": "CPU and available RAM cover the device; RSS/PSS cover all Brave app processes, including unrelated existing tabs. No app force-stop. RSS can count shared pages repeatedly; sampled PSS peak is a lower bound.",
+        "cpuRssRamRequestedCadenceSeconds": 1,
+        "pssRequestedCadenceSeconds": 5,
+        "cpuRssRamCadence": {
+          "samples": 116,
+          "actualStartIntervalMs": {
+            "min": 999.4545419999995,
+            "median": 1000.9591320000036,
+            "max": 2316.165476
+          },
+          "maxSampleDurationMs": 286.5761429999984,
+          "firstUtc": "2026-11-03T17:03:59.491Z",
+          "lastUtc": "2026-11-03T17:05:56.052Z"
+        },
+        "pssCadence": {
+          "samples": 24,
+          "actualStartIntervalMs": {
+            "min": 5000.186369999996,
+            "median": 5001.010048,
+            "max": 6121.434879
+          },
+          "maxSampleDurationMs": 1117.3797,
+          "firstUtc": "2026-11-03T17:04:00.608Z",
+          "lastUtc": "2026-11-03T17:05:56.530Z"
+        },
+        "minimumAvailableBytes": 1480478720,
+        "peakBrowserRssBytes": 1332260864,
+        "peakBrowserPssBytes": 687027200,
+        "peakDeviceCpuBusyPercent": 45.962732919254655
+      },
+      "privateEvidenceDirectory": "out/pkp3/android-private/persistence1"
+    },
+    {
+      "attempt": 2,
+      "accepted": false,
+      "startedUtc": "2026-11-03T17:10:04.980232+00:00",
+      "finishedUtc": "2026-11-03T17:12:22.678448+00:00",
+      "durationSeconds": 137.698,
+      "device": {
+        "model": "MI 8",
+        "android": "15",
+        "browserApp": "com.brave.browser",
+        "browserProtocolVersion": "Chrome/148.0.7778.217"
+      },
+      "guest": {
+        "cpus": 1,
+        "memoryBytes": 536870912,
+        "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
+      },
+      "runtimeBundleAudit": [
+        {
+          "kind": "console",
+          "urlPath": "/linux/dist/immutable/console-5821fd6570e244d9e2e7d964e01fa199d328daa0e7aa9f5e1c3e2201b3c3e861.mjs",
+          "bytes": 225996,
+          "sha256": "5821fd6570e244d9e2e7d964e01fa199d328daa0e7aa9f5e1c3e2201b3c3e861",
+          "status": 200
+        },
+        {
+          "kind": "worker",
+          "urlPath": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+          "bytes": 105773,
+          "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445",
+          "status": 200
+        }
+      ],
+      "steps": [
+        {
+          "command": "id",
+          "elapsedMs": 1332.0010370000018,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk info",
+          "elapsedMs": 1113.0421930000011,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk update",
+          "elapsedMs": 6817.010926000003,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk add python3",
+          "elapsedMs": 30596.371768999998,
+          "boundMs": 180000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "python3 --version",
+          "elapsedMs": 1261.0190100000036,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "Python 3.14.6"
+          ]
+        },
+        {
+          "command": "python3 -c 'import json,zlib,hashlib,ssl;assert json.loads(json.dumps([1,2,3]))==[1,2,3];assert zlib.decompress(zlib.compress(b\"phone\"))==b\"phone\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"MOBILE_\"+\"PYTHON_OK\",2**20,hashlib.sha256(b\"phone\").hexdigest())'",
+          "elapsedMs": 4464.852914000003,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_PYTHON_OK 1048576 45569da57f4b7bf472d7a864ef4781451cae6383fee9fb0ae40c59aa1ce475b7"
+          ]
+        },
+        {
+          "command": "/bin/busybox sha256sum /usr/bin/python3 /usr/lib/python314.zip /etc/apk/world",
+          "elapsedMs": 1700.5911009999982,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "echo MOBILE_'HOME_ACK' > /home/admin/mobile-proof; cat /home/admin/mobile-proof",
+          "elapsedMs": 1092.477350999994,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_HOME_ACK"
+          ]
+        },
+        {
+          "command": "apk info -e python3",
+          "elapsedMs": 1124.231083000006,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk-persist save",
+          "elapsedMs": 32962.185457,
+          "boundMs": 180000,
+          "pass": true,
+          "nativeMarkers": [
+            "APK_PERSIST_SAVED generation=generation-ICfIgn optional=1 elapsed=32.047 manifest=f30036e4caf4c514e4f09a09698664fcbf78761f230e66d156440a3e7fc58a06"
+          ]
+        },
+        {
+          "action": "physical Stop after native save acknowledgment",
+          "ackToTapCompletedMs": 509.05630999999994,
+          "ackToStoppedMs": 555.3408550000022,
+          "nativeMarkers": []
+        }
+      ],
+      "boots": 2,
+      "gatePass": false,
+      "errors": [
+        "Error: Exact offline generation replay acknowledgment absent",
+        "Required native Android gate did not complete"
+      ],
+      "savedGeneration": "generation-ICfIgn",
+      "beforeHashes": {
+        "/usr/bin/python3": "11d1d1365a6a4690ac0befdd987e4036a6b705921b432fdc1c784f2ed6d70ecc",
+        "/usr/lib/python314.zip": "5d2c5ee148b61fc1dab7986110e56da137c00c278c92e18ec22ce43465311f69",
+        "/etc/apk/world": "b9abf0b23a0fca67b340c9d153e2c3b3f162c834667fbede6194454a532a9c5a"
+      },
+      "afterHashes": null,
+      "restart": {},
+      "retainedFinalReplayAcknowledgments": [
+        "APK_PERSIST_RESTORED generation=generation-ICfIgn optional=1 elapsed=4.284 offline=1 exactWorld=1"
+      ],
+      "offlineScope": "Native helper APK replay disables networking and precedes guest network interface configuration. The phone browser network remains available.",
+      "nativeCleanup": {},
+      "ownedWorkerTeardown": [
+        {
+          "label": "after-saved-generation-stop",
+          "elapsedMs": 3.967875999995158,
+          "samples": [
+            {
+              "ms": 3.9302279999974417,
+              "count": 0
+            }
+          ],
+          "remainingCount": 0
+        }
+      ],
+      "cleanup": {
+        "ownedTabClosed": true,
+        "ownedForwardRemoved": true,
+        "ownedHostProcessesRemaining": 0,
+        "hostCleanupErrors": []
+      },
+      "host": {
+        "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+        "quotaFailure": null,
+        "preflightChecks": 2,
+        "resourceSamples": 137,
+        "pssSamples": 28,
+        "peakRssBytes": 109977600,
+        "peakPssBytes": 67293184
+      },
+      "phoneResources": {
+        "scope": "CPU and available RAM cover the device; RSS/PSS cover all Brave app processes, including unrelated existing tabs. No app force-stop. RSS can count shared pages repeatedly; sampled PSS peak is a lower bound.",
+        "cpuRssRamRequestedCadenceSeconds": 1,
+        "pssRequestedCadenceSeconds": 5,
+        "cpuRssRamCadence": {
+          "samples": 135,
+          "actualStartIntervalMs": {
+            "min": 999.2198780000035,
+            "median": 1000.9795694999993,
+            "max": 1917.2196780000002
+          },
+          "maxSampleDurationMs": 567.9879139999975,
+          "firstUtc": "2026-11-03T17:10:06.155Z",
+          "lastUtc": "2026-11-03T17:12:21.480Z"
+        },
+        "pssCadence": {
+          "samples": 27,
+          "actualStartIntervalMs": {
+            "min": 4999.598623999991,
+            "median": 5000.823396499996,
+            "max": 5694.910445
+          },
+          "maxSampleDurationMs": 904.5262359999979,
+          "firstUtc": "2026-11-03T17:10:06.847Z",
+          "lastUtc": "2026-11-03T17:12:17.640Z"
+        },
+        "minimumAvailableBytes": 1411870720,
+        "peakBrowserRssBytes": 1362612224,
+        "peakBrowserPssBytes": 683013120,
+        "peakDeviceCpuBusyPercent": 41.183723797780516
+      },
+      "privateEvidenceDirectory": "out/pkp3/android-private/persistence2"
+    }
+  ],
+  "knownFailureInterpretations": {
+    "1": "Harness invoked a missing bare sha256sum alias. Native BusyBox exposes the applet; corrected harness explicitly invokes /bin/busybox sha256sum. Signed Python install/import had passed; persistence was not attempted.",
+    "2": "Frontend prompt detector accepted APK progress ending # as interactive readiness. Retained output contains the exact offline replay acknowledgment after the premature readiness decision, but restored hashes/imports/world/userdata were not checked. This remains a failed complete gate."
+  },
+  "promptFix": {
+    "path": "web/linux/packages/v1/package-prompt.mjs",
+    "sha256": "acd0c8943395938c69ef913352a5b6071b3f3492e3ff931727ed7297dcad9400",
+    "focusedTests": 3,
+    "sourceReview": "Firefox lifecycle agent approved exact pinned native PS1 matching; actual device gate is separate."
+  },
+  "limits": [
+    "Python install uses a 180-second test bound; previous 45-second timeout is not a measured baseline.",
+    "A console pass does not establish full Firefox usability on Android.",
+    "iOS acceptance has not passed.",
+    "Private raw evidence, CDP URLs, tab identifiers, grants, cookies, device serials and screenshots are excluded from public/source archives."
+  ]
+}

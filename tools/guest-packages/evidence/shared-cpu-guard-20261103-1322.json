@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "recordedUtc": "2026-11-03T16:34:29.894593+00:00",
-  "status": "Reviewed guard and pre-guest diagnostics; representative native rechecks pending",
+  "status": "Reviewed guard plus successful164-check nine-boot common-cap representative native recheck",
   "sourceSha256": {
     "tools/guest-packages/bounded.py": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4",
     "tools/guest-packages/test-bounded-quota.py": "6b5d965c5127cb8b72b4499baef628dd42c15541dcccbb5a2ea6a9811fb2d814",
@@ -120,6 +120,7 @@
     "guestBooted": false,
     "cause": "Native Chromium rewrites /proc/PID/cmdline into a single space-joined process-title argument; the old NUL-token exact-profile assertion failed.",
     "fix": "Canonical short profile path, exact token boundaries in the observed title format, and stronger owned PID/startTicks/native executable validation.",
-    "runtimeAcceptedAfterFix": false
-  }
+    "runtimeAcceptedAfterFix": true
+  },
+  "representativeRecheck": "shared-cap-native-recheck-20261103-1322.json"
 }

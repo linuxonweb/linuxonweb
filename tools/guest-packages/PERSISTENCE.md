@@ -1,9 +1,12 @@
 # Signed package generations (native candidate)
 
-The native helper is a candidate, with real native component validation. It is
-not accepted for production until actual browser Stop durability and the remaining
-signature, identity, compatibility, and interruption gates pass. The shell prototype
-is rejected and exits immediately; image composition requires a native Wasm binary.
+The native helper remains a candidate until its supported browser routes are
+accepted and explicitly published. Native transaction, signature, identity,
+compatibility and crash-boundary gates have passed, and the Firefox candidate passed
+actual GUI save/Stop/restart with exact world, binaries and user data. Plain desktop
+optional installs/ordinary command resolution and complete Android replay acceptance
+remain separate gates. The shell prototype is rejected and exits immediately;
+image composition requires a native Wasm binary.
 
 ## User-visible contract
 
@@ -99,10 +102,10 @@ the prior generation when present; it takes effect after Stop and Start. An expl
   `persistence-primitives-20261103-1322.json` in `evidence/` retain exact source,
   native binary, image, and result identities, including failed first attempts.
 
-Actual production decompression/composition/desktop, Stop immediately after the
-success acknowledgement, signed same-version replacement, recomputed-manifest
-signature tampering, ABI/trust mismatch, interrupted activation, larger Python
-replay, and mobile persistence still need their own passing evidence.
+These initial component results were followed by the safety gates below and the
+integration agent's actual Firefox candidate save/Stop/restart gate. Component times
+do not establish full desktop startup or mobile usability. The distinct mode gates
+and publication status below remain authoritative.
 
 ## Further native safety gates (2026-11-03 15:22 UTC)
 
@@ -133,4 +136,42 @@ The instrumented binary must never be deployed. See
 
 The earlier native functional receipts remain observations of exact signed package bytes and helper behavior. Their owner monitor sampled only the root child CPU ancestor; it did not establish that every browser process shared that ancestor. The package smoke harness also used three-CPU affinity, which is not a substitute for a common capped ancestor. Those durations are not matched-performance acceptance.
 
-The revised owner requires one shared ancestor capped at no more than three CPUs for every observed live owned process, unions child lists from all threads, rejects unreadable live inventories and observed cgroup migration, and retains PID/start identity during cleanup. Fourteen focused regression checks passed. Representative native rechecks under this policy are pending; see `evidence/shared-cpu-guard-20261103-1322.json`.
+The revised owner requires one shared ancestor capped at no more than three CPUs for every observed live owned process, unions child lists from all threads, rejects unreadable live inventories and observed cgroup migration, and retains PID/start identity during cleanup. Fourteen focused regression checks passed. The representative recheck passed 164 functional checks across nine fresh native boots in 128.292 seconds, with 128 valid common-cap samples and zero survivors: GNU 71, helper positive 39, critical negative 54. See `evidence/shared-cap-native-recheck-20261103-1322.json`. This does not expand Firefox, Android or plain-mode acceptance.
+
+## Browser route status before final acceptance
+
+The Firefox candidate uses the exact native helper and APK4 package base. Its actual
+GUI save acknowledgment was followed by normal Stop in 88.631 ms; a fresh production
+browser launch restored the exact generation, world, tar/gzip bytes and a home marker.
+The earlier whole-browser quota qualification still applies to that timing receipt.
+The revised common-cap native transaction recheck above independently passed.
+
+The plain desktop candidate replaces only eight verified signed base payload members,
+adds the current APK alias, accepted native sudo and helper metadata, archives six
+legacy registry/launcher files, and preserves 3,834 unmanaged records byte for byte.
+Its base-only recovery/desktop gate passed. Optional package installs and ordinary
+nonroot command selection have not passed. In particular, legacy BusyBox aliases may
+precede installed GNU commands in the original `/bin`-first PATH. Native sudo supplies
+a protected `/usr/sbin:/usr/bin:/sbin:/bin` PATH, so a sudo-only branding test cannot
+prove the ordinary terminal behavior. The deferred `plain-production-check.sh`
+separates privileged no-force installation from a real uid-1000 PATH/branding phase;
+no unverified alias deletion, force overwrite or image PATH change has been made.
+
+The small console candidate retains one CPU and 512 MiB on the actual MI8 / Android 15
+/ Brave Chromium 148 device. The first corrected persistence attempt installed signed
+Python 3.14.6 in 30.596 s, ran native imports in 4.465 s and saved a signed generation in
+32.047 s. Physical Stop completed 555 ms after the save acknowledgment, and all owned
+worker targets disappeared. Replay later emitted the same generation acknowledgment
+with `offline=1 exactWorld=1` in 4.284 s, but the frontend had mistaken an APK progress
+bar ending `# ` for a prompt and enabled input too early. That full gate failed before
+restored hashes, world and imports were checked. The source now requires the exact
+initial native prompt; three focused progress/chunk/replay tests and independent
+review passed. New immutable bundle and actual device acceptance are still required.
+See `evidence/android-persistence-20261103-1322.json` for both retained attempts,
+actual sample intervals and scoped cleanup. No console persistence publication or
+full Firefox/iOS acceptance follows from these partial observations.
+
+When the console manifest includes the verified helper, its Python button is labeled
+"Install, save & check Python" and executes `apk update`, `apk-persist add python3`,
+and real native Python imports in sequence. Ordinary `apk add` is session-only until
+an explicit successful `apk-persist save`; the candidate page explains this contract.
