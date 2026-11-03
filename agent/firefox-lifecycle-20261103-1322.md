@@ -77,7 +77,7 @@ agent owns actual compilation, signed packaging and runtime publication.
 and xargs scheduler remain in place; E2BIG splitting,126/127, parallel slots and
 ordinary client failures are explicit. No fork result or child success is faked.
 `findutils-spawn-check.sh` exercises genuine guest executables, preserving failed
-owned evidence. Build and runtime results are pending.
+owned evidence. Source2 native build and signed r1 runtime gates below now pass.
 
 ## Independent package-persistence review
 
@@ -89,3 +89,58 @@ base installed-database identity. The second source review found no new blocker
 in signature preflight, offline replay, atomic pointer/previous preservation,
 ABI/trust mismatch refusal or explicit recovery. Actual multi-boot/failure gates
 remain mandatory; source review is not durability acceptance.
+
+## Final composition v2 and actual native observation
+
+V1 is diagnostic-only: it omitted later desktop extras from the generation.
+V2 pins the exact raw extras digest/size and optional gzip digest/size. The
+loader verifies actual downloaded/decoded bytes, rejects prebundled proof paths
+including CPIO aliases, and writes generation+extras proof only in its final
+transient overlay. Legacy/unverified composition gets an empty proof and keeps
+native purge-marker invalidation. No proof is persisted in home.
+
+The first native v2 run selected the existing http1-profile, LastPlatformDir
+/opt/firefox, and LastAppDir
+/opt/firefox/app-5c0ea00a25f77f0e2b4fccb865d98266067d91790d90e8c1b999426fbc438722
+with correct159 build identity and no InvalidateCaches field, per
+/mnt/p3/codex-build/lwc/cache-compat1/compatibility.json. This proves the shell
+proof/resource path, not warm reuse or30-second usability. That launch painted
+52.307s, focused53.888s, then correctly failed exact input because the screenshot
+shows readinessevidencce (extra c) instead of readinessevidence. Integration owns
+native input-event diagnosis and graceful Close/Stop/warm acceptance.
+
+## Native findutils source2 and signed r1 acceptance
+
+First spawn candidate passed22/24 find/xargs checks but255/signal paths segfaulted.
+Readable musl exit.c intentionally traps recursive exit; GNU xargs fatal-child
+handling called exit during atexit. Source2 returns to wait_for_proc_all after
+reaping every child, allowing its existing _exit path to return124/125. The main
+scheduler still stops new work on fatal status. No child success is fabricated.
+
+Fresh build started14:28:14.453131 UTC, ended14:29:31.720432,77.267s,exit0.
+Source2 xargs SHA256:
+cce65505a5002f586c7e88cc1fbc08e48727813228c6963fe3fc5497a1c2c7c3.
+Signed findutils4.10.0-r1 APK SHA256:
+4c485eb661b7ee584d50374f83d66fa7f86ccaed7d8c1a88babb2e57905b30ac.
+Final runtime3 owner started14:33:57.399855 UTC, ended14:34:22.162904,24.763s;
+real guest18.512s. All71 behavior checks passed (32find/xargs,39tar/wget), plus
+signed APK installation/removal. Fatal255/signal pass serial+P2: existing siblings
+finish, no new third job begins after fatal reaping, and child PIDs disappear.
+Valid HTTPS,404 and real self-signed rejection pass. Default CA discovery passes
+with SSL_CERT_FILE,SSL_CERT_DIR,CURL_CA_BUNDLE explicitly unset and asserted absent.
+No insecure TLS option was supplied. Guest/browser exit0,errors empty,owned
+remaining processes0. CPU/RSS/availableRAM1s,PSS5s;3CPU,512MiB guest. Runtime peak
+RSS1,838,227,456 and sampledPSS1,180,037,120bytes; build peakRSS214,798,336 and
+sampledPSS127,277,056bytes.
+
+Exact identities, check lines, and failure-before/fix-after receipt hashes are in
+tools/guest-packages/evidence/findutils-native-spawn-20261103-1322.json.
+Native-command acceptance is separate from full production desktop installation,
+package persistence, mobile/iOS, native Firefox restart and broad JIT guard/GC
+acceptance. P2 is covered; unbounded P0 is not claimed. The overall acceptance
+score remains42/100 until the project manager integrates measured target gates.
+
+The reused native shell lacks reliable set-u/EXIT-status behavior. Native tests
+now emit explicit final status without relying on EXIT traps. Package persistence
+is being moved to a checked native helper; do not enable the old shell helper
+based on source review alone.

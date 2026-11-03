@@ -182,7 +182,11 @@
       "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/find",
       "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/xargs",
       "PACKAGE_SMOKE_EXIT status=0"
-    ]
+    ],
+    "ownedProcessesRemaining": 0,
+    "buildOwnedProcessesRemaining": 0,
+    "runtimeFinishedUtc": "2026-11-03T14:34:22.162904+00:00",
+    "buildFinishedUtc": "2026-11-03T14:29:31.720432+00:00"
   },
   "receipts": {
     "out/pkp3/native-ports-runtime1/result.json": "d333e772a15e9fc48d537c929f6d938f351837bae21683c0e2228c9c377aae69",
