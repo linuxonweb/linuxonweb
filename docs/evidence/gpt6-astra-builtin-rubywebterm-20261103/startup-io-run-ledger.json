@@ -1,0 +1,120 @@
+{
+  "taskStart": "2026-11-03T07:06:26Z",
+  "updated": "2026-11-03T08:18:36.614468+00:00",
+  "runs": [
+    {
+      "run": "io1",
+      "start": "2026-11-03T07:15:26.606Z",
+      "end": "2026-11-03T07:15:51.910Z",
+      "elapsedSeconds": 25.305005,
+      "finishedNormally": false,
+      "remainingOwned": 0
+    },
+    {
+      "run": "io2",
+      "start": "2026-11-03T07:17:58.015Z",
+      "end": "2026-11-03T07:18:06.520Z",
+      "elapsedSeconds": 8.505417999999999,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "cold1",
+      "start": "2026-11-03T07:18:12.133Z",
+      "end": "2026-11-03T07:20:54.415Z",
+      "elapsedSeconds": 162.281578,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "home1",
+      "start": "2026-11-03T07:23:00.854Z",
+      "end": "2026-11-03T07:23:09.304Z",
+      "elapsedSeconds": 8.450156000000002,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "io3",
+      "start": "2026-11-03T07:23:16.679Z",
+      "end": "2026-11-03T07:23:24.230Z",
+      "elapsedSeconds": 7.550953000000001,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "abba1",
+      "start": "2026-11-03T07:28:32.416Z",
+      "end": "2026-11-03T07:28:50.224Z",
+      "elapsedSeconds": 17.8077,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "abba2",
+      "start": "2026-11-03T07:30:24.858Z",
+      "end": "2026-11-03T07:30:42.841Z",
+      "elapsedSeconds": 17.983572,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "trace1",
+      "start": "2026-11-03T07:30:54.517Z",
+      "end": "2026-11-03T07:33:43.602Z",
+      "elapsedSeconds": 169.084356,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "home2",
+      "start": "2026-11-03T07:38:04.013Z",
+      "end": "2026-11-03T07:38:10.916Z",
+      "elapsedSeconds": 6.902523,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "compressed1",
+      "start": "2026-11-03T07:38:10.982Z",
+      "end": "2026-11-03T07:40:53.406Z",
+      "elapsedSeconds": 162.424133,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "direct1",
+      "start": "2026-11-03T07:48:59.504Z",
+      "end": "2026-11-03T07:51:42.229Z",
+      "elapsedSeconds": 162.72502,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "raw3",
+      "start": "2026-11-03T08:00:46.361Z",
+      "end": "2026-11-03T08:03:29.172Z",
+      "elapsedSeconds": 162.811625,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "compressed3",
+      "start": "2026-11-03T08:03:29.264Z",
+      "end": "2026-11-03T08:06:11.362Z",
+      "elapsedSeconds": 162.098434,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    },
+    {
+      "run": "input1",
+      "start": "2026-11-03T08:14:33.066Z",
+      "end": "2026-11-03T08:14:46.012Z",
+      "elapsedSeconds": 12.946298,
+      "finishedNormally": true,
+      "remainingOwned": 0
+    }
+  ],
+  "sequentialOwnerSeconds": 1086.876771,
+  "note": "Elapsed owner durations; model inference time unavailable. Other agents execute in parallel."
+}
