@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "task": "Linuxonweb Firefox lifecycle packages 20261103",
+  "archiveAudit": {
+    "archiveSha256": "4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c",
+    "entriesRead": 12948,
+    "selected": {
+      "init": {
+        "mode": "0o100755",
+        "sha256": "74a5af5da55ed65113b5f678b8dfa8fe182359cb160b48474334244b06082f83",
+        "bytes": 10839,
+        "environmentAndLaunchLines": [
+          {
+            "line": 3,
+            "text": "PATH=/bin:/sbin:/usr/bin:/usr/sbin"
+          },
+          {
+            "line": 6,
+            "text": "export HOME=/home/admin"
+          },
+          {
+            "line": 7,
+            "text": "export USER=admin"
+          },
+          {
+            "line": 8,
+            "text": "export LOGNAME=admin"
+          },
+          {
+            "line": 10,
+            "text": "export SHELL=/bin/sh"
+          },
+          {
+            "line": 40,
+            "text": "    exec setsid cttyhack sh"
+          },
+          {
+            "line": 54,
+            "text": "    exec setsid cttyhack sh"
+          },
+          {
+            "line": 130,
+            "text": "  exec setsid cttyhack sh"
+          },
+          {
+            "line": 137,
+            "text": "  export FONTCONFIG_PATH=/share/fonts/X11"
+          },
+          {
+            "line": 154,
+            "text": "/bin/su -s /bin/sh -c \"export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/Xfbdev :0 -ac -maxbigreqsize 1 -screen '$screen_mode' -nolisten tcp -fp /share/fonts/X11/misc,/share/fonts/X11/cursor\" admin &"
+          },
+          {
+            "line": 166,
+            "text": "  exec setsid cttyhack sh"
+          },
+          {
+            "line": 171,
+            "text": "  /bin/su -s /bin/sh -c 'export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/aurora-files --picker-service' admin &"
+          },
+          {
+            "line": 185,
+            "text": "  /bin/su -s /bin/sh -c \"export HOME=$home USER=$account LOGNAME=$account DISPLAY=:0 XDG_CONFIG_HOME=$home/.config XDG_CACHE_HOME=$home/.cache; exec /bin/firefox --no-remote --new-instance -profile /home/admin/.mozilla/firefox/http1-profile\" \"$account\""
+          },
+          {
+            "line": 194,
+            "text": "  mkdir -p /home/admin/.mozilla/firefox/http1-profile"
+          },
+          {
+            "line": 195,
+            "text": "  if [ ! -e /home/admin/.mozilla/firefox/http1-profile/user.js ]; then"
+          },
+          {
+            "line": 196,
+            "text": "  cat > /home/admin/.mozilla/firefox/http1-profile/user.js <<'LOWLAND_HTTP1_PREFS'"
+          },
+          {
+            "line": 207,
+            "text": "  # NSS creates fresh databases itself; existing profile trust is left intact."
+          },
+          {
+            "line": 208,
+            "text": "  echo \"[NSS_CA_DB] static Nightly roots; preserving existing profile databases\" >&2"
+          },
+          {
+            "line": 209,
+            "text": "  mkdir -p /opt/firefox/fonts /home/admin/.mozilla/firefox/http1-profile/chrome"
+          },
+          {
+            "line": 211,
+            "text": "  [ -e /home/admin/.mozilla/firefox/http1-profile/chrome/userChrome.css ] || cp /lowland-userChrome.css /home/admin/.mozilla/firefox/http1-profile/chrome/userChrome.css"
+          },
+          {
+            "line": 213,
+            "text": "  chown 1000:1000 /home/admin/.mozilla/firefox /home/admin/.mozilla/firefox/http1-profile /home/admin/.mozilla/firefox/http1-profile/chrome /home/admin/.mozilla/firefox/http1-profile/user.js /home/admin/.mozilla/firefox/http1-profile/chrome/userChrome.css"
+          },
+          {
+            "line": 214,
+            "text": "  echo \"[HTTP1_PREFS] h2=off h3=off profile=/home/admin/.mozilla/firefox/http1-profile\" >&2"
+          },
+          {
+            "line": 218,
+            "text": "    if [ ! -x /bin/wait-for-aurora ] || ! /bin/su -s /bin/sh -c 'export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/wait-for-aurora' admin; then"
+          },
+          {
+            "line": 235,
+            "text": "  /bin/su -s /bin/sh -c 'export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/aurora-wm --compositor=no' admin"
+          },
+          {
+            "line": 239,
+            "text": "exec /bin/su -s /bin/sh -c 'export HOME=/home/admin USER=admin LOGNAME=admin DISPLAY=:0; exec /bin/xterm -ls -e htop' admin"
+          }
+        ]
+      }
+    },
+    "absent": [
+      "etc/environment",
+      "etc/profile",
+      "home/admin/.ashrc",
+      "home/admin/.bash_profile",
+      "home/admin/.bashrc",
+      "home/admin/.profile",
+      "root/.profile"
+    ],
+    "ordinaryCommandResolutionExecuted": false
+  },
+  "owner": {
+    "startedUtc": "2026-11-03T17:43:56.231953+00:00",
+    "finishedUtc": "2026-11-03T17:43:59.985851+00:00",
+    "durationSeconds": 3.754,
+    "exitCode": 0,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "quotaFailure": null,
+    "ownedTreePeakRssBytes": 21073920,
+    "ownedTreePeakPssBytes": 317440,
+    "resourceSamples": 3,
+    "pssSamples": 1,
+    "pass": true
+  },
+  "sourceFiles": {
+    "vendor/aurorawm/src/bin/aurora-files/term.rs": {
+      "sha256": "5ee974eb80f3b0a04b32341470fad7e7739abf6569c65a1eed6f45750582c7aa",
+      "bytes": 26464
+    },
+    "tools/guest-rootfs/adapt-wm-guest.py": {
+      "sha256": "837856f748b0a966c28436b5dd87fd551398cd5adf701b49a0060c69a4be62cc",
+      "bytes": 840
+    },
+    "tools/build-aurora-wm-guest.sh": {
+      "sha256": "96dd7fb3a61a3b62a3ee11408e0f3bb4050a6847dbd91fed2107f784a49b8df9",
+      "bytes": 5671
+    },
+    "tools/guest-rootfs/sudo.c": {
+      "sha256": "5aa4f8f14fd704d05d6147bc32ee477b688688aa8911aaae06199c58f6153162",
+      "bytes": 1562
+    },
+    "web/linux/desktop-extras.mjs": {
+      "sha256": "c754e7c8a207e6392e8cf11cef7218754a49dd816b984558492adbef65c9a7b3",
+      "bytes": 19459
+    }
+  },
+  "findings": [
+    "The exact final image1 /init sets PATH=/bin:/sbin:/usr/bin:/usr/sbin and exports it. It sets SHELL=/bin/sh and starts the desktop account through /bin/su without a login flag.",
+    "No checked system/admin/root profile file or etc/profile.d shell script is present in this image. The persistent mounted home may still contain user configuration; this audit does not inspect it.",
+    "The frontend desktop init wrapper sets DISPLAY and starts bridge/agent helpers, then execs /init.desktop-original; it does not override PATH.",
+    "The guest-specific WM build adapter replaces its upstream host fork/bash PTY implementation with the wasm32 Aurora Files posix_spawn implementation. That implementation selects SHELL with /bin/sh fallback, passes only argv0, inherits environ, and changes TERM but not PATH.",
+    "The native sudo source explicitly resets PATH=/usr/sbin:/usr/bin:/sbin:/bin before execvp. Its command lookup therefore cannot prove ordinary nonroot terminal lookup."
+  ],
+  "limits": [
+    "No guest boot or ordinary command-resolution execution was performed.",
+    "The available terminal source/build adapter was audited; this receipt does not independently bind its source to the already deployed Aurora executable.",
+    "BusyBox su environment behavior and persisted user configuration can affect the effective shell PATH; do not infer runtime selection solely from init.",
+    "This is source evidence for the next normal uid1000/no-force package acceptance gate. It does not promote the plain candidate."
+  ]
+}
