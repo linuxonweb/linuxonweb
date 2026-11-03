@@ -1,6 +1,6 @@
 {
   "name": "python3",
-  "version": "3.14.6-r0",
+  "version": "3.14.6-r1",
   "description": "CPython for wasm32 Linux with static modules and compact standard library",
   "url": "https://www.python.org/",
   "license": "PSF-2.0",
@@ -23,6 +23,14 @@
     "usr/share/licenses/python3/LICENSE": {
       "path": "python-LICENSE",
       "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+    },
+    "usr/lib/python3.14/os.py": {
+      "path": "python-os.py",
+      "sha256": "976bdb3e24925f2fb3ce43a4d788de6dcbb88a7cc8604c60ae690fbdd6507546"
+    },
+    "usr/lib/python3.14/lib-dynload/README.linuxonweb": {
+      "path": "python-static-extensions.txt",
+      "sha256": "359ae62a07645d5af06434e709c8db73ed5d51ff8589b156e77c843e54f631b5"
     }
   },
   "provenance": {
@@ -34,6 +42,7 @@
       "no mmap or ctypes",
       "no remote debugger",
       "subprocess adaptation pending; real os.posix_spawn works"
-    ]
+    ],
+    "layoutRevision": "r1 supplies standard CPython stdlib and platform-library landmarks; no PYTHONHOME workaround"
   }
 }

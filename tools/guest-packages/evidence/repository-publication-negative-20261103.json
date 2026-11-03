@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "cases": [
+    {
+      "case": "invalid-index-signature",
+      "rejectedBeforePublicMutation": true
+    },
+    {
+      "case": "non-basename-key",
+      "rejectedBeforePublicMutation": true
+    }
+  ]
+}

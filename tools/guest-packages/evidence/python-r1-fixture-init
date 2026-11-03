@@ -1,0 +1,31 @@
+#!/bin/busybox sh
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+/bin/busybox mount -t proc proc /proc
+/bin/busybox mount -t sysfs sysfs /sys
+/bin/busybox mkdir -p /tmp /home/admin /var/cache/apk
+/bin/busybox chmod 1777 /tmp
+/bin/busybox chown 1000:1000 /home/admin
+/bin/busybox ifconfig lo 127.0.0.1 up
+/bin/busybox ifconfig eth0 192.0.2.2 netmask 255.255.255.0 up
+/bin/busybox route add default gw 192.0.2.1
+/bin/busybox echo nameserver 192.0.2.1 > /etc/resolv.conf
+/bin/busybox ln -sf busybox /bin/su
+fail=0
+check() { if "$@"; then /bin/busybox echo "PACKAGE_CHECK_PASS $*"; else /bin/busybox echo "PACKAGE_CHECK_FAIL $*"; fail=$((fail+1)); fi; }
+check /sbin/apk --initdb add /input/python3-r0.apk
+check /sbin/apk update
+check /sbin/apk add --upgrade python3
+check /bin/busybox test -f /usr/lib/python3.14/os.py
+check /bin/busybox test -d /usr/lib/python3.14/lib-dynload
+if /bin/su -s /bin/sh -c /tests/user-check.sh admin > /tmp/user-out 2> /tmp/user-err; then /bin/busybox echo PACKAGE_CHECK_PASS admin-python-r1; else /bin/busybox echo PACKAGE_CHECK_FAIL admin-python-r1; fail=$((fail+1)); fi
+/bin/busybox cat /tmp/user-out
+/bin/busybox cat /tmp/user-err
+check /bin/busybox test ! -s /tmp/user-err
+check /bin/busybox grep -F PYTHON_ADMIN_MODULE_EXIT=0 /tmp/user-out
+check /bin/busybox sh /tests/coreutils-check.sh
+check /sbin/apk del python3
+check /bin/busybox test ! -e /usr/lib/python3.14/os.py
+check /bin/busybox test ! -e /usr/bin/python3
+/bin/busybox echo PACKAGE_SMOKE_EXIT status=$fail
+exec /bin/busybox poweroff -f

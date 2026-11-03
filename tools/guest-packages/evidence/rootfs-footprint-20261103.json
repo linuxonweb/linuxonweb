@@ -1,0 +1,290 @@
+{
+  "firefox": {
+    "archive": "web/desktop/latest-build/initramfs-firefox.cpio.gz",
+    "totals": {
+      "files": 10377,
+      "bytes": 364714202,
+      "page64kBytes": 979304448
+    },
+    "largestPageGroups": [
+      {
+        "path": "opt/firefox/browser",
+        "files": 5365,
+        "bytes": 54275517,
+        "page64kBytes": 373817344
+      },
+      {
+        "path": "opt/firefox/firefox",
+        "files": 1,
+        "bytes": 208805368,
+        "page64kBytes": 208863232
+      },
+      {
+        "path": "opt/firefox/chrome",
+        "files": 1402,
+        "bytes": 24069146,
+        "page64kBytes": 104923136
+      },
+      {
+        "path": "opt/firefox/moz-src",
+        "files": 553,
+        "bytes": 9765091,
+        "page64kBytes": 38797312
+      },
+      {
+        "path": "opt/firefox/modules",
+        "files": 493,
+        "bytes": 10786139,
+        "page64kBytes": 35586048
+      },
+      {
+        "path": "share/fonts/X11",
+        "files": 338,
+        "bytes": 4260495,
+        "page64kBytes": 24379392
+      },
+      {
+        "path": "share/terminfo/a",
+        "files": 233,
+        "bytes": 231193,
+        "page64kBytes": 15269888
+      },
+      {
+        "path": "bin/aurora-wm",
+        "files": 1,
+        "bytes": 10648580,
+        "page64kBytes": 10682368
+      },
+      {
+        "path": "share/terminfo/x",
+        "files": 160,
+        "bytes": 228832,
+        "page64kBytes": 10485760
+      },
+      {
+        "path": "share/terminfo/t",
+        "files": 156,
+        "bytes": 158701,
+        "page64kBytes": 10223616
+      },
+      {
+        "path": "share/terminfo/d",
+        "files": 135,
+        "bytes": 154331,
+        "page64kBytes": 8847360
+      },
+      {
+        "path": "share/terminfo/n",
+        "files": 128,
+        "bytes": 175500,
+        "page64kBytes": 8388608
+      },
+      {
+        "path": "share/terminfo/v",
+        "files": 118,
+        "bytes": 145615,
+        "page64kBytes": 7733248
+      },
+      {
+        "path": "share/terminfo/w",
+        "files": 115,
+        "bytes": 171315,
+        "page64kBytes": 7536640
+      },
+      {
+        "path": "share/terminfo/s",
+        "files": 107,
+        "bytes": 185808,
+        "page64kBytes": 7012352
+      }
+    ],
+    "largestFiles": [
+      {
+        "path": "opt/firefox/firefox",
+        "bytes": 208805368
+      },
+      {
+        "path": "bin/aurora-wm",
+        "bytes": 10648580
+      },
+      {
+        "path": "bin/curl",
+        "bytes": 4245196
+      },
+      {
+        "path": "bin/apk",
+        "bytes": 4034394
+      },
+      {
+        "path": "bin/aurora-files",
+        "bytes": 3410843
+      },
+      {
+        "path": "opt/firefox/certutil",
+        "bytes": 2934418
+      },
+      {
+        "path": "opt/firefox/pk12util",
+        "bytes": 2837755
+      },
+      {
+        "path": "opt/firefox/chrome/pdfjs/content/build/pdf.worker.mjs",
+        "bytes": 2226211
+      },
+      {
+        "path": "bin/xterm",
+        "bytes": 2223317
+      },
+      {
+        "path": "bin/7zz",
+        "bytes": 2158885
+      }
+    ],
+    "scope": "regular file payload rounded to64KiB pages; excludes inode/slab/cache/runtime overhead and counts hard-link records literally; original first CPIO archive only, APK overlays excluded",
+    "sourceBaseSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa"
+  },
+  "plain": {
+    "archive": "web/linux/initramfs.cpio",
+    "totals": {
+      "files": 2312,
+      "bytes": 39937274,
+      "page64kBytes": 185991168
+    },
+    "largestPageGroups": [
+      {
+        "path": "share/fonts/X11",
+        "files": 338,
+        "bytes": 4260495,
+        "page64kBytes": 24379392
+      },
+      {
+        "path": "share/terminfo/a",
+        "files": 233,
+        "bytes": 231193,
+        "page64kBytes": 15269888
+      },
+      {
+        "path": "bin/aurora-wm",
+        "files": 1,
+        "bytes": 10648580,
+        "page64kBytes": 10682368
+      },
+      {
+        "path": "share/terminfo/x",
+        "files": 160,
+        "bytes": 228832,
+        "page64kBytes": 10485760
+      },
+      {
+        "path": "share/terminfo/t",
+        "files": 156,
+        "bytes": 158701,
+        "page64kBytes": 10223616
+      },
+      {
+        "path": "share/terminfo/d",
+        "files": 135,
+        "bytes": 154331,
+        "page64kBytes": 8847360
+      },
+      {
+        "path": "share/terminfo/n",
+        "files": 128,
+        "bytes": 175500,
+        "page64kBytes": 8388608
+      },
+      {
+        "path": "share/terminfo/v",
+        "files": 118,
+        "bytes": 145615,
+        "page64kBytes": 7733248
+      },
+      {
+        "path": "share/terminfo/w",
+        "files": 115,
+        "bytes": 171315,
+        "page64kBytes": 7536640
+      },
+      {
+        "path": "share/terminfo/s",
+        "files": 107,
+        "bytes": 185808,
+        "page64kBytes": 7012352
+      },
+      {
+        "path": "share/terminfo/p",
+        "files": 102,
+        "bytes": 105048,
+        "page64kBytes": 6684672
+      },
+      {
+        "path": "share/terminfo/h",
+        "files": 93,
+        "bytes": 83395,
+        "page64kBytes": 6094848
+      },
+      {
+        "path": "share/terminfo/c",
+        "files": 77,
+        "bytes": 76255,
+        "page64kBytes": 5046272
+      },
+      {
+        "path": "share/terminfo/m",
+        "files": 77,
+        "bytes": 113140,
+        "page64kBytes": 5046272
+      },
+      {
+        "path": "bin/curl",
+        "files": 1,
+        "bytes": 4245196,
+        "page64kBytes": 4259840
+      }
+    ],
+    "largestFiles": [
+      {
+        "path": "bin/aurora-wm",
+        "bytes": 10648580
+      },
+      {
+        "path": "bin/curl",
+        "bytes": 4245196
+      },
+      {
+        "path": "bin/apk",
+        "bytes": 4034394
+      },
+      {
+        "path": "bin/aurora-files",
+        "bytes": 3410843
+      },
+      {
+        "path": "bin/xterm",
+        "bytes": 2223317
+      },
+      {
+        "path": "bin/7zz",
+        "bytes": 2158885
+      },
+      {
+        "path": "bin/busybox",
+        "bytes": 1230518
+      },
+      {
+        "path": "lib/libcurl.a",
+        "bytes": 1132298
+      },
+      {
+        "path": "bin/Xfbdev",
+        "bytes": 1084045
+      },
+      {
+        "path": "share/fonts/X11/misc/18x18ko.pcf.gz",
+        "bytes": 740887
+      }
+    ],
+    "scope": "regular file payload rounded to64KiB pages; excludes inode/slab/cache/runtime overhead and counts hard-link records literally",
+    "sourceArchiveSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be"
+  }
+}

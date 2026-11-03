@@ -1,0 +1,22 @@
+{
+  "published": true,
+  "baseUrl": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/72701b51-5611-4cef-8136-189f6265a61d/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_pkgsr1/",
+  "all20ServerHashesMatch": true,
+  "publicDownloadChecks": [
+    {
+      "path": "MANIFEST.json",
+      "bytes": 3214,
+      "sha256": "c358a87310460bfc99b4fec53f6ef56950a004f150c0bf234e1d85b1107b694a",
+      "client": "curl",
+      "status": 200
+    },
+    {
+      "path": "wasm32/APKINDEX.tar.gz",
+      "bytes": 1373,
+      "sha256": "d4caaa9a8983776b70fe8954b09c750ddfee5bef36218634a3b0c7805674759e",
+      "client": "curl",
+      "status": 200
+    }
+  ],
+  "clientDifference": "urllib request returned HTTP403; ordinary curl GET returned200 without authentication or modified user-agent"
+}

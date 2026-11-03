@@ -1,0 +1,101 @@
+{
+  "name": "coreutils",
+  "version": "9.11-r0",
+  "description": "GNU coreutils native Linux/Wasm multicall with tested common commands",
+  "url": "https://www.gnu.org/software/coreutils/",
+  "license": "GPL-3.0-or-later",
+  "files": {
+    "usr/bin/coreutils": {
+      "path": "coreutils",
+      "mode": "755",
+      "sha256": "b899b924c0fd49c354954d5fb54c284e8cd00a9d948714a84db1c1a1b0291998"
+    },
+    "usr/share/licenses/coreutils/COPYING": {
+      "path": "coreutils-COPYING",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "usr/share/doc/coreutils/README.linuxonweb": {
+      "path": "coreutils-README.txt",
+      "sha256": "850d53cc0c0692cb05f9ecd504899f458444bd90d61df7dc9a2f70e5c7418af3"
+    },
+    "usr/bin/printf": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/wc": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/mkdir": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/cp": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/mv": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/ln": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/readlink": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/stat": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/sort": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/uniq": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/sha256sum": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/ls": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/touch": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/test": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/head": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/tail": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/seq": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/id": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/date": {
+      "symlink": "coreutils"
+    },
+    "usr/bin/rm": {
+      "symlink": "coreutils"
+    }
+  },
+  "provenance": {
+    "source": {
+      "name": "coreutils",
+      "version": "9.11",
+      "url": "https://ftp.gnu.org/gnu/coreutils/coreutils-9.11.tar.xz",
+      "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/coreutils-9.11.tar.xz",
+      "bytes": 6562420,
+      "sha256": "394024eda0a5955217ceda9cd1201e65dc8fa3aa29c2951135a49521d57c3cc3",
+      "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+    },
+    "rebuiltThisTask": true,
+    "nativeSha256": "b899b924c0fd49c354954d5fb54c284e8cd00a9d948714a84db1c1a1b0291998",
+    "nativeRuntimeEvidence": "tools/guest-packages/evidence/python-r1-coreutils-runtime-20261103.json",
+    "packageInstallGate": "pending",
+    "limits": [
+      "fork/vfork return ENOSYS",
+      "tested /usr/bin aliases only; no full command/option coverage claim"
+    ]
+  }
+}

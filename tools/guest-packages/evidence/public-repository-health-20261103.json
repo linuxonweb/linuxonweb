@@ -1,0 +1,49 @@
+{
+  "pass": true,
+  "baseUrl": "https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz",
+  "checks": [
+    {
+      "url": "http://127.0.0.1:38100/health",
+      "status": 200,
+      "response": "{\"ok\":true,\"service\":\"signed-apk-repository\",\"readOnly\":true}\n"
+    },
+    {
+      "url": "https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz/health",
+      "status": 200,
+      "response": "{\"ok\":true,\"service\":\"signed-apk-repository\",\"readOnly\":true}\n"
+    },
+    {
+      "path": "wasm32/APKINDEX.tar.gz",
+      "status": 200,
+      "bytes": 1373,
+      "sha256": "d4caaa9a8983776b70fe8954b09c750ddfee5bef36218634a3b0c7805674759e",
+      "cacheControl": "no-cache"
+    },
+    {
+      "path": "linuxonweb-dev.rsa.pub",
+      "status": 200,
+      "bytes": 451,
+      "sha256": "529b0b2265917010de583b364d6b7e90b5c17a8c386bbe3cf1b00ec49015580a",
+      "cacheControl": "no-cache"
+    },
+    {
+      "path": "wasm32/python3-3.14.6-r1.apk",
+      "status": 200,
+      "bytes": 6321433,
+      "sha256": "17dc996aa4492e8b283e8937d73ff575bbc98b291a2bf3b398d73802708ce2c1",
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+    {
+      "rejectedPath": "/../private-signing/linuxonweb-dev.rsa",
+      "status": 404
+    },
+    {
+      "rejectedPath": "/tcp",
+      "status": 404
+    },
+    {
+      "rejectedPath": "/__owner/messages",
+      "status": 404
+    }
+  ]
+}

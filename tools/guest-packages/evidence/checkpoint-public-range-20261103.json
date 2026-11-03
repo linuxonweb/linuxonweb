@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "url": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/3378cc4f-3a2b-495e-880a-734fca1b9f18/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_80a52d1/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103.tar.cms.part000",
+  "client": "curl without authentication or User-Agent override",
+  "httpStatus": 206,
+  "range": "bytes=0-4095",
+  "bytes": 4096,
+  "sha256": "9317af6d083252c246b95e9346a641acaf0f763b79405eb3ed9414fe9696ab69",
+  "existingRestoreScript": "local chunk reassembly/hash verification only; contains no HTTP client",
+  "fullPublicCiphertextRedownloadVerified": false,
+  "fullDecryptVerified": false
+}
