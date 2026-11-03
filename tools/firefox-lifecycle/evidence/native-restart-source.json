@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "generatedUtc": "2026-11-03T13:37:31.757706+00:00",
+  "sourcePath": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/xpcom/base/AppShutdown.cpp",
+  "sourceSha256": "7ccde58f3987f2d120d1e0009b34e48e6ce73cde2c46c63c4bf4c8cf13e608be",
+  "patchedSourceSha256": "0be15b054e9c70ae9478c56652338cc1d22c6a4e43fe1c8a896937db2ae977d9",
+  "changedFiles": [
+    "xpcom/base/AppShutdown.cpp"
+  ],
+  "scope": "__wasm__ && __linux__ && !__wasi__; explicit AppShutdownMode::Restart only",
+  "mechanism": "existing LaunchChild(true,true) Unix execv after native profile unlock and restart environment restoration",
+  "ordinaryQuitUnchanged": true,
+  "exitCodeRespawn": false,
+  "binaryPatched": false,
+  "nativeBuildCompleted": false,
+  "runtimeRestartAccepted": false,
+  "requiredBuildInputs": [
+    "reviewed equivalent configured Firefox159 source and generated headers",
+    "matching full native object/archive graph",
+    "native mapping/runtime/stack adapters",
+    "Mesa/EGL and matching libc++/libc++abi/libunwind inputs",
+    "original target compiler/linker/optimizer and fpcast transforms"
+  ],
+  "requiredRuntimeChecks": [
+    "real about:profiles Restart normally returns usable same profile",
+    "replacement exec lifecycle and inherited generation XUL_APP_FILE observed",
+    "ordinary Close remains closed",
+    "failed exec reports failure and exits nonzero",
+    "original JIT semantic/GC/guard/lifecycle gates unchanged"
+  ],
+  "accessBoundary": "Protected historical p6 build inputs are not read or permission-modified by this tool"
+}

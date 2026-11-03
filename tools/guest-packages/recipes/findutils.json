@@ -1,6 +1,6 @@
 {
   "name": "findutils",
-  "version": "4.10.0-r0",
+  "version": "4.10.0-r1",
   "description": "GNU findutils native Linux/Wasm",
   "url": "https://www.gnu.org/software/findutils/",
   "license": "GPL-3.0-or-later",
@@ -9,7 +9,7 @@
     "usr/bin/find": {
       "path": "find",
       "mode": "755",
-      "sha256": "f99037b4af2aed90002363e196393e6983b8b7304f385ba2495b7a67aa84fe8f"
+      "sha256": "2294fbdf75a468acd281ae56d99b1530a3f1e535e148a6228fc1b716df32329b"
     },
     "usr/share/licenses/findutils/COPYING": {
       "path": "findutils-COPYING",
@@ -22,7 +22,7 @@
     "usr/bin/xargs": {
       "path": "xargs",
       "mode": "755",
-      "sha256": "8fa06a51536a9450b79a0a8a11392f9962acef92c9d5b47544debbc23f983471"
+      "sha256": "661fb187644b2e8b22fdec6d9ec39653d88ec82cdd278e44ea913d8b09c86e46"
     }
   },
   "provenance": {
@@ -35,7 +35,7 @@
       "sha256": "1387e0b67ff247d2abde998f90dfbf70c1491391a59ddfecb8ae698789f0a4f5",
       "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
     },
-    "nativeSha256": "f99037b4af2aed90002363e196393e6983b8b7304f385ba2495b7a67aa84fe8f",
+    "nativeSha256": "2294fbdf75a468acd281ae56d99b1530a3f1e535e148a6228fc1b716df32329b",
     "rebuiltThisTask": true,
     "runtimeAccepted": false,
     "scope": "GNU find and xargs with a Linux/Wasm posix_spawn adapter. Native cwd/stdin, wait status and xargs scheduling gates are recorded separately; optional child-only descriptor diagnostics are omitted.",
@@ -52,7 +52,7 @@
         {
           "path": "xargs/xargs.c",
           "originalSha256": "a823a6be7b9f16fbdf310bd8d32c3569684ab48061a1297b3ef8b62b55e9efa2",
-          "patchedSha256": "8dfa480c2d076a18b74a68a2b3782e18dd331c4dea36e04134ac0ad0e05fc905"
+          "patchedSha256": "cce65505a5002f586c7e88cc1fbc08e48727813228c6963fe3fc5497a1c2c7c3"
         }
       ],
       "mechanism": "target musl posix_spawnp plus child file actions",
@@ -61,7 +61,7 @@
       "requires": [
         "posix_spawnp with exec errno propagation",
         "posix_spawn_file_actions_addfchdir_np/addchdir_np/adddup2/addclose/addopen",
-        "unchanged GNU waitpid and xargs scheduler semantics"
+        "GNU waitpid and xargs scheduler with nonrecursive target atexit cleanup"
       ],
       "acceptance": [
         "find -exec semicolon and plus success/failure",
@@ -105,7 +105,7 @@
         "ac_cv_func_madvise": "no",
         "LC_ALL": "C",
         "CPPFLAGS": "-include /mnt/p3/project/linux/linuxonweb/tools/guest-packages/no-fork.h ",
-        "LIBS": "/mnt/p3/codex-build/pkp3/findutils-spawn1/compat/liblinuxonweb-nofork.a"
+        "LIBS": "/mnt/p3/codex-build/pkp3/findutils-spawn2/compat/liblinuxonweb-nofork.a"
       },
       "configureOptions": [],
       "target": "wasm32-unknown-linux-musl",
@@ -123,7 +123,7 @@
           {
             "path": "xargs/xargs.c",
             "originalSha256": "a823a6be7b9f16fbdf310bd8d32c3569684ab48061a1297b3ef8b62b55e9efa2",
-            "patchedSha256": "8dfa480c2d076a18b74a68a2b3782e18dd331c4dea36e04134ac0ad0e05fc905"
+            "patchedSha256": "cce65505a5002f586c7e88cc1fbc08e48727813228c6963fe3fc5497a1c2c7c3"
           }
         ],
         "mechanism": "target musl posix_spawnp plus child file actions",
@@ -132,7 +132,7 @@
         "requires": [
           "posix_spawnp with exec errno propagation",
           "posix_spawn_file_actions_addfchdir_np/addchdir_np/adddup2/addclose/addopen",
-          "unchanged GNU waitpid and xargs scheduler semantics"
+          "GNU waitpid and xargs scheduler with nonrecursive target atexit cleanup"
         ],
         "acceptance": [
           "find -exec semicolon and plus success/failure",

@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-11-03T13:37:46.499996+00:00",
+  "finishedUtc": "2026-11-03T13:38:16.795484+00:00",
+  "durationSeconds": 30.296,
+  "sourceArchiveSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "archiveSha256": "4e7413a96baf81dcef4c79fcc7e3deaa1db33457ea0fd7cb70f0e138c7d394e5",
+  "archiveBytes": 116198453,
+  "uncompressedSha256": "dda498b0586241bd583f01dfe746d0d01feaafe3f8a513668f01958f2bdb1f96",
+  "uncompressedBytes": 371234988,
+  "generation": "aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28",
+  "appDirectory": "/opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28",
+  "nativeSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+  "nativeUnchanged": true,
+  "originalInitUnchanged": true,
+  "originalMarkerPreserved": true,
+  "stableExecutable": "/opt/firefox/firefox",
+  "stableGREDirectory": "/opt/firefox",
+  "changedOriginalFiles": [
+    "opt/firefox/firefox-gpu-diagnostic"
+  ],
+  "addedResourceLinks": [
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/actors",
+      "target": "/opt/firefox/browser/actors"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/chrome",
+      "target": "/opt/firefox/browser/chrome"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/chrome.manifest",
+      "target": "/opt/firefox/browser/chrome.manifest"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/components",
+      "target": "/opt/firefox/browser/components"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/defaults",
+      "target": "/opt/firefox/browser/defaults"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/localization",
+      "target": "/opt/firefox/browser/localization"
+    },
+    {
+      "path": "opt/firefox/app-aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28/modules",
+      "target": "/opt/firefox/browser/modules"
+    }
+  ],
+  "applicationIniSha256": "bc14b02e4ee23a35ed0a4e7f01c34eab8b422ee4591e0611d12f74e6b1994861",
+  "runtimeAcceptance": false,
+  "publicationAccepted": false,
+  "profileMutationByBuilder": false,
+  "protocol": "Native per-profile LastAppDir compatibility; native crash/safe-mode/failure invalidation retained",
+  "generationIdentitySha256": "aec6c42898cfd30839108799b35ebbd9586d6cc44d88ce1d354b3278b4f49c28",
+  "generationResourceCount": 9051,
+  "sourceBuildReport": "../../../codex-build/f3l/cache-image-v1/cache-lifecycle-build.json",
+  "monitor": {
+    "startedUtc": "2026-11-03T13:37:45.443710+00:00",
+    "finishedUtc": "2026-11-03T13:38:17.477449+00:00",
+    "durationSeconds": 32.034,
+    "argv": [
+      "python3",
+      "-B",
+      "tools/firefox-lifecycle/build-cache-image.py",
+      "--base-dir",
+      "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4",
+      "--output",
+      "../../../codex-build/f3l/cache-image-v1"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownerPeakRssBytes": 43089920,
+    "ownedTreePeakRssBytes": 43089920,
+    "ownedTreePeakPssBytes": 32544768,
+    "resourceSamples": 31,
+    "pssSamples": 7,
+    "quotaReadySeconds": 1.002,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  }
+}

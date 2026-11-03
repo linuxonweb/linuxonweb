@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T14:35:55.419840+00:00",
+  "overallScoreUnchanged": 42,
+  "scope": "genuine native signed GNU tools; separate from full production desktop acceptance",
+  "sourceAdapter": {
+    "schema": 1,
+    "sourceVersion": "findutils-4.10.0",
+    "targetGuard": "defined(__wasm32__) && defined(__linux__) && !defined(__wasi__)",
+    "files": [
+      {
+        "path": "find/exec.c",
+        "originalSha256": "7e124e6df795112a5d311528afeec00b0c7eaf7ce8b862d97371ccc369f36924",
+        "patchedSha256": "27e4d01a491915e323b4535fe3e920555bc3aff2e8f1343ffab057770252bf45"
+      },
+      {
+        "path": "xargs/xargs.c",
+        "originalSha256": "a823a6be7b9f16fbdf310bd8d32c3569684ab48061a1297b3ef8b62b55e9efa2",
+        "patchedSha256": "cce65505a5002f586c7e88cc1fbc08e48727813228c6963fe3fc5497a1c2c7c3"
+      }
+    ],
+    "mechanism": "target musl posix_spawnp plus child file actions",
+    "nativeBuildCompleted": false,
+    "runtimeAccepted": false,
+    "requires": [
+      "posix_spawnp with exec errno propagation",
+      "posix_spawn_file_actions_addfchdir_np/addchdir_np/adddup2/addclose/addopen",
+      "GNU waitpid and xargs scheduler with nonrecursive target atexit cleanup"
+    ],
+    "acceptance": [
+      "find -exec semicolon and plus success/failure",
+      "find -execdir restores each child cwd and preserves parent cwd",
+      "xargs quoting/null/batching/P2/P0/slot-var/stdin and tty cases",
+      "xargs ENOENT127/EACCES126/E2BIG splitting/client1=>123/255=>124/signal=>125",
+      "no residual child processes or leaked descriptors"
+    ],
+    "limits": [
+      "target spawn route does not run the optional child-only fd-leak diagnostic before exec",
+      "native guest acceptance required; a host build alone is insufficient"
+    ]
+  },
+  "nativeBuilt": true,
+  "nativeBehaviorAccepted": true,
+  "productionDesktopAccepted": false,
+  "packages": {
+    "findutils-4.10.0-r1.apk": {
+      "bytes": 186097,
+      "sha256": "4c485eb661b7ee584d50374f83d66fa7f86ccaed7d8c1a88babb2e57905b30ac"
+    },
+    "tar-1.35-r1.apk": {
+      "bytes": 336354,
+      "sha256": "679e46386206961bf8279db6e24b8c5e4803f29f4699797c6cf3c97bf6580920"
+    },
+    "wget-1.25.0-r0.apk": {
+      "bytes": 1325799,
+      "sha256": "9138700d0bed2052c28fe6e3f5a53f1a717169ed94c12fdb76f8facdb17d31f8"
+    },
+    "APKINDEX.tar.gz": {
+      "bytes": 1802,
+      "sha256": "00b7c85783e5c5e91cbbdf74f3fe17aa33ca45b2f9f57b149ff2f4d5f3207c7d"
+    }
+  },
+  "binaries": {
+    "find/find": "2294fbdf75a468acd281ae56d99b1530a3f1e535e148a6228fc1b716df32329b",
+    "xargs/xargs": "661fb187644b2e8b22fdec6d9ec39653d88ec82cdd278e44ea913d8b09c86e46"
+  },
+  "beforeFix": {
+    "accepted": false,
+    "receiptSha256": "d333e772a15e9fc48d537c929f6d938f351837bae21683c0e2228c9c377aae69",
+    "failures": [
+      "FINDUTILS_SPAWN_FAIL xargs-client-status-255",
+      "FINDUTILS_SPAWN_FAIL xargs-client-fatal-signal"
+    ],
+    "cause": "target musl exit traps recursive exit; GNU fatal-child atexit path called exit recursively"
+  },
+  "afterFix": {
+    "nativeToolsChecks": 39,
+    "findutilsChecks": 32,
+    "guestPass": true,
+    "guestExitCode": 0,
+    "guestErrors": [],
+    "browserExit": 0,
+    "browserSignal": null,
+    "browserErrors": [],
+    "cpus": 3,
+    "memoryBytes": 536870912,
+    "fixtureImageSha256": "6f0d1d9910685f9f5f86da3ef8a44109de69ec8af0d9c4c9ced9ac65bc6438f3",
+    "buildDurationSeconds": 77.267,
+    "ownerDurationSeconds": 24.763,
+    "guestDurationSeconds": 18.512,
+    "buildStartedUtc": "2026-11-03T14:28:14.453131+00:00",
+    "runtimeStartedUtc": "2026-11-03T14:33:57.399855+00:00",
+    "peakRssBytes": 1838227456,
+    "peakPssBytes": 1180037120,
+    "resourceSamples": 24,
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "checks": [
+      "PACKAGE_CHECK_PASS /sbin/apk --initdb add",
+      "PACKAGE_CHECK_PASS /sbin/apk update",
+      "PACKAGE_CHECK_PASS /sbin/apk add gzip tar wget findutils ca-certificates",
+      "PACKAGE_CHECK_PASS /sbin/apk info --installed gzip tar wget findutils ca-certificates",
+      "NATIVE_TOOLS_PASS genuine-gnu-tar-version",
+      "NATIVE_TOOLS_PASS genuine-gnu-wget-version",
+      "NATIVE_TOOLS_PASS tar-create-uncompressed",
+      "NATIVE_TOOLS_PASS tar-list-uncompressed",
+      "NATIVE_TOOLS_PASS tar-extract-uncompressed",
+      "NATIVE_TOOLS_PASS tar-file-roundtrip",
+      "NATIVE_TOOLS_PASS tar-binary-roundtrip",
+      "NATIVE_TOOLS_PASS tar-mode-roundtrip",
+      "NATIVE_TOOLS_PASS tar-symlink-roundtrip",
+      "NATIVE_TOOLS_PASS tar-create-native-gzip",
+      "NATIVE_TOOLS_PASS tar-gzip-integrity",
+      "NATIVE_TOOLS_PASS tar-list-native-gzip",
+      "NATIVE_TOOLS_PASS tar-extract-native-gzip",
+      "NATIVE_TOOLS_PASS tar-compressed-file-roundtrip",
+      "NATIVE_TOOLS_PASS tar-compressed-binary-roundtrip",
+      "NATIVE_TOOLS_PASS tar-short-option-z-create",
+      "NATIVE_TOOLS_PASS tar-short-option-z-list",
+      "NATIVE_TOOLS_PASS tar-compressed-stdout",
+      "NATIVE_TOOLS_PASS tar-compressed-stdout-integrity",
+      "NATIVE_TOOLS_PASS tar-closed-stdout-fails-without-aliasing",
+      "NATIVE_TOOLS_PASS tar-truncated-gzip-rejected",
+      "NATIVE_TOOLS_PASS tar-missing-compressor-rejected",
+      "NATIVE_TOOLS_PASS tar-compressor-failure-propagated",
+      "NATIVE_TOOLS_PASS tar-compressed-stdin-explicitly-unsupported",
+      "NATIVE_TOOLS_PASS tar-create-parent-path-test",
+      "NATIVE_TOOLS_PASS tar-parent-traversal-rejected",
+      "NATIVE_TOOLS_PASS tar-parent-path-no-write",
+      "NATIVE_TOOLS_PASS wget-http-output",
+      "NATIVE_TOOLS_PASS wget-http-exact-bytes",
+      "NATIVE_TOOLS_PASS wget-http-redirect",
+      "NATIVE_TOOLS_PASS wget-http-redirect-bytes",
+      "NATIVE_TOOLS_PASS wget-http-404-exit-eight",
+      "NATIVE_TOOLS_PASS wget-https-verified-ca",
+      "NATIVE_TOOLS_PASS wget-https-response",
+      "NATIVE_TOOLS_PASS wget-default-ca-without-ssl-environment",
+      "NATIVE_TOOLS_PASS wget-default-ca-exact-response",
+      "NATIVE_TOOLS_PASS wget-https-404-exit-eight",
+      "NATIVE_TOOLS_PASS wget-untrusted-certificate-exit-five",
+      "NATIVE_TOOLS_PASS wget-untrusted-certificate-diagnostic",
+      "NATIVE_TOOLS_DONE checks=39 failures=0 status=0",
+      "PACKAGE_CHECK_PASS /bin/busybox test 0 = 0",
+      "FINDUTILS_SPAWN_PASS find-exec-semicolon-argv",
+      "FINDUTILS_SPAWN_PASS find-exec-plus-argv",
+      "FINDUTILS_SPAWN_PASS find-execdir-cwd-result",
+      "FINDUTILS_SPAWN_PASS find-parent-cwd-unchanged",
+      "FINDUTILS_SPAWN_PASS find-semicolon-failure-predicate",
+      "FINDUTILS_SPAWN_PASS find-semicolon-failure-exit",
+      "FINDUTILS_SPAWN_PASS find-plus-failure-exit",
+      "FINDUTILS_SPAWN_PASS find-missing-command-plus",
+      "FINDUTILS_SPAWN_PASS xargs-quoted-argv",
+      "FINDUTILS_SPAWN_PASS xargs-null-argv",
+      "FINDUTILS_SPAWN_PASS xargs-default-stdin-devnull",
+      "FINDUTILS_SPAWN_PASS xargs-argfile-preserves-stdin",
+      "FINDUTILS_SPAWN_PASS xargs-argfile-closed-stdin",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-two-slot-reuse",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-first-children-distinct",
+      "FINDUTILS_SPAWN_PASS xargs-all-recorded-children-reaped",
+      "FINDUTILS_SPAWN_PASS xargs-client-status-one",
+      "FINDUTILS_SPAWN_PASS xargs-client-status-255",
+      "FINDUTILS_SPAWN_PASS xargs-client-fatal-signal",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-255-status",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-255-wait-existing",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-255-stop-new-work",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-255-children-reaped",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-signal-status",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-signal-wait-existing",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-signal-stop-new-work",
+      "FINDUTILS_SPAWN_PASS xargs-parallel-signal-children-reaped",
+      "FINDUTILS_SPAWN_PASS xargs-missing-command-127",
+      "FINDUTILS_SPAWN_PASS xargs-nonexecutable-command-126",
+      "FINDUTILS_SPAWN_PASS xargs-e2big-splitting-exit",
+      "FINDUTILS_SPAWN_PASS xargs-e2big-no-loss-duplicate",
+      "FINDUTILS_SPAWN_PASS xargs-no-tty-reports-failure",
+      "FINDUTILS_SPAWN_DONE checks=32 failures=0 status=0",
+      "PACKAGE_CHECK_PASS /bin/busybox test 0 = 0",
+      "PACKAGE_CHECK_PASS /sbin/apk del gzip tar wget findutils",
+      "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/gzip",
+      "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/tar",
+      "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/wget",
+      "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/find",
+      "PACKAGE_CHECK_PASS /bin/busybox test ! -e /usr/bin/xargs",
+      "PACKAGE_SMOKE_EXIT status=0"
+    ]
+  },
+  "receipts": {
+    "out/pkp3/native-ports-runtime1/result.json": "d333e772a15e9fc48d537c929f6d938f351837bae21683c0e2228c9c377aae69",
+    "out/pkp3/native-ports-runtime2/result.json": "a8d270d79af7d2e10e261a008eff6eb1bfdfb04965d4418a610639b37d619a23",
+    "out/pkp3/native-ports-runtime3/result.json": "5559a76604757378a52eb4abd3793171ecf892cff5987fc175583c2ad724d305",
+    "out/pkp3/native-ports-owner3/result.json": "6e748b811576c38e63395ad9663e5546fb04cce4a6f23f9e9eb744a2c927a87a",
+    "out/pkp3/findutils-fixed-owner2/result.json": "274bcdd441316a44e4d6aae9ab5d1c109e3f1d36d6a025a404a93fcf5dea95b3",
+    "out/pkp3/findutils-spawn2/build-provenance.json": "691f603cd3d55b8ad5b6acd04f6977318307c16e04c80443ce9d52afc2e341fa"
+  },
+  "limits": [
+    "native command fixture, not decompressed full desktop acceptance",
+    "iOS untested; Android new ports not yet accepted",
+    "find P2 concurrency exercised; unbounded P0 not claimed",
+    "tar remote/device/backup/compressed-stdin and other fork hooks unsupported",
+    "no native Firefox restart rebuild or broad JIT safety acceptance"
+  ]
+}

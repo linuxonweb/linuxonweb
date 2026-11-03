@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "sourceVersion": "findutils-4.10.0",
+  "targetGuard": "defined(__wasm32__) && defined(__linux__) && !defined(__wasi__)",
+  "files": [
+    {
+      "path": "find/exec.c",
+      "originalSha256": "7e124e6df795112a5d311528afeec00b0c7eaf7ce8b862d97371ccc369f36924",
+      "patchedSha256": "27e4d01a491915e323b4535fe3e920555bc3aff2e8f1343ffab057770252bf45"
+    },
+    {
+      "path": "xargs/xargs.c",
+      "originalSha256": "a823a6be7b9f16fbdf310bd8d32c3569684ab48061a1297b3ef8b62b55e9efa2",
+      "patchedSha256": "cce65505a5002f586c7e88cc1fbc08e48727813228c6963fe3fc5497a1c2c7c3"
+    }
+  ],
+  "mechanism": "target musl posix_spawnp plus child file actions",
+  "nativeBuildCompleted": false,
+  "runtimeAccepted": false,
+  "requires": [
+    "posix_spawnp with exec errno propagation",
+    "posix_spawn_file_actions_addfchdir_np/addchdir_np/adddup2/addclose/addopen",
+    "GNU waitpid and xargs scheduler with nonrecursive target atexit cleanup"
+  ],
+  "acceptance": [
+    "find -exec semicolon and plus success/failure",
+    "find -execdir restores each child cwd and preserves parent cwd",
+    "xargs quoting/null/batching/P2/P0/slot-var/stdin and tty cases",
+    "xargs ENOENT127/EACCES126/E2BIG splitting/client1=>123/255=>124/signal=>125",
+    "no residual child processes or leaked descriptors"
+  ],
+  "limits": [
+    "target spawn route does not run the optional child-only fd-leak diagnostic before exec",
+    "native guest acceptance required; a host build alone is insufficient"
+  ]
+}

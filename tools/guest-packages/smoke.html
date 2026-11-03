@@ -2,11 +2,20 @@
 import {spawnMachine,consoleDevice,entropyDevice,inputDevice,createNetwork,attach_guest,connectTcpOverWebSocket,wsTcpProxyNetwork,resolveDnsOverProxy,fileSystemDevice} from '/linux/dist/index.js';
 import {openPersistentHome} from '/linux/persistent-home.mjs';
 window.packageResult={done:false,pass:false,lines:[],errors:[]};
+window.closePackageSmoke=async()=>{
+ await window.packageMachine?.close();
+ await window.packageNetwork?.close();
+ for(const key of ['packageHome','packageExport']){
+  await window[key]?.settle();
+  await window[key]?.destroy();
+  window[key]=null;
+ }
+};
 window.startPackageSmoke=async config=>{
  const result=window.packageResult={done:false,pass:false,lines:[],errors:[],isolated:crossOriginIsolated,startedAt:new Date().toISOString()};
  const decoder=new TextDecoder();let pending='',controller,sent=false;
  const input=config.consoleScript?new ReadableStream({start(c){controller=c;}}):null;
- const consume=bytes=>{pending+=decoder.decode(new Uint8Array(bytes),{stream:true});const lines=pending.split('\n');pending=lines.pop();for(const raw of lines){const line=raw.replaceAll('\r','');result.lines.push(line);if(result.lines.length>2000)result.lines.shift();const exit=/^PACKAGE_SMOKE_EXIT status=(\d+)/.exec(line);if(exit){result.exitCode=Number(exit[1]);result.pass=result.exitCode===0;result.done=true;}}
+ const consume=bytes=>{pending+=decoder.decode(new Uint8Array(bytes),{stream:true});const lines=pending.split('\n');pending=lines.pop();for(const raw of lines){const line=raw.replaceAll('\r','');result.lines.push(line);if(result.lines.length>2000)result.lines.shift();const exit=/^PACKAGE_SMOKE_EXIT status=(\d+)/.exec(line);if(exit){result.exitCode=Number(exit[1]);result.pass=result.exitCode===0;result.done=true;result.finishedAt=new Date().toISOString();result.durationSeconds=(Date.now()-Date.parse(result.startedAt))/1000;}}
   if(config.consoleScript&&!sent&&/(?:^|\n)[^\n]*# $/.test(pending.replaceAll('\r',''))){sent=true;result.consoleScriptSent=true;controller.enqueue(new TextEncoder().encode(config.consoleScript+'\n'));}
   document.querySelector('#log').textContent=result.lines.slice(-100).join('\n');};
  try{
@@ -15,14 +24,31 @@ window.startPackageSmoke=async config=>{
   const memoryBytes=config.memoryBytes??536870912;result.configuration={cpus:config.cpus,memoryBytes,hardwareConcurrency:navigator.hardwareConcurrency,imageSha256:hash,cmdline:config.cmdline??'console=hvc0 rdinit=/init'};
   const extraDevices=[];
   if(config.network||config.networkMode==='public'){
-   const handlers=config.networkMode==='public'?wsTcpProxyNetwork({proxyUrl:'http://127.0.0.1:3000/'}):{resolveDns:async name=>{(result.networkEvents??=[]).push({type:'dns',name});if(name!=='packages.test')throw Error('test DNS name rejected');return ['198.51.100.100'];},connectTcp:async session=>{(result.networkEvents??=[]).push({type:'tcp',host:session.target.hostname,port:session.target.port});if(session.target.hostname!=='198.51.100.100'||session.target.port!==80)throw Error('test TCP target rejected');return connectTcpOverWebSocket({...session,target:{hostname:'127.0.0.1',port:config.repoPort}},{proxyUrl:'http://127.0.0.1:3000/'});}};
-   if(config.networkMode==='public')handlers.resolveDns=name=>resolveDnsOverProxy(name,{proxyUrl:location.origin+'/'});
-   const network=createNetwork(handlers),attached=attach_guest(network);extraDevices.push(attached.attachment.device);window.packageNetwork=network;result.network={guest:attached.attachment.address,gateway:network.gateway,transport:config.networkMode==='public'?'normal project DNS/TCP bridge to public repository':'real guest TCP via project WebSocket bridge to an owned HTTP repository'};
+   const publicMode=config.networkMode==='public', mixed=config.publicNetworkWithFixture===true;
+   if(mixed&&!config.network)throw Error('Mixed native TLS fixture requires its owned repository');
+   const publicHandlers=(publicMode||mixed)?wsTcpProxyNetwork({proxyUrl:'http://127.0.0.1:3000/'}):null;
+   const handlers={
+    resolveDns:async name=>{
+     (result.networkEvents??=[]).push({type:'dns',name});
+     if(!publicMode&&name==='packages.test')return ['198.51.100.100'];
+     if(publicHandlers)return resolveDnsOverProxy(name,{proxyUrl:location.origin+'/'});
+     throw Error('test DNS name rejected');
+    },
+    connectTcp:async session=>{
+     (result.networkEvents??=[]).push({type:'tcp',host:session.target.hostname,port:session.target.port});
+     if(!publicMode&&session.target.hostname==='198.51.100.100'&&session.target.port===80)
+      return connectTcpOverWebSocket({...session,target:{hostname:'127.0.0.1',port:config.repoPort}},{proxyUrl:'http://127.0.0.1:3000/'});
+     if(publicHandlers)return publicHandlers.connectTcp(session);
+     throw Error('test TCP target rejected');
+    }
+   };
+   const network=createNetwork(handlers),attached=attach_guest(network);extraDevices.push(attached.attachment.device);window.packageNetwork=network;
+   result.network={guest:attached.attachment.address,gateway:network.gateway,transport:mixed?'owned signed HTTP repository plus normal project DNS/TCP bridge for native TLS verification':publicMode?'normal project DNS/TCP bridge to public repository':'real guest TCP via project WebSocket bridge to an owned HTTP repository'};
    if(config.network){const store=await openPersistentHome({name:'linuxonweb.package-export.fixture'});window.packageExport=store;extraDevices.push(fileSystemDevice(store,{tag:'export',cache:false}));}
   }
-  if(config.persistHome){const home=await openPersistentHome({name:'linuxonweb.package-home.fixture'});extraDevices.push(fileSystemDevice(home,{tag:'home',cache:false}));}
+  if(config.persistHome){const home=await openPersistentHome({name:'linuxonweb.package-home.fixture'});window.packageHome=home;extraDevices.push(fileSystemDevice(home,{tag:'home',cache:false}));}
   const machine=await spawnMachine({cpus:config.cpus,devicetree:{memory:{reg:[0,memoryBytes]}},initcpio:image,cmdline:result.configuration.cmdline,devices:[consoleDevice(input,new WritableStream({write:consume})),entropyDevice(),inputDevice(),...extraDevices],framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'}});window.packageMachine=machine;
-  void(async()=>{const reader=machine.bootConsole.getReader();const d=new TextDecoder();try{while(true){const x=await reader.read();if(x.done)break;result.bootLog=((result.bootLog||'')+d.decode(new Uint8Array(x.value),{stream:true})).slice(-32000);}}finally{reader.releaseLock();}})();machine.closed.catch(e=>{if(!result.done){result.errors.push(String(e));result.done=true;}});
+  void(async()=>{const reader=machine.bootConsole.getReader();const d=new TextDecoder();try{while(true){const x=await reader.read();if(x.done)break;result.bootLog=((result.bootLog||'')+d.decode(new Uint8Array(x.value),{stream:true})).slice(-32000);}}finally{reader.releaseLock();}})();machine.closed.catch(e=>{if(!result.done){result.errors.push(String(e));result.done=true;result.finishedAt=new Date().toISOString();result.durationSeconds=(Date.now()-Date.parse(result.startedAt))/1000;}});
  }catch(e){result.errors.push(String(e));result.done=true;}
 };
 </script>
