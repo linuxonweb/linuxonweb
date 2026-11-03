@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T09:30:55.278Z",
+  "mode": "mount-tests",
+  "seconds": 90,
+  "run": "/mnt/p3/codex-build/s3n/mount1",
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38086/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1173.957,
+  "navigation": {
+    "frameId": "A1CD85FD016BA06909A9C28D64038EA0",
+    "loaderId": "91F70BB42B7B9172FF739A864BDC6A0B",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38086/linux/index.html?renderer=webgl&gpubackend=webgl",
+    "pageTimeOrigin": 1793698256461.69,
+    "pageNow": 609.8550000190735
+  },
+  "homeTests": [
+    {
+      "page": "home-mount.html",
+      "result": "pass",
+      "text": "{\n  \"checks\": [\n    {\n      \"label\": \"isolated native fixture SHA matches build receipt\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync write is independently readable before guest reply/fsync\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync write is independently readable before guest reply/fsync\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async write is independently readable before guest reply/fsync\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async write is independently readable before guest reply/fsync\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"native write/fdatasync/fsync/rename/error checks all pass\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"no failed native check\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync durable exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync replace exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync fault-quota exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync fault-abort exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync bench exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync close-only exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync stop-open exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync atomic rename survives reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync writes committed before guest response\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync real IndexedDB quota and abort reached guest\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async durable exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async replace exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async fault-quota exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async fault-abort exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async bench exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async close-only exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async stop-open exact bytes survive Stop/reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async atomic rename survives reopen\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async writes committed before guest response\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"async real IndexedDB quota and abort reached guest\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sync mount creates extra FSYNC RPCs while standard mount remains write-through\",\n      \"pass\": true\n    }\n  ],\n  \"guest\": [\n    \"input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\",\n    \"virtiofs virtio3: discovered new tag: sync\",\n    \"virtiofs virtio4: discovered new tag: async\",\n    \"Console: switching to colour frame buffer device 80x30\",\n    \"fb0: wasm framebuffer 640x480-32 at 69ed561c\",\n    \"This architecture does not have kernel memory protection.\",\n    \"Run /init as init process\",\n    \"HOME_CHECK PASS mount-sync-dirsync errno=0\",\n    \"HOME_CHECK PASS mount-standard errno=0\",\n    \"HOME_MODE sync\",\n    \"HOME_CHECK PASS create errno=0\",\n    \"HOME_CHECK PASS write-return errno=0\",\n    \"HOME_CHECK PASS fdatasync errno=0\",\n    \"HOME_CHECK PASS pwrite-return errno=0\",\n    \"HOME_CHECK PASS fsync errno=0\",\n    \"HOME_CHECK PASS close errno=0\",\n    \"HOME_CHECK PASS reopen-size errno=0\",\n    \"HOME_CHECK PASS reopen-bytes errno=0\",\n    \"HOME_CHECK PASS rename-source-durable errno=0\",\n    \"HOME_CHECK PASS atomic-rename errno=0\",\n    \"HOME_CHECK PASS directory-fsync errno=0\",\n    \"HOME_CHECK PASS rename-old-absent errno=2\",\n    \"HOME_CHECK PASS rename-new-exact errno=2\",\n    \"HOME_CHECK PASS fault-seed errno=2\",\n    \"HOME_CHECK PASS quota-ENOSPC errno=28\",\n    \"HOME_CHECK PASS failed-write-size errno=28\",\n    \"HOME_CHECK PASS fault-seed errno=28\",\n    \"HOME_CHECK PASS abort-EIO errno=5\",\n    \"HOME_CHECK PASS failed-write-size errno=5\",\n    \"HOME_CHECK PASS benchmark-final-sync-close errno=5\",\n    \"HOME_BENCH root=/sync calls=256 bytes=1048576 writeSeconds=1.134160\",\n    \"HOME_CHECK PASS close-without-explicit-fsync errno=5\",\n    \"HOME_CHECK PASS stop-with-open-file-write-return errno=5\",\n    \"HOME_MODE async\",\n    \"HOME_CHECK PASS create errno=5\",\n    \"HOME_CHECK PASS write-return errno=5\",\n    \"HOME_CHECK PASS fdatasync errno=5\",\n    \"HOME_CHECK PASS pwrite-return errno=5\",\n    \"HOME_CHECK PASS fsync errno=5\",\n    \"HOME_CHECK PASS close errno=5\",\n    \"HOME_CHECK PASS reopen-size errno=5\",\n    \"HOME_CHECK PASS reopen-bytes errno=5\",\n    \"HOME_CHECK PASS rename-source-durable errno=5\",\n    \"HOME_CHECK PASS atomic-rename errno=5\",\n    \"HOME_CHECK PASS directory-fsync errno=5\",\n    \"HOME_CHECK PASS rename-old-absent errno=2\",\n    \"HOME_CHECK PASS rename-new-exact errno=2\",\n    \"HOME_CHECK PASS fault-seed errno=2\",\n    \"HOME_CHECK PASS quota-ENOSPC errno=28\",\n    \"HOME_CHECK PASS failed-write-size errno=28\",\n    \"HOME_CHECK PASS fault-seed errno=28\",\n    \"HOME_CHECK PASS abort-EIO errno=5\",\n    \"HOME_CHECK PASS failed-write-size errno=5\",\n    \"HOME_CHECK PASS benchmark-final-sync-close errno=5\",\n    \"HOME_BENCH root=/async calls=256 bytes=1048576 writeSeconds=1.080830\",\n    \"HOME_CHECK PASS close-without-explicit-fsync errno=5\",\n    \"HOME_CHECK PASS stop-with-open-file-write-return errno=5\",\n    \"HOME_DONE checks=46 failures=0\"\n  ],\n  \"counts\": {\n    \"sync\": {\n      \"writes\": 265,\n      \"fsyncs\": 270,\n      \"flushes\": 8,\n      \"committedBeforeReply\": 2,\n      \"faults\": [\n        {\n          \"kind\": \"quota\",\n          \"puts\": 16,\n          \"errno\": 28\n        },\n        {\n          \"kind\": \"abort\",\n          \"puts\": 16,\n          \"errno\": 5\n        }\n      ],\n      \"benchmarkStartMs\": 3410.524999976158,\n      \"benchmarkLastReplyMs\": 4543.865000009537,\n      \"benchmarkHostObservedMs\": 1133.3400000333786\n    },\n    \"async\": {\n      \"writes\": 265,\n      \"fsyncs\": 7,\n      \"flushes\": 8,\n      \"committedBeforeReply\": 2,\n      \"faults\": [\n        {\n          \"kind\": \"quota\",\n          \"puts\": 16,\n          \"errno\": 28\n        },\n        {\n          \"kind\": \"abort\",\n          \"puts\": 16,\n          \"errno\": 5\n        }\n      ],\n      \"benchmarkStartMs\": 4767.034999966621,\n      \"benchmarkLastReplyMs\": 5846.599999964237,\n      \"benchmarkHostObservedMs\": 1079.5649999976158\n    }\n  },\n  \"errors\": [],\n  \"started\": \"2026-11-03T09:30:57.263Z\",\n  \"fixture\": {\n    \"testOnly\": true,\n    \"pass\": true,\n    \"sourceArchiveSha256\": \"60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa\",\n    \"busyboxSha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n    \"archiveSha256\": \"10f7929b3070264817f369e0b4cd8c21a9c5e53efb210ff9a3fc79fdbbbec275\",\n    \"archiveBytes\": 1264640,\n    \"files\": {\n      \"bin/busybox\": {\n        \"bytes\": 1230518,\n        \"sha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n        \"mode\": \"0o100755\"\n      },\n      \"bin/sh\": {\n        \"bytes\": 7,\n        \"sha256\": \"9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91\",\n        \"mode\": \"0o120777\"\n      },\n      \"init\": {\n        \"bytes\": 99,\n        \"sha256\": \"eb01c77009ab08f3fea42256cc3d51d4fde3e4f4260be400670169b82febdb10\",\n        \"mode\": \"0o100755\"\n      },\n      \"etc/passwd\": {\n        \"bytes\": 26,\n        \"sha256\": \"5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb\",\n        \"mode\": \"0o100644\"\n      },\n      \"etc/group\": {\n        \"bytes\": 10,\n        \"sha256\": \"7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8\",\n        \"mode\": \"0o100644\"\n      },\n      \"check\": {\n        \"bytes\": 30747,\n        \"sha256\": \"36f5ca6bd49484466e78799224f003ccb15fa740cf226dfb24d43e12118a9c59\",\n        \"mode\": \"0o100755\"\n      }\n    }\n  },\n  \"pass\": true,\n  \"finished\": \"2026-11-03T09:31:03.072Z\"\n}"
+    }
+  ],
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T09:31:06.044Z",
+  "elapsedMs": 10766.004,
+  "resourceSummary": {
+    "pssPeakBytes": 834393088,
+    "rssSumPeakBytes": 1656909824,
+    "minAvailableBytes": 27351269376,
+    "samples": 8,
+    "pssSamples": 2,
+    "pssIntervalMs": 5000
+  }
+}

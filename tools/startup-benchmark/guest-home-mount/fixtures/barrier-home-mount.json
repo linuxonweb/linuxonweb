@@ -1,0 +1,40 @@
+{
+  "testOnly": true,
+  "pass": true,
+  "sourceArchiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+  "busyboxSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+  "archiveSha256": "ed78f55ea11e2a37327fc226b081843d061abfa3c225b414622aa1f1e4142cdd",
+  "archiveBytes": 1291264,
+  "files": {
+    "bin/busybox": {
+      "bytes": 1230518,
+      "sha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+      "mode": "0o100755"
+    },
+    "bin/sh": {
+      "bytes": 7,
+      "sha256": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91",
+      "mode": "0o120777"
+    },
+    "init": {
+      "bytes": 99,
+      "sha256": "eb01c77009ab08f3fea42256cc3d51d4fde3e4f4260be400670169b82febdb10",
+      "mode": "0o100755"
+    },
+    "etc/passwd": {
+      "bytes": 26,
+      "sha256": "5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb",
+      "mode": "0o100644"
+    },
+    "etc/group": {
+      "bytes": 10,
+      "sha256": "7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8",
+      "mode": "0o100644"
+    },
+    "check": {
+      "bytes": 57180,
+      "sha256": "9aede20b11a849c779d9c8f86133935c3b27c9a3697a8aeb21bab88fd550cc4a",
+      "mode": "0o100755"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+<!doctype html><meta charset="utf-8"><title>Experimental native writeback flush lifecycle</title><canvas id="display" width="640" height="480"></canvas><pre id="result">Running…</pre>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice,inputDevice,fileSystemDevice} from '/linux/dist/index.js';
+import {openPersistentHome} from '/linux/persistent-home.mjs';
+const result=globalThis.homeBarrierResult={experimental:true,productionAccepted:false,checks:[],scenarios:[],errors:[],started:new Date().toISOString()};
+const output=document.querySelector('#result'),assert=(ok,label)=>{result.checks.push({label,pass:!!ok});if(!ok)throw Error(label);};
+const delay=ms=>new Promise(r=>setTimeout(r,ms)),hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const idb=req=>new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+async function waitFor(test,ms,label){const end=performance.now()+ms;while(performance.now()<end){const value=test();if(value)return value;await delay(20);}throw Error(label+' deadline');}
+let machine,home,observer,inputWriter,activeFault=null;const originalPut=IDBObjectStore.prototype.put;
+IDBObjectStore.prototype.put=function(...args){const f=activeFault;if(!f||this.transaction.db.name!==f.db||this.name!=='chunks')return originalPut.apply(this,args);if(++f.puts===8)throw new DOMException('Injected barrier quota','QuotaExceededError');return originalPut.apply(this,args);};
+async function readFile(store,name){const node=await store.lookup(store.root,name);if(!node)return new Uint8Array();return store.read(node,{},0n,1048576);}
+try{
+ const meta=await(await fetch('./home-mount.json')).json(),image=new Uint8Array(await(await fetch('./home-mount.cpio')).arrayBuffer());assert(hex(await crypto.subtle.digest('SHA-256',image))===meta.archiveSha256,'pinned native lifecycle fixture');result.fixture=meta;
+ for(const scenario of ['healthy','quota','timeout']){
+  const db='linuxonweb.barrier.'+crypto.randomUUID(),entry={scenario,lines:[],errors:[],writes:0,closed:false,started:performance.now()};result.scenarios.push(entry);const token=crypto.randomUUID().replaceAll('-','');entry.token=token;let faultArmed=false;const names=new Map();
+  try{
+   home=await openPersistentHome({name:db});observer=await openPersistentHome({name:db,readOnly:true});const create=home.create;home.create=async function(...args){const value=await create.apply(this,args);names.set(value.node.id,String(args[1]));return value;};const write=home.write;home.write=async function(...args){entry.writes++;const inject=faultArmed&&names.get(args[0].id)==='active'&&args[3].length>=32768;if(inject)activeFault={db,puts:0};try{return await write.apply(this,args);}catch(error){entry.errors.push({phase:'host-write',errno:error.errno,name:names.get(args[0].id)});throw error;}finally{if(inject){activeFault=null;faultArmed=false;}}};
+   const input=new TransformStream();inputWriter=input.writable.getWriter();const decoder=new TextDecoder();let pending='';
+   const consume=bytes=>{pending+=decoder.decode(new Uint8Array(bytes),{stream:true});const lines=pending.split('\n');pending=lines.pop();for(const raw of lines){const line=raw.replaceAll('\r','');entry.lines.push({line,at:performance.now()});if(line===`HOME_BARRIER COMMITTED ${token}`&&scenario==='healthy'){entry.closeRequestedAt=performance.now();machine.close();}}output.textContent=JSON.stringify(result,null,2);};
+   machine=await spawnMachine({cpus:navigator.hardwareConcurrency,devicetree:{memory:{reg:[0,536870912]}},initcpio:image,cmdline:'console=hvc0 rdinit=/init',devices:[consoleDevice(input.readable,new WritableStream({write:consume})),entropyDevice(),inputDevice(),fileSystemDevice(home,{tag:'writeback',cache:true,cacheSeconds:3600})],framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'}});
+   const current=machine;current.closed.then(()=>{entry.closed=true;},error=>{entry.closed=true;entry.closedReason=String(error);});void(async()=>{const r=current.bootConsole.getReader();try{while(!(await r.read()).done){}}finally{r.releaseLock();}})();
+   const lines=prefix=>entry.lines.filter(x=>x.line.startsWith(prefix));await waitFor(()=>lines('HOME_CONTROL_READY').length&&lines('HOME_WRITER ').length>=3,12000,scenario+' writer start');
+   faultArmed=scenario==='quota';entry.prepareAt=performance.now();await inputWriter.write(new TextEncoder().encode(`PREPARE ${token}\n`));
+   if(scenario==='quota'){
+    await waitFor(()=>lines(`HOME_BARRIER ERROR ${token} syncfs `).length,10000,'real quota flush error');const before=lines('HOME_WRITER ').length;await waitFor(()=>lines('HOME_WRITER ').length>before,3000,'writer resumes after failed flush');assert(!entry.closed,'failed flush retains running guest');assert(!lines(`HOME_BARRIER COMMITTED ${token}`).length,'failed flush never commits shutdown');assert(entry.errors.some(x=>x.errno===28),'real IndexedDB ENOSPC reached the barrier');
+   }else{
+    await waitFor(()=>lines(`HOME_BARRIER PREPARED ${token} `).length,10000,scenario+' prepared');const count=lines('HOME_WRITER ').length;await delay(200);assert(lines('HOME_WRITER ').length===count,scenario+' active user writer is quiescent');
+    const open=await readFile(observer,'acknowledged-open'),active=await readFile(observer,'active');assert(open.length===4096&&open.every(x=>x===0x63),scenario+' acknowledged open write is committed before prepare ACK');assert(active.length===65536&&active.subarray(4).every(x=>x===0x61),scenario+' active writer bytes are committed before prepare ACK');entry.preparedCounter=new DataView(active.buffer,active.byteOffset,active.byteLength).getUint32(0,true);entry.preparedHash=hex(await crypto.subtle.digest('SHA-256',active));
+    if(scenario==='healthy'){
+     await inputWriter.write(new TextEncoder().encode('COMMIT '+('0'.repeat(32))+'\n'));await delay(100);assert(!lines(`HOME_BARRIER COMMITTED ${token}`).length,'wrong nonce cannot commit');await inputWriter.write(new TextEncoder().encode(`COMMIT ${token}\n`));await waitFor(()=>entry.closed,5000,'acknowledged close');assert(lines(`HOME_BARRIER COMMITTED ${token}`).length===1,'exact nonce commit acknowledged once');await observer.destroy();observer=await openPersistentHome({name:db,readOnly:true});const after=await readFile(observer,'active'),afterOpen=await readFile(observer,'acknowledged-open');assert(hex(await crypto.subtle.digest('SHA-256',after))===entry.preparedHash,'no writes occur between acknowledged flush and Stop/reopen');assert(afterOpen.length===4096&&afterOpen.every(x=>x===0x63),'open write survives acknowledged Stop/reopen');
+    }else{
+     await waitFor(()=>lines(`HOME_BARRIER RESUMED ${token} `).length,7000,'barrier timeout recovery');const before=lines('HOME_WRITER ').length;await waitFor(()=>lines('HOME_WRITER ').length>before,3000,'writer resumes after timeout');assert(!entry.closed,'timeout retains running guest');assert(!lines(`HOME_BARRIER COMMITTED ${token}`).length,'timeout never claims shutdown committed');
+    }
+   }
+   entry.pass=true;
+  }finally{
+   // Forced cleanup here is confined to disposable test namespaces after assertions;
+   // the production Stop behavior under test retained the guest on errors/timeouts.
+   if(machine){machine.close();await machine.closed.catch(()=>{});machine=null;}await observer?.destroy().catch(()=>{});await home?.destroy().catch(()=>{});observer=home=null;await idb(indexedDB.deleteDatabase(db)).catch(()=>{});entry.finished=performance.now();
+  }
+ }
+ result.pass=true;
+}catch(error){result.errors.push(String(error));result.pass=false;}
+finally{IDBObjectStore.prototype.put=originalPut;if(machine){machine.close();await machine.closed.catch(()=>{});}await observer?.destroy().catch(()=>{});await home?.destroy().catch(()=>{});result.finished=new Date().toISOString();output.textContent=JSON.stringify(result,null,2);document.documentElement.dataset.result=result.pass?'pass':'fail';}
+</script>

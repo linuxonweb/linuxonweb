@@ -7,7 +7,7 @@ Task start 2026-11-03 07:06:26 UTC; five-hour budget ends about 12:06 UTC.
 Shared branch: gpt-6-astra-pro_builtin-agents_linuxonweb-20261103.
 Preserved source checkpoint 49fc26e. Retained metadata fix 80a52d1 passes 50
 real browser checks plus independent review. No private profiles/caches added.
-Overall acceptance 24/100 at last root update; the full goal remains unmet.
+Overall acceptance 26/100 at last root update; the full goal remains unmet.
 
 ## Current runtime and evidence
 
@@ -58,3 +58,29 @@ relink remains blocked by inaccessible p6 build dependencies.
 Preview port 3000 is a persistent owned systemd service. Authenticated HTTPS
 wrapper, two-second metrics and messaging belong to packages_mobile. Preserve
 user profiles, phone mappings and unrelated services. No Git remote on arrival.
+
+### Latest continuation addition
+
+Current iteration adds diagnostic per-inode home I/O attribution and exact log
+arrival timestamps. `warm1` cold run succeeded visually, but no restart occurred
+because the manual handoff timed out. `inventory2` and `cache1` inspect/export
+only that closed clean test profile. Experimental seed implementation:
+web/linux/startup-cache-seed.mjs, startup-cache-catalog.mjs, startup-cache/60847fb85339.
+11 real-browser safeguards passed in seed-tests1. Seed is not yet linked to
+production main.js. Diagnostic proxy mode `seed` adds only the explicit
+?startup-cache-seed=1 path; normal home/full modes do not seed. Next: after the
+coordinated graphics/package lane, run one bounded fresh-home seed experiment
+and verify cache reads/acceptance and actual launch improvement.
+
+Graphics exact-cube guest run `cube1` uses fx-overlay4 (raw/gzip/manifest only)
+with the same page as the host, no input, 3 CPUs, compressed initramfs. Do not
+change served runtime while that owner is live. Its result also provides the
+new per-inode attribution. Preserve all failed owners and timing caveats.
+
+### Browser image release gate learned on 2026-11-03
+
+Any image/compression/composition change must load the exact candidate through the production browser `DecompressionStream` plus desktop extras/init wrapper and reach a guest command or desktop before publication. Node gzip/DecompressionStream and direct kernel boot are component checks only. Chromium rejects concatenated gzip members (`Junk found after end of compressed data`) even when Node and Linux accept them. The failed4f6bf2d3a326 APK image was withdrawn and tested60847fb85339 restored pending a single-member repack and full browser gate. Preserve the failed cube2 evidence alongside the correction. Compressed boot itself remains validated for the reference608 image; code-cache and writeback experiments remain off.
+
+### November3 experimental durability checkpoint (off public)
+
+The canonical production persistent-home API remains strict and unmodified beyond the accepted create fast path. Standard-mount fixture passed46native+28host checks; without negotiated FUSE_WRITEBACK_CACHE it still makes265hostwrites (270→7fsync calls), so mountflags alone are not the major fix. Experimental negotiated writeback reduced256×4KiB operations to2hostwrites but current Stop lost an acknowledged open dirty page. The subsequent isolated native barrier passed16checks in27.374s, including genuine quiesce+syncfs acknowledgement, strictIDB quota error, exactnonce, healthyStop/reopen and timeoutresume. Exact payload/source/receipt live under tools/startup-benchmark/guest-home-mount and evidence/barrier1-20261103.json. productionAccepted:false: actualdesktop PID1respawns remain a quiescence blocker; no production supervisor or writeback flag is exposed. Prior failure receipts remain.

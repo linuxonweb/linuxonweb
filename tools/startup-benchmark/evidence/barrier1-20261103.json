@@ -1,0 +1,412 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T10:31:01.655Z",
+  "mode": "barrier-tests",
+  "seconds": 100,
+  "run": "/mnt/p3/codex-build/s3n/barrier1",
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38090/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 3228.585,
+  "navigation": {
+    "frameId": "CC6B4D5A0FD078E4F126F85D3F378D55",
+    "loaderId": "29A0FEE8798564A7F43DC0E7E532FD33",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38090/linux/index.html?renderer=webgl&gpubackend=webgl",
+    "pageTimeOrigin": 1793701864897.71,
+    "pageNow": 1040.8799999952316
+  },
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T10:31:29.029Z",
+  "elapsedMs": 27374.305,
+  "resourceSummary": {
+    "pssPeakBytes": 918332416,
+    "rssSumPeakBytes": 1777987584,
+    "minAvailableBytes": 28089810944,
+    "samples": 24,
+    "pssSamples": 5,
+    "pssIntervalMs": 5000
+  },
+  "barrier": {
+    "experimental": true,
+    "productionAccepted": false,
+    "checks": [
+      {
+        "label": "pinned native lifecycle fixture",
+        "pass": true
+      },
+      {
+        "label": "healthy active user writer is quiescent",
+        "pass": true
+      },
+      {
+        "label": "healthy acknowledged open write is committed before prepare ACK",
+        "pass": true
+      },
+      {
+        "label": "healthy active writer bytes are committed before prepare ACK",
+        "pass": true
+      },
+      {
+        "label": "wrong nonce cannot commit",
+        "pass": true
+      },
+      {
+        "label": "exact nonce commit acknowledged once",
+        "pass": true
+      },
+      {
+        "label": "no writes occur between acknowledged flush and Stop/reopen",
+        "pass": true
+      },
+      {
+        "label": "open write survives acknowledged Stop/reopen",
+        "pass": true
+      },
+      {
+        "label": "failed flush retains running guest",
+        "pass": true
+      },
+      {
+        "label": "failed flush never commits shutdown",
+        "pass": true
+      },
+      {
+        "label": "real IndexedDB ENOSPC reached the barrier",
+        "pass": true
+      },
+      {
+        "label": "timeout active user writer is quiescent",
+        "pass": true
+      },
+      {
+        "label": "timeout acknowledged open write is committed before prepare ACK",
+        "pass": true
+      },
+      {
+        "label": "timeout active writer bytes are committed before prepare ACK",
+        "pass": true
+      },
+      {
+        "label": "timeout retains running guest",
+        "pass": true
+      },
+      {
+        "label": "timeout never claims shutdown committed",
+        "pass": true
+      }
+    ],
+    "scenarios": [
+      {
+        "scenario": "healthy",
+        "lines": [
+          {
+            "line": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0",
+            "at": 4648.274999976158
+          },
+          {
+            "line": "virtiofs virtio3: discovered new tag: writeback",
+            "at": 4658.639999985695
+          },
+          {
+            "line": "Console: switching to colour frame buffer device 80x30",
+            "at": 4692.669999957085
+          },
+          {
+            "line": "fb0: wasm framebuffer 640x480-32 at 179c0df3",
+            "at": 4700.814999997616
+          },
+          {
+            "line": "This architecture does not have kernel memory protection.",
+            "at": 4720.870000004768
+          },
+          {
+            "line": "Run /init as init process",
+            "at": 4721.615000009537
+          },
+          {
+            "line": "HOME_CONTROL_READY writer=45",
+            "at": 4925.344999969006
+          },
+          {
+            "line": "HOME_WRITER 1",
+            "at": 4942.944999992847
+          },
+          {
+            "line": "HOME_WRITER 2",
+            "at": 5044.5199999809265
+          },
+          {
+            "line": "HOME_WRITER 3",
+            "at": 5146.120000004768
+          },
+          {
+            "line": "PREPARE c8dba02a53a343af9267320e4199f564",
+            "at": 5205.224999964237
+          },
+          {
+            "line": "HOME_WRITER 4",
+            "at": 5249.52999997139
+          },
+          {
+            "line": "HOME_BARRIER PREPARED c8dba02a53a343af9267320e4199f564 stopped=1",
+            "at": 5331.014999985695
+          },
+          {
+            "line": "COMMIT 00000000000000000000000000000000",
+            "at": 5591.740000009537
+          },
+          {
+            "line": "COMMIT c8dba02a53a343af9267320e4199f564",
+            "at": 5689.264999985695
+          },
+          {
+            "line": "HOME_BARRIER COMMITTED c8dba02a53a343af9267320e4199f564",
+            "at": 5690.469999969006
+          }
+        ],
+        "errors": [],
+        "writes": 2,
+        "closed": true,
+        "started": 299.1449999809265,
+        "token": "c8dba02a53a343af9267320e4199f564",
+        "prepareAt": 5160.389999985695,
+        "preparedCounter": 4,
+        "preparedHash": "61e6fe92ec75e8efa22216d25f09ea28bee9d602f0ecaa033bedcca1eaff742a",
+        "closeRequestedAt": 5690.474999964237,
+        "pass": true,
+        "finished": 5725.120000004768
+      },
+      {
+        "scenario": "quota",
+        "lines": [
+          {
+            "line": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0",
+            "at": 8929.214999973774
+          },
+          {
+            "line": "virtiofs virtio3: discovered new tag: writeback",
+            "at": 8952.534999966621
+          },
+          {
+            "line": "Console: switching to colour frame buffer device 80x30",
+            "at": 9003.784999966621
+          },
+          {
+            "line": "fb0: wasm framebuffer 640x480-32 at 83aaff2f",
+            "at": 9006.185000002384
+          },
+          {
+            "line": "This architecture does not have kernel memory protection.",
+            "at": 9044.414999961853
+          },
+          {
+            "line": "Run /init as init process",
+            "at": 9048.9849999547
+          },
+          {
+            "line": "HOME_CONTROL_READY writer=43",
+            "at": 9305.669999957085
+          },
+          {
+            "line": "HOME_WRITER 1",
+            "at": 9324.844999969006
+          },
+          {
+            "line": "HOME_WRITER 2",
+            "at": 9439.185000002384
+          },
+          {
+            "line": "HOME_WRITER 3",
+            "at": 9542.389999985695
+          },
+          {
+            "line": "PREPARE 17745e0743a641bf9b7d6a0a99e5e00c",
+            "at": 9820.889999985695
+          },
+          {
+            "line": "HOME_WRITER 4",
+            "at": 9847.049999952316
+          },
+          {
+            "line": "HOME_BARRIER ERROR 17745e0743a641bf9b7d6a0a99e5e00c syncfs 28",
+            "at": 10049.935000002384
+          },
+          {
+            "line": "HOME_CONTROL_RETURN status=256",
+            "at": 10057.474999964237
+          },
+          {
+            "line": "HOME_WRITER 5",
+            "at": 10149.924999952316
+          }
+        ],
+        "errors": [
+          {
+            "phase": "host-write",
+            "errno": 28,
+            "name": "active"
+          }
+        ],
+        "writes": 2,
+        "closed": true,
+        "started": 5725.174999952316,
+        "token": "17745e0743a641bf9b7d6a0a99e5e00c",
+        "prepareAt": 9560.310000002384,
+        "pass": true,
+        "finished": 10180.824999988079
+      },
+      {
+        "scenario": "timeout",
+        "lines": [
+          {
+            "line": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0",
+            "at": 13925.464999973774
+          },
+          {
+            "line": "virtiofs virtio3: discovered new tag: writeback",
+            "at": 13955.979999959469
+          },
+          {
+            "line": "Console: switching to colour frame buffer device 80x30",
+            "at": 13996.519999980927
+          },
+          {
+            "line": "fb0: wasm framebuffer 640x480-32 at 328f1583",
+            "at": 14017.134999990463
+          },
+          {
+            "line": "This architecture does not have kernel memory protection.",
+            "at": 14031.004999995232
+          },
+          {
+            "line": "Run /init as init process",
+            "at": 14031.939999997616
+          },
+          {
+            "line": "HOME_CONTROL_READY writer=44",
+            "at": 14332.064999997616
+          },
+          {
+            "line": "HOME_WRITER 1",
+            "at": 14357.259999990463
+          },
+          {
+            "line": "HOME_WRITER 2",
+            "at": 14462.044999957085
+          },
+          {
+            "line": "HOME_WRITER 3",
+            "at": 14567.784999966621
+          },
+          {
+            "line": "PREPARE 6d6368510468410d86952163020cfd26",
+            "at": 14616.504999995232
+          },
+          {
+            "line": "HOME_WRITER 4",
+            "at": 14673.794999957085
+          },
+          {
+            "line": "HOME_BARRIER PREPARED 6d6368510468410d86952163020cfd26 stopped=1",
+            "at": 14820.07999998331
+          },
+          {
+            "line": "HOME_BARRIER RESUMED 6d6368510468410d86952163020cfd26 reason=cancel-or-timeout",
+            "at": 19854.514999985695
+          },
+          {
+            "line": "HOME_WRITER 5",
+            "at": 19858.424999952316
+          },
+          {
+            "line": "HOME_CONTROL_RETURN status=0",
+            "at": 19862.144999980927
+          },
+          {
+            "line": "HOME_WRITER 6",
+            "at": 19960.40499997139
+          }
+        ],
+        "errors": [],
+        "writes": 2,
+        "closed": true,
+        "started": 10180.875,
+        "token": "6d6368510468410d86952163020cfd26",
+        "prepareAt": 14577.089999973774,
+        "preparedCounter": 4,
+        "preparedHash": "61e6fe92ec75e8efa22216d25f09ea28bee9d602f0ecaa033bedcca1eaff742a",
+        "pass": true,
+        "finished": 19969.339999973774
+      }
+    ],
+    "errors": [],
+    "started": "2026-11-03T10:31:06.209Z",
+    "fixture": {
+      "testOnly": true,
+      "pass": true,
+      "sourceArchiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+      "busyboxSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+      "archiveSha256": "ed78f55ea11e2a37327fc226b081843d061abfa3c225b414622aa1f1e4142cdd",
+      "archiveBytes": 1291264,
+      "files": {
+        "bin/busybox": {
+          "bytes": 1230518,
+          "sha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+          "mode": "0o100755"
+        },
+        "bin/sh": {
+          "bytes": 7,
+          "sha256": "9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91",
+          "mode": "0o120777"
+        },
+        "init": {
+          "bytes": 99,
+          "sha256": "eb01c77009ab08f3fea42256cc3d51d4fde3e4f4260be400670169b82febdb10",
+          "mode": "0o100755"
+        },
+        "etc/passwd": {
+          "bytes": 26,
+          "sha256": "5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb",
+          "mode": "0o100644"
+        },
+        "etc/group": {
+          "bytes": 10,
+          "sha256": "7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8",
+          "mode": "0o100644"
+        },
+        "check": {
+          "bytes": 57180,
+          "sha256": "9aede20b11a849c779d9c8f86133935c3b27c9a3697a8aeb21bab88fd550cc4a",
+          "mode": "0o100755"
+        }
+      }
+    },
+    "pass": true,
+    "finished": "2026-11-03T10:31:25.919Z"
+  }
+}

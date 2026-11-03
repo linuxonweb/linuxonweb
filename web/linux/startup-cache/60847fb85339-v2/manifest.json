@@ -1,0 +1,49 @@
+{
+  "schema": 2,
+  "kind": "linuxonweb-firefox-code-cache",
+  "source": {
+    "archiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+    "firefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+    "fixtureReportSha256": "ce32bb8ad23d16f7c4762f3642eedf7a8994d83e27956b0776f12f28ade11e3b",
+    "fixtureStarted": "2026-11-03T08:34:25.746Z",
+    "fixtureEnded": "2026-11-03T08:37:21.182Z",
+    "fixtureBrowser": "Chrome/150.0.7871.114",
+    "profileState": "fresh isolated fixture; only GPU-check, about:blank and about:profiles were opened",
+    "excluded": "Only generated code caches plus four build compatibility fields; no prefs, NSS, places, cookies, logins, permissions, remote-settings or user data"
+  },
+  "asset": {
+    "url": "gpt6-astra-rubywebterm-code-cache.bin.gz",
+    "bytes": 10462324,
+    "sha256": "36c09f1512ea423cb6c878849c8f5b50a78324a37ceecc6f88e903256429c60e",
+    "unpackedBytes": 19247053
+  },
+  "files": [
+    {
+      "filename": "startupCache.4.little",
+      "bytes": 4926718,
+      "sha256": "d904f28520ef704a126168b29a736ee97e01aaf673f0f838e65bb0e609659208"
+    },
+    {
+      "filename": "scriptCache.bin",
+      "bytes": 14313900,
+      "sha256": "40b41e85dc042d8a11e6607886f78031a56a0c35e97dbe57a12fa6c1add9b5ed"
+    },
+    {
+      "filename": "urlCache.bin",
+      "bytes": 6031,
+      "sha256": "84cbad1711df9cc989b096d8cdb918e7674b649f71e912fe37a4c028c5cd7d04"
+    }
+  ],
+  "acceptance": "Experimental opt-in; cache use and launch benefit require guest runtime evidence",
+  "compatibility": {
+    "fields": {
+      "LastVersion": "159.0a1_20261004075010/20261004075010",
+      "LastOSABI": "Linux_wasm32-gcc3",
+      "LastPlatformDir": "/opt/firefox",
+      "LastAppDir": "/opt/firefox/browser"
+    },
+    "bytes": 155,
+    "sha256": "94922cd906f694b72fed76d1edb47d3408197f8398440aa83a955c7f732961dd",
+    "sourceExportSha256": "61205ad22382e19679595ba4f34f7c5c71300ad5689ab8fc1eef2b5c1fc132bc"
+  }
+}

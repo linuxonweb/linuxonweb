@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Real guest HomeFS mount and durability checks</title><canvas id="display" width="640" height="480"></canvas><pre id="result">Running…</pre>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice,inputDevice,fileSystemDevice} from '../dist/index.js';
+import {openPersistentHome} from '../persistent-home.mjs';
+const result=globalThis.homeMountResult={checks:[],guest:[],counts:{},errors:[],started:new Date().toISOString()};
+const assert=(ok,label)=>{result.checks.push({label,pass:!!ok});if(!ok)throw Error(label);};
+const rootName='linuxonweb.mount-durability.'+crypto.randomUUID();
+const stores=[],observers=[],names=[];let machine,activeFault=null;const put=IDBObjectStore.prototype.put;
+IDBObjectStore.prototype.put=function(...args){const f=activeFault;if(!f||this.transaction.db.name!==f.db||this.name!=='chunks')return put.apply(this,args);f.puts++;if(f.kind==='quota'&&f.puts===8)throw new DOMException('Injected fixture quota','QuotaExceededError');const req=put.apply(this,args);if(f.kind==='abort'&&f.puts===8)req.addEventListener('success',()=>this.transaction.abort());return req;};
+const idb=req=>new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+let finishGuest;const guestDone=new Promise((resolve,reject)=>{finishGuest={resolve,reject};});
+const decoder=new TextDecoder();let pending='';
+function consoleWrite(bytes){pending+=decoder.decode(new Uint8Array(bytes),{stream:true});const lines=pending.split('\n');pending=lines.pop();for(const line of lines){const text=line.replaceAll('\r','');result.guest.push(text);if(/^HOME_DONE /.test(text))finishGuest.resolve(text);if(result.guest.length>1000)result.guest.shift();}document.querySelector('#result').textContent=JSON.stringify(result,null,2);}
+try{
+ const meta=await(await fetch('./home-mount.json')).json();const image=new Uint8Array(await(await fetch('./home-mount.cpio')).arrayBuffer());assert(hex(await crypto.subtle.digest('SHA-256',image))===meta.archiveSha256,'isolated native fixture SHA matches build receipt');result.fixture=meta;
+ const devices=[];
+ for(const tag of ['sync','async']){
+  const db=rootName+'.'+tag;names.push(db);const home=await openPersistentHome({name:db});const observer=await openPersistentHome({name:db,readOnly:true});stores.push(home);observers.push(observer);const count=result.counts[tag]={writes:0,fsyncs:0,flushes:0,committedBeforeReply:0,faults:[]};const inodeNames=new Map();
+  const create=home.create;home.create=async function(...args){const value=await create.apply(this,args);inodeNames.set(value.node.id,String(args[1]));return value;};
+  const write=home.write;home.write=async function(...args){count.writes++;const name=inodeNames.get(args[0].id);if(name==='bench'&&count.benchmarkStartMs===undefined)count.benchmarkStartMs=performance.now();const injected=name?.startsWith('fault-')&&args[3].length===65536;if(injected)activeFault={db,kind:name.slice(6),puts:0};try{const value=await write.apply(this,args);if(name==='bench')count.benchmarkLastReplyMs=performance.now();if(name==='durable'){const durable=await observer.read(args[0],{},args[2],args[3].length);assert(durable.length===args[3].length&&durable.every((b,i)=>b===args[3][i]),tag+' write is independently readable before guest reply/fsync');count.committedBeforeReply++;}return value;}catch(error){if(injected)count.faults.push({kind:activeFault.kind,puts:activeFault.puts,errno:error.errno});throw error;}finally{if(injected)activeFault=null;}};
+  for(const method of ['fsync','flush']){const fn=home[method];home[method]=function(...args){count[method==='fsync'?'fsyncs':'flushes']++;return fn.apply(this,args);};}
+  devices.push(fileSystemDevice(home,{tag,cache:true,cacheSeconds:3600}));
+ }
+ machine=await spawnMachine({cpus:navigator.hardwareConcurrency,devicetree:{memory:{reg:[0,536870912]}},initcpio:image,cmdline:'console=hvc0 rdinit=/init',devices:[consoleDevice(null,new WritableStream({write:consoleWrite})),entropyDevice(),inputDevice(),...devices],framebuffer:{canvas:document.querySelector('#display'),width:640,height:480,backend:'canvas2d'}});
+ void(async()=>{const reader=machine.bootConsole.getReader();try{while(!(await reader.read()).done){}}finally{reader.releaseLock();}})();
+ const done=await Promise.race([guestDone,new Promise((_,reject)=>setTimeout(()=>reject(Error('native fixture60s deadline')),60000)),machine.closed.then(()=>{throw Error('guest stopped before fixture completed');})]);
+ assert(/failures=0$/.test(done),'native write/fdatasync/fsync/rename/error checks all pass');assert(!result.guest.some(x=>x.startsWith('HOME_CHECK FAIL')),'no failed native check');
+ // Match the product Stop ordering: settle durable host work, close the guest,
+ // then reopen independent connections and inspect only this disposable namespace.
+ for(const store of stores)await store.settle();machine.close();await machine.closed.catch(()=>{});machine=null;
+ for(const observer of observers)await observer.destroy();for(const store of stores)await store.destroy();
+ for(const tag of ['sync','async']){const home=await openPersistentHome({name:rootName+'.'+tag,readOnly:true});try{for(const [name,size]of [['durable',8192],['replace',4096],['fault-quota',4096],['fault-abort',4096],['bench',1048576],['close-only',4096],['stop-open',4096]]){const node=await home.lookup(home.root,name);const data=await home.read(node,{},0n,size+1);assert(data.length===size&&data.every(x=>x===0x61),tag+' '+name+' exact bytes survive Stop/reopen');}assert(await home.lookup(home.root,'replace.tmp')===undefined,tag+' atomic rename survives reopen');assert(result.counts[tag].committedBeforeReply===2,tag+' writes committed before guest response');assert(result.counts[tag].faults.length===2,tag+' real IndexedDB quota and abort reached guest');}finally{await home.destroy();}}
+ assert(result.counts.sync.fsyncs>result.counts.async.fsyncs+200,'sync mount creates extra FSYNC RPCs while standard mount remains write-through');
+ for(const c of Object.values(result.counts))c.benchmarkHostObservedMs=c.benchmarkLastReplyMs-c.benchmarkStartMs;result.pass=true;
+}catch(error){result.errors.push(String(error));result.pass=false;}
+finally{IDBObjectStore.prototype.put=put;if(machine){machine.close();await machine.closed.catch(()=>{});}for(const store of [...observers,...stores])await store.destroy().catch(()=>{});for(const db of names)await idb(indexedDB.deleteDatabase(db)).catch(()=>{});result.finished=new Date().toISOString();document.querySelector('#result').textContent=JSON.stringify(result,null,2);document.documentElement.dataset.result=result.pass?'pass':'fail';}
+</script>

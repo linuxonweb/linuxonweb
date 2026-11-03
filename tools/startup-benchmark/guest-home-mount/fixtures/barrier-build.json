@@ -1,0 +1,26 @@
+{
+  "startedUtc": "2026-11-03T10:05:37.150770+00:00",
+  "finishedUtc": "2026-11-03T10:05:38.152264+00:00",
+  "durationSeconds": 1.002,
+  "argv": [
+    "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+    "-O2",
+    "-g0",
+    "-pthread",
+    "-matomics",
+    "-mbulk-memory",
+    "-static",
+    "-Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576",
+    "tools/startup-benchmark/guest-home-mount/barrier.c",
+    "-o",
+    "../../../codex-build/s3n/barrier-fixture/check"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "stopReason": null,
+  "ownerPeakRssBytes": 303104,
+  "ownedTreePeakRssBytes": 303104,
+  "resourceSamples": 1,
+  "resourceScope": "one-second owned descendant tree RSS sum (shared pages may be counted more than once), CPU ticks and host available RAM",
+  "pass": true
+}

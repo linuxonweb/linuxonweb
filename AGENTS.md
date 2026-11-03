@@ -52,3 +52,7 @@ pause instructions. Keep this file concise and put detailed work in agent logs.
 ## Next-agent entry
 Use `agent/continue.md` for exact current inputs, latest receipts, failures and
 next steps. `agent/task.md` contains full user instructions; those take precedence.
+
+### Browser image release gate learned on 2026-11-03
+
+Any image/compression/composition change must load the exact candidate through the production browser `DecompressionStream` plus desktop extras/init wrapper and reach a guest command or desktop before publication. Node gzip/DecompressionStream and direct kernel boot are component checks only. Chromium rejects concatenated gzip members (`Junk found after end of compressed data`) even when Node and Linux accept them. The failed4f6bf2d3a326 APK image was withdrawn and tested60847fb85339 restored pending a single-member repack and full browser gate. Preserve the failed cube2 evidence alongside the correction. Compressed boot itself remains validated for the reference608 image; code-cache and writeback experiments remain off.

@@ -3,9 +3,9 @@
 Task start: 2026-11-03T07:06:26Z. Five-hour budget ends approximately12:06UTC;
 only an important bug may justify the requested one-hour extension.
 
-Current overall acceptance: **24/100, provisional and evidence-limited**.
+Current overall acceptance: **26/100, provisional and evidence-limited**.
 This is progress toward the full user goal, not a code-quality grade. Root's
-rubric: desktop6/15; I/O+startup7/25; JIT3/15; graphics4/25; packages1/10;
+rubric: desktop6/15; I/O+startup7/25; JIT3/15; graphics6/25; packages1/10;
 mobile0/5; preview/reproducibility3/5. The goal remains unmet and work continues.
 
 ## Completed startup/I/O iterations
@@ -110,3 +110,75 @@ Task wall time through this ledger update: 4330.615 s.
 Model inference/active attention time is not exposed by the tools; no invented
 main/subagent compute-time totals are reported. Other agents append their own
 build/test durations. No startup_io test/build exceeded5minutes.
+
+## Current iteration 3 — profile I/O and opt-in code-cache seed
+
+The corrected compressed run `warm1` reached the rendered Firefox page by
+90.87 seconds. Its exact about:profiles page later rendered successfully. The
+30-second manual screenshot-to-click handoff expired before the requested
+Restart normally click, so **no warm restart was attempted**. The owner failed
+that harness gate and reaped all its processes. This is not a Firefox restart
+failure. The handoff is now bounded at 90 seconds; fresh cloned test profiles
+exclude stale DevToolsActivePort/Singleton files and require a cleanup receipt.
+
+By 132 seconds the first-profile trace recorded 11,423 home API calls: 3,871
+writes, 33.4 MB written, 46.98 seconds aggregate write time, and 62.21 seconds
+union of in-flight API intervals (maximum concurrency 2). These totals include
+substantial post-start work and are not all serial startup latency. The current
+per-phase evidence is in warm1-home-phase-attribution.json. Aggregate async
+time is 7.81 s before 50 s, 6.28 s during 50–70 s, 14.34 s during 70–90 s,
+16.43 s during 90–110 s, and 17.44 s during the subsequent input/background
+phase. Exact window/page timestamps remain bounded by screenshots.
+
+A closed, isolated profile inventory found 14.31 MB scriptCache.bin and 4.93 MB
+startupCache.4.little; substantial durable SQLite/WAL data also exists and is
+excluded from seeding. The code-cache export includes exactly those two files
+and the 6,031-byte urlCache.bin, with provenance and individual SHA256 hashes.
+The experimental seed asset is 10,462,324 bytes compressed / 19,247,053 bytes
+unpacked, pinned to archive 60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa.
+It is not enabled by the production UI. A diagnostic proxy can opt in after
+all download/validation/import work has started inside the cold timing window.
+
+The importer passed 11 real-browser checks: image mismatch causes no fetch or
+mutation; existing/cleared homes stay unchanged; corrupt bytes fail before
+mutation; an in-page home change during download wins; strict durable reopen
+preserves all three checksums; no durable/NSS profile databases are created.
+Guest acceptance/use and a repeatable launch benefit remain unmeasured.
+
+### Observer cost correction
+
+The Node resource sampler now runs in a Worker. CPU/RSS/available memory/quota
+remain sampled every second; PSS is sampled every five seconds and records its
+scan duration. New PSS peaks are sampled lower bounds at that cadence; they
+are not directly compared to prior one-second-PSS peaks as a code improvement.
+Short runs may contain only one PSS sample. Per-PID/start CPU counter deltas
+avoid negative CPU percentages when a child exits; work between a child's final
+sample and exit can still be missed. No quota/controller policy is changed.
+
+## Iteration 4 — compressed default and APK composition acceptance (2026-11-03)
+
+Overall acceptance before root review: 31/100; this is component evidence, not completion of the user goal. Package image 4f6bf2d3a326 published with unchanged original /init and Firefox native. New concatenated gzip package image, actual desktop extras, and generated init wrapper passed a real 2 GiB / 3 CPU guest boot with APK execution, extras presence and a home write plus sync. Browser elapsed 15.363 s, exit 0. Composition build started 09:59:35 UTC and took 8.008 s; raw-path member/hash validation took 4.003 s from 10:00:32 UTC; bounded runtime envelope took 16.028 s from 10:00:36 UTC; focused default/loader tests took 1.001 s from 10:02:28 UTC. One-second resource monitors were retained. Firefox now preserves gzip by default, with explicit `compressed-initramfs=0` available. GPU overlays that require raw CPIO still select raw.
+
+The earlier matched 3-CPU one-second-PSS pair measured 4.2732 versus 3.2287 GiB (~1.04 GiB reduction). No startup time improvement is attributed to compression. New actual frontend composition closes the package gate; package fixture separately proved two-boot coherent APK DB/files reset and persistent home. Code-cache v1 was rejected as unused (zero guest reads); v2 and writeback remain experimental and off.
+
+## Iteration 5 — production browser compression regression (2026-11-03 10:08–10:13 UTC)
+
+The overlay5 guest benchmark never booted: actual Chrome150 production `DecompressionStream('gzip')` rejected the published multi-member APK archive with `Junk found after end of compressed data`. No FPS result exists for cube2. Its owner ran162.449s, but this is a failed-loader observation interval, not Firefox time or memory. The Node composition + direct kernel checks in iteration4 did not cover the actual browser decompressor; their apparent full acceptance was withdrawn. Root revised provisional acceptance to35/100.
+
+At10:12:48UTC the verified publisher restored immutable60847fb85339 (SHA60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa), retaining the compressed default known to work on this image. The failed4f6bf2d3a326 artifact and evidence remain. Packages is stream-repacking the identical decoded CPIO sequence into one gzip member. Required next gate: independent Chromium stream validation plus exact production main/extras/init wrapper reaching guest desktop, before publication. The benchmark owner now fails fast on a known boot-failed UI status instead of waiting out the full150s interval.
+
+## Iteration6 — repaired browser image and clock-correlated Firefox gate
+
+- Start2026-11-03T10:20:14.572Z; end2026-11-03T10:23:22.839Z; elapsed188.268s. Overall acceptance remains35/100, package release pending.
+- Exact single-member candidate d35dbfeb2a15 reached actual Firefox through production DecompressionStream, extras and init wrapper. Independent graphics browser decode/composition gate passed20/20 in33.874s (separate component time).
+- Completed cube correctnessPASS:82frames/34.085s=2.4058fps, wall34.084s,17.301s maximum stall. Same page origin throughout. This is~4.02% of59.84828fps host; goal unmet.
+- Post-benchmark manual gate expired during context handoff; terminal commands unperformed. This is an orchestration failure, not a product package failure. Dedicated scripted desktop gate follows.
+- PSS4,864,962,560B=4.531GiB sampled5s; CPU/RSS/quota1s. Not directly comparable to earlier old608 matched3.229GiB compressed measurement.
+- Walltime from task start07:06:26 through10:23:22.839=3h16m56.839s. Parallel component/test durations are not added to elapsed walltime.
+
+## Iteration7 — dedicated production package desktop and off-public flush barrier
+
+- Actual repaired-image desktop gate2026-11-03T10:27:44.958Z→10:29:53.861Z,128.903s, clean Stop and zero owned processes. Aurora terminal launched after wm-ready; native APK update and signed Python installation succeeded, python3 --version reported3.14.6. Module execution emitted prefix warnings and no completion marker within4s; ordinary environment/latency investigation pending, publication held. Overall35/100.
+- Isolated barrier fixture2026-11-03T10:31:01.655Z→10:31:29.029Z,27.374s,16checksPASS,0owned; fixture512MiB, actual guestLinux/native syscalls/strictIDB. Open acknowledged writes and activewriter durable before genuine quiesce+syncfs ACK; exactnonce Stop/reopen retained bytes. Real quota error and timeout resume running guest, no false shutdown.
+- Barrier remains experimental/off-public: current real desktop PID1 can spawn/respawn writers and cannot be safely stopped. A supervisor/full-desktop lifecycle gate is not implemented; no production writeback exposure.
+- Elapsed walltime from07:06:26 through10:31:29.029 is3h25m03.029s. Parallel durations remain separate.

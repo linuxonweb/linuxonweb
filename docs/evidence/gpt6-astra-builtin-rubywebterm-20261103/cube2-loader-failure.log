@@ -1,0 +1,5 @@
+[host] boot timing: firefox boot requested 0.8s after page load; update check done at 0.1s
+[host] boot mode=firefox, display=1280x720, cpus=3, ram=2 GB
+[host] boot timing: home ready at 0.1s
+[host] network proxy ws://127.0.0.1:38086 (guest 192.0.2.2 via 192.0.2.1)
+[host error] TypeError: Junk found after end of compressed data.

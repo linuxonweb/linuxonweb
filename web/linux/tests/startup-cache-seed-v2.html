@@ -1,0 +1,51 @@
+<!doctype html><meta charset="utf-8"><title>Firefox code-cache seed checks</title><pre id="result">Running…</pre>
+<script type="module">
+import {openPersistentHome} from '../persistent-home.mjs';
+import {seedFirefoxCodeCache,cacheSha256} from '../startup-cache-seed.mjs';
+import {FIREFOX_CODE_CACHE_SEED as seed} from '../startup-cache-catalog-v2.mjs';
+const output=document.querySelector('#result'),checks=[],fixtures=[];
+const assert=(condition,message)=>{if(!condition)throw Error(message);checks.push(message);output.textContent=checks.join('\n');};
+const options={archiveSha256:seed.archiveSha256,seed};
+const context={mode:0o700,uid:1000,gid:1000};
+async function fresh(){const name='linuxonweb.code-cache-test.'+crypto.randomUUID(),home=await openPersistentHome({name});fixtures.push({name,home});return home;}
+async function cacheDirectory(home){let node=home.root;for(const name of ['admin','.cache','mozilla','firefox','http1-profile','startupCache']){node=await home.lookup(node,name);if(!node)throw Error('Cache directory missing');}return node;}
+try{
+ const mismatch=await fresh();let fetched=0;
+ const skipped=await seedFirefoxCodeCache({...options,home:mismatch,archiveSha256:'0'.repeat(64),fetchImpl:()=>{fetched++;throw Error('Unexpected fetch');}});
+ assert(skipped.reason==='image-mismatch'&&fetched===0&&(await mismatch.readdir(mismatch.root)).length===0,'Different full archive SHA: no download or mutation');
+ const established=await fresh(),admin=await established.mkdir(established.root,'admin',context);
+ const marker=await established.create(admin,'profile-marker',2,{...context,mode:0o600});await established.write(marker.node,marker.handle,0n,new TextEncoder().encode('keep this exact user data'));await established.release(marker.node,marker.handle);
+ fetched=0;const existing=await seedFirefoxCodeCache({...options,home:established,fetchImpl:()=>{fetched++;throw Error('Unexpected fetch');}});
+ const handle=await established.open(marker.node,0),value=await established.read(marker.node,handle,0n,100);await established.release(marker.node,handle);
+ assert(existing.reason==='established-home'&&fetched===0&&new TextDecoder().decode(value)==='keep this exact user data','Existing user home remains byte-for-byte unchanged without downloading');
+ await established.unlink(admin,'profile-marker');
+ assert((await seedFirefoxCodeCache({...options,home:established,fetchImpl:()=>{throw Error('Unexpected fetch');}})).reason==='established-home','Clearing an established profile does not silently recreate its caches');
+ const corrupt=await fresh();let rejected=false;
+ try{await seedFirefoxCodeCache({...options,home:corrupt,fetchImpl:async(url,init)=>{const response=await fetch(url,init);if(String(url).endsWith('.bin.gz')){const bytes=new Uint8Array(await response.arrayBuffer());bytes[20]^=1;return new Response(bytes,{headers:response.headers});}return response;}});}catch(error){rejected=/checksum/.test(error.message);}
+ assert(rejected&&(await corrupt.readdir(corrupt.root)).length===0,'Corrupt code-cache bytes rejected before any home mutation');
+ const race=await fresh();let changed=false;
+ const raced=await seedFirefoxCodeCache({...options,home:race,fetchImpl:async(url,init)=>{const response=await fetch(url,init);if(String(url).endsWith('.bin.gz')&&!changed){changed=true;await race.mkdir(race.root,'new-user-file-directory',context);}return response;}});
+ assert(raced.reason==='home-changed-during-download'&&(await race.readdir(race.root)).map(x=>x.name).join()==='new-user-file-directory','In-page home changes during download are preserved and seed is skipped');
+ const late=await fresh(),lateController=new AbortController(),settle=late.settle;
+ late.settle=async()=>{await settle();lateController.abort(new Error('late committed import cancellation'));};let lateRejected=false;
+ try{await seedFirefoxCodeCache({...options,home:late,signal:lateController.signal});}catch(error){lateRejected=error.message==='late committed import cancellation';}
+ assert(lateRejected&&(await late.readdir(await cacheDirectory(late))).length===3,'Cancellation after the final strict commit reports failure without interrupting durable writes');
+ const accepted=await fresh(),record=fixtures.at(-1);
+ const result=await seedFirefoxCodeCache({...options,home:accepted});
+ const manifest=await fetch(new URL(seed.manifestURL,new URL('../startup-cache-seed.mjs',import.meta.url))).then(r=>r.json());
+ assert(result.status==='seeded'&&result.files===3&&result.importedBytes===manifest.files.reduce((n,f)=>n+f.bytes,0),'Valid pinned seed imports exactly three code-cache files');
+ await accepted.destroy();record.home=await openPersistentHome({name:record.name});
+ const directory=await cacheDirectory(record.home),entries=await record.home.readdir(directory);
+ assert(entries.map(x=>x.name).sort().join()===manifest.files.map(x=>x.filename).sort().join(),'Durable reopen has the exact allowlisted file set');
+ for(const file of manifest.files){const node=await record.home.lookup(directory,file.filename),handle=await record.home.open(node,0);try{const data=await record.home.read(node,handle,0n,file.bytes);assert(data.length===file.bytes&&await cacheSha256(data)===file.sha256,'Durable reopened checksum: '+file.filename);}finally{await record.home.release(node,handle);}}
+ let profile=record.home.root;for(const part of ['admin','.mozilla','firefox','http1-profile'])profile=await record.home.lookup(profile,part);
+ const profileEntries=await record.home.readdir(profile);assert(profileEntries.length===1&&profileEntries[0].name==='compatibility.ini','Only generated compatibility metadata exists in the otherwise pristine profile');
+ const compat=await record.home.lookup(profile,'compatibility.ini'),compatBytes=await record.home.read(compat,{},0n,1024);
+ assert(await cacheSha256(compatBytes)===manifest.compatibility.sha256&&new TextDecoder().decode(compatBytes).split('\n').filter(x=>x.includes('=')).length===4,'Exactly four pinned build fields persist; no prefs, NSS or user database fields');
+ const bad=await fresh(),badManifest=structuredClone(manifest);badManifest.compatibility.fields.EncryptedDatabases='1';const badBytes=new TextEncoder().encode(JSON.stringify(badManifest)),badSeed={...seed,manifestSha256:await cacheSha256(badBytes)};let refused=false;
+ try{await seedFirefoxCodeCache({...options,seed:badSeed,home:bad,fetchImpl:async()=>new Response(badBytes)});}catch(error){refused=/compatibility/.test(error.message);}
+ assert(refused&&(await bad.readdir(bad.root)).length===0,'Unexpected security-related compatibility fields are rejected before any mutation');
+ document.documentElement.dataset.result='pass';output.textContent=`PASS ${checks.length} checks\n`+checks.join('\n');
+}catch(error){document.documentElement.dataset.result='fail';output.textContent='FAIL '+error.stack+'\n'+checks.join('\n');}
+finally{for(const {name,home} of fixtures){await home.destroy().catch(()=>{});await new Promise(resolve=>{const request=indexedDB.deleteDatabase(name);request.onsuccess=request.onerror=request.onblocked=resolve;});}}
+</script>

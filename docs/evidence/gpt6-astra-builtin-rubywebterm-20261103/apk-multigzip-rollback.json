@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-03T10:12:48.944038+00:00",
+  "restored": "60847fb85339",
+  "reason": "Actual Chromium frontend DecompressionStream rejects concatenated gzip members; Node composition and kernel-direct gate did not cover this browser behavior",
+  "failedImageVersion": "4f6bf2d3a326",
+  "failureEvidence": "/mnt/p3/codex-build/s3n/cube2/guest.log",
+  "pending": "single gzip member with identical decompressed CPIO sequence; actual Chromium composition gate"
+}

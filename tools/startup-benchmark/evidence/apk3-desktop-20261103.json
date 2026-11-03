@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T10:27:44.958Z",
+  "mode": "firefox",
+  "seconds": 65,
+  "run": "/mnt/p3/codex-build/s3n/apk3-desktop",
+  "errors": [],
+  "screenshots": [
+    {
+      "name": "at10s.png",
+      "ms": 12091.039,
+      "bootMs": 10378.169999999998
+    },
+    {
+      "name": "at30s.png",
+      "ms": 32512.517,
+      "bootMs": 30799.647999999997
+    },
+    {
+      "name": "at50s.png",
+      "ms": 52815.248,
+      "bootMs": 51102.377
+    },
+    {
+      "name": "final.png",
+      "ms": 67646.782,
+      "bootMs": 65933.912
+    },
+    {
+      "name": "apk-terminal-before.png",
+      "ms": 73151.178,
+      "bootMs": 71438.31199999999
+    },
+    {
+      "name": "apk-command-0.png",
+      "ms": 77730.354,
+      "bootMs": 76017.481
+    },
+    {
+      "name": "apk-command-1.png",
+      "ms": 105636.099,
+      "bootMs": 103923.235
+    },
+    {
+      "name": "apk-command-2.png",
+      "ms": 110596.937,
+      "bootMs": 108884.06999999999
+    },
+    {
+      "name": "apk-command-3.png",
+      "ms": 118271.837,
+      "bootMs": 116558.97099999999
+    }
+  ],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "compressed-initramfs=1&desktop-apk-check=1",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38089/linux/index.html?renderer=webgl&gpubackend=webgl&firefox=1&compressed-initramfs=1&desktop-apk-check=1",
+  "navigationAtMs": 1712.88,
+  "navigation": {
+    "frameId": "621213909CD653987155F25694610EAF",
+    "loaderId": "C08C13222DB8C063199C3EC73FDE92C0",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38089/linux/index.html?renderer=webgl&gpubackend=webgl&firefox=1&compressed-initramfs=1&desktop-apk-check=1",
+    "pageTimeOrigin": 1793701666693.27,
+    "pageNow": 842.9200000166893
+  },
+  "milestones": {
+    "system image": 8202.537,
+    "machine started": 8202.558,
+    "home: persistent storage mounted": 20991.771999999997,
+    "display: starting Xfbdev": 20991.784,
+    "starting /bin/aurora-wm": 20991.793999999998,
+    "[wm-ready]": 20991.797,
+    "starting /bin/firefox": 20991.802,
+    "gl context 2 open": 41372.920000000006
+  },
+  "lastLogAtMs": 63397.75,
+  "seedReceipt": null,
+  "finalState": {
+    "text": "running \u00b7 firefox \u00b7 initramfs\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n0.0 MB \u00b7 0 entries\nCached system images\n116.8 MB\nBrowser usage / quota estimate\n116.8 MB / 10.11 GB\n\nSystem d35dbfeb2a15 \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nHome mounted \u00b7 saved files persist across refresh and system updates.",
+    "cores": 3,
+    "status": "running \u00b7 firefox \u00b7 initramfs"
+  },
+  "postApkCheck": {
+    "startedBootMs": 65941.798,
+    "afterFixedGraphicsObservation": false,
+    "dedicatedDesktopAcceptance": true,
+    "commands": [
+      {
+        "command": "apk --version",
+        "observedBootMs": 76032.298
+      },
+      {
+        "command": "sudo apk update && sudo apk add python3",
+        "observedBootMs": 103962.92499999999
+      },
+      {
+        "command": "python3 --version",
+        "observedBootMs": 108917.71699999999
+      },
+      {
+        "command": "python3 -m json.tool --help && echo python-desktop-ok",
+        "observedBootMs": 116650.038
+      }
+    ],
+    "finishedBootMs": 116678.377,
+    "acceptance": "Requires visual review of native terminal output; no automatic pass from keystrokes"
+  },
+  "stopState": "idle\nTools\nSettings\nPower\nPaste\nClick to paste text or a PNG image into the focused Linux app.\nCopy\nKeyboard\nShow logs\nTests\nMore\nServer packages\n\nLoaded webapp: Unknown\nServer webapp: Unknown\nServer: Unknown\nServer started: Unknown\n\nServer build information unavailable. HTTP 404\n\nPackage\tVersion\tBuild date\n\nUnknown means no version or build date was recorded. Package updates require your choice before boot.\n\nWasm Linux X11 display\n\nNative wasm32 Linux with /dev/fb0, TinyX, aurora-wm, and virtio-net tunneled through a WebSocket TCP proxy. Choose a launch mode, then click the display or terminal to focus its input.\n\nBrowser storage\nBest effort \u00b7 may be evicted\n\nYour Linux home, Firefox profile and downloads stay in this browser. System images are cached separately.\n\nHome file allocation\n15.8 MB \u00b7 113 entries\nCached system images\n116.8 MB\nBrowser usage / quota estimate\n126.6 MB / 10.12 GB\n\nSystem d35dbfeb2a15 \u00b7 Home allocation excludes metadata; browser usage includes all site storage.\n\nRefresh usage\nKeep storage\nUpdate & restart\nDelete cached images\nDelete home\u2026\n\nSaved files persist after refresh. Save work before Update & restart; browser data clearing removes this home.",
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T10:29:53.861Z",
+  "elapsedMs": 128903.022,
+  "resourceSummary": {
+    "pssPeakBytes": 5278598144,
+    "rssSumPeakBytes": 6052491264,
+    "minAvailableBytes": 24672223232,
+    "samples": 125,
+    "pssSamples": 25,
+    "pssIntervalMs": 5000
+  },
+  "review": {
+    "apkVersionAccepted": true,
+    "signedRepositoryUpdateAccepted": true,
+    "pythonPackageInstallAccepted": true,
+    "pythonVersionAccepted": "3.14.6",
+    "pythonModuleAccepted": false,
+    "moduleObservation": "Prefix warnings and no completion marker within4s; investigating ordinary environment and observation bound.",
+    "publicationAccepted": false
+  }
+}

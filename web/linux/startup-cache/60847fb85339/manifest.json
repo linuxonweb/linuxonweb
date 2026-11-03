@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "kind": "linuxonweb-firefox-code-cache",
+  "source": {
+    "archiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+    "firefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+    "fixtureReportSha256": "ce32bb8ad23d16f7c4762f3642eedf7a8994d83e27956b0776f12f28ade11e3b",
+    "fixtureStarted": "2026-11-03T08:34:25.746Z",
+    "fixtureEnded": "2026-11-03T08:37:21.182Z",
+    "fixtureBrowser": "Chrome/150.0.7871.114",
+    "profileState": "fresh isolated fixture; only GPU-check, about:blank and about:profiles were opened",
+    "excluded": "No durable profile, NSS, places, cookies, logins, permissions, remote-settings or user files are included"
+  },
+  "asset": {
+    "url": "gpt6-astra-rubywebterm-code-cache.bin.gz",
+    "bytes": 10462324,
+    "sha256": "36c09f1512ea423cb6c878849c8f5b50a78324a37ceecc6f88e903256429c60e",
+    "unpackedBytes": 19247053
+  },
+  "files": [
+    {
+      "filename": "startupCache.4.little",
+      "bytes": 4926718,
+      "sha256": "d904f28520ef704a126168b29a736ee97e01aaf673f0f838e65bb0e609659208"
+    },
+    {
+      "filename": "scriptCache.bin",
+      "bytes": 14313900,
+      "sha256": "40b41e85dc042d8a11e6607886f78031a56a0c35e97dbe57a12fa6c1add9b5ed"
+    },
+    {
+      "filename": "urlCache.bin",
+      "bytes": 6031,
+      "sha256": "84cbad1711df9cc989b096d8cdb918e7674b649f71e912fe37a4c028c5cd7d04"
+    }
+  ],
+  "acceptance": "Experimental opt-in; cache use and launch benefit require guest runtime evidence"
+}

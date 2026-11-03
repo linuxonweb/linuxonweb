@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {parentPort, workerData} from 'node:worker_threads';
 
-const {rootPid, rootStart, run, startedAtMonotonic, clockTicks} = workerData;
+const {rootPid, rootStart, run, startedAtMonotonic, clockTicks, pssIntervalMs=5000} = workerData;
 const tracked = new Map([[rootPid, rootStart]]);
-let lastTicks, lastSample, timer;
+let lastProcesses, lastSample, timer, lastPssSample=-Infinity;
 const now = () => +(performance.now() - startedAtMonotonic).toFixed(3);
 
 function stat(pid) {
@@ -62,12 +62,15 @@ function quotaSnapshot(group) {
 }
 function sample() {
   const started = now(), list = ownedProcesses();
+  const enumeratedAt=now(), pssSampled=started-lastPssSample>=pssIntervalMs;
   let pss = 0, complete = true;
-  for (const p of list) {
+  if(pssSampled)lastPssSample=started;
+  for (const p of pssSampled ? list : []) {
     try { pss += Number(/^Pss:\s*(\d+)/m.exec(fs.readFileSync(`/proc/${p.pid}/smaps_rollup`, 'utf8'))?.[1] || 0) * 1024; }
     catch { if (stat(p.pid)?.start === p.start) complete = false; }
   }
-  const ticks = list.reduce((n, p) => n + p.ticks, 0);
+  const pssFinishedAt=now();
+  const ticks = list.reduce((sum, p) => sum + Math.max(0, p.ticks - (lastProcesses?.get(p.pid+':'+p.start) ?? 0)), 0);
   const available = Number(/MemAvailable:\s*(\d+)/.exec(fs.readFileSync('/proc/meminfo', 'utf8'))?.[1] || 0) * 1024;
   const quotaByGroup = Object.fromEntries([...new Set(list.map(p => p.cgroup))].map(group => [group, quotaSnapshot(group)]));
   for (const p of list) {
@@ -76,11 +79,13 @@ function sample() {
   }
   const disk = fs.statfsSync(run);
   const row = {ms: started, completedMs: now(), quotaByGroup,
-    cpuPercent: lastTicks === undefined ? null : (ticks - lastTicks) / clockTicks / ((started - lastSample) / 1000) * 100,
-    pssBytes: complete ? pss : null, rssSumBytes: list.reduce((n, p) => n + p.rss, 0),
+    cpuPercent: lastProcesses === undefined ? null : ticks / clockTicks / ((started - lastSample) / 1000) * 100,
+    cpuAccounting:'per-PID/start counter deltas; CPU after a final sample before process exit may be missed',
+    pssBytes: pssSampled&&complete ? pss : null, pssSampled, pssIntervalMs, pssAgeMs:started-lastPssSample,
+    processEnumerationMs:enumeratedAt-started, pssReadMs:pssFinishedAt-enumeratedAt, rssSumBytes: list.reduce((n, p) => n + p.rss, 0),
     availableBytes: available, diskFreeBytes: disk.bavail * disk.bsize, processes: list};
   row.samplingMs = row.completedMs - started;
-  lastTicks = ticks; lastSample = started;
+  lastProcesses = new Map(list.map(p => [p.pid+':'+p.start,p.ticks])); lastSample = started;
   fs.appendFileSync(path.join(run, 'resource-samples.jsonl'), JSON.stringify(row) + '\n');
   parentPort.postMessage({sample: row});
   if (available < 2 * 1024 ** 3) parentPort.postMessage({fatal: 'Host available RAM below 2 GiB'});

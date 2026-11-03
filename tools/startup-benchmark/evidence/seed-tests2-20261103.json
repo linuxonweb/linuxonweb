@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T10:03:57.180Z",
+  "mode": "seed-tests",
+  "seconds": 90,
+  "run": "/mnt/p3/codex-build/s3n/seed-tests2",
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 2843.096,
+  "navigation": {
+    "frameId": "73F39E26E23A042726F24720EC81D3F2",
+    "loaderId": "C0FAF70EEE857DF90147C9A955A26D31",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl",
+    "pageTimeOrigin": 1793700240028.65,
+    "pageNow": 1007.9900000095367
+  },
+  "homeTests": [
+    {
+      "page": "startup-cache-seed.html",
+      "result": "pass",
+      "text": "PASS 12 checks\nDifferent full archive SHA: no download or mutation\nExisting user home remains byte-for-byte unchanged without downloading\nClearing an established profile does not silently recreate its caches\nCorrupt code-cache bytes rejected before any home mutation\nIn-page home changes during download are preserved and seed is skipped\nCancellation after the final strict commit reports failure without interrupting durable writes\nValid pinned seed imports exactly three code-cache files\nDurable reopen has the exact allowlisted file set\nDurable reopened checksum: startupCache.4.little\nDurable reopened checksum: scriptCache.bin\nDurable reopened checksum: urlCache.bin\nNo durable Firefox profile or NSS databases were seeded"
+    },
+    {
+      "page": "startup-cache-seed-v2.html",
+      "result": "pass",
+      "text": "PASS 14 checks\nDifferent full archive SHA: no download or mutation\nExisting user home remains byte-for-byte unchanged without downloading\nClearing an established profile does not silently recreate its caches\nCorrupt code-cache bytes rejected before any home mutation\nIn-page home changes during download are preserved and seed is skipped\nCancellation after the final strict commit reports failure without interrupting durable writes\nValid pinned seed imports exactly three code-cache files\nDurable reopen has the exact allowlisted file set\nDurable reopened checksum: startupCache.4.little\nDurable reopened checksum: scriptCache.bin\nDurable reopened checksum: urlCache.bin\nOnly generated compatibility metadata exists in the otherwise pristine profile\nExactly four pinned build fields persist; no prefs, NSS or user database fields\nUnexpected security-related compatibility fields are rejected before any mutation"
+    }
+  ],
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T10:04:25.341Z",
+  "elapsedMs": 28160.979,
+  "resourceSummary": {
+    "pssPeakBytes": 662981632,
+    "rssSumPeakBytes": 1508216832,
+    "minAvailableBytes": 27708387328,
+    "samples": 25,
+    "pssSamples": 5,
+    "pssIntervalMs": 5000
+  }
+}

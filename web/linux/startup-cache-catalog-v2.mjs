@@ -1,0 +1,6 @@
+// Experimental clean-profile build compatibility seed; not enabled by the product.
+export const FIREFOX_CODE_CACHE_SEED = Object.freeze({
+  "archiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+  "manifestSha256": "727d46d62199a8d3c9cd7a9a692d479ea8bd31a51a36516fa7b4ae4033be4871",
+  "manifestURL": "./startup-cache/60847fb85339-v2/manifest.json"
+});
