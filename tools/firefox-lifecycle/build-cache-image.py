@@ -18,7 +18,7 @@ import shutil
 import stat
 import time
 
-SCHEMA = 'linuxonweb-firefox-app-generation-v2'
+SCHEMA = 'linuxonweb-firefox-app-generation-v3'
 PROOF = '/etc/linuxonweb-firefox-cache-verified'
 LAUNCHER = 'opt/firefox/firefox-gpu-diagnostic'
 NATIVE = 'opt/firefox/firefox'
@@ -138,10 +138,13 @@ def build(args):
         if decoded_bytes != extras['bytes'] or decoded.hexdigest() != extras['sha256']:
             raise ValueError('Compressed extras are not equivalent to pinned raw extras')
     base = source / 'initramfs-firefox.cpio.gz'
-    if sha(base) != manifest['assets']['firefox']['sha256']:
+    if manifest['assets']['firefox'].get('cacheLifecycle') is not None:
+        raise ValueError('Build from a pre-generation image, not an existing cache image')
+    base_sha = sha(base)
+    if base_sha != manifest['assets']['firefox']['sha256']:
         raise ValueError('Input image does not match its manifest')
     before = records(base)
-    for name in (NATIVE, LAUNCHER, INI, MARKER):
+    for name in (NATIVE, LAUNCHER, INI, MARKER, 'init'):
         if name not in before or not stat.S_ISREG(before[name]['mode']):
             raise ValueError('Expected original Firefox file missing: ' + name)
     if before[NATIVE]['sha256'] != NATIVE_SHA:
@@ -160,12 +163,13 @@ def build(args):
         raise ValueError('Expected native Firefox application metadata')
     inventory = []
     for name, value in sorted(before.items()):
-        # Native+platform+app resources, startup font copied by the original init,
-        # and the explicit kernel/ABI contract determine compatibility. Package
-        # repository changes alone do not invalidate Firefox code caches.
+        # Keep explicit native/resource identities for review. The complete
+        # pre-generation base image and its init are also bound below so any
+        # startup or package composition change conservatively invalidates once.
         if (name.startswith('opt/firefox/') and name != MARKER) or name == 'lowland-OpenSans-Regular.ttf':
             inventory.append({'path': name, **{k: value[k] for k in ('mode', 'uid', 'gid', 'links', 'bytes', 'sha256')}})
     identity = {'schema': SCHEMA, 'abiGeneration': args.abi_generation,
+                'baseArchiveSha256': base_sha, 'initSha256': before['init']['sha256'],
                 'kernelSha256': manifest['assets']['kernel']['sha256'],
                 'desktopExtras': extras, 'resources': inventory}
     generation = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
@@ -256,7 +260,7 @@ def build(args):
     report = {'schema': 1, 'startedUtc': started_utc,
               'finishedUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'durationSeconds': round(time.monotonic() - started, 3),
-              'sourceArchiveSha256': manifest['assets']['firefox']['sha256'],
+              'sourceArchiveSha256': base_sha, 'sourceInitSha256': before['init']['sha256'],
               'archiveSha256': digest, 'archiveBytes': archive.stat().st_size,
               'uncompressedSha256': raw_digest.hexdigest(), 'uncompressedBytes': raw_bytes,
               'generation': generation, 'generationIdentity': identity, 'appDirectory': '/' + appdir,

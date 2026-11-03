@@ -144,3 +144,68 @@ The reused native shell lacks reliable set-u/EXIT-status behavior. Native tests
 now emit explicit final status without relying on EXIT traps. Package persistence
 is being moved to a checked native helper; do not enable the old shell helper
 based on source review alone.
+
+## Follow-up review and bounded experiment preparation
+
+Recorded UTC: 2026-11-03T15:17:57.565143+00:00. Root score is now **44/100** after signed GNU ports and
+native keyboard/Stop cleanup acceptance; Firefox startup, native restart, broad
+JIT, full graphics conformance, 50% host performance and iOS remain unmet.
+
+Future cache builds now use `linuxonweb-firefox-app-generation-v3` and bind the
+verified **pre-generation base archive SHA256** and explicit **/init SHA256**,
+plus the existing native/resource/kernel/font/ABI/extras identities. There is no
+self-hash: the produced archive is not an input to its own generation. Existing
+cache candidates remain byte-identical; clean persistence base images can be
+inputs, but existing cacheLifecycle metadata, generation paths or cache proofs
+are rejected. The final combined image needs a fresh two-boot native gate.
+
+The v2 launcher was observed in actual Firefox compatibility metadata with
+LastPlatformDir=/opt/firefox and generated LastAppDir, correct native BuildID,
+and no InvalidateCaches. This establishes the app-directory/proof route, not
+warm cache reuse or a 30-second usable launch. See integration receipt
+`../../../codex-build/lwc/cache-compat1/compatibility.json`.
+
+Independent input source review covered host-owned repeat (explicit browser
+repeat only), native TinyX EV_KEY2 handling, and key/button release before
+persistent-home settle and machine close. The exact deployed TinyX source was
+read from commit feab72ca891bc04b18763763e15ee4e532369cdf; owned copy
+`../../../codex-build/f3l/tinyx-kinput-pinned.c` has SHA256
+fd4e8b1f350a6b390159875edd11284fcb50a98aaf1434af144ae0614e756e6b.
+Integration's two native input runs passed 12 assertions, rapid nonce typing
+and navigation. The promoted input change is integration commit 3c7709c.
+
+Native Quit still missed its original 20-second exit gate in input-host2 even
+after the actual Quit confirmation was clicked. Read-only I/O comparison shows
+progress, not a proven deadlock: +6,535 calls and +16,885.390ms occupied time;
+2,442 writes (10,324,884 bytes), 2,351 fsyncs and 122 renames, no recorded errors.
+startupCache.4.little accounted for 5,497,688 bytes/861 writes; RemoteSettings
+SQLite and WAL accounted for another 3,836,584 bytes/1,417 writes. Native startup
+cache source writes the final header last and waits for the shutdown writer.
+A root-approved later 60–90-second observation must preserve the failed 20s
+result and inspect progress/owned processes before diagnosing a deadlock. No
+write buffering, cache seeding or packed resources are enabled.
+
+The production desktop Test-menu control agent is injected into normal GUI
+boots. Independent review confirms moving its hvc0 open/read until after the
+X socket exists avoids consuming pre-X package-recovery shell input. Console
+and non-GUI modes already exit. Its bounded readiness wait remains; documented
+recovery uses disable/previous then Stop/Start, and a real recovery echo plus
+normal post-X Test-menu action should verify channel ownership.
+
+`prepare-method-threshold.py` stages off-default PBLBC_HITS=50/10/200 overlays.
+The native binary, admission flags, guard/GC policies, PBLIC/PBLJIT thresholds,
+and original purge-marker cache policy remain unchanged. Exact matched scene:
+`../../../codex-build/g3g/fx-overlay5/gpt6-astra-graphics-firefox-benchmark.html`,
+36,031 bytes, SHA256
+e610e6b07da7622ed0724308dd5867b93330ad2a740c515dea46bfa1b1a929c0;
+raw extras 60,034,048 bytes, SHA256
+e5a3450e6ed15cb81e480ca51dcf1d06a90b5f9c391091283fe4dfc878a5ca39.
+The unchanged scene waits 10s from its first callback, then measures every
+callback interval until the first callback after 20s, including long stalls.
+A proposed 150s outer quiet-observation period is **not** the scene warmup.
+The metric is native-page rAF callback rate, not physical displayed-frame rate.
+There is no supported complete final tier-stat dump; sparse native compiler/
+entry snapshots must not be extrapolated into final counts. Existing broad
+GC/guard acceptance requires a reviewed full native build/observer binding that
+is still unavailable; an improved threshold FPS alone cannot promote JIT.
+No threshold benchmark or WebGPU readback presentation test has run yet.
