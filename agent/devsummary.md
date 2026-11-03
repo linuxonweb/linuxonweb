@@ -251,3 +251,28 @@ Builds and non-current-owner tests retain separate bounded receipts. No run in
 iterations10–11 exceeded five minutes; composite owner phases are explicit.
 
 At 2026-11-03T11:43:41.975591+00:00, elapsed since07:06:26 was 16635.976 seconds (4.6211 hours); recorded current-owner durations sum to 3184.443 seconds across 38 completed receipts.
+
+
+## Iteration 12 — isolated same-image cache-marker reuse
+
+First invocation was rejected by the closed-sibling-profile guard before browser
+start (terminal24505); its proxy was reaped. Host duration was not measured; the
+tool-call wall duration10.7s includes service overhead. Corrected owner marker2
+ran 2026-11-03T11:52:59.062Z–2026-11-03T11:55:18.660Z (139.598s), normal Stop, zero owned
+processes and no owner errors. Actual persistent startup/script cache inodes177
+and181 were read5,236,797B/14,313,900B with zero rewrites. Public marker remains.
+
+The GNU guest overlapped11:53:12–11:53:38 and recovery uploads also ran, so no
+clean timing improvement is claimed. Firefox absent at90s, visible and exact
+address text by110–114s; navigation pending at116s and complete by final120s.
+This is cache-reuse evidence, not30s launch or a safe migration fix. Overall
+acceptance41/100 after the separately accepted GNU packages; no score increase
+for this off-public experiment.
+
+Final startup_io accounting checkpoint at 2026-11-03T11:57:19.937918+00:00: elapsed since
+07:06:26 is 17453.938s (4.8483h). The 39 completed current-owner
+receipts sum to 3324.041s. This is summed task duration,
+not CPU time or exclusive wall time. Any overlapping agent tasks are recorded in
+their own ledgers, never added as total wall time. No current-owner receipt is
+above300s; slow multistage/native builds elsewhere retain their separate measured
+receipts and explanations. Marker/Omni builds and tests are all belowfive minutes.

@@ -9,8 +9,8 @@ Do not blanket-add the many unrelated untracked directories, profiles or binarie
 
 ## Verified release and acceptance
 
-Overall acceptance is **40/100**, not a quality claim of completion: desktop6/15,
-I/O+startup10/25, genuine JIT4/15, graphics9/25, packages6/10, mobile1/5,
+Overall acceptance is **41/100**, not a quality claim of completion: desktop6/15,
+I/O+startup10/25, genuine JIT4/15, graphics9/25, packages7/10, mobile1/5,
 preview/reproducibility4/5. Responsive Firefox within30s, general OpenGL/Vulkan,
 50% host performance, Node.js, and full mobile Firefox remain unmet.
 
@@ -137,7 +137,24 @@ Full encrypted history through80a52d1 is saved; incremental history/source and
 latest artifacts need the package agent's final verified checkpoint. Public
 source export excludes profiles, out/, signing keys and private preview state.
 
-Next actions at this checkpoint: finish required GNU package gates; run only the
-approved bounded cache-marker diagnostic if the lane is free; record its actual
-reuse/launch evidence; update this handoff with final commits and recovery
-receipts. Keep APK4 public. Goal score remains40/100; do not claim completion.
+## Final bounded cache-marker result
+
+Isolated marker2 completed11:52:59.062–11:55:18.660 UTC (139.598s), normal
+Stop and zero owned processes. It cloned the closed accepted APK4 profile and
+removed the marker only in that disposable guest. Original cache inode177 was
+read5,236,797B in40reads and inode181 read14,313,900B in110reads, both with zero
+rewrites; compatibility.ini was read unchanged. This confirms actual cache reuse.
+There is no speed claim: recovery uploads and a short GNU guest overlapped.
+Firefox was not visible at90s; by110s it rendered the cube and exact address input.
+Navigation was pending at116s and complete in the final120s capture. No production
+marker migration is enabled. Evidence: startup-benchmark/evidence/cache-marker-20261103.
+
+Latest integration checkpoint before this result:0f2b5dc; accepted GNU gzip/grep/sed
+and recovery tooling:83c4c2. Ten signed packages are available; Node.js remains
+unimplemented. The targeted mobile immutable worker bundle fix is under graphics
+agent validation; review its final commit/runtime evidence before claiming it.
+
+Next actions: finish independent mobile worker loader review and actual boot
+acceptance; final cumulative source/history/runtime recovery; update commit links
+and exact elapsed totals. Keep APK4 public and all experimental cache/writeback
+modes off. No further optional host guest tests are planned by startup_io.

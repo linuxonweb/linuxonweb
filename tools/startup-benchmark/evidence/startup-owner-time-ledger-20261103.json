@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "recordedUtc": "2026-11-03T11:43:41.975591+00:00",
+  "recordedUtc": "2026-11-03T11:57:19.937918+00:00",
   "taskStartUtc": "2026-11-03T07:06:26Z",
-  "taskElapsedSeconds": 16635.975591,
-  "recordedOwnerDurationSeconds": 3184.4429569999998,
+  "taskElapsedSeconds": 17453.937918,
+  "recordedOwnerDurationSeconds": 3324.041211,
   "scope": "Only completed startup_io current-owner reports at one level under s3n; native builds and other-agent tests are recorded in their bounded reports/ledgers. Sum is task time, not exclusive wall time or CPU time. Earlier concurrent diagnostic owners may overlap.",
   "owners": [
     {
@@ -476,6 +476,16 @@
       "start": "2026-11-03T11:29:30.388Z",
       "end": "2026-11-03T11:31:42.562Z",
       "elapsedMs": 132173.555,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "marker2",
+      "start": "2026-11-03T11:52:59.062Z",
+      "end": "2026-11-03T11:55:18.660Z",
+      "elapsedMs": 139598.254,
       "mode": "firefox",
       "errors": [],
       "remainingOwned": 0,

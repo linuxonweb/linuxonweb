@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "overallAcceptanceScore": 41,
+  "productionAccepted": false,
+  "start": "2026-11-03T11:52:59.062Z",
+  "end": "2026-11-03T11:55:18.660Z",
+  "elapsedMs": 139598.254,
+  "sourceProfile": {
+    "source": "/mnt/p3/codex-build/s3n/apk4-quiet/profile",
+    "sourceRun": "/mnt/p3/codex-build/s3n/apk4-quiet",
+    "start": "2026-11-03T11:14:31.040Z",
+    "end": "2026-11-03T11:18:44.471Z",
+    "copyMs": 331.0543580000001
+  },
+  "archiveSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "isolatedChange": "Before unchanged original/init, remove the global root-owned browser/.purgecaches marker only in this disposable guest. Exact APK4 and closed-profile guards remain required.",
+  "cacheInodes": [
+    {
+      "inode": "29",
+      "reads": 1,
+      "readBytes": 155,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 3.7200000286102295,
+      "writeMs": 0
+    },
+    {
+      "inode": "138",
+      "reads": 1,
+      "readBytes": 125904,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 12.439999997615814,
+      "writeMs": 0
+    },
+    {
+      "inode": "177",
+      "reads": 40,
+      "readBytes": 5236797,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 432.79500019550323,
+      "writeMs": 0
+    },
+    {
+      "inode": "179",
+      "reads": 1,
+      "readBytes": 6465,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 2.425000011920929,
+      "writeMs": 0
+    },
+    {
+      "inode": "181",
+      "reads": 110,
+      "readBytes": 14313900,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 1554.5,
+      "writeMs": 0
+    },
+    {
+      "inode": "305",
+      "reads": 1,
+      "readBytes": 1764,
+      "writes": 0,
+      "writeBytes": 0,
+      "readMs": 1.274999976158142,
+      "writeMs": 0
+    }
+  ],
+  "cacheReuseAccepted": true,
+  "sourceCacheInodesPreserved": [
+    177,
+    181
+  ],
+  "visualReview": {
+    "at70s": "No Firefox window yet",
+    "at90s": "No Firefox window yet",
+    "inputTyped": "Firefox and cube visible; exact about:blank text",
+    "inputNavigation": "Navigation not yet completed at116s observation",
+    "final": "Blank new tab completed by final120s capture"
+  },
+  "screenshots": [
+    {
+      "name": "at10s.png",
+      "ms": 15115.792,
+      "bootMs": 12043.277999999998,
+      "requestedAtMs": 13269.705,
+      "completedAtMs": 15115.792,
+      "durationMs": 1846.0869999999995,
+      "requestedAtUtc": "2026-11-03T11:53:12.332Z",
+      "completedAtUtc": "2026-11-03T11:53:14.178Z"
+    },
+    {
+      "name": "at30s.png",
+      "ms": 33409.236,
+      "bootMs": 30336.721999999998,
+      "requestedAtMs": 33273.812,
+      "completedAtMs": 33409.236,
+      "durationMs": 135.42399999999907,
+      "requestedAtUtc": "2026-11-03T11:53:32.336Z",
+      "completedAtUtc": "2026-11-03T11:53:32.471Z"
+    },
+    {
+      "name": "at50s.png",
+      "ms": 54811.498,
+      "bootMs": 51738.984,
+      "requestedAtMs": 53195.835,
+      "completedAtMs": 54811.498,
+      "durationMs": 1615.6630000000005,
+      "requestedAtUtc": "2026-11-03T11:53:52.258Z",
+      "completedAtUtc": "2026-11-03T11:53:53.873Z"
+    },
+    {
+      "name": "at70s.png",
+      "ms": 74052.123,
+      "bootMs": 70979.60900000001,
+      "requestedAtMs": 73218.978,
+      "completedAtMs": 74052.123,
+      "durationMs": 833.1450000000041,
+      "requestedAtUtc": "2026-11-03T11:54:12.281Z",
+      "completedAtUtc": "2026-11-03T11:54:13.114Z"
+    },
+    {
+      "name": "at90s.png",
+      "ms": 94440.736,
+      "bootMs": 91368.22200000001,
+      "requestedAtMs": 93447.744,
+      "completedAtMs": 94440.736,
+      "durationMs": 992.9919999999984,
+      "requestedAtUtc": "2026-11-03T11:54:32.510Z",
+      "completedAtUtc": "2026-11-03T11:54:33.503Z"
+    },
+    {
+      "name": "at110s.png",
+      "ms": 113626.386,
+      "bootMs": 110553.872,
+      "requestedAtMs": 113249.572,
+      "completedAtMs": 113626.386,
+      "durationMs": 376.8139999999985,
+      "requestedAtUtc": "2026-11-03T11:54:52.311Z",
+      "completedAtUtc": "2026-11-03T11:54:52.688Z"
+    },
+    {
+      "name": "input-before.png",
+      "ms": 114039.615,
+      "bootMs": 110967.10100000001,
+      "requestedAtMs": 113651.393,
+      "completedAtMs": 114039.615,
+      "durationMs": 388.22200000000885,
+      "requestedAtUtc": "2026-11-03T11:54:52.713Z",
+      "completedAtUtc": "2026-11-03T11:54:53.102Z"
+    },
+    {
+      "name": "input-typed.png",
+      "ms": 116659.423,
+      "bootMs": 113586.909,
+      "requestedAtMs": 115892.324,
+      "completedAtMs": 116659.423,
+      "durationMs": 767.099000000002,
+      "requestedAtUtc": "2026-11-03T11:54:54.954Z",
+      "completedAtUtc": "2026-11-03T11:54:55.721Z"
+    },
+    {
+      "name": "input-navigation.png",
+      "ms": 119093.42,
+      "bootMs": 116020.906,
+      "requestedAtMs": 118730.537,
+      "completedAtMs": 119093.42,
+      "durationMs": 362.88300000000163,
+      "requestedAtUtc": "2026-11-03T11:54:57.792Z",
+      "completedAtUtc": "2026-11-03T11:54:58.155Z"
+    },
+    {
+      "name": "final.png",
+      "ms": 124080.725,
+      "bootMs": 121008.21100000001,
+      "requestedAtMs": 123349.611,
+      "completedAtMs": 124080.725,
+      "durationMs": 731.1140000000014,
+      "requestedAtUtc": "2026-11-03T11:55:02.412Z",
+      "completedAtUtc": "2026-11-03T11:55:03.143Z"
+    }
+  ],
+  "milestones": {
+    "system image": 23099.846,
+    "machine started": 23099.866,
+    "home: persistent storage mounted": 39049.163,
+    "display: starting Xfbdev": 44085.848999999995,
+    "starting /bin/aurora-wm": 44085.863999999994,
+    "[wm-ready]": 44085.869999999995,
+    "starting /bin/firefox": 44085.877,
+    "gl context 2 open": 75576.909,
+    "PBLJIT compile": 107639.844
+  },
+  "inputProbe": {
+    "startBootMs": 110578.846,
+    "typedBootMs": 111819.579,
+    "enterBootMs": 113656.759,
+    "observedBootMs": 116054.488
+  },
+  "errors": [],
+  "remainingOwned": [],
+  "peakPssBytes": 2841025536,
+  "timingLimitations": [
+    "Recovery uploads overlapped; no clean startup or I/O timing claim.",
+    "GNU guest overlapped2026-11-03T11:53:12Z through11:53:38Z under the shared3CPU quota.",
+    "Milestone observations are log arrival, not exact process execution latency.",
+    "Only cache reuse and visible functional outcome are accepted; no safe public migration policy has been implemented."
+  ],
+  "earlierSetupFailure": {
+    "terminal": 24505,
+    "error": "Reuse requires a closed sibling test profile with cleanup receipt",
+    "reason": "Invocation supplied short marker1 run name outside sibling scratch directory",
+    "beforeBrowserStart": true,
+    "proxyReaped": true,
+    "hostDurationSeconds": null,
+    "note": "No owner receipt was created; exact host duration unmeasured. Tool call wall duration10.7s includes service overhead."
+  }
+}

@@ -70,7 +70,7 @@ Public APK4 d258203daee8 is accepted through the exact production browser path;
 SHA2564675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771.
 Compressed Firefox boot is default. Pythonr1 and genuine GNU coreutils are signed
 packages; rootfs/APK database reset together, /home persists. Overall acceptance
-40/100;30s Firefox, general GL/Vulkan,50% host, Node.js and full mobile Firefox
+41/100;30s Firefox, general GL/Vulkan,50% host, Node.js and full mobile Firefox
 remain unmet. Read agent/continue.md for exact benchmarks and reproduction.
 
 Canonical Omni is an isolated rejected candidate: file allocation fell538.5MB,
