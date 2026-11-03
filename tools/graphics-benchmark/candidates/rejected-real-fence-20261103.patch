@@ -1,0 +1,353 @@
+diff --git a/web/linux/dist/guest-gl-remote.js b/web/linux/dist/guest-gl-remote.js
+index 677292c..e11997d 100644
+--- a/web/linux/dist/guest-gl-remote.js
++++ b/web/linux/dist/guest-gl-remote.js
+@@ -62,7 +62,7 @@ export const OPS = [
+     "GetRenderbufferParameter", "GetTexParameter", "GetSamplerParameter", "GetVertexAttrib", "GetVertexAttribOffset",
+     "GetQuery", "GetQueryParameter", "GetUniform", "GetShaderPrecisionFormat", "GetInternalformatParameter", "GetError",
+     "IsEnabled", "IsObject", "CheckFramebufferStatus", "GetFragDataLocation", "ProgramInfo", "ShaderInfo",
+-    "GetBufferSubData", "PresentSurface",
++    "GetBufferSubData", "PresentSurface", "FenceSync", "DeleteSync", "ClientWaitSync", "WaitSync", "GetSyncParameter",
+ ];
+ 
+ const K_PROGRAM = 8, K_SHADER = 9;
+@@ -79,6 +79,7 @@ const KINDS = [
+ 
+ // GL enums used here (numeric: the Worker has no WebGL2RenderingContext constants before a context exists).
+ const GL = {
++    WAIT_FAILED: 0x911d,
+     NO_ERROR: 0, INVALID_ENUM: 0x500, INVALID_VALUE: 0x501, INVALID_OPERATION: 0x502,
+     BYTE: 0x1400, UNSIGNED_BYTE: 0x1401, SHORT: 0x1402, UNSIGNED_SHORT: 0x1403, INT: 0x1404, UNSIGNED_INT: 0x1405,
+     FLOAT: 0x1406, HALF_FLOAT: 0x140B, HALF_FLOAT_OES: 0x8D61, FLOAT_32_UNSIGNED_INT_24_8_REV: 0x8DAD,
+@@ -338,6 +339,8 @@ function closeContext(id, log, why) {
+         return false;
+     contexts.delete(id);
+     endKeyed(ctx);
++    for (const sync of ctx.syncs.values()) ctx.gl.deleteSync(sync);
++    ctx.syncs.clear();
+     log?.(`gl context ${id} closed (${why}): execs=${ctx.execs} commands=${ctx.commands}`);
+     try {
+         ctx.gl.getExtension("WEBGL_lose_context")?.loseContext();
+@@ -399,7 +402,7 @@ function open(memory, a, log, memories) {
+     const id = nextContext++;
+     const ctx = {
+         id, gl, canvas, lost: false, error: 0, key: 0, copyShared: false, execs: 0, commands: 0, failures: 0,
+-        objects: Array.from({ length: K_PROGRAM + 1 }, () => new Map()), names: new WeakMap(),
++        objects: Array.from({ length: K_PROGRAM + 1 }, () => new Map()), names: new WeakMap(), syncs: new Map(),
+         programs: new WeakMap(), program: null, cookiePointer: 0, cookie: null, memory: null, cmdPointer: 0,
+         w: null, i32: null, f32: null, warned: new Set(), log,
+         texUnit: 0, texBound: new Map(), texInfo: new WeakMap(), fbBound: new Map(), fbAttach: new WeakMap(), fbComplex: new WeakMap(), texPool: [], complete: new Set(),
+@@ -1559,6 +1562,56 @@ H.GetBufferSubData = (c, i) => {
+     out.finish();
+     return new Uint8Array();
+ };
++// Guest GLES fences use real WebGLSync objects. Only nonblocking polls run
++// in this worker; a guest timed wait yields through nanosleep between polls.
++function syncOf(c, name) {
++    const sync = c.syncs.get(name);
++    if (!sync && !c.error) c.error = GL.INVALID_VALUE;
++    return sync;
++}
++H.FenceSync = (c, i) => {
++    const name = c.w[i];
++    if (!name || c.syncs.has(name)) {
++        if (!c.error) c.error = GL.INVALID_VALUE;
++        return numberReply([0]);
++    }
++    const sync = c.gl.fenceSync(c.w[i + 1], c.w[i + 2]);
++    if (sync) c.syncs.set(name, sync);
++    return numberReply([sync ? 1 : 0]);
++};
++H.DeleteSync = (c, i) => {
++    const sync = syncOf(c, c.w[i]);
++    if (sync) {
++        c.gl.deleteSync(sync);
++        c.syncs.delete(c.w[i]);
++    }
++};
++H.ClientWaitSync = (c, i) => {
++    const sync = syncOf(c, c.w[i]);
++    // The guest API is GLES: invalid flag bits are INVALID_VALUE, regardless
++    // of the host WebGL implementation's more restrictive error mapping.
++    if (c.w[i + 1] & ~1) {
++        if (!c.error) c.error = GL.INVALID_VALUE;
++        return numberReply([GL.WAIT_FAILED]);
++    }
++    return numberReply([sync ? c.gl.clientWaitSync(sync, c.w[i + 1], 0) : GL.WAIT_FAILED]);
++};
++H.WaitSync = (c, i) => {
++    const sync = syncOf(c, c.w[i]);
++    // Every object here belongs to this one private context, whose commands
++    // already execute in order. WebGL2 specifies waitSync as effectively a
++    // no-op when contexts cannot share syncs. Avoid a redundant driver wait
++    // (which can lose the NVIDIA context after transform-feedback readback).
++    // This does not report completion: ClientWaitSync/GetSyncParameter still
++    // query the actual GPU fence, and native flags/timeout are validated.
++    if (sync && !c.gl.isSync(sync) && !c.error) c.error = GL.INVALID_VALUE;
++};
++H.GetSyncParameter = (c, i) => {
++    const sync = syncOf(c, c.w[i]);
++    const value = sync ? c.gl.getSyncParameter(sync, c.w[i + 1]) : null;
++    return numberReply(value === null ? [] : [value]);
++};
++
+ // flags, root x, root y, damage x, y, width, height (canvas pixels, top-left
+ // origin). Reply: the key the window must show, or 0 when the guest has to
+ // present by reading back (no keyed presenter on the page, or no free key).
+diff --git a/web/linux/tests/guest-glremote/glremote.c b/web/linux/tests/guest-glremote/glremote.c
+index 9cacc77..07474ea 100644
+--- a/web/linux/tests/guest-glremote/glremote.c
++++ b/web/linux/tests/guest-glremote/glremote.c
+@@ -147,8 +147,7 @@ struct limit { GLenum pname; int n; double *v; };
+  * feedback never get one. */
+ struct gbuf { unsigned char *shadow; size_t size; int host_written; };
+ struct mapping { GLenum target; GLuint buffer; void *ptr; GLintptr offset; GLsizeiptr length; GLbitfield access; };
+-struct glr_sync { uint32_t magic; struct glr_ctx *ctx; };
+-#define SYNC_MAGIC 0x676c7273u
++struct glr_sync { struct glr_sync *next; };
+ 
+ struct glr_surface;
+ struct glr_ctx {
+@@ -158,6 +157,7 @@ struct glr_ctx {
+   uint32_t cookie[2];
+   int lost, bound, destroy_pending, made_current;
+   struct glr_ctx *next;
++  struct glr_sync *syncs;
+   struct glr_surface *draw, *read;
+   /* Host canvas size, and the window surface whose frame it holds (for
+    * EGL_EXT_buffer_age); resizing the canvas clears it. */
+@@ -1983,51 +1983,107 @@ static void glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, con
+   CMD(DrawElementsInstanced, mode, (uint32_t)count, type, offset, (uint32_t)instances);
+   index_restore(c, scratch);
+ }
+-/* Commands run in order on the host and every result is read back through a
+- * later synchronous call, so a fence is complete once its batch was sent. */
++/* Fences track actual host GPU completion. A submitted batch is not a
++ * completed batch. The host only performs zero-timeout WebGL polls; timed
++ * waits sleep in the guest so the GPU worker can return to its event loop.
++ * WebGL requires that turn before a new fence may become signaled. */
++static struct glr_sync *find_sync(struct glr_ctx *c, GLsync sync) {
++  /* Do not dereference arbitrary/deleted handles (glIsSync must be safe). */
++  for (struct glr_sync *s = c->syncs; s; s = s->next)
++    if ((GLsync)s == sync) return s;
++  return NULL;
++}
+ static GLsync glFenceSync(GLenum condition, GLbitfield flags) {
+   CTXR(NULL);
+-  if (condition != GL_SYNC_GPU_COMMANDS_COMPLETE || flags) { add_error(c, condition != GL_SYNC_GPU_COMMANDS_COMPLETE ? GL_INVALID_ENUM : GL_INVALID_VALUE); return NULL; }
++  if (condition != GL_SYNC_GPU_COMMANDS_COMPLETE || flags) {
++    add_error(c, condition != GL_SYNC_GPU_COMMANDS_COMPLETE ? GL_INVALID_ENUM : GL_INVALID_VALUE);
++    return NULL;
++  }
+   struct glr_sync *s = calloc(1, sizeof *s);
+   if (!s) { add_error(c, GL_OUT_OF_MEMORY); return NULL; }
+-  s->magic = SYNC_MAGIC;
+-  s->ctx = c;
++  double result[1];
++  if (q3(c, OP_FenceSync, (uint32_t)(uintptr_t)s, condition, flags, result, 1) != 1 || !result[0]) {
++    free(s);
++    if (c->lost) add_error(c, GL_INVALID_OPERATION);
++    return NULL;
++  }
++  s->next = c->syncs;
++  c->syncs = s;
+   return (GLsync)s;
+ }
+-static int valid_sync(GLsync sync) { return sync && ((struct glr_sync *)sync)->magic == SYNC_MAGIC; }
+-static GLboolean glIsSync(GLsync sync) { return valid_sync(sync); }
++static GLboolean glIsSync(GLsync sync) {
++  CTXR(GL_FALSE);
++  return find_sync(c, sync) != NULL;
++}
+ static void glDeleteSync(GLsync sync) {
+   if (!sync) return;
+-  if (!valid_sync(sync)) { CTX; add_error(c, GL_INVALID_VALUE); return; }
+-  ((struct glr_sync *)sync)->magic = 0;
+-  free(sync);
++  CTX;
++  struct glr_sync **at = &c->syncs;
++  while (*at && (GLsync)*at != sync) at = &(*at)->next;
++  if (!*at) { add_error(c, GL_INVALID_VALUE); return; }
++  struct glr_sync *s = *at;
++  CMD(DeleteSync, (uint32_t)(uintptr_t)s);
++  *at = s->next;
++  free(s);
+ }
+ static GLenum glClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+-  (void)flags; (void)timeout;
+   CTXR(GL_WAIT_FAILED);
+-  if (!valid_sync(sync)) { add_error(c, GL_INVALID_VALUE); return GL_WAIT_FAILED; }
+-  if (!c->used) return GL_ALREADY_SIGNALED;
+-  flush(c);
+-  return GL_CONDITION_SATISFIED;
++  if (!find_sync(c, sync) || (flags & ~GL_SYNC_FLUSH_COMMANDS_BIT)) {
++    add_error(c, GL_INVALID_VALUE);
++    return GL_WAIT_FAILED;
++  }
++  const uint64_t started = now_ns();
++  int first = 1;
++  for (;;) {
++    double result[1];
++    if (q2(c, OP_ClientWaitSync, (uint32_t)(uintptr_t)sync, flags, 2, result, 1) != 1) {
++      add_error(c, GL_INVALID_OPERATION);
++      return GL_WAIT_FAILED;
++    }
++    GLenum status = (GLenum)result[0];
++    if (status == GL_ALREADY_SIGNALED || status == GL_CONDITION_SATISFIED)
++      return first ? status : GL_CONDITION_SATISFIED;
++    if (status == GL_WAIT_FAILED) return status;
++    if (status != GL_TIMEOUT_EXPIRED) {
++      add_error(c, GL_INVALID_OPERATION);
++      return GL_WAIT_FAILED;
++    }
++    const uint64_t elapsed = now_ns() - started;
++    if (elapsed >= timeout) return GL_TIMEOUT_EXPIRED;
++    /* At most one poll/ms. Sub-ms callers retain their smaller timeout. */
++    uint64_t delay = timeout - elapsed;
++    if (delay > 1000000u) delay = 1000000u;
++    struct timespec pause = {0, (long)delay};
++    nanosleep(&pause, NULL);
++    first = 0;
++    flags = 0; /* SYNC_FLUSH_COMMANDS_BIT is needed only on the first poll. */
++  }
+ }
+ static void glWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+-  (void)flags; (void)timeout;
+   CTX;
+-  if (!valid_sync(sync)) add_error(c, GL_INVALID_VALUE);
++  if (!find_sync(c, sync) || flags || timeout != GL_TIMEOUT_IGNORED) {
++    add_error(c, GL_INVALID_VALUE);
++    return;
++  }
++  CMD(WaitSync, (uint32_t)(uintptr_t)sync);
+ }
+ static void glGetSynciv(GLsync sync, GLenum pname, GLsizei count, GLsizei *length, GLint *values) {
+   CTX;
+-  if (!valid_sync(sync)) { add_error(c, GL_INVALID_VALUE); return; }
+-  GLint v;
+-  switch (pname) {
+-  case GL_OBJECT_TYPE: v = GL_SYNC_FENCE; break;
+-  case GL_SYNC_STATUS: flush(c); v = GL_SIGNALED; break;
+-  case GL_SYNC_CONDITION: v = GL_SYNC_GPU_COMMANDS_COMPLETE; break;
+-  case GL_SYNC_FLAGS: v = 0; break;
+-  default: add_error(c, GL_INVALID_ENUM); return;
++  if (!find_sync(c, sync) || count < 0) { add_error(c, GL_INVALID_VALUE); return; }
++  if (pname != GL_OBJECT_TYPE && pname != GL_SYNC_STATUS &&
++      pname != GL_SYNC_CONDITION && pname != GL_SYNC_FLAGS) {
++    add_error(c, GL_INVALID_ENUM);
++    return;
+   }
+-  if (count > 0) values[0] = v;
+-  if (length) *length = count > 0;
++  if (length) *length = 0;
++  if (!count) return;
++  double result[1];
++  if (q2(c, OP_GetSyncParameter, (uint32_t)(uintptr_t)sync, pname, 2, result, 1) != 1) {
++    add_error(c, GL_INVALID_OPERATION);
++    return;
++  }
++  values[0] = (GLint)result[0];
++  if (length) *length = 1;
+ }
+ static void glBindSampler(GLuint unit, GLuint sampler) {
+   CTX;
+@@ -2586,6 +2642,11 @@ static int parse_open_info(struct glr_ctx *c, char *text) {
+   return c->version && c->renderer && c->vendor && c->glsl && c->extensions;
+ }
+ static void free_context(struct glr_ctx *c) {
++  while (c->syncs) {
++    struct glr_sync *s = c->syncs;
++    c->syncs = s->next;
++    free(s);
++  }
+   if (c->host > 0) hostcall(HC_GL_CLOSE, c->host, 0, 0, 0, 0);
+   c->cookie[0] = c->cookie[1] = 0;
+   if (tracing()) say("context %d closed: execs=%llu words=%llu queries=%llu", c->host, (unsigned long long)c->execs,
+diff --git a/web/linux/tests/guest-glremote/glrtest.c b/web/linux/tests/guest-glremote/glrtest.c
+index 7cb88ad..3ad0d8f 100644
+--- a/web/linux/tests/guest-glremote/glrtest.c
++++ b/web/linux/tests/guest-glremote/glrtest.c
+@@ -13,6 +13,7 @@
+ #include <GLES3/gl3.h>
+ #include <fcntl.h>
+ #include <stdarg.h>
++#include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -64,7 +65,10 @@ static void say(const char *format, ...) {
+   X(void, glBeginTransformFeedback, (GLenum)) X(void, glEndTransformFeedback, (void)) X(void, glEnable, (GLenum)) \
+   X(void, glDisable, (GLenum)) X(void *, glMapBufferRange, (GLenum, GLintptr, GLsizeiptr, GLbitfield)) \
+   X(GLboolean, glUnmapBuffer, (GLenum)) X(void, glFinish, (void)) \
+-  X(void, glDeleteTextures, (GLsizei, const GLuint *)) X(void, glDeleteFramebuffers, (GLsizei, const GLuint *))
++  X(void, glDeleteTextures, (GLsizei, const GLuint *)) X(void, glDeleteFramebuffers, (GLsizei, const GLuint *)) \
++  X(GLsync, glFenceSync, (GLenum, GLbitfield)) X(GLboolean, glIsSync, (GLsync)) X(void, glDeleteSync, (GLsync)) \
++  X(GLenum, glClientWaitSync, (GLsync, GLbitfield, GLuint64)) X(void, glWaitSync, (GLsync, GLbitfield, GLuint64)) \
++  X(void, glGetSynciv, (GLsync, GLenum, GLsizei, GLsizei *, GLint *))
+ #define DECLARE(ret, name, args) static ret (*name) args;
+ FUNCS(DECLARE)
+ 
+@@ -263,6 +267,50 @@ int main(void) {
+       frames, (now_ms() - start) / frames);
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+ 
++  /* Real GPU fence state and safe invalid handles, not submission-as-completion. */
++  check(!glIsSync(NULL) && !glIsSync((GLsync)(uintptr_t)1), "invalid-sync-safe");
++  check(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 1) == NULL && glGetError() == GL_INVALID_VALUE,
++      "fence-invalid-flags");
++  check(glFenceSync(GL_SYNC_FENCE, 0) == NULL && glGetError() == GL_INVALID_ENUM,
++      "fence-invalid-condition");
++  glClearColor(.25f, .5f, .75f, 1.f); glClear(GL_COLOR_BUFFER_BIT);
++  GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
++  check(fence && glIsSync(fence), "real-fence-created");
++  if (fence) {
++    check(glClientWaitSync(fence, 8, 0) == GL_WAIT_FAILED && glGetError() == GL_INVALID_VALUE,
++        "wait-invalid-flags");
++    GLint sync_value = -1; GLsizei sync_length = -1;
++    glGetSynciv(fence, GL_OBJECT_TYPE, 1, &sync_length, &sync_value);
++    check(sync_length == 1 && sync_value == GL_SYNC_FENCE, "sync-object-type");
++    glGetSynciv(fence, GL_SYNC_STATUS, -1, &sync_length, &sync_value);
++    check(glGetError() == GL_INVALID_VALUE, "sync-negative-count");
++    glWaitSync(fence, 1, GL_TIMEOUT_IGNORED);
++    check(glGetError() == GL_INVALID_VALUE, "server-wait-invalid-flags");
++    glWaitSync(fence, 0, 0);
++    check(glGetError() == GL_INVALID_VALUE, "server-wait-invalid-timeout");
++    double wait_start = now_ms();
++    GLenum wait_status = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 2000000000ull);
++    double wait_ms = now_ms() - wait_start;
++    check(wait_status == GL_ALREADY_SIGNALED || wait_status == GL_CONDITION_SATISFIED,
++        "real-fence-completed");
++    check(wait_ms < 2500.0, "fence-wait-bounded");
++    glGetSynciv(fence, GL_SYNC_STATUS, 1, &sync_length, &sync_value);
++    check(sync_length == 1 && sync_value == GL_SIGNALED, "actual-signaled-status");
++    check(glClientWaitSync(fence, 0, 0) == GL_ALREADY_SIGNALED, "signaled-zero-poll");
++    glWaitSync(fence, 0, GL_TIMEOUT_IGNORED);
++    check(glGetError() == GL_NO_ERROR, "server-wait-valid");
++    unsigned char fence_pixel[4] = {0};
++    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, fence_pixel);
++    check(near(fence_pixel, 64, 128, 191, 255), "fence-completed-pixels");
++    glDeleteSync(fence);
++    check(!glIsSync(fence), "deleted-sync-is-invalid");
++    check(glClientWaitSync(fence, 0, 0) == GL_WAIT_FAILED && glGetError() == GL_INVALID_VALUE,
++        "deleted-sync-wait-safe");
++    glDeleteSync(fence);
++    check(glGetError() == GL_INVALID_VALUE, "deleted-sync-double-delete-safe");
++    say("GLRTEST timing fence_wait_ms=%.3f status=%u\n", wait_ms, wait_status);
++  }
++
+   eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+   eglDestroyContext(display, context);
+   eglTerminate(display);
+diff --git a/web/linux/tests/guest-glremote/ops.def b/web/linux/tests/guest-glremote/ops.def
+index 658844f..355d0a6 100644
+--- a/web/linux/tests/guest-glremote/ops.def
++++ b/web/linux/tests/guest-glremote/ops.def
+@@ -149,3 +149,8 @@ OP(ProgramInfo)                /* program; reply is text (see guest-gl-remote.js
+ OP(ShaderInfo)                 /* shader; reply is text */
+ OP(GetBufferSubData)           /* target, offset, blob (out: guest pointer) */
+ OP(PresentSurface)             /* flags, root x, y, damage x, y, w, h; reply: key or 0 */
++OP(FenceSync)                  /* name, condition, flags; reply: created */
++OP(DeleteSync)                 /* name */
++OP(ClientWaitSync)             /* name, flags; zero-timeout host poll */
++OP(WaitSync)                   /* name; validated flags=0, timeout=ignored */
++OP(GetSyncParameter)           /* name, pname */

@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>GLES scalar uniform transport</title><pre id="out">RUNNING</pre>
+<script type="module">
+import {handleGlCall,OPS,OP_GL_OPEN,OP_GL_EXEC,OP_GL_CLOSE} from '../../dist/guest-gl-remote.js';
+const report=window.graphicsResults={done:false,pass:false,checks:[],errors:[]};
+const memory=new WebAssembly.Memory({initial:16}),CMD=0x1000,REPLY=0x20000,PIXELS=0x30000;
+let ctx;const f=x=>({f:x}),inline=b=>({inline:b}),text=s=>inline(new TextEncoder().encode(s));
+function check(name,ok,detail){report.checks.push({name,pass:!!ok,detail});if(!ok)report.errors.push(name);}
+function exec(commands){
+ const words=[],bits=new Float32Array(1),u32=new Uint32Array(bits.buffer);
+ for(const[name,...args]of commands){const op=OPS.indexOf(name)+1;if(!op)throw Error('unknown opcode');const body=[];for(const a of args){if(typeof a==='number')body.push(a>>>0);else if('f'in a){bits[0]=a.f;body.push(u32[0]);}else if('inline'in a){const bytes=new Uint8Array((a.inline.length+3)&~3);bytes.set(a.inline);body.push(a.inline.length,0,...new Uint32Array(bytes.buffer));}else if('pointer'in a)body.push(a.bytes,2,a.pointer);}words.push(op|body.length<<12,...body);}
+ new Uint32Array(memory.buffer,CMD,words.length).set(words);const n=handleGlCall(memory,OP_GL_EXEC,[ctx,CMD,words.length*4,REPLY,0x8000],()=>{});if(!n)return[];const view=new DataView(memory.buffer,REPLY,n);return Array.from({length:view.getUint32(0,true)},(_,i)=>view.getFloat64(8+i*8,true));
+}
+function error(){return exec([['GetError']])[0];}
+function pixel(){exec([['ReadPixels',0,0,1,1,0x1908,0x1401,{pointer:PIXELS,bytes:4}]]);return [...new Uint8Array(memory.buffer,PIXELS,4)];}
+try{
+ ctx=handleGlCall(memory,OP_GL_OPEN,[2,0x40000,0x8000,0],()=>{});exec([['SetSurface',4,4],['Viewport',0,0,4,4]]);
+ let id=10;
+ for(const kind of ['f','i','ui'])for(let n=1;n<=4;n++){
+  const vs=id++,fs=id++,p=id++;const base=kind==='f'?'float':kind==='i'?'int':'uint',type=n===1?base:(kind==='f'?'vec':kind==='i'?'ivec':'uvec')+n;
+  const value=n===1?'float(value)':Array.from({length:n},(_,i)=>'float(value.'+'xyzw'[i]+')').join('+');
+  exec([['CreateShader',0x8b31,vs],['CreateShader',0x8b30,fs],['ShaderSource',vs,text('#version 300 es\nvoid main(){vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));gl_Position=vec4(p*2.-1.,0.,1.);}')],['ShaderSource',fs,text('#version 300 es\nprecision highp float;precision highp int;uniform '+type+' value;out vec4 color;void main(){color=vec4(('+value+')/16.,0.,0.,1.);}')],['CompileShader',vs],['CompileShader',fs],['CreateProgram',p],['AttachShader',p,vs],['AttachShader',p,fs],['LinkProgram',p],['UseProgram',p]]);
+  check(kind+n+' linked without error',error()===0);
+  const values=(kind==='f'?[-.5,.25,1.5,2.75]:kind==='i'?[-2147483647,-3,2,1234567]:[0xf1234567,1,0x80000000,4294967295]).slice(0,n);
+  exec([['Uniform'+kind,0,n,...values.map(x=>kind==='f'?f(x):x)]]);
+  const got=exec([['GetUniform',p,0]]);check(kind+n+' preserves scalar values',got.length===n&&got.every((x,i)=>x===values[i]),{got,expected:values});check(kind+n+' has no update error',error()===0);
+  exec([['Uniform'+kind,-1,n,...values.map(x=>kind==='f'?f(x):x)]]);check(kind+n+' inactive location is ignored',error()===0);
+  for(const bad of [0,5]){exec([['Uniform'+kind,0,bad,1,2,3,4,5]]);check(kind+n+' rejects dimension '+bad,error()===0x501);}
+  exec([['DeleteProgram',p],['DeleteShader',vs],['DeleteShader',fs]]);
+ }
+ // Independently verify every optimized draw entry point still changes pixels.
+ const vs=100,fs=101,p=102;exec([['CreateShader',0x8b31,vs],['CreateShader',0x8b30,fs],['ShaderSource',vs,text('#version 300 es\nvoid main(){vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));gl_Position=vec4(p*2.-1.,0.,1.);}')],['ShaderSource',fs,text('#version 300 es\nprecision highp float;out vec4 c;void main(){c=vec4(.25,.5,.75,1.);}')],['CompileShader',vs],['CompileShader',fs],['CreateProgram',p],['AttachShader',p,vs],['AttachShader',p,fs],['LinkProgram',p],['UseProgram',p],['GenObjects',0,1,200],['BindBuffer',0x8893,200],['BufferData',0x8893,0x88e4,inline(new Uint8Array([0,1,2]))]]);
+ for(const draw of [['DrawArrays',4,0,3],['DrawArraysInstanced',4,0,3,1],['DrawElements',4,3,0x1401,0],['DrawElementsInstanced',4,3,0x1401,0,1],['DrawRangeElements',4,0,2,3,0x1401,0]]){
+  exec([['ClearColor',f(0),f(0),f(0),f(0)],['Clear',0x4000],draw]);const got=pixel();check(draw[0]+' renders expected pixels',got.every((v,i)=>Math.abs(v-[64,128,191,255][i])<=2),got);check(draw[0]+' has no error',error()===0);
+ }
+}catch(e){report.errors.push(String(e));}
+finally{if(ctx)try{handleGlCall(memory,OP_GL_CLOSE,[ctx],()=>{});}catch(e){report.errors.push(String(e));}report.done=true;report.pass=report.errors.length===0;document.querySelector('#out').textContent=(report.pass?'ALL PASSED':'FAILED')+'\n'+JSON.stringify(report,null,2);}
+</script>

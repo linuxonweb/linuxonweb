@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>Matched host GLES workload</title><pre id="out">RUNNING</pre>
+<script type="module">
+const report=window.graphicsResults={done:false,pass:false};
+const worker=new Worker('./gl-perf-host.mjs',{type:'module'});
+worker.onmessage=({data})=>{Object.assign(report,data);document.querySelector('#out').textContent=(report.pass?'ALL PASSED':'FAILED')+'\n'+JSON.stringify(report,null,2);worker.terminate();};
+worker.onerror=e=>{Object.assign(report,{done:true,pass:false,errors:[e.message]});document.querySelector('#out').textContent='FAILED';worker.terminate();};
+worker.postMessage({pooled:new URLSearchParams(location.search).get('pooled')==='1'});
+</script>

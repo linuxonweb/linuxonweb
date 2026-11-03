@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Matched guest GLES workload</title>
+<canvas id="display" width="64" height="64"></canvas><pre id="out">RUNNING</pre>
+<script type="module">
+import {spawnMachine,consoleDevice,entropyDevice} from '../../dist/index.js';
+const report=window.graphicsResults={kind:'real wasm32 Linux GLES test',done:false,pass:false,logs:'',bootLogs:'',errors:[],checks:[],isolated:crossOriginIsolated};
+const start=performance.now();let machine,timer,partial='';const decoder=new TextDecoder();
+function finish(){if(report.done)return;report.done=true;clearTimeout(timer);report.durationMs=performance.now()-start;report.checks=report.logs.split('\n').filter(x=>x.startsWith('GLRTEST ok '));report.pass=report.errors.length===0&&report.exitStatus===0&&report.logs.includes('GLRTEST DONE PASS');document.querySelector('#out').textContent=(report.pass?'ALL PASSED':'FAILED')+'\n'+report.logs;}
+function log(bytes){const t=decoder.decode(new Uint8Array(bytes),{stream:true});report.logs=(report.logs+t).slice(-262144);const lines=(partial+t).split('\n');partial=lines.pop().slice(-8192);for(const l of lines){const m=/GLRTEST_EXIT status=(\d+)/.exec(l);if(m){report.exitStatus=Number(m[1]);machine?.close();finish();}}document.querySelector('#out').textContent=report.logs.slice(-12000);}
+try{
+ if(!crossOriginIsolated)throw Error('cross-origin isolation required');
+ const meta=await(await fetch('./current-perf-candidate/build.json')).json();const archive=new Uint8Array(await(await fetch('./current-perf-candidate/initramfs.cpio')).arrayBuffer());
+ const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',archive))].map(x=>x.toString(16).padStart(2,'0')).join('');
+ if(!meta.pass||!meta.testOnly||hash!==meta.archiveSha256||archive.length!==meta.archiveBytes)throw Error('candidate integrity');
+ report.package=meta;report.configuration={cpus:navigator.hardwareConcurrency,memoryBytes:536870912,guestPersistentHome:false,gpuHostcall:{ownerConfig:{gl:{stats:false},vk:{backend:'webgl'}}}};
+ timer=setTimeout(()=>{report.errors.push('60s finite guest deadline');machine?.close();finish();},60000);
+ machine=await spawnMachine({cpus:report.configuration.cpus,devicetree:{memory:{reg:[0,report.configuration.memoryBytes]}},initcpio:archive,cmdline:'console=hvc0 rdinit=/init',devices:[consoleDevice(null,new WritableStream({write:log})),entropyDevice()],framebuffer:{canvas:document.querySelector('#display'),width:64,height:64,backend:'canvas2d'},gpuHostcall:report.configuration.gpuHostcall});
+ report.machineReadyMs=performance.now()-start;window.graphicsMachine=machine;report.gpuEvents=machine.gpuHostcall?.events??[];
+ void(async()=>{const reader=machine.bootConsole.getReader(),d=new TextDecoder();try{for(;;){const{value,done}=await reader.read();if(done)break;report.bootLogs=(report.bootLogs+d.decode(new Uint8Array(value),{stream:true})).slice(-32768);}}catch(e){report.bootError=String(e);}finally{reader.releaseLock();}})();
+ machine.closed.then(()=>{report.closed=true;if(!report.done){if(report.exitStatus!==0)report.errors.push('guest closed before success');finish();}}).catch(e=>{report.closed=true;if(!report.done){report.errors.push(String(e));finish();}});
+}catch(e){report.errors.push(String(e));finish();}
+</script>

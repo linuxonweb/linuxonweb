@@ -1,0 +1,69 @@
+<!doctype html><meta charset="utf-8"><title>Remote GLES fence correctness</title>
+<pre id="out">RUNNING</pre>
+<script type="module">
+import {handleGlCall, OPS, OP_GL_OPEN, OP_GL_EXEC, OP_GL_CLOSE} from '../../dist/guest-gl-remote.js';
+const report=window.graphicsResults={kind:'host GL transport sync correctness',done:false,pass:false,checks:[],logs:[],errors:[]};
+const memory=new WebAssembly.Memory({initial:16}),CMD=4096,REPLY=131072,PIXELS=196608,INFO=262144;
+const log=s=>report.logs.push(s);
+const GL={FENCE:0x9117,COMPLETE:0x9117,STATUS:0x9114,TYPE:0x9112,FLAGS:0x9115,CONDITION:0x9113,UNSIGNALED:0x9118,SIGNALED:0x9119,ALREADY:0x911a,TIMEOUT:0x911b,SATISFIED:0x911c,FAILED:0x911d,FLUSH:1,INVALID_VALUE:0x501,INVALID_OPERATION:0x502};
+const bits=x=>{const v=new Float32Array([x]);return new Uint32Array(v.buffer)[0];};
+function exec(ctx,commands){
+ const words=[];
+ for(const [name,...args] of commands){const op=OPS.indexOf(name)+1;if(!op)throw Error('Unknown op '+name);words.push(op|args.length<<12,...args);}
+ new Uint32Array(memory.buffer,CMD,words.length).set(words);
+ const bytes=handleGlCall(memory,OP_GL_EXEC,[ctx,CMD,words.length*4,REPLY,65536],log);
+ if(bytes<0)throw Error('host error '+bytes);
+ if(!bytes)return [];
+ const view=new DataView(memory.buffer,REPLY,bytes),n=view.getUint32(0,true);
+ return Array.from({length:n},(_,i)=>view.getFloat64(8+i*8,true));
+}
+function check(name,ok,detail){report.checks.push({name,pass:!!ok,detail});if(!ok)report.errors.push(name);}
+const open=()=>handleGlCall(memory,OP_GL_OPEN,[2,INFO,32768,0],log);
+const error=ctx=>exec(ctx,[['GetError']])[0];
+const poll=async(ctx,id)=>{const start=performance.now();let rounds=0,status;do{status=exec(ctx,[['ClientWaitSync',id,rounds?0:1]])[0];rounds++;if(status===GL.ALREADY||status===GL.SATISFIED)return {status,rounds,ms:performance.now()-start};if(status!==GL.TIMEOUT)throw Error('unexpected wait status '+status);await new Promise(resolve=>setTimeout(resolve,2));}while(performance.now()-start<1000);return {status,rounds,ms:performance.now()-start};};
+let ctx,second;
+try{
+ const canvas=new OffscreenCanvas(4,4),gl=canvas.getContext('webgl2',{antialias:false});
+ if(!gl)throw Error('host WebGL2 unavailable');
+ const debug=gl.getExtension('WEBGL_debug_renderer_info');
+ report.identity={userAgent:navigator.userAgent,cpus:navigator.hardwareConcurrency,renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),version:gl.getParameter(gl.VERSION),maxWaitNs:gl.getParameter(gl.MAX_CLIENT_WAIT_TIMEOUT_WEBGL)};
+ gl.getExtension('WEBGL_lose_context')?.loseContext();
+ ctx=open();check('host context created',ctx>0,ctx);
+ exec(ctx,[['SetSurface',8,8],['ClearColor',bits(.25),bits(.5),bits(.75),bits(1)],['Clear',0x4000]]);
+ check('real fence creation',exec(ctx,[['FenceSync',101,GL.COMPLETE,0]])[0]===1);
+ check('new fence stays unsignaled in current event-loop task',exec(ctx,[['GetSyncParameter',101,GL.STATUS]])[0]===GL.UNSIGNALED);
+ check('zero-timeout poll does not fake completion',exec(ctx,[['ClientWaitSync',101,0]])[0]===GL.TIMEOUT);
+ check('fence flags',exec(ctx,[['GetSyncParameter',101,GL.FLAGS]])[0]===0);
+ check('fence condition',exec(ctx,[['GetSyncParameter',101,GL.CONDITION]])[0]===GL.COMPLETE);
+ check('invalid flags fail',exec(ctx,[['ClientWaitSync',101,8]])[0]===GL.FAILED);
+ const badFlagsError=error(ctx);
+ check('invalid flags report GLES INVALID_VALUE',badFlagsError===GL.INVALID_VALUE,badFlagsError);
+ const waited=await poll(ctx,101);report.wait=waited;
+ check('fence completes after event-loop yield',waited.status===GL.ALREADY||waited.status===GL.SATISFIED,waited);
+ check('completed status is actual signaled',exec(ctx,[['GetSyncParameter',101,GL.STATUS]])[0]===GL.SIGNALED);
+ check('completed zero-timeout poll succeeds',exec(ctx,[['ClientWaitSync',101,0]])[0]===GL.ALREADY);
+ exec(ctx,[['WaitSync',101]]);check('server wait valid',error(ctx)===0);
+ exec(ctx,[['ReadPixels',0,0,1,1,0x1908,0x1401,4,2,PIXELS]]);
+ const rgba=Array.from(new Uint8Array(memory.buffer,PIXELS,4));
+ check('GPU pixels complete before signaled fence',rgba.every((v,i)=>Math.abs(v-[64,128,191,255][i])<=1),rgba);
+ exec(ctx,[['DeleteSync',101]]);
+ check('deleted wait fails safely',exec(ctx,[['ClientWaitSync',101,0]])[0]===GL.FAILED);
+ check('deleted wait error',error(ctx)===GL.INVALID_VALUE);
+ check('deleted status has no fabricated value',exec(ctx,[['GetSyncParameter',101,GL.STATUS]]).length===0);
+ check('deleted status error',error(ctx)===GL.INVALID_VALUE);
+ check('arbitrary handle fails safely',exec(ctx,[['ClientWaitSync',0xffffffff,0]])[0]===GL.FAILED);
+ check('arbitrary handle error',error(ctx)===GL.INVALID_VALUE);
+ check('new fence created after delete',exec(ctx,[['FenceSync',102,GL.COMPLETE,0]])[0]===1);
+ second=open();
+ check('fences remain context-private',exec(second,[['ClientWaitSync',102,0]])[0]===GL.FAILED);
+ check('cross-context handle error',error(second)===GL.INVALID_VALUE);
+ handleGlCall(memory,OP_GL_CLOSE,[ctx],log);ctx=null;
+ handleGlCall(memory,OP_GL_CLOSE,[second],log);second=null;
+ check('contexts cleanly closed',true);
+}catch(e){report.errors.push(String(e));}
+finally{
+ for(const id of [ctx,second])if(id)try{handleGlCall(memory,OP_GL_CLOSE,[id],log);}catch(e){report.errors.push('cleanup '+e);}
+ report.done=true;report.pass=report.errors.length===0&&report.checks.length>0;
+ document.querySelector('#out').textContent=report.checks.map(x=>(x.pass?'PASS ':'FAIL ')+x.name).join('\n')+'\n'+(report.pass?'ALL PASSED':'FAILED')+'\n'+JSON.stringify(report,null,2);
+}
+</script>

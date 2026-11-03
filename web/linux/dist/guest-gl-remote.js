@@ -1226,8 +1226,20 @@ H.Disable = (c, i) => {
     c.caps.set(c.w[i], false);
 };
 H.DisableVertexAttribArray = (c, i) => c.gl.disableVertexAttribArray(c.w[i]);
-H.DrawArrays = (c, i) => swizzledDraw(c, () => c.gl.drawArrays(c.w[i], c.i32[i + 1], c.i32[i + 2]));
-H.DrawElements = (c, i) => swizzledDraw(c, () => c.gl.drawElements(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3]));
+H.DrawArrays = (c, i) => {
+    // No swizzle/shadow or text diagnostic state: no closure or restoration
+    // is needed. The complete state-preserving path remains for those cases.
+    if (!c.swizzled.size && !c.shadowed && !c.textPrograms?.has(c.program))
+        return c.gl.drawArrays(c.w[i], c.i32[i + 1], c.i32[i + 2]);
+    return swizzledDraw(c, () => c.gl.drawArrays(c.w[i], c.i32[i + 1], c.i32[i + 2]));
+};
+H.DrawElements = (c, i) => {
+    // No swizzle/shadow or text diagnostic state: no closure or restoration
+    // is needed. The complete state-preserving path remains for those cases.
+    if (!c.swizzled.size && !c.shadowed && !c.textPrograms?.has(c.program))
+        return c.gl.drawElements(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3]);
+    return swizzledDraw(c, () => c.gl.drawElements(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3]));
+};
 H.Enable = (c, i) => {
     if (c.w[i] === GL.PRIMITIVE_RESTART_FIXED_INDEX)
         return;
@@ -1330,8 +1342,15 @@ function uniformScalar(kind, words) {
         const n = c.w[i + 1], loc = location(c, c.program, c.i32[i]);
         if (n < 1 || n > 4)
             throw new RangeError("bad uniform size");
-        const v = Array.from({ length: n }, (_, k) => words(c)[i + 2 + k]);
-        c.gl[UNIFORM_SCALAR[kind][n]](loc, ...v);
+        // Scalar uniform updates are a hot per-draw path. Read directly from
+        // the command buffer rather than allocating an array and callback.
+        const v = words(c), name = UNIFORM_SCALAR[kind][n];
+        switch (n) {
+            case 1: c.gl[name](loc, v[i + 2]); break;
+            case 2: c.gl[name](loc, v[i + 2], v[i + 3]); break;
+            case 3: c.gl[name](loc, v[i + 2], v[i + 3], v[i + 4]); break;
+            case 4: c.gl[name](loc, v[i + 2], v[i + 3], v[i + 4], v[i + 5]); break;
+        }
     };
 }
 function uniformVector(kind, Type) {
@@ -1372,7 +1391,13 @@ H.Viewport = (c, i) => {
     c.gl.viewport(...c.viewport);
 };
 H.ReadBuffer = (c, i) => c.gl.readBuffer(c.w[i]);
-H.DrawRangeElements = (c, i) => swizzledDraw(c, () => c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]));
+H.DrawRangeElements = (c, i) => {
+    // No swizzle/shadow or text diagnostic state: no closure or restoration
+    // is needed. The complete state-preserving path remains for those cases.
+    if (!c.swizzled.size && !c.shadowed && !c.textPrograms?.has(c.program))
+        return c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]);
+    return swizzledDraw(c, () => c.gl.drawRangeElements(c.w[i], c.w[i + 1], c.w[i + 2], c.i32[i + 3], c.w[i + 4], c.w[i + 5]));
+};
 H.TexImage3D = (c, i) => {
     const type = hostType(c.w[i + 8]);
     texDefined(c, c.w[i]);
@@ -1442,8 +1467,20 @@ H.ClearBufferfi = (c, i) => {
 };
 H.CopyBufferSubData = (c, i) => c.gl.copyBufferSubData(c.w[i], c.w[i + 1], c.w[i + 2], c.w[i + 3], c.w[i + 4]);
 H.UniformBlockBinding = (c, i) => c.gl.uniformBlockBinding(programOf(c, c.w[i]), c.w[i + 1], c.w[i + 2]);
-H.DrawArraysInstanced = (c, i) => swizzledDraw(c, () => c.gl.drawArraysInstanced(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]));
-H.DrawElementsInstanced = (c, i) => swizzledDraw(c, () => c.gl.drawElementsInstanced(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3], c.i32[i + 4]));
+H.DrawArraysInstanced = (c, i) => {
+    // No swizzle/shadow or text diagnostic state: no closure or restoration
+    // is needed. The complete state-preserving path remains for those cases.
+    if (!c.swizzled.size && !c.shadowed && !c.textPrograms?.has(c.program))
+        return c.gl.drawArraysInstanced(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]);
+    return swizzledDraw(c, () => c.gl.drawArraysInstanced(c.w[i], c.i32[i + 1], c.i32[i + 2], c.i32[i + 3]));
+};
+H.DrawElementsInstanced = (c, i) => {
+    // No swizzle/shadow or text diagnostic state: no closure or restoration
+    // is needed. The complete state-preserving path remains for those cases.
+    if (!c.swizzled.size && !c.shadowed && !c.textPrograms?.has(c.program))
+        return c.gl.drawElementsInstanced(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3], c.i32[i + 4]);
+    return swizzledDraw(c, () => c.gl.drawElementsInstanced(c.w[i], c.i32[i + 1], c.w[i + 2], c.w[i + 3], c.i32[i + 4]));
+};
 H.BindSampler = (c, i) => {
     const o = object(c, 5, c.w[i + 1]);
     c.gl.bindSampler(c.w[i], o);

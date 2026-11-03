@@ -1,0 +1,388 @@
+{
+  "runs": {
+    "dispatch-scalar-1": {
+      "pass": true,
+      "samples": [],
+      "checks": 82,
+      "source": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-candidate.js",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "dispatch-swizzle-1": {
+      "pass": true,
+      "samples": [],
+      "checks": 24,
+      "source": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-candidate.js",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "dispatch-a1": {
+      "pass": true,
+      "samples": [
+        {
+          "workload": "draw100-read1",
+          "sample": 0,
+          "frames": 1089,
+          "ms": 1000.77,
+          "frameMs": 0.918981
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 1,
+          "frames": 1026,
+          "ms": 1000.205,
+          "frameMs": 0.974859
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 2,
+          "frames": 886,
+          "ms": 1000.15,
+          "frameMs": 1.128837
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 0,
+          "frames": 381,
+          "ms": 1001.215,
+          "frameMs": 2.627861
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 1,
+          "frames": 407,
+          "ms": 1001.175,
+          "frameMs": 2.459889
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 2,
+          "frames": 400,
+          "ms": 1000.175,
+          "frameMs": 2.500438
+        }
+      ],
+      "checks": 48,
+      "source": {
+        "sha256": "53970075c073429ec87a23021c388f16c02270da3466407e6bd34222ad30367c",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-baseline.js",
+        "bytes": 79654,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "dispatch-b1": {
+      "pass": true,
+      "samples": [
+        {
+          "workload": "draw100-read1",
+          "sample": 0,
+          "frames": 1672,
+          "ms": 1000.25,
+          "frameMs": 0.598236
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 1,
+          "frames": 1236,
+          "ms": 1000.02,
+          "frameMs": 0.809078
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 2,
+          "frames": 927,
+          "ms": 1000.64,
+          "frameMs": 1.079439
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 0,
+          "frames": 377,
+          "ms": 1003.285,
+          "frameMs": 2.661233
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 1,
+          "frames": 391,
+          "ms": 1001.87,
+          "frameMs": 2.562327
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 2,
+          "frames": 433,
+          "ms": 1001.335,
+          "frameMs": 2.312552
+        }
+      ],
+      "checks": 48,
+      "source": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-candidate.js",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "dispatch-b2": {
+      "pass": true,
+      "samples": [
+        {
+          "workload": "draw100-read1",
+          "sample": 0,
+          "frames": 1286,
+          "ms": 1000.625,
+          "frameMs": 0.778091
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 1,
+          "frames": 1363,
+          "ms": 1000.435,
+          "frameMs": 0.733995
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 2,
+          "frames": 1318,
+          "ms": 1000.095,
+          "frameMs": 0.758797
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 0,
+          "frames": 424,
+          "ms": 1000.64,
+          "frameMs": 2.36
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 1,
+          "frames": 461,
+          "ms": 1001.4,
+          "frameMs": 2.172234
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 2,
+          "frames": 509,
+          "ms": 1001.34,
+          "frameMs": 1.967269
+        }
+      ],
+      "checks": 48,
+      "source": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-candidate.js",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "dispatch-a2": {
+      "pass": true,
+      "samples": [
+        {
+          "workload": "draw100-read1",
+          "sample": 0,
+          "frames": 1048,
+          "ms": 1000.06,
+          "frameMs": 0.954256
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 1,
+          "frames": 1066,
+          "ms": 1000.365,
+          "frameMs": 0.938429
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 2,
+          "frames": 1004,
+          "ms": 1000.755,
+          "frameMs": 0.996768
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 0,
+          "frames": 412,
+          "ms": 1000.16,
+          "frameMs": 2.427573
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 1,
+          "frames": 433,
+          "ms": 1000.905,
+          "frameMs": 2.311559
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 2,
+          "frames": 413,
+          "ms": 1001.225,
+          "frameMs": 2.424274
+        }
+      ],
+      "checks": 48,
+      "source": {
+        "sha256": "53970075c073429ec87a23021c388f16c02270da3466407e6bd34222ad30367c",
+        "override": "/mnt/p3/codex-build/g3g/dispatch-baseline.js",
+        "bytes": 79654,
+        "requests": 1
+      },
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    },
+    "perfhost-pooled1": {
+      "pass": true,
+      "samples": [
+        {
+          "workload": "draw100-read1",
+          "sample": 0,
+          "frames": 3101,
+          "ms": 1000.1850000023842,
+          "frameMs": 0.3225362786205689
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 1,
+          "frames": 3016,
+          "ms": 1000.2049999833107,
+          "frameMs": 0.3316329575541481
+        },
+        {
+          "workload": "draw100-read1",
+          "sample": 2,
+          "frames": 2182,
+          "ms": 1000.2150000333786,
+          "frameMs": 0.4583936755423367
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 0,
+          "frames": 593,
+          "ms": 1000.0699999928474,
+          "frameMs": 1.6864586846422385
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 1,
+          "frames": 614,
+          "ms": 1000.210000038147,
+          "frameMs": 1.6290065147201092
+        },
+        {
+          "workload": "surface320-readback",
+          "sample": 2,
+          "frames": 507,
+          "ms": 1000.339999973774,
+          "frameMs": 1.9730571991593175
+        }
+      ],
+      "checks": 0,
+      "source": null,
+      "cpus": 3,
+      "observedBrowserCpus": 3
+    }
+  },
+  "ratios": {
+    "draw100-read1": {
+      "baselineMs": [
+        0.918981,
+        0.974859,
+        1.128837,
+        0.954256,
+        0.938429,
+        0.996768
+      ],
+      "candidateMs": [
+        0.598236,
+        0.809078,
+        1.079439,
+        0.778091,
+        0.733995,
+        0.758797
+      ],
+      "pooledHostMs": [
+        0.3225362786205689,
+        0.3316329575541481,
+        0.4583936755423367
+      ],
+      "baselineMedianMs": 0.9645575,
+      "candidateMedianMs": 0.768444,
+      "pooledHostMedianMs": 0.3316329575541481,
+      "candidateVsBaselineThroughput": 1.255208577332896,
+      "candidateVsPooledHostThroughput": 0.4315642487339977
+    },
+    "surface320-readback": {
+      "baselineMs": [
+        2.627861,
+        2.459889,
+        2.500438,
+        2.427573,
+        2.311559,
+        2.424274
+      ],
+      "candidateMs": [
+        2.661233,
+        2.562327,
+        2.312552,
+        2.36,
+        2.172234,
+        1.967269
+      ],
+      "pooledHostMs": [
+        1.6864586846422385,
+        1.6290065147201092,
+        1.9730571991593175
+      ],
+      "baselineMedianMs": 2.443731,
+      "candidateMedianMs": 2.336276,
+      "pooledHostMedianMs": 1.6864586846422385,
+      "candidateVsBaselineThroughput": 1.0459941376789388,
+      "candidateVsPooledHostThroughput": 0.7218576420946149
+    }
+  },
+  "review": {
+    "reviewer": "startup_io builtin agent",
+    "result": "pass",
+    "scope": "scalar arities/views/receiver and draw fast-path restoration/diagnostic equivalence",
+    "candidateSha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63"
+  },
+  "acceptance": {
+    "overallGoalComplete": false,
+    "graphicsRubricPoints": 6,
+    "graphicsRubricMaximum": 25,
+    "fullDesktopOpenGL": false,
+    "vulkanConformance": false,
+    "allWorkloadsAtLeast50PercentHost": false,
+    "firefoxNativeRelink": false,
+    "nativeJitGcGuardAcceptanceUnchanged": false
+  },
+  "servedPreview": {
+    "url": "http://localhost:3000/linux/dist/guest-gl-remote.js",
+    "sourceSha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+    "responseSha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+    "bytes": 81735,
+    "exactSourceBytes": true,
+    "containsVerifiedScalarCode": true,
+    "fastDrawGuards": 5
+  }
+}
