@@ -12,6 +12,16 @@ let home;
 try {
   home = await openPersistentHome({ name: dbName });
   const directory = await home.mkdir(home.root, 'admin', context);
+  // A create must own its open handle before a queued unlink can remove it.
+  const creating = home.create(directory, 'create-unlink', 2 | 0x200, context);
+  const unlinking = home.unlink(directory, 'create-unlink');
+  const [raced] = await Promise.all([creating, unlinking]);
+  assert((await home.getattr(raced.node)).size === 0n, 'new O_TRUNC file starts empty even when unlinked concurrently');
+  await home.write(raced.node, raced.handle, 0n, encoder.encode('open through unlink'));
+  assert(decoder.decode(await home.read(raced.node, raced.handle, 0n, 64)) === 'open through unlink', 'concurrent create/unlink retains a usable open inode');
+  await home.release(raced.node, raced.handle);
+  try { await home.getattr(raced.node); throw new Error('released orphan survived'); }
+  catch (error) { assert(error.errno === 2, 'last close removes the concurrently unlinked inode'); }
   const { node, handle } = await home.create(directory, 'original', 2, { ...context, mode: 0o600 });
   await home.write(node, handle, BigInt(CHUNK_SIZE - 2), encoder.encode('abcdef'));
   assert(decoder.decode(await home.read(node, handle, BigInt(CHUNK_SIZE - 2), 6)) === 'abcdef', 'write spans chunk boundary');

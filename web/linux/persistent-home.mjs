@@ -152,7 +152,11 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     readlink(node) { return transaction(false, async nodes => { const value = await get(nodes, node); if (type(value) !== SYMLINK) throw new FSError('EINVAL'); return value.target; }); },
     async create(parent, name, flags, context) {
       const node = await create(parent, name, context, FILE);
-      return { node, handle: await api.open(node, flags) };
+      // Creation has already committed an empty regular file. Reopening it via
+      // getattr (and a second truncate transaction for O_TRUNC) repeats work and
+      // introduces a window in which a concurrent unlink can delete the inode.
+      opens.set(node.id, (opens.get(node.id) || 0) + 1);
+      return { node, handle: { flags } };
     },
     async open(node, flags) {
       if (readOnly && ((flags & 3) || (flags & 0x200))) throw new FSError('EROFS', 'Home observer is read-only');

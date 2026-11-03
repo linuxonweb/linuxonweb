@@ -1,0 +1,26 @@
+{
+  "change": "newly-created regular files register their open handle directly after the creation transaction commits; no redundant getattr or truncate",
+  "durability": "unchanged strict IndexedDB commits; no buffered writeback",
+  "correctness": {
+    "browser": "Chrome/150.0.7871.114",
+    "checks": 50,
+    "result": "pass",
+    "covers": [
+      "quota rollback",
+      "explicit abort",
+      "reopen persistence",
+      "sparse/truncate data",
+      "concurrent create/unlink keeps open inode",
+      "final close reclaims orphan"
+    ]
+  },
+  "independentReview": "graphics_jit source review passed",
+  "metadataABBA64CyclesMs": {
+    "baseline": 767.3199999928474,
+    "candidate": 695.3874999880791
+  },
+  "sampleReductionPercent": 9.374511286743326,
+  "scope": "One ABBA sample; no claimed general read/write throughput improvement",
+  "rejectedExperiment": "explicit IDBTransaction.commit was removed after random4KiB performance regressed in ABBA1",
+  "remaining": "Firefox cold startup and mobile memory targets unmet"
+}

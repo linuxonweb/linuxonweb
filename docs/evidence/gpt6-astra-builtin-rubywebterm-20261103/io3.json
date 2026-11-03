@@ -1,0 +1,707 @@
+{
+  "schema": 1,
+  "start": "2026-11-03T07:23:16.679Z",
+  "mode": "io",
+  "seconds": 90,
+  "run": "/mnt/p3/codex-build/s3n/io3",
+  "samples": [
+    {
+      "ms": 463.403,
+      "cpuPercent": null,
+      "pssBytes": 91034624,
+      "rssSumBytes": 162029568,
+      "availableBytes": 28934303744,
+      "diskFreeBytes": 448372297728,
+      "processes": [
+        {
+          "pid": 1605392,
+          "ppid": 1605389,
+          "group": 1605389,
+          "session": 1605389,
+          "start": "40699355",
+          "ticks": 7,
+          "rss": 70418432,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605401,
+          "ppid": 1605392,
+          "group": 1605401,
+          "session": 1605401,
+          "start": "40699359",
+          "ticks": 5,
+          "rss": 82780160,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605419,
+          "ppid": 1605392,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699399",
+          "ticks": 2,
+          "rss": 8830976,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        }
+      ]
+    },
+    {
+      "ms": 1477.222,
+      "cpuPercent": 234.75590810588477,
+      "pssBytes": 471120896,
+      "rssSumBytes": 1312960512,
+      "availableBytes": 28799922176,
+      "diskFreeBytes": 448372297728,
+      "processes": [
+        {
+          "pid": 1605392,
+          "ppid": 1605389,
+          "group": 1605389,
+          "session": 1605389,
+          "start": "40699355",
+          "ticks": 22,
+          "rss": 84054016,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1605401,
+          "ppid": 1605392,
+          "group": 1605401,
+          "session": 1605401,
+          "start": "40699359",
+          "ticks": 7,
+          "rss": 83746816,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605419,
+          "ppid": 1605392,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699399",
+          "ticks": 96,
+          "rss": 288063488,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605431,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 51245056,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605432,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 49545216,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605434,
+          "ppid": 1605432,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699410",
+          "ticks": 1,
+          "rss": 20799488,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605465,
+          "ppid": 1605431,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699434",
+          "ticks": 58,
+          "rss": 208793600,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605467,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699435",
+          "ticks": 23,
+          "rss": 83128320,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605477,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699440",
+          "ticks": 2,
+          "rss": 52461568,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605529,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 28,
+          "rss": 153505792,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605530,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 6,
+          "rss": 115560448,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605551,
+          "ppid": 1605465,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699466",
+          "ticks": 0,
+          "rss": 43659264,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605560,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699467",
+          "ticks": 3,
+          "rss": 78397440,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        }
+      ]
+    },
+    {
+      "ms": 2475.263,
+      "cpuPercent": 189.37097774540322,
+      "pssBytes": 518079488,
+      "rssSumBytes": 1360809984,
+      "availableBytes": 28725178368,
+      "diskFreeBytes": 448372297728,
+      "processes": [
+        {
+          "pid": 1605392,
+          "ppid": 1605389,
+          "group": 1605389,
+          "session": 1605389,
+          "start": "40699355",
+          "ticks": 30,
+          "rss": 84402176,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1605401,
+          "ppid": 1605392,
+          "group": 1605401,
+          "session": 1605401,
+          "start": "40699359",
+          "ticks": 8,
+          "rss": 87941120,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605419,
+          "ppid": 1605392,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699399",
+          "ticks": 192,
+          "rss": 310091776,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605431,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 51245056,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605432,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 49545216,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605434,
+          "ppid": 1605432,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699410",
+          "ticks": 1,
+          "rss": 20799488,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605465,
+          "ppid": 1605431,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699434",
+          "ticks": 87,
+          "rss": 212811776,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605467,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699435",
+          "ticks": 24,
+          "rss": 84230144,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605477,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699440",
+          "ticks": 2,
+          "rss": 52461568,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605529,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 82,
+          "rss": 169529344,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605530,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 6,
+          "rss": 115564544,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605551,
+          "ppid": 1605465,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699466",
+          "ticks": 0,
+          "rss": 43659264,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605560,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699467",
+          "ticks": 3,
+          "rss": 78528512,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        }
+      ]
+    },
+    {
+      "ms": 3522.646,
+      "cpuPercent": 104.06890316149871,
+      "pssBytes": 509847552,
+      "rssSumBytes": 1357631488,
+      "availableBytes": 28689317888,
+      "diskFreeBytes": 448372297728,
+      "processes": [
+        {
+          "pid": 1605392,
+          "ppid": 1605389,
+          "group": 1605389,
+          "session": 1605389,
+          "start": "40699355",
+          "ticks": 42,
+          "rss": 86683648,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1605401,
+          "ppid": 1605392,
+          "group": 1605401,
+          "session": 1605401,
+          "start": "40699359",
+          "ticks": 8,
+          "rss": 87941120,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605419,
+          "ppid": 1605392,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699399",
+          "ticks": 252,
+          "rss": 304185344,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605431,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 51245056,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605432,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 49545216,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605434,
+          "ppid": 1605432,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699410",
+          "ticks": 1,
+          "rss": 20799488,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605465,
+          "ppid": 1605431,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699434",
+          "ticks": 89,
+          "rss": 212226048,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605467,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699435",
+          "ticks": 25,
+          "rss": 84471808,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605477,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699440",
+          "ticks": 2,
+          "rss": 52461568,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605529,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 116,
+          "rss": 170319872,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605530,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 6,
+          "rss": 115564544,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605551,
+          "ppid": 1605465,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699466",
+          "ticks": 0,
+          "rss": 43659264,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605560,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699467",
+          "ticks": 3,
+          "rss": 78528512,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        }
+      ]
+    },
+    {
+      "ms": 4544.633,
+      "cpuPercent": 85.12828441066279,
+      "pssBytes": 514795520,
+      "rssSumBytes": 1362132992,
+      "availableBytes": 28682309632,
+      "diskFreeBytes": 448372297728,
+      "processes": [
+        {
+          "pid": 1605392,
+          "ppid": 1605389,
+          "group": 1605389,
+          "session": 1605389,
+          "start": "40699355",
+          "ticks": 55,
+          "rss": 88780800,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1605401,
+          "ppid": 1605392,
+          "group": 1605401,
+          "session": 1605401,
+          "start": "40699359",
+          "ticks": 8,
+          "rss": 87941120,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605419,
+          "ppid": 1605392,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699399",
+          "ticks": 295,
+          "rss": 305307648,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605431,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 51245056,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605432,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699406",
+          "ticks": 3,
+          "rss": 49545216,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605434,
+          "ppid": 1605432,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699410",
+          "ticks": 1,
+          "rss": 20799488,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605465,
+          "ppid": 1605431,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699434",
+          "ticks": 91,
+          "rss": 212230144,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605467,
+          "ppid": 1605419,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699435",
+          "ticks": 27,
+          "rss": 84574208,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605477,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699440",
+          "ticks": 2,
+          "rss": 52461568,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605529,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 143,
+          "rss": 171495424,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605530,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699457",
+          "ticks": 6,
+          "rss": 115564544,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605551,
+          "ppid": 1605465,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699466",
+          "ticks": 0,
+          "rss": 43659264,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1605560,
+          "ppid": 1605434,
+          "group": 1605419,
+          "session": 1605419,
+          "start": "40699467",
+          "ticks": 3,
+          "rss": 78528512,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 8,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": ""
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1065.938,
+  "navigation": {
+    "frameId": "72A5C91FAE5238753AAF16EAA2DF9047",
+    "loaderId": "A909332A4856C696D423DE9B92EA5AD0",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 8,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":8,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl"
+  },
+  "io": {
+    "sequentialWriteMs": 770.1949999928474,
+    "sequentialReadMs": 326.1399999856949,
+    "random4kWriteMs": 515.8000000119209,
+    "random4kReadMs": 211.02499997615814,
+    "metadata64Ms": 1151.2799999713898,
+    "pass": true
+  },
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T07:23:24.230Z",
+  "elapsedMs": 7550.953,
+  "resourceSummary": {
+    "pssPeakBytes": 518079488,
+    "rssSumPeakBytes": 1362132992,
+    "minAvailableBytes": 28682309632,
+    "samples": 5
+  }
+}

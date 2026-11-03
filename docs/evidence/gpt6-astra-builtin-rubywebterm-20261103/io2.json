@@ -1,0 +1,860 @@
+{
+  "schema": 1,
+  "start": "2026-11-03T07:17:58.015Z",
+  "mode": "io",
+  "seconds": 90,
+  "run": "/mnt/p3/codex-build/s3n/io2",
+  "samples": [
+    {
+      "ms": 489.497,
+      "cpuPercent": null,
+      "pssBytes": 94072832,
+      "rssSumBytes": 162873344,
+      "availableBytes": 27715395584,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 9,
+          "rss": 70316032,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 8,
+          "rss": 82903040,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 1,
+          "rss": 9654272,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    },
+    {
+      "ms": 1560.543,
+      "cpuPercent": 168.99367534167538,
+      "pssBytes": null,
+      "rssSumBytes": 1100775424,
+      "availableBytes": 27650281472,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 28,
+          "rss": 83243008,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 9,
+          "rss": 83918848,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 84,
+          "rss": 268021760,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568991,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 5,
+          "rss": 49135616,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568992,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 4,
+          "rss": 49577984,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568995,
+          "ppid": 1568992,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667546",
+          "ticks": 1,
+          "rss": 20852736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569027,
+          "ppid": 1568991,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667580",
+          "ticks": 36,
+          "rss": 112226304,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569029,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667581",
+          "ticks": 10,
+          "rss": 78626816,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569042,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667590",
+          "ticks": 1,
+          "rss": 51478528,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569067,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667604",
+          "ticks": 4,
+          "rss": 0,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569068,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667606",
+          "ticks": 6,
+          "rss": 113926144,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569085,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667619",
+          "ticks": 4,
+          "rss": 78131200,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569086,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667621",
+          "ticks": 7,
+          "rss": 111636480,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    },
+    {
+      "ms": 2514.026,
+      "cpuPercent": 178.2936874595562,
+      "pssBytes": 483912704,
+      "rssSumBytes": 1330683904,
+      "availableBytes": 27573714944,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 40,
+          "rss": 84238336,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 10,
+          "rss": 83939328,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 125,
+          "rss": 293527552,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568991,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 5,
+          "rss": 49135616,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568992,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 4,
+          "rss": 49577984,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568995,
+          "ppid": 1568992,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667546",
+          "ticks": 1,
+          "rss": 20852736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569027,
+          "ppid": 1568991,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667580",
+          "ticks": 101,
+          "rss": 212164608,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569029,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667581",
+          "ticks": 30,
+          "rss": 86798336,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569042,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667590",
+          "ticks": 2,
+          "rss": 52748288,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569085,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667619",
+          "ticks": 40,
+          "rss": 162656256,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569086,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667621",
+          "ticks": 8,
+          "rss": 115318784,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569110,
+          "ppid": 1569027,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667641",
+          "ticks": 0,
+          "rss": 41287680,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569124,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667655",
+          "ticks": 3,
+          "rss": 78438400,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    },
+    {
+      "ms": 3589.806,
+      "cpuPercent": 166.39089776720144,
+      "pssBytes": 515411968,
+      "rssSumBytes": 1351516160,
+      "availableBytes": 27547938816,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 52,
+          "rss": 85872640,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 11,
+          "rss": 88113152,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 225,
+          "rss": 297418752,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568991,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 5,
+          "rss": 49135616,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568992,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 4,
+          "rss": 49577984,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568995,
+          "ppid": 1568992,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667546",
+          "ticks": 1,
+          "rss": 20852736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569027,
+          "ppid": 1568991,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667580",
+          "ticks": 114,
+          "rss": 212344832,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569029,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667581",
+          "ticks": 32,
+          "rss": 87175168,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569042,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667590",
+          "ticks": 2,
+          "rss": 52748288,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569085,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667619",
+          "ticks": 91,
+          "rss": 173228032,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569086,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667621",
+          "ticks": 8,
+          "rss": 115322880,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569110,
+          "ppid": 1569027,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667641",
+          "ticks": 0,
+          "rss": 41287680,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569124,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667655",
+          "ticks": 3,
+          "rss": 78438400,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    },
+    {
+      "ms": 4497.686,
+      "cpuPercent": 101.33497819095038,
+      "pssBytes": 512917504,
+      "rssSumBytes": 1360371712,
+      "availableBytes": 27520675840,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 62,
+          "rss": 88424448,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 11,
+          "rss": 88113152,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 273,
+          "rss": 306630656,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568991,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 5,
+          "rss": 49135616,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568992,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 4,
+          "rss": 49577984,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568995,
+          "ppid": 1568992,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667546",
+          "ticks": 1,
+          "rss": 20852736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569027,
+          "ppid": 1568991,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667580",
+          "ticks": 117,
+          "rss": 211828736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569029,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667581",
+          "ticks": 32,
+          "rss": 87179264,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569042,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667590",
+          "ticks": 2,
+          "rss": 52748288,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569085,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667619",
+          "ticks": 122,
+          "rss": 170831872,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569086,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667621",
+          "ticks": 8,
+          "rss": 115322880,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569110,
+          "ppid": 1569027,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667641",
+          "ticks": 0,
+          "rss": 41287680,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569124,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667655",
+          "ticks": 3,
+          "rss": 78438400,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    },
+    {
+      "ms": 5525.623,
+      "cpuPercent": 93.39093738234932,
+      "pssBytes": 517665792,
+      "rssSumBytes": 1366609920,
+      "availableBytes": 27458846720,
+      "diskFreeBytes": 448667680768,
+      "processes": [
+        {
+          "pid": 1568940,
+          "ppid": 1568939,
+          "group": 1568939,
+          "session": 1568939,
+          "start": "40667486",
+          "ticks": 71,
+          "rss": 89776128,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568949,
+          "ppid": 1568940,
+          "group": 1568949,
+          "session": 1568949,
+          "start": "40667493",
+          "ticks": 12,
+          "rss": 88113152,
+          "affinity": "0-7",
+          "cgroup": "0::/system.slice/webterm-runtime.service"
+        },
+        {
+          "pid": 1568979,
+          "ppid": 1568940,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667533",
+          "ticks": 324,
+          "rss": 309338112,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568991,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 5,
+          "rss": 49135616,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568992,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667540",
+          "ticks": 4,
+          "rss": 49577984,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1568995,
+          "ppid": 1568992,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667546",
+          "ticks": 1,
+          "rss": 20852736,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569027,
+          "ppid": 1568991,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667580",
+          "ticks": 118,
+          "rss": 211738624,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569029,
+          "ppid": 1568979,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667581",
+          "ticks": 34,
+          "rss": 87228416,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569042,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667590",
+          "ticks": 2,
+          "rss": 52776960,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569085,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667619",
+          "ticks": 154,
+          "rss": 173023232,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569086,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667621",
+          "ticks": 8,
+          "rss": 115322880,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569110,
+          "ppid": 1569027,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667641",
+          "ticks": 0,
+          "rss": 41287680,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        },
+        {
+          "pid": 1569124,
+          "ppid": 1568995,
+          "group": 1568979,
+          "session": 1568979,
+          "start": "40667655",
+          "ticks": 3,
+          "rss": 78438400,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 8,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": ""
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1612.958,
+  "navigation": {
+    "frameId": "06CA85D165DF93D4AD7EF52EBC9F8721",
+    "loaderId": "E443E897C6EC23488C8B7468650A6EFF",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":8,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl"
+  },
+  "io": {
+    "sequentialWriteMs": 1219.8700000047684,
+    "sequentialReadMs": 461.67500001192093,
+    "random4kWriteMs": 608.125,
+    "random4kReadMs": 110.56499999761581,
+    "metadata64Ms": 908.4350000023842,
+    "pass": true
+  },
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T07:18:06.520Z",
+  "elapsedMs": 8505.418,
+  "resourceSummary": {
+    "pssPeakBytes": 517665792,
+    "rssSumPeakBytes": 1366609920,
+    "minAvailableBytes": 27458846720,
+    "samples": 6
+  }
+}
