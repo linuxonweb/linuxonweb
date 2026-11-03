@@ -1,0 +1,36 @@
+{
+  "main.js": {
+    "bytes": 62343,
+    "sha256": "4366d24aea9e1f6275c32803b37f8a2d07392d9abd5036eeb8a21ed269a8daff",
+    "exactCurrentSource": true
+  },
+  "physical-keyboard.mjs": {
+    "bytes": 1076,
+    "sha256": "5a4c924c9f502d4f12e842723e01b296199ebba9495ba6c54938d068d420be4d",
+    "exactCurrentSource": true
+  },
+  "package-recovery.mjs": {
+    "bytes": 680,
+    "sha256": "8abe6d94d6403afcd9c7735d0f41cd942dd4fb6c31211c3b2b4cbd992d70f592",
+    "exactCurrentSource": true
+  },
+  "test-commands.mjs": {
+    "bytes": 6621,
+    "sha256": "ca2980603abf463e0c51dbc4da5fdedd9492a2aa70fffc8cd2bf3177bd5c57e0",
+    "exactCurrentSource": true
+  },
+  "dist/virtio/input.js": {
+    "bytes": 10403,
+    "sha256": "f86e83a8695041814305c3ed70da8a06bf3dc73cf9c280fd7c6cb6c2a19268c6",
+    "exactCurrentSource": true
+  },
+  "manifest": {
+    "version": "d258203daee8",
+    "firefox": {
+      "url": "./initramfs-firefox.cpio.gz",
+      "bytes": 116197223,
+      "sha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+      "label": "Firefox system with verified native APK base; package install files reset at reboot"
+    }
+  }
+}

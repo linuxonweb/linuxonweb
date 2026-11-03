@@ -3404,6 +3404,14 @@
     "Only browser events own repeat; guest EV_REP disabled, real client repeats use EV_KEY=2. No synthetic repeat timer.",
     "Two native 12-assertion keyboard runs include held keys, explicit repeats, modifiers, focus loss and rapid typing/navigation; their duration is not startup acceptance.",
     "Native Quit did not report exit in 20 seconds after confirmation; home IO showed ongoing flush work. Cache reuse remains unaccepted.",
-    "Production save ACK->Stop 88.631ms; idle 677.316ms; retained package restart and interactive failure recovery not yet accepted."
-  ]
+    "Production save ACK->Stop 88.631ms; confirmation/input-release bound 677.316ms; idle only observed after later7s wait; retained package restart and interactive failure recovery not yet accepted."
+  ],
+  "stopTimingCorrection": {
+    "reason": "main.js #power-stop opens a confirmation dialog; #stop-yes invokes stopGuest. Legacy stopConfirmedLaunchMs was sampled immediately before that click, not at idle.",
+    "saveAcknowledgmentToDialogRequestMs": 88.631,
+    "saveAcknowledgmentToBeforeConfirmClickMs": 677.316,
+    "idleEarliestTimeMeasured": false,
+    "idleObservedAfterSevenSecondDelay": true,
+    "durableSaveAndFreshRestartResultUnchanged": true
+  }
 }
