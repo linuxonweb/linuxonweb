@@ -1,0 +1,39 @@
+{
+  "name": "sed",
+  "version": "4.10-r0",
+  "description": "GNU sed native Linux/Wasm",
+  "url": "https://www.gnu.org/software/sed/",
+  "license": "GPL-3.0-or-later",
+  "depends": [],
+  "files": {
+    "usr/bin/sed": {
+      "path": "sed",
+      "mode": "755",
+      "sha256": "21b530149b8dccb25b5ab748e31c437abf6c59032b6e426dce71268601825424"
+    },
+    "usr/share/licenses/sed/COPYING": {
+      "path": "sed-COPYING",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "usr/share/doc/sed/README.linuxonweb": {
+      "path": "sed-README.txt",
+      "sha256": "77c78fec98009e3c24e9a6016674207e67967c31eba3fdc2d2d9bb08d191322a"
+    }
+  },
+  "provenance": {
+    "source": {
+      "name": "sed",
+      "version": "4.10",
+      "url": "https://ftp.gnu.org/gnu/sed/sed-4.10.tar.xz",
+      "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/sed-4.10.tar.xz",
+      "bytes": 1732800,
+      "sha256": "b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7",
+      "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+    },
+    "nativeSha256": "21b530149b8dccb25b5ab748e31c437abf6c59032b6e426dce71268601825424",
+    "rebuiltThisTask": true,
+    "runtimeAccepted": false,
+    "scope": "GNU substitutions, extended regular expressions and in-place editing.",
+    "forkBehavior": "ENOSYS, never simulated success"
+  }
+}

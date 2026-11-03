@@ -1,0 +1,18 @@
+{
+  "pass": true,
+  "durationSeconds": 8.406,
+  "cpus": 3,
+  "browserExit": 0,
+  "errors": [],
+  "guestLines": [
+    "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0",
+    "Console: switching to colour frame buffer device 80x30",
+    "fb0: wasm framebuffer 640x480-32 at 93523ee4",
+    "This architecture does not have kernel memory protection.",
+    "Run /init as init process",
+    "GNU_STACK_DIRECTION=-1",
+    "PACKAGE_SMOKE_EXIT status=0"
+  ],
+  "probeSha256": "6e47589f01f30d7425eaee506ed9d014b7ddf2cc04cdededed008f06f0e88cd9",
+  "acceptedDirection": -1
+}

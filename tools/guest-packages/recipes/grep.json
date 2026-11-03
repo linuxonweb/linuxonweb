@@ -1,0 +1,39 @@
+{
+  "name": "grep",
+  "version": "3.12-r0",
+  "description": "GNU grep native Linux/Wasm",
+  "url": "https://www.gnu.org/software/grep/",
+  "license": "GPL-3.0-or-later",
+  "depends": [],
+  "files": {
+    "usr/bin/grep": {
+      "path": "grep",
+      "mode": "755",
+      "sha256": "c8bec99d6486bff242f6f0a8333c7e0edf315458ce8e96925e6b095efdc3044c"
+    },
+    "usr/share/licenses/grep/COPYING": {
+      "path": "grep-COPYING",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "usr/share/doc/grep/README.linuxonweb": {
+      "path": "grep-README.txt",
+      "sha256": "c6135f249941e89b4d8f229ccfa96eaeb2c312229f8bd5118b088f966a5e7502"
+    }
+  },
+  "provenance": {
+    "source": {
+      "name": "grep",
+      "version": "3.12",
+      "url": "https://ftp.gnu.org/gnu/grep/grep-3.12.tar.xz",
+      "archive": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/sources/gnu/grep-3.12.tar.xz",
+      "bytes": 1918448,
+      "sha256": "2649b27c0e90e632eadcd757be06c6e9a4f48d941de51e7c0f83ff76408a07b9",
+      "sourceVerification": "official HTTPS transport; exact downloaded hash recorded; no OpenPGP verification claimed"
+    },
+    "nativeSha256": "c8bec99d6486bff242f6f0a8333c7e0edf315458ce8e96925e6b095efdc3044c",
+    "rebuiltThisTask": true,
+    "runtimeAccepted": false,
+    "scope": "GNU basic and extended regular expressions. PCRE support is disabled.",
+    "forkBehavior": "ENOSYS, never simulated success"
+  }
+}

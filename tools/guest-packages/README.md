@@ -69,3 +69,9 @@ The immutable Python-r1/coreutils snapshot is `https://fileharbor-meak.basicglea
 ## Download and restore evidence
 
 The old encrypted-history `restore-checkpoint.py` reads local chunks and verifies each chunk plus the complete ciphertext; it contains no HTTP downloader. Ordinary curl public downloads of the new snapshot manifest/index and a 4096-byte range from the old ciphertext passed exact hash checks. An urllib request received HTTP403 from the public edge, so curl is the documented retrieval client. No credentials or User-Agent override were used. Full public ciphertext re-download and full cross-environment decryption remain unverified.
+
+## Final GNU packages (2026-11-03)
+
+Genuine GNU coreutils9.11, gzip1.14, grep3.12 and sed4.10 are compiled for Linux/Wasm and verified through signed APK install, representative commands and removal. Use explicit `/usr/bin/ls`, `/usr/bin/gzip`, `/usr/bin/grep`, `/usr/bin/sed`, or `coreutils COMMAND`: the BusyBox standalone shell may prefer its own applets for bare names. GNU gzip gunzip/zcat use the upstream shell launchers with an explicit native gzip path. Grep has no PCRE; the no-MMU port selects the upstream failure-returning fallback for unsupported stack/VMA signal recovery. Fork/vfork return ENOSYS; no child success is simulated. Wget, tar and findutils source recipes exist but were not accepted binaries in this task. Python3.14.6-r1 works in the normal admin environment without PYTHONHOME; Node.js is not ported.
+
+The corrected three-package gate passed24.448s, with one-second CPU/RAM samples; it overlapped a functional startup diagnostic and is not clean speed evidence. Failed predecessors remain recorded.

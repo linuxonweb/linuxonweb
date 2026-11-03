@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Encrypt an incremental Git checkpoint and a package-signing recovery key.
+Only the public recipient certificate is used for encryption. The existing verified
+base clone supplies bundle prerequisites; public output never contains plaintext keys.
+"""
+import argparse,datetime,hashlib,json,os,pathlib,shutil,subprocess,tarfile
+q=argparse.ArgumentParser();q.add_argument('--out',type=pathlib.Path,required=True);q.add_argument('--base',required=True);q.add_argument('--head',required=True);q.add_argument('--verified-base',type=pathlib.Path,required=True);q.add_argument('--recipient',type=pathlib.Path,required=True);q.add_argument('--package-signing-key',type=pathlib.Path,required=True);a=q.parse_args();a.out.mkdir(parents=True,exist_ok=False);a.out.chmod(0o700);private=a.out/'private-work';private.mkdir(mode=0o700);public=a.out/'publish';public.mkdir();prefix='linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103';stamp=datetime.datetime.now(datetime.timezone.utc).isoformat()
+def run(args):
+ r=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+ if r.returncode:raise RuntimeError('checkpoint command failed: '+r.stdout.decode(errors='replace')[-1000:])
+ return r.stdout.decode().strip()
+def sha(p):
+ with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+base=run(['git','rev-parse',a.base]);head=run(['git','rev-parse',a.head]);assert run(['git','rev-parse','HEAD'])==head,'head moved before capture'
+bundle=private/(prefix+'_'+head[:7]+'.increment.bundle');run(['git','-c','pack.threads=1','bundle','create',str(bundle.resolve()),'HEAD','^'+base]);listed=run(['git','bundle','list-heads',str(bundle)]);assert listed.split()[0]==head
+run(['git','-C',str(a.verified_base),'bundle','verify',str(bundle.resolve())]);run(['git','-C',str(a.verified_base),'fetch','--no-tags',str(bundle.resolve()),'HEAD:refs/checkpoints/'+head[:12]]);assert run(['git','-C',str(a.verified_base),'rev-parse','refs/checkpoints/'+head[:12]])==head;run(['git','-C',str(a.verified_base),'fsck','--full','--strict'])
+key=a.package_signing_key.resolve();assert key.is_file() and not a.package_signing_key.is_symlink();assert key.stat().st_mode&0o077==0,'private signing key permissions must be0600'
+inside={'basePrerequisite':base,'capturedHead':head,'bundleName':bundle.name,'bundleSha256':sha(bundle),'bundleBytes':bundle.stat().st_size,'prerequisiteVerification':True,'fetchIntoVerifiedBaseAndFsck':True,'signingKeyRecovery':{'path':'private/linuxonweb-dev.rsa','restoreMode':'0600','warning':'Keep private; do not publish or place in source archives.'},'runtimeArtifacts':'Not contained in this source/history increment; use separately pinned distribution and signed repository release manifests.'}
+(private/'RECOVERY.json').write_text(json.dumps(inside,indent=2)+'\n');plain=private/'increment.tar'
+with tarfile.open(plain,'w')as tar:
+ for p,name in [(bundle,bundle.name),(private/'RECOVERY.json','RECOVERY.json'),(key,'private/linuxonweb-dev.rsa')]:
+  info=tar.gettarinfo(str(p),arcname=name);info.uid=info.gid=0;info.uname=info.gname='root';info.mode=0o600;info.mtime=0
+  with p.open('rb')as f:tar.addfile(info,f)
+plain.chmod(0o600);cipher=public/(prefix+'_'+head[:7]+'.increment.tar.cms');run(['openssl','cms','-encrypt','-stream','-binary','-aes-256-gcm','-in',str(plain),'-outform','DER','-out',str(cipher),str(a.recipient)])
+manifest={'createdAt':stamp,'basePrerequisite':base,'capturedHead':head,'ciphertext':{'name':cipher.name,'bytes':cipher.stat().st_size,'sha256':sha(cipher)},'recipientCertificateSha256':sha(a.recipient),'encryption':'OpenSSL CMS AuthenticatedEnvelopedData AES-256-GCM, RSA3072 recipient','containsEncryptedPackageSigningRecoveryKey':True,'plaintextKeyPubliclyExcluded':True,'bundlePrerequisitesVerifiedAgainstRestoredBase':True,'restoredHeadFsckPassed':True,'fullDecryptVerified':False,'runtimeArtifactsIncluded':False};(public/'INCREMENT-MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n');shutil.copyfile(a.recipient,public/'recipient-public.crt')
+(public/'RESTORE-INCREMENT.md').write_text('# Incremental encrypted recovery\n\nRestore the original 80a52d1 full encrypted checkpoint first. Download the ciphertext using ordinary curl -fSLo FILE URL and verify SHA256 against INCREMENT-MANIFEST.json. This increment is not a standalone full clone.\n\nDecrypt with `openssl cms -decrypt -binary -inform DER -in CIPHERTEXT -recip recovery.pem -inkey recovery.pem -out increment.tar`, then extract into a private directory (`umask 077` before extraction). Run `git -C linuxonweb bundle verify INCREMENT.bundle`, then `git -C linuxonweb fetch INCREMENT.bundle HEAD:refs/heads/recovered-20261103` and `git -C linuxonweb fsck --full --strict`. Check the recovered commit against capturedHead.\n\nThe package signing recovery key is encrypted inside the tar at private/linuxonweb-dev.rsa. Restore it only to a private directory with mode 0600; never publish it or commit it. The public output contains only ciphertext, public certificate, hashes and these instructions. Runtime images/repositories are recovered separately from their exact release manifests. Full cross-environment decryption has not been performed; bundle prerequisites/fetch/fsck were verified before encryption.\n')
+print(json.dumps({'pass':True,'head':head,'base':base,'ciphertextBytes':cipher.stat().st_size,'ciphertextSha256':sha(cipher),'publishDirectory':str(public)}))

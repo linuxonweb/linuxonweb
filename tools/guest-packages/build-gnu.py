@@ -7,9 +7,12 @@ source_root=a.out/'source'
 if not a.resume:
  source_root.mkdir()
  with tarfile.open(archive) as t:t.extractall(source_root,filter='data')
-source=source_root/(record['name']+'-'+record['version']);build=a.out/'build';build.mkdir(exist_ok=a.resume)
+source=source_root/(record['name']+'-'+record['version'])
+if a.name=='grep' and 'LINUXONWEB_NO_MMU_GUARD' not in (source/'lib/stackvma.c').read_text():
+ subprocess.run(['patch','-p1','-i',str((pathlib.Path(__file__).resolve().parent/'grep-no-mmu.patch'))],cwd=source,check=True,stdout=subprocess.DEVNULL)
+build=a.out/'build';build.mkdir(exist_ok=a.resume)
 cc='/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang';binutils='/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/'
-env={'CC':cc,'AR':binutils+'ar','RANLIB':binutils+'ranlib','NM':binutils+'nm','CFLAGS':'-O2 -g0 -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections','LDFLAGS':'-static -pthread -Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576','ac_cv_func_fork':'no','ac_cv_func_vfork':'no','ac_cv_func_mmap':'no','ac_cv_func_mremap':'no','ac_cv_func_mprotect':'no','ac_cv_func_posix_madvise':'no','ac_cv_func_madvise':'no','LC_ALL':'C'}
+env={'CC':cc,'AR':binutils+'ar','RANLIB':binutils+'ranlib','NM':binutils+'nm','CFLAGS':'-O2 -g0 -pthread -matomics -mbulk-memory -ffunction-sections -fdata-sections','LDFLAGS':'-static -pthread -Wl,--gc-sections,--import-memory,--export-table,--shared-memory,--initial-memory=16777216,--max-memory=4294967296,-z,stack-size=1048576','ac_cv_c_stack_direction':'-1','sv_cv_stack_direction':'-1','sv_cv_stack_direction_msg':'grows down (actual guest probe)','ac_cv_func_fork':'no','ac_cv_func_vfork':'no','ac_cv_func_mmap':'no','ac_cv_func_mremap':'no','ac_cv_func_mprotect':'no','ac_cv_func_posix_madvise':'no','ac_cv_func_madvise':'no','LC_ALL':'C'}
 options={'coreutils':['--enable-single-binary=symlinks','--enable-no-install-program=stdbuf','--disable-libcap','--disable-acl','--disable-xattr'],'wget':['--with-ssl=openssl','--disable-iri','--without-libpsl'],'tar':[],'gzip':[],'findutils':[],'grep':['--disable-perl-regexp'],'sed':['--disable-acl']}
 if a.name=='wget':
  ssl='/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7';env.update({'OPENSSL_CFLAGS':'-I'+ssl+'/include','OPENSSL_LIBS':ssl+'/lib/libssl.a '+ssl+'/lib/libcrypto.a -ldl -pthread'})
