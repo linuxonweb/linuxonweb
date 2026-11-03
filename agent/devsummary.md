@@ -3,10 +3,14 @@
 Task start: 2026-11-03T07:06:26Z. Five-hour budget ends approximately12:06UTC;
 only an important bug may justify the requested one-hour extension.
 
-Current overall acceptance: **26/100, provisional and evidence-limited**.
-This is progress toward the full user goal, not a code-quality grade. Root's
-rubric: desktop6/15; I/O+startup7/25; JIT3/15; graphics6/25; packages1/10;
-mobile0/5; preview/reproducibility3/5. The goal remains unmet and work continues.
+Current overall acceptance: **42/100, evidence-limited and incomplete**.
+Root's final accepted rubric before recovery: desktop6/15; I/O+startup10/25;
+JIT4/15; graphics9/25; packages7/10; mobile2/5; preview/reproducibility4/5.
+The historical sections below retain the scores and acceptance state at the
+measurement time; current release/defaults are authoritative in agent/continue.md.
+The base deadline was12:06:26UTC. The authorized extension is restricted to the
+accepted mobile loading bug's verification/documentation and final recovery.
+Model/planning time is not instrumented; do not infer it from gaps in test logs.
 
 ## Completed startup/I/O iterations
 
@@ -276,3 +280,51 @@ not CPU time or exclusive wall time. Any overlapping agent tasks are recorded in
 their own ledgers, never added as total wall time. No current-owner receipt is
 above300s; slow multistage/native builds elsewhere retain their separate measured
 receipts and explanations. Marker/Omni builds and tests are all belowfive minutes.
+
+
+## Final timing and iteration accounting
+
+Documentation checkpoint: **2026-11-03T12:19:58.069549+00:00**. Elapsed from07:06:26UTC is
+**18812.070s (5h13m32.070s)**. The last measured phone event ended
+12:06:35.931UTC,18009.931s after task start. Cumulative recovery publication
+continues after this checkpoint and has its own completion receipt. Model and
+planning time were not instrumented.
+
+| Agent or task | Recorded units | Measured duration | Interpretation |
+|---|---|---:|---|
+| startup_io browser/runtime owners |39 completed receipts|3324.041s summed;3324.037s interval union|Actual monitored browser jobs; none>300s.|
+| startup_io separately retained seed/packing builds |4 receipts|165.523s|2.003s seedv1,3.008s seedv2,128.483s canonical pack,32.029s combination; not a complete native-build aggregate.|
+| packages_mobile monitored stages |88 receipts|2198.230s interval union|Raw nested sum2204.244s is not added again; none individually>300s.|
+| graphics_jit host build/test work |95 measured ledger entries across categories|713.494s host build/test|The95 entries also include the separate categories below and shared runs; not95 independent desktop acceptance cycles.|
+| graphics_jit physical-device owners |Separate owner lifetimes|1349.471s|Includes setup,UI and tool idle; not pure guest CPU or boot time.|
+| graphics_jit read-only background services |Separate bounded owners|542.475s|Overlaps device tests; do not add as wall time.|
+| graphics_jit artifact upload |Separate transfer|156.481s|Network transfer, not build/test CPU.|
+| Final runtime recovery upload |8 verified files,172422959bytes|592.892s|11:57:07.656–12:07:00.548UTC; sequential8MiB transfer parts and server SHA verification explain>5min.|
+
+Startup records contain12 explicitly numbered phase entries (including baseline;
+legacy number3 was not separately recorded). Package legacy23IDs are timed-stage
+IDs; the later milestone ledger records9–11 plus final recovery12. These counters
+have different meanings, so they are not combined into a misleading total.
+
+Two graphics owner lifetimes exceeded5min: the301.001s read-only server was an
+expected finite background service; android6 lasted314.523s because it included
+setup/UI/tool latency, physical Stop and a second Start, with a120s bound for
+each guest period. No slow native build is hidden in those values. All these
+categories can overlap and must not be added to infer project wall elapsed.
+The four retained startup build receipts are partial build coverage; additional
+short fixture durations remain in their experiment notes. No unmeasured total
+model/planning duration is invented.
+
+Detailed accounting: `agent/final-timing-summary-20261103.json`,
+[startup owners](../tools/startup-benchmark/evidence/startup-owner-time-ledger-20261103.json),
+[package stages](../tools/guest-packages/evidence/final-timing-20261103.json),
+[graphics ledger](../agent/graphics-jit-devsummary.json).
+
+Final accepted mobile source commit: a2d3da521831e39f150cb8f757d1eaa7c0d0f621. Further activity is documentation/recovery only; no new runtime tests or optional feature work.
+
+
+Read-only final_acceptance_review passed the bounded claims. Its sole material
+correction was applied: cumulative source/history publication is explicitly
+pending at the versioned documentation checkpoint, and the completed external
+receipt will identify the frozenHEAD. Recovery dependencies and the unperformed
+full public redownload/decrypt are now explicit. No new runtime testing followed.

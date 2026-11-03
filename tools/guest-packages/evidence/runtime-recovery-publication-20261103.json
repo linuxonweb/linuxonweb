@@ -1,0 +1,23 @@
+{
+  "pass": true,
+  "baseUrl": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/f26dad37-c632-4ccf-b123-5180fb22fa05/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_runtime/",
+  "files": 8,
+  "allServerHashesMatch": true,
+  "manifestSha256": "a82cb93fd60c2bd763fc1b0666843ce6996e70ca2be2a434ebd1c4a0a2687077",
+  "freshPublicManifestVerified": true,
+  "localReassemblyAndExtractedHashesVerified": true,
+  "runtimeVersion": "d258203daee8",
+  "imageSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "bytes": 172422959,
+  "uploadStartedUtc": "2026-11-03T11:57:07.655902+00:00",
+  "uploadFinishedUtc": "2026-11-03T12:07:00.547505+00:00",
+  "uploadWallSeconds": 592.892,
+  "transferPauseSeconds": 0,
+  "longStageReason": "Sequential public upload of172.4MB through8MiB parts with server SHA verification; no paused or blocked native build.",
+  "privateExportAudit": {
+    "pass": true,
+    "checkedArchiveMembersAndFiles": 33,
+    "privateValueCount": 40,
+    "scope": "Known private token/cookie/owner values, explicit device identifier, private PEM bodies; documented public base URLs are not secret."
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "taskStartUtc": "2026-11-03T07:06:26+00:00",
+  "documentationCheckpointUtc": "2026-11-03T12:19:58.069549+00:00",
+  "elapsedToDocumentationCheckpointSeconds": 18812.07,
+  "lastMeasuredMobileEventUtc": "2026-11-03T12:06:35.931000+00:00",
+  "elapsedToLastMeasuredMobileEventSeconds": 18009.931,
+  "overallAcceptanceScore": 42,
+  "sourceRuntimeCommit": "a2d3da521831e39f150cb8f757d1eaa7c0d0f621",
+  "timingRules": [
+    "Per-agent categories and parallel/nested intervals are not summed as project elapsed.",
+    "Model/planning time and uninstrumented tool/transfer idle are not measured.",
+    "Final cumulative recovery occurs after this documentation checkpoint and records its own receipt.",
+    "Iteration counters have different granularity; no fabricated unified iteration count is reported."
+  ],
+  "startup_io": {
+    "recordedPhaseEntries": 12,
+    "recordedPhaseIds": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "phaseNote": "The historical number3 was not separately recorded; run receipts preserve actual execution.",
+    "browserOwnerReceipts": 39,
+    "browserOwnerDurationSeconds": 3324.041211,
+    "browserOwnerIntervalUnionSeconds": 3324.037,
+    "separateRetainedBuildReceipts": [
+      {
+        "name": "seed-build1",
+        "start": "2026-11-03T08:57:33.411165+00:00",
+        "end": "2026-11-03T08:57:35.414040+00:00",
+        "seconds": 2.003,
+        "pass": true,
+        "peakOwnedRssBytes": 66134016
+      },
+      {
+        "name": "seed-v2-build",
+        "start": "2026-11-03T09:47:27.172756+00:00",
+        "end": "2026-11-03T09:47:30.180306+00:00",
+        "seconds": 3.008,
+        "pass": true,
+        "peakOwnedRssBytes": 81145856
+      },
+      {
+        "name": "omni-pack-log",
+        "start": "2026-11-03T11:02:38.417315+00:00",
+        "end": "2026-11-03T11:04:46.899795+00:00",
+        "seconds": 128.483,
+        "pass": true,
+        "peakOwnedRssBytes": 86142976
+      },
+      {
+        "name": "omni-combine-log",
+        "start": "2026-11-03T11:09:12.406819+00:00",
+        "end": "2026-11-03T11:09:44.435551+00:00",
+        "seconds": 32.029,
+        "pass": true,
+        "peakOwnedRssBytes": 25784320
+      }
+    ],
+    "separateRetainedBuildSeconds": 165.523,
+    "buildCoverage": "These four retained seed/packing receipts are separate from browser owners, not a complete native-build total. Atomic fixture2.006s and composition8.008s are also documented in devsummary; other small fixture builds were not aggregated here.",
+    "ownerRunsAboveFiveMinutes": []
+  },
+  "packages_mobile": {
+    "ownerStageReceipts": 88,
+    "ownerStageIntervalUnionSeconds": 2198.23,
+    "rawNestedStageSecondsNotWallTime": 2204.244,
+    "iterationCountNote": "23 legacy timed-stage IDs are not23 comparable implementation iterations; later milestone ledger records9\u201311, with12 being final recovery. Do not sum these counters.",
+    "stageRunsAboveFiveMinutes": [],
+    "runtimeRecoveryUpload": {
+      "pass": true,
+      "baseUrl": "https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/f26dad37-c632-4ccf-b123-5180fb22fa05/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_runtime/",
+      "files": 8,
+      "allServerHashesMatch": true,
+      "manifestSha256": "a82cb93fd60c2bd763fc1b0666843ce6996e70ca2be2a434ebd1c4a0a2687077",
+      "freshPublicManifestVerified": true,
+      "localReassemblyAndExtractedHashesVerified": true,
+      "runtimeVersion": "d258203daee8",
+      "imageSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+      "bytes": 172422959,
+      "uploadStartedUtc": "2026-11-03T11:57:07.655902+00:00",
+      "uploadFinishedUtc": "2026-11-03T12:07:00.547505+00:00",
+      "uploadWallSeconds": 592.892,
+      "transferPauseSeconds": 0,
+      "longStageReason": "Sequential public upload of172.4MB through8MiB parts with server SHA verification; no paused or blocked native build.",
+      "privateExportAudit": {
+        "pass": true,
+        "checkedArchiveMembersAndFiles": 33,
+        "privateValueCount": 40,
+        "scope": "Known private token/cookie/owner values, explicit device identifier, private PEM bodies; documented public base URLs are not secret."
+      }
+    }
+  },
+  "graphics_jit": {
+    "measuredIterationEntries": 95,
+    "ownedHostBuildTestSeconds": 713.494,
+    "physicalDeviceOwnerSeconds": 1349.471,
+    "backgroundServiceOwnerSeconds": 542.475,
+    "artifactUploadSeconds": 156.481,
+    "scopeNote": "Owned host build/test, device-owner lifetimes, background services and uploads are separate categories. Device lifetimes include setup/UI/tool idle. Background services overlap phone tests; sums are not project elapsed. Model/planning time is unmeasured. Startup-owned Firefox runs remain excluded from owned build/test total.",
+    "aboveFiveMinutes": [
+      {
+        "name": "android-readonly-server-owner2",
+        "seconds": 301.001,
+        "reason": "Expected bounded read-only background service lifetime; overlaps phone tests."
+      },
+      {
+        "name": "android6",
+        "seconds": 314.523,
+        "reason": "Device-owner lifetime includes setup/UI/tool latency, physical Stop and a second Start; each guest period had a separate120s bound. Not one uninterrupted boot or a build."
+      }
+    ]
+  }
+}

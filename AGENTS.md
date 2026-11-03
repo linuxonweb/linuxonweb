@@ -70,7 +70,7 @@ Public APK4 d258203daee8 is accepted through the exact production browser path;
 SHA2564675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771.
 Compressed Firefox boot is default. Pythonr1 and genuine GNU coreutils are signed
 packages; rootfs/APK database reset together, /home persists. Overall acceptance
-41/100;30s Firefox, general GL/Vulkan,50% host, Node.js and full mobile Firefox
+42/100;30s Firefox, general GL/Vulkan,50% host, Node.js and full mobile Firefox
 remain unmet. Read agent/continue.md for exact benchmarks and reproduction.
 
 Canonical Omni is an isolated rejected candidate: file allocation fell538.5MB,
@@ -79,3 +79,9 @@ normal APK4 image public. Code-cache seeding and negotiated FUSE writeback remai
 off. Root-owned .purgecaches repeatedly invalidates caches; never remove it
 publicly without safe per-image/per-profile invalidation. Native Restart normally
 currently exits without a replacement; do not mask it by relaunching all exit0.
+
+Final accepted mobile/runtime commit: a2d3da521831e39f150cb8f757d1eaa7c0d0f621.
+The minimal MI8 HTTPS console has real native command/Stop/worker-cleanup proof;
+full mobile Firefox, phone Python install, soft-keyboard composition and iOS do
+not. Use agent/next-agent-prompt.md and the consolidated acceptance report for
+unfinished work; final recovery captures the frozen source head separately.

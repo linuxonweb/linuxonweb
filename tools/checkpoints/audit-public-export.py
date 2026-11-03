@@ -7,6 +7,8 @@ q=argparse.ArgumentParser();q.add_argument('--public',type=pathlib.Path,required
 def add(v):
  if isinstance(v,str)and len(v)>=20:
   needles.add(v.encode())
+  if v.startswith('/access/'):
+   needles.add(v.rsplit('/',1)[-1].encode())
   if v.startswith('https://'):
    u=urllib.parse.urlsplit(v)
    for x in u.path.split('/'):
@@ -18,7 +20,7 @@ def walk(v,key=''):
   for k,x in v.items():walk(x,k)
  elif isinstance(v,list):
   for x in v:walk(x,key)
- elif isinstance(v,str)and any(x in key.lower()for x in ['token','secret','cookie','grant','authorization','url']):add(v)
+ elif isinstance(v,str)and (any(x in key.lower()for x in ['token','secret','cookie','grant','authorization'])or(key.lower()in ['path','url','accessurl']and '/access/'in v)):add(v)
 for name in ['owner-key','cookie-key']:
  p=a.private_preview/name
  if p.is_file():needles.add(p.read_bytes().strip())

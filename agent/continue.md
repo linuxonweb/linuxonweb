@@ -9,8 +9,8 @@ Do not blanket-add the many unrelated untracked directories, profiles or binarie
 
 ## Verified release and acceptance
 
-Overall acceptance is **41/100**, not a quality claim of completion: desktop6/15,
-I/O+startup10/25, genuine JIT4/15, graphics9/25, packages7/10, mobile1/5,
+Overall acceptance is **42/100**, not a quality claim of completion: desktop6/15,
+I/O+startup10/25, genuine JIT4/15, graphics9/25, packages7/10, mobile2/5,
 preview/reproducibility4/5. Responsive Firefox within30s, general OpenGL/Vulkan,
 50% host performance, Node.js, and full mobile Firefox remain unmet.
 
@@ -149,12 +149,34 @@ Firefox was not visible at90s; by110s it rendered the cube and exact address inp
 Navigation was pending at116s and complete in the final120s capture. No production
 marker migration is enabled. Evidence: startup-benchmark/evidence/cache-marker-20261103.
 
-Latest integration checkpoint before this result:0f2b5dc; accepted GNU gzip/grep/sed
-and recovery tooling:83c4c2. Ten signed packages are available; Node.js remains
-unimplemented. The targeted mobile immutable worker bundle fix is under graphics
-agent validation; review its final commit/runtime evidence before claiming it.
+## Final accepted mobile release and recovery handoff
 
-Next actions: finish independent mobile worker loader review and actual boot
-acceptance; final cumulative source/history/runtime recovery; update commit links
-and exact elapsed totals. Keep APK4 public and all experimental cache/writeback
-modes off. No further optional host guest tests are planned by startup_io.
+Mobile/runtime commit a2d3da521831e39f150cb8f757d1eaa7c0d0f621 passed independent
+source review,29real-Chromium integrity/lifecycle checks and actual authenticated
+HTTPS MI8 native id/APK/Stop/cleanup. One verified worker fetch and one Blob
+created/revoked serve28workers. The default desktop worker path is unchanged.
+Phone1CPU/512MiB;6.669s imagefetch +3.601s after image verification to prompt;
+full cold navigation/kernel-cache and Firefox timing are not measured. Phone
+Python install exceeded45s, soft-keyboard letter taps and iOS remain unaccepted.
+See the curated mobile receipt/report; never broaden this to full mobile Firefox.
+
+Current overall acceptance42/100: desktop6,I/O10,JIT4,graphics9,packages7,mobile2,
+preview4. Accepted GNU gzip/grep/sed and recovery tools:83c4c2; runtime publication
+receipt preserves APK4/kernel/plain/extras/repository (all8server hashes verified).
+The final cumulative source/history checkpoint includes this documentation head;
+its completion receipt is maintained by packages_mobile after source freeze.
+No runtime tests or optional implementation remain scheduled in this task.
+
+Consolidated report: docs/gpt6-astra-pro_builtin-agents_rubywebterm_acceptance-20261103.md.
+Exact timing table: agent/final-timing-summary-20261103.json. Self-contained next
+prompt: agent/next-agent-prompt.md. Model/planning time is unmeasured; do not add
+parallel or nested task durations as elapsed wall time. Keep APK4 public and all
+cache-seed/writeback/Omni experiments off. The full goal remains unfinished.
+
+Recovery status at source freeze: final cumulative source/history publication is
+pending. The completed external release receipt will name this exact frozenHEAD
+and final URLs. Complete recovery needs original encrypted80a52d1 full-history
+base + final cumulative encrypted increment + exact accepted runtime archive;
+filtered source alone is insufficient. Full public redownload/decrypt has not
+been performed, although local increment fetch/fsck and runtime reassembly/hash
+checks passed. Do not claim the pending upload complete until its receipt exists.
