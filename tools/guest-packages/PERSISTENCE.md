@@ -128,3 +128,9 @@ from the source with those hooks compiled out produced byte-identical production
 bytes (`be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8`).
 The instrumented binary must never be deployed. See
 `evidence/persistence-interruption-20261103-1322.json`.
+
+## CPU quota qualification during this continuation
+
+The earlier native functional receipts remain observations of exact signed package bytes and helper behavior. Their owner monitor sampled only the root child CPU ancestor; it did not establish that every browser process shared that ancestor. The package smoke harness also used three-CPU affinity, which is not a substitute for a common capped ancestor. Those durations are not matched-performance acceptance.
+
+The revised owner requires one shared ancestor capped at no more than three CPUs for every observed live owned process, unions child lists from all threads, rejects unreadable live inventories and observed cgroup migration, and retains PID/start identity during cleanup. Fourteen focused regression checks passed. Representative native rechecks under this policy are pending; see `evidence/shared-cpu-guard-20261103-1322.json`.

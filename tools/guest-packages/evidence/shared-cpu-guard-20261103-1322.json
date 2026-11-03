@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T16:34:29.894593+00:00",
+  "status": "Reviewed guard and pre-guest diagnostics; representative native rechecks pending",
+  "sourceSha256": {
+    "tools/guest-packages/bounded.py": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4",
+    "tools/guest-packages/test-bounded-quota.py": "6b5d965c5127cb8b72b4499baef628dd42c15541dcccbb5a2ea6a9811fb2d814",
+    "tools/guest-packages/run-smoke.mjs": "dc39ab646bc8965b95b6e9b8458bed4a077f10f71e9dfe971ba12ad913662053"
+  },
+  "policy": "Every observed live owned process must retain one common shared ancestor capped at most three CPUs. Independent three-CPU groups, missing caps, unreadable live inventories, and observed membership changes fail closed. The guard unions per-thread child lists, verifies PID/start and parent identity, retains observed reparented descendants and reports cleanup uncertainty.",
+  "regression": {
+    "pass": true,
+    "cases": [
+      "test_common_parent_limits_distinct_owned_groups",
+      "test_independent_three_cpu_caps_are_not_a_shared_budget",
+      "test_unlimited_browser_scope_rejected_despite_capped_parent",
+      "test_affinity_does_not_replace_required_ancestor",
+      "test_same_group_ancestor_reads_deduplicated",
+      "test_membership_change_since_previous_sample_rejected",
+      "test_membership_change_during_observation_rejected",
+      "test_live_unreadable_membership_fails_closed",
+      "test_reused_pid_never_adopts_new_process",
+      "test_fork_from_nonleader_thread_is_discovered",
+      "test_live_missing_children_inventory_fails_closed",
+      "test_thread_disappearance_is_not_an_inventory_failure",
+      "test_reused_child_pid_with_different_parent_not_adopted",
+      "test_reused_root_pid_not_adopted"
+    ],
+    "durationSeconds": 0.033,
+    "realCgroupsCreatedOrMoved": false
+  },
+  "actualReceipts": [
+    {
+      "name": "shared-quota-idle1",
+      "startedUtc": "2026-11-03T16:18:28.918345+00:00",
+      "finishedUtc": "2026-11-03T16:18:32.428463+00:00",
+      "durationSeconds": 3.51,
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": null,
+      "resourceSamples": 3,
+      "pssSamples": 1,
+      "allObservedQuotaSamplesValid": true,
+      "commonLimitedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "maximumOwnedGroups": 1,
+      "maximumQuotaScanSeconds": 0.0014
+    },
+    {
+      "name": "shared-cap-recheck-owner1",
+      "startedUtc": "2026-11-03T16:25:58.894140+00:00",
+      "finishedUtc": "2026-11-03T16:26:06.148117+00:00",
+      "durationSeconds": 7.254,
+      "exitCode": 1,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "resourceSamples": 7,
+      "pssSamples": 2,
+      "allObservedQuotaSamplesValid": true,
+      "commonLimitedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "maximumOwnedGroups": 1,
+      "maximumQuotaScanSeconds": 0.004196
+    },
+    {
+      "name": "shared-cap-recheck-owner2",
+      "startedUtc": "2026-11-03T16:27:52.234772+00:00",
+      "finishedUtc": "2026-11-03T16:28:00.244218+00:00",
+      "durationSeconds": 8.009,
+      "exitCode": 1,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "resourceSamples": 7,
+      "pssSamples": 2,
+      "allObservedQuotaSamplesValid": true,
+      "commonLimitedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "maximumOwnedGroups": 1,
+      "maximumQuotaScanSeconds": 0.00633
+    },
+    {
+      "name": "browser-identity-owner1",
+      "startedUtc": "2026-11-03T16:29:32.318359+00:00",
+      "finishedUtc": "2026-11-03T16:29:39.576717+00:00",
+      "durationSeconds": 7.258,
+      "exitCode": 1,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "resourceSamples": 7,
+      "pssSamples": 2,
+      "allObservedQuotaSamplesValid": true,
+      "commonLimitedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "maximumOwnedGroups": 1,
+      "maximumQuotaScanSeconds": 0.014245
+    }
+  ],
+  "oldEvidenceQualification": {
+    "scope": "Earlier package bounded.py receipts sampled the root child ancestor, not every owned browser group. The package harness also limited Chromium affinity to three CPUs, which does not prove a common ancestor budget.",
+    "functionalAssertions": "The observed native functional outcomes and exact signed bytes remain recorded.",
+    "performanceUse": "Earlier guest durations and memory samples are not evidence of common-cap matched performance.",
+    "affectedReceipts": [
+      "gnu-native-ports-20261103-1322.json",
+      "findutils-native-spawn-20261103-1322.json",
+      "persistence-primitives-20261103-1322.json",
+      "persistence-native-fiveboot-20261103-1322.json",
+      "persistence-native-negatives-20261103-1322.json",
+      "persistence-interruption-20261103-1322.json"
+    ]
+  },
+  "browserIdentityDiagnostic": {
+    "guestBooted": false,
+    "cause": "Native Chromium rewrites /proc/PID/cmdline into a single space-joined process-title argument; the old NUL-token exact-profile assertion failed.",
+    "fix": "Canonical short profile path, exact token boundaries in the observed title format, and stronger owned PID/startTicks/native executable validation.",
+    "runtimeAcceptedAfterFix": false
+  }
+}
