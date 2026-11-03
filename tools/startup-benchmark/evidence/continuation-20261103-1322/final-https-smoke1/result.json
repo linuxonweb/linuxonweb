@@ -1,0 +1,658 @@
+{
+  "schema": 1,
+  "scope": "Actual authenticated production HTTPS URL, fresh owned profile, exact current default image; no diagnostic resource proxy or nonce overlay.",
+  "start": "2026-11-03T17:50:36.779Z",
+  "end": "2026-11-03T17:53:17.295Z",
+  "elapsedMs": 160515.971,
+  "publicDesktopUrl": "https://9209ec251514cc05.5x7aqstuceku.opentunnel.xyz/linux/index.html",
+  "productionAuthentication": {
+    "authenticated": true,
+    "productionOrigin": "https://9209ec251514cc05.5x7aqstuceku.opentunnel.xyz",
+    "manifestPath": "/linux/boot-manifest.json",
+    "manifestSha256": "9da17bf944a4d25d8f4c4811e93a0dc9ca76b7b37f52579544959c7ae18a4bd5",
+    "manifestVersion": "1a3951f0c48d",
+    "returnedToBlank": true,
+    "elapsedMs": 1773.536,
+    "authentication": "Normal HTTPS grant navigation establishes the browser cookie; no cookie values are read or serialized",
+    "privateNavigationEventsRecorded": false,
+    "privateConsoleCacheDiscarded": true,
+    "authenticationWorkerTargetsRemaining": 0
+  },
+  "productionFooter": {
+    "loadedRevision": "efb8d0a9b4c6d53bdd8931fc7a66db9c417c278c7ab4b1a091eeeed5aee70dec",
+    "availableRevision": "efb8d0a9b4c6d53bdd8931fc7a66db9c417c278c7ab4b1a091eeeed5aee70dec",
+    "runtimeVersion": "1a3951f0c48d",
+    "serverStarted": null,
+    "packageVersions": [
+      {
+        "name": "apk-tools",
+        "version": "2.14.12-r0",
+        "buildDate": null
+      },
+      {
+        "name": "busybox",
+        "version": "1.38.0_git-r0",
+        "buildDate": null
+      },
+      {
+        "name": "ca-certificates",
+        "version": "20261103-r0",
+        "buildDate": null
+      },
+      {
+        "name": "coreutils",
+        "version": "9.11-r0",
+        "buildDate": null
+      },
+      {
+        "name": "curl",
+        "version": "8.21.0-r1",
+        "buildDate": null
+      },
+      {
+        "name": "findutils",
+        "version": "4.10.0-r1",
+        "buildDate": null
+      },
+      {
+        "name": "grep",
+        "version": "3.12-r0",
+        "buildDate": null
+      },
+      {
+        "name": "gzip",
+        "version": "1.14-r0",
+        "buildDate": null
+      },
+      {
+        "name": "linuxonweb-vkgears",
+        "version": "20261103-r0",
+        "buildDate": null
+      },
+      {
+        "name": "python3",
+        "version": "3.14.6-r1",
+        "buildDate": null
+      },
+      {
+        "name": "sed",
+        "version": "4.10-r0",
+        "buildDate": null
+      },
+      {
+        "name": "tar",
+        "version": "1.35-r1",
+        "buildDate": null
+      },
+      {
+        "name": "wget",
+        "version": "1.25.0-r0",
+        "buildDate": null
+      }
+    ]
+  },
+  "launchRequest": {
+    "kind": "production Start Firefox menu",
+    "hostMs": 7152.803,
+    "utc": "2026-11-03T17:50:43.932Z",
+    "page": {
+      "requestAtMs": 3558.7200000286102,
+      "pageTimeOrigin": 1793728240376.985
+    }
+  },
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "manual-launch=1&update=1&probe-input=1&probe-control=1&package-production=save&path-audit=tar",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000,
+    "browserObserverStartsAfterSeconds": 0,
+    "descendantQuotaGate": {
+      "samples": [
+        673.775,
+        1702.056
+      ],
+      "beforeNavigation": true,
+      "allEffectiveAncestorCapsAtMostThree": true,
+      "commonSharedAncestors": [
+        "/sys/fs/cgroup/cpulimit.slice/cpu.max"
+      ]
+    }
+  },
+  "publicAssetResponses": [
+    {
+      "ms": 3887.271,
+      "path": "/linux/index.html",
+      "status": 200,
+      "mimeType": "text/html",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4165.198,
+      "path": "/linux/node_modules/@xterm/addon-fit/lib/addon-fit.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4175.497,
+      "path": "/linux/node_modules/@xterm/xterm/css/xterm.css",
+      "status": 200,
+      "mimeType": "text/css",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4413.12,
+      "path": "/linux/main.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4442.711,
+      "path": "/linux/node_modules/@xterm/xterm/lib/xterm.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4805.757,
+      "path": "/linux/dist/index.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4835.133,
+      "path": "/linux/physical-keyboard.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4837.235,
+      "path": "/linux/touch-gesture.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 4838.6,
+      "path": "/linux/keyboard.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5019.45,
+      "path": "/linux/package-recovery.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5060.389,
+      "path": "/linux/log-viewer.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5066.684,
+      "path": "/linux/gpu-present-overlay.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5084.661,
+      "path": "/linux/boot-assets.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5086.434,
+      "path": "/linux/persistent-home.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5108.86,
+      "path": "/linux/mobile-keyboard.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5251.799,
+      "path": "/linux/storage-panel.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5288.388,
+      "path": "/linux/more-menu.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5301.812,
+      "path": "/linux/download-panel.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5319.637,
+      "path": "/linux/test-commands.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5333.708,
+      "path": "/linux/build-info.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5353.671,
+      "path": "/linux/browser-info.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5480.509,
+      "path": "/linux/gpu-test-boot.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5522.049,
+      "path": "/linux/clipboard.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5546.274,
+      "path": "/linux/console-bytes.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5562.788,
+      "path": "/linux/desktop-extras.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5570.483,
+      "path": "/linux/machine-settings.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5580.425,
+      "path": "/linux/guest-gpu-config.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5723.444,
+      "path": "/linux/guest-gpu-status.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5766.104,
+      "path": "/linux/firefox-jit-config.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5799.35,
+      "path": "/linux/dist/guest-gpu-hostcall.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5823.015,
+      "path": "/linux/gputest.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5835.311,
+      "path": "/linux/dist/audio.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5840.005,
+      "path": "/linux/dist/devicetree.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5960.968,
+      "path": "/linux/dist/platform.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 5991.415,
+      "path": "/linux/dist/worker-pool.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6033.322,
+      "path": "/linux/dist/util.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6083.91,
+      "path": "/linux/dist/wasm_binary.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6084.586,
+      "path": "/linux/dist/virtio/core.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6125.303,
+      "path": "/linux/dist/wasm.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6205.905,
+      "path": "/linux/dist/framebuffer.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6238.982,
+      "path": "/linux/dist/virtio/block.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6298.953,
+      "path": "/linux/dist/virtio/console.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6318.815,
+      "path": "/linux/dist/virtio/entropy.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6367.267,
+      "path": "/linux/dist/virtio/fs.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6401.326,
+      "path": "/linux/dist/virtio/net.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6420.668,
+      "path": "/linux/dist/virtio/vsock.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6463.483,
+      "path": "/linux/dist/virtio/input.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6503.158,
+      "path": "/linux/dist/network/index.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6548.105,
+      "path": "/linux/download-progress.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6592.415,
+      "path": "/linux/firefox-cache-lifecycle.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6639.048,
+      "path": "/linux/extra-keys.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6646.37,
+      "path": "/linux/info-wgpu/renderer.mjs",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6695.423,
+      "path": "/linux/dist/bytes.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6735.822,
+      "path": "/linux/dist/framebuffer-presenter.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6799.317,
+      "path": "/linux/dist/network/gateway.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 6822.843,
+      "path": "/linux/dist/network/ws-tcp.js",
+      "status": 200,
+      "mimeType": "text/javascript",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7062.921,
+      "path": "/linux/server-build.json",
+      "status": 200,
+      "mimeType": "application/json",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7151.283,
+      "path": "/linux/server-build.json",
+      "status": 200,
+      "mimeType": "application/json",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7390.27,
+      "path": "/linux/boot-manifest.json",
+      "status": 200,
+      "mimeType": "application/json",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7644.195,
+      "path": "/linux/boot-manifest.json",
+      "status": 200,
+      "mimeType": "application/json",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7942.917,
+      "path": "/linux/desktop-extras.cpio.json",
+      "status": 200,
+      "mimeType": "application/json",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 7975.899,
+      "path": "/linux/vmlinux.wasm",
+      "status": 200,
+      "mimeType": "application/wasm",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 8120.394,
+      "path": "/linux/initramfs-firefox.cpio.gz",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 36076.86,
+      "path": "/linux/desktop-extras.cpio",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 36079.933,
+      "path": "/linux/initramfs-firefox.cpio.gz",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 92674.786,
+      "path": "/linux/initramfs-firefox.cpio.gz",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 97280.143,
+      "path": "/linux/initramfs-firefox.cpio.gz",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    },
+    {
+      "ms": 97280.88,
+      "path": "/linux/desktop-extras.cpio",
+      "status": 206,
+      "mimeType": "application/octet-stream",
+      "fromDiskCache": false
+    }
+  ],
+  "resourceSummary": {
+    "pssPeakBytes": 800680960,
+    "rssSumPeakBytes": 1531047936,
+    "minAvailableBytes": 27112431616,
+    "samples": 157,
+    "pssSamples": 32,
+    "pssIntervalMs": 5000
+  },
+  "quota": {
+    "sampleCount": 157,
+    "allSamplesHaveSharedCap": true,
+    "membershipChanges": 0,
+    "confirmedTerminalRowsExcluded": 1
+  },
+  "result": {
+    "finishedNormally": false,
+    "nativeVmStarted": false,
+    "physicalFirefoxNavigationPerformed": false,
+    "signedPackageCommandsPerformed": false,
+    "ordinaryNonrootPathAuditPerformed": false,
+    "normalUiStopTested": false,
+    "ownerCleanupRemaining": 0,
+    "errors": [
+      {
+        "ms": 157542.149,
+        "error": "Error: Production package command lacks native desktop initialization evidence",
+        "stack": "Error: Production package command lacks native desktop initialization evidence\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:435:251"
+      }
+    ],
+    "classification": "FAILED real HTTPS cold transport observation: required Firefox and desktop-extras downloads remained incomplete at150seconds, so no native desktop initialization existed for package commands. No later readiness/Stop claim."
+  },
+  "visualTransferProgress": {
+    "at70Seconds": {
+      "firefox": "25.5 /110.9 MB",
+      "desktopExtras": "10.3 /57.2 MB",
+      "kernel": "6.0 MB done"
+    },
+    "at150Seconds": {
+      "firefox": "61.9 /110.9 MB",
+      "desktopExtras": "21.5 /57.2 MB",
+      "kernel": "6.0 MB done"
+    },
+    "units": "Rounded progress labels shown by application; not transport wire-byte counters or a measured link rate."
+  },
+  "screenshots": [
+    {
+      "name": "at70s.png",
+      "bytes": 76729,
+      "sha256": "ac900243bdd76dc9e6f688144b017ee02e9a0fba4cbec9b3b7684b25e15ec300"
+    },
+    {
+      "name": "final.png",
+      "bytes": 76596,
+      "sha256": "f95c2e74ae0860325b25369a236652a982fef508c827e2ceeb2d3d66e6122b17"
+    }
+  ]
+}

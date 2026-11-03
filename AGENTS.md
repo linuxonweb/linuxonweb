@@ -1,3 +1,7 @@
+## Final continuation checkpoint —2026-11-03,45/100
+
+The five-hour continuation began13:22:11UTC with deadline18:22:11UTC. Current accepted state, original rubric, live URLs, exact images, remaining failures and recovery chain are in agent/continue.md and the final continuation acceptance report. This status supersedes historical score42/44 summaries without changing the authorization or source/build permission rules below. Exact current user request remains agent/task.md. Host-repeat, signed GNU ports and Android package persistence are accepted; strict Firefox cache lifecycle, native restart,30s startup,50%performance, broadGL/Vulkan, Node.js and fullmobileFirefox/iOS remain unfinished. Runtime final image1a3951f0c48d/4b20a717 is published; oldplain retained. Never promote candidate cache/packed/buffered experiments from partial receipts.
+
 # LinuxOnWeb project instructions
 
 ## Current authorized task — 2026-11-03
