@@ -41,6 +41,7 @@ def attempt(root, number):
         'startedUtc': owner.get('startedUtc'), 'finishedUtc': owner.get('finishedUtc'), 'durationSeconds': owner.get('durationSeconds'),
         'device': {'model': raw.get('device', {}).get('model'), 'android': raw.get('device', {}).get('android'), 'browserApp': browser.get('Android-Package'), 'browserProtocolVersion': browser.get('Browser')},
         'guest': {'cpus': final_state.get('cpus'), 'memoryBytes': final_state.get('guestMemoryBytes'), 'imageSha256': final_state.get('imageSha256')},
+        'kernelCompatibilityAudit': raw.get('kernelCompatibilityAudit'),
         'runtimeBundleAudit': [{key: row[key] for key in ['kind', 'urlPath', 'bytes', 'sha256', 'status'] if key in row} for row in raw.get('runtimeBundleAudit', [])],
         'steps': steps, 'boots': gate.get('boots'), 'gatePass': gate.get('pass', False), 'errors': raw.get('errors', []),
         'savedGeneration': persistence.get('generation'), 'beforeHashes': persistence.get('beforeHashes'), 'afterHashes': persistence.get('afterHashes'),
@@ -65,8 +66,11 @@ def main():
     root = pathlib.Path(__file__).resolve().parents[2]
     rows = [attempt(root, number) for number in args.attempts]
     prompt = root / 'web/linux/packages/v1/package-prompt.mjs'
-    result = {'schema': 1, 'task': 'Linuxonweb Firefox lifecycle packages 20261103', 'scoreContext': '43/100 confirmed before final acceptance review; no automatic score increment from this receipt',
-              'candidateOnly': True, 'published': False, 'attempts': rows,
+    publication_path = root / 'tools/guest-packages/evidence/mobile-publication-20261103-1322.json'
+    publication = json.loads(publication_path.read_text()) if publication_path.exists() else None
+    published = bool(publication and publication.get('pass') and any(row['accepted'] and row['finishedUtc'] == publication.get('androidGateFinishedUtc') for row in rows))
+    result = {'schema': 1, 'task': 'Linuxonweb Firefox lifecycle packages 20261103', 'scoreContext': 'Score is assessed separately in the final acceptance report; this receipt does not award points.',
+              'candidateOnly': not published, 'published': published, 'acceptedScope': 'Android small package console, one CPU and512MiB, signed Python install and exact offline replay' if published else None, 'publicationReceipt': str(publication_path.relative_to(root)) if published else None, 'attempts': rows,
               'knownFailureInterpretations': {'1': 'Harness invoked a missing bare sha256sum alias. Native BusyBox exposes the applet; corrected harness explicitly invokes /bin/busybox sha256sum. Signed Python install/import had passed; persistence was not attempted.',
                                               '2': 'Frontend prompt detector accepted APK progress ending # as interactive readiness. Retained output contains the exact offline replay acknowledgment after the premature readiness decision, but restored hashes/imports/world/userdata were not checked. This remains a failed complete gate.'},
               'promptFix': {'path': str(prompt.relative_to(root)), 'sha256': hashlib.sha256(prompt.read_bytes()).hexdigest(), 'focusedTests': 3, 'sourceReview': 'Firefox lifecycle agent approved exact pinned native PS1 matching; actual device gate is separate.'},

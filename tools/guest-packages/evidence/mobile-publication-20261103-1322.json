@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "pass": true,
+  "startedUtc": "2026-11-03T17:36:55.551932+00:00",
+  "finishedUtc": "2026-11-03T17:36:55.692550+00:00",
+  "promotion": "Each file atomically replaced with directory fsync; HTML replaced last. Previous bytes and symlink metadata preserved locally. No access policy or server restart change.",
+  "previous": {
+    "package-console.cpio.gz": {
+      "sha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912",
+      "bytes": 3425102,
+      "mode": 384,
+      "symlink": null
+    },
+    "console-manifest.json": {
+      "sha256": "9d3c668792d42fd0ca21f863404e7c2d0a41274e7589744b9bae6aa03a3d0b11",
+      "bytes": 1040,
+      "mode": 384,
+      "symlink": null
+    },
+    "runtime-bundles.json": {
+      "sha256": "8131b9001c46fbe2bd5bfc9f891e6f6c06dcf5a3935ec1a1ba37b8f642efe731",
+      "bytes": 7533,
+      "mode": 384,
+      "symlink": null
+    },
+    "package-shell.html": {
+      "sha256": "d117af55de7c369815efe3d6d797d37b11adafed034bc2f639285390684b42e4",
+      "bytes": 5089,
+      "mode": 384,
+      "symlink": null
+    }
+  },
+  "readback": [
+    {
+      "urlPath": "/linux/packages/v1/package-console.cpio.gz",
+      "status": 200,
+      "bytes": 3493625,
+      "sha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
+    },
+    {
+      "urlPath": "/linux/packages/v1/console-manifest.json",
+      "status": 200,
+      "bytes": 1833,
+      "sha256": "1c9b820fcea8c04ab9ac6988a4b8ad779d7ba41b8aae57f77403cd3786ca07e5"
+    },
+    {
+      "urlPath": "/linux/packages/v1/runtime-bundles.json",
+      "status": 200,
+      "bytes": 8391,
+      "sha256": "71a0d974981eccebe911bdc4bd1980662d4badbbbc352564eaaca7e9b60592e3"
+    },
+    {
+      "urlPath": "/linux/packages/v1/package-shell.html",
+      "status": 200,
+      "bytes": 5208,
+      "sha256": "3806748b1730e320c1eb16c21554a2a5f7e992c7d9cae31092c598f27ef859bf"
+    },
+    {
+      "urlPath": "/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs",
+      "status": 200,
+      "bytes": 226131,
+      "sha256": "7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6"
+    },
+    {
+      "urlPath": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+      "status": 200,
+      "bytes": 105773,
+      "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445"
+    }
+  ],
+  "acceptedManifest": "tools/guest-packages/evidence/accepted-mobile-artifacts-20261103-1322.json",
+  "androidGateFinishedUtc": "2026-11-03T17:35:33.715978+00:00",
+  "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74",
+  "consoleSha256": "7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6",
+  "workerSha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445"
+}

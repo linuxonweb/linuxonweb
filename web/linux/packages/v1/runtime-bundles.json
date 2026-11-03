@@ -1,19 +1,19 @@
 {
   "schema": 1,
-  "created": "2026-11-03T11:56:18.387Z",
+  "created": "2026-11-03T17:32:33.234Z",
   "builder": "GPT-6 Astra Pro / built-in graphics_jit / rubywebterm",
   "esbuild": "0.28.1",
   "originalModuleUrlsPreserved": true,
   "externalImports": 0,
   "worker": {
-    "url": "/linux/dist/immutable/worker-d4ffec4ec28122798e730b4db2797ecb2df9983a71a260190299c93c72e59f15.mjs",
-    "bytes": 103608,
-    "sha256": "d4ffec4ec28122798e730b4db2797ecb2df9983a71a260190299c93c72e59f15",
+    "url": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+    "bytes": 105773,
+    "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445",
     "sources": [
       {
         "path": "web/linux/boot-assets.mjs",
-        "bytes": 13602,
-        "sha256": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6"
+        "bytes": 13812,
+        "sha256": "83b16d640cc671f0e5c52a54d24e2928ab41d1d9953b9ca9ddd39ba0597a3cbb"
       },
       {
         "path": "web/linux/dist/audio.js",
@@ -69,18 +69,23 @@
         "path": "web/linux/download-progress.mjs",
         "bytes": 4226,
         "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97"
+      },
+      {
+        "path": "web/linux/firefox-cache-lifecycle.mjs",
+        "bytes": 2423,
+        "sha256": "7179e388fee8e60ba789a3a0b6de15d5176e0c10dffc8eaf07ce794a0ae9f2fc"
       }
     ]
   },
   "console": {
-    "url": "/linux/dist/immutable/console-49b2d792ea611e68e64449488906719e3b518bab6a4b5b8f16c4ff0c8c809558.mjs",
-    "bytes": 222188,
-    "sha256": "49b2d792ea611e68e64449488906719e3b518bab6a4b5b8f16c4ff0c8c809558",
+    "url": "/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs",
+    "bytes": 226131,
+    "sha256": "7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6",
     "sources": [
       {
         "path": "web/linux/boot-assets.mjs",
-        "bytes": 13602,
-        "sha256": "cfd2e5143dc58a03a5073d5c15f5e1e7f1fb5d462732cbff92049734e4ed30c6"
+        "bytes": 13812,
+        "sha256": "83b16d640cc671f0e5c52a54d24e2928ab41d1d9953b9ca9ddd39ba0597a3cbb"
       },
       {
         "path": "web/linux/dist/audio.js",
@@ -169,8 +174,8 @@
       },
       {
         "path": "web/linux/dist/virtio/input.js",
-        "bytes": 9878,
-        "sha256": "29c7d7df90b24747a4a2ab1cce1d1ef3696870d58fd65f44bd835e76e25051a1"
+        "bytes": 10403,
+        "sha256": "f86e83a8695041814305c3ed70da8a06bf3dc73cf9c280fd7c6cb6c2a19268c6"
       },
       {
         "path": "web/linux/dist/virtio/net.js",
@@ -203,9 +208,19 @@
         "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97"
       },
       {
+        "path": "web/linux/firefox-cache-lifecycle.mjs",
+        "bytes": 2423,
+        "sha256": "7179e388fee8e60ba789a3a0b6de15d5176e0c10dffc8eaf07ce794a0ae9f2fc"
+      },
+      {
+        "path": "web/linux/packages/v1/package-prompt.mjs",
+        "bytes": 277,
+        "sha256": "acd0c8943395938c69ef913352a5b6071b3f3492e3ff931727ed7297dcad9400"
+      },
+      {
         "path": "web/linux/packages/v1/package-shell.mjs",
-        "bytes": 9104,
-        "sha256": "7fce19bcb9503a5590af484d2714967b7403953aeff4acddc7824f8141cee926"
+        "bytes": 10278,
+        "sha256": "77daa7bd7d14e5acdeed632aa5aca7fe4e39405a8781cd75d9e8761d8344bda8"
       },
       {
         "path": "web/linux/persistent-home.mjs",
@@ -213,5 +228,12 @@
         "sha256": "a95dad5f5dc769c9c3f8b0649a1d089ed7e2926c8199c56eee1ea7a3cb4251a5"
       }
     ]
-  }
+  },
+  "candidateOnly": true,
+  "consoleImage": {
+    "sha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74",
+    "bytes": 3493625,
+    "nativeHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8"
+  },
+  "publicPrefix": "/linux/packages/v1/candidates/pkp1322c/"
 }

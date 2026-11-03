@@ -1,11 +1,11 @@
-# Signed package generations (native candidate)
+# Signed package generations (mode-specific acceptance)
 
-The native helper remains a candidate until its supported browser routes are
-accepted and explicitly published. Native transaction, signature, identity,
-compatibility and crash-boundary gates have passed, and the Firefox candidate passed
-actual GUI save/Stop/restart with exact world, binaries and user data. Plain desktop
-optional installs/ordinary command resolution and complete Android replay acceptance
-remain separate gates. The shell prototype is rejected and exits immediately;
+The native helper is accepted and published for the small Android package console.
+Native transaction, signature, identity, compatibility and crash-boundary gates
+have passed, and the Firefox candidate passed actual GUI save/Stop/restart with exact
+world, binaries and user data. Its final primary-route publication is tracked by the
+integration acceptance report. Plain desktop optional installs and ordinary command
+resolution remain unaccepted. The shell prototype is rejected and exits immediately;
 image composition requires a native Wasm binary.
 
 ## User-visible contract
@@ -166,12 +166,44 @@ with `offline=1 exactWorld=1` in 4.284 s, but the frontend had mistaken an APK p
 bar ending `# ` for a prompt and enabled input too early. That full gate failed before
 restored hashes, world and imports were checked. The source now requires the exact
 initial native prompt; three focused progress/chunk/replay tests and independent
-review passed. New immutable bundle and actual device acceptance are still required.
-See `evidence/android-persistence-20261103-1322.json` for both retained attempts,
-actual sample intervals and scoped cleanup. No console persistence publication or
-full Firefox/iOS acceptance follows from these partial observations.
+review passed. The final immutable bundle and actual device acceptance are recorded below.
+See `evidence/android-persistence-20261103-1322.json` for all retained attempts,
+actual sample intervals and scoped cleanup. The first two attempts remain failures;
+no full Firefox-on-Android or iOS acceptance follows from a console pass.
 
 When the console manifest includes the verified helper, its Python button is labeled
 "Install, save & check Python" and executes `apk update`, `apk-persist add python3`,
 and real native Python imports in sequence. Ordinary `apk add` is session-only until
 an explicit successful `apk-persist save`; the candidate page explains this contract.
+
+## Accepted Android console and publication (17:35 UTC)
+
+The final actual-device owner ran from 17:32:55.637 to 17:35:33.716 UTC (158.079 s),
+with one guest CPU and 512 MiB, common capped host ancestry throughout, no errors,
+and zero remaining owned host processes. It verified authenticated served bundle
+hashes and the actual HTTPS kernel hash before Start. The prompt fix remained
+unready during replay progress and enabled input at the actual native prompt.
+
+Signed Python 3.14.6 installation took 30.773 s (180 s test bound); real native JSON,
+zlib, hashing and certificate-store imports took 3.934 s. The save command took 31.788 s,
+and physical Stop completed 674.738 ms after acknowledgment. A new guest in the same
+owned persistent home replayed the exact saved generation offline in 3.826 s of helper
+time; Start-to-real-prompt observation was 19.320 s. Native status verified the saved
+signed generation, and binary/stdlib ZIP/world hashes, installed Python state and a
+home marker were unchanged. Restored native imports passed in 4.110 s. Both normal
+Stop operations left zero owned worker targets; exactly two worker blobs were created
+and revoked. The owned phone tab and ADB mapping were removed without touching other
+tabs, mappings or app processes.
+
+The default console now serves those exact tested bytes: new console bundle
+`7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6`, unchanged
+worker `81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445`,
+and unchanged small helper image
+`60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74`.
+Each promoted file was atomically replaced with directory fsync, HTML last; previous
+bytes and symlink metadata were retained. All six actual production upstream files
+matched their length and SHA256 readbacks. The existing authenticated HTTPS route is
+`/linux/packages/v1/package-shell.html?cpus=1`; no access policy or server process
+was changed. The exact build metadata retains its earlier candidate labels as
+provenance; `evidence/accepted-mobile-artifacts-20261103-1322.json` and
+`evidence/mobile-publication-20261103-1322.json` record subsequent acceptance.

@@ -1,9 +1,11 @@
 {
   "schema": 1,
   "task": "Linuxonweb Firefox lifecycle packages 20261103",
-  "scoreContext": "43/100 confirmed before final acceptance review; no automatic score increment from this receipt",
-  "candidateOnly": true,
-  "published": false,
+  "scoreContext": "Score is assessed separately in the final acceptance report; this receipt does not award points.",
+  "candidateOnly": false,
+  "published": true,
+  "acceptedScope": "Android small package console, one CPU and512MiB, signed Python install and exact offline replay",
+  "publicationReceipt": "tools/guest-packages/evidence/mobile-publication-20261103-1322.json",
   "attempts": [
     {
       "attempt": 1,
@@ -22,6 +24,7 @@
         "memoryBytes": 536870912,
         "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
       },
+      "kernelCompatibilityAudit": null,
       "runtimeBundleAudit": [
         {
           "kind": "console",
@@ -165,6 +168,7 @@
         "memoryBytes": 536870912,
         "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
       },
+      "kernelCompatibilityAudit": null,
       "runtimeBundleAudit": [
         {
           "kind": "console",
@@ -346,6 +350,278 @@
         "peakDeviceCpuBusyPercent": 41.183723797780516
       },
       "privateEvidenceDirectory": "out/pkp3/android-private/persistence2"
+    },
+    {
+      "attempt": 3,
+      "accepted": true,
+      "startedUtc": "2026-11-03T17:32:55.636523+00:00",
+      "finishedUtc": "2026-11-03T17:35:33.715978+00:00",
+      "durationSeconds": 158.079,
+      "device": {
+        "model": "MI 8",
+        "android": "15",
+        "browserApp": "com.brave.browser",
+        "browserProtocolVersion": "Chrome/148.0.7778.217"
+      },
+      "guest": {
+        "cpus": 1,
+        "memoryBytes": 536870912,
+        "imageSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74"
+      },
+      "kernelCompatibilityAudit": {
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "bytes": 6281750,
+        "status": 200,
+        "pass": true
+      },
+      "runtimeBundleAudit": [
+        {
+          "kind": "console",
+          "urlPath": "/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs",
+          "bytes": 226131,
+          "sha256": "7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6",
+          "status": 200
+        },
+        {
+          "kind": "worker",
+          "urlPath": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+          "bytes": 105773,
+          "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445",
+          "status": 200
+        }
+      ],
+      "steps": [
+        {
+          "command": "id",
+          "elapsedMs": 981.002658999998,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk info",
+          "elapsedMs": 768.779054000006,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk update",
+          "elapsedMs": 5368.753265000007,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk add python3",
+          "elapsedMs": 30773.384258000006,
+          "boundMs": 180000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "python3 --version",
+          "elapsedMs": 856.0317419999919,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "Python 3.14.6"
+          ]
+        },
+        {
+          "command": "python3 -c 'import json,zlib,hashlib,ssl;assert json.loads(json.dumps([1,2,3]))==[1,2,3];assert zlib.decompress(zlib.compress(b\"phone\"))==b\"phone\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"MOBILE_\"+\"PYTHON_OK\",2**20,hashlib.sha256(b\"phone\").hexdigest())'",
+          "elapsedMs": 3933.9174579999963,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_PYTHON_OK 1048576 45569da57f4b7bf472d7a864ef4781451cae6383fee9fb0ae40c59aa1ce475b7"
+          ]
+        },
+        {
+          "command": "/bin/busybox sha256sum /usr/bin/python3 /usr/lib/python314.zip /etc/apk/world",
+          "elapsedMs": 1388.283546000006,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "echo MOBILE_'HOME_ACK' > /home/admin/mobile-proof; cat /home/admin/mobile-proof",
+          "elapsedMs": 1340.419305000003,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_HOME_ACK"
+          ]
+        },
+        {
+          "command": "apk info -e python3",
+          "elapsedMs": 788.5066430000006,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk-persist save",
+          "elapsedMs": 31787.640163999997,
+          "boundMs": 180000,
+          "pass": true,
+          "nativeMarkers": [
+            "APK_PERSIST_SAVED generation=generation-nHJGMP optional=1 elapsed=30.980 manifest=f30036e4caf4c514e4f09a09698664fcbf78761f230e66d156440a3e7fc58a06"
+          ]
+        },
+        {
+          "action": "physical Stop after native save acknowledgment",
+          "ackToTapCompletedMs": 631.6328050000011,
+          "ackToStoppedMs": 674.7383760000084,
+          "nativeMarkers": []
+        },
+        {
+          "command": "apk-persist status",
+          "elapsedMs": 3716.168084999983,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": [
+            "APK_PERSIST_ACTIVE generation=generation-nHJGMP optional=1 verified=1"
+          ]
+        },
+        {
+          "command": "/bin/busybox sha256sum /usr/bin/python3 /usr/lib/python314.zip /etc/apk/world",
+          "elapsedMs": 1289.8419710000162,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "cat /home/admin/mobile-proof",
+          "elapsedMs": 831.0783220000158,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_HOME_ACK"
+          ]
+        },
+        {
+          "command": "apk info -e python3",
+          "elapsedMs": 815.2100640000135,
+          "boundMs": 20000,
+          "pass": true,
+          "nativeMarkers": []
+        },
+        {
+          "command": "python3 -c 'import json,zlib,hashlib,ssl;assert json.loads(json.dumps([1,2,3]))==[1,2,3];assert zlib.decompress(zlib.compress(b\"phone\"))==b\"phone\";assert ssl.create_default_context().cert_store_stats()[\"x509_ca\"]>0;print(\"MOBILE_\"+\"RESTORED_PYTHON_OK\",2**20,hashlib.sha256(b\"phone\").hexdigest())'",
+          "elapsedMs": 4110.180633999989,
+          "boundMs": 30000,
+          "pass": true,
+          "nativeMarkers": [
+            "MOBILE_RESTORED_PYTHON_OK 1048576 45569da57f4b7bf472d7a864ef4781451cae6383fee9fb0ae40c59aa1ce475b7"
+          ]
+        },
+        {
+          "action": "physical Stop",
+          "nativeMarkers": []
+        }
+      ],
+      "boots": 2,
+      "gatePass": true,
+      "errors": [],
+      "savedGeneration": "generation-nHJGMP",
+      "beforeHashes": {
+        "/usr/bin/python3": "11d1d1365a6a4690ac0befdd987e4036a6b705921b432fdc1c784f2ed6d70ecc",
+        "/usr/lib/python314.zip": "5d2c5ee148b61fc1dab7986110e56da137c00c278c92e18ec22ce43465311f69",
+        "/etc/apk/world": "b9abf0b23a0fca67b340c9d153e2c3b3f162c834667fbede6194454a532a9c5a"
+      },
+      "afterHashes": {
+        "/usr/bin/python3": "11d1d1365a6a4690ac0befdd987e4036a6b705921b432fdc1c784f2ed6d70ecc",
+        "/usr/lib/python314.zip": "5d2c5ee148b61fc1dab7986110e56da137c00c278c92e18ec22ce43465311f69",
+        "/etc/apk/world": "b9abf0b23a0fca67b340c9d153e2c3b3f162c834667fbede6194454a532a9c5a"
+      },
+      "restart": {
+        "usablePromptMs": 19319.519690000016,
+        "replay": "APK_PERSIST_RESTORED generation=generation-nHJGMP optional=1 elapsed=3.826 offline=1 exactWorld=1"
+      },
+      "retainedFinalReplayAcknowledgments": [
+        "APK_PERSIST_RESTORED generation=generation-nHJGMP optional=1 elapsed=3.826 offline=1 exactWorld=1"
+      ],
+      "offlineScope": "Native helper APK replay disables networking and precedes guest network interface configuration. The phone browser network remains available.",
+      "nativeCleanup": {
+        "phase": "stopped",
+        "created": 2,
+        "revoked": 2,
+        "exactOwnedUrl": true,
+        "workerFetches": 2,
+        "expectedBoots": 2
+      },
+      "ownedWorkerTeardown": [
+        {
+          "label": "after-saved-generation-stop",
+          "elapsedMs": 4.662167000002228,
+          "samples": [
+            {
+              "ms": 4.631882999994559,
+              "count": 0
+            }
+          ],
+          "remainingCount": 0
+        },
+        {
+          "label": "after-final-stop",
+          "elapsedMs": 3.9855619999871124,
+          "samples": [
+            {
+              "ms": 3.9732610000064597,
+              "count": 0
+            }
+          ],
+          "remainingCount": 0
+        }
+      ],
+      "cleanup": {
+        "ownedTabClosed": true,
+        "ownedForwardRemoved": true,
+        "ownedHostProcessesRemaining": 0,
+        "hostCleanupErrors": []
+      },
+      "host": {
+        "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+        "quotaFailure": null,
+        "preflightChecks": 3,
+        "resourceSamples": 158,
+        "pssSamples": 32,
+        "peakRssBytes": 113422336,
+        "peakPssBytes": 64649216
+      },
+      "phoneResources": {
+        "scope": "CPU and available RAM cover the device; RSS/PSS cover all Brave app processes, including unrelated existing tabs. No app force-stop. RSS can count shared pages repeatedly; sampled PSS peak is a lower bound.",
+        "cpuRssRamRequestedCadenceSeconds": 1,
+        "pssRequestedCadenceSeconds": 5,
+        "cpuRssRamCadence": {
+          "samples": 156,
+          "actualStartIntervalMs": {
+            "min": 999.1902449999907,
+            "median": 1000.6527889999998,
+            "max": 1750.1990190000001
+          },
+          "maxSampleDurationMs": 280.6000630000053,
+          "firstUtc": "2026-11-03T17:32:56.424Z",
+          "lastUtc": "2026-11-03T17:35:32.283Z"
+        },
+        "pssCadence": {
+          "samples": 32,
+          "actualStartIntervalMs": {
+            "min": 4999.470622000001,
+            "median": 5000.726402999993,
+            "max": 5545.081151
+          },
+          "maxSampleDurationMs": 1037.0523129999929,
+          "firstUtc": "2026-11-03T17:32:56.965Z",
+          "lastUtc": "2026-11-03T17:35:32.659Z"
+        },
+        "minimumAvailableBytes": 1393487872,
+        "peakBrowserRssBytes": 1421864960,
+        "peakBrowserPssBytes": 699460608,
+        "peakDeviceCpuBusyPercent": 46.062992125984245
+      },
+      "privateEvidenceDirectory": "out/pkp3/android-private/persistence3"
     }
   ],
   "knownFailureInterpretations": {

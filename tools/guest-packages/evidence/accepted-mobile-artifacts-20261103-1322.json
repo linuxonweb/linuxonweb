@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "accepted": true,
+  "files": [
+    {
+      "sourcePath": "web/linux/packages/v1/package-console.cpio.gz",
+      "restorePath": "web/linux/packages/v1/package-console.cpio.gz",
+      "bytes": 3493625,
+      "sha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74",
+      "role": "console-image",
+      "urlPath": "/linux/packages/v1/package-console.cpio.gz"
+    },
+    {
+      "sourcePath": "web/linux/packages/v1/console-manifest.json",
+      "restorePath": "web/linux/packages/v1/console-manifest.json",
+      "bytes": 1833,
+      "sha256": "1c9b820fcea8c04ab9ac6988a4b8ad779d7ba41b8aae57f77403cd3786ca07e5",
+      "role": "console-metadata",
+      "urlPath": "/linux/packages/v1/console-manifest.json"
+    },
+    {
+      "sourcePath": "web/linux/packages/v1/runtime-bundles.json",
+      "restorePath": "web/linux/packages/v1/runtime-bundles.json",
+      "bytes": 8391,
+      "sha256": "71a0d974981eccebe911bdc4bd1980662d4badbbbc352564eaaca7e9b60592e3",
+      "role": "console-metadata",
+      "urlPath": "/linux/packages/v1/runtime-bundles.json"
+    },
+    {
+      "sourcePath": "web/linux/packages/v1/package-shell.html",
+      "restorePath": "web/linux/packages/v1/package-shell.html",
+      "bytes": 5208,
+      "sha256": "3806748b1730e320c1eb16c21554a2a5f7e992c7d9cae31092c598f27ef859bf",
+      "role": "console-metadata",
+      "urlPath": "/linux/packages/v1/package-shell.html"
+    },
+    {
+      "sourcePath": "web/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs",
+      "restorePath": "web/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs",
+      "bytes": 226131,
+      "sha256": "7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6",
+      "role": "console-bundle",
+      "urlPath": "/linux/dist/immutable/console-7ffafa012c9072c31e4d0946863fa56ad3a64b9197002e513c922d417d4000a6.mjs"
+    },
+    {
+      "sourcePath": "web/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+      "restorePath": "web/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs",
+      "bytes": 105773,
+      "sha256": "81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445",
+      "role": "worker-bundle",
+      "urlPath": "/linux/dist/immutable/worker-81f46bbca8d06843b50ea2fea18e0dab6d30516a398988a7c0761c4eb66c9445.mjs"
+    }
+  ],
+  "nativeImageUnchanged": true,
+  "workerUnchanged": true,
+  "sourceCompleteGateFinishedUtc": "2026-11-03T17:35:33.715978+00:00",
+  "privateRawEvidenceExcluded": true,
+  "note": "Exact device-tested candidate bytes promoted; candidateOnly/androidAccepted fields inside immutable build metadata describe build-time state. This accepted manifest and the final gate receipt record subsequent acceptance."
+}
