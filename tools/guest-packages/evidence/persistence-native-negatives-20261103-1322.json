@@ -1,0 +1,209 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T15:22:08.361755+00:00",
+  "scope": "exact production helper, real signed APK/native child failures and physically offline restore preflight",
+  "productionHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+  "testHooksEnabled": false,
+  "defaultByteIdentity": {
+    "same": true,
+    "sha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+    "bytes": 158791,
+    "testHooksEnabledInDefault": false
+  },
+  "fixture": {
+    "testOnly": true,
+    "productionAccepted": false,
+    "pinnedImageVersion": "d258203daee8",
+    "pinnedImageSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+    "archiveSha256": "c2a0a11d1f808800be64c58d7d8e5c26e2eb3f46c71237b025532ffa7ba6bb78",
+    "archiveBytes": 9986560,
+    "nativeHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+    "basePackages": [
+      {
+        "name": "apk-tools",
+        "version": "2.14.12-r0",
+        "sha256": "3e44d2334efc4ac82f47ca35671bb4bbba6944bad82ec8a2af11848705a91dfa"
+      },
+      {
+        "name": "busybox",
+        "version": "1.38.0_git-r0",
+        "sha256": "145bb6a8ba35136bdd1fb2d0f5d962208bc30c102caf2d3eb76a809ef1c0f3bd"
+      },
+      {
+        "name": "ca-certificates",
+        "version": "20261103-r0",
+        "sha256": "a39e3b011a9fc6d24c3fa19aab1dc998d12a8a6fa53af3734f5b1a7711cc5fd6"
+      },
+      {
+        "name": "curl",
+        "version": "8.21.0-r1",
+        "sha256": "0e8b38c6e41b1d4dd812ac22ff7f8cf228ae7a08867cf31a209af044215d4819"
+      }
+    ],
+    "baseInstalledDbSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+    "scriptSha256": "e761fe9cfdd8f493432a0a5e47027e1808f8380c39b0e44d1f4d327f574fe281"
+  },
+  "negativeAssets": {
+    "testOnly": true,
+    "mustNotPublish": true,
+    "original": {
+      "name": "gzip",
+      "version": "1.14-r0",
+      "C": "Q1h+2oNYDAZByhm6wOmjQoeBEulBQ=",
+      "sha256": "751ab17c88614079fe14c0156639c02061c84df3f6a052ba97a6c223048addd8"
+    },
+    "sameVersion": {
+      "name": "gzip",
+      "version": "1.14-r0",
+      "C": "Q1h0gK8e7/tZRZUuMzc8qbqzV2YII=",
+      "sha256": "4ccd837c06a651f0bad6370a6dd3c484ceb4b9b68cbe76f3c6c98ca3140b0c34",
+      "signature": "signed with existing development trust; control description changed, executable payload unchanged"
+    },
+    "badSignature": {
+      "sha256": "7e562a13b9947c447fd772b816379821427b3da6d951cf02f8a146f1fac66895",
+      "format": "valid gzip/tar; one RSA signature byte changed; original control/payload unchanged"
+    },
+    "privateKeyCopied": false
+  },
+  "phases": [
+    {
+      "durationSeconds": 32.744,
+      "checks": [
+        "PERSIST_NEGATIVE_PASS signed-repository-update",
+        "PERSIST_NEGATIVE_PASS signed-gzip-add",
+        "PERSIST_NEGATIVE_PASS second-complete-generation",
+        "PERSIST_NEGATIVE_PASS previous-pointer-exists",
+        "PERSIST_NEGATIVE_PASS preserve-good-active",
+        "PERSIST_NEGATIVE_PASS preserve-good-manifest",
+        "PERSIST_NEGATIVE_PASS preserve-good-apk",
+        "PERSIST_NEGATIVE_PASS preserve-good-compatibility",
+        "PERSIST_NEGATIVE_PASS preserve-good-world",
+        "PERSIST_NEGATIVE_PASS maintainer-script-failure-rejected",
+        "PERSIST_NEGATIVE_PASS native-failure-not-acknowledged",
+        "PERSIST_NEGATIVE_PASS failed-operation-keeps-active"
+      ],
+      "failures": [],
+      "markers": [
+        "apk-persist: package operation pending; persistence is acknowledged only by APK_PERSIST_SAVED",
+        "APK_PERSIST_SAVED generation=generation-apNMKk optional=1 elapsed=5.225 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+        "APK_PERSIST_SAVED generation=generation-OOOMdj optional=1 elapsed=7.443 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+        "apk-persist: native /sbin/apk failed (status=1 signal=0); no persistence acknowledgement",
+        "PERSIST_NEGATIVE_DONE phase=0 checks=12 failures=0"
+      ],
+      "networkAttached": true
+    },
+    {
+      "durationSeconds": 22.232,
+      "checks": [
+        "PERSIST_NEGATIVE_PASS physically-offline",
+        "PERSIST_NEGATIVE_PASS trusted-same-version-signature",
+        "PERSIST_NEGATIVE_PASS native-invalid-signature-rejected",
+        "PERSIST_NEGATIVE_PASS replace-signature-fixture",
+        "PERSIST_NEGATIVE_PASS recompute-signature-manifest",
+        "PERSIST_NEGATIVE_PASS recomputed-manifest-signature-rejected",
+        "PERSIST_NEGATIVE_PASS signature-verifier-was-reached",
+        "PERSIST_NEGATIVE_PASS no-files-before-signature",
+        "PERSIST_NEGATIVE_PASS restore-valid-signature-fixture",
+        "PERSIST_NEGATIVE_PASS replace-signed-same-version",
+        "PERSIST_NEGATIVE_PASS recompute-same-version-manifest",
+        "PERSIST_NEGATIVE_PASS signed-same-version-identity-rejected",
+        "PERSIST_NEGATIVE_PASS exact-native-PVC-rejection",
+        "PERSIST_NEGATIVE_PASS no-files-before-identity",
+        "PERSIST_NEGATIVE_PASS restore-valid-identity-fixture",
+        "PERSIST_NEGATIVE_PASS recompute-incompatible-generation",
+        "PERSIST_NEGATIVE_PASS incompatible-generation-rejected",
+        "PERSIST_NEGATIVE_PASS compatibility-diagnostic",
+        "PERSIST_NEGATIVE_PASS restore-compatible-fixture",
+        "PERSIST_NEGATIVE_PASS add-owned-extra-trust-key",
+        "PERSIST_NEGATIVE_PASS altered-trust-rejected",
+        "PERSIST_NEGATIVE_PASS exact-trust-set-diagnostic",
+        "PERSIST_NEGATIVE_PASS remove-owned-extra-key",
+        "PERSIST_NEGATIVE_PASS recompute-broken-world-manifest",
+        "PERSIST_NEGATIVE_PASS protected-base-world-rejected",
+        "PERSIST_NEGATIVE_PASS base-world-diagnostic",
+        "PERSIST_NEGATIVE_PASS restore-complete-world",
+        "PERSIST_NEGATIVE_PASS pristine-database-unmodified",
+        "PERSIST_NEGATIVE_PASS no-optional-payload-after-all-negatives",
+        "PERSIST_NEGATIVE_PASS malformed-active-rejected",
+        "PERSIST_NEGATIVE_PASS malformed-active-disable",
+        "PERSIST_NEGATIVE_PASS malformed-active-no-longer-selected",
+        "PERSIST_NEGATIVE_PASS malformed-pointer-evidence-retained",
+        "PERSIST_NEGATIVE_PASS previous-generation-selected",
+        "PERSIST_NEGATIVE_PASS previous-offline-restore",
+        "PERSIST_NEGATIVE_PASS previous-native-gzip",
+        "PERSIST_NEGATIVE_PASS previous-world-exact"
+      ],
+      "failures": [],
+      "markers": [
+        "apk-persist: native /sbin/apk failed (status=1 signal=0); no persistence acknowledgement",
+        "apk-persist: signed archive P/V/C identity differs from installed snapshot; no package replayed",
+        "apk-persist: base image ABI/trust generation mismatch; explicit compatible migration or disable required",
+        "apk-persist: unexpected signing key; explicit image trust migration required",
+        "apk-persist: base world constraint cannot be removed by persistence v1: curl",
+        "APK_PERSIST_DISABLED evidence=/home/.linuxonweb-packages/disabled-evidence-KcnnNb; saved generations retained; Stop and Start for pristine base",
+        "APK_PERSIST_SELECTED generation=generation-apNMKk; Stop and Start to restore",
+        "APK_PERSIST_RESTORED generation=generation-apNMKk optional=1 elapsed=1.341 offline=1 exactWorld=1",
+        "PERSIST_NEGATIVE_DONE phase=1 checks=37 failures=0"
+      ],
+      "networkAttached": false
+    },
+    {
+      "durationSeconds": 9.603,
+      "checks": [
+        "PERSIST_NEGATIVE_PASS physically-offline",
+        "PERSIST_NEGATIVE_PASS selected-previous-survives-restart",
+        "PERSIST_NEGATIVE_PASS native-package-after-recovery",
+        "PERSIST_NEGATIVE_PASS failed-script-package-not-replayed",
+        "PERSIST_NEGATIVE_PASS recovery-world-exact"
+      ],
+      "failures": [],
+      "markers": [
+        "APK_PERSIST_RESTORED generation=generation-apNMKk optional=1 elapsed=1.941 offline=1 exactWorld=1",
+        "PERSIST_NEGATIVE_DONE phase=2 checks=5 failures=0"
+      ],
+      "networkAttached": false
+    }
+  ],
+  "owner": {
+    "startedUtc": "2026-11-03T15:19:50.774465+00:00",
+    "finishedUtc": "2026-11-03T15:21:01.802436+00:00",
+    "durationSeconds": 71.028,
+    "argv": [
+      "node",
+      "tools/guest-packages/run-smoke.mjs",
+      "out/pkp3/persistence-negative-fixture1/persistence.cpio",
+      "out/pkp3/persistence-negative-runtime1",
+      "out/pkp3/negative-repo1",
+      "out/pkp3/persistence-negative-fixture1/config.json"
+    ],
+    "cwd": "/mnt/p3/project/linux/linuxonweb",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownerPeakRssBytes": 100507648,
+    "ownedTreePeakRssBytes": 1451417600,
+    "ownedTreePeakPssBytes": 908432384,
+    "resourceSamples": 71,
+    "pssSamples": 15,
+    "quotaReadySeconds": 0.0,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "receipts": {
+    "out/pkp3/persistence-negative-runtime1/result.json": "4fbcbcb3f7f1f88aafa02bb67e19acb84de81ca896116d6251652779a545a443",
+    "out/pkp3/negative-owner1/result.json": "9a661b931c83cbff68ceef680c486966c20d40da1d4da28930c6d4fb48cdf112",
+    "out/pkp3/negative-assets1/negative-assets.json": "d8ea166a30620082204bbdf31aecda1cfc883c35a4f371631adbe6027073dc2d",
+    "out/pkp3/default-byte-identity.json": "99c4d0f0934d37a1cc21ee54bccb72b4c5436bd055e3037fc3fb53aeaf74b53b"
+  },
+  "publicRepositoryChangedByNegativeTests": false,
+  "remaining": [
+    "actual GUI typed recovery acceptance",
+    "separately instrumented activation boundary test",
+    "mobile and Python restore timing"
+  ]
+}

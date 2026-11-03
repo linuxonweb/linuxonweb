@@ -1,0 +1,89 @@
+{
+  "candidateOnly": true,
+  "productionAccepted": false,
+  "sourceConsoleSha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912",
+  "archiveSha256": "60be177eb68336db15f85129676a5f15a8544139e747272ca633cc8d4e82be74",
+  "archiveBytes": 3493625,
+  "gzipMembers": 1,
+  "rootfsPayloadBytes": 9830912,
+  "nativeHelperSha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+  "exactFirefoxPackageCompatibility": true,
+  "compatibility": {
+    "apkNativeSha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2",
+    "baseInstalledDatabaseSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+    "baseInventorySha256": "5734f71ef1b5090f02d42b39a0fc24cb5516534a0f693c2ff42d2c6fe1852e31",
+    "busyboxNativeSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+    "kernelSha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+    "packageTarget": "wasm32-linux-musl",
+    "schema": 1,
+    "signingTrustSha256": "a3eeb9da5d7b3192a4e8665c917d5c73450e2088dc0abcb2d6525a861bca5291"
+  },
+  "originalInitSha256": "6ebba8e54d160714745484b0140e2f4fea864737a4eae01874eb3d248f6cac1d",
+  "patchedInitSha256": "8004e5408560e4658ff3dffa51cf359b81317373193726fc847406763eaf888e",
+  "overlayFiles": {
+    "etc/linuxonweb-packages/compatibility": {
+      "bytes": 612,
+      "sha256": "fecea4630d4581f82f33575b38c9206bb8ab550b035028bb31df5bad167c6d7e",
+      "mode": "0o100644"
+    },
+    "etc/linuxonweb-packages/installed": {
+      "bytes": 210,
+      "sha256": "5734f71ef1b5090f02d42b39a0fc24cb5516534a0f693c2ff42d2c6fe1852e31",
+      "mode": "0o100644"
+    },
+    "etc/linuxonweb-packages/trust.sha256": {
+      "bytes": 102,
+      "sha256": "a3eeb9da5d7b3192a4e8665c917d5c73450e2088dc0abcb2d6525a861bca5291",
+      "mode": "0o100644"
+    },
+    "etc/linuxonweb-packages/base-world": {
+      "bytes": 39,
+      "sha256": "73e9f36cde3f8594c9b3fc5d1ae39edeca8c7eb3d6c14dd5a4727aa332d57622",
+      "mode": "0o100644"
+    },
+    "init": {
+      "bytes": 1741,
+      "sha256": "8004e5408560e4658ff3dffa51cf359b81317373193726fc847406763eaf888e",
+      "mode": "0o100755"
+    },
+    "usr/sbin/apk-persist": {
+      "bytes": 158791,
+      "sha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+      "mode": "0o100755"
+    },
+    "usr/share/doc/linuxonweb-packages/PERSISTENCE.txt": {
+      "bytes": 8417,
+      "sha256": "3b9ac0cf686a9c8d65f22ba6280e5dae0e10ead97d44226a29f29396e3044b4c",
+      "mode": "0o100644"
+    }
+  },
+  "pendingGates": [
+    "normal console signed install/save/restart",
+    "actual recovery input and clear recovery UI",
+    "Android HTTPS worker/native command/Python duration with 1CPU512MiB"
+  ],
+  "owner": {
+    "startedUtc": "2026-11-03T15:51:10.581053+00:00",
+    "finishedUtc": "2026-11-03T15:51:12.836804+00:00",
+    "durationSeconds": 2.256,
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownedTreePeakRssBytes": 27328512,
+    "ownedTreePeakPssBytes": 578560,
+    "resourceSamples": 2,
+    "pssSamples": 1,
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "guestRuntimeAccepted": false,
+  "frontendRecoverySourceOnly": true,
+  "sourceSha256": {
+    "tools/guest-packages/overlay-console-persistence.py": "ce3771a71e9ffec39ae957f84d8ae2a80780bfe0ccbd78b716223329c92039d4",
+    "web/linux/packages/v1/package-shell.mjs": "1a2cb59949cea8bdd89e8565d95a72d50400a7291c432b7782168c59326a5aea"
+  }
+}

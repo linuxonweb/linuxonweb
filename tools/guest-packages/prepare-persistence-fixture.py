@@ -3,7 +3,9 @@
 import argparse,base64,gzip,hashlib,importlib.util,io,json,pathlib,tarfile,zlib
 p=argparse.ArgumentParser()
 for name in ['base','manifest','kernel','helper','repo','out']:p.add_argument('--'+name,type=pathlib.Path,required=True)
+p.add_argument('--test-script',type=pathlib.Path);p.add_argument('--extra',action='append',default=[]);p.add_argument('--restarts',type=int,default=4);p.add_argument('--timeout',type=int,default=150)
 a=p.parse_args();a.out.mkdir(parents=True,exist_ok=False)
+if not 0<=a.restarts<=5 or not 10<=a.timeout<=300:raise ValueError('bounded fixture configuration required')
 here=pathlib.Path(__file__).resolve().parent
 s=importlib.util.spec_from_file_location('overlay',here/'overlay-persistence.py');overlay=importlib.util.module_from_spec(s);s.loader.exec_module(overlay)
 manifest=json.loads(a.manifest.read_text())
@@ -61,7 +63,11 @@ fi
 /bin/busybox sh /tests/persistence-check.sh
 exec /bin/busybox poweroff -f
 '''
-files.update({'init':(0o100755,init.encode()),'bin/sh':(0o120777,b'busybox'),'usr/sbin/apk-persist':(0o100755,helper),'tests/persistence-check.sh':(0o100755,(here/'persistence-check.sh').read_bytes()),'etc/apk/repositories':(0o100644,b'http://packages.test/repo\n'),'etc/apk/arch':(0o100644,b'wasm32\n'),'etc/passwd':(0o100644,b'root:x:0:0:root:/:/bin/sh\n'),'etc/group':(0o100644,b'root:x:0:\n')})
+files.update({'init':(0o100755,init.encode()),'bin/sh':(0o120777,b'busybox'),'usr/sbin/apk-persist':(0o100755,helper),'tests/persistence-check.sh':(0o100755,(a.test_script or here/'persistence-check.sh').read_bytes()),'etc/apk/repositories':(0o100644,b'http://packages.test/repo\n'),'etc/apk/arch':(0o100644,b'wasm32\n'),'etc/passwd':(0o100644,b'root:x:0:0:root:/:/bin/sh\n'),'etc/group':(0o100644,b'root:x:0:\n')})
+for item in a.extra:
+ name,path=item.split('=',1);data=pathlib.Path(path).read_bytes()
+ if name in files:raise ValueError('extra file collision')
+ files[name]=(0o100755 if data.startswith(b'\0asm') or data.startswith(b'#!') else 0o100644,data)
 dirs={'bin','dev','proc','sys','tmp','etc','usr','usr/bin','usr/libexec','var','var/cache','lib','run','home'}
 for name in files:
  parent=pathlib.PurePosixPath(name).parent
@@ -76,5 +82,5 @@ chunks.append(overlay.cpio.entry('TRAILER!!!',mode=0));image=b''.join(chunks);im
 (a.out/'persistence.cpio').write_bytes(image)
 report={'testOnly':True,'productionAccepted':False,'pinnedImageVersion':manifest['version'],'pinnedImageSha256':overlay.sha(a.base),'archiveSha256':hashlib.sha256(image).hexdigest(),'archiveBytes':len(image),'nativeHelperSha256':hashlib.sha256(helper).hexdigest(),'basePackages':packages,'baseInstalledDbSha256':hashlib.sha256(original['lib/apk/db/installed'][1]).hexdigest(),'scriptSha256':hashlib.sha256(files['tests/persistence-check.sh'][1]).hexdigest()}
 (a.out/'fixture.json').write_text(json.dumps(report,indent=2)+'\n')
-(a.out/'config.json').write_text(json.dumps({'persistHome':True,'exportDatabase':False,'timeoutSeconds':150,'restartConfigs':[{'network':False} for _ in range(4)]},indent=2)+'\n')
+(a.out/'config.json').write_text(json.dumps({'persistHome':True,'exportDatabase':False,'timeoutSeconds':a.timeout,'restartConfigs':[{'network':False} for _ in range(a.restarts)]},indent=2)+'\n')
 print(json.dumps(report,indent=2))

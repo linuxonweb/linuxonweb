@@ -65,9 +65,9 @@ statuses. Each APK operation runs in an owned process group. On timeout or signa
 that group receives TERM and KILL before the leader is reaped, so its identity
 cannot be reused during cleanup. This cleanup guarantee covers timeout/cancellation;
 a package script that intentionally starts a background daemon on ordinary success
-is not claimed to be sandboxed. Individual child and overall300-second operation
-bounds are explicit. Limits are128 optional packages,256MiB archive generation,
-4MiB metadata, and a2MiB native stack. Archives are retained without automatic
+is not claimed to be sandboxed. Individual child and overall 300-second operation
+bounds are explicit. Limits are 128 optional packages, 256 MiB archive generation,
+4 MiB metadata, and a 2 MiB native stack. Archives are retained without automatic
 pruning, so repeated full generations consume persistent storage.
 
 ## Explicit recovery
@@ -82,19 +82,19 @@ the prior generation when present; it takes effect after Stop and Start. An expl
 
 ## Current evidence
 
-- The real guest passed34 prerequisite checks: file/directory fsync, rename and
+- The real guest passed 34 prerequisite checks: file/directory fsync, rename and
   old-open-inode semantics, exclusive create, write errors, observed positive short
   writes, native spawn error/exit propagation, process-group setup, and concurrent
   nonblocking lock exclusion. The first probe failed only to induce a short write
-  with a1MiB request; the bounded2MiB repeat observed1MiB written and read back.
-- Five fresh guest boots passed39 checks using exact APK4 base package files and
+  with a 1 MiB request; the bounded 2 MiB repeat observed 1 MiB written and read back.
+- Five fresh guest boots passed 39 checks using exact APK4 base package files and
   database, real persistent HomeFS, and no network device after the first boot.
   Signed tar+gzip add/save, offline restore with exact world, removal/new generation,
   removal restore, corrupt archive rejection before replay, explicit disable, base
   recovery, and user-data retention passed.
-- Helper timings in that component fixture: tar+gzip save2.608s and restore1.977s;
-  post-removal gzip save3.242s and restore1.373s. These are not full desktop startup
-  times. The five-boot owner ran52.008s with1s CPU/RSS/RAM/quota and5s PSS sampling.
+- Helper timings in that component fixture: tar+gzip save 2.608 s and restore 1.977 s;
+  post-removal gzip save 3.242 s and restore 1.373 s. These are not full desktop startup
+  times. The five-boot owner ran 52.008 s with 1 s CPU/RSS/RAM/quota and 5 s PSS sampling.
 - `persistence-native-fiveboot-20261103-1322.json` and
   `persistence-primitives-20261103-1322.json` in `evidence/` retain exact source,
   native binary, image, and result identities, including failed first attempts.
@@ -103,3 +103,28 @@ Actual production decompression/composition/desktop, Stop immediately after the
 success acknowledgement, signed same-version replacement, recomputed-manifest
 signature tampering, ABI/trust mismatch, interrupted activation, larger Python
 replay, and mobile persistence still need their own passing evidence.
+
+## Further native safety gates (2026-11-03 15:22 UTC)
+
+The exact default production helper passed 54 additional checks across three fresh
+boots. A real failing maintainer script returned failure without advancing the
+active generation. The helper rejected a bad RSA signature even after the test
+recomputed all SHA256 manifests; it also rejected a validly signed archive with the
+same name/version and a different native C identity. The latter fixture changes
+control metadata while retaining the original executable payload. Compatibility,
+trust-set, and protected-world changes were rejected. A malformed active pointer
+was preserved by disable, and a verified prior generation was selected and replayed
+offline. Native owner time was 71.028 seconds. See
+`evidence/persistence-native-negatives-20261103-1322.json`.
+
+Separately, an explicitly instrumented native helper passed 22 assertions over
+three boots. Compile-time-only hooks stopped it before activation and immediately
+after active-pointer rename, before directory fsync and the success acknowledgement.
+A native supervisor killed and reaped only its known isolated child group. A fresh
+boot retained the prior generation in the first case and replayed the new complete
+generation in the second. Native owner time was 37.008 seconds. This is process-kill
+boundary coverage, not a hardware-power-loss claim. Rebuilding the default helper
+from the source with those hooks compiled out produced byte-identical production
+bytes (`be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8`).
+The instrumented binary must never be deployed. See
+`evidence/persistence-interruption-20261103-1322.json`.

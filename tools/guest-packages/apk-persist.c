@@ -92,6 +92,17 @@ static void acknowledge(const char *format, ...) {
   va_list args; va_start(args, format); int n = vprintf(format, args); va_end(args);
   if (n < 0 || fflush(stdout) || ferror(stdout)) die("success acknowledgement could not be written");
 }
+#ifdef APK_PERSIST_TEST_HOOKS
+/* Present only in explicitly instrumented test builds. Default binary must stay
+   byte-identical when these source-only checkpoints are added. */
+static void test_checkpoint(const char *point) {
+  const char *selected = getenv("APK_PERSIST_TEST_STOP");
+  if (selected && !strcmp(selected, point)) {
+    check_cancel();
+    if (raise(SIGSTOP)) die("test checkpoint stop failed");
+  }
+}
+#endif
 static void checked_path(char *out, size_t cap, const char *format, ...) {
   va_list args; va_start(args, format); int n = vsnprintf(out, cap, format, args); va_end(args);
   if (n < 0 || (size_t)n >= cap) die("path exceeds supported bound");
@@ -445,6 +456,9 @@ static void atomic_record(const char *name, const Generation *generation) {
   if (fsync(fd) || close(fd)) die("pointer flush failed: %s", strerror(errno));
   checked_path(target, sizeof target, STATE "/%s", name);
   if (rename(temp, target)) die("activate pointer: %s", strerror(errno));
+#ifdef APK_PERSIST_TEST_HOOKS
+  if (!strcmp(name, "active")) test_checkpoint("after-active-rename");
+#endif
   sync_dir(STATE);
 }
 static void activate(const Generation *generation) {
@@ -656,6 +670,9 @@ static void save_snapshot(const Inventory *base) {
   if (exists(next.dir)) die("generation identity collision; old data retained");
   if (rename(stage_path, next.dir)) die("finalize immutable generation: %s", strerror(errno));
   checked_path(stage_path, sizeof stage_path, "%s", next.dir); sync_dir(STATE);
+#ifdef APK_PERSIST_TEST_HOOKS
+  test_checkpoint("before-activate");
+#endif
   activate(&next); stage_path[0] = 0;
   if (close(database_lock)) die("database lock close failed"); database_lock = -1;
   acknowledge("APK_PERSIST_SAVED generation=%s optional=%zu elapsed=%.3f manifest=%s\n", next.name, optional.n, now() - start, next.hash);

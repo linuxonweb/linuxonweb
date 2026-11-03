@@ -1,0 +1,103 @@
+{
+  "recordedUtc": "2026-11-03T15:34:06.450759+00:00",
+  "servedAssetHashesPreviouslyMatched": true,
+  "runtimeModified": false,
+  "modes": [
+    {
+      "mode": "plain",
+      "path": "web/linux/initramfs.cpio",
+      "bytes": 40495556,
+      "sha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+      "native": {
+        "bin/busybox": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c"
+      },
+      "hasPackageDatabase": true,
+      "initPackageHookPresent": false,
+      "initHomeMountPresent": true,
+      "standardInitAnchorCount": 1,
+      "installedDatabaseSha256": "565074610e1c7d1a88eb43af66d047c6f4327bcbcf20148e8501bece2aed4f7c",
+      "exactFirefoxBaseDatabase": false,
+      "world": "apk-tools=3.0.5-r0\nbusybox=1.37.0-r0\ncurl=8.21.0-r0\nfont-cursor-misc=1.0.4-r0\nfont-misc-misc=1.1.3-r0\nhtop=3.3.0-r0\nlinux-guest-agent=0.0.0-r0\nncurses=6.6-r0\np7zip=26.02-r0\ntinyx=1.3_git20241113-r0\nxterm=410-r0\n",
+      "identities": [
+        "C:Q1jrU4+SUCrPfA6DJvaS4fa26QBno=",
+        "P:apk-tools",
+        "V:3.0.5-r0",
+        "C:Q1pEdbiAeDJRG4BPTzCIS5r9VYnj8=",
+        "P:busybox",
+        "V:1.37.0-r0",
+        "C:Q1i61uA1UAsEPDwohwG74KuReV+qE=",
+        "P:curl",
+        "V:8.21.0-r0",
+        "C:Q1wRM11nAIJee+KOcnmY9ogs5LJ3E=",
+        "P:font-cursor-misc",
+        "V:1.0.4-r0",
+        "C:Q1x69Ny3e8kGHinGOcE+5mfdwP2hU=",
+        "P:font-misc-misc",
+        "V:1.1.3-r0",
+        "C:Q1g0rbBLA8MHAfZJp6OZAvXnHERI4=",
+        "P:htop",
+        "V:3.3.0-r0",
+        "C:Q14K7YqwoeELJxEOh4OoEsjEnHHcA=",
+        "P:linux-guest-agent",
+        "V:0.0.0-r0",
+        "C:Q1lLdtsUQ43td5puNEs/I4bZyJgww=",
+        "P:ncurses",
+        "V:6.6-r0",
+        "C:Q1Mu6ahdK/ji2EnZOmoV0ELk8IAoY=",
+        "P:p7zip",
+        "V:26.02-r0",
+        "C:Q1TwT96AgiShbNc+CjsSlwxefJIjk=",
+        "P:tinyx",
+        "V:1.3_git20241113-r0",
+        "C:Q1rBR9WnSPCA43ULPt3xKXioudaNU=",
+        "P:xterm",
+        "V:410-r0"
+      ],
+      "exactFirefoxBusybox": true,
+      "exactFirefoxApk": false
+    },
+    {
+      "mode": "mobile-console",
+      "path": "web/linux/packages/v1/package-console.cpio.gz",
+      "bytes": 3425102,
+      "sha256": "12d9a1246d7671f220e4e5d600e0892173c553c06a3bb63efeec3b1e5c347912",
+      "native": {
+        "bin/busybox": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+        "sbin/apk": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2"
+      },
+      "hasPackageDatabase": true,
+      "initPackageHookPresent": false,
+      "initHomeMountPresent": true,
+      "standardInitAnchorCount": 0,
+      "installedDatabaseSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+      "exactFirefoxBaseDatabase": true,
+      "world": "apk-tools\nbusybox\nca-certificates\ncurl\n",
+      "identities": [
+        "C:Q17Ve3P4N2t+E8UjxTS45kBs0pz00=",
+        "P:apk-tools",
+        "V:2.14.12-r0",
+        "C:Q1Fk/fmuBJSrjzuaun/0Nw2YLimOI=",
+        "P:busybox",
+        "V:1.38.0_git-r0",
+        "C:Q1tuwX1UO0G62UEF42hmoNJ0NsPI0=",
+        "P:ca-certificates",
+        "V:20261103-r0",
+        "C:Q139a07w/tMvqOsYQq64axIixJbCc=",
+        "P:curl",
+        "V:8.21.0-r1"
+      ],
+      "exactFirefoxBusybox": true,
+      "exactFirefoxApk": true
+    }
+  ],
+  "referenceCompatibility": {
+    "apkNativeSha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2",
+    "baseInstalledDatabaseSha256": "a2d6fb5b55d43b8cea08fac21b2672589bf1172560bef4cf33327de440363580",
+    "baseInventorySha256": "5734f71ef1b5090f02d42b39a0fc24cb5516534a0f693c2ff42d2c6fe1852e31",
+    "busyboxNativeSha256": "f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c",
+    "kernelSha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+    "packageTarget": "wasm32-linux-musl",
+    "schema": 1,
+    "signingTrustSha256": "a3eeb9da5d7b3192a4e8665c917d5c73450e2088dc0abcb2d6525a861bca5291"
+  }
+}

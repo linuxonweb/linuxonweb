@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T15:23:17.259637+00:00",
+  "scope": "TEST_ONLY instrumented native helper stopped at deterministic activation checkpoints, killed only by its native owned-process-group supervisor; fresh guest root on every phase",
+  "exactProductionByteCrashTest": false,
+  "defaultProductionBytesUnchanged": {
+    "same": true,
+    "sha256": "be3214abafca8d28d7d5c46f18f17af887cda82c4651940a099bea689b06a3b8",
+    "bytes": 158791,
+    "testHooksEnabledInDefault": false
+  },
+  "instrumentedHelperSha256": "cbfd80e218e973967ea0d72fa3ac24edefc9cb602af8f3da2309943dee178e85",
+  "supervisorSha256": "2de9a7676a2d66daf6ff1918469ca1abf2749ab411cc74f61df8b9ea7a302858",
+  "checkpoints": [
+    "before-activate: complete unselected new generation; prior active must survive",
+    "after-active-rename: new pointer renamed before directory fsync/success ACK; new complete generation must replay"
+  ],
+  "phases": [
+    {
+      "durationSeconds": 13.806,
+      "checks": [
+        "PERSIST_BOUNDARY_PASS repository-update",
+        "PERSIST_BOUNDARY_PASS acknowledged-gzip-generation",
+        "PERSIST_BOUNDARY_PASS preserve-acknowledged-pointer",
+        "PERSIST_BOUNDARY_PASS unacknowledged-tar-session-install",
+        "PERSIST_BOUNDARY_PASS kill-before-activation",
+        "PERSIST_BOUNDARY_PASS prior-pointer-identical",
+        "PERSIST_BOUNDARY_PASS prior-generation-valid"
+      ],
+      "failures": [],
+      "markers": [
+        "APK_PERSIST_SAVED generation=generation-cHjIgh optional=1 elapsed=1.533 manifest=348a7cc4fcc02745e6da4cd9b9b1bf1823ed9b4e13a9f787858fbcc6fa264f6e",
+        "PERSIST_INTERRUPT_CHECKPOINT point=before-activate stopped=1 acknowledgement=not-reached",
+        "PERSIST_INTERRUPT_PASS point=before-activate killed=9 reaped=1",
+        "APK_PERSIST_ACTIVE generation=generation-cHjIgh optional=1 verified=1",
+        "PERSIST_BOUNDARY_DONE phase=0 checks=7 failures=0"
+      ],
+      "networkAttached": true
+    },
+    {
+      "durationSeconds": 11.017,
+      "checks": [
+        "PERSIST_BOUNDARY_PASS physically-offline",
+        "PERSIST_BOUNDARY_PASS restore-prior-after-kill",
+        "PERSIST_BOUNDARY_PASS acknowledged-gzip-retained",
+        "PERSIST_BOUNDARY_PASS unacknowledged-tar-absent",
+        "PERSIST_BOUNDARY_PASS removal-session-only",
+        "PERSIST_BOUNDARY_PASS kill-after-active-rename",
+        "PERSIST_BOUNDARY_PASS new-complete-pointer-selected",
+        "PERSIST_BOUNDARY_PASS previous-pointer-retained",
+        "PERSIST_BOUNDARY_PASS new-generation-valid"
+      ],
+      "failures": [],
+      "markers": [
+        "APK_PERSIST_RESTORED generation=generation-cHjIgh optional=1 elapsed=1.505 offline=1 exactWorld=1",
+        "PERSIST_INTERRUPT_CHECKPOINT point=after-active-rename stopped=1 acknowledgement=not-reached",
+        "PERSIST_INTERRUPT_PASS point=after-active-rename killed=9 reaped=1",
+        "APK_PERSIST_ACTIVE generation=generation-JbFAnn optional=0 verified=1",
+        "PERSIST_BOUNDARY_DONE phase=1 checks=9 failures=0"
+      ],
+      "networkAttached": false
+    },
+    {
+      "durationSeconds": 7.794,
+      "checks": [
+        "PERSIST_BOUNDARY_PASS physically-offline",
+        "PERSIST_BOUNDARY_PASS new-generation-replays-after-kill",
+        "PERSIST_BOUNDARY_PASS removed-gzip-absent",
+        "PERSIST_BOUNDARY_PASS abandoned-tar-absent",
+        "PERSIST_BOUNDARY_PASS base-world-coherent",
+        "PERSIST_BOUNDARY_PASS user-data-preserved"
+      ],
+      "failures": [],
+      "markers": [
+        "APK_PERSIST_RESTORED generation=generation-JbFAnn optional=0 elapsed=0.766 offline=1 exactWorld=1",
+        "PERSIST_BOUNDARY_DONE phase=2 checks=6 failures=0"
+      ],
+      "networkAttached": false
+    }
+  ],
+  "owner": {
+    "startedUtc": "2026-11-03T15:21:04.809635+00:00",
+    "finishedUtc": "2026-11-03T15:21:41.817336+00:00",
+    "durationSeconds": 37.008,
+    "argv": [
+      "node",
+      "tools/guest-packages/run-smoke.mjs",
+      "out/pkp3/persistence-interrupt-fixture1/persistence.cpio",
+      "out/pkp3/persistence-interrupt-runtime1",
+      "out/pkp3/repo",
+      "out/pkp3/persistence-interrupt-fixture1/config.json"
+    ],
+    "cwd": "/mnt/p3/project/linux/linuxonweb",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "ownerPeakRssBytes": 100597760,
+    "ownedTreePeakRssBytes": 1520857088,
+    "ownedTreePeakPssBytes": 922004480,
+    "resourceSamples": 37,
+    "pssSamples": 8,
+    "quotaReadySeconds": 0.0,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "receipts": {
+    "out/pkp3/persistence-interrupt-runtime1/result.json": "2136ec5eb6e3053f3b3fceb4b4b99a9ddc0d2961508274b571dc42d6774ecba9",
+    "out/pkp3/interrupt-owner1/result.json": "1c0f08608449a4858a7c06d65590e8de3a19230b4fcbbab59b038daece140037",
+    "out/pkp3/persistence-test-build1/build.json": "db407a7bf28e66978153c7aa38bbd3891d49f948a772c88b2d88ad2f22166841",
+    "out/pkp3/interrupt-build1/build.json": "c28cbe2caf79d896b14c74d504b293ef24b815532eb4d358bcbcc6333d5f8ca2",
+    "out/pkp3/default-byte-identity.json": "99c4d0f0934d37a1cc21ee54bccb72b4c5436bd055e3037fc3fb53aeaf74b53b"
+  },
+  "limits": [
+    "process-kill boundary fixture, not a hardware-power-loss claim",
+    "actual production ACK then normal Stop is recorded separately by integration",
+    "test-only native helper must never replace the default production binary"
+  ]
+}

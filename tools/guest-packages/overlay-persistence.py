@@ -47,7 +47,10 @@ def scan(archive):
     wanted = {'init', 'etc/apk/world', 'lib/apk/db/installed', 'sbin/apk', 'bin/busybox'}
     records = {}
     maxino = 1
-    with gzip.open(archive, 'rb') as stream:
+    with pathlib.Path(archive).open('rb') as raw:
+        compressed = raw.read(2) == b'\x1f\x8b'
+    opener = gzip.open if compressed else open
+    with opener(archive, 'rb') as stream:
         while True:
             first = stream.read(1)
             while first == b'\0':
