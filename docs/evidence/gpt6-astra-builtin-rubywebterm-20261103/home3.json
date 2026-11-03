@@ -1,0 +1,542 @@
+{
+  "schema": 1,
+  "start": "2026-11-03T08:28:00.087Z",
+  "mode": "home-tests",
+  "seconds": 20,
+  "run": "/mnt/p3/codex-build/s3n/home3",
+  "samples": [
+    {
+      "ms": 467.153,
+      "completedMs": 498.181,
+      "quotaByGroup": {
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": null,
+      "pssBytes": 106233856,
+      "rssSumBytes": 224964608,
+      "availableBytes": 28306767872,
+      "diskFreeBytes": 439434952704,
+      "processes": [
+        {
+          "pid": 2033930,
+          "ppid": 2033899,
+          "group": 2033899,
+          "session": 2033899,
+          "start": "41087694",
+          "ticks": 11,
+          "rss": 83484672,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033946,
+          "ppid": 2033930,
+          "group": 2033946,
+          "session": 2033946,
+          "start": "41087701",
+          "ticks": 4,
+          "rss": 82907136,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033957,
+          "ppid": 2033930,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087741",
+          "ticks": 3,
+          "rss": 49905664,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033969,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087746",
+          "ticks": 0,
+          "rss": 8667136,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 31.027999999999963
+    },
+    {
+      "ms": 1503.316,
+      "completedMs": 1569.838,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 180.4735355344671,
+      "pssBytes": 475996160,
+      "rssSumBytes": 1302765568,
+      "availableBytes": 28151721984,
+      "diskFreeBytes": 439434952704,
+      "processes": [
+        {
+          "pid": 2033930,
+          "ppid": 2033899,
+          "group": 2033899,
+          "session": 2033899,
+          "start": "41087694",
+          "ticks": 23,
+          "rss": 91635712,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033946,
+          "ppid": 2033930,
+          "group": 2033946,
+          "session": 2033946,
+          "start": "41087701",
+          "ticks": 6,
+          "rss": 83845120,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033957,
+          "ppid": 2033930,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087741",
+          "ticks": 80,
+          "rss": 287252480,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033969,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087746",
+          "ticks": 3,
+          "rss": 49147904,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033970,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087746",
+          "ticks": 3,
+          "rss": 48963584,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033972,
+          "ppid": 2033970,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087751",
+          "ticks": 0,
+          "rss": 20918272,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034003,
+          "ppid": 2033969,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087774",
+          "ticks": 48,
+          "rss": 206327808,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034004,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087775",
+          "ticks": 17,
+          "rss": 82120704,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034015,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087781",
+          "ticks": 1,
+          "rss": 52850688,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034062,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087804",
+          "ticks": 19,
+          "rss": 146296832,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034063,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087804",
+          "ticks": 4,
+          "rss": 114266112,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034080,
+          "ppid": 2034003,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087814",
+          "ticks": 0,
+          "rss": 41304064,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034094,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087819",
+          "ticks": 1,
+          "rss": 77836288,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 66.52199999999993
+    },
+    {
+      "ms": 2506.986,
+      "completedMs": 2555.896,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 140.4844221706338,
+      "pssBytes": null,
+      "rssSumBytes": 1376542720,
+      "availableBytes": 28098297856,
+      "diskFreeBytes": 439434952704,
+      "processes": [
+        {
+          "pid": 2033930,
+          "ppid": 2033899,
+          "group": 2033899,
+          "session": 2033899,
+          "start": "41087694",
+          "ticks": 29,
+          "rss": 96624640,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033946,
+          "ppid": 2033930,
+          "group": 2033946,
+          "session": 2033946,
+          "start": "41087701",
+          "ticks": 10,
+          "rss": 88039424,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033957,
+          "ppid": 2033930,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087741",
+          "ticks": 115,
+          "rss": 297820160,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033969,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087746",
+          "ticks": 3,
+          "rss": 49147904,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033970,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087746",
+          "ticks": 3,
+          "rss": 48963584,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2033972,
+          "ppid": 2033970,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087751",
+          "ticks": 1,
+          "rss": 20918272,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034003,
+          "ppid": 2033969,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087774",
+          "ticks": 89,
+          "rss": 209936384,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034004,
+          "ppid": 2033957,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087775",
+          "ticks": 25,
+          "rss": 84164608,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034015,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087781",
+          "ticks": 1,
+          "rss": 52994048,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034062,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087804",
+          "ticks": 59,
+          "rss": 194695168,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034063,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087804",
+          "ticks": 4,
+          "rss": 114278400,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034080,
+          "ppid": 2034003,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087814",
+          "ticks": 0,
+          "rss": 41304064,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034133,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087866",
+          "ticks": 4,
+          "rss": 0,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2034150,
+          "ppid": 2033972,
+          "group": 2033957,
+          "session": 2033957,
+          "start": "41087915",
+          "ticks": 3,
+          "rss": 77656064,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 48.91000000000031
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": ""
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1169.735,
+  "navigation": {
+    "frameId": "DDDFFB99612937C1EB2BB8C7E54DBBB9",
+    "loaderId": "9B029F7C3383D99A8F35F0A89C79C42F",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl"
+  },
+  "homeTests": [
+    {
+      "page": "persistent-home.html",
+      "result": "pass",
+      "text": "{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"new O_TRUNC file starts empty even when unlinked concurrently\",\n    \"concurrent create/unlink retains a usable open inode\",\n    \"last close removes the concurrently unlinked inode\",\n    \"write spans chunk boundary\",\n    \"sparse gap is zero-filled\",\n    \"truncate then extend never exposes old bytes\",\n    \"symlink target round trips\",\n    \"close and reopen preserves renamed bytes\",\n    \"ownership and mode persist\",\n    \"unlink removes the directory entry\",\n    \"open unlinked inode remains readable\",\n    \"observer opening preserves another connection's open unlinked inode\",\n    \"observer reads the actual committed unlinked bytes\",\n    \"observer release preserves the guest's open inode\",\n    \"observer rejects writes\",\n    \"observer rejects writable handles\",\n    \"observer rejects file creation\",\n    \"observer close preserves guest bytes\",\n    \"final close reclaims unlinked inode\",\n    \"rename retains overwritten open inode\",\n    \"atomic rename exposes replacement\",\n    \"quota exhaustion maps to guest ENOSPC\",\n    \"failed multi-chunk write rolls back bytes and size\",\n    \"storage accepts writes after aborted transaction\",\n    \"new files use small blocks\",\n    \"holes before small blocks read as zero\",\n    \"write spans a small-block boundary\",\n    \"whole-block write replaces exactly one block\",\n    \"legacy 64 KiB chunks still read\",\n    \"legacy file keeps its chunk size on write\",\n    \"emptied legacy file moves to small blocks\",\n    \"emptied legacy file reads its new bytes\",\n    \"an older page cannot open an upgraded home\",\n    \"directory cycles rejected\",\n    \"concurrent guest lease rejected\"\n  ]\n}"
+    },
+    {
+      "page": "persistent-home-write.html",
+      "result": "pass",
+      "text": "{\n  \"status\": \"passed\",\n  \"checks\": [\n    {\n      \"label\": \"write returns exact byte count\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"multi-block write queues multiple requests before awaiting completion\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"queued block writes are bounded to 32\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"only partial edge blocks read old bytes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"write resolves after one strict transaction commits\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"batched write preserves both edges and copies caller-owned input\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"aligned full blocks skip old reads and span bounded batches\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"later-batch synchronous quota error maps to ENOSPC\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"later-batch failure rolls back earlier batches and metadata\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"asynchronous transaction abort rejects the write\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"asynchronous abort rolls back queued writes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"sparse batched writes preserve zero-filled holes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"overlapping concurrent writes serialize atomically\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"successful bytes survive close and reopen after failed writes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"legacy 64-KiB files retain their format across multiple batches\",\n      \"pass\": true\n    }\n  ],\n  \"batching\": {\n    \"puts\": 97,\n    \"gets\": 2,\n    \"pending\": 0,\n    \"peak\": 32,\n    \"transactions\": 1,\n    \"strict\": true,\n    \"committed\": true\n  },\n  \"aligned\": {\n    \"puts\": 65,\n    \"gets\": 0,\n    \"pending\": 0,\n    \"peak\": 32,\n    \"transactions\": 1,\n    \"strict\": true,\n    \"committed\": true\n  },\n  \"measurements\": [\n    {\n      \"bytes\": 4096,\n      \"samples\": [\n        2.865000009536743,\n        3.125,\n        3.1299999952316284,\n        3.1700000166893005,\n        3.5,\n        3.6050000190734863,\n        7.25\n      ],\n      \"medianMs\": 3.1700000166893005,\n      \"mibPerSecond\": 1.2322555140171978\n    },\n    {\n      \"bytes\": 131072,\n      \"samples\": [\n        6.714999973773956,\n        7.605000019073486,\n        8.125,\n        8.944999992847443,\n        9.844999969005585,\n        10.0799999833107,\n        12.2049999833107\n      ],\n      \"medianMs\": 8.944999992847443,\n      \"mibPerSecond\": 13.974287322521175\n    },\n    {\n      \"bytes\": 1048576,\n      \"samples\": [\n        41.375,\n        41.855000019073486,\n        48.44499999284744,\n        51.91500002145767,\n        52.980000019073486,\n        71.71499997377396,\n        126.28500002622604\n      ],\n      \"medianMs\": 51.91500002145767,\n      \"mibPerSecond\": 19.26225560217041\n    }\n  ]\n}"
+    }
+  ],
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T08:28:06.216Z",
+  "elapsedMs": 6129.053,
+  "resourceSummary": {
+    "pssPeakBytes": 475996160,
+    "rssSumPeakBytes": 1376542720,
+    "minAvailableBytes": 28098297856,
+    "samples": 3
+  }
+}

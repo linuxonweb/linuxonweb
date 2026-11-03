@@ -1,0 +1,590 @@
+[
+  {
+    "fromSeconds": 5,
+    "calls": 1,
+    "totalAsyncMs": 67.7,
+    "bytes": 0,
+    "top": [
+      [
+        "usage",
+        1,
+        67.7
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 10,
+    "calls": 191,
+    "totalAsyncMs": 278.3,
+    "bytes": 1642,
+    "top": [
+      [
+        "getattr",
+        78,
+        70.7
+      ],
+      [
+        "setattr",
+        15,
+        52.7
+      ],
+      [
+        "mkdir",
+        12,
+        47.8
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 15,
+    "calls": 77,
+    "totalAsyncMs": 92.5,
+    "bytes": 540,
+    "top": [
+      [
+        "getattr",
+        39,
+        24.3
+      ],
+      [
+        "setattr",
+        6,
+        20.6
+      ],
+      [
+        "write",
+        2,
+        12.3
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 20,
+    "calls": 33,
+    "totalAsyncMs": 54.3,
+    "bytes": 0,
+    "top": [
+      [
+        "getattr",
+        17,
+        21.2
+      ],
+      [
+        "lookup",
+        9,
+        13.8
+      ],
+      [
+        "mkdir",
+        2,
+        8.2
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 25,
+    "calls": 65,
+    "totalAsyncMs": 121.5,
+    "bytes": 155,
+    "top": [
+      [
+        "write",
+        9,
+        48.1
+      ],
+      [
+        "lookup",
+        15,
+        25.6
+      ],
+      [
+        "getattr",
+        19,
+        23.3
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 30,
+    "calls": 176,
+    "totalAsyncMs": 852.1,
+    "bytes": 461619,
+    "top": [
+      [
+        "write",
+        18,
+        265.6
+      ],
+      [
+        "getattr",
+        50,
+        197.4
+      ],
+      [
+        "lookup",
+        34,
+        135.0
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 35,
+    "calls": 161,
+    "totalAsyncMs": 592.4,
+    "bytes": 35442,
+    "top": [
+      [
+        "getattr",
+        47,
+        140.9
+      ],
+      [
+        "write",
+        15,
+        136.7
+      ],
+      [
+        "lookup",
+        26,
+        107.6
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 40,
+    "calls": 570,
+    "totalAsyncMs": 2989.3,
+    "bytes": 1494298,
+    "top": [
+      [
+        "write",
+        109,
+        1754.6
+      ],
+      [
+        "getattr",
+        141,
+        408.1
+      ],
+      [
+        "create",
+        17,
+        220.6
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 45,
+    "calls": 692,
+    "totalAsyncMs": 2761.0,
+    "bytes": 1768832,
+    "top": [
+      [
+        "write",
+        110,
+        1114.6
+      ],
+      [
+        "getattr",
+        171,
+        409.1
+      ],
+      [
+        "create",
+        29,
+        309.8
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 50,
+    "calls": 57,
+    "totalAsyncMs": 268.9,
+    "bytes": 28581,
+    "top": [
+      [
+        "write",
+        6,
+        91.1
+      ],
+      [
+        "getattr",
+        17,
+        53.2
+      ],
+      [
+        "setattr",
+        4,
+        40.4
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 55,
+    "calls": 187,
+    "totalAsyncMs": 816.6,
+    "bytes": 399701,
+    "top": [
+      [
+        "write",
+        30,
+        380.1
+      ],
+      [
+        "getattr",
+        48,
+        125.9
+      ],
+      [
+        "create",
+        9,
+        89.0
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 60,
+    "calls": 617,
+    "totalAsyncMs": 3747.7,
+    "bytes": 7475164,
+    "top": [
+      [
+        "write",
+        292,
+        3491.6
+      ],
+      [
+        "read",
+        23,
+        119.6
+      ],
+      [
+        "getattr",
+        24,
+        56.0
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 65,
+    "calls": 270,
+    "totalAsyncMs": 1447.6,
+    "bytes": 1092345,
+    "top": [
+      [
+        "write",
+        74,
+        968.8
+      ],
+      [
+        "getattr",
+        52,
+        138.5
+      ],
+      [
+        "lookup",
+        28,
+        103.2
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 70,
+    "calls": 316,
+    "totalAsyncMs": 2281.9,
+    "bytes": 1253176,
+    "top": [
+      [
+        "write",
+        88,
+        1516.6
+      ],
+      [
+        "getattr",
+        49,
+        230.6
+      ],
+      [
+        "read",
+        9,
+        134.0
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 75,
+    "calls": 421,
+    "totalAsyncMs": 3475.3,
+    "bytes": 1400151,
+    "top": [
+      [
+        "write",
+        145,
+        2730.1
+      ],
+      [
+        "getattr",
+        56,
+        165.0
+      ],
+      [
+        "rename",
+        5,
+        113.1
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 80,
+    "calls": 724,
+    "totalAsyncMs": 4345.7,
+    "bytes": 4485682,
+    "top": [
+      [
+        "write",
+        213,
+        2972.5
+      ],
+      [
+        "getattr",
+        125,
+        428.2
+      ],
+      [
+        "create",
+        16,
+        174.4
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 85,
+    "calls": 703,
+    "totalAsyncMs": 4239.8,
+    "bytes": 2144738,
+    "top": [
+      [
+        "write",
+        249,
+        3293.7
+      ],
+      [
+        "lookup",
+        50,
+        252.1
+      ],
+      [
+        "getattr",
+        68,
+        234.9
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 90,
+    "calls": 590,
+    "totalAsyncMs": 3894.3,
+    "bytes": 1436887,
+    "top": [
+      [
+        "write",
+        189,
+        2903.2
+      ],
+      [
+        "getattr",
+        84,
+        239.6
+      ],
+      [
+        "lookup",
+        26,
+        181.8
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 95,
+    "calls": 618,
+    "totalAsyncMs": 3880.4,
+    "bytes": 3026948,
+    "top": [
+      [
+        "write",
+        259,
+        3493.4
+      ],
+      [
+        "getattr",
+        36,
+        89.5
+      ],
+      [
+        "setattr",
+        8,
+        69.0
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 100,
+    "calls": 1093,
+    "totalAsyncMs": 4326.0,
+    "bytes": 2481887,
+    "top": [
+      [
+        "write",
+        550,
+        4243.6
+      ],
+      [
+        "getattr",
+        12,
+        21.7
+      ],
+      [
+        "lookup",
+        3,
+        20.9
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 105,
+    "calls": 992,
+    "totalAsyncMs": 4332.5,
+    "bytes": 1982961,
+    "top": [
+      [
+        "write",
+        504,
+        4306.3
+      ],
+      [
+        "getattr",
+        9,
+        14.4
+      ],
+      [
+        "readdir",
+        2,
+        6.7
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 110,
+    "calls": 670,
+    "totalAsyncMs": 3779.6,
+    "bytes": 2109856,
+    "top": [
+      [
+        "write",
+        326,
+        3646.8
+      ],
+      [
+        "getattr",
+        17,
+        43.8
+      ],
+      [
+        "release",
+        7,
+        40.8
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 115,
+    "calls": 498,
+    "totalAsyncMs": 3496.6,
+    "bytes": 3679628,
+    "top": [
+      [
+        "write",
+        165,
+        2798.2
+      ],
+      [
+        "getattr",
+        85,
+        274.5
+      ],
+      [
+        "create",
+        6,
+        82.4
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 120,
+    "calls": 910,
+    "totalAsyncMs": 4565.7,
+    "bytes": 2695779,
+    "top": [
+      [
+        "write",
+        237,
+        2659.0
+      ],
+      [
+        "rename",
+        26,
+        568.3
+      ],
+      [
+        "getattr",
+        190,
+        454.8
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 125,
+    "calls": 728,
+    "totalAsyncMs": 4629.9,
+    "bytes": 3855313,
+    "top": [
+      [
+        "write",
+        254,
+        3372.0
+      ],
+      [
+        "rename",
+        19,
+        328.8
+      ],
+      [
+        "getattr",
+        111,
+        307.6
+      ]
+    ]
+  },
+  {
+    "fromSeconds": 130,
+    "calls": 63,
+    "totalAsyncMs": 969.4,
+    "bytes": 415204,
+    "top": [
+      [
+        "write",
+        22,
+        760.4
+      ],
+      [
+        "lookup",
+        4,
+        63.8
+      ],
+      [
+        "rename",
+        2,
+        52.6
+      ]
+    ]
+  }
+]

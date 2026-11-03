@@ -31,8 +31,10 @@ pause instructions. Keep this file concise and put detailed work in agent logs.
 - Measure effective CPU affinity/quota for every runtime owner; bind guest CPU
   setting to actual browser capacity. Do not spoof hardwareConcurrency.
 - Sample CPU/RAM at1s during tests. Record build/test times and investigate tasks
-  >5min if unexpectedly slow. Maximum one heavy build plus one light test until
-  resource measurements demonstrate capacity. Coordinate heavy launches.
+  >5min if unexpectedly slow. Serialize all host guest runtime gates under the shared3CPU quota; overlapping
+  guests have stalled at SMP bringup. Keep timed runs free of builds/uploads.
+  PSS may be sampled every5s while CPU/RSS/available RAM/quota remain1s; record
+  this cadence and label PSS peaks as sampled lower bounds.
 - Avoid large/base64 terminal output; retain logs and screenshots in files.
 
 ## Validation and acceptance
@@ -55,4 +57,25 @@ next steps. `agent/task.md` contains full user instructions; those take preceden
 
 ### Browser image release gate learned on 2026-11-03
 
-Any image/compression/composition change must load the exact candidate through the production browser `DecompressionStream` plus desktop extras/init wrapper and reach a guest command or desktop before publication. Node gzip/DecompressionStream and direct kernel boot are component checks only. Chromium rejects concatenated gzip members (`Junk found after end of compressed data`) even when Node and Linux accept them. The failed4f6bf2d3a326 APK image was withdrawn and tested60847fb85339 restored pending a single-member repack and full browser gate. Preserve the failed cube2 evidence alongside the correction. Compressed boot itself remains validated for the reference608 image; code-cache and writeback experiments remain off.
+Every image/compression/composition change must boot the exact served artifact
+through the production browser DecompressionStream plus extras/init wrapper and
+reach a guest command or desktop before publication. Node gzip and direct kernel
+boot are component checks. Chromium rejects concatenated gzip members although
+Node/Linux accept them. Preserve the withdrawn4f6bf2d3a326 failure and repaired
+single-member acceptance evidence; do not repeat that publication mistake.
+
+### Current verified state for the next agent
+
+Public APK4 d258203daee8 is accepted through the exact production browser path;
+SHA2564675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771.
+Compressed Firefox boot is default. Pythonr1 and genuine GNU coreutils are signed
+packages; rootfs/APK database reset together, /home persists. Overall acceptance
+40/100;30s Firefox, general GL/Vulkan,50% host, Node.js and full mobile Firefox
+remain unmet. Read agent/continue.md for exact benchmarks and reproduction.
+
+Canonical Omni is an isolated rejected candidate: file allocation fell538.5MB,
+but measured whole-browser PSS regressed23.4% and FPS did not improve. Keep the
+normal APK4 image public. Code-cache seeding and negotiated FUSE writeback remain
+off. Root-owned .purgecaches repeatedly invalidates caches; never remove it
+publicly without safe per-image/per-profile invalidation. Native Restart normally
+currently exits without a replacement; do not mask it by relaunching all exit0.

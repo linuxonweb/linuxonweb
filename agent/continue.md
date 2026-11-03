@@ -1,92 +1,143 @@
-# Current continuation — active 2026-11-03 task
+# LinuxOnWeb continuation — 2026-11-03
 
-Read agent/task.md for the full user request and AGENTS.md for current rules.
-Root is CTO; built-in same-model agents own implementation, tests and deployment.
-Task start 2026-11-03 07:06:26 UTC; five-hour budget ends about 12:06 UTC.
+Read `agent/task.md` for the exact user request and `AGENTS.md` for active rules.
+The main agent is CTO; same-model built-in subagents implement, test and deploy.
+Task started 2026-11-03 07:06:26 UTC; the five-hour base deadline is 12:06:26.
+An extra hour is authorized only for an important bug, not general scope growth.
+Branch: `gpt-6-astra-pro_builtin-agents_linuxonweb-20261103`. No Git remote existed.
+Do not blanket-add the many unrelated untracked directories, profiles or binaries.
 
-Shared branch: gpt-6-astra-pro_builtin-agents_linuxonweb-20261103.
-Preserved source checkpoint 49fc26e. Retained metadata fix 80a52d1 passes 50
-real browser checks plus independent review. No private profiles/caches added.
-Overall acceptance 26/100 at last root update; the full goal remains unmet.
+## Verified release and acceptance
 
-## Current runtime and evidence
+Overall acceptance is **40/100**, not a quality claim of completion: desktop6/15,
+I/O+startup10/25, genuine JIT4/15, graphics9/25, packages6/10, mobile1/5,
+preview/reproducibility4/5. Responsive Firefox within30s, general OpenGL/Vulkan,
+50% host performance, Node.js, and full mobile Firefox remain unmet.
 
-Normal package 60847fb85339: 114,767,798-byte gzip, Firefox 159 original O2
-plus fpcast ABI, 12,908 CPIO records. Home is browser-backed persistent; rootfs
-is volatile. NSS key4.db seed has no private-key rows; home seeds are empty
-directories. Package privacy receipts live under /mnt/p3/codex-build/s3n/.
-Compression is still opt-in, not accepted as the default.
+The public default is the accepted, single-gzip **APK4 image d258203daee8**:
+116,197,223 bytes, SHA256
+`4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771`.
+Candidate source: `out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4`.
+Original Firefox native SHA256 remains
+`26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998`;
+original /init remains byte-identical. Compressed initramfs is now the normal
+Firefox default; `compressed-initramfs=0` retains the raw diagnostic path.
 
-Latest matched raw3/compressed3 runs completed and reaped. Both used native
-browser and guest 3 CPUs, fixed taskset 0-2, and all recorded ancestor quota
-snapshots show effective 3 CPUs. Peak owned PSS 4.2732 vs 3.2287 GiB; about
-24.4% lower, but no startup gain: Firefox window observed by ~71 s, rendered
-startup page ~91 s. Earlier 8-core runs did not capture historical quota
-values and must not be used as a clean CPU-controlled comparison.
+Actual production browser boot, DecompressionStream, extras/init wrapper,
+Firefox/cube rendering, normal admin terminal, signed `sudo apk update/add`,
+Python r1 module help with empty prefix-warning output, and product Stop passed.
+The rootfs and APK database reset together at guest reboot; /home persists.
+GNU coreutils uses explicit /usr/bin paths; bare ash `ls` may remain BusyBox.
+Do not call this a persistent rootfs installation system.
 
-The input harness originally delayed keyup while waiting for CDP, then still
-blocked on synchronous /proc sampling. Monitoring now runs in a Worker with
-one-second CPU/RAM/PSS/quota samples. Focused input1 test passed 176 actual
-DOM keypresses: exact text and order, max dispatch 32.61 ms and DOM 38.39 ms
-for intended 20 ms. This is harness validation, not guest latency acceptance.
+Live signed package repository:
+https://a3cf34ce40307517.5x7aqstuceku.opentunnel.xyz
+The image also has an explicit tagged @snapshot repository; it is not an
+automatic stale fallback. Package/mobile agent owns package publication and
+final encrypted recovery uploads. Do not put signing keys or preview tokens in Git.
 
-Current owner: tools/startup-benchmark/gpt6-astra-current.mjs; monitor worker
-gpt6-astra-monitor.mjs; isolated constructor proxy gpt6-astra-timing-proxy.mjs.
-Run artifacts: /mnt/p3/codex-build/s3n/. Committed evidence copies are under
-docs/evidence/gpt6-astra-builtin-rubywebterm-20261103/.
-Direct1 showed a single large Firefox Module compile ~0.903 s, so speculative
-large-module caching is not justified. Cloned Instance calls need role/call-site
-classification; their 29.17 s sum spans workers and is not serial latency.
+## Measured results and their limits
 
-## Ownership and next actions
+Accepted create fast path (80a52d1): 50 browser checks and independent review;
+64-cycle metadata ABBA sample767.32→695.39ms (~9.4%). Strict durability unchanged.
+Accepted atomic lookup+attributes (c2e4d21): 24 host checks plus actual native
+stat/lstat/permissions/ENOENT assertions; one read-only transaction instead of two,
+legacy fallback preserved. Native128-stat ABBA median about11.9% lower;
+LOOKUP counts remain262, separate getattr calls785→526. Do not add percentages
+or claim general I/O throughput from these distinct metadata workloads.
 
-startup_io: integration, storage/startup, task docs. graphics_jit: GL/JIT,
-benchmarks and explicit backend UI. packages_mobile: packages, mobile, preview,
-backup. Python now has the contiguous build/checkpoint lane; startup_io should
-only do static analysis and lightweight checks until that agent releases it.
-Graphics dispatch candidate independently source-reviewed by startup_io and
-approved; no full OpenGL/Vulkan/50%-host acceptance follows from that alone.
+Earlier controlled reference-image raw/compressed pair used real3CPU capacity,
+identical inputs and1s PSS:4.2732→3.2287GiB peak (~1.0445GiB lower). It did not
+improve startup: window observed around71s, rendered page around91s. Those peaks
+are not fresh measurements of APK4. Large Firefox Module compilation was only
+~0.903s; repeated-large-compile caching is not a justified startup optimization.
 
-Next runtime: one compressed cold run with corrected input timing and a genuine
-warm Firefox process restart retaining profile/cache. Measure cold request to
-usable content/input separately from warm process launch. Use bounded content
-conditions and retain failures; don't hide latency behind fixed waits or hidden
-prelaunch. Prove stop and persistence separately. Keep compression opt-in until
-these pass. Inspect accessible startup/profile/cache phases while native Firefox
-relink remains blocked by inaccessible p6 build dependencies.
+Latest APK4 quiet control: first150s has no screenshots/evaluate/log polling or
+tracing. CPU/RSS/quota remain1s, PSS every5s (sampled lower-bound peaks).
+Actual cube81frames/23.287s=3.4783fps, about5.8% of the same host cube59.84828fps.
+The full browser still stalls for seconds despite a hardware glremote path.
+PSS peak2,810,084,352B=2.617GiB in this run. A3.7s early copy/hash overlap is
+recorded; the later cube sample itself was quiet. No30s readiness claim follows
+from a quiet owner that intentionally observes only after150s.
 
-Preview port 3000 is a persistent owned systemd service. Authenticated HTTPS
-wrapper, two-second metrics and messaging belong to packages_mobile. Preserve
-user profiles, phone mappings and unrelated services. No Git remote on arrival.
+Benchmark settings are explicit3CPUs,2GiB guest,1280x720, WebGL presenter/backend.
+Public defaults differ: CPU min(4,hardwareConcurrency), saved settings honored,
+initial2GiB with a possible4GiB Firefox choice, auto/WebGPU presentation and
+WebGPU guest backend. Do not silently fallback or present the benchmark settings
+as the public default. Hardware host: Chrome150, NVIDIA MX110/ANGLE OpenGL.
 
-### Latest continuation addition
+## Rejected optional Omni experiment
 
-Current iteration adds diagnostic per-inode home I/O attribution and exact log
-arrival timestamps. `warm1` cold run succeeded visually, but no restart occurred
-because the manual handoff timed out. `inventory2` and `cache1` inspect/export
-only that closed clean test profile. Experimental seed implementation:
-web/linux/startup-cache-seed.mjs, startup-cache-catalog.mjs, startup-cache/60847fb85339.
-11 real-browser safeguards passed in seed-tests1. Seed is not yet linked to
-production main.js. Diagnostic proxy mode `seed` adds only the explicit
-?startup-cache-seed=1 path; normal home/full modes do not seed. Next: after the
-coordinated graphics/package lane, run one bounded fresh-home seed experiment
-and verify cache reads/acceptance and actual launch improvement.
+Canonical159 mozpack packaging preserved8,030 non-manifest payloads plus native,
+init, symlinks and external assets. Regular files8,059→26;64KiB file allocation
+791,281,664→252,772,352B (538,509,312B lower), but download grew3.2MB.
+Candidate `/mnt/p3/codex-build/s3n/rootfs-omni`, versiond9d7bebfe7df,
+SHA256ad654b781ff46891236c4b6a6f1403a0ef396428339105d46d7b6bd1ab25980f.
+It is **not published**. Matched first150s PSS regressed2.617→3.231GiB (+23.4%);
+cube3.1877fps versus3.4783fps provided no gain. Fresh Firefox and an existing
+APK4 profile both rendered and accepted exact about:blank input/navigation.
+Retained-profile gate132.174s ended with normal Stop and zero owned processes.
+A lower one-GiB viability configuration is untested; do not infer it fails merely
+from the two-GiB PSS result. Builder: tools/startup-benchmark/gpt6-astra-pack-omni.py.
+Full receipts/screenshots: tools/startup-benchmark/evidence/apk4-omni-20261103/.
 
-Graphics exact-cube guest run `cube1` uses fx-overlay4 (raw/gzip/manifest only)
-with the same page as the host, no input, 3 CPUs, compressed initramfs. Do not
-change served runtime while that owner is live. Its result also provides the
-new per-inode attribution. Preserve all failed owners and timing caveats.
+## Concrete startup/restart leads
 
-### Browser image release gate learned on 2026-11-03
+The actual root-owned /opt/firefox/browser/.purgecaches marker remains after
+normal Firefox startup; admin cannot remove it. Source159 CheckCompatibility
+sets cachesOK=false whenever it exists; removal failure is ignored. A diskless
+root restores it every boot. This is a concrete repeated-invalidation bug.
+Do not globally remove it: same native build ID can accompany changed resources,
+and all persisted profiles need safe per-image invalidation. A same-image,
+closed-test-profile diagnostic is authorized through an isolated proxy only;
+its result must be recorded separately from a production-safe migration fix.
 
-Any image/compression/composition change must load the exact candidate through the production browser `DecompressionStream` plus desktop extras/init wrapper and reach a guest command or desktop before publication. Node gzip/DecompressionStream and direct kernel boot are component checks only. Chromium rejects concatenated gzip members (`Junk found after end of compressed data`) even when Node and Linux accept them. The failed4f6bf2d3a326 APK image was withdrawn and tested60847fb85339 restored pending a single-member repack and full browser gate. Preserve the failed cube2 evidence alongside the correction. Compressed boot itself remains validated for the reference608 image; code-cache and writeback experiments remain off.
+Actual about:profiles Restart normally was clicked in the Omni run: oldPID106
+exited0, no new process/window appeared within90s. This is a real action failure,
+not a handoff timeout. Native bytes are unchanged; baseline runtime equivalence
+is untested. Readable159 source gives a likely existing mechanism: AppShutdown
+calls LaunchChild(true), aTryExec defaultsfalse, and wasm/Linux
+PR_CreateProcessDetached returns PR_NOT_IMPLEMENTED_ERROR. Shutdown ignores the
+result. A legitimate native rebuild could use correct exec/spawn semantics;
+restarting every exit0 in a shell would break ordinary Close and is unsuitable.
 
-### November3 experimental durability checkpoint (off public)
+## Off-public experiments and safety contracts
 
-The canonical production persistent-home API remains strict and unmodified beyond the accepted create fast path. Standard-mount fixture passed46native+28host checks; without negotiated FUSE_WRITEBACK_CACHE it still makes265hostwrites (270→7fsync calls), so mountflags alone are not the major fix. Experimental negotiated writeback reduced256×4KiB operations to2hostwrites but current Stop lost an acknowledged open dirty page. The subsequent isolated native barrier passed16checks in27.374s, including genuine quiesce+syncfs acknowledgement, strictIDB quota error, exactnonce, healthyStop/reopen and timeoutresume. Exact payload/source/receipt live under tools/startup-benchmark/guest-home-mount and evidence/barrier1-20261103.json. productionAccepted:false: actualdesktop PID1respawns remain a quiescence blocker; no production supervisor or writeback flag is exposed. Prior failure receipts remain.
+Public HomeFS commits remain strict. Cache seed v1 imported but had zero reused
+reads; v2 timed out cooperatively during a contended run. No accepted efficacy.
+Both remain off, with only allowlisted code caches and generated compatibility
+metadata, no prefs/security/user databases. Preserve failure receipts.
 
-### Current acceptance follow-up
+Experimental FUSE_WRITEBACK_CACHE reduced256x4KiB writes to2 host writes, but
+current Stop lost acknowledged dirty guest pages. The isolated barrier fixture
+passed16 checks in27.374s: real quiesce/syncfs, open/active writers, durable reopen,
+quota→ENOSPC, nonce ownership and timeout resume. productionAccepted:false:
+real desktop PID1 can respawn/write and cannot simply be stopped. No public
+writeback mode or new supervisor is enabled. Do not weaken durability for speed.
 
-Cachev2 actualrun failed its cooperative15s deadline during concurrent work after first4.9MB strictlycommitted cache; no compatibility completion or reusedread proof. Seed remains off. Pending release uses repaired single-gzip d35dbfeb2a15, already actualFirefoxboot/cubePASS; actualdesktop signedAPK install and Pythonversionpass, modulecompletion exceeded4sobservation (not fatal), and packageagent is fixing standardlandmarkdirectory warnings in Pythonr1 before repeat. Quiet owner now excludes active browserprobes for requested150s and records screenshot request/completion times. Automated warmRestart mode uses previouslyobserved Restartnormally control at identical viewport; genuine newFirefoxPID +sameprofile +render/input evidence remains required before anylatencyclaim.
+## Runtime ownership, artifacts and recovery
 
-Future narrowIO lead: HomeFS.lookup reads an inode, then FUSELOOKUP repeats getattr in a second IDBtransaction. An optional transactionallycoupled lookup-with-attributes API may remove the redundant roundtrip without cross-request metadata caching. Notimplemented.
+All host guest runtime gates are serialized under the effective3CPU ancestor
+quota. Concurrent guests stalled at SMP bringup; this was a resource confound.
+Keep1s CPU/RSS/quota monitoring in a separate worker and5s PSS; synchronous PSS
+sampling previously delayed input keyup and invalidated those latency probes.
+Profiles/caches/logs must be disk-backed with short TMPDIR Unix socket paths.
+Preserve the existing phone reverse8888 mapping and unrelated services.
+
+Owner: tools/startup-benchmark/gpt6-astra-current.mjs. Diagnostic proxy:
+gpt6-astra-timing-proxy.mjs. Run artifacts: /mnt/p3/codex-build/s3n/.
+Use a closed sibling test profile only; never a user's persisted browser profile.
+The current proxy marker experiment is guarded by exact APK4 hash and closed
+profile receipt. Public assets remain untouched.
+
+The preview port3000 runs as an owned persistent systemd user service; the
+package agent owns authenticated HTTPS metrics/messages and the public signed
+repository. Source/archive browser release gate is mandatory (AGENTS.md).
+Full encrypted history through80a52d1 is saved; incremental history/source and
+latest artifacts need the package agent's final verified checkpoint. Public
+source export excludes profiles, out/, signing keys and private preview state.
+
+Next actions at this checkpoint: finish required GNU package gates; run only the
+approved bounded cache-marker diagnostic if the lane is free; record its actual
+reuse/launch evidence; update this handoff with final commits and recovery
+receipts. Keep APK4 public. Goal score remains40/100; do not claim completion.

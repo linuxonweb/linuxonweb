@@ -1,0 +1,255 @@
+[host] boot timing: firefox boot requested 0.5s after page load; update check done at 1.0s
+[host] boot mode=firefox, display=1280x720, cpus=3, ram=2 GB
+[host] boot timing: home ready at 1.1s
+[host] network proxy ws://127.0.0.1:38095 (guest 192.0.2.2 via 192.0.2.1)
+[host] boot timing: system image (284 MiB) ready at 3.1s
+[host] boot timing: desktop extras appended at 4.8s
+[host] boot timing: machine started at 5.4s
+[host] machine started (framebuffer + virtio input/console/net)
+[host] gputest: waiting for guest GPU listener on vsock port 4050 (gpubackend=webgl: forced WebGL2)
+random: crng init done
+printk: legacy bootconsole [earlycon0] enabled
+Linux version 7.1.5 (a@acachy) (clang version 22.1.6, LLD 22.1.6) # SMP 
+Heap:	(ptrval) -> (ptrval) = 14928
+Stack:	00000000 -> (ptrval) = 65536
+Core count: 3
+Zone ranges:
+  Normal   [mem 0x0000000000000000-0x000000007fffffff]
+Movable zone start for each node
+Early memory node ranges
+  node   0: [mem 0x0000000000000000-0x000000007fffffff]
+Initmem setup node 0 [mem 0x0000000000000000-0x000000007fffffff]
+percpu: max_distance=0x30000 too large for vmalloc space 0x0
+percpu: Embedded 1 pages/cpu s17972 r0 d47564 u65536
+percpu: wasting 1 pages per chunk
+Kernel command line: console=hvc0 rdinit=/init demo.mode=firefox home.persistent=1 firefox=1
+Unknown kernel command line parameters "firefox=1", will be passed to user space.
+printk: log buffer data + meta data: 131072 + 409600 = 540672 bytes
+Dentry cache hash table entries: 262144 (order: 4, 1048576 bytes, linear)
+Inode-cache hash table entries: 131072 (order: 3, 524288 bytes, linear)
+Sorting __ex_table...
+Built 1 zonelists, mobility grouping off.  Total pages: 32768
+mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=3, Nodes=1
+rcu: Hierarchical RCU implementation.
+rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=3.
+rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=3
+NR_IRQS: 256
+IRQs enabled
+rcu: srcu_init: Setting srcu_struct sizes based on contention.
+clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+clocksource: wasm: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+Console: colour dummy device 80x25
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)
+Mountpoint-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)
+VFS: Finished mounting rootfs on nullfs
+rcu: Hierarchical SRCU implementation.
+rcu: 	Max phase no-delay instances is 1000.
+Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+smp: Bringing up secondary CPUs ...
+Hello from cpu 1!
+Hello from cpu 2!
+smp: Brought up 1 node, 3 CPUs
+Memory: 1951488K/2097152K available (139136K reserved, 0K cma-reserved)
+devtmpfs: initialized
+posixtimers hash table entries: 2048 (order: 0, 24576 bytes, linear)
+futex hash table entries: 1024 (65536 bytes on 1 NUMA nodes, total 64 KiB, linear).
+NET: Registered PF_NETLINK/PF_ROUTE protocol family
+pps_core: LinuxPPS API ver. 1 registered
+pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+PTP clock support registered
+clocksource: Switched to clocksource wasm
+NET: Registered PF_INET protocol family
+IP idents hash table entries: 32768 (order: 2, 262144 bytes, linear)
+tcp_listen_portaddr_hash hash table entries: 8192 (order: 1, 98304 bytes, linear)
+Table-perturb hash table entries: 65536 (order: 2, 262144 bytes, linear)
+TCP established hash table entries: 16384 (order: 0, 65536 bytes, linear)
+TCP bind hash table entries: 16384 (order: 3, 393216 bytes, linear)
+TCP: Hash tables configured (established 16384 bind 16384)
+UDP hash table entries: 2048 (order: 1, 114688 bytes, linear)
+NET: Registered PF_UNIX/PF_LOCAL protocol family
+Unpacking initramfs...
+[host] gputest: connect retry (timed out connecting to guest vsock port 4050)
+Freeing initrd memory: 134784K
+workingset: timestamp_bits=30 (anon: 26) max_order=15 bucket_order=0 (anon: 0)
+squashfs: version 4.0 (2009/01/31) Phillip Lougher
+fuse: init (API version 7.45)
+io scheduler mq-deadline registered
+io scheduler kyber registered
+NET: Registered PF_VSOCK protocol family
+printk: legacy console [hvc0] enabled
+printk: legacy bootconsole [earlycon0] disabled
+input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0
+virtiofs virtio4: discovered new tag: home
+Console: switching to colour frame buffer device 160x45
+[host] gputest: connect retry (guest reset vsock connection)
+fb0: wasm framebuffer 1280x720-32 at 094b073e
+This architecture does not have kernel memory protection.
+Run /init as init process
+home: persistent storage mounted
+network: eth0 192.0.2.2/24 gw 192.0.2.1
+display: starting Xfbdev as admin at 1280x720x32
+_XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.
+LinuxInit: VT_ACTIVATE skipped (Operation not permitted)
+LinuxInit: VT_WAITACTIVE skipped (Operation not permitted)
+LinuxInit: KDSETMODE skipped (Operation not permitted)
+Using evdev pointer /dev/input/event0
+[NSS_CA_DB] static Nightly roots; preserving existing profile databases
+[HTTP1_PREFS] h2=off h3=off profile=/home/admin/.mozilla/firefox/http1-profile
+firefox test mode: waiting for Aurora readiness (10-second deadline) before launching as admin
+starting /bin/aurora-wm --compositor=no as admin
+aurora-wm: light compositor disabled by setting
+clipboard: X11 bridge ready
+[wm-ready] Aurora handshake ready after 465 ms
+starting /bin/firefox as admin
+[98, Main Thread] WARNING: g_module_symbol: assertion 'module != NULL' failed: 'glib warning', file source/firefox-159.0a1/toolkit/xre/nsSigHandlers.cpp:237
+
+(firefox-nightly:98): GModule-CRITICAL **: 11:29:46.606: g_module_symbol: assertion 'module != NULL' failed
+[98, Main Thread] WARNING: g_module_close: assertion 'module != NULL' failed: 'glib warning', file source/firefox-159.0a1/toolkit/xre/nsSigHandlers.cpp:237
+
+(firefox-nightly:98): GModule-CRITICAL **: 11:29:46.609: g_module_close: assertion 'module != NULL' failed
+Fontconfig error: Cannot load default config file: File not found
+[host] gpu-owner: gl context 1 open: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)
+PBLIC enabled (threshold=200)
+PBLBC enabled (threshold=50 ic=1 loopexit=0 loopjit=1)
+PBLJIT enabled (threshold=1000, logBudget=24)
+PBLUNIMPL total=1 StoreFixedSlotUndefinedResult=1
+PBLIC compile #1 len=3 inline=1 step=0 wasm=251 idx=224491
+PBLIC stats(compiles) compiles=1 rejects=0 installs=1 entries=0 fails=0 steps=0 top:
+PBLBC compile #1 self-hosted:354 ops=174 inline=156 ic=37 exit=18 wasm=13281 idx=224492
+PBLBC compile #2 resource://gre/modules/ActorManagerParent.sys.mjs:884 ops=18 inline=8 ic=1 exit=10 wasm=824 idx=224493
+PBLIC compile #2 len=12 inline=3 step=0 wasm=398 idx=224494
+PBLIC stats(compiles) compiles=2 rejects=0 installs=2 entries=336 fails=0 steps=0 top:
+PBLIC compile #3 len=11 inline=3 step=0 wasm=305 idx=224495
+PBLBC compile #3 resource://gre/modules/Console.sys.mjs:609 ops=128 inline=89 ic=23 exit=39 wasm=8204 idx=224496
+PBLIC compile #4 len=7 inline=2 step=0 wasm=283 idx=224497
+PBLIC stats(compiles) compiles=4 rejects=0 installs=4 entries=1551 fails=0 steps=0 top:
+PBLBC compile #4 self-hosted:2826 ops=15 inline=12 ic=2 exit=3 wasm=1088 idx=224498
+PBLIC compile #5 len=15 inline=4 step=0 wasm=365 idx=224499
+PBLIC compile #6 len=14 inline=4 step=0 wasm=325 idx=224500
+PBLIC compile #7 len=12 inline=3 step=0 wasm=305 idx=224501
+PBLIC compile #8 len=10 inline=3 step=0 wasm=322 idx=224502
+PBLIC stats(compiles) compiles=8 rejects=0 installs=8 entries=2409 fails=0 steps=0 top:
+PBLIC compile #9 len=20 inline=5 step=0 wasm=334 idx=224503
+PBLIC compile #10 len=14 inline=4 step=0 wasm=314 idx=224504
+PBLIC compile #11 len=16 inline=3 step=1 wasm=429 idx=224505
+PBLBC compile #5 self-hosted:402 ops=38 inline=35 ic=10 exit=3 wasm=3201 idx=224506
+PBLBC compile #6 self-hosted:2524 ops=112 inline=100 ic=21 exit=12 wasm=7428 idx=224507
+PBLIC compile #12 len=11 inline=3 step=0 wasm=304 idx=224508
+PBLIC compile #13 len=11 inline=3 step=0 wasm=343 idx=224509
+PBLIC compile #14 len=10 inline=3 step=0 wasm=339 idx=224510
+PBLIC compile #15 len=26 inline=7 step=0 wasm=373 idx=224511
+PBLBC compile #7 resource://gre/modules/XPCOMUtils.sys.mjs:229 ops=18 inline=12 ic=6 exit=6 wasm=1705 idx=224512
+PBLBC compile #8 resource://gre/modules/XPCOMUtils.sys.mjs:176 ops=150 inline=99 ic=29 exit=51 wasm=10738 idx=224513
+PBLIC compile #16 len=17 inline=5 step=0 wasm=342 idx=224514
+PBLIC stats(compiles) compiles=16 rejects=0 installs=16 entries=12112 fails=188 steps=31 top: StoreFixedSlotUndefinedResult=31
+PBLBC compile #9 self-hosted:2761 ops=304 inline=286 ic=57 exit=18 wasm=22929 idx=224515
+PBLBC compile #10 resource://gre/modules/Log.sys.mjs:269 ops=7 inline=4 ic=1 exit=3 wasm=456 idx=224516
+PBLBC compile #11 resource://gre/modules/Log.sys.mjs:218 ops=78 inline=62 ic=15 exit=16 wasm=5225 idx=224517
+PBLIC compile #17 len=19 inline=5 step=0 wasm=344 idx=224518
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) [GFX1-]: vaapitest: ERROR
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) |[1][GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+ (t=18.6004) [GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+
+[host] gpu-owner: gl context 2 open: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)
+PBLIC compile #18 len=16 inline=4 step=0 wasm=408 idx=224519
+PBLIC compile #19 len=11 inline=3 step=0 wasm=313 idx=224520
+PBLBC compile #12 resource://gre/modules/TelemetryEnvironment.sys.mjs:882 ops=165 inline=132 ic=49 exit=33 wasm=16901 idx=224521
+PBLIC compile #20 len=12 inline=3 step=0 wasm=300 idx=224522
+PBLIC compile #21 len=23 inline=3 step=1 wasm=435 idx=224523
+PBLBC compile #13 moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs:4538 ops=29 inline=14 ic=5 exit=15 wasm=1908 idx=224524
+PBLBC compile #14 self-hosted:145 ops=126 inline=116 ic=24 exit=10 wasm=9463 idx=224525
+PBLBC compile #15 resource://gre/modules/Console.sys.mjs:500 ops=70 inline=54 ic=16 exit=16 wasm=5226 idx=224526
+PBLIC compile #22 len=10 inline=3 step=0 wasm=305 idx=224527
+PBLBC compile #16 self-hosted:107 ops=92 inline=83 ic=18 exit=9 wasm=7094 idx=224528
+PBLBC compile #17 resource://gre/modules/Log.sys.mjs:434 ops=147 inline=132 ic=25 exit=15 wasm=10615 idx=224529
+PBLIC compile #23 len=7 inline=1 step=1 wasm=399 idx=224530
+PBLIC compile #24 len=30 inline=6 step=1 wasm=502 idx=224531
+PBLBC compile #18 self-hosted:4799 ops=96 inline=85 ic=19 exit=11 wasm=6599 idx=224532
+PBLIC compile #25 len=18 inline=5 step=0 wasm=347 idx=224533
+PBLBC compile #19 resource://gre/modules/Console.sys.mjs:742 ops=12 inline=8 ic=1 exit=4 wasm=621 idx=224534
+PBLIC compile #26 len=7 inline=1 step=1 wasm=382 idx=224535
+PBLBC compile #20 resource://gre/modules/XPCOMUtils.sys.mjs:237 ops=128 inline=99 ic=37 exit=29 wasm=12109 idx=224536
+PBLIC compile #27 len=26 inline=3 step=2 wasm=579 idx=224537
+PBLBC compile #21 resource://gre/modules/TelemetryControllerParent.sys.mjs:1369 ops=67 inline=55 ic=9 exit=12 wasm=4092 idx=224538
+PBLBC compile #22 self-hosted:125 ops=118 inline=109 ic=25 exit=9 wasm=9297 idx=224539
+PBLBC compile #23 resource://gre/modules/Extension.sys.mjs:307 ops=167 inline=139 ic=19 exit=28 wasm=11492 idx=224540
+PBLIC compile #28 len=23 inline=3 step=1 wasm=435 idx=224541
+PBLIC compile #29 len=11 inline=3 step=0 wasm=378 idx=224542
+PBLIC compile #30 len=6 inline=2 step=0 wasm=302 idx=224543
+PBLJIT reject resource://gre/modules/Extension.sys.mjs:307 off=12 at=18 op=GetLocal reason=nested loop
+PBLIC compile #31 len=16 inline=4 step=0 wasm=313 idx=224544
+PBLBC compile #24 resource://gre/modules/Console.sys.mjs:316 ops=10 inline=5 ic=3 exit=5 wasm=1213 idx=224545
+PBLBC compile #25 resource://gre/modules/ExtensionCommon.sys.mjs:1200 ops=44 inline=34 ic=10 exit=10 wasm=3228 idx=224546
+PBLBC compile #26 resource://gre/modules/AsyncShutdown.sys.mjs:141 ops=56 inline=34 ic=14 exit=22 wasm=4422 idx=224547
+PBLBC compile #27 self-hosted:2873 ops=60 inline=44 ic=9 exit=16 wasm=3400 idx=224548
+PBLBC compile #28 self-hosted:4474 ops=135 inline=105 ic=17 exit=30 wasm=8446 idx=224549
+PBLBC compile #29 resource://gre/modules/shared/NewPasswordModel.sys.mjs:1 ops=250 inline=93 ic=23 exit=157 wasm=9591 idx=224550
+PBLBC compile #30 resource://gre/modules/third_party/fathom/fathom.mjs:1566 ops=53 inline=43 ic=5 exit=10 wasm=2435 idx=224551
+PBLBC compile #31 resource://gre/modules/third_party/fathom/fathom.mjs:300 ops=24 inline=14 ic=0 exit=10 wasm=580 idx=224552
+PBLIC compile #32 len=32 inline=6 step=1 wasm=490 idx=224553
+PBLIC stats(compiles) compiles=32 rejects=0 installs=32 entries=65065 fails=3398 steps=929 top: CallNativeFunction=536 StoreFixedSlotUndefinedResult=209 GuardFunctionScript=61 IsCallableResult=50 MegamorphicLoadSlotByValueResult=43 CallScriptedFunction=28 AddAndStoreDynamicSlot=2
+PBLBC compile #32 resource://gre/modules/third_party/fathom/fathom.mjs:2197 ops=39 inline=36 ic=9 exit=3 wasm=3187 idx=224554
+PBLBC compile #33 resource://gre/modules/third_party/fathom/fathom.mjs:1939 ops=11 inline=8 ic=1 exit=3 wasm=567 idx=224555
+PBLBC compile #34 resource://gre/modules/third_party/fathom/fathom.mjs:1870 ops=14 inline=4 ic=2 exit=10 wasm=763 idx=224556
+PBLBC compile #35 resource://gre/modules/third_party/fathom/fathom.mjs:1878 ops=14 inline=4 ic=2 exit=10 wasm=763 idx=224557
+PBLBC compile #36 resource://gre/modules/third_party/fathom/fathom.mjs:2175 ops=32 inline=20 ic=2 exit=12 wasm=1519 idx=224558
+PBLBC compile #37 resource://gre/modules/third_party/fathom/fathom.mjs:1293 ops=36 inline=21 ic=2 exit=15 wasm=1282 idx=224559
+PBLBC compile #38 resource://gre/modules/third_party/fathom/fathom.mjs:1984 ops=27 inline=22 ic=9 exit=5 wasm=2762 idx=224560
+PBLBC compile #39 resource://gre/modules/third_party/fathom/fathom.mjs:1728 ops=61 inline=44 ic=8 exit=17 wasm=2934 idx=224561
+PBLBC compile #40 self-hosted:1303 ops=6 inline=3 ic=0 exit=3 wasm=251 idx=224562
+PBLIC compile #33 len=18 inline=4 step=1 wasm=461 idx=224566
+PBLIC compile #34 len=23 inline=3 step=1 wasm=435 idx=224568
+PBLIC compile #35 len=23 inline=3 step=1 wasm=435 idx=224569
+PBLIC compile #36 len=14 inline=4 step=0 wasm=376 idx=224571
+PBLIC compile #37 len=18 inline=5 step=0 wasm=330 idx=224572
+PBLIC compile #38 len=8 inline=1 step=1 wasm=399 idx=224579
+PBLIC compile #39 len=12 inline=3 step=0 wasm=300 idx=224580
+PBLIC compile #40 len=36 inline=8 step=1 wasm=546 idx=224582
+PBLIC stats(compiles) compiles=64 rejects=0 installs=64 entries=584783 fails=24243 steps=13742 top: MegamorphicLoadSlotResult=3704 MegamorphicStoreSlot=1751 MegamorphicHasPropResult=1432 AddAndStoreDynamicSlot=940 CallScriptedFunction=939 CallNativeFunction=893 AddAndStoreFixedSlot=839 GuardFunctionScript=705
+PBLJIT reject self-hosted:125 off=251 at=251 op=LoopHead reason=head type
+PBLJIT reject resource://gre/modules/Extension.sys.mjs:307 off=93 at=99 op=GetArg reason=nested loop
+PBLJIT reject resource://gre/modules/Extension.sys.mjs:307 off=192 at=192 op=LoopHead reason=head type
+PBLJIT reject self-hosted:125 off=251 at=251 op=LoopHead reason=head type
+PBLJIT reject resource://gre/modules/third_party/jsesc/jsesc.mjs:116 off=1144 at=1150 op=GetLocal reason=region size
+PBLJIT reject resource://gre/modules/third_party/jsesc/jsesc.mjs:49 off=4 at=4 op=LoopHead reason=head type
+PBLIC stats(compiles) compiles=128 rejects=0 installs=128 entries=1190953 fails=60360 steps=127276 top: MegamorphicLoadSlotResult=41102 CallNativeFunction=29813 LoadStringCharResult=24380 CallScriptedFunction=3566 AddAndStoreFixedSlot=3184 StoreDenseElementHole=3147 GuardFunctionScript=2946 MegamorphicHasPropResult=2804
+PBLJIT reject self-hosted:167 off=337 at=337 op=LoopHead reason=head type
+PBLJIT reject self-hosted:145 off=246 at=246 op=LoopHead reason=head type
+[host] gpu-owner: gl context 3 open: ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) |[1][GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+ (t=18.6004) |[2][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9504) [GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) |[1][GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+ (t=18.6004) |[2][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9504) |[3][GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))" (t=39.9604) [GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))"
+JavaScript warning: file:///opt/firefox/gpu-check/gpu-check.html, line 285: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) |[1][GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+ (t=18.6004) |[2][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9504) |[3][GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))" (t=39.9604) |[4][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9704) [GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))
+Crash Annotation GraphicsCriticalError: |[0][GFX1-]: vaapitest: ERROR (t=18.5904) |[1][GFX1-]: vaapitest: VA-API test failed: failed to open renderDeviceFD.
+ (t=18.6004) |[2][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9504) |[3][GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))" (t=39.9604) |[4][GFX1]: Failed to parse ANGLE renderer: Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0)) (t=39.9704) |[5][GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))" (t=39.9804) [GFX1-]: Couldn't sanitize GL_RENDERER "Host WebGL2 (ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL 4.5.0))"
+JavaScript warning: file:///opt/firefox/gpu-check/gpu-check.html, line 391: WebGPU is only available on 64-bit architectures.
+PBLJIT reject self-hosted:107 off=178 at=178 op=LoopHead reason=head type
+PBLJIT compile #1 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225032 attempts=2 gcEpoch=0
+PBLJIT stats compiles=1 rejects=10 runs=0 bails=0
+PBLIC stats(steps) compiles=200 rejects=0 installs=200 entries=6382731 fails=269946 steps=1048576 top: CallNativeFunction=414397 LoadStringCharResult=392249 MegamorphicLoadSlotResult=55223 ObjectToIteratorResult=27079 IsArrayResult=20262 StoreDenseElementHole=19868 MegamorphicLoadSlotByValueResult=19520 IsCallableResult=12211
+PBLUNIMPL total=16384 MapSetResult=2992 StoreFixedSlotUndefinedResult=1670 MapGetResult=1608 MapGetStringResult=1490 SetAddResult=1207 MapHasResult=792
+PBLIC stats(compiles) compiles=256 rejects=0 installs=256 entries=6732781 fails=302985 steps=1084690 top: CallNativeFunction=417100 LoadStringCharResult=392249 MegamorphicLoadSlotResult=57532 ObjectToIteratorResult=27079 StoreDenseElementHole=25187 IsArrayResult=21199 MegamorphicLoadSlotByValueResult=19634 IsCallableResult=15378
+PBLJIT GC evict oldEpoch=0 newEpoch=1
+PBLJIT compile #2 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225308 attempts=2 gcEpoch=1
+PBLJIT stats compiles=2 rejects=10 runs=41 bails=0
+PBLJIT reject file:///opt/firefox/gpu-check/gpu-check.html:210 off=73 at=79 op=GetLocal reason=nested loop
+[Parent 98, IPC Launch] WARNING: fork() failed: Function not implemented: file /mnt/p6/build/firefox-nightly-musl-jit-full-20261002/source/firefox-159.0a1/ipc/chromium/src/base/process_util_linux.cc:103
+[Parent 98, IPC I/O Parent] WARNING: Failed to launch utility subprocess @fork (Error:38): file source/firefox-159.0a1/ipc/glue/GeckoChildProcessHost.cpp:838
+console.warn: BackupService: "There was an error while trying to get the Document's directory" [Exception... "Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIProperties.get]"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame :: moz-src:///browser/components/backup/BackupService.sys.mjs :: get docsDirFolderPath :: line 1304"  data: no]
+PBLJIT reject file:///opt/firefox/gpu-check/gpu-check.html:210 off=38 at=44 op=GetLocal reason=nested loop
+PBLJIT reject self-hosted:3906 off=1521 at=1562 op=GetElem reason=element type
+PBLJIT GC evict oldEpoch=1 newEpoch=2
+PBLJIT compile #3 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225471 attempts=2 gcEpoch=2
+PBLIC stats(steps) compiles=352 rejects=1 installs=352 entries=24215455 fails=867653 steps=4194304 top: CallNativeFunction=1793178 LoadStringCharResult=1727332 ObjectToIteratorResult=110458 MegamorphicLoadSlotResult=88518 IsArrayResult=76168 MegamorphicLoadSlotByValueResult=70664 StoreDenseElementHole=62912 IsCallableResult=40777
+console.error: AboutHomeStartupCache: "requestCache called with no _procManager!"
+PBLJIT GC evict oldEpoch=2 newEpoch=3
+PBLJIT compile #4 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225486 attempts=2 gcEpoch=4
+PBLJIT stats compiles=4 rejects=13 runs=8091 bails=0
+PBLJIT GC evict oldEpoch=4 newEpoch=5
+PBLJIT compile #5 file:///opt/firefox/gpu-check/gpu-check.html:210 off=120 len=83 ops=31 vars=6 depth=5 wasm=2216 idx=225487 attempts=2 gcEpoch=5

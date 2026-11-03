@@ -1,0 +1,55 @@
+{
+  "phases": [
+    {
+      "phase": "pre-window-definite",
+      "fromSeconds": 0,
+      "toSeconds": 50,
+      "calls": 1966,
+      "aggregateAsyncSeconds": 7.809,
+      "writes": 268,
+      "writeAsyncSeconds": 3.35,
+      "writtenMiB": 1.965
+    },
+    {
+      "phase": "window-transition",
+      "fromSeconds": 50,
+      "toSeconds": 70,
+      "calls": 1131,
+      "aggregateAsyncSeconds": 6.281,
+      "writes": 402,
+      "writeAsyncSeconds": 4.932,
+      "writtenMiB": 5.784
+    },
+    {
+      "phase": "page-transition",
+      "fromSeconds": 70,
+      "toSeconds": 90,
+      "calls": 2164,
+      "aggregateAsyncSeconds": 14.343,
+      "writes": 695,
+      "writeAsyncSeconds": 10.513,
+      "writtenMiB": 5.346
+    },
+    {
+      "phase": "rendered-page-idle",
+      "fromSeconds": 90,
+      "toSeconds": 110,
+      "calls": 3293,
+      "aggregateAsyncSeconds": 16.433,
+      "writes": 1502,
+      "writeAsyncSeconds": 14.947,
+      "writtenMiB": 7.439
+    },
+    {
+      "phase": "input-and-background",
+      "fromSeconds": 110,
+      "toSeconds": 135,
+      "calls": 2869,
+      "aggregateAsyncSeconds": 17.441,
+      "writes": 1004,
+      "writeAsyncSeconds": 13.236,
+      "writtenMiB": 11.321
+    }
+  ],
+  "caveat": "Calls assigned by start time to five-second bins; aggregate async durations may overlap and cross boundaries. Exact first window lies between51s and71s, first rendered page between71s and91s."
+}

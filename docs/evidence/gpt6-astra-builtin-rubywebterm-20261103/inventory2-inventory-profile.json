@@ -1,0 +1,768 @@
+{
+  "nodes": 127,
+  "truncated": false,
+  "files": [
+    {
+      "id": 1,
+      "path": "/home/",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 2,
+      "path": "/home/admin",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 3,
+      "path": "/home/admin/Desktop",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 4,
+      "path": "/home/admin/Documents",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 5,
+      "path": "/home/admin/Downloads",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 6,
+      "path": "/home/admin/Documents/readme.txt",
+      "bytes": 29,
+      "mode": 33188
+    },
+    {
+      "id": 7,
+      "path": "/home/admin/Downloads/note.txt",
+      "bytes": 7,
+      "mode": 33188
+    },
+    {
+      "id": 8,
+      "path": "/home/admin/Documents/browse.txt",
+      "bytes": 117,
+      "mode": 33188
+    },
+    {
+      "id": 9,
+      "path": "/home/admin/.linuxonweb-seeded",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 10,
+      "path": "/home/admin/.mozilla",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 11,
+      "path": "/home/admin/.cache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 12,
+      "path": "/home/firefox",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 13,
+      "path": "/home/firefox/.mozilla",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 14,
+      "path": "/home/firefox/.cache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 15,
+      "path": "/home/admin/.mozilla/firefox",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 16,
+      "path": "/home/admin/.mozilla/firefox/http1-profile",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 17,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/user.js",
+      "bytes": 380,
+      "mode": 33188
+    },
+    {
+      "id": 18,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/chrome",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 19,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/chrome/userChrome.css",
+      "bytes": 1109,
+      "mode": 33188
+    },
+    {
+      "id": 20,
+      "path": "/home/admin/.config",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 21,
+      "path": "/home/admin/.config/aurora-wm",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 22,
+      "path": "/home/admin/.config/aurora-wm/settings.conf",
+      "bytes": 270,
+      "mode": 33188
+    },
+    {
+      "id": 23,
+      "path": "/home/admin/.cache/mozilla",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 24,
+      "path": "/home/admin/.cache/mozilla/firefox",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 25,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/.parentlock",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 26,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/lock",
+      "bytes": 14,
+      "mode": 41471
+    },
+    {
+      "id": 27,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 29,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/compatibility.ini",
+      "bytes": 155,
+      "mode": 33152
+    },
+    {
+      "id": 30,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 31,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 32,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 33,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/doomed",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "id": 34,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/cookies.sqlite",
+      "bytes": 98304,
+      "mode": 33188
+    },
+    {
+      "id": 42,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage.sqlite",
+      "bytes": 28672,
+      "mode": 33188
+    },
+    {
+      "id": 45,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 46,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/ls-archive.sqlite",
+      "bytes": 131072,
+      "mode": 33188
+    },
+    {
+      "id": 51,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/permissions.sqlite",
+      "bytes": 163840,
+      "mode": 33188
+    },
+    {
+      "id": 55,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/times.json",
+      "bytes": 50,
+      "mode": 33188
+    },
+    {
+      "id": 57,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/extension-store-permissions",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 63,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 64,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 65,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/.metadata-v2",
+      "bytes": 62,
+      "mode": 33188
+    },
+    {
+      "id": 69,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 70,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/3870112724rsegmnoittet-es.sqlite",
+      "bytes": 49152,
+      "mode": 33188
+    },
+    {
+      "id": 73,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/3870112724rsegmnoittet-es.sqlite-wal",
+      "bytes": 6868096,
+      "mode": 33188
+    },
+    {
+      "id": 76,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/extension-store",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 81,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/pkcs11.txt",
+      "bytes": 466,
+      "mode": 33152
+    },
+    {
+      "id": 82,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/3870112724rsegmnoittet-es.files",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 83,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/cert9.db",
+      "bytes": 229376,
+      "mode": 33152
+    },
+    {
+      "id": 88,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/key4.db",
+      "bytes": 294912,
+      "mode": 33152
+    },
+    {
+      "id": 91,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/security_state",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 97,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/extension-store-permissions/data.safe.bin",
+      "bytes": 1313,
+      "mode": 33188
+    },
+    {
+      "id": 98,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/bounce-tracking-protection.sqlite",
+      "bytes": 98304,
+      "mode": 33188
+    },
+    {
+      "id": 102,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/SiteSecurityServiceState.bin",
+      "bytes": 1716,
+      "mode": 33188
+    },
+    {
+      "id": 103,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/a2b0ebf2.sqlite",
+      "bytes": 229376,
+      "mode": 33188
+    },
+    {
+      "id": 104,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionCheckpoints.json",
+      "bytes": 90,
+      "mode": 33188
+    },
+    {
+      "id": 105,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/places.sqlite",
+      "bytes": 5242880,
+      "mode": 33188
+    },
+    {
+      "id": 108,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/favicons.sqlite",
+      "bytes": 5242880,
+      "mode": 33188
+    },
+    {
+      "id": 111,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/favicons.sqlite-wal",
+      "bytes": 1147752,
+      "mode": 33188
+    },
+    {
+      "id": 112,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/places.sqlite-wal",
+      "bytes": 2295472,
+      "mode": 33188
+    },
+    {
+      "id": 114,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/bookmarkbackups",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 115,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/safebrowsing",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 117,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/a2b0ebf2.sqlite-wal",
+      "bytes": 524704,
+      "mode": 33188
+    },
+    {
+      "id": 118,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/a2b0ebf2.sqlite-shm",
+      "bytes": 65536,
+      "mode": 33188
+    },
+    {
+      "id": 119,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/content-prefs.sqlite",
+      "bytes": 262144,
+      "mode": 33188
+    },
+    {
+      "id": 122,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/logins.db",
+      "bytes": 360448,
+      "mode": 33188
+    },
+    {
+      "id": 126,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/9085CF9B24AE65C77BD081772230413CCEE1184A",
+      "bytes": 16996,
+      "mode": 33152
+    },
+    {
+      "id": 130,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/thumbnails",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 131,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/extension-store/data.safe.bin",
+      "bytes": 116546,
+      "mode": 33188
+    },
+    {
+      "id": 135,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/360DE1F3E174E84794C36651DD126686164A2F9A",
+      "bytes": 596250,
+      "mode": 33152
+    },
+    {
+      "id": 136,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1974846527meornoittso-r.sqlite",
+      "bytes": 49152,
+      "mode": 33188
+    },
+    {
+      "id": 137,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/webext.sc.lz4",
+      "bytes": 125456,
+      "mode": 33188
+    },
+    {
+      "id": 138,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/domain_to_categories.sqlite",
+      "bytes": 98304,
+      "mode": 33188
+    },
+    {
+      "id": 141,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/domain_to_categories.sqlite-journal",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 146,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-logs",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 147,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/content-prefs.sqlite-wal",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 148,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-logs/success-sessionrestore-1793694882966.txt",
+      "bytes": 1532,
+      "mode": 33188
+    },
+    {
+      "id": 149,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1974846527meornoittso-r.sqlite-wal",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 151,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/xulstore.json",
+      "bytes": 83,
+      "mode": 33188
+    },
+    {
+      "id": 152,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1974846527meornoittso-r.files",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 153,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/2918063365piupsah.sqlite",
+      "bytes": 49152,
+      "mode": 33188
+    },
+    {
+      "id": 157,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/2918063365piupsah.sqlite-wal",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 160,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/2918063365piupsah.files",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 161,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/autofill.db",
+      "bytes": 589824,
+      "mode": 33188
+    },
+    {
+      "id": 163,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1657114595AmcateirvtiSty.sqlite",
+      "bytes": 49152,
+      "mode": 33188
+    },
+    {
+      "id": 164,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/B85B6859D18FB7585612995F32E488A37FC2A72B",
+      "bytes": 106170,
+      "mode": 33152
+    },
+    {
+      "id": 165,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 167,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/autofill.db-wal",
+      "bytes": 623080,
+      "mode": 33188
+    },
+    {
+      "id": 168,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/autofill.db-shm",
+      "bytes": 65536,
+      "mode": 33188
+    },
+    {
+      "id": 169,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/activity-stream.discovery_stream.json",
+      "bytes": 94681,
+      "mode": 33188
+    },
+    {
+      "id": 173,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1657114595AmcateirvtiSty.sqlite-wal",
+      "bytes": 0,
+      "mode": 33188
+    },
+    {
+      "id": 174,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/06A6D86B39A0E3DCE68006525D21C3AAB6C8E0B4",
+      "bytes": 22186,
+      "mode": 33152
+    },
+    {
+      "id": 175,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/storage/permanent/chrome/idb/1657114595AmcateirvtiSty.files",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 176,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/startupCache.4.little",
+      "bytes": 4926718,
+      "mode": 33188
+    },
+    {
+      "id": 177,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/settings",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 179,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/urlCache.bin",
+      "bytes": 6031,
+      "mode": 33188
+    },
+    {
+      "id": 182,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/scriptCache.bin",
+      "bytes": 14313900,
+      "mode": 33188
+    },
+    {
+      "id": 184,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/BE2C04A74629473334936F33CB11B43633C8B5E4",
+      "bytes": 26116,
+      "mode": 33152
+    },
+    {
+      "id": 186,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/E1D84915E4F5156EEB91D07C4E6F05B983390CD3",
+      "bytes": 19440,
+      "mode": 33152
+    },
+    {
+      "id": 187,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-backups",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 190,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 192,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean/db",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 194,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean/pending_pings",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 195,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/extensions.json",
+      "bytes": 13568,
+      "mode": 33188
+    },
+    {
+      "id": 196,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/FCC7001BFDD510C5A43379D3F42BC3909B08B76F",
+      "bytes": 22126,
+      "mode": 33152
+    },
+    {
+      "id": 199,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/containers.json",
+      "bytes": 583,
+      "mode": 33188
+    },
+    {
+      "id": 202,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/handlers.json",
+      "bytes": 426,
+      "mode": 33188
+    },
+    {
+      "id": 203,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/4FA981EF5906758E1896FCAD16BBA06BD31985D1",
+      "bytes": 26125,
+      "mode": 33152
+    },
+    {
+      "id": 206,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/addonStartup.json.lz4",
+      "bytes": 4026,
+      "mode": 33188
+    },
+    {
+      "id": 208,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/addons.json",
+      "bytes": 24,
+      "mode": 33188
+    },
+    {
+      "id": 211,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/broadcast-listeners.json",
+      "bytes": 209,
+      "mode": 33188
+    },
+    {
+      "id": 213,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/state.json",
+      "bytes": 236,
+      "mode": 33188
+    },
+    {
+      "id": 218,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/session-state.json",
+      "bytes": 162,
+      "mode": 33188
+    },
+    {
+      "id": 222,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/aborted-session-ping",
+      "bytes": 17833,
+      "mode": 33188
+    },
+    {
+      "id": 263,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-backups/recovery.baklz4",
+      "bytes": 1152,
+      "mode": 33188
+    },
+    {
+      "id": 296,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/scriptCache-child.bin",
+      "bytes": 1764,
+      "mode": 33188
+    },
+    {
+      "id": 345,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/index",
+      "bytes": 384,
+      "mode": 33152
+    },
+    {
+      "id": 350,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/6E7C72B58DD19446CD32AC5809F9CF381FDD9B9B",
+      "bytes": 17042,
+      "mode": 33152
+    },
+    {
+      "id": 352,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/search.json.mozlz4",
+      "bytes": 331,
+      "mode": 33188
+    },
+    {
+      "id": 358,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/75B5AB405E2524132CB5F49D04222C9B898C9CCA",
+      "bytes": 16046,
+      "mode": 33152
+    },
+    {
+      "id": 365,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/activity-stream.contile.json",
+      "bytes": 14,
+      "mode": 33188
+    },
+    {
+      "id": 372,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/prefs.js",
+      "bytes": 8049,
+      "mode": 33152
+    },
+    {
+      "id": 376,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean/events",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 397,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-backups/recovery.jsonlz4",
+      "bytes": 1336,
+      "mode": 33188
+    },
+    {
+      "id": 409,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean/tmp",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "id": 412,
+      "path": "/home/admin/.mozilla/firefox/http1-profile/datareporting/glean/db/data.safe.bin",
+      "bytes": 2774,
+      "mode": 33188
+    },
+    {
+      "id": 422,
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/activity-stream.shortcut_cache.json",
+      "bytes": 220,
+      "mode": 33188
+    }
+  ]
+}

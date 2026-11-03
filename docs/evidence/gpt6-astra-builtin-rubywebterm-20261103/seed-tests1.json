@@ -1,0 +1,771 @@
+{
+  "schema": 1,
+  "reusedTestProfile": null,
+  "start": "2026-11-03T09:00:32.152Z",
+  "mode": "seed-tests",
+  "seconds": 60,
+  "run": "/mnt/p3/codex-build/s3n/seed-tests1",
+  "samples": [
+    {
+      "ms": 513.204,
+      "completedMs": 561.075,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": null,
+      "pssBytes": 133940224,
+      "pssSampled": true,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 0,
+      "processEnumerationMs": 43.242000000000075,
+      "pssReadMs": 3.711999999999989,
+      "rssSumBytes": 238579712,
+      "availableBytes": 29560725504,
+      "diskFreeBytes": 438589775872,
+      "processes": [
+        {
+          "pid": 2267105,
+          "ppid": 2267103,
+          "group": 2267103,
+          "session": 2267103,
+          "start": "41282899",
+          "ticks": 17,
+          "rss": 83517440,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267124,
+          "ppid": 2267105,
+          "group": 2267124,
+          "session": 2267124,
+          "start": "41282908",
+          "ticks": 8,
+          "rss": 82894848,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267158,
+          "ppid": 2267105,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282948",
+          "ticks": 5,
+          "rss": 49885184,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267203,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 1,
+          "rss": 11423744,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267204,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 2,
+          "rss": 10858496,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 47.871000000000095
+    },
+    {
+      "ms": 1566.929,
+      "completedMs": 1597.94,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 173.6696007022705,
+      "pssBytes": null,
+      "pssSampled": false,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 1053.7250000000001,
+      "processEnumerationMs": 30.45699999999988,
+      "pssReadMs": 0.009999999999990905,
+      "rssSumBytes": 1283473408,
+      "availableBytes": 29343858688,
+      "diskFreeBytes": 438589775872,
+      "processes": [
+        {
+          "pid": 2267105,
+          "ppid": 2267103,
+          "group": 2267103,
+          "session": 2267103,
+          "start": "41282899",
+          "ticks": 30,
+          "rss": 91545600,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267124,
+          "ppid": 2267105,
+          "group": 2267124,
+          "session": 2267124,
+          "start": "41282908",
+          "ticks": 9,
+          "rss": 83902464,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267158,
+          "ppid": 2267105,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282948",
+          "ticks": 91,
+          "rss": 287145984,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267203,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 5,
+          "rss": 49446912,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267204,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 6,
+          "rss": 50712576,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267207,
+          "ppid": 2267204,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282965",
+          "ticks": 1,
+          "rss": 22757376,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267256,
+          "ppid": 2267203,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282994",
+          "ticks": 39,
+          "rss": 184668160,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267257,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282995",
+          "ticks": 12,
+          "rss": 80207872,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267295,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283003",
+          "ticks": 2,
+          "rss": 53968896,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267342,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283028",
+          "ticks": 13,
+          "rss": 141914112,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267343,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283029",
+          "ticks": 6,
+          "rss": 116760576,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267371,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283044",
+          "ticks": 2,
+          "rss": 79024128,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267385,
+          "ppid": 2267256,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283048",
+          "ticks": 0,
+          "rss": 41418752,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 31.010999999999967
+    },
+    {
+      "ms": 2571.941,
+      "completedMs": 2614.793,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 149.25194923045697,
+      "pssBytes": null,
+      "pssSampled": false,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 2058.737,
+      "processEnumerationMs": 42.38100000000031,
+      "pssReadMs": 0.011999999999716238,
+      "rssSumBytes": 1468391424,
+      "availableBytes": 29402550272,
+      "diskFreeBytes": 438589775872,
+      "processes": [
+        {
+          "pid": 2267105,
+          "ppid": 2267103,
+          "group": 2267103,
+          "session": 2267103,
+          "start": "41282899",
+          "ticks": 34,
+          "rss": 96124928,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267124,
+          "ppid": 2267105,
+          "group": 2267124,
+          "session": 2267124,
+          "start": "41282908",
+          "ticks": 12,
+          "rss": 88096768,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267158,
+          "ppid": 2267105,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282948",
+          "ticks": 111,
+          "rss": 302096384,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267203,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 5,
+          "rss": 49446912,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267204,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 6,
+          "rss": 50712576,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267207,
+          "ppid": 2267204,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282965",
+          "ticks": 1,
+          "rss": 22757376,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267256,
+          "ppid": 2267203,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282994",
+          "ticks": 90,
+          "rss": 209100800,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267257,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282995",
+          "ticks": 30,
+          "rss": 83738624,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267295,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283003",
+          "ticks": 2,
+          "rss": 54177792,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267342,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283028",
+          "ticks": 66,
+          "rss": 274821120,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267343,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283029",
+          "ticks": 6,
+          "rss": 116764672,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267385,
+          "ppid": 2267256,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283048",
+          "ticks": 0,
+          "rss": 41418752,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267418,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283098",
+          "ticks": 3,
+          "rss": 79134720,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 42.85200000000032
+    },
+    {
+      "ms": 3594.087,
+      "completedMs": 3624.348,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 116.42172448945647,
+      "pssBytes": null,
+      "pssSampled": false,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 3080.883,
+      "processEnumerationMs": 29.48700000000008,
+      "pssReadMs": 0.011999999999716238,
+      "rssSumBytes": 1399025664,
+      "availableBytes": 29496418304,
+      "diskFreeBytes": 438589775872,
+      "processes": [
+        {
+          "pid": 2267105,
+          "ppid": 2267103,
+          "group": 2267103,
+          "session": 2267103,
+          "start": "41282899",
+          "ticks": 39,
+          "rss": 96206848,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267124,
+          "ppid": 2267105,
+          "group": 2267124,
+          "session": 2267124,
+          "start": "41282908",
+          "ticks": 12,
+          "rss": 88096768,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267158,
+          "ppid": 2267105,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282948",
+          "ticks": 160,
+          "rss": 295251968,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267203,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 5,
+          "rss": 49442816,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267204,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282957",
+          "ticks": 6,
+          "rss": 50712576,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267207,
+          "ppid": 2267204,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282965",
+          "ticks": 1,
+          "rss": 22757376,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267256,
+          "ppid": 2267203,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282994",
+          "ticks": 91,
+          "rss": 208494592,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267257,
+          "ppid": 2267158,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41282995",
+          "ticks": 32,
+          "rss": 83869696,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267295,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283003",
+          "ticks": 2,
+          "rss": 54173696,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267342,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283028",
+          "ticks": 128,
+          "rss": 212721664,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267343,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283029",
+          "ticks": 6,
+          "rss": 116744192,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267385,
+          "ppid": 2267256,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283048",
+          "ticks": 0,
+          "rss": 41418752,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2267418,
+          "ppid": 2267207,
+          "group": 2267158,
+          "session": 2267158,
+          "start": "41283098",
+          "ticks": 3,
+          "rss": 79134720,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 30.260999999999967
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1326.482,
+  "navigation": {
+    "frameId": "A85D898BED01C0BED01773540DB6EAF0",
+    "loaderId": "E372D65C27FBAB23ED253481F726891B",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:3000/linux/index.html?renderer=webgl&gpubackend=webgl"
+  },
+  "homeTests": [
+    {
+      "page": "startup-cache-seed.html",
+      "result": "pass",
+      "text": "PASS 11 checks\nDifferent full archive SHA: no download or mutation\nExisting user home remains byte-for-byte unchanged without downloading\nClearing an established profile does not silently recreate its caches\nCorrupt code-cache bytes rejected before any home mutation\nIn-page home changes during download are preserved and seed is skipped\nValid pinned seed imports exactly three code-cache files\nDurable reopen has the exact allowlisted file set\nDurable reopened checksum: startupCache.4.little\nDurable reopened checksum: scriptCache.bin\nDurable reopened checksum: urlCache.bin\nNo durable Firefox profile or NSS databases were seeded"
+    }
+  ],
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T09:00:39.642Z",
+  "elapsedMs": 7489.696,
+  "resourceSummary": {
+    "pssPeakBytes": 133940224,
+    "rssSumPeakBytes": 1468391424,
+    "minAvailableBytes": 29343858688,
+    "samples": 4,
+    "pssSamples": 1,
+    "pssIntervalMs": 5000
+  }
+}

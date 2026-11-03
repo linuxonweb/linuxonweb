@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "reusedTestProfile": {
+    "source": "/mnt/p3/codex-build/s3n/warm1/profile",
+    "sourceRun": "/mnt/p3/codex-build/s3n/warm1",
+    "start": "2026-11-03T08:34:25.746Z",
+    "end": "2026-11-03T08:37:21.182Z",
+    "copyMs": 90.331661
+  },
+  "start": "2026-11-03T08:45:27.539Z",
+  "mode": "home-inventory",
+  "seconds": 20,
+  "run": "/mnt/p3/codex-build/s3n/inventory1",
+  "samples": [
+    {
+      "ms": 759.262,
+      "completedMs": 827.565,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": null,
+      "pssBytes": 110606336,
+      "pssSampled": true,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 0,
+      "processEnumerationMs": 62.759000000000015,
+      "pssReadMs": 4.447000000000003,
+      "rssSumBytes": 229044224,
+      "availableBytes": 29227175936,
+      "diskFreeBytes": 439050424320,
+      "processes": [
+        {
+          "pid": 2136778,
+          "ppid": 2136766,
+          "group": 2136766,
+          "session": 2136766,
+          "start": "41192427",
+          "ticks": 34,
+          "rss": 98279424,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2136798,
+          "ppid": 2136778,
+          "group": 2136798,
+          "session": 2136798,
+          "start": "41192446",
+          "ticks": 10,
+          "rss": 82751488,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2136843,
+          "ppid": 2136778,
+          "group": 2136843,
+          "session": 2136843,
+          "start": "41192486",
+          "ticks": 6,
+          "rss": 48013312,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 68.30300000000011
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [
+    {
+      "ms": 714.359,
+      "error": "TypeError: fetch failed",
+      "stack": "TypeError: fetch failed\n    at node:internal/deps/undici/undici:14976:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:121:16"
+    }
+  ],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "finishedNormally": false,
+  "remainingOwned": [],
+  "end": "2026-11-03T08:45:31.441Z",
+  "elapsedMs": 3902.08,
+  "resourceSummary": {
+    "pssPeakBytes": 110606336,
+    "rssSumPeakBytes": 229044224,
+    "minAvailableBytes": 29227175936,
+    "samples": 1,
+    "pssSamples": 1,
+    "pssIntervalMs": 5000
+  }
+}

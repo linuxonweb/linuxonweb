@@ -1,0 +1,17 @@
+{
+  "publishedUtc": "2026-11-03T11:08:22Z",
+  "version": "d258203daee8",
+  "expectedSha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "sha256": "4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771",
+  "bytes": 116197223,
+  "expectedBytes": 116197223,
+  "rangeStatus": 206,
+  "rangeBytes": 16,
+  "headers": {
+    "Content-Type": "application/octet-stream",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "Content-Length": "116197223"
+  },
+  "fullFrontendSmokePending": true
+}

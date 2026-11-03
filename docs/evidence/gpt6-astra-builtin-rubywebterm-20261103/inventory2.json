@@ -1,0 +1,362 @@
+{
+  "schema": 1,
+  "reusedTestProfile": {
+    "source": "/mnt/p3/codex-build/s3n/warm1/profile",
+    "sourceRun": "/mnt/p3/codex-build/s3n/warm1",
+    "start": "2026-11-03T08:34:25.746Z",
+    "end": "2026-11-03T08:37:21.182Z",
+    "copyMs": 81.50569499999999
+  },
+  "start": "2026-11-03T08:46:00.428Z",
+  "mode": "home-inventory",
+  "seconds": 20,
+  "run": "/mnt/p3/codex-build/s3n/inventory2",
+  "samples": [
+    {
+      "ms": 490.903,
+      "completedMs": 540.872,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": null,
+      "pssBytes": 135392256,
+      "pssSampled": true,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 0,
+      "processEnumerationMs": 44.049999999999955,
+      "pssReadMs": 4.882000000000062,
+      "rssSumBytes": 257318912,
+      "availableBytes": 29166338048,
+      "diskFreeBytes": 439048359936,
+      "processes": [
+        {
+          "pid": 2141867,
+          "ppid": 2141848,
+          "group": 2141848,
+          "session": 2141848,
+          "start": "41195718",
+          "ticks": 26,
+          "rss": 93945856,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141876,
+          "ppid": 2141867,
+          "group": 2141876,
+          "session": 2141876,
+          "start": "41195734",
+          "ticks": 8,
+          "rss": 82718720,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141888,
+          "ppid": 2141867,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195775",
+          "ticks": 4,
+          "rss": 49831936,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141910,
+          "ppid": 2141888,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195782",
+          "ticks": 2,
+          "rss": 14405632,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141911,
+          "ppid": 2141888,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195782",
+          "ticks": 2,
+          "rss": 16416768,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 49.96899999999994
+    },
+    {
+      "ms": 1546.907,
+      "completedMs": 1605.339,
+      "quotaByGroup": {
+        "0::/cpulimit.slice/cpulimit-70.slice": {
+          "capacity": 3,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+              "raw": "560000 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+              "raw": "300000 100000"
+            }
+          ]
+        },
+        "0::/system.slice/webterm-runtime.service": {
+          "capacity": null,
+          "limits": [
+            {
+              "path": "/sys/fs/cgroup/system.slice/webterm-runtime.service/cpu.max",
+              "raw": "max 100000"
+            },
+            {
+              "path": "/sys/fs/cgroup/system.slice/cpu.max",
+              "raw": "max 100000"
+            }
+          ]
+        }
+      },
+      "cpuPercent": 165.71906924594984,
+      "pssBytes": null,
+      "pssSampled": false,
+      "pssIntervalMs": 5000,
+      "pssAgeMs": 1056.004,
+      "processEnumerationMs": 57.13499999999999,
+      "pssReadMs": 0.015000000000100044,
+      "rssSumBytes": 1130274816,
+      "availableBytes": 28989087744,
+      "diskFreeBytes": 439048359936,
+      "processes": [
+        {
+          "pid": 2141867,
+          "ppid": 2141848,
+          "group": 2141848,
+          "session": 2141848,
+          "start": "41195718",
+          "ticks": 41,
+          "rss": 101122048,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141876,
+          "ppid": 2141867,
+          "group": 2141876,
+          "session": 2141876,
+          "start": "41195734",
+          "ticks": 9,
+          "rss": 83587072,
+          "affinity": "0-2",
+          "cgroup": "0::/system.slice/webterm-runtime.service",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141888,
+          "ppid": 2141867,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195775",
+          "ticks": 87,
+          "rss": 271724544,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141910,
+          "ppid": 2141888,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195782",
+          "ticks": 6,
+          "rss": 53846016,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141911,
+          "ppid": 2141888,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195782",
+          "ticks": 5,
+          "rss": 53518336,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141913,
+          "ppid": 2141911,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195789",
+          "ticks": 1,
+          "rss": 23035904,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141970,
+          "ppid": 2141910,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195827",
+          "ticks": 40,
+          "rss": 158892032,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141971,
+          "ppid": 2141888,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195828",
+          "ticks": 12,
+          "rss": 80478208,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2141982,
+          "ppid": 2141913,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195838",
+          "ticks": 3,
+          "rss": 55418880,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2142012,
+          "ppid": 2141913,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195855",
+          "ticks": 10,
+          "rss": 125272064,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2142042,
+          "ppid": 2141913,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195879",
+          "ticks": 3,
+          "rss": 79659008,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        },
+        {
+          "pid": 2142051,
+          "ppid": 2141970,
+          "group": 2141888,
+          "session": 2141888,
+          "start": "41195884",
+          "ticks": 0,
+          "rss": 43720704,
+          "affinity": "0-2",
+          "cgroup": "0::/cpulimit.slice/cpulimit-70.slice",
+          "effectiveCpus": 3
+        }
+      ],
+      "samplingMs": 58.432000000000016
+    }
+  ],
+  "events": [],
+  "console": [],
+  "errors": [],
+  "screenshots": [],
+  "configuration": {
+    "cpus": 3,
+    "ramMiB": 2048,
+    "resolution": "1280x720",
+    "renderer": "webgl",
+    "query": "",
+    "monitorIntervalMs": 1000,
+    "pssIntervalMs": 5000
+  },
+  "acceptance": "Unreviewed; screenshots and interaction required",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.114",
+    "revision": "@f405107495a07cb1bfcf687d4af8d91117098db6",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.15"
+  },
+  "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl",
+  "navigationAtMs": 1410.747,
+  "navigation": {
+    "frameId": "F5B668E91CCCD970FE17C8D4AE4B0010",
+    "loaderId": "5D177A38631868F09C53A031E5A5F750",
+    "isDownload": false
+  },
+  "initial": {
+    "cores": 3,
+    "crossOriginIsolated": true,
+    "settings": "{\"cpus\":3,\"ram\":2048,\"resolution\":\"1280x720\",\"backend\":\"webgl\"}",
+    "url": "http://127.0.0.1:38082/linux/index.html?renderer=webgl&gpubackend=webgl"
+  },
+  "inventory": {
+    "atMs": 2130.438,
+    "nodes": 127,
+    "files": 127,
+    "truncated": false
+  },
+  "finishedNormally": true,
+  "remainingOwned": [],
+  "end": "2026-11-03T08:46:05.539Z",
+  "elapsedMs": 5111.381,
+  "resourceSummary": {
+    "pssPeakBytes": 135392256,
+    "rssSumPeakBytes": 1130274816,
+    "minAvailableBytes": 28989087744,
+    "samples": 2,
+    "pssSamples": 1,
+    "pssIntervalMs": 5000
+  }
+}

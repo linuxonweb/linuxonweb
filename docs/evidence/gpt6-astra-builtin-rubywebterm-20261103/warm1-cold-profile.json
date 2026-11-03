@@ -1,0 +1,156 @@
+{
+  "nodes": 118,
+  "truncated": false,
+  "files": [
+    {
+      "path": "/home/admin/.cache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/firefox/.cache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/user.js",
+      "bytes": 380,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/doomed",
+      "bytes": 0,
+      "mode": 16832
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/safebrowsing",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/9085CF9B24AE65C77BD081772230413CCEE1184A",
+      "bytes": 16996,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/thumbnails",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/360DE1F3E174E84794C36651DD126686164A2F9A",
+      "bytes": 596250,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/webext.sc.lz4",
+      "bytes": 125456,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-logs",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-logs/success-sessionrestore-1793694882966.txt",
+      "bytes": 1532,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/B85B6859D18FB7585612995F32E488A37FC2A72B",
+      "bytes": 106170,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/activity-stream.discovery_stream.json",
+      "bytes": 94681,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/06A6D86B39A0E3DCE68006525D21C3AAB6C8E0B4",
+      "bytes": 22186,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/startupCache.4.little",
+      "bytes": 4926718,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/urlCache.bin",
+      "bytes": 6031,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/startupCache/scriptCache-new.bin",
+      "bytes": 8510104,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/BE2C04A74629473334936F33CB11B43633C8B5E4",
+      "bytes": 26116,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/E1D84915E4F5156EEB91D07C4E6F05B983390CD3",
+      "bytes": 19440,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-backups",
+      "bytes": 0,
+      "mode": 16877
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/sessionstore-backups/recovery.jsonlz4",
+      "bytes": 1119,
+      "mode": 33188
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/FCC7001BFDD510C5A43379D3F42BC3909B08B76F",
+      "bytes": 22126,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.cache/mozilla/firefox/http1-profile/cache2/entries/4FA981EF5906758E1896FCAD16BBA06BD31985D1",
+      "bytes": 26125,
+      "mode": 33152
+    },
+    {
+      "path": "/home/admin/.mozilla/firefox/http1-profile/prefs.js",
+      "bytes": 7810,
+      "mode": 33152
+    }
+  ]
+}

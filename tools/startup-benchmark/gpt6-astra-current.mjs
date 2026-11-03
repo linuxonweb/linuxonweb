@@ -16,6 +16,8 @@ if(fs.existsSync(run))throw Error('fresh run required');
 fs.mkdirSync(run,{recursive:true,mode:0o700});
 const scratch=path.join(run,'t');fs.mkdirSync(scratch,{mode:0o700});
 if(scratch.length>65)throw Error('Use a short disk scratch path');
+const requestedRam=Number(process.env.LINUXONWEB_TEST_RAM_MIB||2048);
+if(![1024,2048].includes(requestedRam))throw Error('Test RAM must be1024 or2048 MiB');
 const profile=path.join(run,'profile');
 let reusedTestProfile=null;
 if(process.env.LINUXONWEB_REUSE_TEST_PROFILE){
@@ -27,7 +29,7 @@ if(process.env.LINUXONWEB_REUSE_TEST_PROFILE){
 }else fs.mkdirSync(profile,{mode:0o700});
 const env={...process.env,TMPDIR:scratch,TMP:scratch,TEMP:scratch,XDG_CACHE_HOME:path.join(run,'cache')};
 const start=performance.now(),time=()=>+(performance.now()-start).toFixed(3);
-const report={schema:1,reusedTestProfile,start:new Date().toISOString(),mode,seconds,run,samples:[],events:[],console:[],errors:[],screenshots:[],configuration:{cpus:os.availableParallelism(),ramMiB:2048,resolution:'1280x720',renderer:'webgl',query,monitorIntervalMs:1000,pssIntervalMs:5000},acceptance:'Unreviewed; screenshots and interaction required'};
+const report={schema:1,reusedTestProfile,start:new Date().toISOString(),mode,seconds,run,samples:[],events:[],console:[],errors:[],screenshots:[],configuration:{cpus:os.availableParallelism(),ramMiB:requestedRam,resolution:'1280x720',renderer:'webgl',query,monitorIntervalMs:1000,pssIntervalMs:5000},acceptance:'Unreviewed; screenshots and interaction required'};
 function save(){fs.writeFileSync(path.join(run,'report.json'),JSON.stringify(report,null,2)+'\n');}
 function identity(pid){try{const st=fs.readFileSync(`/proc/${pid}/stat`,'utf8');const f=st.slice(st.lastIndexOf(')')+2).split(' ');const status=fs.readFileSync(`/proc/${pid}/status`,'utf8');return{pid,ppid:+f[1],group:+f[2],session:+f[3],start:f[19],ticks:+f[11]+ +f[12],rss:+(/VmRSS:\s*(\d+)/.exec(status)?.[1]||0)*1024,affinity:/Cpus_allowed_list:\s*(\S+)/.exec(status)?.[1],cgroup:fs.readFileSync(`/proc/${pid}/cgroup`,'utf8').trim()};}catch{return null;}}
 const tracked=new Map([[process.pid,identity(process.pid)]]);
@@ -146,7 +148,7 @@ try{
  if(observeAfter>0&&(mode!=='firefox'||options.get('trace-startup')==='1'))throw Error('Quiet observation requires Firefox mode without tracing');
  if(options.get('trace-startup')==='1'){await send('Tracing.start',{transferMode:'ReturnAsStream',categories:'v8,disabled-by-default-v8.wasm,disabled-by-default-v8.runtime_stats'});tracing=true;}
  await send('Page.addScriptToEvaluateOnNewDocument',{source:`globalThis.__gpt6InputDom=[];for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{if(e.target?.tagName==='CANVAS'&&__gpt6InputDom.length<2048)__gpt6InputDom.push({type,code:e.code,key:e.key,repeat:e.repeat,ms:performance.timeOrigin+performance.now()});},true);`});
- await send('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:')localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({cpus:${report.configuration.cpus},ram:2048,resolution:'1280x720',backend:'webgl'}));`});
+ await send('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:')localStorage.setItem('linuxonweb.machine-settings.v1',JSON.stringify({cpus:${report.configuration.cpus},ram:${report.configuration.ramMiB},resolution:'1280x720',backend:'webgl'}));`});
  const url=new URL(`http://127.0.0.1:${testPort}/linux/index.html`);url.searchParams.set('renderer','webgl');url.searchParams.set('gpubackend','webgl');if(mode==='firefox')url.searchParams.set('firefox','1');for(const[k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  report.url=url.href;bootAt=time();report.navigationAtMs=bootAt;report.navigation=await send('Page.navigate',{url:url.href});if(report.navigation.errorText)throw Error('Navigation: '+report.navigation.errorText);
  if(observeAfter>0){report.quietObservation={startBootMs:time()-bootAt,startUtc:new Date().toISOString(),requestedEndBootMs:observeAfter*1000,excludes:['screenshots','Runtime.evaluate','log polling','tracing'],resourceMonitor:'CPU/RSS/quota1s; PSS5s; separateworker',passiveConsoleEvents:true};save();while(time()-bootAt<observeAfter*1000&&!closed)await delay(200);report.quietObservation.endBootMs=time()-bootAt;report.quietObservation.endUtc=new Date().toISOString();if(closed)throw Error('Resource monitor stopped quiet observation');}
@@ -222,12 +224,12 @@ try{
   if(!String(await guestLogs()).includes('[wm-ready]'))throw Error('Desktop package gate requires actual window-manager readiness');
   await evaluate("document.querySelector('[data-test=uname]').click()");await delay(5000);await shot('apk-terminal-before');
   await evaluate("document.querySelector('canvas')?.focus({preventScroll:true})");
-  const commands=[['apk --version',3000],['sudo apk update && sudo apk add python3',25000],['python3 --version',3000],['python3 -m json.tool --help && echo python-desktop-ok',25000]];
+  const commands=[['apk --version',3000],['sudo apk update && sudo apk add python3 coreutils',30000],['python3 --version',3000],['ls --version',3000],['python3 -m json.tool --help && echo python-desktop-ok',25000],['ls -ld /opt/firefox/browser /opt/firefox/browser/.purgecaches',3000]];
   report.postApkCheck.commands=[];
   for(let index=0;index<commands.length;index++){
    const [command,observeMs]=commands[index];
    for(const c of command){
-    const special={' ':['Space',32,0],'-':['Minus',189,0],'.':['Period',190,0],'&':['Digit7',55,8]};const [code,vk,mod]=special[c]||(/^\d$/.test(c)?['Digit'+c,c.charCodeAt(0),0]:['Key'+c.toUpperCase(),c.toUpperCase().charCodeAt(0),0]);
+    const special={' ':['Space',32,0],'-':['Minus',189,0],'.':['Period',190,0],'&':['Digit7',55,8],'/':['Slash',191,0]};const [code,vk,mod]=special[c]||(/^\d$/.test(c)?['Digit'+c,c.charCodeAt(0),0]:['Key'+c.toUpperCase(),c.toUpperCase().charCodeAt(0),0]);
     const shift={key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16};if(mod===8)await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...shift,modifiers:8});
     try{await pressKey({key:c,code,windowsVirtualKeyCode:vk,nativeVirtualKeyCode:vk,text:c,unmodifiedText:c},mod);}finally{if(mod===8)await send('Input.dispatchKeyEvent',{type:'keyUp',...shift,modifiers:0});}await delay(20);
    }

@@ -1,0 +1,485 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-11-03T11:43:41.975591+00:00",
+  "taskStartUtc": "2026-11-03T07:06:26Z",
+  "taskElapsedSeconds": 16635.975591,
+  "recordedOwnerDurationSeconds": 3184.4429569999998,
+  "scope": "Only completed startup_io current-owner reports at one level under s3n; native builds and other-agent tests are recorded in their bounded reports/ledgers. Sum is task time, not exclusive wall time or CPU time. Earlier concurrent diagnostic owners may overlap.",
+  "owners": [
+    {
+      "run": "io1",
+      "start": "2026-11-03T07:15:26.606Z",
+      "end": "2026-11-03T07:15:51.910Z",
+      "elapsedMs": 25305.005,
+      "mode": "io",
+      "errors": [
+        {
+          "ms": 1116.272,
+          "exception": {
+            "exceptionId": 1,
+            "text": "Uncaught",
+            "lineNumber": 0,
+            "columnNumber": 0,
+            "scriptId": "5",
+            "url": "chrome-error://chromewebdata/",
+            "exception": {
+              "type": "object",
+              "subtype": "error",
+              "className": "DOMException",
+              "description": "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+              "objectId": "-3417084835918271213.1.1",
+              "preview": {
+                "type": "object",
+                "subtype": "error",
+                "description": "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.",
+                "overflow": false,
+                "properties": [
+                  {
+                    "name": "stack",
+                    "type": "string",
+                    "value": "SecurityError: Failed to read the 'localStorage' p\u2026rom 'Window': Access is denied for this document."
+                  },
+                  {
+                    "name": "code",
+                    "type": "number",
+                    "value": "18"
+                  },
+                  {
+                    "name": "name",
+                    "type": "string",
+                    "value": "SecurityError"
+                  },
+                  {
+                    "name": "message",
+                    "type": "string",
+                    "value": "Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+                  }
+                ]
+              }
+            },
+            "executionContextId": 1
+          }
+        },
+        {
+          "ms": 22415.223,
+          "error": "Error: {\"exceptionId\":2,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":67,\"scriptId\":\"9\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\",\"objectId\":\"-3417084835918271213.1.3\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"SecurityError: Failed to read the 'localStorage' p\u2026rom 'Window': Access is denied for this document.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"18\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"SecurityError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\"}]}}}",
+          "stack": "Error: {\"exceptionId\":2,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":67,\"scriptId\":\"9\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\",\"objectId\":\"-3417084835918271213.1.3\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"SecurityError: Failed to read the 'localStorage' p\u2026rom 'Window': Access is denied for this document.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"18\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"SecurityError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\"}]}}}\n    at evaluate (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:32:176)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:52:17"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "io2",
+      "start": "2026-11-03T07:17:58.015Z",
+      "end": "2026-11-03T07:18:06.520Z",
+      "elapsedMs": 8505.418,
+      "mode": "io",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "cold1",
+      "start": "2026-11-03T07:18:12.133Z",
+      "end": "2026-11-03T07:20:54.415Z",
+      "elapsedMs": 162281.578,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "home1",
+      "start": "2026-11-03T07:23:00.854Z",
+      "end": "2026-11-03T07:23:09.304Z",
+      "elapsedMs": 8450.156,
+      "mode": "home-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "io3",
+      "start": "2026-11-03T07:23:16.679Z",
+      "end": "2026-11-03T07:23:24.230Z",
+      "elapsedMs": 7550.953,
+      "mode": "io",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "abba1",
+      "start": "2026-11-03T07:28:32.416Z",
+      "end": "2026-11-03T07:28:50.224Z",
+      "elapsedMs": 17807.7,
+      "mode": "io-compare",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "abba2",
+      "start": "2026-11-03T07:30:24.858Z",
+      "end": "2026-11-03T07:30:42.841Z",
+      "elapsedMs": 17983.572,
+      "mode": "io-compare",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "trace1",
+      "start": "2026-11-03T07:30:54.517Z",
+      "end": "2026-11-03T07:33:43.602Z",
+      "elapsedMs": 169084.356,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "home2",
+      "start": "2026-11-03T07:38:04.013Z",
+      "end": "2026-11-03T07:38:10.916Z",
+      "elapsedMs": 6902.523,
+      "mode": "home-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "compressed1",
+      "start": "2026-11-03T07:38:10.982Z",
+      "end": "2026-11-03T07:40:53.406Z",
+      "elapsedMs": 162424.133,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "direct1",
+      "start": "2026-11-03T07:48:59.504Z",
+      "end": "2026-11-03T07:51:42.229Z",
+      "elapsedMs": 162725.02,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "raw3",
+      "start": "2026-11-03T08:00:46.361Z",
+      "end": "2026-11-03T08:03:29.172Z",
+      "elapsedMs": 162811.625,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "compressed3",
+      "start": "2026-11-03T08:03:29.264Z",
+      "end": "2026-11-03T08:06:11.362Z",
+      "elapsedMs": 162098.434,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "input1",
+      "start": "2026-11-03T08:14:33.066Z",
+      "end": "2026-11-03T08:14:46.012Z",
+      "elapsedMs": 12946.298,
+      "mode": "input-timing",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "home3",
+      "start": "2026-11-03T08:28:00.087Z",
+      "end": "2026-11-03T08:28:06.216Z",
+      "elapsedMs": 6129.053,
+      "mode": "home-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "warm1",
+      "start": "2026-11-03T08:34:25.746Z",
+      "end": "2026-11-03T08:37:21.182Z",
+      "elapsedMs": 175436.4,
+      "mode": "firefox",
+      "errors": [
+        {
+          "ms": 172395.507,
+          "error": "Error: Visible restart click missing or invalid within30s",
+          "stack": "Error: Visible restart click missing or invalid within30s\n    at warmRestart (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:82:153)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:176:57"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "inventory1",
+      "start": "2026-11-03T08:45:27.539Z",
+      "end": "2026-11-03T08:45:31.441Z",
+      "elapsedMs": 3902.08,
+      "mode": "home-inventory",
+      "errors": [
+        {
+          "ms": 714.359,
+          "error": "TypeError: fetch failed",
+          "stack": "TypeError: fetch failed\n    at node:internal/deps/undici/undici:14976:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:121:16"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "inventory2",
+      "start": "2026-11-03T08:46:00.428Z",
+      "end": "2026-11-03T08:46:05.539Z",
+      "elapsedMs": 5111.381,
+      "mode": "home-inventory",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "cache1",
+      "start": "2026-11-03T08:51:49.704Z",
+      "end": "2026-11-03T08:52:09.287Z",
+      "elapsedMs": 19582.673,
+      "mode": "cache-export",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "seed-tests1",
+      "start": "2026-11-03T09:00:32.152Z",
+      "end": "2026-11-03T09:00:39.642Z",
+      "elapsedMs": 7489.696,
+      "mode": "seed-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "cube1",
+      "start": "2026-11-03T09:07:10.571Z",
+      "end": "2026-11-03T09:09:53.130Z",
+      "elapsedMs": 162558.366,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "mount1",
+      "start": "2026-11-03T09:30:55.278Z",
+      "end": "2026-11-03T09:31:06.044Z",
+      "elapsedMs": 10766.004,
+      "mode": "mount-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "seed1",
+      "start": "2026-11-03T09:32:01.753Z",
+      "end": "2026-11-03T09:34:44.161Z",
+      "elapsedMs": 162408.237,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "writeback1",
+      "start": "2026-11-03T09:42:01.231Z",
+      "end": "2026-11-03T09:42:07.090Z",
+      "elapsedMs": 5859.542,
+      "mode": "writeback-tests",
+      "errors": [
+        {
+          "ms": 2716.545,
+          "error": "Error: {\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":34,\"scriptId\":\"60\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"60\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":34}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"TypeError\",\"description\":\"TypeError: Cannot read properties of null (reading 'dataset')\\n    at <anonymous>:1:35\",\"objectId\":\"8724406204939386636.2.2\"}}",
+          "stack": "Error: {\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":34,\"scriptId\":\"60\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"60\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":34}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"TypeError\",\"description\":\"TypeError: Cannot read properties of null (reading 'dataset')\\n    at <anonymous>:1:35\",\"objectId\":\"8724406204939386636.2.2\"}}\n    at evaluate (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:40:176)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:172:49"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "writeback2",
+      "start": "2026-11-03T09:42:26.372Z",
+      "end": "2026-11-03T09:42:37.444Z",
+      "elapsedMs": 11072.493,
+      "mode": "writeback-tests",
+      "errors": [
+        {
+          "ms": 8076.2,
+          "error": "Error: Home test failed: home-writeback.html {\n  \"experimental\": true,\n  \"productionAccepted\": false,\n  \"checks\": [\n    {\n      \"label\": \"test image SHA matches\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"explicit fsync retains full benchmark data\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"O_WRONLY read-for-write preserved adjacent bytes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"dirty truncate and extension remain zero-filled\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"fsynced atomic rename persists\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"syncfs makes an open file durable\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"Linux coalesced256applicationwrites into fewer host requests\",\n      \"pass\": true\n    }\n  ],\n  \"guest\": [\n    \"input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\",\n    \"virtiofs virtio3: discovered new tag: writeback\",\n    \"Console: switching to colour frame buffer device 80x30\",\n    \"fb0: wasm framebuffer 640x480-32 at 2dfbbf9b\",\n    \"This architecture does not have kernel memory protection.\",\n    \"Run /init as init process\",\n    \"WB_CHECK PASS mount-writeback errno=0\",\n    \"WB_CHECK PASS seed-fdatasync errno=0\",\n    \"WB_CHECK PASS open-write-only errno=0\",\n    \"WB_CHECK FAIL drop-read-page errno=0\",\n    \"WB_CHECK PASS partial-write-with-kernel-read errno=0\",\n    \"WB_CHECK PASS read-for-write-preserves-adjacent-data errno=0\",\n    \"WB_CHECK PASS benchmark-fsync errno=0\",\n    \"WB_BENCH calls=256 bytes=1048576 writeSeconds=0.087385 durableSeconds=0.175360\",\n    \"WB_CHECK PASS truncate-dirty-seed errno=0\",\n    \"WB_CHECK PASS truncate-dirty-fsync errno=0\",\n    \"WB_CHECK PASS extend-after-truncate errno=0\",\n    \"WB_CHECK PASS truncate-read errno=0\",\n    \"WB_CHECK PASS truncate-zero-tail errno=0\",\n    \"WB_CHECK PASS rename-durable-source errno=0\",\n    \"WB_CHECK PASS rename errno=0\",\n    \"WB_CHECK PASS directory-fsync errno=0\",\n    \"WB_CHECK PASS fault-durable-seed errno=0\",\n    \"WB_FAULT kind=quota write=65536 writeErrno=0 fsync=-1 syncErrno=28\",\n    \"WB_CHECK PASS delayed-error-observed errno=28\",\n    \"WB_CHECK PASS fault-durable-seed errno=28\",\n    \"WB_FAULT kind=abort write=65536 writeErrno=0 fsync=-1 syncErrno=5\",\n    \"WB_CHECK PASS delayed-error-observed errno=5\",\n    \"WB_CHECK PASS write-before-syncfs errno=5\",\n    \"WB_CHECK FAIL syncfs-barrier errno=5\",\n    \"WB_CHECK PASS close-without-explicit-sync errno=5\",\n    \"WB_CHECK PASS unsynced-write-before-stop errno=5\",\n    \"WB_DONE checks=23 failures=2\"\n  ],\n  \"counts\": {\n    \"writes\": 12,\n    \"reads\": 3,\n    \"fsyncs\": 9,\n    \"flushes\": 9,\n    \"byFile\": {\n      \"read-for-write\": {\n        \"writes\": 2,\n        \"reads\": 2,\n        \"writeBytes\": 8192,\n        \"readBytes\": 8192,\n        \"writeSizes\": [\n          4096,\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4555.564999997616,\n        \"lastReplyMs\": 4627.084999978542\n      },\n      \"bench\": {\n        \"writes\": 2,\n        \"reads\": 0,\n        \"writeBytes\": 1056768,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          466944,\n          589824\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4682.420000016689,\n        \"lastReplyMs\": 4845.040000021458\n      },\n      \"truncate\": {\n        \"writes\": 1,\n        \"reads\": 1,\n        \"writeBytes\": 17,\n        \"readBytes\": 4096,\n        \"writeSizes\": [\n          17\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4906.995000004768,\n        \"lastReplyMs\": 4917.115000009537\n      },\n      \"rename.tmp\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5001.689999997616,\n        \"lastReplyMs\": 5009.490000009537\n      },\n      \"unknown\": {\n        \"writes\": 0,\n        \"reads\": 0,\n        \"writeBytes\": 0,\n        \"readBytes\": 0,\n        \"writeSizes\": [],\n        \"errors\": []\n      },\n      \"fault-quota\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [\n          {\n            \"method\": \"write\",\n            \"errno\": 28,\n            \"puts\": 16\n          }\n        ],\n        \"firstWriteMs\": 5122.045000016689,\n        \"lastReplyMs\": 5130.625\n      },\n      \"fault-abort\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [\n          {\n            \"method\": \"write\",\n            \"errno\": 5,\n            \"puts\": 16\n          }\n        ],\n        \"firstWriteMs\": 5175.620000004768,\n        \"lastReplyMs\": 5181.34500002861\n      },\n      \"sync-open\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5317.295000016689,\n        \"lastReplyMs\": 5323.089999973774\n      },\n      \"close-only\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5429.689999997616,\n        \"lastReplyMs\": 5438.194999992847\n      }\n    }\n  },\n  \"errors\": [],\n  \"started\": \"2026-11-03T09:42:28.891Z\",\n  \"fixture\": {\n    \"testOnly\": true,\n    \"pass\": true,\n    \"sourceArchiveSha256\": \"60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa\",\n    \"busyboxSha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n    \"archiveSha256\": \"60f5aca303ffa1023b1e518dc0199bb830b5a6f76fdf5d8c321d9b6a609cf425\",\n    \"archiveBytes\": 1263616,\n    \"files\": {\n      \"bin/busybox\": {\n        \"bytes\": 1230518,\n        \"sha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n        \"mode\": \"0o100755\"\n      },\n      \"bin/sh\": {\n        \"bytes\": 7,\n        \"sha256\": \"9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91\",\n        \"mode\": \"0o120777\"\n      },\n      \"init\": {\n        \"bytes\": 99,\n        \"sha256\": \"eb01c77009ab08f3fea42256cc3d51d4fde3e4f4260be400670169b82febdb10\",\n        \"mode\": \"0o100755\"\n      },\n      \"etc/passwd\": {\n        \"bytes\": 26,\n        \"sha256\": \"5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb\",\n        \"mode\": \"0o100644\"\n      },\n      \"etc/group\": {\n        \"bytes\": 10,\n        \"sha256\": \"7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8\",\n        \"mode\": \"0o100644\"\n      },\n      \"check\": {\n        \"bytes\": 29501,\n        \"sha256\": \"f1e3fd81254ab974a4d8e0b8bc04e37c7038716c2eec11869aaffb919eca23cf\",\n        \"mode\": \"0o100755\"\n      }\n    }\n  },\n  \"nativePassed\": false,\n  \"beforeStop\": {\n    \"bench\": {\n      \"exists\": true,\n      \"size\": 1048576,\n      \"sha256\": \"9bc1b2a288b26af7257a36277ae3816a7d4f16e89c1e7e77d0a5c48bad62b360\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"read-for-write\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"acade6e59476e4710f5a2e4d225989c2226dd7d03e1c225aed20d321ee696871\",\n      \"allA\": false,\n      \"byte100\": 97,\n      \"byte101\": 90,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"truncate\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"08ab5113b0c68e846f419ac53688407cdeca4188695558a76e9facdd7e4dafd6\",\n      \"allA\": false,\n      \"byte100\": 0,\n      \"byte101\": 0,\n      \"byte102\": 0,\n      \"truncateTailZero\": true\n    },\n    \"renamed\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-quota\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-abort\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"sync-open\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"close-only\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"stop-open\": {\n      \"exists\": true,\n      \"size\": 0,\n      \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n      \"allA\": true,\n      \"truncateTailZero\": true\n    }\n  },\n  \"afterStop\": {\n    \"bench\": {\n      \"exists\": true,\n      \"size\": 1048576,\n      \"sha256\": \"9bc1b2a288b26af7257a36277ae3816a7d4f16e89c1e7e77d0a5c48bad62b360\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"read-for-write\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"acade6e59476e4710f5a2e4d225989c2226dd7d03e1c225aed20d321ee696871\",\n      \"allA\": false,\n      \"byte100\": 97,\n      \"byte101\": 90,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"truncate\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"08ab5113b0c68e846f419ac53688407cdeca4188695558a76e9facdd7e4dafd6\",\n      \"allA\": false,\n      \"byte100\": 0,\n      \"byte101\": 0,\n      \"byte102\": 0,\n      \"truncateTailZero\": true\n    },\n    \"renamed\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-quota\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-abort\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"sync-open\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"close-only\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"stop-open\": {\n      \"exists\": true,\n      \"size\": 0,\n      \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n      \"allA\": true,\n      \"truncateTailZero\": true\n    }\n  },\n  \"currentStopDurabilityPass\": false,\n  \"writebackNegotiated\": true,\n  \"assessmentCompleted\": true,\n  \"pass\": false,\n  \"finished\": \"2026-11-03T09:42:34.343Z\"\n}",
+          "stack": "Error: Home test failed: home-writeback.html {\n  \"experimental\": true,\n  \"productionAccepted\": false,\n  \"checks\": [\n    {\n      \"label\": \"test image SHA matches\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"explicit fsync retains full benchmark data\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"O_WRONLY read-for-write preserved adjacent bytes\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"dirty truncate and extension remain zero-filled\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"fsynced atomic rename persists\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"syncfs makes an open file durable\",\n      \"pass\": true\n    },\n    {\n      \"label\": \"Linux coalesced256applicationwrites into fewer host requests\",\n      \"pass\": true\n    }\n  ],\n  \"guest\": [\n    \"input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\",\n    \"virtiofs virtio3: discovered new tag: writeback\",\n    \"Console: switching to colour frame buffer device 80x30\",\n    \"fb0: wasm framebuffer 640x480-32 at 2dfbbf9b\",\n    \"This architecture does not have kernel memory protection.\",\n    \"Run /init as init process\",\n    \"WB_CHECK PASS mount-writeback errno=0\",\n    \"WB_CHECK PASS seed-fdatasync errno=0\",\n    \"WB_CHECK PASS open-write-only errno=0\",\n    \"WB_CHECK FAIL drop-read-page errno=0\",\n    \"WB_CHECK PASS partial-write-with-kernel-read errno=0\",\n    \"WB_CHECK PASS read-for-write-preserves-adjacent-data errno=0\",\n    \"WB_CHECK PASS benchmark-fsync errno=0\",\n    \"WB_BENCH calls=256 bytes=1048576 writeSeconds=0.087385 durableSeconds=0.175360\",\n    \"WB_CHECK PASS truncate-dirty-seed errno=0\",\n    \"WB_CHECK PASS truncate-dirty-fsync errno=0\",\n    \"WB_CHECK PASS extend-after-truncate errno=0\",\n    \"WB_CHECK PASS truncate-read errno=0\",\n    \"WB_CHECK PASS truncate-zero-tail errno=0\",\n    \"WB_CHECK PASS rename-durable-source errno=0\",\n    \"WB_CHECK PASS rename errno=0\",\n    \"WB_CHECK PASS directory-fsync errno=0\",\n    \"WB_CHECK PASS fault-durable-seed errno=0\",\n    \"WB_FAULT kind=quota write=65536 writeErrno=0 fsync=-1 syncErrno=28\",\n    \"WB_CHECK PASS delayed-error-observed errno=28\",\n    \"WB_CHECK PASS fault-durable-seed errno=28\",\n    \"WB_FAULT kind=abort write=65536 writeErrno=0 fsync=-1 syncErrno=5\",\n    \"WB_CHECK PASS delayed-error-observed errno=5\",\n    \"WB_CHECK PASS write-before-syncfs errno=5\",\n    \"WB_CHECK FAIL syncfs-barrier errno=5\",\n    \"WB_CHECK PASS close-without-explicit-sync errno=5\",\n    \"WB_CHECK PASS unsynced-write-before-stop errno=5\",\n    \"WB_DONE checks=23 failures=2\"\n  ],\n  \"counts\": {\n    \"writes\": 12,\n    \"reads\": 3,\n    \"fsyncs\": 9,\n    \"flushes\": 9,\n    \"byFile\": {\n      \"read-for-write\": {\n        \"writes\": 2,\n        \"reads\": 2,\n        \"writeBytes\": 8192,\n        \"readBytes\": 8192,\n        \"writeSizes\": [\n          4096,\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4555.564999997616,\n        \"lastReplyMs\": 4627.084999978542\n      },\n      \"bench\": {\n        \"writes\": 2,\n        \"reads\": 0,\n        \"writeBytes\": 1056768,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          466944,\n          589824\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4682.420000016689,\n        \"lastReplyMs\": 4845.040000021458\n      },\n      \"truncate\": {\n        \"writes\": 1,\n        \"reads\": 1,\n        \"writeBytes\": 17,\n        \"readBytes\": 4096,\n        \"writeSizes\": [\n          17\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 4906.995000004768,\n        \"lastReplyMs\": 4917.115000009537\n      },\n      \"rename.tmp\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5001.689999997616,\n        \"lastReplyMs\": 5009.490000009537\n      },\n      \"unknown\": {\n        \"writes\": 0,\n        \"reads\": 0,\n        \"writeBytes\": 0,\n        \"readBytes\": 0,\n        \"writeSizes\": [],\n        \"errors\": []\n      },\n      \"fault-quota\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [\n          {\n            \"method\": \"write\",\n            \"errno\": 28,\n            \"puts\": 16\n          }\n        ],\n        \"firstWriteMs\": 5122.045000016689,\n        \"lastReplyMs\": 5130.625\n      },\n      \"fault-abort\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [\n          {\n            \"method\": \"write\",\n            \"errno\": 5,\n            \"puts\": 16\n          }\n        ],\n        \"firstWriteMs\": 5175.620000004768,\n        \"lastReplyMs\": 5181.34500002861\n      },\n      \"sync-open\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5317.295000016689,\n        \"lastReplyMs\": 5323.089999973774\n      },\n      \"close-only\": {\n        \"writes\": 1,\n        \"reads\": 0,\n        \"writeBytes\": 4096,\n        \"readBytes\": 0,\n        \"writeSizes\": [\n          4096\n        ],\n        \"errors\": [],\n        \"firstWriteMs\": 5429.689999997616,\n        \"lastReplyMs\": 5438.194999992847\n      }\n    }\n  },\n  \"errors\": [],\n  \"started\": \"2026-11-03T09:42:28.891Z\",\n  \"fixture\": {\n    \"testOnly\": true,\n    \"pass\": true,\n    \"sourceArchiveSha256\": \"60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa\",\n    \"busyboxSha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n    \"archiveSha256\": \"60f5aca303ffa1023b1e518dc0199bb830b5a6f76fdf5d8c321d9b6a609cf425\",\n    \"archiveBytes\": 1263616,\n    \"files\": {\n      \"bin/busybox\": {\n        \"bytes\": 1230518,\n        \"sha256\": \"f772c352356483bbe0a44eb07b1f156df8e88920ae3d0325f38026be0ba6df9c\",\n        \"mode\": \"0o100755\"\n      },\n      \"bin/sh\": {\n        \"bytes\": 7,\n        \"sha256\": \"9d75f0d7c398df565d7ac04c6819b62d6d8f9560f5eb4672596ecd8f7e96ae91\",\n        \"mode\": \"0o120777\"\n      },\n      \"init\": {\n        \"bytes\": 99,\n        \"sha256\": \"eb01c77009ab08f3fea42256cc3d51d4fde3e4f4260be400670169b82febdb10\",\n        \"mode\": \"0o100755\"\n      },\n      \"etc/passwd\": {\n        \"bytes\": 26,\n        \"sha256\": \"5cba27664958b4261ec7071c47f76b5d66d5aa9a1a5333868658f1f57c3563fb\",\n        \"mode\": \"0o100644\"\n      },\n      \"etc/group\": {\n        \"bytes\": 10,\n        \"sha256\": \"7a696fcfba89a55a6d73fa1a03c7f071fad2141340027b17a25db249e26b9be8\",\n        \"mode\": \"0o100644\"\n      },\n      \"check\": {\n        \"bytes\": 29501,\n        \"sha256\": \"f1e3fd81254ab974a4d8e0b8bc04e37c7038716c2eec11869aaffb919eca23cf\",\n        \"mode\": \"0o100755\"\n      }\n    }\n  },\n  \"nativePassed\": false,\n  \"beforeStop\": {\n    \"bench\": {\n      \"exists\": true,\n      \"size\": 1048576,\n      \"sha256\": \"9bc1b2a288b26af7257a36277ae3816a7d4f16e89c1e7e77d0a5c48bad62b360\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"read-for-write\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"acade6e59476e4710f5a2e4d225989c2226dd7d03e1c225aed20d321ee696871\",\n      \"allA\": false,\n      \"byte100\": 97,\n      \"byte101\": 90,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"truncate\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"08ab5113b0c68e846f419ac53688407cdeca4188695558a76e9facdd7e4dafd6\",\n      \"allA\": false,\n      \"byte100\": 0,\n      \"byte101\": 0,\n      \"byte102\": 0,\n      \"truncateTailZero\": true\n    },\n    \"renamed\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-quota\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-abort\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"sync-open\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"close-only\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"stop-open\": {\n      \"exists\": true,\n      \"size\": 0,\n      \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n      \"allA\": true,\n      \"truncateTailZero\": true\n    }\n  },\n  \"afterStop\": {\n    \"bench\": {\n      \"exists\": true,\n      \"size\": 1048576,\n      \"sha256\": \"9bc1b2a288b26af7257a36277ae3816a7d4f16e89c1e7e77d0a5c48bad62b360\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"read-for-write\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"acade6e59476e4710f5a2e4d225989c2226dd7d03e1c225aed20d321ee696871\",\n      \"allA\": false,\n      \"byte100\": 97,\n      \"byte101\": 90,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"truncate\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"08ab5113b0c68e846f419ac53688407cdeca4188695558a76e9facdd7e4dafd6\",\n      \"allA\": false,\n      \"byte100\": 0,\n      \"byte101\": 0,\n      \"byte102\": 0,\n      \"truncateTailZero\": true\n    },\n    \"renamed\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-quota\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"fault-abort\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"sync-open\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"close-only\": {\n      \"exists\": true,\n      \"size\": 4096,\n      \"sha256\": \"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\n      \"allA\": true,\n      \"byte100\": 97,\n      \"byte101\": 97,\n      \"byte102\": 97,\n      \"truncateTailZero\": false\n    },\n    \"stop-open\": {\n      \"exists\": true,\n      \"size\": 0,\n      \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n      \"allA\": true,\n      \"truncateTailZero\": true\n    }\n  },\n  \"currentStopDurabilityPass\": false,\n  \"writebackNegotiated\": true,\n  \"assessmentCompleted\": true,\n  \"pass\": false,\n  \"finished\": \"2026-11-03T09:42:34.343Z\"\n}\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:173:75"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "compat2",
+      "start": "2026-11-03T09:45:10.925Z",
+      "end": "2026-11-03T09:45:28.755Z",
+      "elapsedMs": 17830.776,
+      "mode": "compat-export",
+      "errors": [
+        {
+          "ms": 9215.59,
+          "error": "Error: {\"exceptionId\":1,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"AbortError: Version change transaction was aborted in upgradeneeded event handler.\",\"objectId\":\"2742813141228778393.1.1\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"AbortError: Version change transaction was aborted in upgradeneeded event handler.\",\"overflow\":false,\"properties\":[{\"name\":\"code\",\"type\":\"number\",\"value\":\"20\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"AbortError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"Version change transaction was aborted in upgradeneeded event handler.\"}]}}}",
+          "stack": "Error: {\"exceptionId\":1,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"AbortError: Version change transaction was aborted in upgradeneeded event handler.\",\"objectId\":\"2742813141228778393.1.1\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"AbortError: Version change transaction was aborted in upgradeneeded event handler.\",\"overflow\":false,\"properties\":[{\"name\":\"code\",\"type\":\"number\",\"value\":\"20\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"AbortError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"Version change transaction was aborted in upgradeneeded event handler.\"}]}}}\n    at evaluate (file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:40:176)\n    at async file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:154:13"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "compat3",
+      "start": "2026-11-03T09:46:13.364Z",
+      "end": "2026-11-03T09:46:19.703Z",
+      "elapsedMs": 6338.804,
+      "mode": "compat-export",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "seed-tests2",
+      "start": "2026-11-03T10:03:57.180Z",
+      "end": "2026-11-03T10:04:25.341Z",
+      "elapsedMs": 28160.979,
+      "mode": "seed-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "cube2",
+      "start": "2026-11-03T10:08:31.031Z",
+      "end": "2026-11-03T10:11:13.480Z",
+      "elapsedMs": 162449.171,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "cube3",
+      "start": "2026-11-03T10:20:14.572Z",
+      "end": "2026-11-03T10:23:22.839Z",
+      "elapsedMs": 188267.951,
+      "mode": "firefox",
+      "errors": [
+        {
+          "ms": 185136.568,
+          "error": "Error: Post-APK check requires observed completed GPU benchmark before typing",
+          "stack": "Error: Post-APK check requires observed completed GPU benchmark before typing\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:218:247"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "apk3-desktop",
+      "start": "2026-11-03T10:27:44.958Z",
+      "end": "2026-11-03T10:29:53.861Z",
+      "elapsedMs": 128903.022,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "barrier1",
+      "start": "2026-11-03T10:31:01.655Z",
+      "end": "2026-11-03T10:31:29.029Z",
+      "elapsedMs": 27374.305,
+      "mode": "barrier-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "seed2",
+      "start": "2026-11-03T10:37:51.463Z",
+      "end": "2026-11-03T10:40:21.459Z",
+      "elapsedMs": 149995.627,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "lookup1",
+      "start": "2026-11-03T10:51:28.132Z",
+      "end": "2026-11-03T10:53:28.157Z",
+      "elapsedMs": 120025.271,
+      "mode": "lookup-tests",
+      "errors": [
+        {
+          "ms": 116341.622,
+          "error": "Error: Home test failed: home-lookup.html {\n  \"pass\": true,\n  \"checks\": [\n    {\n      \"pass\": true,\n      \"label\": \"optional atomic lookup is available\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup returns the requested inode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves mode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves uid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves gid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves size\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blocks\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves nlink\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blockSize\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves timestamp\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing entry remains absent\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing parent returns ENOENT\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"regular-file parent returns ENOTDIR\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"symlink metadata describes the link without following it\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"fresh read-only connection observes committed ownership and permissions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"returned metadata mutation cannot alter the store\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/rename race retains one consistent namespace snapshot\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup observes rename without stale cache\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/unlink snapshot is coherent and subsequent lookup is fresh\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"open-unlinked inode metadata remains independently current\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"atomic lookup completes in one readonly transaction\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"legacy lookup plus getattr uses two readonly transactions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"real IndexedDB read failure propagates EIO\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup recovers after aborted read\"\n    }\n  ],\n  \"benchmark\": [\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 330.3799999952316,\n      \"readonlyTransactions\": 128\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 174.36000001430511,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 222.1700000166893,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 328.664999961853,\n      \"readonlyTransactions\": 128\n    }\n  ]\n}",
+          "stack": "Error: Home test failed: home-lookup.html {\n  \"pass\": true,\n  \"checks\": [\n    {\n      \"pass\": true,\n      \"label\": \"optional atomic lookup is available\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup returns the requested inode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves mode\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves uid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves gid\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves size\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blocks\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves nlink\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves blockSize\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"snapshot preserves timestamp\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing entry remains absent\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"missing parent returns ENOENT\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"regular-file parent returns ENOTDIR\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"symlink metadata describes the link without following it\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"fresh read-only connection observes committed ownership and permissions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"returned metadata mutation cannot alter the store\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/rename race retains one consistent namespace snapshot\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup observes rename without stale cache\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"lookup/unlink snapshot is coherent and subsequent lookup is fresh\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"open-unlinked inode metadata remains independently current\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"atomic lookup completes in one readonly transaction\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"legacy lookup plus getattr uses two readonly transactions\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"real IndexedDB read failure propagates EIO\"\n    },\n    {\n      \"pass\": true,\n      \"label\": \"subsequent lookup recovers after aborted read\"\n    }\n  ],\n  \"benchmark\": [\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 330.3799999952316,\n      \"readonlyTransactions\": 128\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 174.36000001430511,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"atomic\",\n      \"count\": 64,\n      \"elapsedMs\": 222.1700000166893,\n      \"readonlyTransactions\": 64\n    },\n    {\n      \"variant\": \"legacy\",\n      \"count\": 64,\n      \"elapsedMs\": 328.664999961853,\n      \"readonlyTransactions\": 128\n    }\n  ]\n}\n    at file:///mnt/p3/project/linux/linuxonweb/tools/startup-benchmark/gpt6-astra-current.mjs:181:75"
+        }
+      ],
+      "remainingOwned": 0,
+      "finishedNormally": false
+    },
+    {
+      "run": "lookup2",
+      "start": "2026-11-03T10:54:21.646Z",
+      "end": "2026-11-03T10:54:59.187Z",
+      "elapsedMs": 37541.1,
+      "mode": "lookup-tests",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "apk4-quiet",
+      "start": "2026-11-03T11:14:31.040Z",
+      "end": "2026-11-03T11:18:44.471Z",
+      "elapsedMs": 253431.492,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "omni-fresh",
+      "start": "2026-11-03T11:22:22.165Z",
+      "end": "2026-11-03T11:26:56.924Z",
+      "elapsedMs": 274758.208,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    },
+    {
+      "run": "omni-existing",
+      "start": "2026-11-03T11:29:30.388Z",
+      "end": "2026-11-03T11:31:42.562Z",
+      "elapsedMs": 132173.555,
+      "mode": "firefox",
+      "errors": [],
+      "remainingOwned": 0,
+      "finishedNormally": true
+    }
+  ]
+}

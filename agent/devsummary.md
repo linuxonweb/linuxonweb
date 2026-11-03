@@ -195,3 +195,59 @@ At10:12:48UTC the verified publisher restored immutable60847fb85339 (SHA60847fb8
 - Isolatedsourcepinstart2026-11-03T10:47:44.297938+00:00, acceptance/landingrecord2026-11-03T11:02:03.728411+00:00, wall859.430s. Nativebuild2.006s, host/nativepassingowner37.541s; priorfixturecompletionselectorfailure120.025s preserved.
 -24hostcorrectnesschecks andactualnative stat/lstat/uid/gid/mode/ENOENT/fallback checks passed. ABBA128statbaseline2307.330/2288.055ms vsatomic2056.060/1992.705ms(~11.9% lower median inthisworkload);262LOOKUPs each, separategetattr785→526. Thispercentage isseparate fromcreate9.4%microbenchmark andisnotanoverallstartupclaim.
 - Independentgraphics_jit reviewPASS; onlyoptional atomicreadonlysnapshotAPI andFUSEuse added, existinglegacyfallback preserved. No crossrequestcache orwrite/fsyncdurability change. Overall35/100 pendingparentrubricupdate andAPKpublication.
+
+
+## Iteration 10 — repaired public APK4 and actual desktop package acceptance
+
+Publication identity verified at 2026-11-03 11:08:22 UTC. Production owner
+`apk4-quiet` ran 11:14:31.040–11:18:44.471 UTC (253.431 seconds), with zero
+remaining owned processes. It loaded exact served APK4 d258203daee8 through the
+browser decompressor plus extras/init. After a150-second observer-free interval,
+actual normal-admin terminal commands installed signed Pythonr1/coreutils;
+Python module help and `python-desktop-ok` appeared without prefix warnings.
+Bare `ls` still resolves BusyBox; GNU explicit paths have separate package gates.
+The first immediate publication assertion failed without preserving mismatch
+values; the next full-stream served verification passed. No cause is invented.
+
+Quiet cube:81frames/23.287s=3.4783fps, wall23.279s, maximum7.089s frame stall;
+correct pixels and GL error0. Host exact page59.84828fps. PSS2,810,084,352B
+(2.617GiB), sampled every5s; CPU/RSS/quota every1s. An early3.7s copy/hash
+confound is retained. There is no30s readiness claim. Overall acceptance
+37→39/100 after root review. Exact evidence: startup-benchmark/evidence/apk4-omni-20261103.
+
+## Iteration 11 — canonical Omni packing, rejected for public promotion
+
+Canonical pack build 11:02:38.417–11:04:46.899 UTC (128.483 seconds, peakRSS
+86,142,976B); APK4 combination started11:09:12.407 and took32.029 seconds
+(peakRSS25,784,320B). Payload verification preserved8,030 non-manifest resource
+contents plus original native/init. Regular files8,059→26;64KiB allocation
+fell538,509,312B, but download grew3.2MB. Candidate d9d7bebfe7df stays isolated.
+
+Fresh owner `omni-fresh`:11:22:22.165–11:26:56.924 UTC,274.758 seconds.
+First150s PSS3,468,967,936B=3.231GiB versus2.617GiB control (+23.4%);
+cube3.1877fps versus3.4783fps gives no speed benefit. Source/file packing alone
+is not browser memory acceptance. Both observations use3CPUs/2GiB and5s PSS.
+
+Actual Restart normally click at11:25:10.937 exited oldPID106 with status0;
+no replacement PID/window appeared within90s. This is a real action failure.
+Readable unchanged native159 source suggests unsupported NSPR detached spawn;
+exact baseline runtime equivalence remains untested. Never restart every exit0
+as a workaround, since that breaks ordinary Close.
+
+Retained closed APK4 profile run `omni-existing`:11:29:30.388–11:31:42.562 UTC,
+132.174 seconds, normal Stop and zero owned processes. Firefox/cube visible
+by90.756s; exact about:blank input and blank-page navigation observed at
+113.205/115.544s. These are observation bounds, not event latency. Public image
+remains APK4. Overall acceptance remains39/100; later independently reviewed
+MI8 native-prompt evidence raises the project to40/100 (mobile1/5 only).
+
+## Timing accounting checkpoint
+
+All completed current-owner durations are indexed in
+`tools/startup-benchmark/evidence/startup-owner-time-ledger-20261103.json`.
+The sum is recorded owner task time, not CPU time and not overall wall time;
+parallel agent work and earlier diagnostic overlap must not be double-counted.
+Builds and non-current-owner tests retain separate bounded receipts. No run in
+iterations10–11 exceeded five minutes; composite owner phases are explicit.
+
+At 2026-11-03T11:43:41.975591+00:00, elapsed since07:06:26 was 16635.976 seconds (4.6211 hours); recorded current-owner durations sum to 3184.443 seconds across 38 completed receipts.

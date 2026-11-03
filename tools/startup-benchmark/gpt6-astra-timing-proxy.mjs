@@ -54,7 +54,7 @@ if(diagnosticMode==='full'){
       const complete=(error,value)=>{
         const duration=performance.now()-started;
         const bytes=name==='write'?(args[3]?.byteLength??0):name==='read'?(value?.byteLength??0):0;
-        if(!error&&['lookup','mkdir','create','symlink'].includes(name)){const id=value?.node?.id??value?.id;if(id)timing.nodes[id]={parent:args[0]?.id,name:String(args[1])};}
+        if(!error&&['lookup','lookupWithAttributes','mkdir','create','symlink'].includes(name)){const id=value?.node?.id??value?.id;if(id)timing.nodes[id]={parent:args[0]?.id,name:String(args[1])};}
         if(!error&&name==='rename'){const node=Object.values(timing.nodes).find(n=>n.parent===args[0]?.id&&n.name===args[1]);if(node){node.parent=args[2]?.id;node.name=String(args[3]);}}
         if(name==='write'||name==='read'){const id=args[0]?.id;if(id){const io=timing.inodes[id]??={reads:0,writes:0,readBytes:0,writeBytes:0,readMs:0,writeMs:0,bins:{}};const ib=io.bins[bin]??={reads:0,writes:0,readBytes:0,writeBytes:0,readMs:0,writeMs:0};for(const item of [io,ib]){if(name==='write'){item.writes++;item.writeBytes+=bytes;item.writeMs+=duration;}else{item.reads++;item.readBytes+=bytes;item.readMs+=duration;}}}}
         for(const item of [row,bucket]){item.totalMs+=duration;item.maxMs=Math.max(item.maxMs,duration);item.bytes+=bytes;if(error)item.errors++;}
@@ -138,6 +138,20 @@ if(process.env.LINUXONWEB_BOOT_PACKAGE){
  if(!asset||!Number.isSafeInteger(asset.bytes)||asset.bytes<1||!(/^[0-9a-f]{64}$/).test(asset.sha256)||path.basename(asset.url)!=='initramfs-firefox.cpio.gz')throw Error('Invalid candidate Firefox manifest');
  const file=path.join(directory,'initramfs-firefox.cpio.gz'),stat=fs.statSync(file),digest=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))digest.update(chunk);if(stat.size!==asset.bytes||digest.digest('hex')!==asset.sha256)throw Error('Candidate Firefox archive identity differs');
  const route='/linux/initramfs-firefox.cpio.gz';overrideFiles.set(route,{file,bytes:asset.bytes,sha256:asset.sha256});pins[route]={overrideFile:file,bytes:asset.bytes,sha256:asset.sha256};sources.set('/linux/boot-manifest.json',manifestBytes);mimeTypes.set('/linux/boot-manifest.json','application/json');pins['/linux/boot-manifest.json']={overrideFile:path.join(directory,'boot-manifest.json'),version:manifest.version,sha256:crypto.createHash('sha256').update(manifestBytes).digest('hex')};
+}
+// Isolated same-image diagnostic, never a public cache invalidation policy.
+if(process.env.LINUXONWEB_REMOVE_PURGE_MARKER==='1'){
+ const expected='4675a8ceb318c539cd64eb1b69338a19185d0cadb7a5f51b2352048a0c09a771';
+ const archive=overrideFiles.get('/linux/initramfs-firefox.cpio.gz');
+ const profile=path.resolve(process.env.LINUXONWEB_REUSE_TEST_PROFILE||'');
+ const profileRun=path.dirname(profile),receipt=JSON.parse(fs.readFileSync(path.join(profileRun,'report.json'),'utf8'));
+ if(archive?.sha256!==expected||path.basename(profile)!=='profile'||receipt.run!==profileRun||!receipt.end||receipt.remainingOwned?.length!==0||!receipt.finishedNormally||!String(receipt.finalState?.text).includes('d258203daee8'))throw Error('Marker diagnostic requires exact accepted APK4 and its closed retained profile');
+ const raw=fs.readFileSync('web/linux/desktop-extras.mjs','utf8');
+ const marker='exec /init.desktop-original "$@"\\n';
+ if(raw.split(marker).length!==2)throw Error('Original desktop init wrapper anchor differs');
+ const code=raw.replace(marker,'/bin/busybox rm -f /opt/firefox/browser/.purgecaches\\n/bin/busybox echo cache-marker-test-removed >&2\\n'+marker);
+ const route='/linux/desktop-extras.mjs';sources.set(route,Buffer.from(code));fs.writeFileSync(path.join(out,'desktop-extras-original.mjs'),raw);fs.writeFileSync(path.join(out,'desktop-extras-marker-test.mjs'),code);
+ pins[route]={testOnly:true,productionAccepted:false,sourceProfile:profile,archiveSha256:expected,originalSha256:crypto.createHash('sha256').update(raw).digest('hex'),instrumentedSha256:crypto.createHash('sha256').update(code).digest('hex')};
 }
 const connections=new Set();
 const server=http.createServer((request,response)=>{

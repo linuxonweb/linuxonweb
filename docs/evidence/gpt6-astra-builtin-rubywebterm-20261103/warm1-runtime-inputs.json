@@ -1,0 +1,13 @@
+{
+  "captured": "2026-11-03T08:35:09.827596+00:00",
+  "note": "Current candidate includes reviewed graphics dispatch and uncommitted explicit backend UI; this is not the prior raw/compressed A/B source.",
+  "files": {
+    "web/linux/main.js": "324fb6b52976af06283cae221727b3d69e781a349ba5e3cff1f76328f0126dc6",
+    "web/linux/index.html": "a5447d5b1daf26836a65a58033d8f0e14d824465a7607332ba0c226ad907ee77",
+    "web/linux/machine-settings.mjs": "4930dd9cf8224cd3654b9e3ba89c25faeb414ed642ff9fe9d292e363fee1dee6",
+    "web/linux/guest-gpu-config.mjs": "421ab707f6797d166bf0902ff939d575a14d220fcddfcd585419d4446d7d742f",
+    "web/linux/dist/guest-gl-remote.js": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+    "web/linux/persistent-home.mjs": "73922989ccafaa6bb6ecd68cc484b00db45baf6dd70c8a8184c091384b5e0a75",
+    "web/linux/desktop-extras.mjs": "555856c23a0c6ae9978fcdbe0564ff4000bc8ba65ddc34af40fced597d260273"
+  }
+}
