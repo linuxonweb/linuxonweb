@@ -13,12 +13,12 @@ root continue are archived under `agent/archive/`; they are evidence, not active
 pause instructions. Keep this file concise and put detailed work in agent logs.
 
 ## Git and ownership
-- Branch: gpt-6-astra-pro_builtin-agents_linuxonweb-20261103.
+- Branch: gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322.
 - Checkpoint49fc26e preserves reviewed pre-existing source changes. Excluded
   private dirs/caches/big binaries remain untouched. No Git remote was configured.
-- startup_io owns integration, startup/storage implementation and agent handoffs.
-- graphics_jit owns guest GL/JIT and graphics benchmarks; coordinate main.js edits.
-- packages_mobile owns package tooling, mobile UI and preview/metrics/deployment.
+- integration_acceptance owns integration, acceptance/graphics harnesses and agent handoffs.
+- firefox_lifecycle owns cache protocol, native restart and legitimate JIT build route; coordinate main.js edits.
+- packages_persistence owns package tooling, persistence and missing ports. Integration owns final preview/recovery coordination.
 - Commit only reviewed task files, never blanket-add unrelated artifacts.
 - Preserve failed evidence; checkpoint important progress and at most10 iterations.
 
@@ -85,3 +85,11 @@ The minimal MI8 HTTPS console has real native command/Stop/worker-cleanup proof;
 full mobile Firefox, phone Python install, soft-keyboard composition and iOS do
 not. Use agent/next-agent-prompt.md and the consolidated acceptance report for
 unfinished work; final recovery captures the frozen source head separately.
+
+### Fresh continuation budget and checkpoint
+
+Task starts2026-11-03T13:22:11Z, five-hour deadline18:22:11Z. At most one extra
+hour only for important bugs. Frozen parent81103b2 remains unchanged and is
+tagged checkpoint-linuxonweb-20261103-1322-81103b2. Baseline42/100.
+Read current agent/task.md and agent/continue.md; retain all disabled experiments
+and acceptance limitations until new actual production-browser evidence passes.

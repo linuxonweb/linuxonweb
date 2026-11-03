@@ -1,3 +1,22 @@
+# Active continuation — 2026-11-03 13:22 UTC
+
+Fresh task start: **2026-11-03T13:22:11Z**. Normal deadline: **18:22:11Z**.
+One extra hour only for important bug fixes, with a maximum of19:22:11Z.
+Branch: `gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322`.
+Checkpoint tag: `checkpoint-linuxonweb-20261103-1322-81103b2`.
+Frozen parent `81103b2ec04a8a4f8453617ca128448e831645bc` is unchanged.
+Baseline acceptance remains **42/100**, pending new evidence.
+Main agent is CTO; same-model built-in subagents own engineering.
+Integration/acceptance owns shared lifecycle/harness/publication and Git index coordination.
+Firefox agent owns cache protocol/native restart/JIT build route.
+Packages agent owns package persistence and missing native ports.
+Request the shared heavy-runtime lease before any guest boot or benchmark.
+Use `agent/task.md` as current exact instructions; previous notes are archived.
+
+Completed prior delivery: https://fileharbor-meak.basicgleam65.chatgpt.site/raw/meaklocaldev/85337f77-8669-4c34-b004-c691237d91ba/linuxonweb_gpt-6-astra-pro_builtin-agents_rubywebterm_20261103_complete/index.html
+
+## Inherited verified baseline
+
 # LinuxOnWeb continuation — 2026-11-03
 
 Read `agent/task.md` for the exact user request and `AGENTS.md` for active rules.
