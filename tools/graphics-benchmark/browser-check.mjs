@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import crypto from 'node:crypto';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {spawn} from 'node:child_process';
 import {readHostNproc} from '../guest-rootfs/firefox-host-cpus.mjs';
 const [scratch,inputUrl,resultGlobal='graphicsResults']=process.argv.slice(2);
@@ -15,8 +15,8 @@ const inputs={};let server;
 if(process.env.GRAPHICS_ISOLATED==='1'){
  const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../web');
  const cached=new Map();
- const override=process.env.GRAPHICS_GL_OVERRIDE;
- if(override){const b=fs.readFileSync(override);cached.set('/linux/dist/guest-gl-remote.js',b);inputs['/linux/dist/guest-gl-remote.js']={sha256:crypto.createHash('sha256').update(b).digest('hex'),override:path.resolve(override),bytes:b.length};}
+ const overrides=[['/linux/dist/guest-gl-remote.js',process.env.GRAPHICS_GL_OVERRIDE],['/linux/dist/guest-jit.js',process.env.GRAPHICS_JIT_OVERRIDE],[new URL(inputUrl).pathname,process.env.GRAPHICS_PAGE_OVERRIDE]];
+ for(const [route,override] of overrides)if(override){const b=fs.readFileSync(override);cached.set(route,b);inputs[route]={sha256:crypto.createHash('sha256').update(b).digest('hex'),override:path.resolve(override),bytes:b.length};}
  server=http.createServer((req,res)=>{try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);if(!pathname.startsWith('/linux/'))throw Error('route');const f=path.resolve(root,'.'+pathname);if(!f.startsWith(root+'/'))throw Error('path');let b=cached.get(pathname);if(!b){b=fs.readFileSync(f);cached.set(pathname,b);inputs[pathname]={sha256:crypto.createHash('sha256').update(b).digest('hex'),bytes:b.length};}inputs[pathname].requests=(inputs[pathname].requests??0)+1;const type=/\.m?js$/.test(pathname)?'text/javascript':pathname.endsWith('.html')?'text/html':pathname.endsWith('.json')?'application/json':pathname.endsWith('.wasm')?'application/wasm':'application/octet-stream';res.writeHead(200,{'Content-Type':type,'Content-Length':b.length,'Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp','Cross-Origin-Resource-Policy':'same-origin','Cache-Control':'no-store'});res.end(b);}catch{res.writeHead(404);res.end('Not found');}});
  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});const selected=new URL(url);url='http://127.0.0.1:'+server.address().port+selected.pathname+selected.search;
 }
@@ -24,7 +24,9 @@ const browser=process.env.CHROMIUM??'/home/a/.local/archpkg/pacman/usr/bin/chrom
 const prime=process.env.PRIME_RUN??'/usr/bin/prime-run';
 const angle=process.env.GRAPHICS_ANGLE??'vulkan';
 if(!['vulkan','gl'].includes(angle))throw Error('GRAPHICS_ANGLE must be explicit vulkan or gl');
-const args=['--ignore-gpu-blocklist',`--use-angle=${angle}`,'--use-gl=angle',...(angle==='vulkan'?['--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan']:[]),'--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-sync','--remote-debugging-address=127.0.0.1','--remote-debugging-port=0',`--user-data-dir=${run}/p`,`--disk-cache-dir=${run}/c`,'--window-size=800,600','about:blank'];
+const viewport=process.env.GRAPHICS_VIEWPORT?.split('x').map(Number)??null;
+if(viewport&&(viewport.length!==2||viewport.some((n,i)=>!Number.isInteger(n)||n<(i?240:320)||n>4096)))throw Error('invalid GRAPHICS_VIEWPORT');
+const args=['--ignore-gpu-blocklist',`--use-angle=${angle}`,'--use-gl=angle',...(angle==='vulkan'?['--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan']:[]),'--no-first-run','--no-default-browser-check','--disable-background-networking','--disable-sync','--remote-debugging-address=127.0.0.1','--remote-debugging-port=0',`--user-data-dir=${run}/p`,`--disk-cache-dir=${run}/c`,`--window-size=${(viewport??[800,600]).join(',')}`,'about:blank'];
 const observedOwnerCpus=readHostNproc();
 // The host controller caps browser owners at 3 CPUs; never bypass that policy.
 const cpus=Math.min(observedOwnerCpus,Number(process.env.GRAPHICS_CPUS??3));
@@ -48,9 +50,12 @@ try{
  let next=0;const waiting=new Map();
  socket.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const item=waiting.get(m.id);if(item){clearTimeout(item.timer);waiting.delete(m.id);m.error?item.reject(Error(m.error.message)):item.resolve(m.result);}}else if(m.method==='Runtime.exceptionThrown'){result.errors.push(m.params.exceptionDetails?.exception?.description??m.params.exceptionDetails?.text??'page exception');}else if(m.method==='Runtime.consoleAPICalled'&&result.console.length<100){result.console.push(m.params.args.map(a=>a.value??a.description).join(' ').slice(0,1500));}};
  send=(method,params={})=>new Promise((resolve,reject)=>{const id=++next;const timer=setTimeout(()=>{waiting.delete(id);reject(Error('CDP deadline '+method));},10000);waiting.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
- await send('Runtime.enable');await send('Page.enable');const nav=await send('Page.navigate',{url});if(nav.errorText)throw Error('navigation '+nav.errorText);
+ await send('Runtime.enable');await send('Page.enable');
+ if(viewport)await send('Emulation.setDeviceMetricsOverride',{width:viewport[0],height:viewport[1],deviceScaleFactor:1,mobile:false});
+ const nav=await send('Page.navigate',{url});if(nav.errorText)throw Error('navigation '+nav.errorText);
+ if(process.env.GRAPHICS_TEST_HOOK){const hook=await import(pathToFileURL(path.resolve(process.env.GRAPHICS_TEST_HOOK)).href);await hook.run({send,result,url,cpus});}
  for(let k=0;k<400;k++){
-  const r=await send('Runtime.evaluate',{expression:`({result:window.${resultGlobal}??null,text:document.getElementById('out')?.textContent??'',href:location.href,ua:navigator.userAgent,cpus:navigator.hardwareConcurrency})`,returnByValue:true});
+  const r=await send('Runtime.evaluate',{expression:`({result:window.${resultGlobal}??null,text:document.getElementById('out')?.textContent??'',href:location.href,ua:navigator.userAgent,cpus:navigator.hardwareConcurrency,viewport:[innerWidth,innerHeight,devicePixelRatio]})`,returnByValue:true});
   result.page=r.result?.value??null;
   if(result.page?.cpus!==cpus)throw Error('browser/owner CPU count mismatch '+JSON.stringify({owner:cpus,browser:result.page?.cpus}));
   if(result.page?.result?.done||/ALL PASSED|FAILED/.test(result.page?.text??''))break;

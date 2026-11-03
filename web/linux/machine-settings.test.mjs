@@ -115,3 +115,15 @@ test('an unversioned saved 2 CPUs is the old default and takes the new default',
   assert.equal(restoreConfiguration(settingsRecord({ resolution: '1280x720', cpus: 2, ram: 4096, backend: 'auto' }), defaults, options).configuration.cpus, 2);
   assert.equal(restoreConfiguration({ resolution: '1280x720', cpus: 3, ram: 4096, backend: 'auto' }, defaults, options).configuration.cpus, 3);
 });
+
+
+test('guest backend choice is independent and invalid saved auto stays explicit WebGPU', () => {
+  const defaults = { ...firefoxDefaults, guestBackend: 'webgpu' };
+  for (const value of ['auto', 'vulkan', null, undefined])
+    assert.equal(restoreConfiguration({ guestBackend: value }, defaults, options).configuration.guestBackend, 'webgpu');
+  assert.equal(restoreConfiguration({ guestBackend: 'webgl' }, defaults, options).configuration.guestBackend, 'webgl');
+  const old = { ...defaults, backend: 'auto' };
+  assert.equal(displayOnlyChange(old, { ...old, backend: 'webgl' }), true);
+  assert.equal(displayOnlyChange(old, { ...old, guestBackend: 'webgl' }), false);
+  assert.equal(displayOnlyChange(old, { ...old, backend: 'webgl', guestBackend: 'webgl' }), false);
+});

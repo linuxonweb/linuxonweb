@@ -70,13 +70,15 @@ function sizeParam(params, name) {
 /**
  * `?gpubackend=webgpu|webgl` forces the host backend for tests: `webgpu`
  * disables the WebGL2 fallback, `webgl` skips WebGPU acquisition. Anything
- * else (or absent) is `auto`: WebGPU first, WebGL2 on acquisition failure.
+ * else (or absent, including the old `auto` URL) selects WebGPU only.
+ * A WebGL backend requires an explicit user choice; acquisition never silently
+ * changes the product's guest backend.
  */
 export const GPU_BACKENDS = Object.freeze(['auto', 'webgpu', 'webgl']);
 export function gpuBackendParam(search = globalThis.location?.search ?? '') {
   const value = (new URLSearchParams(search).get('gpubackend') || '').toLowerCase();
   if (value === 'webgl2') return 'webgl';
-  return GPU_BACKENDS.includes(value) ? value : 'auto';
+  return value === 'webgl' ? 'webgl' : 'webgpu';
 }
 
 /** Fetches the demo archive; null (logged) when absent or unavailable. */
@@ -108,7 +110,7 @@ export function appendCpio(base, extra) {
  * session, then wait for the next listener. `wake()` retries immediately
  * (e.g. when the guest prints GUEST_GPU_LISTENING).
  */
-export function startGpuHost({ vsock, log, gpu = globalThis.navigator?.gpu, backend = 'auto', retryMs = 2000, connectTimeoutMs = 3000, importHost } = {}) {
+export function startGpuHost({ vsock, log, gpu = globalThis.navigator?.gpu, backend = 'webgpu', retryMs = 2000, connectTimeoutMs = 3000, importHost } = {}) {
   if (!GPU_BACKENDS.includes(backend)) throw new TypeError(`unknown GPU backend ${backend}`);
   // Forced WebGL: serveGPU sees no WebGPU API and takes its WebGL2 path.
   const serveGpu = backend === 'webgl' ? null : gpu;

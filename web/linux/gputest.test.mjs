@@ -48,7 +48,8 @@ test('host loop retries, serves each session and stops', async () => {
   assert.ok(calls.every(([port]) => port === GPUTEST_VSOCK_PORT));
   assert.equal(served.length, 2);
   const o = served[0].options;
-  assert.ok(o.allowGraphics && o.allowWebGL && o.allowUniforms && o.allowTextures && o.allowDepth);
+  assert.ok(o.allowGraphics && o.allowUniforms && o.allowTextures && o.allowDepth);
+  assert.equal(o.allowWebGL, false, 'default WebGPU never silently downgrades');
   assert.equal(o.graphicsTranslatorOptions.sha256, '5b78ad4937a5f04011fdc8000207009a5fb4d51f41fc1c7af6ce6a303e67fca5');
   assert.equal(o.webglTranslatorOptions.sha256, '5bf9d0be09b14b2ffdf40efcc4fabf872b2717b658c87039c76ae51efc3740c5');
   assert.equal(lines.filter(line => line.includes('connect retry')).length, 1, 'repeated identical failures are logged once');
@@ -59,9 +60,9 @@ test('gpubackend query parameter', () => {
   assert.equal(gpuBackendParam('?gputest=1&gpubackend=webgpu'), 'webgpu');
   assert.equal(gpuBackendParam('?gpubackend=webgl&gputest=1&firefox=1'), 'webgl');
   assert.equal(gpuBackendParam('?gpubackend=WebGL2'), 'webgl');
-  assert.equal(gpuBackendParam('?gpubackend=auto'), 'auto');
-  assert.equal(gpuBackendParam('?gpubackend=vulkan'), 'auto');
-  assert.equal(gpuBackendParam(''), 'auto');
+  assert.equal(gpuBackendParam('?gpubackend=auto'), 'webgpu');
+  assert.equal(gpuBackendParam('?gpubackend=vulkan'), 'webgpu');
+  assert.equal(gpuBackendParam(''), 'webgpu');
 });
 
 test('forced backends shape serveGPU options', async () => {

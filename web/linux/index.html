@@ -450,6 +450,7 @@
                 <option value="400x800">400 × 800 (portrait)</option>
                 <option value="512x960">512 × 960 (portrait)</option>
                 <option value="720x1280">720 × 1280 (portrait)</option>
+                <option value="900x1200">900 × 1200 (portrait)</option>
                 <option value="900x1600">900 × 1600 (portrait)</option>
                 <option value="800x600">800 × 600</option>
                 <option value="1280x720" selected>1280 × 720 (default)</option>
@@ -485,8 +486,18 @@
                 <option value="webgl">WebGL</option>
                 <option value="canvas2d">Canvas 2D</option>
               </select>
-              <span class="settings-copy">How this page draws the guest display. Auto uses WebGPU; if WebGPU does not work you are asked to choose WebGL or Canvas 2D. Guest Firefox rendering and video decoding remain software.</span>
+              <span class="settings-copy">How this page draws the guest display. Auto uses WebGPU; if WebGPU does not work you are asked to choose WebGL or Canvas 2D. Guest graphics are reported separately below. Video hardware acceleration has not been established.</span>
               <output id="graphics-status" aria-live="polite"></output>
+            </div>
+            <div class="field">
+              <label for="guest-graphics-backend">Guest Vulkan backend</label>
+              <select id="guest-graphics-backend">
+                <option value="webgpu">WebGPU (preferred)</option>
+                <option value="webgl">WebGL (limited compatibility)</option>
+              </select>
+              <span class="settings-copy">Experimental Vulkan subset. WebGL runs only when you select it. Changing this backend restarts the guest. Full desktop OpenGL and Vulkan compatibility are still incomplete.</span>
+              <output id="guest-vulkan-status" aria-live="polite"></output>
+              <output id="guest-gl-status" aria-live="polite"></output>
             </div>
             <button class="action" id="display-pan" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18" /><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" /></svg><span class="label">Pan display</span></button>
             <p id="settings-note" class="settings-note" role="status">Choose settings, then apply your changes.</p>

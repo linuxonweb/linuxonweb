@@ -15,6 +15,7 @@ export function restoreConfiguration(saved, defaults, { resolutions, ramValues, 
   // default, not as a choice; they now start with the WebGPU default.
   const oldDefault = saved.backend === 'canvas2d' && saved.presentationVersion !== PRESENTATION_VERSION;
   if (['canvas2d', 'auto', 'webgl'].includes(saved.backend) && !oldDefault) configuration.backend = saved.backend;
+  if ('guestBackend' in defaults && ['webgpu', 'webgl'].includes(saved.guestBackend)) configuration.guestBackend = saved.guestBackend;
   return { configuration, ramChosen };
 }
 
@@ -77,5 +78,6 @@ export function withPresentationChoice(configuration, backend, ramChosen) {
 // Only the presenter differs, so a running guest can switch without restarting.
 export function displayOnlyChange(active, next) {
   return active.backend !== next.backend && active.resolution === next.resolution
-    && active.cpus === next.cpus && active.ram === next.ram;
+    && active.cpus === next.cpus && active.ram === next.ram
+    && (active.guestBackend ?? 'webgpu') === (next.guestBackend ?? 'webgpu');
 }

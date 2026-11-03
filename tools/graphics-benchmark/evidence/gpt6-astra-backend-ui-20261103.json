@@ -1,0 +1,184 @@
+{
+  "kind": "explicit guest graphics backend controls",
+  "pass": true,
+  "scope": "Product settings acceptance; does not prove complete graphics API or Firefox acceleration",
+  "unitTests": 28,
+  "browserChecks": [
+    {
+      "name": "initial guest WebGPU choice is explicit",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "portrait resolution is offered",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "guest APIs have separate status labels",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "guest backend requires review before saving",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "cancel restores choice without writing",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "explicit WebGL and resolution are saved together",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "reload restores saved graphics and resolution",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "saved choice survives a URL without backend",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "explicit WebGPU URL overrides saved fallback for this load",
+      "pass": true,
+      "actual": true
+    },
+    {
+      "name": "no VM is started by settings review",
+      "pass": true,
+      "actual": true
+    }
+  ],
+  "started": "2026-11-03T08:44:18.328Z",
+  "ended": "2026-11-03T08:44:20.693Z",
+  "browser": {
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "cpus": 3,
+    "viewport": [
+      1280,
+      720,
+      1
+    ]
+  },
+  "functionalContended": true,
+  "checksNotes": "No guest boot; explicit URL versus saved choice, cancellation, reload and backend separation exercised. Current-guest restart predicate also checked as a pure unit test.",
+  "sourceSha256": {
+    "web/linux/main.js": "324fb6b52976af06283cae221727b3d69e781a349ba5e3cff1f76328f0126dc6",
+    "web/linux/index.html": "a5447d5b1daf26836a65a58033d8f0e14d824465a7607332ba0c226ad907ee77",
+    "web/linux/gputest.mjs": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+    "web/linux/guest-gpu-config.mjs": "421ab707f6797d166bf0902ff939d575a14d220fcddfcd585419d4446d7d742f",
+    "web/linux/machine-settings.mjs": "4930dd9cf8224cd3654b9e3ba89c25faeb414ed642ff9fe9d292e363fee1dee6",
+    "web/linux/guest-gpu-status.mjs": "144071096a539631e88edb8c794f6b6cd52b061d8b66858f1726247de92614c5"
+  },
+  "resources": {
+    "started_unix": 1793695458.231489,
+    "ended_unix": 1793695461.668693,
+    "duration_s": 3.437,
+    "command": [
+      "env",
+      "GRAPHICS_ISOLATED=1",
+      "GRAPHICS_ANGLE=gl",
+      "GRAPHICS_VIEWPORT=1280x720",
+      "GRAPHICS_TEST_HOOK=tools/graphics-benchmark/gpu-ui-check.mjs",
+      "node",
+      "tools/graphics-benchmark/browser-check.mjs",
+      "../../../codex-build/g3g",
+      "http://localhost/linux/index.html"
+    ],
+    "exit_code": 0,
+    "stop_reason": null,
+    "peak_sum_rss_bytes": 1124982784,
+    "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+    "resource_samples": 4,
+    "tracked_identities": [
+      {
+        "pid": 2129273,
+        "start_ticks": 41185514
+      },
+      {
+        "pid": 2129293,
+        "start_ticks": 41185523
+      },
+      {
+        "pid": 2129294,
+        "start_ticks": 41185524
+      },
+      {
+        "pid": 2129307,
+        "start_ticks": 41185528
+      },
+      {
+        "pid": 2129309,
+        "start_ticks": 41185533
+      },
+      {
+        "pid": 2129421,
+        "start_ticks": 41185586
+      },
+      {
+        "pid": 2129391,
+        "start_ticks": 41185568
+      },
+      {
+        "pid": 2129390,
+        "start_ticks": 41185567
+      },
+      {
+        "pid": 2129354,
+        "start_ticks": 41185550
+      },
+      {
+        "pid": 2129306,
+        "start_ticks": 41185528
+      },
+      {
+        "pid": 2129341,
+        "start_ticks": 41185544
+      },
+      {
+        "pid": 2129420,
+        "start_ticks": 41185585
+      },
+      {
+        "pid": 2129494,
+        "start_ticks": 41185700
+      },
+      {
+        "pid": 2129478,
+        "start_ticks": 41185675
+      }
+    ],
+    "remaining": []
+  },
+  "unitResources": {
+    "started_unix": 1793696541.8104203,
+    "ended_unix": 1793696543.2150326,
+    "duration_s": 1.405,
+    "command": [
+      "node",
+      "--test",
+      "web/linux/machine-settings.test.mjs",
+      "web/linux/gputest.test.mjs",
+      "web/linux/guest-gpu-status.test.mjs"
+    ],
+    "exit_code": 0,
+    "stop_reason": null,
+    "peak_sum_rss_bytes": 1126400,
+    "sum_rss_note": "Sampled sum; shared pages may be counted more than once.",
+    "resource_samples": 2,
+    "tracked_identities": [
+      {
+        "pid": 2279572,
+        "start_ticks": 41293872
+      }
+    ],
+    "remaining": []
+  },
+  "screenshot": "tools/graphics-benchmark/evidence/gpt6-astra-backend-settings-20261103.png"
+}

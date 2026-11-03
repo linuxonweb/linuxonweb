@@ -30,7 +30,8 @@ import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboard
 import { loadDesktopInitramfs, loadDesktopExtras, useCompressedInitramfs } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
 import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
-import { guestGpuHostcallOptions } from './guest-gpu-config.mjs';
+import { guestGpuHostcallOptions, guestGpuUrl } from './guest-gpu-config.mjs';
+import { newGuestGpuState, observeGuestGpuMessage, guestGpuLabels } from './guest-gpu-status.mjs';
 import { firefoxJitFlags } from './firefox-jit-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
@@ -108,6 +109,9 @@ const cpuValue = document.getElementById("cpu-value");
 const ramSelect = document.getElementById("ram");
 const graphicsSelect = document.getElementById('graphics-backend');
 const graphicsStatus = document.getElementById('graphics-status');
+const guestGraphicsSelect = document.getElementById('guest-graphics-backend');
+const guestGlStatus = document.getElementById('guest-gl-status');
+const guestVulkanStatus = document.getElementById('guest-vulkan-status');
 // The running framebuffer host switches presenter without a guest restart.
 let setPresenter = null;
 let presentationPromptOpen = false;
@@ -161,8 +165,15 @@ for (const button of document.querySelectorAll(".toolbar .tool")) {
 let firefoxMode = new URLSearchParams(location.search).get("firefox") === "1";
 // ?gputest=1 serves the guest Vulkan ICD over vsock and appends gpu/gputest.cpio.
 let gputestMode = gputestEnabled();
-// ?gpubackend=webgpu|webgl forces the gputest host backend (default auto).
+// Guest Vulkan uses WebGPU unless the user explicitly selects WebGL.
 let gpuBackend = gpuBackendParam();
+let guestGpuState = newGuestGpuState(gpuBackend);
+function showGuestGpuStatus() {
+  const labels = guestGpuLabels(guestGpuState);
+  guestGlStatus.textContent = labels.gl;
+  guestVulkanStatus.textContent = labels.vulkan;
+}
+showGuestGpuStatus();
 // ?gpu=1 serves guest GPU sessions (vsock 4050) without the demo archive.
 // Firefox mode serves them by default (guest WebGL on Zink); ?gpu=0 opts out.
 let gpuParam = new URLSearchParams(location.search).get("gpu");
@@ -419,6 +430,8 @@ function writeConsole(value, source = "guest") {
 let homeLogTail = '';
 
 function hostLog(line, kind = "host") {
+  const nextGpuState = observeGuestGpuMessage(guestGpuState, line);
+  if (nextGpuState !== guestGpuState) { guestGpuState = nextGpuState; showGuestGpuStatus(); }
   writeConsole(`[host${kind === "error" ? " error" : ""}] ${line}\r\n`, "host");
 }
 
@@ -442,11 +455,12 @@ cpuInput.max = String(hostCores);
 cpuInput.value = String(defaultCpus);
 // Window-based resolutions are measured when a guest boots. A window narrower
 // than 720 px defaults to its width × 500; wider windows keep 1280 × 720.
-const defaults = { resolution: window.innerWidth < 720 ? "window-500" : "1280x720", cpus: defaultCpus, ram: 2048, backend: 'auto' };
+const defaults = { resolution: window.innerWidth < 720 ? "window-500" : "1280x720", cpus: defaultCpus, ram: 2048, backend: 'auto', guestBackend: 'webgpu' };
 function validConfiguration(value) {
   return value && [...resolutionSelect.options].some(option => option.value === value.resolution)
     && Number.isInteger(value.cpus) && value.cpus >= 1 && value.cpus <= hostCores
-    && [...ramSelect.options].some(option => Number(option.value) === value.ram);
+    && [...ramSelect.options].some(option => Number(option.value) === value.ram)
+    && ['webgpu', 'webgl'].includes(value.guestBackend);
 }
 let activeConfiguration = { ...defaults };
 // True once the user has saved a memory size; Firefox then boots without asking.
@@ -458,23 +472,29 @@ try {
 } catch { /* Ignore missing or malformed saved settings. */ }
 // A renderer= URL parameter chooses the display presentation for this page load.
 activeConfiguration.backend = presentationFromUrl(location.search) ?? activeConfiguration.backend;
+if (new URLSearchParams(location.search).has('gpubackend')) activeConfiguration.guestBackend = gpuBackendParam();
+gpuBackend = activeConfiguration.guestBackend;
 function readConfiguration() {
-  return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value };
+  return { resolution: resolutionSelect.value, cpus: Number(cpuInput.value), ram: Number(ramSelect.value), backend: graphicsSelect.value, guestBackend: guestGraphicsSelect.value };
 }
 function showConfiguration(value) {
   resolutionSelect.value = value.resolution;
   cpuInput.value = String(value.cpus);
   ramSelect.value = String(value.ram);
   graphicsSelect.value = value.backend || 'auto';
+  guestGraphicsSelect.value = value.guestBackend || 'webgpu';
+  gpuBackend = guestGraphicsSelect.value;
+  guestGpuState = { ...guestGpuState, selectedBackend: gpuBackend };
+  showGuestGpuStatus();
   // Only the active configuration is shown here; keep the URL parameter in step with it.
-  history.replaceState(history.state, '', presentationUrl(location.href, graphicsSelect.value));
+  history.replaceState(history.state, '', guestGpuUrl(presentationUrl(location.href, graphicsSelect.value), gpuBackend));
   updateCpuLabel();
   updateSettingsState();
 }
 function updateSettingsState() {
   const value = readConfiguration();
   settingsApply.disabled = configurationLocked || !validConfiguration(value)
-    || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram && value.backend === activeConfiguration.backend);
+    || (value.resolution === activeConfiguration.resolution && value.cpus === activeConfiguration.cpus && value.ram === activeConfiguration.ram && value.backend === activeConfiguration.backend && value.guestBackend === activeConfiguration.guestBackend);
   settingsNote.textContent = configurationLocked ? "Please wait while the machine starts or restarts."
     : activeMachine && setPresenter && displayOnlyChange(activeConfiguration, value) ? "Display presentation changes apply without restarting the guest."
     : currentMode === "firefox" ? "Applying changes restarts the guest. Firefox may need more memory; boot checks the selected image before starting."
@@ -537,6 +557,7 @@ restartDialog.addEventListener("click", (ev) => ev.stopPropagation());
 resolutionSelect.addEventListener("change", updateSettingsState);
 ramSelect.addEventListener("change", updateSettingsState);
 graphicsSelect.addEventListener('change', updateSettingsState);
+guestGraphicsSelect.addEventListener('change', updateSettingsState);
 cpuInput.addEventListener("input", () => { updateCpuLabel(); updateSettingsState(); });
 updateWindowResolutionLabels();
 window.addEventListener("resize", updateWindowResolutionLabels);
@@ -595,6 +616,8 @@ async function launchGpuTest(url) {
     firefoxMode = next.searchParams.get('firefox') === '1';
     gputestMode = gputestEnabled(next.search);
     gpuBackend = gpuBackendParam(next.search);
+    activeConfiguration.guestBackend = gpuBackend;
+    guestGraphicsSelect.value = gpuBackend;
     gpuParam = next.searchParams.get('gpu');
     selectedGpuTest = selection;
     restarting = false;
@@ -619,7 +642,7 @@ settingsApply.addEventListener("click", () => {
   document.getElementById("restart-title").textContent = pendingDisplayOnly ? "Change display presentation?" : activeMachine ? "Restart the guest?" : "Apply machine settings?";
   document.getElementById("restart-summary").textContent = pendingDisplayOnly
     ? `Display presentation · ${graphicsSelect.selectedOptions[0].text}. Continue saves this setting and switches the display now; the guest keeps running.`
-    : `${resolveResolution(next.resolution).replace("x", " × ")} ·${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
+    : `${resolveResolution(next.resolution).replace("x", " × ")} ·${next.cpus} ${next.cpus === 1 ? "core" : "cores"} · ${next.ram === 4096 ? "4 GB" : `${next.ram} MB`} · ${graphicsSelect.selectedOptions[0].text} · guest Vulkan ${guestGraphicsSelect.selectedOptions[0].text}. ${activeMachine ? "Continue saves these settings and restarts the guest in the same mode." : "Continue saves these settings for the next boot."}`;
   document.getElementById("restart-warning").hidden = !activeMachine || pendingDisplayOnly;
   restartDialog.showModal();
 });
@@ -670,7 +693,7 @@ restartContinue.addEventListener("click", async () => {
   // Reload releases the old guest's canvas listeners, streams, workers and
   // network. Keep every existing query parameter (proxy, Firefox, diagnostics);
   // renderer= carries the newly applied presentation.
-  history.replaceState(history.state, '', presentationUrl(location.href, next.backend));
+  history.replaceState(history.state, '', guestGpuUrl(presentationUrl(location.href, next.backend), next.guestBackend));
   location.reload();
 });
 
@@ -698,6 +721,7 @@ function lockConfiguration(locked) {
   cpuInput.disabled = locked;
   ramSelect.disabled = locked;
   graphicsSelect.disabled = locked;
+  guestGraphicsSelect.disabled = locked;
   updateSettingsState();
 }
 
@@ -1124,6 +1148,8 @@ async function boot(mode) {
       .filter(Boolean)
       .join(" ");
     const memory = ramBytes(Number(ramSelect.value));
+    guestGpuState = newGuestGpuState(gpuBackend);
+    showGuestGpuStatus();
     const machine = await spawnMachine({
       cpus: Number(cpuInput.value),
       cmdline: `${rootCommand} ${modeFlags}`,
@@ -1248,7 +1274,7 @@ async function stopGuest() {
 }
 
 // Firefox mode is intended for unattended Chromium testing. Boot immediately;
-// guest init waits 10 seconds after X is ready before launching /bin/firefox.
+// Guest init waits for Aurora readiness (bounded by a deadline), then launches /bin/firefox.
 // ?gputest=1 alone auto-boots X; combined with ?firefox=1 it boots Firefox.
 if (selectedGpuTest === 'webgpu' || selectedGpuTest === 'webgl') {
   queueMicrotask(() => void boot('wgpu'));

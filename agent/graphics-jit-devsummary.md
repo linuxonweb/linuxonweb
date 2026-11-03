@@ -1,6 +1,6 @@
 # Graphics and JIT work — GPT-6 Astra Pro / built-in agents / rubywebterm
 
-Current scope score: **15/100**. Real host sync checks pass, but the complete native guest workload exposes a regression. No full OpenGL/Vulkan, whole-Firefox JIT, or50%host performance acceptance is claimed.
+Current graphics/JIT work-scope score: **30/100**. The verified host draw-dispatch optimization is shipped. The real-fence candidate failed native correctness and remains excluded. No full OpenGL/Vulkan, whole-Firefox JIT, or50%host performance acceptance is claimed.
 
 ## Iteration / build / test ledger
 
@@ -46,3 +46,7 @@ Production now contains this reviewed host optimization only. Failed real-fence
 changes are parked separately. Parent provisional overall score26/100;
 graphics rubric6/25. Native159 relink and original JIT safety acceptance remain
 blocked/unresolved respectively. Full test timing ledger is the companion JSON.
+
+## Explicit guest backend controls — 2026-11-03
+
+The product defaults guest Vulkan to WebGPU and requires an explicit WebGL choice. Presenter, guest OpenGL and experimental Vulkan status are separate. The 900 × 1200 portrait option is available. Twenty-eight unit checks and ten real-browser functional checks pass, including cancellation, saved choice, reload and URL override. These checks do not establish full Vulkan/OpenGL or whole-Firefox hardware acceleration. Exact sources and resource receipts: `tools/graphics-benchmark/evidence/gpt6-astra-backend-ui-20261103.json`.

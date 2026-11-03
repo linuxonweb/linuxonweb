@@ -306,6 +306,58 @@
       "receipt": "/mnt/p3/codex-build/g3g/perfhost-pooled1/receipt.json",
       "scope_score": 30,
       "finding": "Verified real GPU correctness/performance; detailed evidence in dispatch summary"
+    },
+    {
+      "name": "ui-unit1",
+      "start_utc": "2026-11-03T08:26:45.928438+00:00",
+      "end_utc": "2026-11-03T08:26:47.332178+00:00",
+      "seconds": 1.404,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 2330624,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "26/27 passed; old default-fallback expectation requires explicit new WebGPU policy",
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit1/receipt.json"
+    },
+    {
+      "name": "ui-unit2",
+      "start_utc": "2026-11-03T08:27:44.345476+00:00",
+      "end_utc": "2026-11-03T08:27:45.749468+00:00",
+      "seconds": 1.404,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1232896,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "27/27 explicit backend settings/status unit tests passed",
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit2/receipt.json"
+    },
+    {
+      "name": "ui-browser1",
+      "start_utc": "2026-11-03T08:44:18.231489+00:00",
+      "end_utc": "2026-11-03T08:44:21.668693+00:00",
+      "seconds": 3.437,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1124982784,
+      "resource_samples": 4,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "10 real-browser settings checks passed; no guest started; contention allowed for correctness",
+      "receipt": "/mnt/p3/codex-build/g3g/ui-browser1/receipt.json"
+    },
+    {
+      "name": "ui-unit3",
+      "start_utc": "2026-11-03T09:02:21.810420+00:00",
+      "end_utc": "2026-11-03T09:02:23.215033+00:00",
+      "seconds": 1.405,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1126400,
+      "resource_samples": 2,
+      "remaining_owned_processes": 0,
+      "scope_score": 30,
+      "finding": "28/28 final backend settings/status unit tests passed",
+      "receipt": "/mnt/p3/codex-build/g3g/ui-unit3/receipt.json"
     }
   ],
   "total_owned_build_test_seconds": 254.22899999999998,
@@ -327,5 +379,7 @@
     "bypassed": false
   },
   "overall_provisional_score": 26,
-  "elapsed_wall_seconds": 4422.892398
+  "elapsed_wall_seconds": 4422.892398,
+  "elapsed_to_last_seconds": 6983.215033,
+  "owned_build_test_seconds": 261.879
 }

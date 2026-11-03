@@ -1,9 +1,9 @@
 // Explicit desktop opt-in to the common Rust Vulkan service. Backend selection
-// still comes from the existing gpubackend parser; no setting is persisted.
-export function guestGpuOwnerConfig(search, gpuBackend = 'auto') {
+// comes from the explicit active setting, mirrored in the gpubackend URL.
+export function guestGpuOwnerConfig(search, gpuBackend = 'webgpu') {
   // ?debug=1 also logs guest GL remote call rates every 5 s of activity.
   const gl = new URLSearchParams(search).get('debug') === '1' ? { gl: { stats: true } } : {};
-  return { ...gl, ...vulkanOwnerConfig(search, gpuBackend) };
+  return { ...gl, ...vulkanOwnerConfig(search, gpuBackend === 'webgl' ? 'webgl' : 'webgpu') };
 }
 function vulkanOwnerConfig(search, gpuBackend) {
   if (new URLSearchParams(search).get('gpuruntime') !== 'rust') {
@@ -13,7 +13,7 @@ function vulkanOwnerConfig(search, gpuBackend) {
     return { vk: { backend: gpuBackend, ...(large ? { allowLargeColorTargets: true,
       ...(options.get('gpulargesampledtargets') !== '0' ? { allowLargeSampledTargets: true } : {}) } : {}) } };
   }
-  const wgpuBackend = ['auto', 'webgpu', 'webgl'].includes(gpuBackend) ? gpuBackend : 'auto';
+  const wgpuBackend = gpuBackend === 'webgl' ? 'webgl' : 'webgpu';
   const options = new URLSearchParams(search);
   return { vk: { backend: 'wgpu', wgpuBackend, allowResources: true,
     ...(options.get('gpulargetargets') === '1' ? { allowLargeColorTargets: true } : {}),
@@ -24,7 +24,15 @@ function vulkanOwnerConfig(search, gpuBackend) {
 
 // Match the accepted native Rust renderer's synchronous shader guard. The
 // ordinary hostcall path continues to use its existing default guard.
-export function guestGpuHostcallOptions(search, gpuBackend = 'auto') {
+export function guestGpuHostcallOptions(search, gpuBackend = 'webgpu') {
   const ownerConfig = guestGpuOwnerConfig(search, gpuBackend);
   return ownerConfig.vk.backend === 'wgpu' ? { ownerConfig, stallMs: 30000 } : { ownerConfig };
+}
+
+// Preserve unrelated query parameters and make the active guest backend explicit.
+export function guestGpuUrl(href, backend) {
+  if (!['webgpu', 'webgl'].includes(backend)) throw new TypeError('unsupported guest GPU backend');
+  const url = new URL(href);
+  url.searchParams.set('gpubackend', backend);
+  return url.href;
 }
