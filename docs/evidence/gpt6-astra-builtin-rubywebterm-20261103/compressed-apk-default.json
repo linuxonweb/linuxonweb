@@ -1,0 +1,123 @@
+{
+  "accepted": true,
+  "date": "2026-11-03",
+  "default": "Firefox preserves compressed initramfs; explicit compressed-initramfs=0 retains the raw diagnostic path",
+  "imageVersion": "4f6bf2d3a326",
+  "imageSha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3",
+  "composition": {
+    "input": {
+      "url": "./initramfs-firefox.cpio.gz",
+      "bytes": 116195863,
+      "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3",
+      "label": "Firefox system with verified native APK base; package install files reset at reboot"
+    },
+    "version": "4f6bf2d3a326",
+    "preserveGzip": true,
+    "compressExtras": true,
+    "bytes": 134620836,
+    "sha256": "8adf3b9480558c86c7a73583338e5065a836bcdc6318cf844a11185fb629878f",
+    "marks": [
+      {
+        "imageExpandedBytes": 371230996,
+        "ms": 4110.489826
+      },
+      {
+        "readyMs": 6763.360487
+      }
+    ],
+    "durationMs": 7303.3530709999995
+  },
+  "rawDiagnostic": {
+    "pass": true,
+    "rawDiagnostic": true,
+    "concatenatedGzipInput": true,
+    "archiveBytes": 431241740,
+    "records": 13151,
+    "found": {
+      "init": {
+        "bytes": 206,
+        "sha256": "9b2a63b94ca2fd001b80b276792e9cefb238e2d2cebb21e500e1812a5ca3f52a"
+      },
+      "usr/bin/sudo": {
+        "bytes": 33262,
+        "sha256": "4edb1243495610789b21b266cf00f273282f3dd1b08d9b5ce343ed4c53a4a1e3"
+      },
+      "etc/apk/repositories": {
+        "bytes": 175,
+        "sha256": "88997c2829c87c16bb05435e938e25a8120e1cd6b9037eecc7c80941ed0cc639"
+      },
+      "sbin/apk": {
+        "bytes": 3694719,
+        "sha256": "455c6c74b6706b2e24c661756d0a92bb1323c12fcc11d21b7f52f7e2c5f513c2"
+      },
+      "bin/clipboard-bridge": {
+        "bytes": 831698,
+        "sha256": "c37d74229d996e37adc896388883b3104d5b93e21fc9f3054eb73ff7eede3b45"
+      },
+      "init.desktop-original": {
+        "bytes": 10243,
+        "sha256": "55d55013be46cb13541320943ef03c50a43580bf69dd5d4c425963a41a5d8803"
+      },
+      "bin/linuxonweb-run-agent": {
+        "bytes": 2014,
+        "sha256": "ad25cabfc1e5fc72c5e73c105afc5932b1cf605afdb68df0f4668f9b9f652117"
+      }
+    },
+    "durationMs": 3627.2430240000003
+  },
+  "runtime": {
+    "startedAt": "2026-11-03T10:00:36.632Z",
+    "durationSeconds": 15.363,
+    "pass": true,
+    "browserExit": 0,
+    "configuration": {
+      "cpus": 3,
+      "memoryBytes": 2147483648,
+      "hardwareConcurrency": 3,
+      "imageSha256": "8adf3b9480558c86c7a73583338e5065a836bcdc6318cf844a11185fb629878f",
+      "cmdline": "console=hvc0 rdinit=/init demo.mode=console home.persistent=1"
+    },
+    "lines": [
+      "fb0: wasm framebuffer 640x480-32 at 649c71d7",
+      "Freeing initrd memory: 131456K",
+      "This architecture does not have kernel memory protection.",
+      "Run /init as init process",
+      "home: persistent storage mounted",
+      "network: no eth0 (host did not attach virtio-net)",
+      "~ # /sbin/apk --version && test -x /bin/clipboard-bridge && test -r /init.deskto",
+      "p-original && test -r /bin/linuxonweb-run-agent && echo combined-compressed-apk ",
+      "> /home/composition-sentinel && sync && echo PACKAGE_SMOKE_EXIT status=0 || echo",
+      " PACKAGE_SMOKE_EXIT status=1",
+      "apk-tools 2.14.12, compiled for wasm32.",
+      "PACKAGE_SMOKE_EXIT status=0"
+    ]
+  },
+  "testResult": {
+    "startedUtc": "2026-11-03T10:02:28.052666+00:00",
+    "finishedUtc": "2026-11-03T10:02:29.054085+00:00",
+    "durationSeconds": 1.001,
+    "argv": [
+      "node",
+      "--test",
+      "web/linux/desktop-compressed.test.mjs",
+      "web/linux/desktop-extras.test.mjs"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownerPeakRssBytes": 450560,
+    "ownedTreePeakRssBytes": 638976,
+    "resourceSamples": 1,
+    "resourceScope": "one-second owned descendant tree RSS sum (shared pages may be counted more than once), CPU ticks and host available RAM",
+    "pass": true
+  },
+  "priorEvidence": {
+    "matched3CpuRawPssGiB": 4.2732,
+    "matched3CpuCompressedPssGiB": 3.2287,
+    "sampling": "one-second PSS for this matched pair; later five-second PSS peaks are lower bounds and not mixed into this comparison",
+    "startup": "No measured startup speed improvement was established by compression",
+    "functional": "Corrected compressed Firefox input/navigation and Stop passed in warm1/seed1; two-boot package fixture separately proves coherent rootfs reset and persistent home"
+  },
+  "experimentalModes": "Code-cache seeds and FUSE writeback remain disabled",
+  "loaderSha256": "a6b83c6e4c9e1e17d9f3f9276e175de058697792ed4a0acb794ab94a86d54186"
+}

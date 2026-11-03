@@ -1,0 +1,28 @@
+{
+  "pass": true,
+  "checkedAt": "2026-11-03T09:56:43.603278+00:00",
+  "version": "4f6bf2d3a326",
+  "servedArchive": {
+    "bytes": 116195863,
+    "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3"
+  },
+  "headers": {
+    "Content-Type": "application/octet-stream",
+    "Cache-Control": "no-store",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Accept-Ranges": "bytes",
+    "Last-Modified": "Tue, 03 Nov 2026 09:55:38 GMT",
+    "Content-Length": "116195863",
+    "Date": "Tue, 03 Nov 2026 09:56:02 GMT",
+    "Connection": "close"
+  },
+  "range": {
+    "status": 206,
+    "bytes": 16,
+    "contentRange": "bytes 0-15/116195863"
+  },
+  "previousArchiveSha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa",
+  "initialCombinedGate": "An initial immediate combined assertion failed before a receipt was saved; fresh full response then matched SHA, size and isolation headers. Preserved publish command output; no causal diagnosis claimed."
+}

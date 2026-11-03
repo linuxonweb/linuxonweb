@@ -139,7 +139,8 @@ async function scanInitOverlay(reader, signal) {
   return { bytes: position, overlay: desktopInitOverlay(cpioEntry('init', original)) };
 }
 export function useCompressedInitramfs(mode, search, rawRequired = false) {
-  return mode === 'firefox' && !rawRequired && new URLSearchParams(search).get('compressed-initramfs') === '1';
+  const choice = new URLSearchParams(search).get('compressed-initramfs');
+  return mode === 'firefox' && !rawRequired && (choice === null || choice === '1');
 }
 export async function loadDesktopInitramfs(image, extras, { gzip = false, preserveGzip = false, compressExtras = false, signal, onImage = () => {}, onReady = () => {} } = {}) {
   const imageReady = Promise.resolve(image);

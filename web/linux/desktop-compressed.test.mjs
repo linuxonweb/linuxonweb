@@ -11,9 +11,10 @@ const trailer = cpioEntry('TRAILER!!!', new Uint8Array(), 0);
 const system = join([cpioEntry('large', new Uint8Array(2 * 1024 * 1024)), init, trailer]);
 const extras = join([cpioEntry('extra', encoder.encode('extra')), trailer]);
 
-test('compressed boot is explicitly opted in for Firefox, never raw-archive GPU overlays', () => {
+test('compressed boot defaults on for Firefox, with an explicit raw diagnostic override', () => {
   assert.equal(desktopExtras.useCompressedInitramfs('firefox', '?compressed-initramfs=1', false), true);
-  for (const search of ['', '?compressed-initramfs=0', '?compressed-initramfs=true']) {
+  assert.equal(desktopExtras.useCompressedInitramfs('firefox', '', false), true);
+  for (const search of ['?compressed-initramfs=0', '?compressed-initramfs=true']) {
     assert.equal(desktopExtras.useCompressedInitramfs('firefox', search, false), false);
   }
   for (const mode of ['startx', 'console', 'wgpu']) {
