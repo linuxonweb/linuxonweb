@@ -1,0 +1,714 @@
+{
+  "agent": "packages_mobile",
+  "recordedOwnerStageCount": 88,
+  "ownerStageUnionSeconds": 2198.23,
+  "rawNestedStageSecondsNotWallTime": 2204.244,
+  "note": "Owner-stage union merges nested and overlapping monitored intervals. It excludes unmonitored planning and ongoing cloud transfer time. Legacy iteration-timing JSON numbers are timed stage identifiers, not comparable with later milestone numbers. Do not add category or agent sums as elapsed wall time.",
+  "longerThanFiveMinutes": [],
+  "records": [
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-build1/result.json",
+      "startUtc": "2026-11-03T07:13:15.809094+00:00",
+      "endUtc": "2026-11-03T07:13:16.812104+00:00",
+      "seconds": 1.003,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-build2/result.json",
+      "startUtc": "2026-11-03T07:13:48.811823+00:00",
+      "endUtc": "2026-11-03T07:13:49.814116+00:00",
+      "seconds": 1.002,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk3/build-log/result.json",
+      "startUtc": "2026-11-03T07:14:26.203019+00:00",
+      "endUtc": "2026-11-03T07:14:28.205734+00:00",
+      "seconds": 2.003,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk4/build-log/result.json",
+      "startUtc": "2026-11-03T07:14:51.020673+00:00",
+      "endUtc": "2026-11-03T07:14:54.024007+00:00",
+      "seconds": 3.003,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-preview-check/owner/result.json",
+      "startUtc": "2026-11-03T07:20:39.919896+00:00",
+      "endUtc": "2026-11-03T07:20:48.948740+00:00",
+      "seconds": 9.029,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk5/build-log/result.json",
+      "startUtc": "2026-11-03T07:22:45.596266+00:00",
+      "endUtc": "2026-11-03T07:22:49.601750+00:00",
+      "seconds": 4.006,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk6/build-log/result.json",
+      "startUtc": "2026-11-03T07:23:19.699737+00:00",
+      "endUtc": "2026-11-03T07:23:28.709191+00:00",
+      "seconds": 9.009,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk7/build-log/result.json",
+      "startUtc": "2026-11-03T07:23:42.759732+00:00",
+      "endUtc": "2026-11-03T07:23:50.767304+00:00",
+      "seconds": 8.008,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/apk7/helper-log/result.json",
+      "startUtc": "2026-11-03T07:23:50.768020+00:00",
+      "endUtc": "2026-11-03T07:23:51.769497+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/logs/apk-host-build/result.json",
+      "startUtc": "2026-11-03T07:25:49.550273+00:00",
+      "endUtc": "2026-11-03T07:25:58.575010+00:00",
+      "seconds": 9.025,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-smoke/owner1/result.json",
+      "startUtc": "2026-11-03T07:29:36.420075+00:00",
+      "endUtc": "2026-11-03T07:29:44.438935+00:00",
+      "seconds": 8.019,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-smoke/owner2/result.json",
+      "startUtc": "2026-11-03T07:35:52.516227+00:00",
+      "endUtc": "2026-11-03T07:36:01.533838+00:00",
+      "seconds": 9.018,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-smoke/owner3/result.json",
+      "startUtc": "2026-11-03T07:43:44.928649+00:00",
+      "endUtc": "2026-11-03T07:43:52.942966+00:00",
+      "seconds": 8.014,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python1/configure-log/result.json",
+      "startUtc": "2026-11-03T07:44:58.334323+00:00",
+      "endUtc": "2026-11-03T07:46:25.445291+00:00",
+      "seconds": 87.111,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-smoke/run5-owner/result.json",
+      "startUtc": "2026-11-03T07:52:54.209443+00:00",
+      "endUtc": "2026-11-03T07:53:02.225761+00:00",
+      "seconds": 8.016,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python2/configure-log/result.json",
+      "startUtc": "2026-11-03T07:53:15.981641+00:00",
+      "endUtc": "2026-11-03T07:54:51.118700+00:00",
+      "seconds": 95.137,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python2/build1-log/result.json",
+      "startUtc": "2026-11-03T07:55:03.905936+00:00",
+      "endUtc": "2026-11-03T07:55:27.950396+00:00",
+      "seconds": 24.044,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/configure-log/result.json",
+      "startUtc": "2026-11-03T07:57:11.925835+00:00",
+      "endUtc": "2026-11-03T07:58:50.101214+00:00",
+      "seconds": 98.175,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/build1-log/result.json",
+      "startUtc": "2026-11-03T08:14:10.368809+00:00",
+      "endUtc": "2026-11-03T08:15:36.552765+00:00",
+      "seconds": 86.184,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-smoke/input-validation1/result.json",
+      "startUtc": "2026-11-03T08:16:53.416973+00:00",
+      "endUtc": "2026-11-03T08:16:54.418435+00:00",
+      "seconds": 1.001,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/configure-log-2/result.json",
+      "startUtc": "2026-11-03T08:20:09.821575+00:00",
+      "endUtc": "2026-11-03T08:21:31.996369+00:00",
+      "seconds": 82.175,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/build2-log/result.json",
+      "startUtc": "2026-11-03T08:21:32.056224+00:00",
+      "endUtc": "2026-11-03T08:22:36.206312+00:00",
+      "seconds": 64.15,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/build3-log/result.json",
+      "startUtc": "2026-11-03T08:26:01.588619+00:00",
+      "endUtc": "2026-11-03T08:26:21.623021+00:00",
+      "seconds": 20.034,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/build4-log/result.json",
+      "startUtc": "2026-11-03T08:30:56.657405+00:00",
+      "endUtc": "2026-11-03T08:31:29.713112+00:00",
+      "seconds": 33.056,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/prepare-smoke1-log/result.json",
+      "startUtc": "2026-11-03T08:41:26.377210+00:00",
+      "endUtc": "2026-11-03T08:41:29.382024+00:00",
+      "seconds": 3.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-py-smoke1/run1-owner/result.json",
+      "startUtc": "2026-11-03T08:41:57.392979+00:00",
+      "endUtc": "2026-11-03T08:42:08.416304+00:00",
+      "seconds": 11.023,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-python3/prepare-smoke2-log/result.json",
+      "startUtc": "2026-11-03T08:43:33.078413+00:00",
+      "endUtc": "2026-11-03T08:43:36.083516+00:00",
+      "seconds": 3.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-py-smoke2/run1-owner/result.json",
+      "startUtc": "2026-11-03T08:43:36.180151+00:00",
+      "endUtc": "2026-11-03T08:43:50.210738+00:00",
+      "seconds": 14.031,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/gnu-fetch-log/result.json",
+      "startUtc": "2026-11-03T08:49:57.774032+00:00",
+      "endUtc": "2026-11-03T08:50:22.792360+00:00",
+      "seconds": 25.018,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-coreutils1/configure-log/result.json",
+      "startUtc": "2026-11-03T08:53:02.943049+00:00",
+      "endUtc": "2026-11-03T08:55:40.376377+00:00",
+      "seconds": 157.433,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-coreutils1/build-log/result.json",
+      "startUtc": "2026-11-03T08:55:40.378619+00:00",
+      "endUtc": "2026-11-03T08:55:53.423143+00:00",
+      "seconds": 13.045,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-network1/run1-owner/result.json",
+      "startUtc": "2026-11-03T09:15:47.897924+00:00",
+      "endUtc": "2026-11-03T09:16:05.932571+00:00",
+      "seconds": 18.035,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-network1/run2-owner/result.json",
+      "startUtc": "2026-11-03T09:18:06.425178+00:00",
+      "endUtc": "2026-11-03T09:18:22.449353+00:00",
+      "seconds": 16.024,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-network1/run3-owner/result.json",
+      "startUtc": "2026-11-03T09:25:35.830222+00:00",
+      "endUtc": "2026-11-03T09:25:54.858240+00:00",
+      "seconds": 19.028,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-network1/run4-owner/result.json",
+      "startUtc": "2026-11-03T09:35:33.843352+00:00",
+      "endUtc": "2026-11-03T09:36:03.941946+00:00",
+      "seconds": 30.099,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk1-owner/result.json",
+      "startUtc": "2026-11-03T09:40:55.357233+00:00",
+      "endUtc": "2026-11-03T09:41:01.362398+00:00",
+      "seconds": 6.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-normal1-owner/result.json",
+      "startUtc": "2026-11-03T09:44:54.393688+00:00",
+      "endUtc": "2026-11-03T09:45:32.755758+00:00",
+      "seconds": 38.362,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-normal2-owner/result.json",
+      "startUtc": "2026-11-03T09:47:15.587856+00:00",
+      "endUtc": "2026-11-03T09:48:15.896965+00:00",
+      "seconds": 60.309,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/sudo-current/owner/result.json",
+      "startUtc": "2026-11-03T09:50:47.710827+00:00",
+      "endUtc": "2026-11-03T09:50:48.721768+00:00",
+      "seconds": 1.011,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk2-owner/result.json",
+      "startUtc": "2026-11-03T09:51:40.898023+00:00",
+      "endUtc": "2026-11-03T09:51:46.904014+00:00",
+      "seconds": 6.006,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-normal3-owner/result.json",
+      "startUtc": "2026-11-03T09:51:47.034928+00:00",
+      "endUtc": "2026-11-03T09:52:59.310789+00:00",
+      "seconds": 72.276,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-coreutils1/build-log1/result.json",
+      "startUtc": "2026-11-03T09:55:11.657475+00:00",
+      "endUtc": "2026-11-03T09:55:12.661968+00:00",
+      "seconds": 1.005,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-coreutils1/build-log2/result.json",
+      "startUtc": "2026-11-03T09:55:56.803181+00:00",
+      "endUtc": "2026-11-03T09:57:16.055504+00:00",
+      "seconds": 79.252,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-coreutils1/build-log3/result.json",
+      "startUtc": "2026-11-03T09:59:49.053081+00:00",
+      "endUtc": "2026-11-03T09:59:50.057870+00:00",
+      "seconds": 1.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-capabilities/owner/result.json",
+      "startUtc": "2026-11-03T10:01:07.660263+00:00",
+      "endUtc": "2026-11-03T10:01:14.671820+00:00",
+      "seconds": 7.012,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-gzip1/configure-log/result.json",
+      "startUtc": "2026-11-03T10:01:55.228862+00:00",
+      "endUtc": "2026-11-03T10:02:27.259500+00:00",
+      "seconds": 32.031,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-gzip1/build-log1/result.json",
+      "startUtc": "2026-11-03T10:02:27.259888+00:00",
+      "endUtc": "2026-11-03T10:02:28.261201+00:00",
+      "seconds": 1.001,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/configure-log/result.json",
+      "startUtc": "2026-11-03T10:02:29.039301+00:00",
+      "endUtc": "2026-11-03T10:03:13.087331+00:00",
+      "seconds": 44.048,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log1/result.json",
+      "startUtc": "2026-11-03T10:03:13.087771+00:00",
+      "endUtc": "2026-11-03T10:03:14.089370+00:00",
+      "seconds": 1.002,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-sed1/configure-log/result.json",
+      "startUtc": "2026-11-03T10:03:14.747112+00:00",
+      "endUtc": "2026-11-03T10:04:39.881207+00:00",
+      "seconds": 85.134,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-sed1/build-log1/result.json",
+      "startUtc": "2026-11-03T10:04:39.881873+00:00",
+      "endUtc": "2026-11-03T10:04:41.886230+00:00",
+      "seconds": 2.004,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk3-owner/result.json",
+      "startUtc": "2026-11-03T10:13:47.508548+00:00",
+      "endUtc": "2026-11-03T10:14:21.538742+00:00",
+      "seconds": 34.03,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-prefix1-owner/result.json",
+      "startUtc": "2026-11-03T10:33:01.220377+00:00",
+      "endUtc": "2026-11-03T10:34:39.667591+00:00",
+      "seconds": 98.447,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-gzip1/build-log2/result.json",
+      "startUtc": "2026-11-03T10:37:54.989080+00:00",
+      "endUtc": "2026-11-03T10:37:57.015634+00:00",
+      "seconds": 2.027,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log2/result.json",
+      "startUtc": "2026-11-03T10:37:57.378417+00:00",
+      "endUtc": "2026-11-03T10:37:59.386120+00:00",
+      "seconds": 2.008,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-sed1/build-log2/result.json",
+      "startUtc": "2026-11-03T10:37:59.683960+00:00",
+      "endUtc": "2026-11-03T10:38:04.780516+00:00",
+      "seconds": 5.097,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-r1core/run1-owner/result.json",
+      "startUtc": "2026-11-03T10:39:01.057199+00:00",
+      "endUtc": "2026-11-03T10:40:08.871002+00:00",
+      "seconds": 67.814,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-r1core/run2-owner/result.json",
+      "startUtc": "2026-11-03T10:46:43.573185+00:00",
+      "endUtc": "2026-11-03T10:47:24.826075+00:00",
+      "seconds": 41.253,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-r1core/run3-owner/result.json",
+      "startUtc": "2026-11-03T10:48:41.975632+00:00",
+      "endUtc": "2026-11-03T10:50:00.448457+00:00",
+      "seconds": 78.473,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-live-repo1/run1-owner/result.json",
+      "startUtc": "2026-11-03T10:56:26.496907+00:00",
+      "endUtc": "2026-11-03T10:57:03.696845+00:00",
+      "seconds": 37.2,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-live-repo1/run2-owner/result.json",
+      "startUtc": "2026-11-03T11:00:13.627301+00:00",
+      "endUtc": "2026-11-03T11:02:00.562230+00:00",
+      "seconds": 106.935,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk4-owner/result.json",
+      "startUtc": "2026-11-03T11:02:48.037535+00:00",
+      "endUtc": "2026-11-03T11:04:14.334894+00:00",
+      "seconds": 86.297,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-gzip1/build-log3/result.json",
+      "startUtc": "2026-11-03T11:04:14.913347+00:00",
+      "endUtc": "2026-11-03T11:04:54.325616+00:00",
+      "seconds": 39.412,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log3/result.json",
+      "startUtc": "2026-11-03T11:04:54.914375+00:00",
+      "endUtc": "2026-11-03T11:05:21.123419+00:00",
+      "seconds": 26.209,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-sed1/build-log3/result.json",
+      "startUtc": "2026-11-03T11:05:21.583997+00:00",
+      "endUtc": "2026-11-03T11:05:47.947629+00:00",
+      "seconds": 26.364,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic1/stack-compile/result.json",
+      "startUtc": "2026-11-03T11:34:27.628196+00:00",
+      "endUtc": "2026-11-03T11:34:28.632369+00:00",
+      "seconds": 1.004,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic1/probe-owner/result.json",
+      "startUtc": "2026-11-03T11:34:29.111741+00:00",
+      "endUtc": "2026-11-03T11:34:50.127211+00:00",
+      "seconds": 21.015,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic2/stack-compile/result.json",
+      "startUtc": "2026-11-03T11:36:58.042779+00:00",
+      "endUtc": "2026-11-03T11:36:59.044193+00:00",
+      "seconds": 1.001,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic2/probe-owner/result.json",
+      "startUtc": "2026-11-03T11:36:59.780281+00:00",
+      "endUtc": "2026-11-03T11:37:35.806724+00:00",
+      "seconds": 36.026,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/stack-compile/result.json",
+      "startUtc": "2026-11-03T11:39:54.433797+00:00",
+      "endUtc": "2026-11-03T11:39:55.437389+00:00",
+      "seconds": 1.004,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/probe-owner/result.json",
+      "startUtc": "2026-11-03T11:39:56.076353+00:00",
+      "endUtc": "2026-11-03T11:40:05.094392+00:00",
+      "seconds": 9.018,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/grep-owner/result.json",
+      "startUtc": "2026-11-03T11:40:05.105994+00:00",
+      "endUtc": "2026-11-03T11:40:07.108884+00:00",
+      "seconds": 2.003,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log4/result.json",
+      "startUtc": "2026-11-03T11:40:05.322876+00:00",
+      "endUtc": "2026-11-03T11:40:06.324774+00:00",
+      "seconds": 1.002,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/grep-owner2/result.json",
+      "startUtc": "2026-11-03T11:42:41.001594+00:00",
+      "endUtc": "2026-11-03T11:42:46.010043+00:00",
+      "seconds": 5.008,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log5/result.json",
+      "startUtc": "2026-11-03T11:42:41.097106+00:00",
+      "endUtc": "2026-11-03T11:42:45.104495+00:00",
+      "seconds": 4.007,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/package-gzip/result.json",
+      "startUtc": "2026-11-03T11:42:46.010525+00:00",
+      "endUtc": "2026-11-03T11:42:47.013655+00:00",
+      "seconds": 1.003,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/package-grep/result.json",
+      "startUtc": "2026-11-03T11:42:47.014194+00:00",
+      "endUtc": "2026-11-03T11:42:48.016496+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/package-sed/result.json",
+      "startUtc": "2026-11-03T11:42:48.017202+00:00",
+      "endUtc": "2026-11-03T11:42:49.019287+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/index/result.json",
+      "startUtc": "2026-11-03T11:42:49.020012+00:00",
+      "endUtc": "2026-11-03T11:42:50.022041+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic3/runtime-owner/result.json",
+      "startUtc": "2026-11-03T11:42:50.773984+00:00",
+      "endUtc": "2026-11-03T11:43:00.797601+00:00",
+      "seconds": 10.024,
+      "pass": false,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/grep-owner2/result.json",
+      "startUtc": "2026-11-03T11:53:06.227432+00:00",
+      "endUtc": "2026-11-03T11:53:08.231380+00:00",
+      "seconds": 2.004,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-grep1/build-log6/result.json",
+      "startUtc": "2026-11-03T11:53:06.482148+00:00",
+      "endUtc": "2026-11-03T11:53:07.487418+00:00",
+      "seconds": 1.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/package-gzip/result.json",
+      "startUtc": "2026-11-03T11:53:08.232032+00:00",
+      "endUtc": "2026-11-03T11:53:09.236755+00:00",
+      "seconds": 1.005,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/package-grep/result.json",
+      "startUtc": "2026-11-03T11:53:09.237383+00:00",
+      "endUtc": "2026-11-03T11:53:10.239730+00:00",
+      "seconds": 1.002,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/package-sed/result.json",
+      "startUtc": "2026-11-03T11:53:10.240255+00:00",
+      "endUtc": "2026-11-03T11:53:11.244365+00:00",
+      "seconds": 1.004,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/index/result.json",
+      "startUtc": "2026-11-03T11:53:11.244981+00:00",
+      "endUtc": "2026-11-03T11:53:12.247724+00:00",
+      "seconds": 1.003,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-gnu-basic4/runtime-owner/result.json",
+      "startUtc": "2026-11-03T11:53:13.499090+00:00",
+      "endUtc": "2026-11-03T11:53:38.590401+00:00",
+      "seconds": 25.091,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    },
+    {
+      "receipt": "out/pm-final-runtime-prepare/result.json",
+      "startUtc": "2026-11-03T11:56:41.472404+00:00",
+      "endUtc": "2026-11-03T11:56:48.482175+00:00",
+      "seconds": 7.01,
+      "pass": true,
+      "sampleIntervalSeconds": 1
+    }
+  ]
+}
