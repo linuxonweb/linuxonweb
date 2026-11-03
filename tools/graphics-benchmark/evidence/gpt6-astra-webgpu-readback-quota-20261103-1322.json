@@ -1,0 +1,1424 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T16:43:05.251574+00:00",
+  "scope": "Explicit isolated WebGPU rendering with CPU readback/opaque 2D presentation",
+  "acceptance": {
+    "rawReadbackPixelsUnderSharedQuota": true,
+    "adapterPixelsAndCleanupUnderSharedQuota": true,
+    "nativeVulkanWsiFixtureUnderSharedQuota": true,
+    "fullApiConformance": false,
+    "performanceParity": false,
+    "directExportDriverBugFixed": false,
+    "publicDesktopDefaultChanged": false
+  },
+  "limits": [
+    "Native WSI fixture is not a conformance suite",
+    "Uniform-colour pixel oracle is separate from native nonuniformity observation",
+    "Experimental isolated Linux WebGPU flags are recorded, not normal-browser compatibility acceptance",
+    "Canvas byte accounting is nominal width*height*4 and excludes browser/driver overhead",
+    "Resource observations are one-second samples, with PSS every five seconds; no throughput claim"
+  ],
+  "rawDiagnostic": {
+    "ownerPath": "/mnt/p3/codex-build/f3l/webgpu-raw-quota-owner1",
+    "owner": {
+      "startedUtc": "2026-11-03T16:41:30.741035+00:00",
+      "finishedUtc": "2026-11-03T16:41:36.252877+00:00",
+      "durationSeconds": 5.512,
+      "argv": [
+        "env",
+        "GRAPHICS_ISOLATED=1",
+        "GRAPHICS_ANGLE=vulkan",
+        "GRAPHICS_WEBGPU_DIAGNOSTIC=1",
+        "GRAPHICS_CPUS=3",
+        "GRAPHICS_PAGE_OVERRIDE=tools/graphics-benchmark/diagnostics/webgpu-readback-present.html",
+        "node",
+        "tools/graphics-benchmark/browser-check.mjs",
+        "../../../codex-build/f3l",
+        "http://localhost/linux/tests/guest-glremote/webgpu-readback-present.html?presentation=readback-2d",
+        "graphicsResults"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 78528512,
+      "ownedTreePeakRssBytes": 1164894208,
+      "ownedTreePeakPssBytes": 308224,
+      "resourceSamples": 5,
+      "pssSamples": 1,
+      "quotaReadySeconds": 0.504,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "browserPath": "/mnt/p3/codex-build/f3l/br-HoPrAo/result.json",
+    "browserResultSha256": "7539cc93715f818ccba802a306fa0b237470513843cf69598a87599cf67966bb",
+    "qualified": true,
+    "browserPassed": true,
+    "continuousQuota": {
+      "samples": 5,
+      "allKnownAndValid": true,
+      "commonAncestorPaths": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "allObservedProcesses": 44
+    },
+    "beforeNavigationQuota": {
+      "valid": true,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3,
+          "processes": [
+            {
+              "pid": 358780,
+              "startTicks": 44048815,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 359281,
+              "startTicks": 44048992,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358823,
+              "startTicks": 44048839,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358825,
+              "startTicks": 44048840,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358921,
+              "startTicks": 44048895,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358850,
+              "startTicks": 44048860,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358854,
+              "startTicks": 44048870,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 359172,
+              "startTicks": 44048958,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 359156,
+              "startTicks": 44048955,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 359087,
+              "startTicks": 44048939,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358991,
+              "startTicks": 44048914,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358847,
+              "startTicks": 44048859,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 358915,
+              "startTicks": 44048894,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3
+        }
+      ],
+      "violations": []
+    },
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/f3l/br-HoPrAo/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-HoPrAo/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "inputs": {
+      "/linux/tests/guest-glremote/webgpu-readback-present.html": {
+        "sha256": "da460d27ece801cbea4d01cdee720ed3f4842381cce17aefa1be572cc62ecd57",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/diagnostics/webgpu-readback-present.html",
+        "bytes": 5669,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "40a31c8192c482fdf3faf5863b31c34bd4b0916d797a5b12c5460d5ea17c8c42",
+        "bytes": 87346,
+        "requests": 1
+      }
+    },
+    "browserErrors": [],
+    "result": {
+      "schema": 1,
+      "done": true,
+      "pass": true,
+      "scope": "Explicit opt-in driver diagnosis, no automatic fallback and no native Vulkan acceptance",
+      "renderingBackend": "webgpu",
+      "presentationBackend": "CPU readback to 2D ImageData, then ImageBitmap or attached 2D canvas",
+      "errors": [],
+      "events": [],
+      "phases": [
+        {
+          "phase": "render-only",
+          "frames": 12,
+          "render": {
+            "samples": 12,
+            "minMs": 1.6100000143051147,
+            "meanMs": 5.036666661500931,
+            "p95Ms": 19.064999997615814,
+            "maxMs": 19.064999997615814
+          },
+          "totalWork": {
+            "samples": 12,
+            "minMs": 1.6150000095367432,
+            "meanMs": 5.042916655540466,
+            "p95Ms": 19.07499998807907,
+            "maxMs": 19.07499998807907
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 0,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 12,
+            "draws": 0,
+            "readbacks": 0,
+            "uploads": 0,
+            "uniformUploads": 0
+          }
+        },
+        {
+          "phase": "readback-2d-imagebitmap",
+          "frames": 24,
+          "render": {
+            "samples": 24,
+            "minMs": 1.3299999833106995,
+            "meanMs": 3.909583325187365,
+            "p95Ms": 5.980000019073486,
+            "maxMs": 10.3299999833107
+          },
+          "readback": {
+            "samples": 24,
+            "minMs": 2.6450000405311584,
+            "meanMs": 8.17791667332252,
+            "p95Ms": 15.839999973773956,
+            "maxMs": 47.7600000500679
+          },
+          "presentation": {
+            "samples": 24,
+            "minMs": 1.7400000095367432,
+            "meanMs": 4.199791669845581,
+            "p95Ms": 8.535000026226044,
+            "maxMs": 29.430000007152557
+          },
+          "totalWork": {
+            "samples": 24,
+            "minMs": 8.75,
+            "meanMs": 16.29875000069539,
+            "p95Ms": 37.9549999833107,
+            "maxMs": 60.92500001192093
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 1,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 36,
+            "draws": 0,
+            "readbacks": 24,
+            "uploads": 0,
+            "uniformUploads": 0
+          }
+        },
+        {
+          "phase": "readback-attached-2d",
+          "frames": 24,
+          "render": {
+            "samples": 24,
+            "minMs": 2.1449999809265137,
+            "meanMs": 5.123750006159146,
+            "p95Ms": 12.540000021457672,
+            "maxMs": 13.135000050067902
+          },
+          "readback": {
+            "samples": 24,
+            "minMs": 2.159999966621399,
+            "meanMs": 4.913541669646899,
+            "p95Ms": 10.110000014305115,
+            "maxMs": 11.979999959468842
+          },
+          "presentation": {
+            "samples": 24,
+            "minMs": 1.6899999976158142,
+            "meanMs": 3.0152083337306976,
+            "p95Ms": 5.064999997615814,
+            "maxMs": 5.590000033378601
+          },
+          "totalWork": {
+            "samples": 24,
+            "minMs": 8.115000009536743,
+            "meanMs": 13.057291676600775,
+            "p95Ms": 19.25499999523163,
+            "maxMs": 20.57499998807907
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 1,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 60,
+            "draws": 0,
+            "readbacks": 48,
+            "uploads": 0,
+            "uniformUploads": 0
+          }
+        }
+      ],
+      "adapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": "",
+        "isFallbackAdapter": false
+      },
+      "currentPhase": "readback-attached-2d",
+      "closed": {
+        "state": "closed",
+        "resources": 0,
+        "nativeObjects": 0,
+        "allocatedBytes": 0,
+        "recordingDraws": 0,
+        "flippedPipelines": 0,
+        "presentsShown": 0,
+        "buffersCreated": 1,
+        "buffersDestroyed": 1,
+        "texturesCreated": 1,
+        "texturesDestroyed": 1,
+        "passes": 60,
+        "draws": 0,
+        "readbacks": 48,
+        "uploads": 0,
+        "uniformUploads": 0
+      },
+      "beforeDeviceDestroyLoss": null,
+      "deviceDestroyRequested": true,
+      "destroyNotification": {
+        "reason": "destroyed",
+        "message": "Device was destroyed.",
+        "phase": "readback-attached-2d"
+      },
+      "destroyResult": {
+        "reason": "destroyed",
+        "message": "Device was destroyed."
+      }
+    }
+  },
+  "adapterDiagnostic": {
+    "ownerPath": "/mnt/p3/codex-build/f3l/webgpu-adapter-quota-owner1",
+    "owner": {
+      "startedUtc": "2026-11-03T16:42:19.223259+00:00",
+      "finishedUtc": "2026-11-03T16:42:24.983472+00:00",
+      "durationSeconds": 5.76,
+      "argv": [
+        "env",
+        "GRAPHICS_ISOLATED=1",
+        "GRAPHICS_ANGLE=vulkan",
+        "GRAPHICS_WEBGPU_DIAGNOSTIC=1",
+        "GRAPHICS_CPUS=3",
+        "GRAPHICS_PAGE_OVERRIDE=tools/graphics-benchmark/diagnostics/webgpu-readback-adapter.html",
+        "node",
+        "tools/graphics-benchmark/browser-check.mjs",
+        "../../../codex-build/f3l",
+        "http://localhost/linux/tests/guest-glremote/webgpu-readback-adapter.html?presentation=readback-2d",
+        "graphicsResults"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 76898304,
+      "ownedTreePeakRssBytes": 1177788416,
+      "ownedTreePeakPssBytes": 233472,
+      "resourceSamples": 5,
+      "pssSamples": 1,
+      "quotaReadySeconds": 0.755,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "browserPath": "/mnt/p3/codex-build/f3l/br-vqvy24/result.json",
+    "browserResultSha256": "9a99cb8f337e736bdb30e00a7e7a4bc6b2f40c53471726774e415035f476c553",
+    "qualified": true,
+    "browserPassed": true,
+    "continuousQuota": {
+      "samples": 5,
+      "allKnownAndValid": true,
+      "commonAncestorPaths": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "allObservedProcesses": 43
+    },
+    "beforeNavigationQuota": {
+      "valid": true,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3,
+          "processes": [
+            {
+              "pid": 363537,
+              "startTicks": 44053688,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363811,
+              "startTicks": 44053913,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363557,
+              "startTicks": 44053712,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363558,
+              "startTicks": 44053713,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363662,
+              "startTicks": 44053800,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363597,
+              "startTicks": 44053742,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363622,
+              "startTicks": 44053757,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363777,
+              "startTicks": 44053883,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363775,
+              "startTicks": 44053881,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363743,
+              "startTicks": 44053860,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363682,
+              "startTicks": 44053819,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363595,
+              "startTicks": 44053741,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 363661,
+              "startTicks": 44053799,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3
+        }
+      ],
+      "violations": []
+    },
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/f3l/br-vqvy24/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-vqvy24/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "inputs": {
+      "/linux/tests/guest-glremote/webgpu-readback-adapter.html": {
+        "sha256": "e145869b6f18fab9055867fa559ad6cfece7ab58586b974dad9edd3bd6be50bc",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/diagnostics/webgpu-readback-adapter.html",
+        "bytes": 5932,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "40a31c8192c482fdf3faf5863b31c34bd4b0916d797a5b12c5460d5ea17c8c42",
+        "bytes": 87346,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/readback-presentation.mjs": {
+        "sha256": "62e72c09ceacc267fe1c04ac4a1a9c71a0ac28222a345a641f2590c7f3b7e204",
+        "bytes": 5543,
+        "requests": 1
+      }
+    },
+    "browserErrors": [],
+    "result": {
+      "schema": 1,
+      "done": true,
+      "pass": true,
+      "scope": "Explicit opt-in driver diagnosis, no automatic fallback and no native Vulkan acceptance",
+      "renderingBackend": "webgpu",
+      "presentationBackend": "CPU readback to 2D ImageData, then ImageBitmap or attached 2D canvas",
+      "errors": [],
+      "events": [],
+      "phases": [
+        {
+          "phase": "render-only",
+          "frames": 12,
+          "render": {
+            "samples": 12,
+            "minMs": 1.75,
+            "meanMs": 3.3050000071525574,
+            "p95Ms": 8.685000002384186,
+            "maxMs": 8.685000002384186
+          },
+          "totalWork": {
+            "samples": 12,
+            "minMs": 1.75,
+            "meanMs": 3.3112500061591468,
+            "p95Ms": 8.694999992847443,
+            "maxMs": 8.694999992847443
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 0,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 12,
+            "draws": 0,
+            "readbacks": 0,
+            "uploads": 0,
+            "uniformUploads": 0,
+            "readbackPresentation": {
+              "mode": "readback-2d",
+              "renderingBackend": "webgpu",
+              "closed": false,
+              "surfaces": 0,
+              "canvasBytes": 0,
+              "pending": false,
+              "maxDimension": 512,
+              "maxSurfaces": 16,
+              "frames": 0,
+              "bitmapFrames": 0,
+              "attachedFrames": 0,
+              "rejectedLateFrames": 0
+            }
+          }
+        },
+        {
+          "phase": "readback-2d-imagebitmap",
+          "frames": 24,
+          "render": {
+            "samples": 24,
+            "minMs": 1.6500000357627869,
+            "meanMs": 3.8945833295583725,
+            "p95Ms": 7.2799999713897705,
+            "maxMs": 7.294999957084656
+          },
+          "combinedReadbackAndPresentation": {
+            "samples": 24,
+            "minMs": 4.189999997615814,
+            "meanMs": 11.112083348135153,
+            "p95Ms": 13.90499997138977,
+            "maxMs": 31.09500002861023
+          },
+          "totalWork": {
+            "samples": 24,
+            "minMs": 10.105000019073486,
+            "meanMs": 15.01187501102686,
+            "p95Ms": 18.959999978542328,
+            "maxMs": 33.43000000715256
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 1,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 36,
+            "draws": 0,
+            "readbacks": 24,
+            "uploads": 0,
+            "uniformUploads": 0,
+            "readbackPresentation": {
+              "mode": "readback-2d",
+              "renderingBackend": "webgpu",
+              "closed": false,
+              "surfaces": 1,
+              "canvasBytes": 65536,
+              "pending": false,
+              "maxDimension": 512,
+              "maxSurfaces": 16,
+              "frames": 24,
+              "bitmapFrames": 24,
+              "attachedFrames": 0,
+              "rejectedLateFrames": 0
+            }
+          }
+        },
+        {
+          "phase": "readback-attached-2d",
+          "frames": 24,
+          "render": {
+            "samples": 24,
+            "minMs": 1.5649999976158142,
+            "meanMs": 5.153750002384186,
+            "p95Ms": 13.01500004529953,
+            "maxMs": 27.445000052452087
+          },
+          "combinedReadbackAndPresentation": {
+            "samples": 24,
+            "minMs": 3.2300000190734863,
+            "meanMs": 6.393125002582868,
+            "p95Ms": 10,
+            "maxMs": 10.069999992847443
+          },
+          "totalWork": {
+            "samples": 24,
+            "minMs": 6.275000035762787,
+            "meanMs": 11.551041670143604,
+            "p95Ms": 16.915000021457672,
+            "maxMs": 31.915000021457672
+          },
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 1,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 60,
+            "draws": 0,
+            "readbacks": 48,
+            "uploads": 0,
+            "uniformUploads": 0,
+            "readbackPresentation": {
+              "mode": "readback-2d",
+              "renderingBackend": "webgpu",
+              "closed": false,
+              "surfaces": 2,
+              "canvasBytes": 131072,
+              "pending": false,
+              "maxDimension": 512,
+              "maxSurfaces": 16,
+              "frames": 48,
+              "bitmapFrames": 24,
+              "attachedFrames": 24,
+              "rejectedLateFrames": 0
+            }
+          }
+        }
+      ],
+      "adapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": "",
+        "isFallbackAdapter": false
+      },
+      "currentPhase": "readback-attached-2d",
+      "closed": {
+        "state": "closed",
+        "resources": 0,
+        "nativeObjects": 0,
+        "allocatedBytes": 0,
+        "recordingDraws": 0,
+        "flippedPipelines": 0,
+        "presentsShown": 0,
+        "buffersCreated": 1,
+        "buffersDestroyed": 1,
+        "texturesCreated": 1,
+        "texturesDestroyed": 1,
+        "passes": 60,
+        "draws": 0,
+        "readbacks": 48,
+        "uploads": 0,
+        "uniformUploads": 0,
+        "readbackPresentation": {
+          "mode": "readback-2d",
+          "renderingBackend": "webgpu",
+          "closed": true,
+          "surfaces": 0,
+          "canvasBytes": 0,
+          "pending": false,
+          "maxDimension": 512,
+          "maxSurfaces": 16,
+          "frames": 48,
+          "bitmapFrames": 24,
+          "attachedFrames": 24,
+          "rejectedLateFrames": 0
+        }
+      },
+      "beforeDeviceDestroyLoss": null,
+      "deviceDestroyRequested": true,
+      "destroyNotification": {
+        "reason": "destroyed",
+        "message": "Device was destroyed.",
+        "phase": "readback-attached-2d"
+      },
+      "destroyResult": {
+        "reason": "destroyed",
+        "message": "Device was destroyed."
+      }
+    }
+  },
+  "nativeFixture": {
+    "ownerPath": "/mnt/p3/codex-build/f3l/vulkan-readback-quota-owner1",
+    "owner": {
+      "startedUtc": "2026-11-03T16:42:37.798700+00:00",
+      "finishedUtc": "2026-11-03T16:42:52.553929+00:00",
+      "durationSeconds": 14.755,
+      "argv": [
+        "env",
+        "GRAPHICS_ISOLATED=1",
+        "GRAPHICS_ANGLE=vulkan",
+        "GRAPHICS_WEBGPU_DIAGNOSTIC=1",
+        "GRAPHICS_CPUS=3",
+        "GRAPHICS_PAGE_OVERRIDE=tools/graphics-benchmark/vulkan-wsi-readback.html",
+        "node",
+        "tools/graphics-benchmark/browser-check.mjs",
+        "../../../codex-build/f3l",
+        "http://localhost/linux/tests/guest-glremote/vulkan-wsi-readback.html?backend=webgpu&presentation=readback-2d",
+        "graphicsResults"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 134889472,
+      "ownedTreePeakRssBytes": 2089885696,
+      "ownedTreePeakPssBytes": 1400267776,
+      "resourceSamples": 14,
+      "pssSamples": 3,
+      "quotaReadySeconds": 0.752,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "browserPath": "/mnt/p3/codex-build/f3l/br-JjwMxK/result.json",
+    "browserResultSha256": "31c461a8a220b17ade86f9fdd793e1aad10aba039c39300453f710357849aae2",
+    "qualified": true,
+    "browserPassed": true,
+    "continuousQuota": {
+      "samples": 14,
+      "allKnownAndValid": true,
+      "commonAncestorPaths": [
+        "/sys/fs/cgroup/cpulimit.slice"
+      ],
+      "allObservedProcesses": 158
+    },
+    "beforeNavigationQuota": {
+      "valid": true,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3,
+          "processes": [
+            {
+              "pid": 365352,
+              "startTicks": 44055546,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365518,
+              "startTicks": 44055636,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365376,
+              "startTicks": 44055557,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365377,
+              "startTicks": 44055557,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365425,
+              "startTicks": 44055584,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365389,
+              "startTicks": 44055565,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365391,
+              "startTicks": 44055570,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365498,
+              "startTicks": 44055621,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365495,
+              "startTicks": 44055619,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365469,
+              "startTicks": 44055610,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365435,
+              "startTicks": 44055594,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365388,
+              "startTicks": 44055565,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 365421,
+              "startTicks": 44055584,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3
+        }
+      ],
+      "violations": []
+    },
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/f3l/br-JjwMxK/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/f3l/br-JjwMxK/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "inputs": {
+      "/linux/tests/guest-glremote/vulkan-wsi-readback.html": {
+        "sha256": "c7eb3fd193ce1956b0e7205a0af49d1e2c8e398e3252726191113ba2b5b1ebd7",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/vulkan-wsi-readback.html",
+        "bytes": 6597,
+        "requests": 1
+      },
+      "/linux/dist/index.js": {
+        "sha256": "2549a6fb5ed72ed8377b72b70db6324cce8c63c14bc86ac859505ea939172b3f",
+        "bytes": 25067,
+        "requests": 1
+      },
+      "/linux/gpu-present-overlay.mjs": {
+        "sha256": "f4791d691f22fa362cf0b3a1853ec0f9b876996d22b218b3c60a0eb916b00881",
+        "bytes": 3782,
+        "requests": 1
+      },
+      "/linux/guest-gpu-config.mjs": {
+        "sha256": "57cec94ede526e63967d770aef8a34adbf8894d142bd149cd0a6eda20a9402e7",
+        "bytes": 2349,
+        "requests": 1
+      },
+      "/linux/dist/audio.js": {
+        "sha256": "b473743a8a19b90af923c5d358c773dc1d6c5e2cb7840e236a35ac8bf53f8ae6",
+        "bytes": 6134,
+        "requests": 54
+      },
+      "/linux/dist/devicetree.js": {
+        "sha256": "6a5ac56197c61941ec40847c7145a2d5b7822bea9dda18a9663b0ed156461dba",
+        "bytes": 5332,
+        "requests": 1
+      },
+      "/linux/dist/platform.js": {
+        "sha256": "2c50bc21020cecb812f976142144f1f98def7a3d1d4e31eec06caa306653eb19",
+        "bytes": 6153,
+        "requests": 54
+      },
+      "/linux/dist/worker-pool.mjs": {
+        "sha256": "38eac0f2f8a88359ad7344ae20e3dc27f6b394c8bca4b2fde191eff1e5a1ff98",
+        "bytes": 1228,
+        "requests": 1
+      },
+      "/linux/dist/util.js": {
+        "sha256": "a0e8f06505b3b19943e233d72184475697cb02c12a07fd2cdc8508583f2b0c81",
+        "bytes": 244,
+        "requests": 54
+      },
+      "/linux/dist/virtio/block.js": {
+        "sha256": "87af5551c38a6c1e786e585475fe296a240501d2ec07c120696252b17956ea4e",
+        "bytes": 4335,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-hostcall.js": {
+        "sha256": "e6c684c8fc29d4c36f58c40dec513af9dfd850026e33cdd4d98c13160c2aedab",
+        "bytes": 21520,
+        "requests": 55
+      },
+      "/linux/dist/wasm_binary.js": {
+        "sha256": "247157bc8079ad2a8c905d5cd1b57ad55a4e7468e972cf2d7f58b6573651ecf5",
+        "bytes": 7036,
+        "requests": 54
+      },
+      "/linux/dist/virtio/console.js": {
+        "sha256": "9de7ffef6f0396dcb4725fcc03a3205b8ecdee11af67adb136981d735b837ef5",
+        "bytes": 4813,
+        "requests": 1
+      },
+      "/linux/dist/virtio/core.js": {
+        "sha256": "4a92a76da0701f506f5fa0368636ad340f92d3d06d335cc0a001d1d632305459",
+        "bytes": 13386,
+        "requests": 1
+      },
+      "/linux/dist/virtio/entropy.js": {
+        "sha256": "527ac8103305e0572e1c0f0598431966b6ef50eb4e32b4c8982d3fd83da8b484",
+        "bytes": 817,
+        "requests": 1
+      },
+      "/linux/dist/wasm.js": {
+        "sha256": "79ad8b3ce6b60811d98cea72bf01539b4a2c3d935d16fdc037fb8852932a4b6e",
+        "bytes": 6677,
+        "requests": 54
+      },
+      "/linux/dist/virtio/fs.js": {
+        "sha256": "ba1cae001f6a78586d8ba35943058c10746f9450528a6c9fbdcb4ecfbdbf1e6a",
+        "bytes": 37978,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer.js": {
+        "sha256": "2e45a93a43fb9e28aecd70b173013c4d09528652adfa5018ff5408832373cd8d",
+        "bytes": 22257,
+        "requests": 1
+      },
+      "/linux/dist/virtio/net.js": {
+        "sha256": "87febbb9d02d0b3c047d97b92c9c2f1a6f3ecaa49f241358846f9d47bc8c9b83",
+        "bytes": 6534,
+        "requests": 1
+      },
+      "/linux/dist/virtio/vsock.js": {
+        "sha256": "4c83483f6866165e5bc8a28b576cf0d17da7b59b31c0176d6a629a7a9d6d7ced",
+        "bytes": 12220,
+        "requests": 1
+      },
+      "/linux/dist/virtio/input.js": {
+        "sha256": "f86e83a8695041814305c3ed70da8a06bf3dc73cf9c280fd7c6cb6c2a19268c6",
+        "bytes": 10403,
+        "requests": 1
+      },
+      "/linux/dist/network/index.js": {
+        "sha256": "e1aa93214acbe987abaf8a09f57651ceb975b7424c0122190231e1b32864db52",
+        "bytes": 189,
+        "requests": 1
+      },
+      "/linux/dist/bytes.js": {
+        "sha256": "692a3827bcfd8f2ac3a7ca728be7455b1666d3b525adbf21b7593c56dc85bbe5",
+        "bytes": 7290,
+        "requests": 1
+      },
+      "/linux/dist/framebuffer-presenter.js": {
+        "sha256": "9962757a80bac27d6a6bd14458a050e456629ee5672a16b1ec7345af964c2f01",
+        "bytes": 9876,
+        "requests": 1
+      },
+      "/linux/dist/network/gateway.js": {
+        "sha256": "ff346b436e8e4aefeaeda0ab2b211958b93365e01cc2611f3b39a89bc09bf1ba",
+        "bytes": 42698,
+        "requests": 1
+      },
+      "/linux/dist/network/ws-tcp.js": {
+        "sha256": "5d2ca5f5aaa6974792cc4fa794d58053fd2e5185edbca2cd160eee5f2951b3f8",
+        "bytes": 4877,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/build.json": {
+        "sha256": "f02ffe296108f8a8c4cd09a591edd9d992b7b1e032bdb0c7d6a5efe90595173c",
+        "bytes": 658,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/current-wsi-candidate/initramfs.cpio": {
+        "sha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "bytes": 41867716,
+        "requests": 1
+      },
+      "/linux/boot-assets.mjs": {
+        "sha256": "83b16d640cc671f0e5c52a54d24e2928ab41d1d9953b9ca9ddd39ba0597a3cbb",
+        "bytes": 13812,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/firefox-cache-lifecycle.mjs": {
+        "sha256": "7179e388fee8e60ba789a3a0b6de15d5176e0c10dffc8eaf07ce794a0ae9f2fc",
+        "bytes": 2423,
+        "requests": 1
+      },
+      "/linux/boot-manifest.json": {
+        "sha256": "45098057be07cbebfa9a99fe03a0a44e9ed437e4c4f15b36a96b6e5f4b3ff3dd",
+        "bytes": 662,
+        "requests": 1
+      },
+      "/linux/vmlinux.wasm": {
+        "sha256": "21c15250e6f27c95fef333a16ffbc411159838f194f0ea19f8adcda3f21b0e75",
+        "bytes": 6281750,
+        "requests": 1
+      },
+      "/linux/dist/worker.js": {
+        "sha256": "4fc3e6e547825c0a3ebc25a5166e6c519d4dae5c337c9409667235beb4daad99",
+        "bytes": 40824,
+        "requests": 53
+      },
+      "/linux/dist/user-memory-growth-adapter.js": {
+        "sha256": "7500739662e7abed6a99732f4321e2ec0865a2bc9d8c8816c633217dd48adf83",
+        "bytes": 4842,
+        "requests": 53
+      },
+      "/linux/dist/firefox-callback-adapter.mjs": {
+        "sha256": "c0d78a9f6408f135c80428652da7003dd1c90e4fc841ae99f6810346a66853a0",
+        "bytes": 6242,
+        "requests": 53
+      },
+      "/linux/dist/guest-jit.js": {
+        "sha256": "ca4794d47830db98aeafa702323de41e2b0171c9286452f1462f9a566bdcc62f",
+        "bytes": 26544,
+        "requests": 53
+      },
+      "/linux/dist/guest-gpu-owner.js": {
+        "sha256": "7f5ee4cc800d45288cf1f1bab0aab6b53e87b7e8d5e39616b0fea3bbc80e1fe7",
+        "bytes": 19219,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-wgpu.js": {
+        "sha256": "bc89607dd8c8da3357aae1b1e72a00f1b31e4e4243ff342689e8ce5dde7e41ea",
+        "bytes": 41304,
+        "requests": 1
+      },
+      "/linux/dist/guest-gl-remote.js": {
+        "sha256": "a5a1037afbbbc25eabf51c6d4f41ecf95b1ed3bc884191921f1421aaeebbca63",
+        "bytes": 81735,
+        "requests": 1
+      },
+      "/linux/dist/guest-gpu-vk.js": {
+        "sha256": "c028baed225ad3349359ee709e399d6e2fb4cd1eb2d93bd5b531b133f829e886",
+        "bytes": 13160,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/host.mjs": {
+        "sha256": "bb6b1df8e47c8e782eecf25bff79b21aae1af0605dbdd5f0745c4f07c416f5c7",
+        "bytes": 51506,
+        "requests": 1
+      },
+      "/linux/gputest.mjs": {
+        "sha256": "aa894dbe23f71fb88bbb7f2cf46bf2460ee8c337899b8b16ccd9e2127f172076",
+        "bytes": 8892,
+        "requests": 1
+      },
+      "/linux/tests/guest-gpu/readback-range.mjs": {
+        "sha256": "1b167fdb2c21371a81b2c49ce8bdebea0597d1f225857b59dfd81dcd84a6fc8e",
+        "bytes": 4247,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/index.mjs": {
+        "sha256": "2efd5613c60cf6aa3fec742950570e30be8acfa77aad19b374ef9bae2bd6db1e",
+        "bytes": 3441,
+        "requests": 1
+      },
+      "/linux/gpu/wgsl.wasm": {
+        "sha256": "5b78ad4937a5f04011fdc8000207009a5fb4d51f41fc1c7af6ce6a303e67fca5",
+        "bytes": 824299,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/worker.mjs": {
+        "sha256": "0a289be10ff900c0d01d3c743a3637e8c1a4da5a7b3706842136d641ae75167e",
+        "bytes": 1117,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/translator/abi.mjs": {
+        "sha256": "1979a124ba4e1be476632be74de3247c6b4ca917185272f989083f9f03f88273",
+        "bytes": 4963,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "40a31c8192c482fdf3faf5863b31c34bd4b0916d797a5b12c5460d5ea17c8c42",
+        "bytes": 87346,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/readback-presentation.mjs": {
+        "sha256": "62e72c09ceacc267fe1c04ac4a1a9c71a0ac28222a345a641f2590c7f3b7e204",
+        "bytes": 5543,
+        "requests": 1
+      }
+    },
+    "browserErrors": [],
+    "result": {
+      "kind": "explicit native Vulkan WebGPU readback diagnostic",
+      "done": true,
+      "pass": true,
+      "backend": "webgpu",
+      "presentation": "readback-2d",
+      "hostReports": [
+        {
+          "commands": 5794,
+          "draws": 0,
+          "clears": 0,
+          "readbacks": 0,
+          "dispatches": 0,
+          "uploads": 0,
+          "translations": 0,
+          "translatorsCreated": 0,
+          "translatorsClosed": 0,
+          "released": 9,
+          "adapter": {
+            "vendor": "nvidia",
+            "architecture": "maxwell",
+            "description": "",
+            "isFallbackAdapter": false
+          },
+          "error": null,
+          "graphicsTranslations": 2,
+          "graphicsPasses": 1443,
+          "graphicsDraws": 4329,
+          "graphicsUploads": 1443,
+          "graphicsReadbacks": 0,
+          "graphicsUniformUploads": 1443,
+          "graphicsTextureUploads": 0,
+          "graphicsTranslatorsCreated": 1,
+          "graphicsTranslatorsClosed": 1,
+          "graphics": {
+            "state": "closed",
+            "resources": 0,
+            "nativeObjects": 0,
+            "allocatedBytes": 0,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 3,
+            "buffersDestroyed": 3,
+            "texturesCreated": 4,
+            "texturesDestroyed": 4,
+            "passes": 1443,
+            "draws": 4329,
+            "readbacks": 1443,
+            "uploads": 1443,
+            "uniformUploads": 1443,
+            "textureUploads": 0,
+            "samplersCreated": 0,
+            "blits": 0,
+            "readbackPresentation": {
+              "mode": "readback-2d",
+              "renderingBackend": "webgpu",
+              "closed": true,
+              "surfaces": 0,
+              "canvasBytes": 0,
+              "pending": false,
+              "maxDimension": 512,
+              "maxSurfaces": 16,
+              "frames": 1443,
+              "bitmapFrames": 1,
+              "attachedFrames": 1442,
+              "rejectedLateFrames": 0
+            },
+            "readbackRanges": {
+              "snapshotBytes": 0,
+              "snapshots": 0,
+              "fragments": 0,
+              "traceVersion": 1,
+              "checksumAlgorithm": "adler32",
+              "traceCapacity": 256,
+              "traceExhausted": false,
+              "trace": []
+            }
+          },
+          "backend": "webgpu",
+          "acquisitionError": null,
+          "contextsCreated": 0,
+          "contextsClosed": 0,
+          "cleanupErrors": [],
+          "presentation": "readback-2d",
+          "sampledTargetProbe": {
+            "sampledColorTargetProfile": 1,
+            "maxSampledColorTargetDimension": 512,
+            "maxSampledColorTargetBytes": 1048576,
+            "maxSampledColorTargetBindings": 4,
+            "actualRenderToSamplePixels": true,
+            "pixel": [
+              51,
+              153,
+              255,
+              255
+            ],
+            "closedProbe": {
+              "resources": 0,
+              "state": "closed"
+            }
+          },
+          "presents": 1443
+        }
+      ],
+      "pixelSamples": [
+        {
+          "width": 128,
+          "height": 128,
+          "bytes": 65536,
+          "fnv1a32": "e4e46f9c",
+          "distinctRgbCapped256": 151,
+          "scope": "Actual first native ImageBitmap pixels; nonuniformity check, not an exact image/conformance oracle"
+        }
+      ],
+      "logs": "input: wasm keyboard/mouse as /devices/platform/virtio2/virtio2/input/input0\r\nConsole: switching to colour frame buffer device 80x30\r\nfb0: wasm framebuffer 640x480-32 at 40a56b1a\r\nThis architecture does not have kernel memory protection.\r\nRun /gpt6-astra-vulkan-init as init process\r\nnetwork: no eth0 (host did not attach virtio-net)\r\ndisplay: starting Xfbdev as admin at 640x480x32\r\n_XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.\r\nLinuxInit: VT_ACTIVATE skipped (Operation not permitted)\r\nLinuxInit: VT_WAITACTIVE skipped (Operation not permitted)\r\nLinuxInit: KDSETMODE skipped (Operation not permitted)\r\nUsing evdev pointer /dev/input/event0\r\nstarting /bin/aurora-wm --compositor=no as admin\r\naurora-wm: light compositor disabled by setting\r\nVKGEARS_START present=1 size=128x128 seconds=6\r\nGUEST_GPU_HOSTCALL\r\nGUEST_VK_HOST_HELLO {\"version\":1,\"maxResources\":256,\"maxTarget\":512,\"backend\":\"webgpu\",\"shader\":\"WGSL\",\"colorTargetRangeProfile\":1,\"maxColorTargetDimension\":512,\"maxColorTargetBytes\":1048576,\"maxReadbackRangeBytes\":65516,\"graphicsProfile\":1,\"maxVertexBuffer\":65536,\"maxGraphicsDraws\":1024,\"maxVertexStride\":2048,\"integerViewport\":false,\"uniformProfile\":1,\"maxUniformRange\":16384,\"uniformOffsetAlignment\":256,\"maxUniformBuffer\":65536,\"sampledColorTargets\":1,\"textureProfile\":1,\"maxSampledTextures\":16,\"maxTextureDimension\":128,\"maxSamplers\":32,\"largeTextureProfile\":1,\"maxLargeTextureDimension\":1024,\"blendProfile\":1,\"maxSamplerAnisotropy\":16,\"depthProfile\":1,\"depthFormats\":[\"d32-sfloat\",\"d16-unorm\"],\"maxDepthDimension\":128,\"largeDepthProfile\":1,\"maxLargeDepthDimension\":512,\"presentProfile\":1,\"maxPresentDimension\":512,\"viewportFlipProfile\":1,\"mipmapProfile\":1,\"maxMipLevels\":11,\"textureSwizzleProfile\":1,\"indexedDrawProfile\":1,\"depthSampleProfile\":1,\"largeVertexBufferProfile\":1,\"maxLargeVertexBuffer\":1048576,\"hugeSampledProfile\":1,\"maxHugeSampledDimension\":2048,\"sampledColorTargetProfile\":1,\"maxSampledColorTargetDimension\":512,\"maxSampledColorTargetBytes\":1048576,\"maxSampledColorTargetBindings\":4,\"pipelineStateProfile\":1,\"colorWriteMaskBits\":15,\"triangleProvokingVertex\":\"first\",\"lineListProfile\":1,\"adapter\":{\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"isFallbackAdapter\":false}}\r\nGUEST_VK_HOST_HELLO {\"version\":1,\"maxResources\":256,\"maxTarget\":512,\"backend\":\"webgpu\",\"shader\":\"WGSL\",\"colorTargetRangeProfile\":1,\"maxColorTargetDimension\":512,\"maxColorTargetBytes\":1048576,\"maxReadbackRangeBytes\":65516,\"graphicsProfile\":1,\"maxVertexBuffer\":65536,\"maxGraphicsDraws\":1024,\"maxVertexStride\":2048,\"integerViewport\":false,\"uniformProfile\":1,\"maxUniformRange\":16384,\"uniformOffsetAlignment\":256,\"maxUniformBuffer\":65536,\"sampledColorTargets\":1,\"textureProfile\":1,\"maxSampledTextures\":16,\"maxTextureDimension\":128,\"maxSamplers\":32,\"largeTextureProfile\":1,\"maxLargeTextureDimension\":1024,\"blendProfile\":1,\"maxSamplerAnisotropy\":16,\"depthProfile\":1,\"depthFormats\":[\"d32-sfloat\",\"d16-unorm\"],\"maxDepthDimension\":128,\"largeDepthProfile\":1,\"maxLargeDepthDimension\":512,\"presentProfile\":1,\"maxPresentDimension\":512,\"viewportFlipProfile\":1,\"mipmapProfile\":1,\"maxMipLevels\":11,\"textureSwizzleProfile\":1,\"indexedDrawProfile\":1,\"depthSampleProfile\":1,\"largeVertexBufferProfile\":1,\"maxLargeVertexBuffer\":1048576,\"hugeSampledProfile\":1,\"maxHugeSampledDimension\":2048,\"sampledColorTargetProfile\":1,\"maxSampledColorTargetDimension\":512,\"maxSampledColorTargetBytes\":1048576,\"maxSampledColorTargetBindings\":4,\"pipelineStateProfile\":1,\"colorWriteMaskBits\":15,\"triangleProvokingVertex\":\"first\",\"lineListProfile\":1,\"adapter\":{\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"isFallbackAdapter\":false}}\r\nVK_DEVICE_NAME   = EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\r\nVK_API_VERSION   = 1.1.0\r\nVK_DRIVER        = 0x0 vendor=0x0 device=0x0 type=0\r\nVK_BACKEND       = webgpu (host WebGPU or WebGL2 behind the guest ICD)\r\nVK_MAX_IMAGE_2D  = 2048  render=128x128 window=128x128\r\nVKGEARS_GEOMETRY vertices=2640 gear1=0+1320 gear2=1320+660 gear3=1980+660 stride=24\r\nVKGEARS_X11_OPEN display=:0 screen=640x480 window=128x128+480+48 depth=24 bpp=32 direct_rgb=1\r\nVKGEARS_DEPTH format=126 render=128x128\r\nGUEST_VK_TRACE wsi surface_support family=0 supported=1\r\nGUEST_VK_TRACE wsi capabilities window=128x128 max=512\r\nGUEST_VK_TRACE wsi capabilities window=128x128 max=512\r\nVKGEARS_SWAPCHAIN images=2 mode=immediate extent=128x128\r\nVKGEARS_READY device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" backend=webgpu present=1 wsi=1 size=128x128 render=128x128\r\n585 frames in 2.0 seconds = 292.261 FPS\r\nVKGEARS_FPS backend=webgpu device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=292.261 frames=585 seconds=2.00 present=1 size=128x128 render=128x128\r\nVKGEARS_PHASES_MS render=3.365 convert=0.000 put=0.000 sync=0.000 frames=585\r\n497 frames in 2.0 seconds = 248.020 FPS\r\nVKGEARS_FPS backend=webgpu device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" fps=248.020 frames=497 seconds=2.00 present=1 size=128x128 render=128x128\r\nVKGEARS_PHASES_MS render=3.969 convert=0.000 put=0.000 sync=0.000 frames=497\r\nVKGEARS_DONE backend=webgpu device=\"EXPERIMENTAL bounded SPIR-V graphics; NOT conformant\" frames=1443 seconds=6.00 avg_fps=240.423 present=1 size=128x128 render=128x128 status=0 reason=seconds\r\nGUEST_VK_WSI_LIVE swapchains=0 leaked=0\r\nGUEST_VK_SYNC teardown_released=0\r\nGUEST_VK_RESOURCES live=0 allocated_bytes=0\r\nGUEST_VK_WSI_SURFACES live=0 leaked=0\r\nGUEST_VK_CLOSE status=0\r\nVULKAN_WSI_SMOKE_EXIT status=0\r\n",
+      "bootLogs": "random: crng init done\nprintk: legacy bootconsole [earlycon0] enabled\nLinux version 7.1.5 (a@acachy) (clang version 22.1.6, LLD 22.1.6) # SMP \nHeap:\t(ptrval) -> (ptrval) = 14928\nStack:\t00000000 -> (ptrval) = 65536\nCore count: 3\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000003fffffff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000003fffffff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000003fffffff]\npercpu: max_distance=0x30000 too large for vmalloc space 0x0\npercpu: Embedded 1 pages/cpu s17972 r0 d47564 u65536\npercpu: wasting 1 pages per chunk\nKernel command line: console=hvc0 console=hvc0 rdinit=/gpt6-astra-vulkan-init\nprintk: log buffer data + meta data: 131072 + 409600 = 540672 bytes\nDentry cache hash table entries: 131072 (order: 3, 524288 bytes, linear)\nInode-cache hash table entries: 65536 (order: 2, 262144 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping off.  Total pages: 16384\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=3, Nodes=1\nrcu: Hierarchical RCU implementation.\nrcu: \tRCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=3.\nrcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.\nrcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=3\nNR_IRQS: 256\nIRQs enabled\nrcu: srcu_init: Setting srcu_struct sizes based on contention.\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nclocksource: wasm: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns\nConsole: colour dummy device 80x25\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)\nMountpoint-cache hash table entries: 16384 (order: 0, 65536 bytes, linear)\nVFS: Finished mounting rootfs on nullfs\nrcu: Hierarchical SRCU implementation.\nrcu: \tMax phase no-delay instances is 1000.\nTimer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level\nsmp: Bringing up secondary CPUs ...\nHello from cpu 1!\nHello from cpu 2!\nsmp: Brought up 1 node, 3 CPUs\nMemory: 998272K/1048576K available (43904K reserved, 0K cma-reserved)\ndevtmpfs: initialized\nposixtimers hash table entries: 2048 (order: 0, 24576 bytes, linear)\nfutex hash table entries: 1024 (65536 bytes on 1 NUMA nodes, total 64 KiB, linear).\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource wasm\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 16384 (order: 1, 131072 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 8192 (order: 1, 98304 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 2, 262144 bytes, linear)\nTCP established hash table entries: 16384 (order: 0, 65536 bytes, linear)\nTCP bind hash table entries: 16384 (order: 3, 393216 bytes, linear)\nTCP: Hash tables configured (established 16384 bind 16384)\nUDP hash table entries: 2048 (order: 1, 114688 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nworkingset: timestamp_bits=30 (anon: 26) max_order=14 bucket_order=0 (anon: 0)\nsquashfs: version 4.0 (2009/01/31) Phillip Lougher\nfuse: init (API version 7.45)\nio scheduler mq-deadline registered\nio scheduler kyber registered\nUnpacking initramfs...\nFreeing initrd memory: 40832K\nNET: Registered PF_VSOCK protocol family\nprintk: legacy console [hvc0] enabled\nprintk: legacy bootconsole [earlycon0] disabled\n",
+      "ownerEvents": [
+        {
+          "kind": "owner-spawned",
+          "gen": 1
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 backend=webgpu presentation=readback-2d adapter={\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"wgpuBackend\":\"webgpu\"}"
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "vk session 1 closed commands=5794 passes=1443 draws=4329"
+        },
+        {
+          "kind": "owner-log",
+          "gen": 1,
+          "message": "GUEST_WEBGPU_READBACK_HOST_REPORT {\"commands\":5794,\"draws\":0,\"clears\":0,\"readbacks\":0,\"dispatches\":0,\"uploads\":0,\"translations\":0,\"translatorsCreated\":0,\"translatorsClosed\":0,\"released\":9,\"adapter\":{\"vendor\":\"nvidia\",\"architecture\":\"maxwell\",\"description\":\"\",\"isFallbackAdapter\":false},\"error\":null,\"graphicsTranslations\":2,\"graphicsPasses\":1443,\"graphicsDraws\":4329,\"graphicsUploads\":1443,\"graphicsReadbacks\":0,\"graphicsUniformUploads\":1443,\"graphicsTextureUploads\":0,\"graphicsTranslatorsCreated\":1,\"graphicsTranslatorsClosed\":1,\"graphics\":{\"state\":\"closed\",\"resources\":0,\"nativeObjects\":0,\"allocatedBytes\":0,\"recordingDraws\":0,\"flippedPipelines\":0,\"presentsShown\":0,\"buffersCreated\":3,\"buffersDestroyed\":3,\"texturesCreated\":4,\"texturesDestroyed\":4,\"passes\":1443,\"draws\":4329,\"readbacks\":1443,\"uploads\":1443,\"uniformUploads\":1443,\"textureUploads\":0,\"samplersCreated\":0,\"blits\":0,\"readbackPresentation\":{\"mode\":\"readback-2d\",\"renderingBackend\":\"webgpu\",\"closed\":true,\"surfaces\":0,\"canvasBytes\":0,\"pending\":false,\"maxDimension\":512,\"maxSurfaces\":16,\"frames\":1443,\"bitmapFrames\":1,\"attachedFrames\":1442,\"rejectedLateFrames\":0},\"readbackRanges\":{\"snapshotBytes\":0,\"snapshots\":0,\"fragments\":0,\"traceVersion\":1,\"checksumAlgorithm\":\"adler32\",\"traceCapacity\":256,\"traceExhausted\":false,\"trace\":[]}},\"backend\":\"webgpu\",\"acquisitionError\":null,\"contextsCreated\":0,\"contextsClosed\":0,\"cleanupErrors\":[],\"presentation\":\"readback-2d\",\"sampledTargetProbe\":{\"sampledColorTargetProfile\":1,\"maxSampledColorTargetDimension\":512,\"maxSampledColorTargetBytes\":1048576,\"maxSampledColorTargetBindings\":4,\"actualRenderToSamplePixels\":true,\"pixel\":[51,153,255,255],\"closedProbe\":{\"resources\":0,\"state\":\"closed\"}},\"presents\":1443}"
+        },
+        {
+          "kind": "owner-dead",
+          "reason": 4,
+          "gen": 1
+        }
+      ],
+      "errors": [],
+      "presents": 5,
+      "presentKinds": {
+        "request": 1,
+        "bitmap": 1,
+        "attached": 1,
+        "end": 1,
+        "reset": 1
+      },
+      "isolated": true,
+      "package": {
+        "pass": true,
+        "testOnly": true,
+        "trace": true,
+        "archiveBytes": 41867716,
+        "archiveSha256": "6c121d5e3a69548a62d48c6924b6ea696f9cc1f86d98961d799d6e855de5d831",
+        "baseSha256": "3abcabf273287eada1663c5fc4baedc7f7e28b379c580b796cfebea0f531d1be",
+        "binarySha256": "cc4a4c6c26d6469f3973af424b9f7cf3e6056127ee8f11e4920de368c90b8add",
+        "overlaySha256": "aaf7fb66a3f42939a7a9588ee204d3f44255b3d781c75674317051a55b306492",
+        "cmdline": "console=hvc0 rdinit=/gpt6-astra-vulkan-init",
+        "boundedSeconds": 6,
+        "xserverDeadlineSeconds": 40,
+        "scope": "Fresh guest Vulkan public acquire/render/present WSI smoke; not conformance or throughput comparison"
+      },
+      "configuration": {
+        "cpus": 3,
+        "memoryBytes": 1073741824,
+        "framebuffer": [
+          640,
+          480
+        ],
+        "backend": "webgpu",
+        "guestPersistentHome": false
+      },
+      "exitStatus": 0,
+      "durationMs": 11510.969999969006,
+      "overlay": {
+        "frames": 1,
+        "shown": 1,
+        "dropped": 0,
+        "attached": 1,
+        "moves": 1
+      },
+      "hostAccepted": true
+    },
+    "firstNativeFrame": {
+      "path": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/evidence/gpt6-astra-webgpu-readback-quota-20261103-1322.png",
+      "bytes": 3633,
+      "sha256": "c960eb021d66354cef9698aea984feeb38016ed4c0dc4b8598fe4a57813fa239"
+    }
+  }
+}

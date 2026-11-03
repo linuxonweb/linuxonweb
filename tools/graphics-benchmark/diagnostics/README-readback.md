@@ -6,7 +6,7 @@ This is an experimental, explicitly selected presentation route. Rendering stays
 
 The native owner requires `vk.backend = "webgpu"` and `vk.presentation = "readback-2d"`, presentation enabled, and the large colour target profile. A native explicit WebGPU flag may resolve the backend, but WebGL and external renderer backends cannot use this mode. Unknown presentation values fail. No automatic fallback exists.
 
-The adapter supports RGBA8 targets through 512x512, at most 16 surfaces, 16 MiB of CPU canvas stores, and one in-flight frame. It checks the target extent before readback, validates the returned extent/format/row order, rejects a frame cancelled by Close or surface removal, and releases owned CPU stores during cleanup. A sink takes bitmap ownership synchronously; if it throws, the adapter closes the bitmap. The current worker sink posts/transfers synchronously. Default direct presentation retains its existing path.
+The adapter supports RGBA8 targets through 512x512, at most 16 surfaces, 16 MiB of nominal RGBA canvas pixel capacity (browser/driver overhead is additional), and one in-flight frame. It checks the target extent before readback, validates the returned extent/format/row order, rejects a frame cancelled by Close or surface removal, and releases owned CPU stores during cleanup. A sink takes bitmap ownership synchronously; if it throws, the adapter closes the bitmap. The current worker sink posts/transfers synchronously. Default direct presentation retains its existing path.
 
 ## Evidence layers
 
@@ -16,7 +16,9 @@ The adapter supports RGBA8 targets through 512x512, at most 16 surfaces, 16 MiB 
 - `../vulkan-wsi-readback.html?backend=webgpu&presentation=readback-2d` boots the pinned real native Vulkan WSI fixture. It requires real draws, actual nonuniform first-frame pixels, correct native exits and zero graphics/WSI resources. Nonuniformity is not an exact image oracle or conformance suite.
 - Existing `webgpu-present-diagnostic.html` and `webgpu-canvas-preferred.html` direct-export reproductions remain unchanged.
 
-At this source checkpoint only the ownership tests passed under the corrected shared-ancestor guard. Earlier real raw readback observations lack recorded browser descendant quota and remain qualified. A successful receipt from one diagnostic must not be relabelled as another gate.
+The guarded rechecks on 2026-11-03 passed: raw pixels in 5.512 seconds, actual adapter pixels/cleanup in 5.760 seconds, and native WSI in 14.755 seconds. Every before-navigation and continuous descendant snapshot shared `/cpulimit.slice` capped at three CPUs, with no owned processes remaining. The raw and adapter diagnostics each made 60 real render passes and checked 48 frames. Native WSI made 1,443 passes / 4,329 draws and 1,443 presentation calls; the first 128x128 bitmap contained 151 distinct RGB colours and visibly showed three coloured gears. Native WSI, GPU objects and CPU canvas stores closed at zero. See `../evidence/gpt6-astra-webgpu-readback-quota-20261103-1322.json` and its PNG.
+
+The native loop's approximately 240 submissions per second is not physical display refresh, Firefox performance, or a matched-host result. Earlier real raw observations still lack recorded browser descendant quota and remain qualified; their receipts were not overwritten. A successful receipt from one diagnostic must not be relabelled as another gate.
 
 ## Guarded browser execution
 

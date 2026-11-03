@@ -47,7 +47,7 @@ try{
  let port;
  for(let k=0;k<150&&!port;k++){if(child.exitCode!==null)throw Error('browser exited '+child.exitCode);try{port=Number(fs.readFileSync(`${run}/p/DevToolsActivePort`,'utf8').split('\n')[0]);}catch{}if(!port)await sleep(100);}
  if(!port)throw Error('browser did not open DevTools');
- const pages=await(await fetch(`http://127.0.0.1:${port}/json/list`)).json();const page=pages.find(t=>t.type==='page');if(!page)throw Error('no owned page');
+ const targets=await(await fetch(`http://127.0.0.1:${port}/json/list`)).json();result.initialTargets=targets.map(({id,type,url,title})=>({id,type,url,title}));const pages=targets.filter(t=>t.type==='page');if(pages.length!==1||pages[0].url!=='about:blank'||targets.some(t=>['worker','shared_worker','service_worker'].includes(t.type)))throw Error('fresh owned browser has unexpected pages or workers');const page=pages[0];
  socket=new WebSocket(page.webSocketDebuggerUrl);await new Promise((r,j)=>{socket.onopen=r;socket.onerror=j;});
  let next=0;const waiting=new Map();
  socket.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const item=waiting.get(m.id);if(item){clearTimeout(item.timer);waiting.delete(m.id);m.error?item.reject(Error(m.error.message)):item.resolve(m.result);}}else if(m.method==='Runtime.exceptionThrown'){result.errors.push(m.params.exceptionDetails?.exception?.description??m.params.exceptionDetails?.text??'page exception');}else if(m.method==='Runtime.consoleAPICalled'&&result.console.length<100){result.console.push(m.params.args.map(a=>a.value??a.description).join(' ').slice(0,1500));}};
