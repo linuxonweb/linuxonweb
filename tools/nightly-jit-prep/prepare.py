@@ -2,6 +2,7 @@
 """Create a pinned review overlay, never modify the live Nightly source/objdir."""
 import argparse, difflib, hashlib, json, re
 from pathlib import Path
+from extension_document_budget import adapt_xpc
 p=argparse.ArgumentParser()
 p.add_argument('--source',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
@@ -120,6 +121,9 @@ text=change(original,'  // Disable most JITs in Safe-Mode.\n','''#if defined(__w
 
   // Disable most JITs in Safe-Mode.
 ''','explicit wasm browser PBL setter')
+read(repo/'tools/nightly-jit-prep/extension_document_budget.py')
+text=adapt_xpc(text)
+checks.append({'name':'Linux/Wasm extension-document watchdog default', 'pass':True, 'seconds':60})
 save(original,text,rel)
 original=read(repo/'tools/pbl-jit/PblJit.cpp'); text=original
 text=change(text,'!Watchtower::watchesPropertyModification(&n)','!Watchtower::watchesPropertyValueChange(&n)','Nightly Watchtower API (disabled phase)')
@@ -170,6 +174,8 @@ Compiler* TranslateLoop(Init init, Buf& m) {
         }
 ''','        // Argument-frame ABI is deferred; the first phase accepts locals only.\n','defer runtime argument-frame access')
 save(original,text,'PblJit.cpp')
+cache_header=read(repo/'tools/pbl-jit/PblCacheObserve.h')
+save(cache_header,cache_header,'PblCacheObserve.h')
 original=read(repo/'tools/pbl-jit/host-test/mock.h')
 start=original.index('#define PBLJIT_OPS(X)'); end=original.index('enum class JSOp',start)
 macro='#define PBLJIT_OPS(X) '+ ' \\\n  '.join(f"X({o['name']}, {o['number']}, {o['length']})" for o in ops)+'\n'

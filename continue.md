@@ -1,3 +1,102 @@
+# Current task update — 2026-10-17 13:37 UTC
+
+Active branch: `gpt-6-astra-pro-firefox-popup-jit-20261017`, initial checkpoint `71df14827dfa7c262c8265e5ca9c9ec26e9ff572`. The latest optimizer request is implemented: original -O2 completed577.252850s,47.252850 beyond the old530s cutoff. Default optimize phase/owner/outer are1800/1860/1890+10s; build/package/runtime limits and original tests unchanged. Native26e380d20f7a / archive60847fb85339 passed fpcast,WABT,static ABI/package in82.560876s. Earlier censored attempts do not establish isolated speedup.
+
+Optimized original tests: disabled jd17o2 PASS50/zero native events; enabled je17o2 and its one exact repeat je17o2r fail different original in-window GC coverage predicates despite correct semantics/other scopes. Mutation jm17o2 and its one exact repeat jm17o2r pass75 rows/8408 assertions/18 warmups but fail3/6 guard-family predicates. All native Firefox processes exited naturally0 and owners cleaned up. Root verified retained lifetime/cache evidence: selected historical entries were safely freed before the required windows; no stale-entry execution or hash defect proved. Do not weaken original checkers or retry identical runs until green.
+
+The task preview serves archive60847f. Supervisor761994/2334360 remains; current child1587974/3581192 replaced1158499/2945518. Protected992/1606 remains. Explicitly rebind future owners and use stat-only checks for unrelated services.
+
+Fresh desktop-ui/o2-cold1 verified actual cached archive,CPU3/2048MiB and signed uBlock1.75.0. Its first popup stayed blank with filter-fingerprint script timeout, ViewShowing timeout and four null-context lines. Navigation still works. Default logs prove native PBL JIT/IC compiles/runs. Host WebGPU adapter unavailable; visible Use WebGL fallback rendered. Popup/full JIT/graphics acceptance false.
+
+Run closed naturally: Firefox0, normal Stop guest saved home and returned idle, owner2106 exit0 after524.906587s. All19 tracked identities/groups/sessions,Xvfb93,CDP41833 gone;11 root cleanup/evidence checks pass. Peak observed PSS6,075,591,680B,97/97 complete samples. Procedure mistake: Ctrl+Shift+Q was ineffective; actual Ctrl+Q Quit confirmation had only71.222476s left, missing150s reserve. Use correct shortcut and confirm early next time. Root receipt SHA8dc26281f0f49ae7ab85bec8e3305607b8cf7fd92d9613e27805d21bc01d55d4.
+
+The Wasm/Linux-only extension-document watchdog source/recipe passed root review: 60-second default, 445 extracted-code behavior assertions and 12 source negative cases; exact retained XPC O2 compile arguments and owned response-file substitution. Native build is not launched yet; explicit protected PID/start manifest support is being added to avoid unrelated cmdline discovery. Original runtime limits and tests stay unchanged.
+
+Canonical standard, non-preloaded ZIP packing fixture R10 passes all seven independent proofs (10 resources, five native aliases, 21 unchanged CPIO records). Optimized/preloaded ZIP is explicitly rejected. Root read full result/adapter/validation/closure receipts; no real native packing yet. Fresh phone check13:36:42UTC sees1.584GiB available, below unchanged2GiB gate; apps/tabs/UsbFfs tcp8888 mapping untouched.
+
+Root warm-profile helper plus two independent-review fixes passed seven focused clone tests. Fresh desktop-ui-tools-r5 has12 verified files, preparation SHA9c215b5b50c9c921dc8b474e23115f2591e1c11cdeeaa88a63d5cb035c428fb6. No real copy/browser yet. Only a naturally closed task baseline with root review may be cloned; 540s owner unchanged and actual Quit confirmation must retain150s reserve.
+
+Next: finish process-pin option and admit native build; original-O2 transform/package/original tests; cold/warm popup checks; real packed resources bound to new native; packed1024MiB desktop/compressed-initramfs memory checks; Android only if admitted. Separate graphics branch only after desktop+Android work. No blanket git add, broad kill, blocked recursive inventory or rejected private owner/AutoConfig inspection. See report and diary for evidence and mistakes.
+
+---
+
+# Active Firefox popup, JIT and Android repair, 2026-10-17
+
+The user resumed and expanded the goal: Rubywebterm in this repository,
+checkpoint existing work, fix installed uBlock toolbar freeze, verify JIT,
+then run Linux-Wasm Firefox in connected Android Brave; only after those work,
+create another model-prefixed branch for Vulkan/OpenGL. This current request
+supersedes the historical pause below. No final acceptance is claimed.
+
+Checkpoint:71df14827dfa7c262c8265e5ca9c9ec26e9ff572.
+Active branch:gpt-6-astra-pro-firefox-popup-jit-20261017.
+Detailed evidence:docs/gpt-6-astra-pro-firefox-popup-20261017.md.
+Task artifacts:/mnt/p3/codex-build/astra-linuxweb-oct17/.
+Unrelated desktop sessions, phone and its existing mapping8888 are preserved.
+
+Both original-O2 attempts hit unchanged deadlines (507.569s and534.187s overall).
+Compatibility-only native6258aabbaa and primary archive26229de6855b are verified;
+both JIT objects rebuilt explicitly, Wasm/ABI/archive checks pass. Full O2 is
+unresolved. Original JIT suites/checkers/deadlines remain unchanged.
+
+IMPORTANT CORRECTION: dom.max_ext_content_script_run_time(5/60) applies to
+ExpandedPrincipal content scripts. Source creates an ordinary ContentPrincipal
+for extension background pages, so their predicted watchdog is
+DOM max_script_run_time(default10). Runs4–6/8 did NOT prove a60-second background
+budget. Source-pinned correction:diagnostic-scope-correction.json under taskdir.
+uBlock popup starts opacity0 until background getPopupData responds; termination
+can therefore leave its loaded popup invisible. Direct runtime principal/attach
+await tracing remains pending; do not report the temporary helper as executed.
+
+Runs7/8 on native6258 still terminate during uBlock filter parsing. Run7 all-tier
+typed probe passed12 groups/9514 assertions/four checksums in1203ms; native exit0
+and cleanup observed. Run6 loop-only probe passed in2422ms but no native exit0
+before deadline. Run8's normal temporary-addon chooser did not appear and input
+stopped responding; native exit0 was not observed before fixed owner deadline.
+All desktop runs1–8 are closed with exact owned cleanup. No isolated speedup is
+claimed across different tier configurations. Owned dev server3000 persists.
+
+Original enabled je17b PASSED50 rows and all four original scopes on native6258;
+original disabled jd17b PASSED50 rows with zero native entries. Both natural
+exit0 and exact cleanup passed. All-tier mutation jm17b FAILED the unchanged
+checker:4/6 native guard-family proofs, while all75 semantic rows/8408 assertions
+passed separately. Incidental incremental GC skipped first mutation native
+entry for property-write/math-callee after epoch3-to4 change. Keep GC safety and
+original checker. The sole unchanged repeat jm17c PASSED75 rows/8408 assertions,
+18 native warmups/all6 guard families, natural exit0 and exact cleanup. Root
+verified original-evaluation predicates. Do not report jm17b as passing.
+
+Corrected content60 package f8cf4e95d222 is independently hash-verified; native
+unchanged, one pref member only. Fresh run9 installed signed uBlock normally,
+recovered a complete popup, toggled filtering off/on, loaded Example Domain and
+reopened a correct domain popup. Cold setup/navigation remain slow; one prior
+ViewShowing timeout/two null-window errors remain, but no Script terminated
+through11:24:33. Actual cache f8cf verified, CPU3/2048MiB/defaultGPU/no extras.
+Normal CtrlQ11:25:33 (>100s reserve), but native Firefox exit0 was NOT observed.
+Actual Quit clicked11:27:03, only12.4s before fixed deadline; owner exit0 is not
+guest exit0. All15 host identities/CDP/display/mount/loop cleanup verified.
+A distinct warm profile copy passed read-only e2fsck and before/after hash;
+application state remains potentially unclean. Run10 finished: two actual warm
+popups rendered by observer bounds3.52s/6.35s; internal-page navigation remained
+slow. No diagnostic prefs/helper executed. Root actual Quit11:44:11 left162.7s;
+native Firefox exit0 and exact13-identity/endpoint/display/mount/loop cleanup
+passed. Its unpacked observed peak PSS5.13GiB is not phone-ready.
+No runtime principal/attach helper has executed. Detailed timestamps/screens
+and remaining limitations are in the task report. Preserve run9 for a warm clone.
+
+Reserve90s for natural Firefox exit in every ordinary UI session. Only after
+desktop acceptance validate packed/compressed startup and actual Android Brave.
+No graphics branch or public deployment yet. Canonical edits remain unstaged;
+do not add unrelated untracked files, private directories or binaries.
+
+
+Latest optimizer result: the name-only original-O2 attempt timed out after 530.794406s, no output; physical cleanup verified and stale managed handle1746 reconciled with exact stop. On 2026-10-17 at 20:01:19 Asia/Shanghai the user explicitly authorized optimizer diagnosis/speed improvement and a longer time limit if necessary. The eight-request probe settled to a host-enforced effective3CPUs, so no higher-CPU optimizer launched. Preparing an explicit optimizer-only1800s phase/1860s owner/1890+10 outer attempt at3CPUs, with low-rate external observation; not yet launched. Original runtime tests/checkers/deadlines remain unchanged. Warm run10 has native Firefox exit 0 and full cleanup; Android available memory was 1,450,532 KiB at 11:48:01.469 UTC, so packed desktop measurement remains prerequisite.
+
+
+Current optimizer update (2026-10-17 12:21 UTC): user-authorized extended original `wasm-opt -O2` run completed successfully; handle 1849 was reaped with exit 0. Optimizer 577.252850 seconds, owner 586.778808 seconds, three CPUs; the same process finished 47.252850 seconds beyond the old cutoff. Output 194,201,649 bytes, SHA-256 bb92c36681c4b15544a2fb8630b79288d671112e64af04c88f91738003893f2c, independently hash-verified by root. Owner reports complete owned cleanup and protected identities unchanged. Final fpcast/ABI/package and runtime acceptance remain pending. Five-second userspace profiling was bounded and separately recorded; it did not identify one dominant visible hotspot. See the dated completion section of the task report. Do not rerun O2 for the package stage.
+
+---
+
 # Desktop Chromium and Firefox JIT continuation, 2026-10-15
 
 ## User pause: candidate21 runtime stopped, 2026-10-15

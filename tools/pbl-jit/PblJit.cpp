@@ -39,12 +39,15 @@
 // op on the fast paths used here, and JumpTarget/LoopHead reset it from their
 // operand.
 
+#include <errno.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include <atomic>
 #include <new>
@@ -73,6 +76,43 @@
 
 namespace js {
 namespace pbljit {
+
+// A complete observation is one append transaction even when stdout shares fd2.
+// Stdio retains its stderr lock; a short write is never retried as a remainder.
+void PrintObservation(const char* failure, const char* format, ...)
+    __attribute__((format(printf, 2, 3)));
+void PrintObservation(const char* failure, const char* format, ...) {
+  const int savedErrno = errno;
+  char line[4096];
+  va_list args;
+  va_start(args, format);
+  int length = vsnprintf(line, sizeof(line), format, args);
+  va_end(args);
+  flockfile(stderr);
+  if (length >= 0 && size_t(length) < sizeof(line)) {
+    ssize_t written;
+    do {
+      written = syscall(SYS_write, long(STDERR_FILENO), long(uintptr_t(line)), long(length), 0L, 0L, 0L);
+    } while (written < 0 && errno == EINTR);
+    if (written == length) {
+      funlockfile(stderr);
+      errno = savedErrno;
+      return;
+    }
+  }
+  // Existing exhausted-family sentinels reject incomplete native evidence.
+  ssize_t written;
+  do {
+    written = syscall(SYS_write, long(STDERR_FILENO), long(uintptr_t(failure)), long(strlen(failure)), 0L, 0L, 0L);
+  } while (written < 0 && errno == EINTR);
+  funlockfile(stderr);
+  errno = savedErrno;
+  if (written != ssize_t(strlen(failure))) abort();
+}
+
+void ObserveLocation(const char* filename, unsigned line, unsigned off, JSContext* cx,
+                     const char* event, uint32_t fn, int64_t kind = -1,
+                     uint32_t sp = 0, int32_t delta = 0, uint32_t ic = 0);
 
 struct Exit {
   uint64_t* sp;
@@ -111,6 +151,8 @@ struct Entry {
 };
 
 thread_local Entry* tCache;
+
+#include "PblCacheObserve.h"
 
 uint32_t CacheIndex(JSScript* script, const jsbytecode* pc) {
   // Firefox shares immutable bytecode between scripts with different atoms.
@@ -1784,15 +1826,27 @@ void LogReject(JSScript* script, const Compiler& c) {
           c.reason ? c.reason : "?");
 }
 
-void Evict(Entry* e) {
-  if (e->fn) {
-    syscall(SYS_jit_free, long(e->fn), 1L);
-  }
+void FreeNative(uint32_t fn, uint32_t slot, JSContext* cx,
+                const char* cause, bool gcEviction = false) {
+  long rc = syscall(SYS_jit_free, long(fn), 1L);
+  const int syscallErrno = errno;
+  cacheobs::Released(slot, fn, MajorGC(cx), cause, rc,
+                     rc == -1 ? syscallErrno : 0, gcEviction,
+                     [&](const cacheobs::Record& old) {
+    ObserveLocation(old.file, old.line, old.off, cx, "gc-evict", old.fn);
+  });
+  errno = syscallErrno;
+}
+
+void Evict(Entry* e, uint32_t slot, JSContext* cx, const char* cause,
+           bool gcEviction = false) {
+  if (e->fn) FreeNative(e->fn, slot, cx, cause, gcEviction);
   free(e->bytes);
   memset(e, 0, sizeof *e);
 }
 
-bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
+bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m,
+             JSContext* cx, uint32_t slot) {
   if (c.reason) {
     LogReject(script, c);
     return false;
@@ -1806,10 +1860,15 @@ bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
     if (TakeLog()) fprintf(stderr, "PBLJIT install rc=%ld bytes=%zu\n", rc, m.n);
     return false;
   }
+  if (cacheobs::CaptureEnabled()) {
+    cacheobs::Installed(script->filename(), script->lineno(),
+                        unsigned(pc - script->code()), slot, idx[0], e->majorGC,
+                        uintptr_t(script), uintptr_t(pc));
+  }
   size_t len = size_t(c.end - pc);
   e->bytes = static_cast<uint8_t*>(malloc(len));
   if (!e->bytes) {
-    syscall(SYS_jit_free, long(idx[0]), 1L);
+    FreeNative(idx[0], slot, cx, "install-allocation-failure");
     return false;
   }
   memcpy(e->bytes, pc, len);
@@ -1837,7 +1896,7 @@ bool Install(JSScript* script, jsbytecode* pc, Entry* e, Compiler& c, Buf& m) {
 }
 
 bool Compile(JSScript* script, jit::BaselineFrame* frame, jsbytecode* pc,
-             Entry* e, JSContext* cx) {
+             Entry* e, JSContext* cx, uint32_t slot) {
   if (gInstalls.load(std::memory_order_relaxed) >= kMaxInstalls) return false;
   Buf m;
   Compiler* cp = TranslateLoop(
@@ -1855,7 +1914,7 @@ bool Compile(JSScript* script, jit::BaselineFrame* frame, jsbytecode* pc,
       },
       m);
   if (!cp) return false;
-  bool ok = Install(script, pc, e, *cp, m);
+  bool ok = Install(script, pc, e, *cp, m, cx, slot);
   FreeCompiler(cp);
   return ok;
 }
@@ -1865,11 +1924,100 @@ bool Compile(JSScript* script, jit::BaselineFrame* frame, jsbytecode* pc,
 typedef int64_t (*JitFn)(void* frame, void* sp, void* intr, void* out,
                          void* argv);
 
+// Diagnostic-only bounded observer. Owned source filter preserves budget.
+bool ObserverActive() {
+  static const bool enabled = [] {
+    const char* v = getenv("PBLJIT_OBSERVE");
+    return v && strcmp(v, "1") == 0;
+  }();
+  return enabled;
+}
+
+bool ObserverFilenameEnabled(const char* filename) {
+  if (!ObserverActive()) return false;
+  static constexpr char prefix[] = "file:///home/admin/nightly-jit-safety/";
+  return filename && strncmp(filename, prefix, sizeof(prefix) - 1) == 0;
+}
+
+bool ObserverEnabled(JSScript* script) {
+  return ObserverActive() && ObserverFilenameEnabled(script->filename());
+}
+
+void ObserveLocation(const char* filename, unsigned line, unsigned off, JSContext* cx,
+                     const char* event, uint32_t fn, int64_t kind,
+                     uint32_t sp, int32_t delta, uint32_t ic) {
+  if (!ObserverFilenameEnabled(filename)) return;
+  static std::atomic<int> remaining{4096};
+  int observationRemaining = remaining.fetch_sub(1, std::memory_order_relaxed);
+  if (observationRemaining <= 0) {
+    if (observationRemaining == 0)
+      PrintObservation("PBLJIT_OBS_EXHAUSTED reason=emission-failed\n", "PBLJIT_OBS_EXHAUSTED budget=4096\n");
+    return;
+  }
+  PrintObservation("PBLJIT_OBS_EXHAUSTED reason=emission-failed\n", "PBLJIT_OBS event=%s file=%s line=%u off=%u tid=%ld pthread=%lu tls=%p epoch=%llu fn=%u kind=%lld sp=%u pcDelta=%d ic=%u\n",
+          event, filename, line, off,
+          syscall(SYS_gettid), static_cast<unsigned long>((uintptr_t)pthread_self()), static_cast<void*>(&tCache),
+          static_cast<unsigned long long>(MajorGC(cx)), fn,
+          static_cast<long long>(kind), sp, delta, ic);
+}
+
+void Observe(JSScript* script, jsbytecode* pc, JSContext* cx,
+             const char* event, uint32_t fn = 0, int64_t kind = -1,
+             uint32_t sp = 0, int32_t delta = 0, uint32_t ic = 0) {
+  if (!ObserverEnabled(script)) return;
+  ObserveLocation(script->filename(), script->lineno(), unsigned(pc - script->code()),
+                  cx, event, fn, kind, sp, delta, ic);
+}
+
+void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,
+                 const char* reason) {
+  if (!ObserverEnabled(script)) return;
+  // Deduplicate repeated heads. Fixed TLS storage; no heap or runtime calls.
+  struct Seen { JSScript* script; const char* reason; uint64_t epoch; };
+  static thread_local Seen seen[32]{};
+  uint64_t epoch = MajorGC(cx);
+  for (auto& entry : seen) {
+    if (entry.script == script && entry.reason == reason && entry.epoch == epoch)
+      return;
+  }
+  static thread_local unsigned next = 0;
+  seen[next++ % 32] = {script, reason, epoch};
+  Observe(script, pc, cx, reason);
+}
+
+void ObservePolicy(JSScript* script, JSContext* cx) {
+  if (!ObserverEnabled(script)) return;
+  // Called only at the existing rejection point, before disabling baseline.
+  // Read the actual source policy without changing admission or allocating.
+  for (const auto& note : script->trynotes()) {
+    if (note.kind() == TryNoteKind::Catch) {
+      ObserveSkip(script, script->code(), cx, "policy-catch");
+      return;
+    }
+    if (note.kind() == TryNoteKind::Finally) {
+      ObserveSkip(script, script->code(), cx, "policy-finally");
+      return;
+    }
+  }
+  for (jsbytecode* pc = script->code(); pc < script->codeEnd();
+       pc += GetBytecodeLength(pc)) {
+    JSOp op = JSOp(*pc);
+    if (op == JSOp::Throw || op == JSOp::ThrowWithStack) {
+      ObserveSkip(script, pc, cx,
+                  op == JSOp::Throw ? "policy-throw" : "policy-throw-stack");
+      return;
+    }
+  }
+}
+
 bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
                 jsbytecode* pc, JSContext* cx, Exit* exit) {
   // The generated module contains untraced shape/object constants. Never
   // dereference them while incremental GC is active or after any major GC.
-  if (IncrementalGC(cx)) return false;
+  if (IncrementalGC(cx)) {
+    ObserveSkip(script, pc, cx, "skip-incremental");
+    return false;
+  }
   uint64_t gc = MajorGC(cx);
   Entry* cache = tCache;
   if (MOZ_UNLIKELY(!cache)) {
@@ -1886,7 +2034,9 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
               static_cast<unsigned long long>(e->majorGC),
               static_cast<unsigned long long>(gc));
     }
-    Evict(e);
+    Evict(e, h, cx,
+          cacheobs::ReplacementCause(e->pc == pc && e->script == script, e->majorGC == gc),
+          e->state == 1 && e->majorGC != gc);
     e->pc = pc;
     e->script = script;
     e->majorGC = gc;
@@ -1895,13 +2045,14 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
   if (e->global != CurrentGlobal(cx)) return false;
   if (e->state != 1) {
     if (e->state == 2 || ++e->hits < kCompileHits) return false;
-    e->state = Compile(script, frame, pc, e, cx) ? 1 : 2;
-    if (e->state != 1) return false;
+    e->state = Compile(script, frame, pc, e, cx, h) ? 1 : 2;
+    if (e->state != 1) { ObserveSkip(script, pc, cx, "reject"); return false; }
+    Observe(script, pc, cx, "install", e->fn);
   }
   // Same pc pointer, possibly a different (re-allocated) script: compare.
   if (MOZ_UNLIKELY(pc + e->len > script->codeEnd() ||
                    memcmp(pc, e->bytes, e->len) != 0)) {
-    Evict(e);
+    Evict(e, h, cx, "bytes");
     e->pc = pc;
     return false;
   }
@@ -1921,10 +2072,18 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
   } out;
   int64_t kind = reinterpret_cast<JitFn>(uintptr_t(e->fn))(
       frame, sp, cx->addressOfInterruptBits(), &out, argv);
+  // emitExit writes all three output fields for Normal, Bail and Interrupt.
+  // Direct NoEntry returns and unexpected kinds have no valid output storage.
+  bool observedOutputValid = kind == Normal || kind == Bail || kind == Interrupt;
+  Observe(script, pc, cx, kind == NoEntry ? "noentry" : kind == Bail ? "bail" :
+          kind == Interrupt ? "interrupt" : kind == Normal ? "run" : "invalid-kind",
+          e->fn, kind, observedOutputValid ? out.sp : 0,
+          observedOutputValid ? out.pcDelta : 0,
+          observedOutputValid ? out.icIndex : 0);
   if (kind == NoEntry || kind == Bail) {
     gBails.fetch_add(1, std::memory_order_relaxed);
     if (++e->bails >= kMaxBails) {
-      syscall(SYS_jit_free, long(e->fn), 1L);
+      FreeNative(e->fn, h, cx, "bail-limit");
       e->fn = 0;
       e->state = 2;
       if (TakeLog()) {

@@ -298,6 +298,8 @@ constexpr uint32_t L_STUB = kParams + kI64Locals, L_CTX = L_STUB + 1,
 constexpr uint32_t kI32Locals = 5;
 constexpr uint32_t L_D0 = L_STUB + kI32Locals, L_D1 = L_D0 + 1;
 constexpr uint32_t kF64Locals = 2;
+// Append the diagnostic i64 local after all original local groups.
+constexpr uint32_t L_OBSERVATION = L_D1 + 1;
 
 // JSObject::offsetOfShape() is reserved for MacroAssembler.
 constexpr uint32_t kShapeOffset = uint32_t(JSObject::offsetOfHeaderPtr());
@@ -316,6 +318,7 @@ struct Translator {
   uint32_t sdo;        // stub data offset
   const char* reason = nullptr;
   uint32_t nInline = 0, nStep = 0;
+  pbltier::IcDescriptor* observation = nullptr;
 
   bool reject(const char* why) {
     reason = why;
@@ -583,6 +586,24 @@ struct Translator {
     for (uint32_t i = 4; i < kParams; i++) i64c(0);
   }
 
+  // The original result is already on the stack; the helper returns it
+  // unchanged. No callbacks or extra locals are emitted in observation-off mode.
+  void observeReturn() {
+    if (!observation) return;
+    i64c(int64_t(uintptr_t(observation)));
+    lget(3);  // ICCtx, not an assumed current bytecode PC.
+    lget(L_OBSERVATION);
+    padArgs();
+    i32c(int32_t(uintptr_t(&pbltier::IcReturn)));
+    b.put(OP_CALLIND);
+    b.uleb(0);
+    b.uleb(0);
+  }
+  void returnValue() {
+    observeReturn();
+    op(OP_RETURN);
+  }
+
   // Run [start, end) in ICInterpretOps.
   void step(uint32_t start, uint32_t end, bool last, uint32_t ids) {
     nStep++;
@@ -606,7 +627,7 @@ struct Translator {
     b.uleb(0);
     b.uleb(0);
     if (last) {
-      op(OP_RETURN);
+      returnValue();
       return;
     }
     lset(L_A);
@@ -621,7 +642,7 @@ struct Translator {
     b.put(OP_IF);
     b.put(OP_VOID);
     lget(L_A);
-    op(OP_RETURN);
+    returnValue();
     b.put(OP_END);
     lget(L_A);
     lset(L_RET);
@@ -1589,11 +1610,30 @@ bool Translator::run() {
         return reject("operand id >= 16");
       }
     }
+    // These hot memory operations are currently interpreted one op at a
+    // time through the fpcast ABI. Keep their complete IC chain in the
+    // native interpreter until typed-array operations can be compiled inline.
+    // Compile() negatively caches rejection and PblIcEntry installs the
+    // interpreter pointer, so hot entries do not retry compilation.
+    if (o == uint32_t(CacheOp::LoadTypedArrayElementResult) ||
+        o == uint32_t(CacheOp::StoreTypedArrayElement)) {
+      return reject("typed-array mixed IC");
+    }
     pos += 2 + n;
     if (++nops > kMaxOps) return reject("too many ops");
   }
 
   // Prologue: STUB, CTX; regs 0..2 = arg0, arg1, ctx.arg2 (WRITE_VALUE_REG).
+  if (observation) {
+    i64c(int64_t(uintptr_t(observation)));
+    lget(3);
+    for (uint32_t i = 2; i < kParams; i++) i64c(0);
+    i32c(int32_t(uintptr_t(&pbltier::IcEnter)));
+    b.put(OP_CALLIND);
+    b.uleb(0);
+    b.uleb(0);
+    lset(L_OBSERVATION);
+  }
   lget(2);
   op(OP_I32WRAP);
   lset(L_STUB);
@@ -1640,7 +1680,7 @@ bool Translator::run() {
     pos = end;
   }
   lget(L_RET);
-  op(OP_RETURN);
+  returnValue();
   b.put(OP_END);  // $fail
   // Failure: count it, then call stub->next's code like CallNextIC.
   i32c(int32_t(uintptr_t(&gStats[kStatFails])));
@@ -1664,6 +1704,7 @@ bool Translator::run() {
   b.put(OP_CALLIND);
   b.uleb(0);
   b.uleb(0);
+  observeReturn();  // Implicit return after the actual next-stub call.
   b.put(OP_END);  // function
   return !b.oom || reject("oom");
 }
@@ -1672,13 +1713,17 @@ bool Translator::assemble(Buf& m) {
   Buf c;
   Buf body;
   // Locals: i64, i32 and f64 groups.
-  body.uleb(3);
+  body.uleb(observation ? 4 : 3);
   body.uleb(kI64Locals);
   body.put(0x7e);
   body.uleb(kI32Locals);
   body.put(0x7f);
   body.uleb(kF64Locals);
   body.put(0x7c);
+  if (observation) {
+    body.uleb(1);
+    body.put(0x7e);
+  }
   body.putn(b.p, b.n);
 
   m.putn("\0asm\1\0\0\0", 8);
@@ -1746,12 +1791,13 @@ bool SameContent(const Entry* e, const CacheIRStubInfo* info) {
          memcmp(e->copy, info->code(), e->len) == 0;
 }
 
-void Compile(Entry* e, const CacheIRStubInfo* info) {
+void Compile(Entry* e, const CacheIRStubInfo* info, ICCtx& ctx) {
   if (gInstalls.load(std::memory_order_relaxed) >= kMaxInstalls) {
     e->state = 2;
     return;
   }
   Translator t;
+  if (pbltier::Enabled()) t.observation = pbltier::NewIcDescriptor();
   t.info = info;
   t.code = info->code();
   t.len = info->codeLength();
@@ -1786,8 +1832,11 @@ void Compile(Entry* e, const CacheIRStubInfo* info) {
   memcpy(e->copy, t.code, t.len);
   e->len = t.len;
   e->sdo = uint8_t(info->stubDataOffset());
+  // Fill the stable generated-code identity before publishing callable code.
+  if (t.observation) t.observation->fn = idx[0];
   e->fn = idx[0];
   e->state = 1;
+  if (t.observation) pbltier::IcInstall(t.observation, ctx);
   gInstalls.fetch_add(1, std::memory_order_relaxed);
   uint32_t n = gCompiles.fetch_add(1, std::memory_order_relaxed) + 1;
   if (TakeLog()) {
@@ -1800,7 +1849,7 @@ void Compile(Entry* e, const CacheIRStubInfo* info) {
 
 // Returns the code this stub should use from now on, or null to keep
 // counting through PblIcEntry.
-uint8_t* Enter(ICCacheIRStub* stub) {
+uint8_t* Enter(ICCacheIRStub* stub, ICCtx& ctx) {
   uint8_t* interp = reinterpret_cast<uint8_t*>(&ICInterpretOps);
   if (!Enabled()) return interp;
   if (!tTable) {
@@ -1835,7 +1884,7 @@ uint8_t* Enter(ICCacheIRStub* stub) {
     memset(e, 0, sizeof *e);
     e->info = info;
   }
-  if (e->state == 0 && ++e->hits >= kHits) Compile(e, info);
+  if (e->state == 0 && ++e->hits >= kHits) Compile(e, info, ctx);
   if (e->state == 1) return reinterpret_cast<uint8_t*>(uintptr_t(e->fn));
   if (e->state == 2) return interp;
   return nullptr;
@@ -1845,7 +1894,7 @@ uint8_t* Enter(ICCacheIRStub* stub) {
 
 static uint64_t PblIcEntry(uint64_t arg0, uint64_t arg1, ICStub* stub,
                            ICCtx& ctx) {
-  uint8_t* code = pblic::Enter(stub->toCacheIRStub());
+  uint8_t* code = pblic::Enter(stub->toCacheIRStub(), ctx);
   if (!code) return ICInterpretOps(arg0, arg1, stub, ctx);
   stub->updateRawJitCode(code);
   ICStubFunc func = reinterpret_cast<ICStubFunc>(code);

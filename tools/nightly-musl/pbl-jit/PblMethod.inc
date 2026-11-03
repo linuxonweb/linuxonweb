@@ -62,7 +62,8 @@ constexpr uint32_t L_D0 = L_FR + kNI32, L_D1 = L_D0 + 1;
 constexpr uint32_t kNF64 = 2;
 
 // Exit kinds (high word of the result; low word is the op's pc offset).
-enum : uint32_t { kExit = 0, kIcError = 1 };
+// Diagnostic reason changes no interpreter continuation or result semantics.
+enum : uint32_t { kExit = 0, kIcError = 1, kObservedIrqExit = 2 };
 // Flags parameter bits.
 enum : uint32_t { kFlagArgsAliased = 1 };
 
@@ -1189,11 +1190,13 @@ bool MT::translateOp() {
     }
     case JSOp::LoopHead:
       // Pending interrupts are handled by the interpreter's LoopHead.
+      // The diagnostic reason originates only in this executed IRQ branch.
+      // With observation disabled, emit the exact original exit constant.
       lget(P_IRQ);
       op(OP_I32WRAP);
       load32(0);
       ifThen();
-      exitHere();
+      exitAt(cur, pbltier::Enabled() ? kObservedIrqExit : kExit);
       end();
       if (gLoopJit) {
         // if (!(loopState[cur] & kLoopSkip)) {
@@ -1720,7 +1723,7 @@ Entry* Find(const ImmutableScriptData* isd) {
   return nullptr;
 }
 
-void Compile(Entry* e, JSScript* script) {
+void Compile(Entry* e, JSScript* script, JSContext* cx) {
   MT t;
   t.entry = e;
   t.code = script->code();
@@ -1773,6 +1776,8 @@ void Compile(Entry* e, JSScript* script) {
   e->shared = script->sharedData();
   e->shared->AddRef();
   e->state = 1;
+  if (pbltier::Enabled())
+    pbltier::Guard(pbltier::kInstall, script, cx, e->fn, -1);
   uint32_t nc = gCompiles.fetch_add(1, std::memory_order_relaxed) + 1;
   if (TakeLog()) {
     fprintf(stderr,
@@ -1805,7 +1810,7 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
     if (script->hasScriptCounts() || script->immutableScriptData() != isd) {
       return kNone;
     }
-    Compile(e, script);
+    Compile(e, script, ctx.frameMgr.cxForLocalUseOnly());
     if (e->state != 1) return kNone;
   }
   uint32_t off = uint32_t(pc - entryPC);
@@ -1830,8 +1835,12 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
   typedef uint64_t (*Fn)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
                          uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
                          uint64_t, uint64_t);
-  Fn fn = reinterpret_cast<Fn>(uintptr_t(e->fn));
+  const uint32_t calledFn = e->fn;
+  Fn fn = reinterpret_cast<Fn>(uintptr_t(calledFn));
   gRuns++;
+  const bool observing = pbltier::Enabled();
+  uint64_t observation = observing
+      ? pbltier::Begin(frame->script(), cx, calledFn, off) : 0;
   uint64_t r = fn(uintptr_t(frame), uintptr_t(sp), j, uintptr_t(icEntries),
                   uintptr_t(&ctx), uintptr_t(&io), uintptr_t(frame->argv()),
                   argsObjAliasesFormals ? kFlagArgsAliased : 0,
@@ -1839,6 +1848,13 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
                   uintptr_t(cx->addressOfInterruptBits()), uintptr_t(entryPC),
                   uintptr_t(cx));
   uint32_t exitOff = uint32_t(r);
+  if (observing) {
+    pbltier::End(frame->script(), cx, calledFn, observation, exitOff,
+                 uint32_t(r >> 32));
+    if ((r >> 32) == kObservedIrqExit)
+      pbltier::Guard(pbltier::kIrqExit, frame->script(), cx, calledFn,
+                     int32_t(exitOff));
+  }
   out->sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
   out->pc = entryPC + exitOff;
   uint32_t k = e->opAt[exitOff];
@@ -1864,7 +1880,12 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
   uint32_t& st = e->loopState[e->opAt[pcOff]];
   JSScript* script = frame->script();
   if (frame->isDebuggee() || script->hasScriptCounts()) return 0;
-  if (cx->runtime()->gc.isIncrementalGCInProgress()) return 0;
+  if (cx->runtime()->gc.isIncrementalGCInProgress()) {
+    if (pbltier::Enabled())
+      pbltier::Guard(pbltier::kIncremental, script, cx, e->fn,
+                     int32_t(pcOff));
+    return 0;
+  }
   js::pbljit::Exit jx;
   if (!js::pbljit::OnLoopHead(script, frame,
                               reinterpret_cast<uint64_t*>(uintptr_t(spA)),

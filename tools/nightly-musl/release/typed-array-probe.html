@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Firefox typed-array IC probe</title>
+<style>body{font:16px monospace;margin:2rem}pre{white-space:pre-wrap}</style>
+<h1>Firefox typed-array IC probe</h1>
+<p>Separate semantic and fixed-work throughput diagnostic. No browser preferences are changed.</p>
+<pre id="result">Starting</pre>
+<script>
+'use strict';
+const SPEC='typed-array-ic-probe-v1';
+const started=performance.now();
+const WALL_MS=120000, CHUNK=16384, SAMPLES=7, CHUNKS_PER_SAMPLE=4;
+const output=document.getElementById('result');
+const rows=[];
+let assertions=0;
+const label=new URLSearchParams(location.search).get('label')||SPEC;
+const encode=value=>typeof value==='bigint'?String(value)+'n':Number.isNaN(value)?'NaN':Object.is(value,-0)?'-0':value===Infinity?'+Infinity':value===-Infinity?'-Infinity':value;
+function emit(row){row={spec:SPEC,label,...row};rows.push(row);const line='PBL_TYPED_ARRAY '+JSON.stringify(row);console.log(line);output.textContent+='\n'+line;}
+function eq(actual,expected,name){assertions++;if(!Object.is(actual,expected))throw Error(name+': '+encode(actual)+' expected '+encode(expected));}
+function checkDeadline(){if(performance.now()-started>=WALL_MS)throw Error('Fixed120-second probe deadline reached');}
+async function tick(){checkDeadline();await new Promise(resolve=>setTimeout(resolve,0));checkDeadline();}
+function readAt(view,index){return view[index];}
+function writeAt(view,index,value){view[index]=value;return view[index];}
+function scan(view,count){let sum=0;for(let i=0;i<count;i++)sum=(sum+view[i&1023])|0;return sum;}
+function update(view,count,salt){for(let i=0;i<count;i++)view[i&1023]=(i+salt)&65535;return view[0];}
+function clamped(value){if(Number.isNaN(value)||value<=0)return 0;if(value>=255)return 255;const floor=Math.floor(value),fraction=value-floor;return fraction<0.5?floor:fraction>0.5?floor+1:(floor&1)?floor+1:floor;}
+const numberValues=[-Infinity,-4294967297,-2147483649,-2147483648,-65537,-32769,-129,-1,-0,0,0.5,1.5,2.5,127,128,255,256,32767,32768,65535,65536,2147483647,2147483648,4294967295,4294967296,NaN,Infinity];
+const descriptors=[['Int8',Int8Array,'setInt8','getInt8'],['Uint8',Uint8Array,'setUint8','getUint8'],['Int16',Int16Array,'setInt16','getInt16'],['Uint16',Uint16Array,'setUint16','getUint16'],['Int32',Int32Array,'setInt32','getInt32'],['Uint32',Uint32Array,'setUint32','getUint32'],['Float32',Float32Array,'setFloat32','getFloat32'],['Float64',Float64Array,'setFloat64','getFloat64'],['Uint8Clamped',Uint8ClampedArray,null,null]];
+async function numberSemantics(){
+ const oracle=new DataView(new ArrayBuffer(8));
+ for(const [name,Ctor,setter,getter]of descriptors){
+  const view=new Ctor(32),before=assertions;
+  for(let i=0;i<512;i++){writeAt(view,i&31,i&31);eq(readAt(view,i&31),i&31,name+' warm');}
+  await tick();
+  for(let i=0;i<numberValues.length;i++){
+   const value=numberValues[i],index=i&31;
+   let expected;if(name==='Uint8Clamped')expected=clamped(value);else{oracle[setter](0,value,true);expected=oracle[getter](0,true);}
+   eq(writeAt(view,index,value),expected,name+' store '+i);eq(readAt(view,index),expected,name+' load '+i);
+  }
+  const old0=readAt(view,0),old31=readAt(view,31);
+  for(const index of [-1,-2147483648,32,4294967295,1.5,NaN,Infinity]){eq(readAt(view,index),undefined,name+' invalid read '+index);eq(writeAt(view,index,23),undefined,name+' invalid write '+index);}
+  eq(readAt(view,0),old0,name+' first unaffected');eq(readAt(view,31),old31,name+' last unaffected');
+  emit({event:'semantic',name:'number-'+name,assertions:assertions-before});await tick();
+ }
+}
+async function bigIntSemantics(){
+ const values=[-(1n<<80n),-(1n<<63n)-1n,-1n,0n,1n,(1n<<63n)-1n,1n<<63n,(1n<<64n)-1n,1n<<64n,1n<<80n];
+ const oracle=new DataView(new ArrayBuffer(8));
+ for(const[name,Ctor,setter,getter]of[['BigInt64',BigInt64Array,'setBigInt64','getBigInt64'],['BigUint64',BigUint64Array,'setBigUint64','getBigUint64']]){
+  const view=new Ctor(16),before=assertions;
+  for(let i=0;i<512;i++){const value=BigInt(i&15);writeAt(view,i&15,value);eq(readAt(view,i&15),value,name+' warm');}
+  await tick();
+  for(let i=0;i<values.length;i++){oracle[setter](0,values[i],true);const expected=oracle[getter](0,true);eq(writeAt(view,i,values[i]),expected,name+' store');eq(readAt(view,i),expected,name+' load');}
+  eq(readAt(view,-1),undefined,name+' negative');eq(writeAt(view,16,1n),undefined,name+' OOB store');
+  let threw=false;try{writeAt(view,0,1);}catch(error){threw=error instanceof TypeError;}eq(threw,true,name+' rejects Number');
+  emit({event:'semantic',name:'bigint-'+name,assertions:assertions-before});await tick();
+ }
+}
+async function lifecycleSemantics(){
+ const before=assertions;
+ if(typeof ArrayBuffer.prototype.resize!=='function'||typeof structuredClone!=='function')throw Error('Required resize/detach APIs are unavailable');
+ const buffer=new ArrayBuffer(16,{maxByteLength:32}),tracking=new Uint8Array(buffer),fixed=new Uint8Array(buffer,0,16);
+ for(let i=0;i<512;i++){writeAt(tracking,i&15,i&15);eq(readAt(fixed,i&15),i&15,'resize warm');}
+ await tick();buffer.resize(8);
+ eq(tracking.length,8,'tracking shrink length');eq(fixed.length,0,'fixed becomes OOB');eq(readAt(tracking,8),undefined,'tracking OOB');eq(readAt(fixed,0),undefined,'fixed OOB read');eq(writeAt(fixed,0,99),undefined,'fixed OOB write');eq(readAt(tracking,0),0,'OOB write untouched');
+ buffer.resize(16);eq(fixed.length,16,'fixed recovered length');eq(readAt(fixed,0),0,'existing bytes retained');eq(readAt(fixed,8),0,'truncated bytes zeroed');eq(writeAt(fixed,15,255),255,'recovered write');
+ const detached=new Uint32Array([11,22,33]);for(let i=0;i<512;i++)eq(readAt(detached,i%3),(i%3+1)*11,'detach warm');
+ await tick();const moved=structuredClone(detached.buffer,{transfer:[detached.buffer]});
+ eq(detached.length,0,'detached length');eq(readAt(detached,0),undefined,'detached read');eq(writeAt(detached,0,99),undefined,'detached write');eq(new DataView(moved).getUint32(0,true),11,'transferred bytes unchanged');
+ emit({event:'semantic',name:'resize-and-detach',assertions:assertions-before});await tick();
+}
+async function throughput(name,Ctor,mode){
+ const view=new Ctor(1024);for(let i=0;i<view.length;i++)view[i]=i&255;
+ const expectedRead=130560*(CHUNK/1024);
+ let checksum=0;const samplesMs=[];
+ for(let warm=0;warm<4;warm++){const value=mode==='read'?scan(view,CHUNK):update(view,CHUNK,warm);if(mode==='read')eq(value,expectedRead,name+' warm checksum');await tick();}
+ const begun=performance.now();
+ for(let sample=0;sample<SAMPLES;sample++){
+  let elapsed=0;
+  for(let chunk=0;chunk<CHUNKS_PER_SAMPLE;chunk++){
+   checkDeadline();const salt=sample*CHUNKS_PER_SAMPLE+chunk;const t=performance.now();const value=mode==='read'?scan(view,CHUNK):update(view,CHUNK,salt);elapsed+=performance.now()-t;checksum=(checksum+value)|0;
+   if(mode==='read')eq(value,expectedRead,name+' read checksum');
+   else eq(value,Ctor===Uint8Array?salt:(CHUNK-1024+salt)&65535,name+' write checksum');
+   await tick();
+  }
+  samplesMs.push(elapsed);
+ }
+ if(mode==='write'){
+  const dv=new DataView(view.buffer),salt=SAMPLES*CHUNKS_PER_SAMPLE-1;
+  for(let i=0;i<1024;i++){const want=Ctor===Uint8Array?(CHUNK-1024+i+salt)&255:(CHUNK-1024+i+salt)&65535;eq(Ctor===Uint8Array?dv.getUint8(i):dv.getUint32(i*4,true),want,name+' final storage');}
+ }
+ emit({event:'throughput',name,mode,operations:SAMPLES*CHUNKS_PER_SAMPLE*CHUNK,samplesMs,activeMs:samplesMs.reduce((a,b)=>a+b,0),wallMs:performance.now()-begun,checksum});
+}
+(async()=>{
+ try{
+  emit({event:'start',userAgent:navigator.userAgent,hardwareConcurrency:navigator.hardwareConcurrency,wallLimitMs:WALL_MS,chunk:CHUNK,samples:SAMPLES,chunksPerSample:CHUNKS_PER_SAMPLE});
+  await tick();await numberSemantics();await bigIntSemantics();await lifecycleSemantics();
+  await throughput('Uint8-read',Uint8Array,'read');await throughput('Uint32-read',Uint32Array,'read');await throughput('Uint8-write',Uint8Array,'write');await throughput('Uint32-write',Uint32Array,'write');
+  checkDeadline();emit({event:'done',ok:true,assertions,elapsedMs:performance.now()-started});
+ }catch(error){emit({event:'error',message:String(error),stack:String(error.stack)});emit({event:'done',ok:false,assertions,elapsedMs:performance.now()-started});}
+ window.typedArrayProbeResult={spec:SPEC,label,rows,complete:true};
+})();
+</script>

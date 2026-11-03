@@ -1,45 +1,51 @@
 #!/usr/bin/env python3
-"""Write OUT/report.json for package-firefox-native-gpu.py --build.
-
-Starts from the a38 GPU build report (unchanged plugin-container, gfxtest and
-recipe records) and points the firefox artifact at OUT/obj/firefox.fpcast.wasm.
-
-usage: release-report.py OUT_DIR
-"""
-import hashlib
+"""Report only observed build products; compilation is not runtime acceptance."""
 import json
-import os
+from pathlib import Path
 import sys
 
-TEMPLATE = '/mnt/p3/codex-build/opus-ffgpu/a38/report.json'
-HERE = os.path.dirname(os.path.abspath(__file__))
+
+def write_report(out,state):
+    out=Path(out)
+    firefox={name:state[name] for name in ('raw','final') if name in state}
+    optimization=state.get('optimization',{'mode':'not run','optimizedArtifact':None})
+    if optimization.get('optimizedArtifact') is not None:
+        firefox['optimized']=optimization['optimizedArtifact']
+    report={
+        'schema':'linuxonweb-jit-release-build-2',
+        'passBuild':state.get('passBuild',False),
+        'completedThrough':state['stage'] if state.get('passBuild') else 'failed; see commands',
+        'note':'Incremental musl release build from canonical JIT source and explicitly retained base inputs. Runtime acceptance remains pending.',
+        'sourceBoundary':state.get('sourceBoundary'),
+        'xpcIntegration':state.get('xpcIntegration'),
+        'sourceInputs':state.get('sourceInputs',[]),
+        'generatedSources':state.get('generatedSources',[]),
+        'compilerEnvironment':state.get('compilerEnvironment'),
+        'compileCommands':state.get('compileCommands',{}),
+        'compilerOptimization':state.get('compilerOptimization'),
+        'objects':state.get('objects',{}),
+        'archive':state.get('archive'),
+        'baseLinkArguments':state.get('baseLinkArguments'),
+        'linkInputs':state.get('linkInputs',[]),
+        'optimizer':optimization,
+        'diagnosticOnly':optimization.get('mode')!='O2',
+        'fullO2Status':'complete' if optimization.get('optimizedArtifact') is not None else 'unresolved',
+        'artifacts':{'firefox':firefox},
+        'abiReport':state.get('abiReport'),
+        'package':state.get('package'),
+        'manifest':state.get('manifest'),
+        'elapsedSeconds':state.get('elapsedSeconds'),
+        'commands':state.get('commands',[]),
+        'error':state.get('error'),
+        'lifecycleWarning':state.get('lifecycleWarning'),
+        'runtimeAcceptance':False,
+        'releaseAcceptance':False,
+    }
+    (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+    return report
 
 
-def sha(path):
-    h = hashlib.sha256()
-    with open(path, 'rb') as f:
-        while chunk := f.read(1 << 24):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def artifact(path):
-    return {'path': path, 'bytes': os.path.getsize(path), 'sha256': sha(path)}
-
-
-out = os.path.abspath(sys.argv[1])
-report = json.load(open(TEMPLATE))
-report['schema'] = 'opus-release-build-1'
-report['note'] = ('Release: Nightly 159 wasm32 musl with PBL JIT (PBLIC + PBLBC), '
-                  'wasm-opt -O2 then --fpcast-emu, no debug info.')
-report['artifacts']['firefox']['raw'] = artifact(f'{out}/obj/firefox.preoptimizer.wasm')
-report['artifacts']['firefox']['optimized'] = artifact(f'{out}/obj/firefox.optimized.wasm')
-report['artifacts']['firefox']['final'] = artifact(f'{out}/obj/firefox.fpcast.wasm')
-pbl = os.path.join(HERE, '..', 'pbl-jit')
-report['pblic'] = {
-    'object': artifact(f'{out}/pbl/obj/PortableBaselineInterpret.o'),
-    'sources': {name: sha(os.path.join(pbl, name)) for name in
-                ['PortableBaselineInterpret.patch', 'PblIc.inc', 'PblIcOps.h', 'PblMethod.inc']},
-}
-json.dump(report, open(f'{out}/report.json', 'w'), indent=1)
-print(f'{out}/report.json')
+if __name__=='__main__':
+    out=Path(sys.argv[1]).resolve(strict=True)
+    write_report(out,json.loads((out/'build-state.json').read_text()))
+    print(out/'report.json')

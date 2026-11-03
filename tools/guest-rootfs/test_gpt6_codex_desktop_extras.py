@@ -86,5 +86,88 @@ class DesktopExtrasPackagingTests(unittest.TestCase):
         self.assertEqual(records['/bin/clipboard-bridge'], wasm)
 
 
+    def existing_fixture(self):
+        content = b'\0asm\x01\0\0\0'
+        link = b'app'
+        entries = [
+            ('bin', 0o40755, b''),
+            ('bin/app', 0o100755, content),
+            ('bin/alias', 0o120777, link),
+        ]
+        raw = b''.join(PACKER.newc_entry(index + 1, name, mode, data)
+                       for index, (name, mode, data) in enumerate(entries))
+        raw += PACKER.newc_entry(0, 'TRAILER!!!', 0, b'')
+        raw += b'\0' * (-len(raw) % 512)
+        members = [{'path': '/' + name, 'bytes': len(data),
+                    'sha256': hashlib.sha256(data).hexdigest()}
+                   for name, mode, data in entries if mode != 0o40755]
+        manifest = {'schema': 1, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                    'members': members, 'provenance': {'fixture': 'preserve this metadata'}}
+        source = self.root / 'original.cpio'
+        source.write_bytes(raw)
+        metadata = Path(str(source) + '.json')
+        metadata.write_text(json.dumps(manifest) + '\n')
+        return source, metadata, raw, manifest
+
+    def test_existing_cli_preserves_archive_aliases_and_original_metadata(self):
+        source, metadata, raw, manifest = self.existing_fixture()
+        original_metadata = metadata.read_bytes()
+        output = self.root / 'desktop-extras.cpio'
+        completed = subprocess.run([
+            sys.executable, '-B', str(SCRIPT), '--existing-archive', str(source),
+            '--output', str(output),
+        ], capture_output=True, timeout=15, check=False)
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode())
+        actual = json.loads(Path(str(output) + '.json').read_text())
+        self.assertEqual({key: value for key, value in actual.items() if key != 'gzip'}, manifest)
+        self.assertEqual(output.read_bytes(), raw)
+        self.assertEqual(gzip.decompress(Path(str(output) + '.gz').read_bytes()), raw)
+        self.assertEqual(source.read_bytes(), raw)
+        self.assertEqual(metadata.read_bytes(), original_metadata)
+        self.assertEqual(actual['gzip']['sha256'],
+                         hashlib.sha256(Path(str(output) + '.gz').read_bytes()).hexdigest())
+
+    def test_existing_archive_rejects_false_hash_or_member_inventory_without_output(self):
+        source, metadata, raw, manifest = self.existing_fixture()
+        for label, change in [
+            ('archive-hash', lambda item: item.update(sha256='0' * 64)),
+            ('member-hash', lambda item: item['members'][0].update(sha256='0' * 64)),
+            ('missing-member', lambda item: item['members'].pop()),
+            ('duplicate-member', lambda item: item['members'].append(item['members'][0])),
+        ]:
+            with self.subTest(label=label):
+                changed = json.loads(json.dumps(manifest))
+                change(changed)
+                metadata.write_text(json.dumps(changed))
+                output = self.root / (label + '.cpio')
+                with self.assertRaises(ValueError):
+                    PACKER.package_existing_archive(source, metadata, output)
+                self.assertFalse(output.exists())
+                self.assertFalse(Path(str(output) + '.gz').exists())
+                self.assertFalse(Path(str(output) + '.json').exists())
+        self.assertEqual(source.read_bytes(), raw)
+
+    def test_existing_archive_requires_fresh_outputs_and_regular_inputs(self):
+        source, metadata, raw, manifest = self.existing_fixture()
+        output = self.root / 'occupied.cpio'
+        output.write_bytes(b'preserve previous output')
+        with self.assertRaisesRegex(ValueError, 'fresh output'):
+            PACKER.package_existing_archive(source, metadata, output)
+        self.assertEqual(output.read_bytes(), b'preserve previous output')
+        link = self.root / 'source-link.cpio'
+        link.symlink_to(source)
+        with self.assertRaisesRegex(ValueError, 'regular files'):
+            PACKER.package_existing_archive(link, metadata, self.root / 'unwritten.cpio')
+
+    def test_existing_archive_rejects_truncated_cpio_even_with_matching_outer_hash(self):
+        source, metadata, raw, manifest = self.existing_fixture()
+        truncated = raw[:100]
+        source.write_bytes(truncated)
+        manifest.update(bytes=len(truncated), sha256=hashlib.sha256(truncated).hexdigest())
+        metadata.write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError, 'complete trailer'):
+            PACKER.package_existing_archive(source, metadata, self.root / 'truncated.cpio')
+
+
 if __name__ == '__main__':
     unittest.main()

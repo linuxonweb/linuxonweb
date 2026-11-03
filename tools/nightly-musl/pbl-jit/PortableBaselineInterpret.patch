@@ -1,17 +1,28 @@
 --- a/js/src/vm/PortableBaselineInterpret.cpp
 +++ b/js/src/vm/PortableBaselineInterpret.cpp
-@@ -60,6 +60,10 @@
+@@ -60,6 +60,12 @@
  #include "vm/TypeofEqOperand.h"  // TypeofEqOperand
  #include "vm/WrapperObject.h"
  
 +#include <atomic>
++#include <errno.h>
++#include <pthread.h>
 +#include <sys/syscall.h>
 +#include <unistd.h>
 +
  #include "debugger/DebugAPI-inl.h"
  #include "jit/BaselineFrame-inl.h"
  #include "jit/JitScript-inl.h"
-@@ -83,8 +87,68 @@
+@@ -71,6 +77,8 @@
+ 
+ namespace js {
+ namespace pbljit {
++void PrintObservation(const char* failure, const char* format, ...)
++    __attribute__((format(printf, 2, 3)));
+ struct Exit { uint64_t* sp; int32_t pcDelta; uint32_t icIndex; };
+ void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,
+                  const char* reason);
+@@ -83,7 +91,67 @@
  namespace js {
  namespace pbl {
  
@@ -27,7 +38,7 @@
 +}
 +
  using namespace js::jit;
- 
++
 +// PBL adapter diagnostics: CacheOps that PBL does not implement make their
 +// stub fail on every use. Count them and print the most frequent now and
 +// then (PBLUNIMPL=0 silences it).
@@ -76,11 +87,10 @@
 +  }
 +  fprintf(stderr, "%s\n", buf);
 +}
-+
+ 
  /*
   * Debugging: enable `TRACE_INTERP` for an extremely detailed dump of
-  * what PBL is doing at every opcode step.
-@@ -490,6 +554,14 @@
+@@ -490,6 +558,14 @@
    StackVal* sp_;
    PBIResult error;
    uint64_t arg2;
@@ -95,7 +105,7 @@
  
    ICCtx(JSContext* cx, BaselineFrame* frame_, State& state_, Stack& stack_)
        : frame(frame_),
-@@ -545,9 +617,14 @@
+@@ -545,9 +621,14 @@
    }
  }
  
@@ -110,7 +120,7 @@
    {
  #define DECLARE_CACHEOP_CASE(name) __label__ cacheop_##name
  
-@@ -829,6 +906,10 @@
+@@ -829,6 +910,10 @@
      DECLARE_CACHEOP_CASE(LoadStringAtResult);
      DECLARE_CACHEOP_CASE(LoadStringCodePointResult);
      DECLARE_CACHEOP_CASE(CallNativeGetterResult);
@@ -121,7 +131,7 @@
      DECLARE_CACHEOP_CASE(LoadUndefinedResult);
      DECLARE_CACHEOP_CASE(LoadDoubleConstant);
      DECLARE_CACHEOP_CASE(LoadBooleanConstant);
-@@ -884,7 +965,8 @@
+@@ -884,7 +969,8 @@
  
  #define PREDICT_NEXT(name)                            \
    static_assert(CacheOp::name != CacheOp::PblReturn); \
@@ -131,7 +141,7 @@
      cacheIRReader.readOp();                           \
      cacheop = CacheOp::name;                          \
      goto cacheop_##name;                              \
-@@ -893,18 +975,29 @@
+@@ -893,18 +979,29 @@
  #define PREDICT_RETURN()                                 \
    if (!cacheIRReader.more()) {                           \
      TRACE_PRINTF("stub successful, predicted return\n"); \
@@ -165,7 +175,7 @@
  
      DISPATCH_CACHEOP();
  
-@@ -916,6 +1009,7 @@
+@@ -916,6 +1013,7 @@
  
        CACHEOP_CASE(PblReturn) {
          TRACE_PRINTF("stub successful!\n");
@@ -173,7 +183,7 @@
          return retValue;
        }
  
-@@ -1071,8 +1165,9 @@
+@@ -1071,8 +1169,9 @@
            DISPATCH_CACHEOP();
          } else if (val.isDouble()) {
            double doubleVal = val.toDouble();
@@ -185,7 +195,7 @@
              DISPATCH_CACHEOP();
            }
          }
-@@ -2258,16 +2353,31 @@
+@@ -2258,16 +2357,31 @@
        }
  
        CACHEOP_CASE(CallScriptedFunction)
@@ -220,7 +230,7 @@
            ignoresRv = cacheIRReader.readBool();
          }
  
-@@ -3818,8 +3928,8 @@
+@@ -3818,8 +3932,8 @@
            FAIL_IC();
          }
          double result = std::floor(input);
@@ -231,7 +241,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3834,8 +3944,8 @@
+@@ -3834,8 +3948,8 @@
            FAIL_IC();
          }
          double result = std::ceil(input);
@@ -242,7 +252,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3846,12 +3956,12 @@
+@@ -3846,12 +3960,12 @@
        CACHEOP_CASE(MathTruncToInt32Result) {
          NumberOperandId inputId = cacheIRReader.numberOperandId();
          double input = READ_VALUE_REG(inputId.id()).toNumber();
@@ -258,7 +268,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3865,8 +3975,8 @@
+@@ -3865,8 +3979,8 @@
          if (input == 0.0 && std::signbit(input)) {
            FAIL_IC();
          }
@@ -269,7 +279,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3978,8 +4088,8 @@
+@@ -3978,8 +4092,8 @@
          if (std::isnan(input)) {
            FAIL_IC();
          }
@@ -280,10 +290,15 @@
            FAIL_IC();
          }
          retValue = Int32Value(result).asRawBits();
-@@ -4412,6 +4522,50 @@
-         DISPATCH_CACHEOP();
-       }
- 
+@@ -4407,6 +4521,50 @@
+             return IC_ERROR_SENTINEL();
+           }
+           retValue = resultRooted.asRawBits();
++        }
++        PREDICT_RETURN();
++        DISPATCH_CACHEOP();
++      }
++
 +      CACHEOP_CASE(CallDOMGetterResult) {
 +        // PBL adapter: the DOM getter through the same VM helper Baseline
 +        // calls (jit::CallDOMGetter); guards precede this op in the stub.
@@ -323,15 +338,10 @@
 +            ctx.error = PBIResult::Error;
 +            return IC_ERROR_SENTINEL();
 +          }
-+        }
-+        PREDICT_RETURN();
-+        DISPATCH_CACHEOP();
-+      }
-+
-       CACHEOP_CASE(CallNativeSetter) {
-         ValOperandId receiverId = cacheIRReader.valOperandId();
-         uint32_t setterOffset = cacheIRReader.stubOffset();
-@@ -5410,13 +5564,18 @@
+         }
+         PREDICT_RETURN();
+         DISPATCH_CACHEOP();
+@@ -5410,13 +5568,18 @@
  #define CACHEOP_UNIMPL(name, ...)               \
    cacheop_##name : __attribute__((unused));     \
    TRACE_PRINTF("unknown CacheOp: " #name "\n"); \
@@ -351,10 +361,11 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +5927,11 @@
+@@ -5768,8 +5931,12 @@
    }
  }
  
++#include "PblTierObserve.h"
 +#include "PblIc.inc"
 +#include "PblMethod.inc"
 +
@@ -364,7 +375,7 @@
  }
  
  /*
-@@ -5810,8 +5972,9 @@
+@@ -5810,8 +5977,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -376,7 +387,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5935,7 +6098,8 @@
+@@ -5935,7 +6103,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -386,7 +397,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6138,9 @@
+@@ -5974,6 +6143,9 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -396,7 +407,7 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -8240,6 +8407,7 @@
+@@ -8240,6 +8412,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -404,7 +415,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -9160,6 +9328,29 @@
+@@ -9160,6 +9333,29 @@
  
    DISPATCH();
  
@@ -434,7 +445,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,6 +9539,20 @@
+@@ -9348,6 +9544,20 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -455,7 +466,7 @@
    if (state.script()->hasJitScript()) {
      return MethodStatus::Method_Compiled;
    }
-@@ -9368,18 +9573,27 @@
+@@ -9368,18 +9578,27 @@
        return MethodStatus::Method_CantCompile;
      }
    }
