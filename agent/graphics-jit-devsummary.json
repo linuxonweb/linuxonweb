@@ -960,10 +960,26 @@
       "finding": "Real Chromium20/20 decode/native identity/production extras+wrapper gates PASS; full guest acceptance separate",
       "receipt": "/mnt/p3/codex-build/g3g/archive-browser2/receipt.json",
       "iteration": 69
+    },
+    {
+      "iteration": 70,
+      "name": "clockcube-evidence-and-matrix",
+      "start_utc": "2026-11-03T10:36:15.503268+00:00",
+      "end_utc": "2026-11-03T10:36:15.507601+00:00",
+      "seconds": 0.004,
+      "kind": "analysis-and-report",
+      "exit_code": 0,
+      "scope_score": 34,
+      "finding": "Independent visual/clock/resource review of startup-owned cube3:2.40575fps,4.01975% host, wall within1ms; observation/IO limitations retained",
+      "evidence": "tools/graphics-benchmark/evidence/gpt6-astra-firefox-clockcube-20261103.json",
+      "build_test_seconds": 0,
+      "shared_guest_run_owner": "startup_io",
+      "shared_guest_run_seconds": 188.267,
+      "shared_guest_run_counted_in_owned_total": false
     }
   ],
   "total_owned_build_test_seconds": 684.891,
-  "last_work_state": "Independent repaired gzip/component browser gate20/20 accepted; full production guest clockcube handled by startup. WSI accepted; WebGPU driver repro retained. Native159 build audit written.",
+  "last_work_state": "Clock-correlated same-page Firefox result and honest graphics/JIT matrix complete. Whole Firefox target remains unmet; next quiet candidate run belongs startup_io. Vulkan WSI demo payload awaiting optional APK publication.",
   "jit_current_candidate": {
     "archive": "60847fb85339",
     "native": "26e380d20f7a",
@@ -973,7 +989,7 @@
   },
   "native_relink_blocker": "Historical exact native object/runtime archives under root0700 /mnt/p6/build inaccessible; readable complete159 export exists under p3 but clean build/runtime acceptance not budgeted. See native build audit.",
   "overall_provisional_score": 26,
-  "elapsed_wall_seconds": 4422.892398,
-  "elapsed_to_last_seconds": 11817.715,
+  "elapsed_wall_seconds": 12615.507601,
+  "elapsed_to_last_seconds": 12615.507601,
   "owned_build_test_seconds": 684.891
 }

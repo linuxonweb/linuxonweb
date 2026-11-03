@@ -3,15 +3,27 @@
 Current graphics/JIT scope score: **34/100**. This is not the whole-project score.
 Accepted changes: host GLES dispatch, explicit backend UI, bounded host JIT
 cache, and real bounded Vulkan WSI through explicitly selected WebGL. Full
-OpenGL/Vulkan conformance, Firefox30s, complete native JIT acceptance, and50%
+OpenGL/Vulkan conformance, Firefox 30 s, complete native JIT acceptance, and 50%
 host-browser performance remain unmet.
+
+## Clock-correlated complete Firefox result
+
+The final checked run uses the repaired single-member APK image and the same
+320×240 WebGL2 cube as host Chromium. Host: **59.84828 fps**. Guest: **2.40575 fps**
+(82 callbacks / 34,085 ms), **4.01975%** of host. Guest wall time is 34,084 ms;
+its 17,301 ms interval remains in the sample. Peak PSS is **4.531 GiB**, not
+4.865 GiB (the latter number is GB decimal). No 50% or 30-second acceptance.
+Screenshots and persistent-profile writes overlap the measurement; correlation
+is preserved without assigning cause. Next candidate measurements use the
+new quiet observer mode and require a matched quiet control for attribution.
+See the graphics/JIT matrix and clockcube JSON for exact hashes and boundaries.
 
 ## Current evidence and boundaries
 
 - Host GLES draw-dispatch median0.965→0.768ms in balanced A/B/B/A samples;
  25.5% higher throughput for that workload,43.2% of its direct-host comparator.
  This is not whole-Firefox performance.
-- JIT cache69 native current-contract checks pass;8MiB cap counts source images,
+- JIT cache 69 native current-contract checks pass; 8 MiB cap counts source images,
  not all compiled memory or installed private functions. Original native
  Firefox GC/guard coverage gates remain unresolved and unchanged.
 - Native Vulkan WSI gate passes real acquire/render/present, CLOSE=0, and zero
@@ -104,5 +116,7 @@ reaped. Failed iterations remain included.
 | 67 | fx-host2 | 2026-11-03T10:07:29.632465+00:00 | 2026-11-03T10:08:02.524782+00:00 | 32.892 | 0 | 34 | Quiet matched host59.84828fps, performance20000.575ms vswall20001ms; guest pending |
 | 68 | archive-browser1 | 2026-11-03T10:16:49.895320+00:00 | 2026-11-03T10:17:03.491621+00:00 | 13.596 | 1 | 34 | Actual repaired gzip passes12 gates; fixture incorrectly required optional precompressed extras |
 | 69 | archive-browser2 | 2026-11-03T10:18:41.394749+00:00 | 2026-11-03T10:19:15.269097+00:00 | 33.874 | 0 | 34 | Real Chromium20/20 decode/native identity/production extras+wrapper gates PASS; full guest acceptance separate |
+
+| 70 | clockcube-evidence-and-matrix | 2026-11-03T10:36:15.503268+00:00 | 2026-11-03T10:36:15.507601+00:00 | 0.004 | 0 | 34 | Clock-correlated guest 2.40575 fps / 4.01975% host; original stalls and observer limits retained |
 
 Total owned build/test time through this checkpoint: **684.891 seconds**. Elapsed wall time is recorded separately; do not sum parallel agents' wall times.
