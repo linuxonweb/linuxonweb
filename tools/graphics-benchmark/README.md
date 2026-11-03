@@ -87,3 +87,23 @@ resize, state preservation, and lifecycle/device-loss behavior.
 `GRAPHICS_ANGLE=vulkan`. It adds Chrome's experimental Linux WebGPU flag to that
 fresh developer browser only. It does not alter product settings or switch
 backends; the retained NVIDIA device-allocation failure is not a passed gate.
+
+## Independent real-browser archive gate
+
+`archive-browser-validation.html` validates the exact repaired system image in
+Chromium, including its decoded byte count/hash, unchanged original init and
+Firefox, and production extras/init-wrapper composition. It retains both a
+tiny concatenated-gzip control and the original failed package image. Node
+DecompressionStream acceptance is not substituted for browser acceptance.
+
+Use the isolated browser harness with the page override, `archive-browser-hook.mjs`,
+and `GRAPHICS_ARCHIVE_OVERRIDE`, `GRAPHICS_ARCHIVE_CONTROL`, and
+`GRAPHICS_ARCHIVE_MANIFEST` pointing to pinned local test inputs. The independent
+20-check report is `evidence/gpt6-astra-chromium-archive-20261103.json`.
+The full production main/guest boot remains a separate startup owner gate.
+
+Minimal WebGPU driver reproducers are in `diagnostics/`. Use them as isolated
+page overrides at `/linux/tests/guest-glremote/` with explicit Vulkan ANGLE and
+`GRAPHICS_WEBGPU_DIAGNOSTIC=1`. Their retained failures distinguish successful
+offscreen rendering from device loss at canvas export; they are not accepted
+WebGPU presentation tests.

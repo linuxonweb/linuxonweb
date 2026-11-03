@@ -876,10 +876,94 @@
       "finding": "32 actual GPU checks PASS including context loss",
       "receipt": "/mnt/p3/codex-build/g3g/presentation-check2/receipt.json",
       "iteration": 63
+    },
+    {
+      "name": "fx-overlay-build5",
+      "start_utc": "2026-11-03T10:02:58.781995+00:00",
+      "end_utc": "2026-11-03T10:03:01.189171+00:00",
+      "seconds": 2.407,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 153346048,
+      "resource_samples": 3,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Exact cube endpoint-clock overlay prepared; original overlay4 preserved",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-overlay-build5/receipt.json",
+      "iteration": 64
+    },
+    {
+      "name": "webgpu-present-diagnostic1",
+      "start_utc": "2026-11-03T10:04:09.752424+00:00",
+      "end_utc": "2026-11-03T10:04:13.263178+00:00",
+      "seconds": 3.511,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 1050337280,
+      "resource_samples": 4,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "12 render-only WebGPU passes succeed; first image export causes device loss",
+      "receipt": "/mnt/p3/codex-build/g3g/webgpu-present-diagnostic1/receipt.json",
+      "iteration": 65
+    },
+    {
+      "name": "webgpu-canvas-preferred1",
+      "start_utc": "2026-11-03T10:04:49.380444+00:00",
+      "end_utc": "2026-11-03T10:05:01.980439+00:00",
+      "seconds": 12.6,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 978067456,
+      "resource_samples": 13,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Raw preferred-format WebGPU canvas export also causes device loss",
+      "receipt": "/mnt/p3/codex-build/g3g/webgpu-canvas-preferred1/receipt.json",
+      "iteration": 66
+    },
+    {
+      "name": "fx-host2",
+      "start_utc": "2026-11-03T10:07:29.632465+00:00",
+      "end_utc": "2026-11-03T10:08:02.524782+00:00",
+      "seconds": 32.892,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 1104588800,
+      "resource_samples": 33,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Quiet matched host59.84828fps, performance20000.575ms vswall20001ms; guest pending",
+      "receipt": "/mnt/p3/codex-build/g3g/fx-host2/receipt.json",
+      "iteration": 67
+    },
+    {
+      "name": "archive-browser1",
+      "start_utc": "2026-11-03T10:16:49.895320+00:00",
+      "end_utc": "2026-11-03T10:17:03.491621+00:00",
+      "seconds": 13.596,
+      "exit_code": 1,
+      "sampled_peak_sum_rss_bytes": 3268177920,
+      "resource_samples": 14,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Actual repaired gzip passes12 gates; fixture incorrectly required optional precompressed extras",
+      "receipt": "/mnt/p3/codex-build/g3g/archive-browser1/receipt.json",
+      "iteration": 68
+    },
+    {
+      "name": "archive-browser2",
+      "start_utc": "2026-11-03T10:18:41.394749+00:00",
+      "end_utc": "2026-11-03T10:19:15.269097+00:00",
+      "seconds": 33.874,
+      "exit_code": 0,
+      "sampled_peak_sum_rss_bytes": 2662526976,
+      "resource_samples": 34,
+      "remaining_owned_processes": 0,
+      "scope_score": 34,
+      "finding": "Real Chromium20/20 decode/native identity/production extras+wrapper gates PASS; full guest acceptance separate",
+      "receipt": "/mnt/p3/codex-build/g3g/archive-browser2/receipt.json",
+      "iteration": 69
     }
   ],
-  "total_owned_build_test_seconds": 586.011,
-  "last_work_state": "WebGL native WSI and32pixel/lifecycle checks accepted; explicit WebGPU device loss retained; original Firefox cube diagnostic2.73% host, endpoint correlation pending.",
+  "total_owned_build_test_seconds": 684.891,
+  "last_work_state": "Independent repaired gzip/component browser gate20/20 accepted; full production guest clockcube handled by startup. WSI accepted; WebGPU driver repro retained. Native159 build audit written.",
   "jit_current_candidate": {
     "archive": "60847fb85339",
     "native": "26e380d20f7a",
@@ -887,17 +971,9 @@
     "semantics": "50 broad cases and75 mutation cases /8408assertions passed historically",
     "coverage_gap": "Selected old cache entries were freed before required GC/guard windows; no stale-entry execution established."
   },
-  "native_relink_blocker": {
-    "path": "/mnt/p6/build",
-    "mode": "0700",
-    "uid": 0,
-    "current_uid": 1000,
-    "kind": "OS read/search access denied",
-    "affected": "Exact Nightly159 object tree and seven static link libraries",
-    "bypassed": false
-  },
+  "native_relink_blocker": "Historical exact native object/runtime archives under root0700 /mnt/p6/build inaccessible; readable complete159 export exists under p3 but clean build/runtime acceptance not budgeted. See native build audit.",
   "overall_provisional_score": 26,
   "elapsed_wall_seconds": 4422.892398,
-  "elapsed_to_last_seconds": 10408.306,
-  "owned_build_test_seconds": 586.011
+  "elapsed_to_last_seconds": 11817.715,
+  "owned_build_test_seconds": 684.891
 }

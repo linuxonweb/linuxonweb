@@ -1,0 +1,616 @@
+{
+  "acceptedComponent": true,
+  "fullProductionGuestAcceptance": "separate startup_io gate; this report does not assert guest boot or FPS",
+  "candidateVersion": "d35dbfeb2a15",
+  "result": {
+    "path": "/mnt/p3/codex-build/g3g/br-ZB3okm/result.json",
+    "pass": true,
+    "errors": [],
+    "flags": [
+      "--ignore-gpu-blocklist",
+      "--use-angle=gl",
+      "--use-gl=angle",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-ZB3okm/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-ZB3okm/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/candidate-image.cpio.gz": {
+        "sha256": "bbbae5dc2fde312fdb1b95d28d47cc5cf7f8290a79e023c0cec50d6d394855db",
+        "override": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk3/initramfs-firefox.cpio.gz",
+        "bytes": 116197129,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/control-image.cpio.gz": {
+        "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3",
+        "override": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk2/initramfs-firefox.cpio.gz",
+        "bytes": 116195863,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/archive-validation.json": {
+        "sha256": "3c0069fdef56f3db291f3b3d8d604acc6ffeb216bf9d44a5cf63abb053209d27",
+        "override": "/mnt/p3/codex-build/g3g/archive-validation.json",
+        "bytes": 1296,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/archive-browser-validation.html": {
+        "sha256": "1064db4fc70ecadf9fdfa7c61638449ad98830eec204e41eb959acc5f40bc850",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/archive-browser-validation.html",
+        "bytes": 7116,
+        "requests": 1
+      },
+      "/linux/desktop-extras.mjs": {
+        "sha256": "a6b83c6e4c9e1e17d9f3f9276e175de058697792ed4a0acb794ab94a86d54186",
+        "bytes": 13035,
+        "requests": 1
+      },
+      "/linux/test-commands.mjs": {
+        "sha256": "bc9f46d2ac0613e759c3932aec311f60a904607771da920c5a701a69092a1e35",
+        "bytes": 6371,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/more-menu.mjs": {
+        "sha256": "39404d3735d57efe8867dffb25aabdff9abc56e08677060c2f8d379a3461c4aa",
+        "bytes": 2528,
+        "requests": 1
+      },
+      "/linux/desktop-extras.cpio.json": {
+        "sha256": "a0620f4c9d2399a56a516ad6309959fbe0fc2522bae3d1d2d70e2aba04cade40",
+        "bytes": 33988,
+        "requests": 1
+      },
+      "/linux/desktop-extras.cpio": {
+        "sha256": "5b624dd8325b4cbc717c114c3eb7592cc3ca67e257b06aa1e41ddb73c7f070d8",
+        "bytes": 59997184,
+        "requests": 1
+      }
+    },
+    "started": "2026-11-03T10:18:42.656Z",
+    "ended": "2026-11-03T10:19:04.550Z",
+    "browserResult": {
+      "done": true,
+      "pass": true,
+      "checks": [
+        {
+          "label": "minimal single-member gzip decodes",
+          "pass": true
+        },
+        {
+          "label": "retained Chromium concatenated-member rejection reproduced",
+          "pass": true
+        },
+        {
+          "label": "actual failed image identity",
+          "pass": true
+        },
+        {
+          "label": "actual old package image reproduces browser failure",
+          "pass": true
+        },
+        {
+          "label": "served repaired image identity",
+          "pass": true
+        },
+        {
+          "label": "real Chromium accepts repaired gzip",
+          "pass": true
+        },
+        {
+          "label": "exact decoded byte count",
+          "pass": true
+        },
+        {
+          "label": "decoded CPIO byte identity",
+          "pass": true
+        },
+        {
+          "label": "original init exists",
+          "pass": true
+        },
+        {
+          "label": "original init checksum preserved",
+          "pass": true
+        },
+        {
+          "label": "native Firefox exists",
+          "pass": true
+        },
+        {
+          "label": "native Firefox checksum preserved",
+          "pass": true
+        },
+        {
+          "label": "real production scanner reads full decoded system",
+          "pass": true
+        },
+        {
+          "label": "composition preserves exact system gzip",
+          "pass": true
+        },
+        {
+          "label": "real raw desktop extras selected",
+          "pass": true
+        },
+        {
+          "label": "unique tail gzip boundary",
+          "pass": true
+        },
+        {
+          "label": "compressed extras tail footer matches expected size",
+          "pass": true
+        },
+        {
+          "label": "actual browser decodes compressed extras and wrapper tail",
+          "pass": true
+        },
+        {
+          "label": "compressed tail preserves verified raw extras",
+          "pass": true
+        },
+        {
+          "label": "compressed tail preserves exact production init wrapper",
+          "pass": true
+        }
+      ],
+      "errors": [],
+      "started": "2026-11-03T10:18:45.049Z",
+      "runtime": "Actual browser DecompressionStream; not Node zlib",
+      "identity": {
+        "version": "d35dbfeb2a15",
+        "candidate": {
+          "bytes": 116197129,
+          "sha256": "bbbae5dc2fde312fdb1b95d28d47cc5cf7f8290a79e023c0cec50d6d394855db"
+        },
+        "control": {
+          "bytes": 116195863,
+          "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3"
+        },
+        "raw": {
+          "bytes": 371230996,
+          "sha256": "0853a133e4f84814de0230b7b06de20fc1d81352194243f8bdd2562272e69eec"
+        },
+        "initSha256": "55d55013be46cb13541320943ef03c50a43580bf69dd5d4c425963a41a5d8803",
+        "firefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+        "minimalSingle": [
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          75,
+          74,
+          44,
+          78,
+          229,
+          202,
+          47,
+          75,
+          45,
+          202,
+          73,
+          172,
+          228,
+          2,
+          0,
+          229,
+          192,
+          153,
+          108,
+          13,
+          0,
+          0,
+          0
+        ],
+        "minimalMultiple": [
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          75,
+          74,
+          44,
+          78,
+          229,
+          2,
+          0,
+          163,
+          227,
+          162,
+          8,
+          5,
+          0,
+          0,
+          0,
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          203,
+          47,
+          75,
+          45,
+          202,
+          73,
+          172,
+          228,
+          2,
+          0,
+          36,
+          103,
+          183,
+          30,
+          8,
+          0,
+          0,
+          0
+        ]
+      },
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "cpus": 3,
+      "minimalConcatenated": {
+        "accepted": false,
+        "bytesBeforeError": 5,
+        "seconds": 0.0006150000095367431,
+        "error": "TypeError: Junk found after end of compressed data."
+      },
+      "actualConcatenated": {
+        "accepted": false,
+        "bytesBeforeError": 131072,
+        "seconds": 2.365014999985695,
+        "error": "TypeError: Junk found after end of compressed data."
+      },
+      "decode": {
+        "bytes": 371230996,
+        "seconds": 2.1822099999785425,
+        "sha256": "0853a133e4f84814de0230b7b06de20fc1d81352194243f8bdd2562272e69eec"
+      },
+      "cpioRecords": 12936,
+      "scannedBytes": 371230996,
+      "composition": {
+        "extrasEncoding": "raw then production CompressionStream",
+        "extrasBytes": 59997184,
+        "overlayBytes": 13560,
+        "tailCompressedBytes": 18562493,
+        "tailDecodedBytes": 60010744,
+        "bytes": 134759628,
+        "sha256": "5095d3664bee0cc11a470660e81a94a401e377bd8427baa0ab105e9b1a6aafb1"
+      },
+      "ended": "2026-11-03T10:19:04.441Z"
+    }
+  },
+  "owner": {
+    "started_unix": 1793701121.394749,
+    "ended_unix": 1793701155.2690966,
+    "duration_s": 33.874,
+    "exit_code": 0,
+    "stop_reason": null,
+    "peak_sum_rss_bytes": 2662526976,
+    "resource_samples": 34,
+    "remaining": []
+  },
+  "earlierFixtureFailure": {
+    "path": "/mnt/p3/codex-build/g3g/br-vrZxSq/result.json",
+    "pass": false,
+    "errors": [],
+    "flags": [
+      "--ignore-gpu-blocklist",
+      "--use-angle=gl",
+      "--use-gl=angle",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-vrZxSq/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-vrZxSq/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/candidate-image.cpio.gz": {
+        "sha256": "bbbae5dc2fde312fdb1b95d28d47cc5cf7f8290a79e023c0cec50d6d394855db",
+        "override": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk3/initramfs-firefox.cpio.gz",
+        "bytes": 116197129,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/control-image.cpio.gz": {
+        "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3",
+        "override": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/build/rootfs-apk2/initramfs-firefox.cpio.gz",
+        "bytes": 116195863,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/archive-validation.json": {
+        "sha256": "3c0069fdef56f3db291f3b3d8d604acc6ffeb216bf9d44a5cf63abb053209d27",
+        "override": "/mnt/p3/codex-build/g3g/archive-validation.json",
+        "bytes": 1296,
+        "requests": 1
+      },
+      "/linux/tests/guest-glremote/archive-browser-validation.html": {
+        "sha256": "28e6edd2b05a6d2d2f11a5c8a03f7abd0ffd2a694ecf88f09ceeb4efd6be3576",
+        "override": "/mnt/p3/project/linux/linuxonweb/tools/graphics-benchmark/archive-browser-validation.html",
+        "bytes": 5744,
+        "requests": 1
+      },
+      "/linux/desktop-extras.mjs": {
+        "sha256": "a6b83c6e4c9e1e17d9f3f9276e175de058697792ed4a0acb794ab94a86d54186",
+        "bytes": 13035,
+        "requests": 1
+      },
+      "/linux/test-commands.mjs": {
+        "sha256": "bc9f46d2ac0613e759c3932aec311f60a904607771da920c5a701a69092a1e35",
+        "bytes": 6371,
+        "requests": 1
+      },
+      "/linux/download-progress.mjs": {
+        "sha256": "d7afb147cca35603e6a3c964b63872e708ebbd9b42244a2816ca131eed6e0d97",
+        "bytes": 4226,
+        "requests": 1
+      },
+      "/linux/more-menu.mjs": {
+        "sha256": "39404d3735d57efe8867dffb25aabdff9abc56e08677060c2f8d379a3461c4aa",
+        "bytes": 2528,
+        "requests": 1
+      },
+      "/linux/desktop-extras.cpio.json": {
+        "sha256": "a0620f4c9d2399a56a516ad6309959fbe0fc2522bae3d1d2d70e2aba04cade40",
+        "bytes": 33988,
+        "requests": 1
+      },
+      "/linux/desktop-extras.cpio": {
+        "sha256": "5b624dd8325b4cbc717c114c3eb7592cc3ca67e257b06aa1e41ddb73c7f070d8",
+        "bytes": 59997184,
+        "requests": 1
+      }
+    },
+    "started": "2026-11-03T10:16:51.218Z",
+    "ended": "2026-11-03T10:17:02.516Z",
+    "browserResult": {
+      "done": true,
+      "pass": false,
+      "checks": [
+        {
+          "label": "minimal single-member gzip decodes",
+          "pass": true
+        },
+        {
+          "label": "retained Chromium concatenated-member rejection reproduced",
+          "pass": true
+        },
+        {
+          "label": "actual failed image identity",
+          "pass": true
+        },
+        {
+          "label": "actual old package image reproduces browser failure",
+          "pass": true
+        },
+        {
+          "label": "served repaired image identity",
+          "pass": true
+        },
+        {
+          "label": "real Chromium accepts repaired gzip",
+          "pass": true
+        },
+        {
+          "label": "exact decoded byte count",
+          "pass": true
+        },
+        {
+          "label": "decoded CPIO byte identity",
+          "pass": true
+        },
+        {
+          "label": "original init exists",
+          "pass": true
+        },
+        {
+          "label": "original init checksum preserved",
+          "pass": true
+        },
+        {
+          "label": "native Firefox exists",
+          "pass": true
+        },
+        {
+          "label": "native Firefox checksum preserved",
+          "pass": true
+        },
+        {
+          "label": "real precompressed desktop extras selected",
+          "pass": false
+        }
+      ],
+      "errors": [
+        "Error: real precompressed desktop extras selected\n    at check (http://127.0.0.1:43403/linux/tests/guest-glremote/archive-browser-validation.html:5:77)\n    at http://127.0.0.1:43403/linux/tests/guest-glremote/archive-browser-validation.html:16:121"
+      ],
+      "started": "2026-11-03T10:16:52.516Z",
+      "runtime": "Actual browser DecompressionStream; not Node zlib",
+      "identity": {
+        "version": "d35dbfeb2a15",
+        "candidate": {
+          "bytes": 116197129,
+          "sha256": "bbbae5dc2fde312fdb1b95d28d47cc5cf7f8290a79e023c0cec50d6d394855db"
+        },
+        "control": {
+          "bytes": 116195863,
+          "sha256": "a8749a3a38dc7e7d554a211dc159d2831016654b7eadeefcced0cb0ee69ff6e3"
+        },
+        "raw": {
+          "bytes": 371230996,
+          "sha256": "0853a133e4f84814de0230b7b06de20fc1d81352194243f8bdd2562272e69eec"
+        },
+        "initSha256": "55d55013be46cb13541320943ef03c50a43580bf69dd5d4c425963a41a5d8803",
+        "firefoxSha256": "26e380d20f7ad198155fcf0626bc72ab49a5caf2be89e61dcafadbf4efd16998",
+        "minimalSingle": [
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          75,
+          74,
+          44,
+          78,
+          229,
+          202,
+          47,
+          75,
+          45,
+          202,
+          73,
+          172,
+          228,
+          2,
+          0,
+          229,
+          192,
+          153,
+          108,
+          13,
+          0,
+          0,
+          0
+        ],
+        "minimalMultiple": [
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          75,
+          74,
+          44,
+          78,
+          229,
+          2,
+          0,
+          163,
+          227,
+          162,
+          8,
+          5,
+          0,
+          0,
+          0,
+          31,
+          139,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          3,
+          203,
+          47,
+          75,
+          45,
+          202,
+          73,
+          172,
+          228,
+          2,
+          0,
+          36,
+          103,
+          183,
+          30,
+          8,
+          0,
+          0,
+          0
+        ]
+      },
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "cpus": 3,
+      "minimalConcatenated": {
+        "accepted": false,
+        "bytesBeforeError": 5,
+        "seconds": 0.011620000004768372,
+        "error": "TypeError: Junk found after end of compressed data."
+      },
+      "actualConcatenated": {
+        "accepted": false,
+        "bytesBeforeError": 131072,
+        "seconds": 1.8485099999904633,
+        "error": "TypeError: Junk found after end of compressed data."
+      },
+      "decode": {
+        "bytes": 371230996,
+        "seconds": 2.278814999997616,
+        "sha256": "0853a133e4f84814de0230b7b06de20fc1d81352194243f8bdd2562272e69eec"
+      },
+      "cpioRecords": 12936,
+      "ended": "2026-11-03T10:17:02.427Z"
+    }
+  },
+  "earlierOwner": {
+    "started_unix": 1793701009.8953197,
+    "ended_unix": 1793701023.4916208,
+    "duration_s": 13.596,
+    "exit_code": 1,
+    "stop_reason": null,
+    "peak_sum_rss_bytes": 3268177920,
+    "resource_samples": 14,
+    "remaining": []
+  },
+  "earlierFailureReason": "The repaired image passed all12 decode/init/native checks; fixture incorrectly required precompressed extras although the current manifest is raw. Fixture changed to follow exact production compressExtras branch and retained failure output.",
+  "validation": [
+    "real Chromium150 DecompressionStream, not Node zlib",
+    "minimal and actual old concatenated-member rejection retained",
+    "exact served repaired compressed byte count/hash",
+    "exact371230996 decoded CPIO bytes/SHA",
+    "original/init and nativeFirefox checksums",
+    "actual loadDesktopExtras plus loadDesktopInitramfs gzip/preserve/compressExtras composition",
+    "verified raw extras and generated init wrapper decoded from exact compressed tail"
+  ],
+  "sourceSha256": {
+    "tools/graphics-benchmark/archive-browser-validation.html": "1064db4fc70ecadf9fdfa7c61638449ad98830eec204e41eb959acc5f40bc850",
+    "tools/graphics-benchmark/archive-browser-hook.mjs": "a323ac9878756ee31e41c68c5d40288cb94f606dc6c8a11b32a49cd9c0e4929f",
+    "tools/graphics-benchmark/browser-check.mjs": "48a25173633fe7e07e06f61deca76dc4402aa4886a2fe2f8ea3079cbe3b0f998"
+  }
+}

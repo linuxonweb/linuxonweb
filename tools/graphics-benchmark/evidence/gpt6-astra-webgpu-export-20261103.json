@@ -1,0 +1,174 @@
+{
+  "accepted": false,
+  "scope": "Minimal isolated reproduction of WebGPU canvas export device loss; no product fallback or driver change",
+  "rendererCase": {
+    "path": "/mnt/p3/codex-build/g3g/br-cGuAtm/result.json",
+    "pass": false,
+    "errors": [],
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-cGuAtm/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-cGuAtm/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/webgpu-present-diagnostic.html": {
+        "sha256": "8c269eec21a4783e1674a8e0987e193d1708ab4cf18c75c451ad2b35f3708bf9",
+        "override": "/mnt/p3/codex-build/g3g/webgpu-present-diagnostic.html",
+        "bytes": 2404,
+        "requests": 1
+      },
+      "/linux/tests/guest-vulkan-graphics/renderer.mjs": {
+        "sha256": "06ce3a3dc2f83c2ca1ad14211b50f1173e6581cc5822737c6595d202df6a8817",
+        "bytes": 87106,
+        "requests": 1
+      }
+    },
+    "started": "2026-11-03T10:04:09.915Z",
+    "ended": "2026-11-03T10:04:12.302Z",
+    "browserResult": {
+      "done": true,
+      "pass": false,
+      "errors": [
+        "Error: device lost during bitmap-export\n    at http://127.0.0.1:39233/linux/tests/guest-glremote/webgpu-present-diagnostic.html:9:394"
+      ],
+      "phases": [
+        {
+          "phase": "render-only",
+          "frames": 12,
+          "stats": {
+            "state": "open",
+            "resources": 1,
+            "nativeObjects": 1,
+            "allocatedBytes": 65536,
+            "recordingDraws": 0,
+            "flippedPipelines": 0,
+            "presentsShown": 0,
+            "buffersCreated": 0,
+            "buffersDestroyed": 0,
+            "texturesCreated": 1,
+            "texturesDestroyed": 0,
+            "passes": 12,
+            "draws": 0,
+            "readbacks": 0,
+            "uploads": 0,
+            "uniformUploads": 0
+          }
+        }
+      ],
+      "events": [],
+      "scope": "Isolated functional driver diagnosis; not conformance or performance",
+      "adapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "description": "",
+        "isFallbackAdapter": false
+      },
+      "current": {
+        "phase": "bitmap-export",
+        "frame": 0,
+        "at": "2026-11-03T10:04:12.157Z"
+      },
+      "lost": {
+        "reason": "unknown",
+        "message": "vkAllocateMemory failed with VK_ERROR_OUT_OF_DEVICE_MEMORY\n - While handling unexpected error type Internal when allowed errors are Validation.\n    at CheckVkSuccessImpl (../../third_party/dawn/src/dawn/native/vulkan/VulkanError.cpp:106)\n",
+        "current": {
+          "phase": "bitmap-export",
+          "frame": 0,
+          "at": "2026-11-03T10:04:12.157Z"
+        }
+      }
+    }
+  },
+  "preferredCanvasCase": {
+    "path": "/mnt/p3/codex-build/g3g/br-BlDqK9/result.json",
+    "pass": false,
+    "errors": [],
+    "flags": [
+      "--enable-unsafe-webgpu",
+      "--ignore-gpu-blocklist",
+      "--use-angle=vulkan",
+      "--use-gl=angle",
+      "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--user-data-dir=/mnt/p3/codex-build/g3g/br-BlDqK9/p",
+      "--disk-cache-dir=/mnt/p3/codex-build/g3g/br-BlDqK9/c",
+      "--window-size=800,600",
+      "about:blank"
+    ],
+    "cpus": 3,
+    "inputs": {
+      "/linux/tests/guest-glremote/webgpu-canvas-preferred.html": {
+        "sha256": "78b5eccfbfea9b8cc2c6d3d64c6c5ec36d8e4729f59b1dec8baae3737adcd801",
+        "override": "/mnt/p3/codex-build/g3g/webgpu-canvas-preferred.html",
+        "bytes": 1189,
+        "requests": 1
+      }
+    },
+    "started": "2026-11-03T10:04:49.540Z",
+    "ended": "2026-11-03T10:04:51.151Z",
+    "browserResult": {
+      "done": true,
+      "pass": false,
+      "errors": [
+        "Error: device lost\n    at http://127.0.0.1:42651/linux/tests/guest-glremote/webgpu-canvas-preferred.html:3:830"
+      ],
+      "format": "rgba8unorm",
+      "adapter": {
+        "vendor": "nvidia",
+        "architecture": "maxwell",
+        "isFallbackAdapter": false
+      },
+      "frame": 0,
+      "lost": {
+        "reason": "unknown",
+        "message": "vkAllocateMemory failed with VK_ERROR_OUT_OF_DEVICE_MEMORY\n - While handling unexpected error type Internal when allowed errors are Validation.\n    at CheckVkSuccessImpl (../../third_party/dawn/src/dawn/native/vulkan/VulkanError.cpp:106)\n"
+      }
+    }
+  },
+  "owners": {
+    "renderer": {
+      "started_unix": 1793700249.7524238,
+      "ended_unix": 1793700253.2631779,
+      "duration_s": 3.511,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 1050337280,
+      "resource_samples": 4,
+      "remaining": []
+    },
+    "preferred": {
+      "started_unix": 1793700289.3804436,
+      "ended_unix": 1793700301.980439,
+      "duration_s": 12.6,
+      "exit_code": 1,
+      "stop_reason": null,
+      "peak_sum_rss_bytes": 978067456,
+      "resource_samples": 13,
+      "remaining": []
+    }
+  },
+  "finding": "12 render-only passes with one64KiB texture succeed, then the first canvas ImageBitmap export loses real NVIDIA Maxwell device with vkAllocateMemory/VK_ERROR_OUT_OF_DEVICE_MEMORY. Raw browser-preferred-format canvas fails the same way.",
+  "sourceSha256": {
+    "webgpu-present-diagnostic.html": "8c269eec21a4783e1674a8e0987e193d1708ab4cf18c75c451ad2b35f3708bf9",
+    "webgpu-canvas-preferred.html": "78b5eccfbfea9b8cc2c6d3d64c6c5ec36d8e4729f59b1dec8baae3737adcd801"
+  },
+  "reference": "https://developer.chrome.com/docs/web-platform/webgpu/troubleshooting-tips"
+}

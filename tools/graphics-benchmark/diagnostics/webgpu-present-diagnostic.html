@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>Isolated WebGPU presentation diagnosis</title><pre id="out">Running</pre><canvas id="shown" width="128" height="128"></canvas><canvas id="attached" width="128" height="128"></canvas><script type="module">
+import {createGraphicsRenderer} from '../guest-vulkan-graphics/renderer.mjs';
+const report=window.graphicsResults={done:false,pass:false,errors:[],phases:[],events:[],scope:'Isolated functional driver diagnosis; not conformance or performance'};let device,r;
+function note(phase,frame){report.current={phase,frame,at:new Date().toISOString()};}
+try{
+ const adapter=await navigator.gpu.requestAdapter({powerPreference:'high-performance'});if(!adapter)throw Error('adapter unavailable');report.adapter={vendor:adapter.info.vendor,architecture:adapter.info.architecture,description:adapter.info.description,isFallbackAdapter:adapter.info.isFallbackAdapter};device=await adapter.requestDevice();device.lost.then(info=>{report.lost={reason:info.reason,message:info.message,current:report.current};});device.addEventListener('uncapturederror',e=>report.events.push(String(e.error.message)));
+ r=createGraphicsRenderer(device);const target=await r.createTarget({width:128,height:128});const bitmapContext=document.getElementById('shown').getContext('bitmaprenderer');const output=document.getElementById('attached').transferControlToOffscreen();
+ for(const phase of ['render-only','bitmap-export','attached-canvas']){
+  for(let n=0;n<12;n++){note(phase,n);r.begin({target,loadOp:'clear',storeOp:'store',clearColor:[n%2,0,.5,1]});await r.end();if(phase!=='render-only')await r.present(target,1,phase==='attached-canvas'?output:null,b=>{if(b)bitmapContext.transferFromImageBitmap(b);});await device.queue.onSubmittedWorkDone();await new Promise(resolve=>requestAnimationFrame(()=>resolve()));if(report.lost)throw Error('device lost during '+phase);}
+  report.phases.push({phase,frames:12,stats:r.getStats()});
+ }
+ const image=await r.readback(target);report.pixel=[...image.pixels.slice(0,4)];if(report.pixel[0]<250||report.pixel[2]<120)throw Error('rendered pixel mismatch');await r.destroy(target);r.forgetSurface(1);r.close();report.closed=r.getStats();report.pass=true;
+}catch(e){report.errors.push(String(e.stack??e));}
+finally{r?.close();device?.destroy();report.done=true;document.getElementById('out').textContent=JSON.stringify(report,null,2);}
+</script>
