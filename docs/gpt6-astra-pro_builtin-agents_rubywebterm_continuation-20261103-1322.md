@@ -1,6 +1,6 @@
 # LinuxOnWeb continuation acceptance — 2026-11-03
 
-**44/100 confirmed; the complete requested goal remains unfinished.** Work began13:22:11UTC on a fresh named branch from frozen81103b2, with the five-hour deadline18:22:11UTC. This report supersedes the prior42/100 report for the changes described here. Exact final publication/capture times and final mobile/performance outcomes are appended after the last bounded gates.
+**45/100 confirmed; the complete requested goal remains unfinished.** Work began13:22:11UTC on a fresh named branch from frozen81103b2, with the five-hour deadline18:22:11UTC. This report supersedes the prior42/100 report for the changes described here. Exact final publication/capture times and final mobile/performance outcomes are appended after the last bounded gates.
 
 ## Acceptance against the original targets
 
@@ -14,7 +14,7 @@
 | Durable package installation | Explicit native apk-persist saves signed immutable generations and exact world, verifies replay into clean rootfs.39 positive and54 negative checks passed. Real GUI recovery was typed and normal Stop destroyed owned workers. | Firefox candidate accepted for final publication; plain package resolution/replay remains pending. |
 | Android/iOS | Android15 MI8, Brave148,1CPU512MiB: Python signed install30.596s/imports4.465s; native offline exact-world replay4.284s. Final full persistence gate pending after a prompt-detection fix. No iOS test surface. | Full mobile Firefox and iOS acceptance unfinished. |
 
-Scoring retains the original rubric: desktop7/15, startup10/20, JIT4/20, graphics9/20, packages8/10, mobile2/10, preview/recovery4/5 =44/100. The two added points reflect the tested keyboard fix and signed common-port delivery. A fixture does not receive fullAPI credit, and package persistence is not counted twice.
+Scoring retains the original rubric: desktop7/15, startup10/20, JIT4/20, graphics9/20, packages8/10, mobile3/10, preview/recovery4/5 =45/100. The three added points reflect the tested keyboard fix, signed common-port delivery and actual Android package persistence. A fixture does not receive fullAPI credit, and package persistence is not counted twice.
 
 ## What changed and why
 
@@ -59,3 +59,11 @@ Recovery requires the original encrypted80a52d1 base, the final cumulative incre
 5. Extend graphics coverage beyond the explicit native fixture, retain direct-export device-loss reproduction, and measure readback cost before any presentation default change.
 
 Final publication, final benchmark/mobile outcomes and artifact verification are recorded below when completed.
+
+## Final publication update —17:40UTC
+
+The exact approved Firefox persistence image1a3951f0c48d was published through the normal publisher and all116265893 served bytes match SHA4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c. Manifest SHA9da17bf944a4d25d8f4c4811e93a0dc9ca76b7b37f52579544959c7ae18a4bd5. Old plain image is retained; strict cache remains off-default. An initial publication stopped before mutation because the old construction receipt had no passPackage. A separate transparent adjudicated release receipt cites exact completed gates/root approval, preserves the candidate, and explicitly excludes unrun targets. Successful publication2.004s. The footer now returns200 and matching content revisionefb8d0a9b4c6d53bdd8931fc7a66db9c417c278c7ab4b1a091eeeed5aee70dec with13 package versions; unknown server start/build times remain unknown.
+
+Final Android gate passed17:35:33.716UTC,158.079s total. Real signed Python install, generation/world/Python+stdlib hashes, installed database, user marker, offline replay and restored imports passed. Both normal Stop gates reached zero owned workers; only the owned tab/forward were removed. Six exact tested artifacts were promoted and independently read back through production localhost3000; HTTPS access policy and worker bytes remain unchanged. Score45 confirmed. Prior attempts and native replay evidence remain in the three-attempt JSON. This supersedes pending mobile publication language above.
+
+The final matched native FPS run remained incomplete: the resource guard stopped on a row whose process had exited during sampling. Prior and other live process samples were capped; no unlimited migration was observed. This is not retrospective acceptance or a new FPS result. A reviewed tri-state identity fix excludes only confirmed vanished/reused/terminal identities, still rejects unknown live identities, and passes12 focused cases. Final deployment smoke uses the corrected guard.

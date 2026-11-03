@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {parentPort, workerData} from 'node:worker_threads';
+import {revalidateOwnedIdentity} from './owned-process-identity.mjs';
 
 const {rootPid, rootStart, run, startedAtMonotonic, clockTicks, pssIntervalMs=5000} = workerData;
 const tracked = new Map([[rootPid, rootStart]]);
@@ -19,6 +20,11 @@ function stat(pid) {
 function ownedProcesses() {
   // Only stat is read for unrelated processes; detailed accounting is owned only.
   const all = fs.readdirSync('/proc').filter(x => /^\d+$/.test(x)).map(x => stat(+x)).filter(Boolean);
+  const enumerated = new Map(all.map(p=>[p.pid,p]));
+  for(const [pid,start] of tracked)if(enumerated.get(pid)?.start!==start){
+    const state=revalidateOwnedIdentity({pid,start});
+    if(state.kind==='live')throw new Error('Known live owned process absent from readable inventory: '+pid);
+  }
   const owned = new Map(all.filter(p => tracked.get(p.pid) === p.start).map(p => [p.pid, p]));
   let changed = true;
   while (changed) {
@@ -62,7 +68,7 @@ function quotaSnapshot(group) {
   return {capacity: Number.isFinite(capacity) ? capacity : null, limits};
 }
 function sample() {
-  const started = now(), list = ownedProcesses();
+  const started = now(); let list = ownedProcesses();
   const enumeratedAt=now(), pssSampled=started-lastPssSample>=pssIntervalMs;
   let pss = 0, complete = true;
   if(pssSampled)lastPssSample=started;
@@ -73,6 +79,8 @@ function sample() {
   const pssFinishedAt=now();
   const ticks = list.reduce((sum, p) => sum + Math.max(0, p.ticks - (lastProcesses?.get(p.pid+':'+p.start) ?? 0)), 0);
   const available = Number(/MemAvailable:\s*(\d+)/.exec(fs.readFileSync('/proc/meminfo', 'utf8'))?.[1] || 0) * 1024;
+  const excludedTerminal=[];
+  list=list.filter(p=>{const state=revalidateOwnedIdentity(p);if(state.kind==='terminal'){excludedTerminal.push(state);return false;}p.state=state.state;return true;});
   const quotaByGroup = Object.fromEntries([...new Set(list.map(p => p.cgroup))].map(group => [group, quotaSnapshot(group)]));
   for (const p of list) {
     const count = affinityCount(p.affinity), quota = quotaByGroup[p.cgroup].capacity;
@@ -83,7 +91,7 @@ function sample() {
   const commonCpuAncestors=groupValues.length?capPaths(groupValues[0]).filter(file=>groupValues.every(q=>capPaths(q).includes(file))):[];
   const changedMembership=[];for(const p of list){const key=p.pid+':'+p.start;const previous=observedGroups.get(key);if(previous&&previous!==p.cgroup&&stat(p.pid)?.start===p.start)changedMembership.push(p.pid);observedGroups.set(key,p.cgroup);}
   const disk = fs.statfsSync(run);
-  const row = {ms: started, completedMs: now(), quotaByGroup, commonCpuAncestors, changedMembership,
+  const row = {ms: started, completedMs: now(), quotaByGroup, commonCpuAncestors, changedMembership, excludedTerminal,
     cpuPercent: lastProcesses === undefined ? null : ticks / clockTicks / ((started - lastSample) / 1000) * 100,
     cpuAccounting:'per-PID/start counter deltas; CPU after a final sample before process exit may be missed',
     pssBytes: pssSampled&&complete ? pss : null, pssSampled, pssIntervalMs, pssAgeMs:started-lastPssSample,

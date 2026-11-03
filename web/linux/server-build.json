@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-11-03T17:38:31.249368+00:00",
+  "identityMethod": "SHA256 of sorted tracked regular web/linux file names and content digests; excludes metadata file and normalizes its own revision meta tag. Not a Git commit or server start timestamp.",
+  "webapp": {
+    "version": "efb8d0a9b4c6d53bdd8931fc7a66db9c417c278c7ab4b1a091eeeed5aee70dec",
+    "buildDate": null,
+    "trackedFileCount": 597
+  },
+  "server": {
+    "version": "f66dd887a5669adeddd1dd1567191c479d6eef7aca7020940ee6399d2717661f",
+    "buildDate": null,
+    "started": null
+  },
+  "runtime": {
+    "version": "1a3951f0c48d",
+    "firefoxSha256": "4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c"
+  },
+  "packages": [
+    {
+      "name": "apk-tools",
+      "version": "2.14.12-r0",
+      "buildDate": null
+    },
+    {
+      "name": "busybox",
+      "version": "1.38.0_git-r0",
+      "buildDate": null
+    },
+    {
+      "name": "ca-certificates",
+      "version": "20261103-r0",
+      "buildDate": null
+    },
+    {
+      "name": "coreutils",
+      "version": "9.11-r0",
+      "buildDate": null
+    },
+    {
+      "name": "curl",
+      "version": "8.21.0-r1",
+      "buildDate": null
+    },
+    {
+      "name": "findutils",
+      "version": "4.10.0-r1",
+      "buildDate": null
+    },
+    {
+      "name": "grep",
+      "version": "3.12-r0",
+      "buildDate": null
+    },
+    {
+      "name": "gzip",
+      "version": "1.14-r0",
+      "buildDate": null
+    },
+    {
+      "name": "linuxonweb-vkgears",
+      "version": "20261103-r0",
+      "buildDate": null
+    },
+    {
+      "name": "python3",
+      "version": "3.14.6-r1",
+      "buildDate": null
+    },
+    {
+      "name": "sed",
+      "version": "4.10-r0",
+      "buildDate": null
+    },
+    {
+      "name": "tar",
+      "version": "1.35-r1",
+      "buildDate": null
+    },
+    {
+      "name": "wget",
+      "version": "1.25.0-r0",
+      "buildDate": null
+    }
+  ]
+}

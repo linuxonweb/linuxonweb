@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {revalidateOwnedIdentity} from './owned-process-identity.mjs';
+const row={pid:123,start:'456',rss:0,cgroup:''};
+const stat=(state='S',start='456')=>`123 (owned test) ${[state,...Array(18).fill('0'),start,...Array(5).fill('0')].join(' ')}`;
+let count=0;const test=(label,fn)=>{fn();count++;console.log('PASS '+label);};
+for(const code of ['ENOENT','ESRCH'])test('confirmed '+code,()=>assert.equal(revalidateOwnedIdentity(row,()=>{throw Object.assign(new Error(),{code});}).kind,'terminal'));
+for(const state of ['Z','X','x'])test('terminal '+state,()=>assert.equal(revalidateOwnedIdentity(row,()=>stat(state)).kind,'terminal'));
+test('reused PID is not old owner',()=>assert.equal(revalidateOwnedIdentity(row,()=>stat('S','789')).reason,'identity-reused'));
+test('empty quota with live identity stays live',()=>assert.equal(revalidateOwnedIdentity(row,()=>stat()).kind,'live'));
+for(const code of ['EACCES','EIO'])test('unknown '+code+' fails closed',()=>assert.throws(()=>revalidateOwnedIdentity(row,()=>{throw Object.assign(new Error(),{code});}),/unreadable/));
+test('malformed stat fails closed',()=>assert.throws(()=>revalidateOwnedIdentity(row,()=>''),/Malformed/));
+test('malformed start fails closed',()=>assert.throws(()=>revalidateOwnedIdentity(row,()=>stat('S','NaN')),/Malformed/));
+test('running owned identity remains live',()=>assert.equal(revalidateOwnedIdentity(row,()=>stat('R')).kind,'live'));
+console.log(JSON.stringify({pass:true,cases:count,scope:'Exact-identity terminal/live/unknown policy; no guest or performance assertion'}));

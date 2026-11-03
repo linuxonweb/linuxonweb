@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-11-03T17:38:31.970386+00:00",
+  "pass": true,
+  "runtimeVersion": "1a3951f0c48d",
+  "manifestSha256": "9da17bf944a4d25d8f4c4811e93a0dc9ca76b7b37f52579544959c7ae18a4bd5",
+  "firefoxBytes": 116265893,
+  "firefoxSha256": "4b20a71713a8229f52f3ac2702d8d94dd5b4779a53ed28f0bb0d5830bf14b06c",
+  "cacheLifecyclePresent": false,
+  "footerRevision": "efb8d0a9b4c6d53bdd8931fc7a66db9c417c278c7ab4b1a091eeeed5aee70dec",
+  "serverStarted": null,
+  "packageVersions": [
+    {
+      "name": "apk-tools",
+      "version": "2.14.12-r0",
+      "buildDate": null
+    },
+    {
+      "name": "busybox",
+      "version": "1.38.0_git-r0",
+      "buildDate": null
+    },
+    {
+      "name": "ca-certificates",
+      "version": "20261103-r0",
+      "buildDate": null
+    },
+    {
+      "name": "coreutils",
+      "version": "9.11-r0",
+      "buildDate": null
+    },
+    {
+      "name": "curl",
+      "version": "8.21.0-r1",
+      "buildDate": null
+    },
+    {
+      "name": "findutils",
+      "version": "4.10.0-r1",
+      "buildDate": null
+    },
+    {
+      "name": "grep",
+      "version": "3.12-r0",
+      "buildDate": null
+    },
+    {
+      "name": "gzip",
+      "version": "1.14-r0",
+      "buildDate": null
+    },
+    {
+      "name": "linuxonweb-vkgears",
+      "version": "20261103-r0",
+      "buildDate": null
+    },
+    {
+      "name": "python3",
+      "version": "3.14.6-r1",
+      "buildDate": null
+    },
+    {
+      "name": "sed",
+      "version": "4.10-r0",
+      "buildDate": null
+    },
+    {
+      "name": "tar",
+      "version": "1.35-r1",
+      "buildDate": null
+    },
+    {
+      "name": "wget",
+      "version": "1.25.0-r0",
+      "buildDate": null
+    }
+  ],
+  "source": "Exact production localhost3000 route after normal publication; actual HTTPS browser smoke remains separate",
+  "publicationOwner": {
+    "startedUtc": "2026-11-03T17:38:11.308515+00:00",
+    "finishedUtc": "2026-11-03T17:38:13.312450+00:00",
+    "durationSeconds": 2.004,
+    "argv": [
+      "/home/a/.config/nvm/versions/node/v22.22.2/bin/node",
+      "web/desktop/publish-build.mjs",
+      "out/pkp3/final-firefox-release1"
+    ],
+    "cwd": "/mnt/p3/project/linux/linuxonweb",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 96669696,
+    "ownedTreePeakRssBytes": 96669696,
+    "ownedTreePeakPssBytes": 9312256,
+    "resourceSamples": 2,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.001,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  }
+}
