@@ -74,7 +74,8 @@ function createPresentSink(id) {
 export function configureVk(value) {
     if (!value || typeof value !== "object")
         return;
-    config = { enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true, allowResources: value.allowResources === true, allowLargeColorTargets: value.allowLargeColorTargets === true,allowDepthStencil:value.allowDepthStencil===true,allowLargeSampledTargets:value.allowLargeSampledTargets===true, allowPresent: value.allowPresent !== false };
+    if (value.presentation !== undefined && !["direct", "readback-2d"].includes(value.presentation)) throw new Fault(EINVAL, "unknown Vulkan presentation mode");
+    config = { presentation: value.presentation ?? "direct", enabled: value.enabled !== false, backend: ["auto", "webgpu", "webgl", "wgpu"].includes(value.backend) ? value.backend : "auto", wgpuBackend: value.wgpuBackend ?? "auto", forceFallbackAdapter: value.forceFallbackAdapter === true, allowResources: value.allowResources === true, allowLargeColorTargets: value.allowLargeColorTargets === true,allowDepthStencil:value.allowDepthStencil===true,allowLargeSampledTargets:value.allowLargeSampledTargets===true, allowPresent: value.allowPresent !== false };
 }
 
 function view(memory, pointer, length) {
@@ -192,6 +193,9 @@ async function openSession(flags, log) {
     const [{ serveGPU }, { GPUTEST_TRANSLATORS }] = await hostModule;
     const requestedBackend = flags & VK_OPEN_FLAG_FORCE_WEBGL ? "webgl" : flags & VK_OPEN_FLAG_FORCE_WEBGPU ? "webgpu" : null;
     const backend = config.backend === "wgpu" ? "wgpu" : requestedBackend ?? config.backend;
+    const presentation = config.presentation ?? "direct";
+    if (presentation === "readback-2d" && (backend !== "webgpu" || !config.allowLargeColorTargets || !config.allowPresent))
+        throw new Fault(EINVAL, "readback-2d requires explicit WebGPU presentation");
     const gpu = backend === "webgl" || backend === "wgpu" ? null : globalThis.navigator?.gpu;
     const wgpuFactory = backend === "wgpu" ? async () => {
         const { createWgpuRenderer } = await import("../gpu-runtime/pipeline-candidate/bridge.mjs");
@@ -203,18 +207,19 @@ async function openSession(flags, log) {
     sessions.set(id, session);
     session.done = serveGPU(connection, {
         gpu, allowLargeSampledTargets:config.allowLargeSampledTargets===true, allowDepthStencil:config.allowDepthStencil===true, allowLargeColorTargets: config.allowLargeColorTargets === true, allowGraphics: true, allowWebGL: backend !== "webgpu" && backend !== "wgpu", allowUniforms: backend !== "wgpu" || config.allowResources, allowTextures: backend !== "wgpu" || config.allowResources, allowDepth: backend !== "wgpu" || config.allowResources,
-        graphicsBackendFactory: wgpuFactory,
+        graphicsBackendFactory: wgpuFactory, graphicsPresentation: presentation,
         // Direct presentation: frames go to the page as ImageBitmaps (guest-gpu-hostcall.js onPresent).
         presentSink: config.allowPresent === false || typeof globalThis.postMessage !== "function" ? null : createPresentSink(id),
         timeoutMs: 0x7fffffff,
         graphicsTranslatorOptions: GPUTEST_TRANSLATORS.wgsl, webglTranslatorOptions: GPUTEST_TRANSLATORS.glsl,
         onEvent(event) {
             if (event.type === "adapter")
-                log(`vk session ${id} backend=${event.backend} adapter=${JSON.stringify({ vendor: event.vendor, architecture: event.architecture, description: event.description, name:event.name, driver:event.driver, driverInfo:event.driverInfo, deviceType:event.deviceType, wgpuBackend:event.backend, forceFallbackAdapter:event.forceFallbackAdapter })}`);
+                log(`vk session ${id} backend=${event.backend}${event.presentation ? " presentation=" + event.presentation : ""} adapter=${JSON.stringify({ vendor: event.vendor, architecture: event.architecture, description: event.description, name:event.name, driver:event.driver, driverInfo:event.driverInfo, deviceType:event.deviceType, wgpuBackend:event.backend, forceFallbackAdapter:event.forceFallbackAdapter })}`);
         },
     }).then((report) => {
         log(`vk session ${id} closed commands=${report.commands} passes=${report.graphicsPasses} draws=${report.graphicsDraws}${report.error ? " error=" + JSON.stringify(report.error) : ""}`);
         if (backend === "wgpu") log("GUEST_WGPU_HOST_REPORT " + JSON.stringify(report));
+        if (presentation === "readback-2d") log("GUEST_WEBGPU_READBACK_HOST_REPORT " + JSON.stringify(report));
         return report;
     }, (error) => {
         log(`vk session ${id} failed: ${error?.message ?? error}`);

@@ -1,0 +1,48 @@
+<!doctype html><meta charset="utf-8"><title>Explicit WebGPU readback adapter diagnostic</title>
+<style>body{font:16px system-ui;background:#11202c;color:#e7f3fb}canvas{width:256px;height:256px;border:2px solid #93e7cb;margin:12px}pre{white-space:pre-wrap}</style>
+<h1>WebGPU rendering · CPU readback · 2D presentation</h1>
+<p>Isolated diagnostic. This does not establish native Vulkan conformance or host performance parity.</p>
+<canvas id="bitmap" width="128" height="128"></canvas><canvas id="direct" width="128" height="128"></canvas><pre id="out">Running</pre>
+<script type="module">
+import {createGraphicsRenderer} from '../guest-vulkan-graphics/renderer.mjs';
+import {createReadbackPresentation} from '../guest-vulkan-graphics/readback-presentation.mjs';
+const report=window.graphicsResults={schema:1,done:false,pass:false,scope:'Explicit opt-in driver diagnosis, no automatic fallback and no native Vulkan acceptance',renderingBackend:'webgpu',presentationBackend:'CPU readback to 2D ImageData, then ImageBitmap or attached 2D canvas',errors:[],events:[],phases:[]};
+let device,renderer,target,offscreen,bitmap;
+const display=()=>new Promise(r=>requestAnimationFrame(r));
+const summarize=a=>{const b=[...a].sort((x,y)=>x-y);return {samples:b.length,minMs:b[0],meanMs:b.reduce((x,y)=>x+y,0)/b.length,p95Ms:b[Math.ceil(b.length*.95)-1],maxMs:b.at(-1)};};
+const verify=(pixels,expected)=>{if(pixels.length!==128*128*4)throw Error('pixel extent mismatch');for(let p=0;p<pixels.length;p++)if(Math.abs(pixels[p]-expected[p%4])>1)throw Error('deterministic pixel mismatch at '+p+': '+pixels[p]);};
+try{
+ if(new URL(location.href).searchParams.get('presentation')!=='readback-2d')throw Error('Explicit presentation=readback-2d selection required');
+ const adapter=await navigator.gpu?.requestAdapter({powerPreference:'high-performance'});if(!adapter)throw Error('WebGPU adapter unavailable');
+ report.adapter={vendor:adapter.info.vendor,architecture:adapter.info.architecture,description:adapter.info.description,isFallbackAdapter:adapter.info.isFallbackAdapter??adapter.isFallbackAdapter??null};
+ device=await adapter.requestDevice();device.lost.then(info=>{const notice={reason:info.reason,message:info.message,phase:report.currentPhase};if(report.deviceDestroyRequested&&info.reason==='destroyed')report.destroyNotification=notice;else report.deviceLost=notice;});device.addEventListener('uncapturederror',e=>report.events.push(String(e.error.message)));
+ renderer=createReadbackPresentation(createGraphicsRenderer(device));target=await renderer.createTarget({width:128,height:128});
+ offscreen=new OffscreenCanvas(128,128);const cpu=offscreen.getContext('2d',{willReadFrequently:true});
+ const attached=document.getElementById('direct').transferControlToOffscreen();
+ const shown=document.getElementById('bitmap').getContext('bitmaprenderer'),direct=attached.getContext('2d',{willReadFrequently:true});
+ if(!cpu||!shown||!direct)throw Error('Selected 2D/ImageBitmap presentation contexts unavailable');
+ for(const phase of ['render-only','readback-2d-imagebitmap','readback-attached-2d']){
+  report.currentPhase=phase;const renderTimes=[],readbackTimes=[],presentationTimes=[],totalTimes=[];const frames=phase==='render-only'?12:24;
+  for(let n=0;n<frames;n++){
+   const start=performance.now(),expected=[n%2?255:0,n%2?0:255,128,255];
+   renderer.begin({target,loadOp:'clear',storeOp:'store',clearColor:[n%2,1-n%2,.5,1]});await renderer.end();await device.queue.onSubmittedWorkDone();const rendered=performance.now();renderTimes.push(rendered-start);
+   if(phase!=='render-only'){
+    if(phase==='readback-2d-imagebitmap')await renderer.present(target,1,null,frame=>{bitmap=frame;cpu.drawImage(frame,0,0);verify(cpu.getImageData(0,0,128,128).data,expected);shown.transferFromImageBitmap(frame);bitmap=null;});
+    else await renderer.present(target,2,attached,frame=>{if(frame!==null)throw Error('Attached output returned a bitmap');verify(direct.getImageData(0,0,128,128).data,expected);});
+    readbackTimes.push(performance.now()-rendered);presentationTimes.push(0);
+   }
+   totalTimes.push(performance.now()-start);await display();if(report.deviceLost)throw Error('Device lost during '+phase);if(report.events.length)throw Error('Uncaptured GPU validation error');
+  }
+  report.phases.push({phase,frames,render:summarize(renderTimes),...(readbackTimes.length?{combinedReadbackAndPresentation:summarize(readbackTimes)}:{}),totalWork:summarize(totalTimes),stats:renderer.getStats()});
+ }
+ await renderer.destroy(target);target=null;renderer.close();report.closed=renderer.getStats();
+ if(report.closed.state!=='closed'||report.closed.resources!==0||report.closed.nativeObjects!==0||report.closed.allocatedBytes!==0||report.closed.readbackPresentation.surfaces!==0||report.closed.readbackPresentation.canvasBytes!==0||report.closed.readbackPresentation.pending||report.closed.readbackPresentation.frames!==48)throw Error('Renderer cleanup did not release resources');
+ report.pass=true;
+}catch(error){report.errors.push(String(error.stack??error));}
+finally{
+ const passed=report.pass;report.pass=false;bitmap?.close();renderer?.close();if(offscreen){offscreen.width=0;offscreen.height=0;}
+ report.beforeDeviceDestroyLoss=report.deviceLost??null;report.deviceDestroyRequested=Boolean(device);
+ if(device){let deadline;try{device.destroy();const note=await Promise.race([device.lost,new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error('intentional device destroy notification deadline')),5000);})]);report.destroyResult={reason:note.reason,message:note.message};if(note.reason!=='destroyed')report.errors.push('Unexpected device-loss reason at cleanup: '+note.reason);}catch(error){report.errors.push(String(error));}finally{clearTimeout(deadline);}}
+ report.pass=passed&&!report.deviceLost&&!report.errors.length;report.done=true;document.getElementById('out').textContent=JSON.stringify(report,null,2);
+}
+</script>

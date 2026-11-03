@@ -669,5 +669,14 @@
     }
   },
   "runtimeSourcePinsBefore": "/mnt/p3/codex-build/f3l/method1/runtime-source-before.json",
-  "runtimeFreeze": "265 source files pinned before controls; integration confirmed no active runtime changes until native owner ended; targeted waiter unfreeze authorized afterward."
+  "runtimeFreeze": "265 source files pinned before controls; integration confirmed no active runtime changes until native owner ended; targeted waiter unfreeze authorized afterward.",
+  "quotaAudit": {
+    "updatedUtc": "2026-11-03T16:19:52.735818+00:00",
+    "native50aAllSampledDescendantsShareThreeCpuAncestor": true,
+    "nativeSamples": 160,
+    "nativeProcessObservations": 2084,
+    "hostBeforeDescendantAncestorsUnproven": true,
+    "matchedPerformanceAccepted": false,
+    "reference": "tools/firefox-lifecycle/evidence/browser-quota-audit-20261103-1322.json"
+  }
 }

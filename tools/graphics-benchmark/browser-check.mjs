@@ -4,7 +4,7 @@ import path from 'node:path';
 import http from 'node:http';
 import crypto from 'node:crypto';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {spawn} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {readHostNproc} from '../guest-rootfs/firefox-host-cpus.mjs';
 const [scratch,inputUrl,resultGlobal='graphicsResults']=process.argv.slice(2);
 let url=inputUrl;
@@ -37,7 +37,7 @@ const allowed=fs.readFileSync('/proc/self/status','utf8').match(/^Cpus_allowed_l
 if(cpus<1||cpus>allowed.length)throw Error('invalid effective CPU allocation');
 const affinity=allowed.slice(0,cpus).join(',');
 const log=fs.openSync(`${run}/browser.log`,'w');
-const child=spawn('/usr/bin/taskset',['-c',affinity,prime,browser,...args],{detached:true,stdio:['ignore',log,log],env:{...process.env,DISPLAY:process.env.DISPLAY??':0',TMPDIR:run,TMP:run,TEMP:run,XDG_CACHE_HOME:`${run}/x`}});fs.closeSync(log);
+const child=spawn('/usr/bin/taskset',['-c',affinity,prime,browser,...args],{detached:true,stdio:['ignore',log,log],env:{...process.env,DISPLAY:process.env.DISPLAY??':0',TMPDIR:run,TMP:run,TEMP:run,XDG_CACHE_HOME:`${run}/x`,DBUS_SESSION_BUS_ADDRESS:'unix:path='+path.join(run,'no-session-bus.sock')}});fs.closeSync(log);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const result={url,run,started:new Date().toISOString(),errors:[],console:[],flags:args,cpus,affinity,observedOwnerCpus,inputs};
 let socket,status=1,send;
@@ -54,6 +54,15 @@ try{
  send=(method,params={})=>new Promise((resolve,reject)=>{const id=++next;const timer=setTimeout(()=>{waiting.delete(id);reject(Error('CDP deadline '+method));},10000);waiting.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
  await send('Runtime.enable');await send('Page.enable');
  if(viewport)await send('Emulation.setDeviceMetricsOverride',{width:viewport[0],height:viewport[1],deviceScaleFactor:1,mobile:false});
+ // The bounded.py owner supplies continuous per-second descendant quota checks.
+ // Refuse to navigate this owned browser until its actual tree shares a capped
+ // ancestor; taskset and navigator.hardwareConcurrency alone are insufficient.
+ const guardPath=fileURLToPath(new URL('../guest-packages/bounded.py',import.meta.url));
+ const guard=spawnSync('python3',[guardPath,'--check-tree',String(process.pid)],{encoding:'utf8',timeout:10000,maxBuffer:1024*1024});
+ if(guard.error)throw Error('browser quota preflight '+guard.error.message);
+ try{result.quotaPreflight=JSON.parse(guard.stdout);}catch{throw Error('browser quota preflight did not return valid JSON');}
+ if(guard.status!==0||result.quotaPreflight.valid!==true)throw Error('browser common three-CPU ancestor preflight failed');
+ result.quotaMonitoring='Continuous observed-descendant checks provided by the required bounded.py owner; this receipt records the before-navigation preflight';
  const nav=await send('Page.navigate',{url});if(nav.errorText)throw Error('navigation '+nav.errorText);
  if(process.env.GRAPHICS_TEST_HOOK){const hook=await import(pathToFileURL(path.resolve(process.env.GRAPHICS_TEST_HOOK)).href);await hook.run({send,result,url,cpus});}
  for(let k=0;k<400;k++){

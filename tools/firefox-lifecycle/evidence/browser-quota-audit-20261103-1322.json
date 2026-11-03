@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T16:19:52.735818+00:00",
+  "reason": "A separate integration browser was observed moving automatically to an unlimited user D-Bus scope; historical owner-only receipts cannot establish descendant CPU enforcement.",
+  "nativeMethod50a": {
+    "path": "/mnt/p3/codex-build/f3l/method50a/report.json",
+    "sha256": "b45a0398ac6b6c956afdeedfde13cf224d037343b9a4b1cb07e9152334d07867",
+    "samples": 160,
+    "processObservations": 2084,
+    "quotaGroups": {
+      "0::/cpulimit.slice/cpulimit-70.slice": {
+        "capacity": 3,
+        "limits": [
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice/cpu.max",
+            "raw": "560000 100000"
+          },
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice/cpu.max",
+            "raw": "300000 100000"
+          }
+        ]
+      }
+    },
+    "unknownOrOverThreeObservations": 0,
+    "allRecordedProcessesShareThreeCpuAncestor": true,
+    "claimLimit": "One-second sampled identities, not a continuous kernel trace. Experiment remains incomplete and confounded by duplicate resource monitors; no FPS result."
+  },
+  "unprovenDescendantQuotaRuns": [
+    "method-host-before",
+    "webgpu-readback-owner1",
+    "webgpu-direct-owner1"
+  ],
+  "scopeOfUncertainty": "Historical bounded.py sampled owner ancestors only; three-CPU affinity and navigator.hardwareConcurrency do not prove the required shared ancestor.",
+  "newRunsRequire": [
+    "Fresh owned browser D-Bus address at a nonexistent socket; no user bus or cgroup changes",
+    "Actual descendant common-ancestor preflight before page navigation",
+    "Updated bounded.py continuous observed-descendant common-ancestor and migration rejection",
+    "One CPU/RSS/RAM1s and PSS5s monitor only"
+  ]
+}

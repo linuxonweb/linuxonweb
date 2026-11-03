@@ -45,6 +45,7 @@ def main(args):
         signal.signal(sig, lambda number, frame: interrupts.append(number))
     observed = {}
     reason = None
+    cleanup_errors = []
     with (args.out / 'command.log').open('w') as log:
         child = subprocess.Popen(command, cwd=args.cwd, stdout=log, stderr=subprocess.STDOUT,
                                  env=dict(os.environ), start_new_session=True)
@@ -53,29 +54,47 @@ def main(args):
         try:
             while child.poll() is None:
                 # Process identity inventory only; no PSS/CPU/RAM measurements.
-                for row in helper.tree(child.pid):
-                    observed[(row['pid'], row['startTicks'])] = row
+                try:
+                    current = {(row['pid'], row['startTicks']): row for row in helper.tree(child.pid, identity['startTicks'])}
+                    for key, known in list(observed.items()):
+                        if key not in current and helper.still_owned(known):
+                            current.update({(row['pid'], row['startTicks']): row for row in helper.tree(known['pid'], known['startTicks'])})
+                    observed.update(current)
+                except helper.OwnedInventoryError as error:
+                    observed.update({(row['pid'], row['startTicks']): row for row in error.items})
+                    cleanup_errors.extend(error.problems)
+                    reason = 'owned_inventory_unreadable'; break
+                except (OSError, ValueError) as error:
+                    cleanup_errors.append({'reason': 'owned_identity_unreadable', 'error': type(error).__name__})
+                    reason = 'owned_identity_unreadable'; break
                 if interrupts:
                     reason = 'owner_signal_' + str(interrupts[-1]); break
                 if time.monotonic() - started >= args.seconds:
                     reason = 'finite_owner_deadline'; break
                 time.sleep(.5)
         finally:
-            active = [row for row in observed.values() if row['pid'] != child.pid and helper.still_owned(row)]
+            active = []
+            for row in observed.values():
+                if row['pid'] == child.pid: continue
+                try:
+                    if helper.still_owned(row): active.append(row)
+                except (OSError, ValueError) as error:
+                    active.append(row)
+                    cleanup_errors.append({'pid': row['pid'], 'reason': 'cleanup_identity_unreadable', 'error': type(error).__name__})
             remaining = []
             if child.poll() is None or active:
                 if child.poll() is not None and active and reason is None:
                     reason = 'owned_descendants_outlived_startup_owner'
-                remaining = helper.stop_owned_tree(child, identity, observed)
+                remaining = helper.stop_owned_tree(child, identity, observed, cleanup_errors)
             for sig, action in original.items():
                 signal.signal(sig, action)
     result = {'schema': 1, 'kind': 'lifecycle-only-startup-watchdog', 'startedUtc': started_utc,
               'finishedUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'durationSeconds': round(time.monotonic() - started, 3), 'argv': command,
               'exitCode': child.poll(), 'stopReason': reason, 'ownedProcessesRemaining': len(remaining),
-              'remainingIdentities': remaining, 'resourceMonitor': 'Delegated solely to the owned startup harness: CPU/RSS/RAM1s, PSS5s',
+              'remainingIdentities': remaining, 'cleanupInventoryErrors': cleanup_errors, 'resourceMonitor': 'Delegated solely to the owned startup harness: CPU/RSS/RAM1s, PSS5s',
               'watchdogSamplesPss': False, 'watchdogProducesCpuRssSamples': False,
-              'pass': child.poll() == 0 and reason is None and not remaining}
+              'pass': child.poll() == 0 and reason is None and not remaining and not cleanup_errors}
     (args.out / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result), flush=True)
     return result['pass']

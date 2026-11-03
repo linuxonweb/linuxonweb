@@ -889,6 +889,8 @@ struct Out { @builtin(position) position: vec4f, @location(0) uv: vec2f };
         return sampledTargetCapabilities;
       });
     },
+    /** Read-only extent for bounded explicit CPU presentation; no native objects escape. */
+    targetExtent(handle) { const { width, height, format } = get(handle, 'target').descriptor; return Object.freeze({ width, height, format }); },
     presentable: typeof OffscreenCanvas === 'function',
     /** Copy a stored target to the surface's canvas. With a page-owned (transferred)
      *  canvas the browser shows the frame itself and sink(null) is called; otherwise

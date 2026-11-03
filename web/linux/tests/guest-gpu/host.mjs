@@ -37,7 +37,7 @@ export function createWebGLContextLease() {
 /** One device and resource table per connection. No guest memory/shared views. */
 export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, timeoutMs = 60000, onEvent = () => {}, allowClear = false, allowCompute = false, translatorOptions, translatorFactory,
   allowGraphics = false, allowUniforms = false, allowTextures = false, allowDepth = false, allowDepthStencil = false, allowLargeColorTargets = false, allowLargeSampledTargets = false, graphicsTranslatorOptions, graphicsTranslatorFactory, graphicsBackendFactory,
-  allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease, presentSink = null } = {}) {
+  allowWebGL = false, webglTranslatorOptions, webglTranslatorFactory, webglContextFactory = createWebGLContextLease, presentSink = null, graphicsPresentation = 'direct' } = {}) {
   const resources = new Map(); let translator, graphicsTranslator, graphicsRenderer, validateGraphicsShader;
   let presentEnd = () => {};
   let device, contextLease, lost = false, closed = false, nextId = 1, allocation = 0, lastRequest = 0;
@@ -142,6 +142,12 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     return result;
   };
   try {
+    if (!['direct', 'readback-2d'].includes(graphicsPresentation)) fail('unknown graphics presentation mode');
+    if (graphicsPresentation === 'readback-2d') {
+      if (!allowGraphics || !allowLargeColorTargets || allowWebGL || graphicsBackendFactory || typeof presentSink !== 'function')
+        fail('readback-2d requires explicit direct WebGPU graphics with presentation and no fallback');
+      report.presentation = graphicsPresentation;
+    }
     if (typeof allowLargeColorTargets !== 'boolean' || (allowLargeColorTargets && !allowGraphics)) fail('large colour profile requires graphics');
     if (allowWebGL && !allowGraphics) fail('WebGL fallback requires the graphics profile');
     if (allowUniforms && !allowGraphics) fail('uniform profile requires the graphics profile');
@@ -208,6 +214,12 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
       }, ...(uniformOptions ?? {}), ...(allowDepth ? { allowDepth } : {}) }) :
         renderer.createGraphicsRenderer(device, allowDepth ? { ...uniformOptions, allowDepth } : uniformOptions);
     }
+    if (graphicsPresentation === 'readback-2d') {
+      if (closed || report.backend !== 'webgpu') fail('readback-2d requires a live WebGPU backend');
+      const { createReadbackPresentation } = await import('../guest-vulkan-graphics/readback-presentation.mjs');
+      if (closed) fail('session closed', -19);
+      graphicsRenderer = createReadbackPresentation(graphicsRenderer);
+    }
     if(allowLargeColorTargets && (!graphicsRenderer || graphicsRenderer.limits.maxTargetSize<512 || typeof graphicsRenderer.readback!=='function')) fail('renderer lacks actual colour extent/readback profile');
     // The direct WebGPU renderer proves render-to-sample with an actual pixel probe.
     if(allowLargeSampledTargets===true&&allowLargeColorTargets&&allowTextures&&!graphicsBackendFactory&&typeof graphicsRenderer?.probeSampledTargets==='function')await graphicsRenderer.probeSampledTargets();
@@ -224,7 +236,7 @@ export async function serveGPU(connection, { gpu = globalThis.navigator?.gpu, ti
     const allowLargeDepth = allowDepth && allowLargeColorTargets && graphicsRenderer?.largeDepth === true;
     const presentSurfaces = new Set();
     presentEnd = () => { for (const surface of presentSurfaces) { graphicsRenderer?.forgetSurface?.(surface); try { presentSink({ surface, end: true }); } catch {} } presentSurfaces.clear(); };
-    onEvent({ type: 'adapter', backend: report.backend, ...report.adapter });
+    onEvent({ type: 'adapter', backend: report.backend, ...report.adapter, ...(report.presentation ? { presentation: report.presentation } : {}) });
     while (!closed) {
       const header = await connection.readExactly(16); if (!header.length) break;
       const { opcode, request, length } = decodeHeader(header, allowClear, allowCompute, allowGraphics, allowUniforms, allowTextures, allowDepth, allowLargeColorTargets, allowPresent);

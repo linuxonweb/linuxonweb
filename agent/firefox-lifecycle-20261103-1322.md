@@ -241,3 +241,17 @@ No active test process remains owned by this agent. Curated receipts and retaine
 screenshot: `tools/firefox-lifecycle/evidence/method-threshold-incomplete-20261103-1322.json`
 and `method50-incomplete-20261103-1322.png`. Required broad JIT guard/GC/build
 binding gates remain unchanged and unmet.
+
+## Quota audit and explicit WebGPU diagnostic (2026-11-03, around 16:20 UTC)
+
+An isolated real NVIDIA/WebGPU clear/readback diagnostic observed 60 render passes and 48 full-target pixel checks, explicit CPU readback to 2D ImageData plus ImageBitmap/attached 2D presentation, and closed renderer resources. The unchanged direct WebGPU canvas export reproduction still lost its device on the first bitmap export (`VK_ERROR_OUT_OF_DEVICE_MEMORY`). These are functional observations only: no native Vulkan, shader-draw, conformance, throughput or default-backend claim. Historical bounded owner receipts did not record descendant cgroup ancestry, so constrained acceptance is withheld pending a representative recheck.
+
+A separate integration browser was observed migrating automatically through the desktop D-Bus session to an unlimited systemd scope. Retrospective `method50a` internal monitoring contains 160 samples / 2,084 process observations, all under the same `/cpulimit.slice` three-CPU ancestor; its experiment remains incomplete and double-monitored. Host-before and both graphics receipts only recorded owner quota and therefore have an explicit unknown-descendant qualification. The new graphics launcher isolates its owned D-Bus address and requires the actual shared-ancestor preflight before navigation, with continuous checking delegated to the updated single bounded owner. No cgroup permissions or limits are modified.
+
+## Explicit readback adapter source checkpoint (2026-11-03, around 16:35 UTC)
+
+An off-default adapter now routes real WebGPU renderer readback through opaque CPU 2D ImageData presentation. Configuration must explicitly select `readback-2d` with effective WebGPU; WebGL fallback and external renderer factories are rejected. The normal direct mode is unchanged. Limits are 512x512, 16 surfaces / 16 MiB CPU canvas stores and one pending presentation. Close/forget cancel late frames; failed synchronous sinks close their owned ImageBitmap. Session selection is captured before asynchronous work. Integration independently reviewed the source with no diagnostic blocker; current sink ownership is explicitly synchronous.
+
+Eleven focused ownership/backend rejection tests passed under the updated bounded owner in 1.255 seconds, one resource sample, no surviving owned descendants. These use a stub renderer and do not establish GPU acceptance. The separate real adapter fixture checks all pixels across 48 clear/readback presentations; the native WSI fixture records actual first-frame pixels and requires nonuniformity plus native draw/close/resource evidence. Both real fixtures await a shared-three-CPU guarded browser lane. The earlier historical raw readback/direct-loss observations remain qualified because descendant quota was not recorded.
+
+The single-monitor startup watchdog was updated for the new all-thread inventory and cleanup-error API but has still not run a Firefox performance gate. A stalled owned Git inspection pager was identified by its exact argv and PID/start identity and terminated; no other sessions were touched.

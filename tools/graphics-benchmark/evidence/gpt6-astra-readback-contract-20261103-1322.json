@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T16:30:16.160833+00:00",
+  "scope": "stubbed ownership/cancellation and explicit-backend rejection; no native GPU acceptance",
+  "pass": true,
+  "nativeGraphicsAcceptance": false,
+  "checks": 11,
+  "commandOutput": "PASS oversize rejected before GPU readback/allocation\nPASS close during readback prevents late display\nPASS forget during readback prevents resurrection\nPASS sink throw closes exactly owned bitmap\nPASS invalid returned layout cannot reach canvas\nPASS single in-flight frame enforced before readback\nPASS surface budget and cleanup bound CPU stores\nPASS attached/private switch releases previous store\nPASS delegated capabilities and read-only snapshots preserved\nPASS wrong backend contract rejected before acquisition\nPASS unknown presentation mode fails closed\n{\"pass\":true,\"checks\":11,\"scope\":\"stubbed ownership/cancellation and explicit-backend rejection; no native GPU acceptance\"}\n",
+  "owner": {
+    "startedUtc": "2026-11-03T16:29:52.544352+00:00",
+    "finishedUtc": "2026-11-03T16:29:53.798860+00:00",
+    "durationSeconds": 1.255,
+    "argv": [
+      "node",
+      "tools/graphics-benchmark/test-readback-presentation.mjs"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 618496,
+    "ownedTreePeakRssBytes": 618496,
+    "ownedTreePeakPssBytes": 3101696,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.252,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "quotaSnapshots": [
+    {
+      "valid": true,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3.0
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3.0,
+          "processes": [
+            {
+              "pid": 289316,
+              "startTicks": 43978970,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3.0
+        }
+      ],
+      "violations": []
+    }
+  ],
+  "inputs": {
+    "tools/graphics-benchmark/test-readback-presentation.mjs": "0883463b67b8746104db841674914148d836b61662416c992d1ddb13699fdbc2",
+    "web/linux/tests/guest-vulkan-graphics/readback-presentation.mjs": "62e72c09ceacc267fe1c04ac4a1a9c71a0ac28222a345a641f2590c7f3b7e204",
+    "web/linux/tests/guest-gpu/host.mjs": "bb6b1df8e47c8e782eecf25bff79b21aae1af0605dbdd5f0745c4f07c416f5c7"
+  }
+}
