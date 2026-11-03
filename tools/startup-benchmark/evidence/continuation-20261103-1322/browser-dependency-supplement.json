@@ -1,0 +1,522 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-11-03T18:01:14.336528+00:00",
+  "manifest": {
+    "schema": 1,
+    "createdUtc": "2026-11-03T17:57:45.806763+00:00",
+    "sourceCommit": "dbe3301a0749d3b076c1a123f6b93abfafd7c839",
+    "runtimeManifestSha256": "fed503455594836a87b131d2e62a62a12bdd0c220c4e9768b0d5c6dd65d1b081",
+    "runtimeVersion": "1a3951f0c48d",
+    "archive": {
+      "name": "linuxonweb_browser_dependencies_20261103_1322.tar.gz",
+      "bytes": 219830,
+      "sha256": "8eceddd553a1651b2139d63a6f6a470b67bd994d1f2a5c054ff68279beed6069"
+    },
+    "files": [
+      {
+        "restorePath": "web/linux/dist/firefox-webgpu-decoder.wasm",
+        "bytes": 377315,
+        "sha256": "2f0c575b700a9220aea6365a60201f29600ff446c26eeeb78d703ccb11cd248e"
+      },
+      {
+        "restorePath": "web/linux/node_modules/@xterm/addon-fit/lib/addon-fit.js",
+        "bytes": 1497,
+        "sha256": "bdaefa370b1bfc42ee88d46fe6072400902a4d4b2d45cd93438dda9b23c97089"
+      },
+      {
+        "restorePath": "web/linux/node_modules/@xterm/xterm/css/xterm.css",
+        "bytes": 5559,
+        "sha256": "ba8e6985669488981ccf40c0cefe3aba80722cb6c92de7ad628b0bd717faf2b6"
+      },
+      {
+        "restorePath": "web/linux/node_modules/@xterm/xterm/lib/xterm.js",
+        "bytes": 289441,
+        "sha256": "1f991ac3b4b283ebf96e60ae23a00a52765dd3a2e46fa6fdda9f1aab032f7495"
+      },
+      {
+        "restorePath": "web/linux/third-party-notices/browser-dependencies-20261103.md",
+        "bytes": 1023,
+        "sha256": "cb698b07843b5be92df169132d62ede52ca22db0ba3bc449305bda727efa0431"
+      },
+      {
+        "restorePath": "web/linux/third-party-notices/xterm-existing-MIT.txt",
+        "bytes": 1580,
+        "sha256": "f18c60ef467344d9886e3c0782be05af9216902c9a8206e0cfca2c389d3c63cf"
+      }
+    ],
+    "scope": "Exact minimal tracked browser dependencies omitted from filtered public source; full encrypted Git history already contains their original payloads",
+    "optionalDecoderEnabled": false,
+    "newNativeAcceptance": false
+  },
+  "verification": {
+    "schema": 1,
+    "pass": true,
+    "cases": [
+      {
+        "case": "actual-optimized-restore",
+        "pass": true,
+        "filesVerified": 6,
+        "written": 6,
+        "reusedIdentical": 0,
+        "destination": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-browser-dependencies/private-verify/restored"
+      },
+      {
+        "case": "identical-existing-idempotent",
+        "pass": true,
+        "filesVerified": 6,
+        "written": 0,
+        "reusedIdentical": 6,
+        "destination": "/mnt/p3/project/linux/linuxonweb/out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-browser-dependencies/private-verify/restored"
+      },
+      {
+        "case": "differing-existing-preserved",
+        "pass": true,
+        "refusal": "file identity mismatch"
+      },
+      {
+        "case": "non-directory-ancestor-preflight",
+        "pass": true,
+        "refusal": "non-directory restore ancestor"
+      },
+      {
+        "case": "symlink-destination-refused",
+        "pass": true,
+        "refusal": "symlink in restore destination"
+      },
+      {
+        "case": "corrupt-archive-optimized",
+        "pass": true,
+        "refusal": "file identity mismatch"
+      },
+      {
+        "case": "tampered-manifest-optimized",
+        "pass": true,
+        "refusal": "pinned restore contract"
+      }
+    ],
+    "scope": "Actual exact small payload reconstruction twice plus five conflict/integrity refusals under Python-O; no new native guest or whole encrypted recovery claim",
+    "buildOwner": {
+      "startedUtc": "2026-11-03T17:57:44.707464+00:00",
+      "finishedUtc": "2026-11-03T17:57:46.712004+00:00",
+      "durationSeconds": 2.005,
+      "argv": [
+        "python3",
+        "tools/checkpoints/prepare-browser-dependencies.py",
+        "--out",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-browser-dependencies",
+        "--runtime-manifest",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-final-runtime/publish/RUNTIME-MANIFEST.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 454656,
+      "ownedTreePeakRssBytes": 454656,
+      "ownedTreePeakPssBytes": 576512,
+      "resourceSamples": 1,
+      "pssSamples": 1,
+      "quotaReadySeconds": 1.003,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "verificationOwner": {
+      "startedUtc": "2026-11-03T17:59:07.142744+00:00",
+      "finishedUtc": "2026-11-03T17:59:08.648857+00:00",
+      "durationSeconds": 1.506,
+      "argv": [
+        "python3",
+        "tools/checkpoints/test-browser-dependencies.py",
+        "--directory",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-browser-dependencies",
+        "--runtime-manifest",
+        "out/gpt-6-astra-pro_builtin-agents_packages-mobile-20261103/backup/continuation-final-runtime/publish/RUNTIME-MANIFEST.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 585728,
+      "ownedTreePeakRssBytes": 585728,
+      "ownedTreePeakPssBytes": 362496,
+      "resourceSamples": 1,
+      "pssSamples": 1,
+      "quotaReadySeconds": 0.503,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "knownPrivateValueAudit": "Performed by final delivery owner before upload; this receipt is not that audit"
+  },
+  "publicPathCoverage": {
+    "schema": 1,
+    "allObservedPathsCovered": true,
+    "observedUniquePaths": 62,
+    "paths": [
+      {
+        "urlPath": "/linux/boot-assets.mjs",
+        "restorePath": "web/linux/boot-assets.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/boot-manifest.json",
+        "restorePath": "web/desktop/latest-build/boot-manifest.json",
+        "coverage": "exact runtime archive"
+      },
+      {
+        "urlPath": "/linux/browser-info.mjs",
+        "restorePath": "web/linux/browser-info.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/build-info.mjs",
+        "restorePath": "web/linux/build-info.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/clipboard.mjs",
+        "restorePath": "web/linux/clipboard.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/console-bytes.mjs",
+        "restorePath": "web/linux/console-bytes.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/desktop-extras.cpio",
+        "restorePath": "web/linux/desktop-extras.cpio",
+        "coverage": "exact runtime archive"
+      },
+      {
+        "urlPath": "/linux/desktop-extras.cpio.json",
+        "restorePath": "web/linux/desktop-extras.cpio.json",
+        "coverage": "exact runtime archive"
+      },
+      {
+        "urlPath": "/linux/desktop-extras.mjs",
+        "restorePath": "web/linux/desktop-extras.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/audio.js",
+        "restorePath": "web/linux/dist/audio.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/bytes.js",
+        "restorePath": "web/linux/dist/bytes.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/devicetree.js",
+        "restorePath": "web/linux/dist/devicetree.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/framebuffer-presenter.js",
+        "restorePath": "web/linux/dist/framebuffer-presenter.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/framebuffer.js",
+        "restorePath": "web/linux/dist/framebuffer.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/guest-gpu-hostcall.js",
+        "restorePath": "web/linux/dist/guest-gpu-hostcall.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/index.js",
+        "restorePath": "web/linux/dist/index.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/network/gateway.js",
+        "restorePath": "web/linux/dist/network/gateway.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/network/index.js",
+        "restorePath": "web/linux/dist/network/index.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/network/ws-tcp.js",
+        "restorePath": "web/linux/dist/network/ws-tcp.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/platform.js",
+        "restorePath": "web/linux/dist/platform.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/util.js",
+        "restorePath": "web/linux/dist/util.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/block.js",
+        "restorePath": "web/linux/dist/virtio/block.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/console.js",
+        "restorePath": "web/linux/dist/virtio/console.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/core.js",
+        "restorePath": "web/linux/dist/virtio/core.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/entropy.js",
+        "restorePath": "web/linux/dist/virtio/entropy.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/fs.js",
+        "restorePath": "web/linux/dist/virtio/fs.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/input.js",
+        "restorePath": "web/linux/dist/virtio/input.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/net.js",
+        "restorePath": "web/linux/dist/virtio/net.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/virtio/vsock.js",
+        "restorePath": "web/linux/dist/virtio/vsock.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/wasm.js",
+        "restorePath": "web/linux/dist/wasm.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/wasm_binary.js",
+        "restorePath": "web/linux/dist/wasm_binary.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/dist/worker-pool.mjs",
+        "restorePath": "web/linux/dist/worker-pool.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/download-panel.mjs",
+        "restorePath": "web/linux/download-panel.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/download-progress.mjs",
+        "restorePath": "web/linux/download-progress.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/extra-keys.mjs",
+        "restorePath": "web/linux/extra-keys.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/firefox-cache-lifecycle.mjs",
+        "restorePath": "web/linux/firefox-cache-lifecycle.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/firefox-jit-config.mjs",
+        "restorePath": "web/linux/firefox-jit-config.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/gpu-present-overlay.mjs",
+        "restorePath": "web/linux/gpu-present-overlay.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/gpu-test-boot.mjs",
+        "restorePath": "web/linux/gpu-test-boot.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/gputest.mjs",
+        "restorePath": "web/linux/gputest.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/guest-gpu-config.mjs",
+        "restorePath": "web/linux/guest-gpu-config.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/guest-gpu-status.mjs",
+        "restorePath": "web/linux/guest-gpu-status.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/index.html",
+        "restorePath": "web/linux/index.html",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/info-wgpu/renderer.mjs",
+        "restorePath": "web/linux/info-wgpu/renderer.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/initramfs-firefox.cpio.gz",
+        "restorePath": "web/desktop/latest-build/initramfs-firefox.cpio.gz",
+        "coverage": "exact runtime archive"
+      },
+      {
+        "urlPath": "/linux/keyboard.mjs",
+        "restorePath": "web/linux/keyboard.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/log-viewer.mjs",
+        "restorePath": "web/linux/log-viewer.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/machine-settings.mjs",
+        "restorePath": "web/linux/machine-settings.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/main.js",
+        "restorePath": "web/linux/main.js",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/mobile-keyboard.mjs",
+        "restorePath": "web/linux/mobile-keyboard.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/more-menu.mjs",
+        "restorePath": "web/linux/more-menu.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/node_modules/@xterm/addon-fit/lib/addon-fit.js",
+        "restorePath": "web/linux/node_modules/@xterm/addon-fit/lib/addon-fit.js",
+        "coverage": "exact browser dependency supplement"
+      },
+      {
+        "urlPath": "/linux/node_modules/@xterm/xterm/css/xterm.css",
+        "restorePath": "web/linux/node_modules/@xterm/xterm/css/xterm.css",
+        "coverage": "exact browser dependency supplement"
+      },
+      {
+        "urlPath": "/linux/node_modules/@xterm/xterm/lib/xterm.js",
+        "restorePath": "web/linux/node_modules/@xterm/xterm/lib/xterm.js",
+        "coverage": "exact browser dependency supplement"
+      },
+      {
+        "urlPath": "/linux/package-recovery.mjs",
+        "restorePath": "web/linux/package-recovery.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/persistent-home.mjs",
+        "restorePath": "web/linux/persistent-home.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/physical-keyboard.mjs",
+        "restorePath": "web/linux/physical-keyboard.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/server-build.json",
+        "restorePath": "web/linux/server-build.json",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/storage-panel.mjs",
+        "restorePath": "web/linux/storage-panel.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/test-commands.mjs",
+        "restorePath": "web/linux/test-commands.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/touch-gesture.mjs",
+        "restorePath": "web/linux/touch-gesture.mjs",
+        "coverage": "tracked public source"
+      },
+      {
+        "urlPath": "/linux/vmlinux.wasm",
+        "restorePath": "web/linux/vmlinux.wasm",
+        "coverage": "exact runtime archive"
+      }
+    ],
+    "scope": "Public response-header path coverage only; large rootfs downloads did not complete and no native VM was started in the final HTTPS run. Actual full filtered-source archive hash inventory is checked by final delivery tooling."
+  },
+  "publicFiles": [
+    {
+      "name": "BROWSER-DEPENDENCIES-MANIFEST.json",
+      "bytes": 1864,
+      "sha256": "f4b35ed7d9810ca6f8084e553b6cfd29ba92250606531578544c7c6a0d522eaa"
+    },
+    {
+      "name": "DEPENDENCY-VERIFICATION.json",
+      "bytes": 4284,
+      "sha256": "7e49cf78d3f8e6b94bd6e75387aa641269f39f092725aa49ec18defd7f95d4c9"
+    },
+    {
+      "name": "PUBLIC-PATH-COVERAGE.json",
+      "bytes": 10098,
+      "sha256": "747fef1f039e89dd4df9a90a6c402d1ffb4863acdcfd11269765603b820a41b8"
+    },
+    {
+      "name": "README.md",
+      "bytes": 1801,
+      "sha256": "1a2c02f725037a7303b964d2d53f9eb7af488c000242dc3cd0271402470e8908"
+    },
+    {
+      "name": "index.html",
+      "bytes": 846,
+      "sha256": "e7be41044dd0916396e43ca28a9407d1c7342533bda83559cff159daf06f6610"
+    },
+    {
+      "name": "linuxonweb_browser_dependencies_20261103_1322.tar.gz",
+      "bytes": 219830,
+      "sha256": "8eceddd553a1651b2139d63a6f6a470b67bd994d1f2a5c054ff68279beed6069"
+    },
+    {
+      "name": "restore-browser-dependencies.py",
+      "bytes": 5087,
+      "sha256": "0edf5407b79fcda14c8656e9edcfe57418a7464b8db8d3f98fcb80865a00fb7a"
+    }
+  ],
+  "scope": "Small public-source supplement only; actual full encrypted chain already includes tracked dependencies. Rootfs transfer and native browser gates are independent."
+}
