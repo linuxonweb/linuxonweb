@@ -2,7 +2,10 @@
 // comes from the explicit active setting, mirrored in the gpubackend URL.
 export function guestGpuOwnerConfig(search, gpuBackend = 'webgpu') {
   // ?debug=1 also logs guest GL remote call rates every 5 s of activity.
-  const gl = new URLSearchParams(search).get('debug') === '1' ? { gl: { stats: true } } : {};
+  const params = new URLSearchParams(search);
+  // ?glerror=exact queries the host GL error state on every guest GetError.
+  const glOptions = { ...(params.get('debug') === '1' ? { stats: true } : {}), ...(params.get('glerror') === 'exact' ? { exactErrors: true } : {}) };
+  const gl = Object.keys(glOptions).length ? { gl: glOptions } : {};
   return { ...gl, ...vulkanOwnerConfig(search, gpuBackend === 'webgl' ? 'webgl' : 'webgpu') };
 }
 function vulkanOwnerConfig(search, gpuBackend) {

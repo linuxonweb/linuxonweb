@@ -139,12 +139,13 @@ class Fault extends Error {
 const contexts = new Map();
 let nextContext = 1;
 let probeResult = null;
-let enabled = true, statsEnabled = false;
+let enabled = true, statsEnabled = false, exactErrors = false;
 
 /** Owner config `gl`: the remote is on unless `{enabled: false}`; `{stats: true}` logs per-context call rates. */
 export function configureGl(value) {
     enabled = value?.enabled !== false;
     statsEnabled = value?.stats === true;
+    exactErrors = value?.exactErrors === true;
     if (statsEnabled) {
         globalThis.__glDumpTextures = dumpTextures;
         globalThis.__glSetKeyedPresent = setKeyedPresent;
@@ -1541,9 +1542,24 @@ H.GetInternalformatParameter = (c, i) => {
         return numberReply([(c.gl.getInternalformatParameter(c.w[i], c.w[i + 1], GL.SAMPLES) ?? []).length]);
     return reply(c, c.gl.getInternalformatParameter(c.w[i], c.w[i + 1], c.w[i + 2]) ?? []);
 };
+// Host getError is a synchronous GPU-process round trip (~4 ms). Guest
+// compositors call it after most batches, saturating the single owner and
+// stalling Firefox. Query exactly during a context's first seconds (feature
+// probes), then at most every ERROR_CHECK_MS; GL errors are sticky, so a
+// skipped error is reported by a later GetError. ?glerror=exact restores
+// a host query on every call.
+const ERROR_EXACT_MS = 10000, ERROR_CHECK_MS = 100;
 H.GetError = (c) => {
-    const error = c.error || c.gl.getError();
+    let error = c.error;
     c.error = 0;
+    if (!error) {
+        const now = performance.now();
+        c.errorSince ??= now;
+        if (exactErrors || now - c.errorSince < ERROR_EXACT_MS || now - (c.errorCheckedAt ?? 0) >= ERROR_CHECK_MS) {
+            c.errorCheckedAt = now;
+            error = c.gl.getError();
+        }
+    }
     return numberReply([error]);
 };
 H.IsEnabled = (c, i) => numberReply([c.w[i] === GL.PRIMITIVE_RESTART_FIXED_INDEX ? 1 : c.gl.isEnabled(c.w[i]) ? 1 : 0]);
