@@ -1,0 +1,460 @@
+{
+  "schema": "linuxonweb-final159-input-lock-1",
+  "description": "Reviewed final159 source/configuration/generated tiers/native objects/archive/link/package identities. This is provenance, never guest acceptance.",
+  "sourceGitHead": "525176a870d4ec4329e7decdb2ef7fdd5b87fb22",
+  "officialBuildID": "20261002211853",
+  "localBuildID": "20261003042618",
+  "sourceHgRevision": "dfc77f7a6d716f1a20a2576597638d4fc21cd916",
+  "files": [
+    {
+      "root": "source",
+      "path": ".mozconfig",
+      "bytes": 1094,
+      "sha256": "14439b013a62c5130b3b135dbbfac0f8c0fa37b8dc57726f50a10504462f3e86"
+    },
+    {
+      "root": "source",
+      "path": "config/gcc_hidden.h",
+      "bytes": 285,
+      "sha256": "94de080a7f0cb72de6078f1a54666303862a1186ea6da6595f9d659ffa59e9aa"
+    },
+    {
+      "root": "source",
+      "path": "js/src/vm/Opcodes.h",
+      "bytes": 141783,
+      "sha256": "d8afd46d78dd09ca6f59e482f7245c57a848ae77f30e17ab2c196294d2a84f61"
+    },
+    {
+      "root": "source",
+      "path": "js/src/vm/PblJit.cpp",
+      "bytes": 79130,
+      "sha256": "4222b9069e561d18a0e037f2747275d9131cc05fa89419fcba84ac21231ff583"
+    },
+    {
+      "root": "source",
+      "path": "js/src/vm/PortableBaselineInterpret.cpp",
+      "bytes": 331614,
+      "sha256": "68ad285afe873cef8afdc4739350ded8854dbc5257f621a1788922253e47eef5"
+    },
+    {
+      "root": "source",
+      "path": "js/src/vm/moz.build",
+      "bytes": 4495,
+      "sha256": "2ada5b0944458f8195255c36da46b5e3c0a25d4dc0089ddf0d2036d6e2d2581d"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/adapters/defs.mk",
+      "bytes": 3259,
+      "sha256": "c5788f20bbbdb839ab3d51b86b7229fcba0bdefde3194b8ee1e81750d6073e31"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/adapters/native-runtime/runtime.c",
+      "bytes": 2676,
+      "sha256": "3ee136b2ee2154221e26d070703dbc3d988824cf99c399c62ba047e09956e7a3"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/adapters/native-stack/stack.c",
+      "bytes": 1301,
+      "sha256": "7d1d0d85dacd408c3b94278be44d1ac00baf0d81a8c3b2ffa936416e1f0590d5"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/audio-pthread-port.py",
+      "bytes": 2216,
+      "sha256": "b5f6c8d67227aa43cecee9632148fc8ddea68ce4ba9790191086f11686e34a1e"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/build-cxx-runtime.py",
+      "bytes": 2261,
+      "sha256": "cf7d6d460a51dca752f3b8eaad9a786c05a932dd87970a826216ee2ae1e07724"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/build-native-mapping.py",
+      "bytes": 2023,
+      "sha256": "87667154b405883d5101f3ebc7223f4dc44fdd007d4988f03da64719a299ba52"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/build-native-runtime.py",
+      "bytes": 2290,
+      "sha256": "11e66f41943a133cf55410cc203c6d2041d2f9470df775c0e4b5eed5ac464ae5"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/build-native-stack.py",
+      "bytes": 3565,
+      "sha256": "55335c9d3b67a7cc7eb331b89aa130bb2d02966b45090845fa05ed0fa64ab897"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/cargo",
+      "bytes": 1090,
+      "sha256": "2b2b9384fcb40837592a967126dac34848c4a5ab7c4518dc1cec004216f69da4"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/configure-cxx-runtime.py",
+      "bytes": 2602,
+      "sha256": "1930e822a3a169386db723b53a056347d5e65c162589924cd5e72890182727c4"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/environment.sh",
+      "bytes": 47879,
+      "sha256": "be6ae83fcdd094466b034aa02bd1a1896f18f6e6c99450f434bbf0afedb2ace5"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/freeze-inttypes-component.py",
+      "bytes": 4757,
+      "sha256": "196c88b4fe3c1e7fb50e877db8691020a3ba1c1adbb067b2e37e3948f3346f9f"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/freeze-inttypes-progress.py",
+      "bytes": 3901,
+      "sha256": "9baeb765192c4931be34aaf5024cde3136277df345876f2da85f961ff53cd7da"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/mozconfig",
+      "bytes": 1045,
+      "sha256": "dbfbcaec292d9eb97665f4874f9836c65d37c0cb48e9b35c46d527be15981807"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-abseil-mmap-port.py",
+      "bytes": 1873,
+      "sha256": "2cab17bca980dddc954db8d4e74e1c5ec6b7e6b2c193a90bd8f461897307aa26"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-abseil-stack-port.py",
+      "bytes": 1892,
+      "sha256": "ffca4368dd375109c89a1d9907295b812f9b0cb6d2461070474f6b325fc0461a"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-architecture-port.py",
+      "bytes": 4214,
+      "sha256": "167d69abb03e7cdc0b1af60add4880e997ba12cab2156144121b1ab88fb3b3ef"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-cargo-cxx-runtime-port.py",
+      "bytes": 3985,
+      "sha256": "38cb6a3242113bd587869c5a77497c0897a8b7d592cd5aba543fceb48ecedd90"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-certutil-templates-port.py",
+      "bytes": 2278,
+      "sha256": "9b9d58b563ca879bddcd29600bd2e831f7a93c93c8ec088c405401b0d3106b48"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-duplicate-fd-port.py",
+      "bytes": 3458,
+      "sha256": "7548bf3cbd31a4d602b05b52b6aba10e0c8cf16f49b28763daf6f4c46d9388b8"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-env-interposer-port.py",
+      "bytes": 2375,
+      "sha256": "5ace7f88f94f8d3d0b4e7377f62e4962edc91a7baf510bcec83e93ddba317936"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-expat-static-port.py",
+      "bytes": 3849,
+      "sha256": "68ad92323f23430ceb364569a99c36aea51743582da7bfabb784c1f6e13ac65b"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-fenv-port.py",
+      "bytes": 1813,
+      "sha256": "a2dd3f2c083557e609e607b1be4765a9594338050f29d99b228f1dcc7eca208c"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-ggml-backtrace-port.py",
+      "bytes": 1778,
+      "sha256": "b20a5ad19604a0b7aaf23fc982a1301ed53776ce250f2312363c902946ff2ed1"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-libevent-time64-port.py",
+      "bytes": 2945,
+      "sha256": "58811028a77fd18a6376c26d90c74ef15da17542c66443ba8ed4760d968839a4"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-llama-mapping-port.py",
+      "bytes": 2189,
+      "sha256": "f36ed579da7b38ba41ea38eef2921f025b80118c44885f0c9ac55ca7e07b7a7b"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-nss-disabled-fips-signature-port.py",
+      "bytes": 1813,
+      "sha256": "d77f055f7f4661d7adde00a3a2775ed61cdd44eac7cdd249348599437cc3dc7d"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-perf-port.py",
+      "bytes": 2285,
+      "sha256": "d0776b4bc0a45c5e9e480165bb97b7b7bafac5ef6e715388eb3364090d3d57c9"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-pixman-xshm-port.py",
+      "bytes": 4135,
+      "sha256": "1d0c1632080e292d08f3e50af67e181716b4b4e49ad7596be5fba3413c43c27b"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-static-inference-port.py",
+      "bytes": 3905,
+      "sha256": "6faa604dedbfbcad7ceb8dae60ed9d881600f6745d0d70418ff8e1f04a799525"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-static-loader-port.py",
+      "bytes": 3156,
+      "sha256": "a3a406b9b78bb49d6c6a3bdbddaa715fb6325899e5dd4a3cbbd5a0502924b88b"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-static-names-port.py",
+      "bytes": 4041,
+      "sha256": "d990af21b864a3007b5018be51e3d94d157e61ca9d45edb1a88ee00f691b0c85"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-tagged-mmap-port.py",
+      "bytes": 1884,
+      "sha256": "895b00755aeec0716f45a953773c748c22c7e562ed72dcca92af4a949e3d31f9"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-wasm-link-paths-port.py",
+      "bytes": 824,
+      "sha256": "c86c2bef81d379d511787183bf313f6ea44c740f59021733db68300ed65729f4"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/native-xptcall-port.py",
+      "bytes": 3945,
+      "sha256": "1136ab44418cbba0a1b5593aba2d58dd64ad642252a86b49d07c65567419d6b0"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/object_goals.py",
+      "bytes": 2916,
+      "sha256": "068ca3c07c443a973d5ff8d421e1ec0c1deb01a960de78bf1b47cc32a81eb087"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/refresh-inttypes-prerequisites.py",
+      "bytes": 2367,
+      "sha256": "1116cd68dc2160b8fe8b29b922f952591d777a59d717d6ab14c2a4333ff832e0"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/run-phase.py",
+      "bytes": 10690,
+      "sha256": "746f0c1a1dd01c69597db59d9be009cd583d6c39858221714fa7f6eceb77a59d"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/rust-target/wasm32-unknown-linux-musl.json",
+      "bytes": 1231,
+      "sha256": "485dd3c8f0cd20098593ef35e616cbfc14bce9c2d8f38ea86abeffcc5119ddf3"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/rustc",
+      "bytes": 588,
+      "sha256": "b694d77bb63a627c3af7e5d7c6e58af00f26db195089d054079874f45580acef"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/shim/filesystem",
+      "bytes": 383,
+      "sha256": "367972518578fcf127a7ff6ce61ad72236a8039ca8a360c9d8a74a636d4cbc20"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/shim/inttypes.h",
+      "bytes": 305,
+      "sha256": "056c55532c5be17edd7f2ff7de0987be0e53f72b55d12be6b4a476849c1ac4de"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/shim/sys/mman.h",
+      "bytes": 1943,
+      "sha256": "47983e6461ef20ebaf2fb5be0dc64864352dadb6943163eda402a8cc64d0cd1b"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/static-port.py",
+      "bytes": 5420,
+      "sha256": "c915782666535339d972863fe16ff8f4b660bf00dced95d383ba906096861a0e"
+    },
+    {
+      "root": "source",
+      "path": "linuxonweb-build/recipe/wgpu-core-native-backend-port.py",
+      "bytes": 1554,
+      "sha256": "01e6487fffd96dfab101e997731986ff605c1f2a2d610e44b01893c20a64f4f1"
+    },
+    {
+      "root": "build",
+      "path": "compile-PblJit.command.json",
+      "bytes": 3757,
+      "sha256": "82e977ad984f338f727070b52aa5e30adbcd2fc673e2d7b923660478314a911d"
+    },
+    {
+      "root": "build",
+      "path": "compile-PblJit.receipt.json",
+      "bytes": 3965,
+      "sha256": "17cf75f07ee648ca1ab4969abe636d6301ea58d45ed748046d4e091dc1531d76"
+    },
+    {
+      "root": "build",
+      "path": "compile-PortableBaselineInterpret.command.json",
+      "bytes": 3833,
+      "sha256": "de595f3237eeed004c559a568a8f3597ef5cd1868e1271fb17770977add1c2ae"
+    },
+    {
+      "root": "build",
+      "path": "compile-PortableBaselineInterpret.receipt.json",
+      "bytes": 4042,
+      "sha256": "4c5ef4e50f487defc779b2866d8a73fbfd0ac5cf56fbaae4e0fe5f2b843ee513"
+    },
+    {
+      "root": "build",
+      "path": "generated/manifest.json",
+      "bytes": 7441,
+      "sha256": "cb239b700631d7f835ba9f97ea8f28c49f2fa7f05f512d857bf4238b1c0787fe"
+    },
+    {
+      "root": "build",
+      "path": "generated/overlay/host-test/mock.h",
+      "bytes": 8829,
+      "sha256": "cd8e3a453c89391baa97229af550480e465a0c73731ff4f9476c7dbc34b57db2"
+    },
+    {
+      "root": "build",
+      "path": "lib/libjs_static.a",
+      "bytes": 52410026,
+      "sha256": "91d4398150f36547587188d09f03325a51624eeb5afaffb3dadba41071f1ff25"
+    },
+    {
+      "root": "build",
+      "path": "link.args",
+      "bytes": 19095,
+      "sha256": "a5cba0bd1917d1c3f1b87e2befe5c46b6ac49c7f442ba8bdffab8fe67c673a82"
+    },
+    {
+      "root": "build",
+      "path": "link.command.json",
+      "bytes": 370,
+      "sha256": "b6d1a2c736b9cf6030f8d760c19d5b28435507917d721704126b97ced4e30c5a"
+    },
+    {
+      "root": "build",
+      "path": "link.receipt.json",
+      "bytes": 578,
+      "sha256": "f04ebea84002bbc87ebf53e17248601e6bd69e9eebb71ff619eb5cd3b8e213a6"
+    },
+    {
+      "root": "build",
+      "path": "pbl/obj/PblJit.o",
+      "bytes": 89766,
+      "sha256": "2351b8686017b2ee763739da9c151357aba7fb4b2207ec46ddb786df60297587"
+    },
+    {
+      "root": "build",
+      "path": "pbl/obj/PortableBaselineInterpret.o",
+      "bytes": 459928,
+      "sha256": "0c5d045e6345ca4f22a5b1aae5f26f012f385716e50e2020ea62aa287dd59026"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblCacheObserve.h",
+      "bytes": 4635,
+      "sha256": "72df755ee48cfb5451d4f842774c06e4b74a50a73f78fe2fcb5cfc7766c1498a"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblIc.inc",
+      "bytes": 51837,
+      "sha256": "e24511bc58a1ae2eb05819e843c27fc8380934c4959f61dcca7cd6184802361b"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblIcOps.h",
+      "bytes": 18376,
+      "sha256": "16ab45821d1881870f09ba68d7c865ced4e5e3c51a4ac2af3d2fe10119596d21"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblJit.cpp",
+      "bytes": 81089,
+      "sha256": "cbbccd4e04b695cbad76deb32a849d89220ce062d018e630d59ba311852bb80f"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblMethod.inc",
+      "bytes": 49678,
+      "sha256": "55ff9e65dc14551dfd9095971a4c1515c74de831c27300a9a4f000c2221c2629"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PblTierObserve.h",
+      "bytes": 8349,
+      "sha256": "a238ea0d943f273bc6efaab150853418af975d832f8baacd12dacf246fe3acb4"
+    },
+    {
+      "root": "build",
+      "path": "pbl/src/PortableBaselineInterpret.cpp",
+      "bytes": 339875,
+      "sha256": "d77dbdf8d019c5249658469ceafda3a142f613ea8911a8dd4db2ef3d18f67e4b"
+    },
+    {
+      "root": "build",
+      "path": "report.json",
+      "bytes": 682533,
+      "sha256": "da26a57434cfa570ecade01dc55c139858b33093ac936127fabc8493279a054b"
+    },
+    {
+      "root": "package",
+      "path": "boot-manifest.json",
+      "bytes": 733,
+      "sha256": "8b0416b2336a4d891b97409d611c61b2d327b189461eea36daf70824687a3346"
+    },
+    {
+      "root": "package",
+      "path": "freeze-receipt.json",
+      "bytes": 454507,
+      "sha256": "59167cf7aa924e37cabd37b438e96fd03495520762577e5fcf9ad6fe8e21b61c"
+    },
+    {
+      "root": "package",
+      "path": "initramfs-firefox.cpio.gz",
+      "bytes": 114767798,
+      "sha256": "60847fb853398000566e822884816fdd8a75d6c8e7776189ba3fcab1672859fa"
+    },
+    {
+      "root": "package",
+      "path": "package.json",
+      "bytes": 708,
+      "sha256": "a841ed9a80c1acfa2d5baa2ce9411cffc448243962237dc7e99888c264557f4c"
+    }
+  ]
+}
