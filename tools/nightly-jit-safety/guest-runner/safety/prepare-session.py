@@ -2,6 +2,9 @@
 """Prepare small guest files; an unbuilt candidate always remains pending."""
 import argparse, hashlib, json, os, shutil, subprocess
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from owned_paths import task_root, scoped_path
 
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--task-root', type=Path, required=True)
@@ -12,9 +15,10 @@ p.add_argument('--build-binding', type=Path, help='Independent reviewed full-JIT
 a = p.parse_args()
 import re
 if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', a.label): p.error('invalid label')
-root = a.task_root
-if not root.is_absolute() or root.resolve()!=root or not root.is_dir() or not re.fullmatch(r'/mnt/p6/(?:project/)?build/[^/]+',str(root)): p.error('canonical disk task root required')
-if not a.out.resolve().is_relative_to(root): p.error('scoped disk task output required')
+try:
+    root = task_root(a.task_root)
+    scoped_path(root, a.out, fresh=True)
+except (ValueError, OSError) as error: p.error(str(error))
 if shutil.disk_usage(root).free < 20*1024**3: p.error('20GiB reserve required')
 if sum(f.stat().st_size for f in root.rglob('*') if f.is_file()) > 256*1024**2: p.error('256MiB task cap')
 here = Path(__file__).resolve().parent
