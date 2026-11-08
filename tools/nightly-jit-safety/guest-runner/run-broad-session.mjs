@@ -5,12 +5,12 @@ import { openSync,closeSync,readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath,pathToFileURL } from 'node:url';
 import { spawn,execFileSync } from 'node:child_process';
-import { PREPARATION_TASK,RUNTIME_CAP,taskRoot,allocationContract,REPO,LIMIT,sha,require,pinFile,pinnedJSON,patchInit,bindingContract,parentChecks,completeCapture,completedSession,exactFirefoxExit } from './contracts.mjs';
+import { PREPARATION_TASK,RUNTIME_CAP,taskRoot,repoRoot,loadFrameObserver,allocationContract,LIMIT,sha,require,pinFile,pinnedJSON,patchInit,bindingContract,parentChecks,completeCapture,completedSession,exactFirefoxExit } from './contracts.mjs';
 import { readHostNproc,selectHostCpus,guestCpuStateExpression,guestCpuPrebootStateExpression,saveGuestCpuEvidence,saveHostCpuPhaseEvidence } from './guest-rootfs/firefox-host-cpus.mjs';
 import { prepareBrowserAffinity,browserLaunchCommand,saveBrowserAffinityEvidence } from './guest-rootfs/firefox-browser-affinity.mjs';
 import { pinOwnedGroup,drainOwnedGroup,groupSnapshot,parseProcStat } from './guest-rootfs/benchmark-process-group.mjs';
 import { ownedBrowserEndpoint,ownedPageEndpoint,fatalLines } from './guest-rootfs/check-firefox-nightly-benchmark.mjs';
-import {createStallFrameDiagnostics} from '/mnt/p6/build/interrupt-worker-frames-prep-20261004/worker-stall-frames.mjs';
+import {scopedPath} from '../owned-paths.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url)),sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const writeJSON=(filename,value)=>fs.writeFile(filename,JSON.stringify(value,null,2)+'\n');
 function consoleExpression(label) {
@@ -22,10 +22,7 @@ export function options(argv) {
   for(let i=0;i<argv.length;i+=2){const name=argv[i];require(/^--[a-z][a-z0-9-]*$/.test(name)&&!Object.hasOwn(result,name),'invalid/duplicate option');result[name]=argv[i+1];}
   return result;
 }
-async function scopedFresh(out,TASK) {
-  require(out.startsWith(TASK+'/')&&await fs.realpath(path.dirname(out))===path.dirname(out),'fresh canonical task output required');
-  require(!(await fs.stat(out).catch(e=>e.code==='ENOENT'?null:Promise.reject(e))),'output must not exist');
-}
+async function scopedFresh(out,TASK) {await scopedPath(TASK,out,{fresh:true});}
 export async function storageCheck(TASK,cap=256*1024**2) {
   const usage=Number(execFileSync('du',['-sb',TASK],{encoding:'utf8',timeout:10000}).split(/\s+/)[0]),disk=await fs.statfs(TASK);
   require(Number.isSafeInteger(usage)&&usage<cap&&disk.bavail*disk.bsize>=20*1024**3,'actual task cap/20GiB reserve required');
@@ -35,7 +32,7 @@ export async function storageCheck(TASK,cap=256*1024**2) {
 export async function prepare(args) {
   require(Object.keys(args).every(name=>['--task-root','--out','--label','--arm','--binding','--binding-sha256'].includes(name)),'unknown preparation option');
   require(['disabled','enabled'].includes(args['--arm'])&&/^[A-Za-z0-9_-]{1,64}$/.test(args['--label']||''),'arm/owned label required');
-  const TASK=await taskRoot(args),out=path.resolve(args['--out']);await scopedFresh(out,TASK);await storageCheck(TASK);
+  const TASK=await taskRoot(args),out=args['--out'];await scopedFresh(out,TASK);await storageCheck(TASK);
   const command=['python3',here+'/safety/prepare-session.py','--task-root',TASK,'--out',out,'--label',args['--label'],'--arm',args['--arm']];
   if(args['--binding']){bindingContract(await pinnedJSON({path:args['--binding'],sha256:args['--binding-sha256']}));command.push('--build-binding',args['--binding']);}
   execFileSync(command[0],command.slice(1),{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:45000});
@@ -47,12 +44,12 @@ export async function prepare(args) {
   return {kind:'broad-session-preparation-v1',pass:false,preparationComplete:true,status:contract.status,out,guestAcceptance:false,browserStarted:false};
 }
 export async function preflight(args) {
-  require(Object.keys(args).every(name=>['--task-root','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256','--arm','--out'].includes(name)),'unknown runner option');
+  require(Object.keys(args).every(name=>['--task-root','--repo','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256','--arm','--out'].includes(name)),'unknown runner option');
   require(['disabled','enabled'].includes(args['--arm']),'explicit arm required');
-  const TASK=await taskRoot(args);require(TASK!==PREPARATION_TASK,'runtime requires a separate admitted4GiB task root');
+  const TASK=await taskRoot(args),repo=await repoRoot(args);require(TASK!==PREPARATION_TASK,'runtime requires a separate admitted4GiB task root');
   const inputs=[],retain=async record=>{const row=await pinFile(record);inputs.push(row);return row;};
   const launch=await pinnedJSON({path:args['--launch'],sha256:args['--launch-sha256']});
-  require(launch.kind==='caller-reviewed-nightly-broad-runner-launch-v1'&&launch.pass===true&&launch.repo===REPO&&launch.task===TASK&&launch.sameBinaryRuntimeArms===true,'actual reviewed launch contract required');
+  require(launch.kind==='caller-reviewed-nightly-broad-runner-launch-v1'&&launch.pass===true&&launch.repo===repo&&launch.task===TASK&&launch.sameBinaryRuntimeArms===true,'actual reviewed launch contract required');
   const implementation=await pinnedJSON({path:args['--implementation'],sha256:args['--implementation-sha256']});
   require(implementation.kind==='nightly-broad-runner-implementation-v1'&&implementation.implementationRoot===here,'executing implementation differs');
   for(const record of implementation.files)await retain(record);
@@ -60,6 +57,7 @@ export async function preflight(args) {
   const frameObserver=implementation.frameObserver;require(frameObserver?.kind==='existing-owned-worker-stall-frames-v1'&&implementation.files.some(row=>row.path===frameObserver.path&&row.sha256===frameObserver.sha256),'task-only frame observer pin required');await retain(frameObserver);
   const startupConfig=implementation.startupConfig;require(startupConfig?.kind==='standard-nightly-autoconfig-startup-v1','task-only AutoConfig binding required');for(const key of ['defaults','config']){const record=startupConfig[key];require(record&&implementation.files.some(row=>row.path===record.path&&row.sha256===record.sha256),'task-only AutoConfig source pin required');await retain(record);}
   for(const name of ['run-broad-session.mjs','contracts.mjs','runner-entry.sys.mjs','capture-launch.sh','supervise-broad-session.py','evaluate-capture.py','safety/prepare-session.py','safety/generate.mjs','safety/cases.mjs','safety/cases-broad.mjs','safety/check-session.py','safety/check-privileged.py','safety/check.py','safety/guest-entry.sys.mjs','safety/guest-content.sys.mjs','safety/privileged-driver.js','safety/NightlyJitSafetyChild.sys.mjs','safety/NightlyJitSafetyParent.sys.mjs','guest-rootfs/firefox-host-cpus.mjs','guest-rootfs/firefox-browser-affinity.mjs','guest-rootfs/benchmark-process-group.mjs','guest-rootfs/check-firefox-nightly-benchmark.mjs','guest-rootfs/benchmark-diagnostics.sys.mjs'])require(implementation.files.some(row=>row.path===here+'/'+name),'missing executing implementation pin: '+name);
+  for(const name of ['owned-paths.mjs','owned_paths.py'])require(implementation.files.some(row=>row.path===path.resolve(here,'..',name)),'missing executing owned-path policy pin: '+name);
   const review=await pinnedJSON({path:args['--prelaunch-review'],sha256:args['--prelaunch-review-sha256']});
   require(review.kind==='caller-reviewed-nightly-broad-runner-prelaunch-v1'&&review.pass===true&&review.launchSHA256===args['--launch-sha256']&&review.implementationSHA256===args['--implementation-sha256']&&review.noActiveOwnedBuild===true&&review.freshFinalLinkTerminalReapedEmpty===true,'actual independent postlink/resource launch review required');
   const binding=await pinnedJSON(launch.buildBinding);bindingContract(binding);await retain(launch.buildBinding);
@@ -92,8 +90,8 @@ export async function preflight(args) {
   for(const route of ['/linux/index.html','/linux/main.js','/linux/persistent-home.mjs','/linux/boot-assets.mjs','/linux/worker.js','/linux/vmlinux.wasm','/linux/initramfs.cpio'])require(routes[route],'unbound core runtime route '+route);
   require(routes['/linux/vmlinux.wasm']===launch.kernel.path,'served actual kernel differs');
   require(launch.runtimeFiles.some(row=>row.route==='/linux/initramfs.cpio'&&row.sha256===manifest.assets?.plain?.sha256),'served actual plain package differs from candidate manifest');
-  await retain(launch.serverSource);require(launch.serverSource.path===REPO+'/web/desktop/dev-server.mjs','existing dev server source required');
-  const out=path.resolve(args['--out']);await scopedFresh(out,TASK);const storage=await storageCheck(TASK,RUNTIME_CAP),allocation=allocationContract(launch,manifest,storage.usage);
+  await retain(launch.serverSource);require(launch.serverSource.path===repo+'/web/desktop/dev-server.mjs','existing dev server source required');
+  const out=args['--out'];await scopedFresh(out,TASK);const storage=await storageCheck(TASK,RUNTIME_CAP),allocation=allocationContract(launch,manifest,storage.usage);
   for(const [key,record]of [['firefox',launch.archive],['kernel',launch.kernel],['plain',launch.runtimeFiles.find(row=>row.route==='/linux/initramfs.cpio')]])require(manifest.assets[key].bytes===(await fs.stat(record.path)).size,'current actual package size differs: '+key);
   for(const record of [launch.binary,launch.archive,launch.kernel,launch.runtimeFiles.find(row=>row.route==='/linux/initramfs.cpio')])require(!record.path.startsWith(TASK+'/'),'large package inputs must stay outside runtime task; no package copy');
   for(const name of ['TMPDIR','TMP','TEMP'])require(await fs.realpath(process.env[name])===TASK+'/t','task-owned disk scratch required');
@@ -104,7 +102,7 @@ export async function preflight(args) {
   require(Array.isArray(launch.ownedBuildRoots)&&launch.ownedBuildRoots.length>=1,'owned fresh build roots required');
   const active=[];for(const line of execFileSync('ps',['-eo','pid,args'],{encoding:'utf8'}).split('\n')){const m=/^\s*(\d+)\s+(.+)$/.exec(line);if(!m||!/(?:^|[\s/])(?:clang(?:\+\+)?(?:-\d+)?|rustc|cargo|ninja|make|mach)(?:[\s.]|$)|build-full/.test(m[2]))continue;let cwd;try{cwd=await fs.realpath('/proc/'+m[1]+'/cwd');}catch{continue;}if(launch.ownedBuildRoots.some(root=>cwd===root||cwd.startsWith(root+'/')||m[2].includes(root)))active.push({pid:Number(m[1]),cwd,argv:m[2]});}
   require(!active.length,'actual owned build still live; no browser launch');
-  return {launch,binding,session:sessions[args['--arm']],manifest,routes,inputs,out,review,TASK,allocation,windowObserver,startupConfig};
+  return {launch,binding,session:sessions[args['--arm']],manifest,routes,inputs,out,review,TASK,repo,allocation,windowObserver,frameObserver,startupConfig};
 }
 function homeFunction(operation,argument) {
   return `(async()=>{const h=await(await import('/linux/persistent-home.mjs')).openPersistentHome();try{${operation}}finally{await h.destroy();}})()`;
@@ -113,7 +111,7 @@ export const readHomeExpression=filename=>homeFunction(`let n=h.root;for(const p
 export const installHomeExpression=files=>homeFunction(`async function dir(p){let n=h.root;for(const part of p.split('/'))n=await h.lookup(n,part)||await h.mkdir(n,part,{mode:0o755,uid:1000,gid:1000});return n;}for(const [filename,b64]of Object.entries(${JSON.stringify(files)})){const parts=filename.split('/'),name=parts.pop(),parent=await dir(parts.join('/'));if(await h.lookup(parent,name))throw Error('fresh installed file already exists');const f=await h.create(parent,name,2,{mode:filename==='admin/nightly-jit-safety/wait-firefox-window.wasm'?0o755:0o644,uid:1000,gid:1000});const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));if(await h.write(f.node,f.handle,0n,bytes)!==bytes.length)throw Error('short install');await h.release(f.node,f.handle);}return true;`);
 export async function run(args) {
   const prepared=await preflight(args),{launch,binding,manifest,routes,inputs,out,TASK}=prepared,arm=args['--arm'];
-  await fs.mkdir(out);await writeJSON(out+'/prelaunch.json',{...prepared,inputs});
+  await fs.mkdir(out,{mode:0o700});await writeJSON(out+'/prelaunch.json',{...prepared,inputs});
   const rec={kind:'actual-nightly-broad-runner-capture-v1',arm,label:prepared.session.label,pass:false,fullJITAcceptance:false,guestAcceptance:false,gpuAcceptance:false,missingIndependentGates:['native callback stack/TLS/syscall probes','mutation guards','baseline/update/NSS/TLS/UI','eight-case ABBAAB and v10 performance']};
   let server,service,child,exited,exitInfo,ownedGroup,ws,verified=false,next=0,raw=Buffer.alloc(0),started,deadline,session,frameDiagnostics;
   const pending=new Map(),errors=[],artifacts={};
@@ -130,7 +128,7 @@ export async function run(args) {
     const servedManifest=structuredClone(manifest);servedManifest.assets.firefox.url='./initramfs-firefox.cpio.gz';
     await writeJSON(out+'/served-manifest.json',servedManifest);routes['/linux/boot-manifest.json']=out+'/served-manifest.json';routes['/linux/initramfs-firefox.cpio.gz']=launch.archive.path;
     let serverSource=await fs.readFile(launch.serverSource.path,'utf8');require(serverSource.includes('server.listen(port,'),'existing server anchor changed');serverSource=serverSource.slice(0,serverSource.indexOf('server.listen(port,'));
-    for(const [from,to]of [["const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));",'const root = '+JSON.stringify(REPO)+';'],['const server = createServer',`export const requests=[],sockets=new Set();const routes=${JSON.stringify(routes)};\nconst server = createServer`],["const requestPath = request.url?.split('?')[0];","const requestPath = request.url?.split('?')[0];requests.push({at:Date.now(),path:requestPath,bound:!!routes[requestPath],expectedRefusal:['/dns','/tcp','/favicon.ico'].includes(requestPath)});"],["const target = safePath(request.url || '/');","const target = routes[requestPath];"],["const addresses = await dns.resolve4(name);","throw Error('owned broad session: DNS refused');"],["if (requestPath === '/tcp') { handleTcpWebSocket(request, socket, head); return; }","if (requestPath === '/tcp') { socket.destroy(); return; }"]]){require(serverSource.includes(from),'existing server adapter anchor changed: '+from);serverSource=serverSource.replaceAll(from,to);}
+    for(const [from,to]of [["const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));",'const root = '+JSON.stringify(prepared.repo)+';'],['const server = createServer',`export const requests=[],sockets=new Set();const routes=${JSON.stringify(routes)};\nconst server = createServer`],["const requestPath = request.url?.split('?')[0];","const requestPath = request.url?.split('?')[0];requests.push({at:Date.now(),path:requestPath,bound:!!routes[requestPath],expectedRefusal:['/dns','/tcp','/favicon.ico'].includes(requestPath)});"],["const target = safePath(request.url || '/');","const target = routes[requestPath];"],["const addresses = await dns.resolve4(name);","throw Error('owned broad session: DNS refused');"],["if (requestPath === '/tcp') { handleTcpWebSocket(request, socket, head); return; }","if (requestPath === '/tcp') { socket.destroy(); return; }"]]){require(serverSource.includes(from),'existing server adapter anchor changed: '+from);serverSource=serverSource.replaceAll(from,to);}
     serverSource+='\nserver.on("connection",socket=>{sockets.add(socket);socket.on("close",()=>sockets.delete(socket));});export {server};\n';await fs.writeFile(out+'/server.mjs',serverSource);
     service=await import(pathToFileURL(out+'/server.mjs').href);server=service.server;await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
     const origin='http://127.0.0.1:'+server.address().port;rec.origin=origin;
@@ -147,6 +145,7 @@ export async function run(args) {
     const targets=await(await fetch('http://127.0.0.1:'+port+'/json/list',{signal:AbortSignal.timeout(2000)})).json();require(targets.filter(target=>target.type==='page').length===1,'one owned fresh page required');const target=targets.find(target=>target.type==='page');const pageURL=ownedPageEndpoint(target,rec.endpoint);
     require(await fs.readFile(out+'/profile/DevToolsActivePort','utf8')===active,'owned endpoint changed');await writeJSON(out+'/endpoint-ownership.json',{...rec.endpoint,target,version});verified=true;
     ws=new WebSocket(pageURL);ws.onmessage=event=>{const message=JSON.parse(event.data);if(message.id){const entry=pending.get(message.id);if(entry){pending.delete(message.id);clearTimeout(entry.timer);(message.sessionId||undefined)!==entry.sessionId?entry.reject(Error('CDP response worker session mismatch')):message.error?entry.reject(Error(JSON.stringify(message.error))):entry.resolve(message.result);}}else {frameDiagnostics?.handle(message);if(!message.sessionId&&message.method==='Runtime.exceptionThrown')errors.push(message.params);}};await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('owned websocket query timeout')),remaining(10000));ws.onopen=()=>{clearTimeout(timer);resolve();};ws.onerror=error=>{clearTimeout(timer);reject(error);};});
+    const createStallFrameDiagnostics=await loadFrameObserver(prepared.frameObserver);
     frameDiagnostics=createStallFrameDiagnostics({filename:out+'/worker-stall-frames.jsonl',origin,pageTargetId:target.id,label:prepared.session.label,call,alive});await frameDiagnostics.start();
     await call('Page.enable');await call('Runtime.enable');await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});await call('Page.navigate',{url:origin+'/linux/boot-manifest.json'});await until(()=>ev("document.readyState==='complete'"),10000,'seed page');
     const browserHardwareConcurrency=await ev('navigator.hardwareConcurrency');rec.affinity=await saveBrowserAffinityEvidence(affinity,child.pid,browserHardwareConcurrency,out);rec.cpu=selectHostCpus(rec.affinity.hostNproc,browserHardwareConcurrency);
@@ -213,6 +212,6 @@ export async function run(args) {
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const mode=process.argv[2];
-  if(mode==='--help')console.log('Host-only: node run-broad-session.mjs --prepare --task-root TASK --out TASK/NEW --label LABEL --arm disabled|enabled [--binding ABS --binding-sha256 SHA]\nActual run only through supervise-broad-session.py --run --task-root TASK --out TASK/NEW --arm disabled|enabled --launch ABS --launch-sha256 SHA --implementation ABS --implementation-sha256 SHA --prelaunch-review ABS --prelaunch-review-sha256 SHA. Missing final binding always fails before spawn. Capture remains pass:false until independent acquisition review plus existing check-session.py.');
+  if(mode==='--help')console.log('Host-only: node run-broad-session.mjs --prepare --task-root TASK --out TASK/NEW --label LABEL --arm disabled|enabled [--binding ABS --binding-sha256 SHA]\nActual run only through supervise-broad-session.py --run --repo REPO --task-root TASK --out TASK/NEW --arm disabled|enabled --launch ABS --launch-sha256 SHA --implementation ABS --implementation-sha256 SHA --prelaunch-review ABS --prelaunch-review-sha256 SHA. Missing final binding always fails before spawn. Capture remains pass:false until independent acquisition review plus existing check-session.py.');
   else {try{const args=options(process.argv.slice(3));const report=mode==='--prepare'?await prepare(args):mode==='--run'?await run(args):null;require(report,'--prepare or supervised --run required');console.log(JSON.stringify(report));if(mode==='--run'&&!report.captureProducerPass)process.exitCode=1;}catch(error){console.log(JSON.stringify({pass:false,status:'failed',browserStarted:false,error:String(error)}));process.exitCode=1;}}
 }
