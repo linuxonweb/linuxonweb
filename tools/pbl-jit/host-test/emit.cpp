@@ -123,6 +123,13 @@ static int emit(const char* dir, const char* name, Code& c, size_t headAt) {
             key & kArgKey ? "arg" : "local", key & ~kArgKey, k.varLive[i] ? "true" : "false",
             k.varWritten[i] ? "true" : "false", unsigned(k.headTy[i]));
   }
+  fprintf(j, "],\"loops\":[");
+  for (uint32_t i = 0; i < k.nloops; i++) {
+    const Loop& l = k.loops[i];
+    fprintf(j, "%s{\"head\":%d,\"end\":%d,\"depth\":%u,\"liveMask\":%u,\"ic\":%u}",
+            i ? "," : "", int(l.head - k.head), l.end ? int(l.end - k.head) : -1,
+            l.depth, l.liveMask, l.ic);
+  }
   fprintf(j, "],\"targets\":%u,\"maxArg\":%u,\"maxDepth\":%u,\"ops\":%u,\"attempts\":%u,\"mark\":[%d,%d]}\n",
           k.ntargets, k.maxArg, k.maxDepth, k.nops, k.attempts, gMark[0] < 0 ? -1 : gMark[0] - int(headAt),
           gMark[1] < 0 ? -1 : gMark[1] - int(headAt));
@@ -151,8 +158,11 @@ static void forTail(Code& c, size_t h, size_t jf, uint32_t ic) {
   size_t g = c.jump(JSOp::Goto); c.patch(g, h);
   c.here(jf); c.target(ic); c.op(JSOp::Return);
 }
+#include "nested-fixtures.h"
+
 int main(int argc, char** argv) {
   const char* dir = argv[1];
+  emitNestedFixtures(dir);
   reset();
   {  // int-loop: for (let i = 0; i < N; i++) sum = (sum + i) | 0;  sum=local0 i=local1
     Code c;
@@ -334,7 +344,7 @@ int main(int argc, char** argv) {
     emit(dir, "reject-headtype", c, h);
     reset();
   }
-  {  // rejected: nested loop inside the region
+  {  // rejected: a nested header with no backedge
     Code c;
     size_t h = c.head(0);
     c.head(1);
@@ -662,7 +672,9 @@ int main(int argc, char** argv) {
     cx.global = oldGlobal;
     test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "restore global");
     test(other->hits == 2, "restored global counts");
-    Evict(e); Evict(other); free(tCache); tCache = nullptr;
+    Evict(e, hash, &cx, "host-test-cleanup");
+    Evict(other, CacheIndex(second, c.b.data()), &cx, "host-test-cleanup");
+    free(tCache); tCache = nullptr;
     char path[512]; snprintf(path, sizeof path, "%s/cache-tests.json", dir);
     FILE* f = fopen(path, "w");
     fprintf(f, "{\"pass\":%s,\"checks\":%u,\"failures\":%u}\n", failures ? "false" : "true", checks, failures);
