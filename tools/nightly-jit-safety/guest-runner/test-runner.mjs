@@ -1,12 +1,13 @@
 // Host contract/fault tests. Never launch Chromium or a guest.
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { PREPARATION_TASK as TASK,LIMIT,sha,require,bindingContract,patchInit,parentChecks,completeCapture,completedSession,exactFirefoxExit,pinFile } from './contracts.mjs';
+import { taskRoot,LIMIT,sha,require,bindingContract,patchInit,parentChecks,completeCapture,completedSession,exactFirefoxExit,pinFile } from './contracts.mjs';
 import { options,readHomeExpression,installHomeExpression,preflight } from './run-broad-session.mjs';
 import { drainOwnedGroup,parseProcStat } from './guest-rootfs/benchmark-process-group.mjs';
 import { selectHostCpus,guestCpuEvidence } from './guest-rootfs/firefox-host-cpus.mjs';
 const checks=[];const check=(name,fn)=>{fn();checks.push(name);};const reject=(fn,message)=>{let threw=false;try{fn();}catch{threw=true;}require(threw,message);};
-const out=TASK+'/status';
+const args=options(process.argv.slice(2)),TASK=await taskRoot(args);
+const out=TASK+'/runner-contract-tests';await fs.mkdir(out,{mode:0o700});
 const binding={kind:'caller-reviewed-full-nightly-jit-build-binding-v1',pass:true,target:'wasm32-linux-musl',version:'159.0a1',environmentSlotCount:23,broadCoverage:true,restartOnlyPref:'javascript.options.portable_baseline',localBuildID:'20261004075010'};
 const keys=['finalBinarySHA256','archiveSHA256','runtimeManifestSHA256','kernelSHA256','buildReviewSHA256','observerPblSha256','observerInterpreterSha256','optionObserverWorkerSha256','optionObserverStartupSha256'];for(const key of keys)binding[key]='a'.repeat(64);
 check('complete binding predicate',()=>bindingContract(binding));
@@ -15,7 +16,7 @@ for(const [key,value]of [['pass',false],['kind','objects-emitted'],['environment
 check('duplicate argv rejected',()=>reject(()=>options(['--arm','enabled','--arm','disabled']),'duplicate accepted'));
 check('odd argv rejected',()=>reject(()=>options(['--out']),'missing argv accepted'));
 const init='launch_firefox() {\n /bin/su -s /bin/sh -c "export HOME=$home; exec /bin/firefox --no-remote --new-instance -profile /home/admin/.mozilla/firefox/http1-profile https://www.bing.com" "$account"\n}\n';
-check('exact actual init replacement retains wrapper',()=>require(patchInit(init)==='launch_firefox() {\n /bin/su -s /bin/sh -c "export HOME=$home; exec /bin/sh /home/admin/nightly-jit-safety/capture-launch.sh" "$account"\n}\n','unexpected patch'));
+check('exact actual init replacement retains wrapper',()=>require(patchInit(init)==='launch_firefox() {\n  cp /home/admin/nightly-jit-safety/njs-autoconfig.js /opt/firefox/defaults/pref/njs-autoconfig.js || return 97\n  cp /home/admin/nightly-jit-safety/njs-autoconfig.cfg /opt/firefox/njs-autoconfig.cfg || return 97\n /bin/su -s /bin/sh -c "export HOME=$home; exec /bin/sh /home/admin/nightly-jit-safety/capture-launch.sh" "$account"\n}\n','unexpected patch'));
 check('duplicate launch anchor rejected',()=>reject(()=>patchInit(init+init),'duplicate init accepted'));
 check('missing launch anchor rejected',()=>reject(()=>patchInit('# empty init'),'missing init accepted'));
 check('changed launch flags rejected',()=>reject(()=>patchInit(init.replace('--no-remote','--remote')),'changed init accepted'));
@@ -38,12 +39,12 @@ check('missing privileged scope rejected',()=>reject(()=>completedSession({...re
 check('reordered privileged scopes rejected',()=>reject(()=>completedSession({...result,operations:[...result.operations].reverse()},'enabled','fixture'),'reordered scopes accepted'));
 check('disabled arm special scopes rejected',()=>reject(()=>completedSession({...result,portableBaseline:false},'disabled','fixture'),'disabled debugger accepted'));
 const stat='71 (firefox) S 1 71 71 0 0 0 0 0 0 0 0 0 0 0 0 0 0 900 10 1';
-const limits='Max file size             2097152              2097152              bytes\nMax core file size        0                    0                    bytes\n';
+const limits='Max file size             unlimited            unlimited              bytes\nMax core file size        0                    0                    bytes\n';
 const launch={kind:'actual-owned-firefox-launch-v1',pid:71,observerEnabled:'1',logBudget:'0'},exit={kind:'actual-owned-firefox-exit-v1',pid:71,status:0,reaped:true,naturalGroupEmpty:true,forced:false};
 check('exact guest terminal identity/limits predicate',()=>exactFirefoxExit(launch,exit,stat,'',limits,parent));
 for(const [key,value]of [['status',1],['reaped',false],['naturalGroupEmpty',false],['forced',true],['pid',72]])check('guest cleanup '+key+' mismatch refused',()=>reject(()=>exactFirefoxExit(launch,{...exit,[key]:value},stat,'',limits,parent),'bad guest cleanup accepted'));
 check('physical zombie blocks guest cleanup',()=>reject(()=>exactFirefoxExit(launch,exit,stat,stat.replace(' S ',' Z '),limits,parent),'zombie accepted'));
-check('wrong guest file-size unit refused',()=>reject(()=>exactFirefoxExit(launch,exit,stat,'',limits.replaceAll('2097152','1048576'),parent),'wrong file limit accepted'));
+check('wrong guest file-size unit refused',()=>reject(()=>exactFirefoxExit(launch,exit,stat,'',limits.replaceAll('unlimited','1048576'),parent),'wrong file limit accepted'));
 check('wrong guest process group refused',()=>reject(()=>exactFirefoxExit(launch,exit,stat.replace(' S 1 71 71 ',' S 1 72 71 '),'',limits,parent),'wrong group accepted'));
 check('stat parser retains zombie state',()=>require(parseProcStat(stat.replace(' S ',' Z ')).state==='Z','zombie swallowed'));
 const cpu=selectHostCpus(6,6),state={browserHardwareConcurrency:6,selectedGuestCpus:6};
@@ -58,5 +59,5 @@ let clock=0,calls=0;const receipt=await drainOwnedGroup(groupOwner,{now:()=>cloc
 clock=0;calls=0;const forced=await drainOwnedGroup(groupOwner,{now:()=>clock,sleep:async ms=>{clock+=ms;},scan:async()=>calls++<103?[{pid:72,pgid:71,sid:71,state:'Z',startTicks:'901'}]:[],kill:()=>{}});check('forced group cleanup never passes',()=>require(!forced.pass&&forced.forced,'forced drain passed'));
 let badGroup=false;try{await drainOwnedGroup(groupOwner,{scan:async()=>[{pid:71,pgid:71,sid:71,state:'S',startTicks:'901'}]});}catch{badGroup=true;}check('reused group leader refused',()=>require(badGroup,'reused leader accepted'));
 const file=out+'/pin-fault.txt';await fs.writeFile(file,'retained\n');await pinFile({path:file,sha256:sha('retained\n')});let drift=false;try{await pinFile({path:file,sha256:sha('changed\n')});}catch{drift=true;}check('actual disk digest drift refused',()=>require(drift,'disk drift accepted'));
-const missingPlan=out+'/missing-build-launch.json';await fs.writeFile(missingPlan,JSON.stringify({kind:'caller-reviewed-nightly-broad-runner-launch-v1',pass:false}));let launchRejected=false;try{await preflight({'--arm':'enabled','--launch':missingPlan,'--launch-sha256':sha(await fs.readFile(missingPlan)),'--out':TASK+'/never-launched'});}catch{launchRejected=true;}check('unbuilt launch rejected before spawn',()=>require(launchRejected,'unbuilt launch admitted'));
+const missingPlan=out+'/missing-build-launch.json';await fs.writeFile(missingPlan,JSON.stringify({kind:'caller-reviewed-nightly-broad-runner-launch-v1',pass:false}));let launchRejected=false;try{await preflight({'--task-root':TASK,'--repo':args['--repo']??process.cwd(),'--arm':'enabled','--launch':missingPlan,'--launch-sha256':sha(await fs.readFile(missingPlan)),'--out':TASK+'/never-launched'});}catch(error){launchRejected=error.message==='actual reviewed launch contract required';}check('unbuilt launch rejected before spawn',()=>require(launchRejected,'unbuilt launch admitted'));
 const report={kind:'broad-runner-host-fault-checks-v1',pass:true,count:checks.length,checks,hostOnly:true,browserStarted:false,guestAcceptance:false,jitAcceptance:false,gpuAcceptance:false};await fs.writeFile(out+'/host-checks.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
