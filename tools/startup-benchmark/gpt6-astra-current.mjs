@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {nativeQuitDialogVisible} from './native-quit-visual.mjs';
 // Current-tree measurement owner. Each run owns its private profile/display.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -386,13 +387,39 @@ try{
   const control={key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17};
   await send('Input.dispatchKeyEvent',{type:'rawKeyDown',...control,modifiers:2});
   try{await pressKey({key:'q',code:'KeyQ',windowsVirtualKeyCode:81,nativeVirtualKeyCode:81},2);}finally{await send('Input.dispatchKeyEvent',{type:'keyUp',...control,modifiers:0});}
-  await delay(1200);await shot('native-quit-dialog');
-  // The exact native Ctrl+Q confirmation was visually reviewed at this fixed
-  // 1280x720 guest geometry in input-host1/native-close.png.
-  const quitRect=await evaluate("(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {left:r.left,top:r.top,width:r.width,height:r.height};})()");
-  report.nativeClose.confirmation={kind:'Observed native Quit Nightly dialog',reference:'input-host1/native-close.png',guestX:718.5,guestY:229};
-  await clickGuest(quitRect.left+718.5*quitRect.width/1280,quitRect.top+229*quitRect.height/720);
-  const closeSeconds=Number(options.get('close-bound-seconds')||20);if(![20,60,90].includes(closeSeconds))throw Error('Unsupported native close bound');report.nativeClose.boundSeconds=closeSeconds;report.nativeClose.progress=[];let nextProgress=0;const until=time()+closeSeconds*1000;let exited=false;
+  const closeSeconds=Number(options.get('close-bound-seconds')||20);
+  if(![20,60,90].includes(closeSeconds))throw Error('Unsupported native close bound');
+  report.nativeClose.boundSeconds=closeSeconds;
+  // Wait for the actual native dialog, not a blind 1.2s delay. The historical
+  // cache-final-cold1 click preceded the prompt and could never close Firefox.
+  // The visual gate recognizes a white modal, darkened backdrop and purple
+  // Nightly confirmation button in the same screenshot. Unknown layouts fail
+  // closed; no unverified blind click is allowed.
+  const geometry=await evaluate("(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {viewport:{width:innerWidth,height:innerHeight},canvas:{left:r.left,top:r.top,width:r.width,height:r.height}};})()");
+  const until=time()+closeSeconds*1000;
+  let confirmed=false,exitedWithoutPrompt=false,attempts=0;
+  while(time()<until){
+   const frame=await send('Page.captureScreenshot',{format:'png'});
+   attempts++;
+   const bytes=Buffer.from(frame.data,'base64');
+   if(nativeQuitDialogVisible(bytes,geometry.viewport,geometry.canvas)){
+    const reference='native-quit-dialog-observed.png';
+    fs.writeFileSync(path.join(run,reference),bytes);
+    report.nativeClose.confirmation={kind:'Visual detection of current-launch native Quit Nightly dialog',reference,guestX:718.5,guestY:229,attempts,observedLaunchMs:time()-bootAt};
+    save();
+    await clickGuest(geometry.canvas.left+718.5*geometry.canvas.width/1280,geometry.canvas.top+229*geometry.canvas.height/720);
+    confirmed=true;break;
+   }
+   const exitRows=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.filter(r=>r.id>"+exitLogFloorId+").map(r=>r.text))");
+   if(exitRows.some(row=>/firefox exited with status 0/.test(row))){
+    report.nativeClose.confirmation={kind:'Native Firefox exited without a confirmation prompt',attempts,observedLaunchMs:time()-bootAt};
+    exitedWithoutPrompt=true;break;
+   }
+   await delay(800);
+  }
+  report.nativeClose.dialogProbeAttempts=attempts;
+  if(!confirmed&&!exitedWithoutPrompt){await shot('native-quit-dialog-unconfirmed');throw Error('Native Firefox Quit confirmation was not visually observed within close bound; no blind click attempted');}
+  report.nativeClose.progress=[];let nextProgress=0;let exited=false;
   while(time()<until){if(time()>=nextProgress){const io=await evaluate('(()=>{const t=globalThis.__gpt6HomeTimings;return t?{active:t.active,busyMs:t.busyMs,writeCalls:t.methods.write?.calls,writeBytes:t.methods.write?.bytes,fsyncCalls:t.methods.fsync?.calls}:null})()');report.nativeClose.progress.push({observedLaunchMs:time()-bootAt,io});nextProgress=time()+5000;save();}const logs=await guestLogs();fs.writeFileSync(path.join(run,'closed-guest.log'),logs);const exitRows=await evaluate("import('./main.js').then(m=>m.guestLogs.history.rows.filter(r=>r.id>"+exitLogFloorId+").map(r=>({id:r.id,text:r.text})))");const exitLine=exitRows.find(r=>/firefox exited with status (\d+)/.test(r.text));const match=exitLine&&/firefox exited with status (\d+)/.exec(exitLine.text);if(match){report.nativeClose.exitLogRow=exitLine;report.nativeClose.status=Number(match[1]);report.nativeClose.observedLaunchMs=time()-bootAt;exited=true;break;}await delay(250);}
   await shot('native-close');if(!exited||report.nativeClose.status!==0)throw Error('Native Firefox Close did not report successful exit');
   report.nativeClose.profile=await profileSnapshot('closed',true);save();
