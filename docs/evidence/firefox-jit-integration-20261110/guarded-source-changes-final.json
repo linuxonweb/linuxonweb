@@ -1,0 +1,136 @@
+[
+  {
+    "before": {
+      "bytes": 331614,
+      "sha256": "68ad285afe873cef8afdc4739350ded8854dbc5257f621a1788922253e47eef5",
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PortableBaselineInterpret.cpp"
+    },
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PortableBaselineInterpret.cpp",
+      "bytes": 339875,
+      "sha256": "d77dbdf8d019c5249658469ceafda3a142f613ea8911a8dd4db2ef3d18f67e4b"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PortableBaselineInterpret.cpp",
+      "bytes": 339875,
+      "sha256": "d77dbdf8d019c5249658469ceafda3a142f613ea8911a8dd4db2ef3d18f67e4b"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblIc.inc",
+      "bytes": 51837,
+      "sha256": "e24511bc58a1ae2eb05819e843c27fc8380934c4959f61dcca7cd6184802361b"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblIc.inc",
+      "bytes": 51837,
+      "sha256": "e24511bc58a1ae2eb05819e843c27fc8380934c4959f61dcca7cd6184802361b"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblMethod.inc",
+      "bytes": 49678,
+      "sha256": "55ff9e65dc14551dfd9095971a4c1515c74de831c27300a9a4f000c2221c2629"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblMethod.inc",
+      "bytes": 49678,
+      "sha256": "55ff9e65dc14551dfd9095971a4c1515c74de831c27300a9a4f000c2221c2629"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblIcOps.h",
+      "bytes": 18376,
+      "sha256": "16ab45821d1881870f09ba68d7c865ced4e5e3c51a4ac2af3d2fe10119596d21"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblIcOps.h",
+      "bytes": 18376,
+      "sha256": "16ab45821d1881870f09ba68d7c865ced4e5e3c51a4ac2af3d2fe10119596d21"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblTierObserve.h",
+      "bytes": 8349,
+      "sha256": "a238ea0d943f273bc6efaab150853418af975d832f8baacd12dacf246fe3acb4"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblTierObserve.h",
+      "bytes": 8349,
+      "sha256": "a238ea0d943f273bc6efaab150853418af975d832f8baacd12dacf246fe3acb4"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblCacheObserve.h",
+      "bytes": 4635,
+      "sha256": "72df755ee48cfb5451d4f842774c06e4b74a50a73f78fe2fcb5cfc7766c1498a"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblCacheObserve.h",
+      "bytes": 4635,
+      "sha256": "72df755ee48cfb5451d4f842774c06e4b74a50a73f78fe2fcb5cfc7766c1498a"
+    }
+  },
+  {
+    "before": {
+      "bytes": 79130,
+      "sha256": "4222b9069e561d18a0e037f2747275d9131cc05fa89419fcba84ac21231ff583",
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblJit.cpp"
+    },
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/js/src/vm/PblJit.cpp",
+      "bytes": 88153,
+      "sha256": "2f8c8d36f7a367f65f932050507317a960d3b41747c422ba278b8df63bdb957f"
+    },
+    "input": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/native-src/PblJit.cpp",
+      "bytes": 88153,
+      "sha256": "2f8c8d36f7a367f65f932050507317a960d3b41747c422ba278b8df63bdb957f"
+    }
+  },
+  {
+    "before": null,
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/.mozconfig",
+      "bytes": 1100,
+      "sha256": "3ab9eb153120ffd9da4108f70c5cbc3be06533459db68ec892ca516c7d3f4c2f"
+    },
+    "kind": "owned-path-relocation"
+  },
+  {
+    "before": {
+      "bytes": 3259,
+      "sha256": "1cc295959db38cf73c76a090651a7cd9393d18c591b570610250311aa3ba52f5",
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/defs.mk"
+    },
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/defs.mk",
+      "bytes": 3344,
+      "sha256": "3e70769373e4f60292085accd9fc400fbea9f7fe8cfcbfd824dbc365d8484ea7"
+    },
+    "kind": "owned-path-relocation"
+  },
+  {
+    "before": {
+      "bytes": 3259,
+      "sha256": "c5788f20bbbdb839ab3d51b86b7229fcba0bdefde3194b8ee1e81750d6073e31",
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/linuxonweb-build/adapters/defs.mk"
+    },
+    "after": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4/linuxonweb-build/adapters/defs.mk",
+      "bytes": 3344,
+      "sha256": "3e70769373e4f60292085accd9fc400fbea9f7fe8cfcbfd824dbc365d8484ea7"
+    },
+    "kind": "owned-path-relocation"
+  }
+]

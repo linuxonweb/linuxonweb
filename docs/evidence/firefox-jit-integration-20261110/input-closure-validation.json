@@ -1,0 +1,93 @@
+{
+  "kind": "reviewed-preparation-input-closure-validation-v1",
+  "pass": true,
+  "projectAcceptanceScore": 45,
+  "scope": "Preparation input identity, fail-before-mutation rejection, and exact historical helper linkage receipt binding only.",
+  "inputClosure": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/final159-preparation-inputs-20261110.json",
+    "bytes": 481428,
+    "sha256": "b0f250c47e5938dbf3d4728a2ba43541207eda270b7be4f23779cda3092d0d49"
+  },
+  "inputClosureFiles": 1796,
+  "exactConsumedTrees": 5,
+  "recipe": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/prepare-owned-build.py",
+    "bytes": 19178,
+    "sha256": "21b092c32f993b0cf6e88c5d019ce67c7eb848eb9f27d109d57d7e7ba2239c76"
+  },
+  "preparationModules": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/input_closure.py",
+      "bytes": 8617,
+      "sha256": "9b063f5a15f4ce973523d3e47bd34842282360d64a4880f879e7bea75a5ff1ce"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/rebuild-preflight.py",
+      "bytes": 34094,
+      "sha256": "f2d075883e2e27de257fcabc30100a03837222c2dcbb38157b3e968d3f294d73"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-safety/owned_paths.py",
+      "bytes": 3060,
+      "sha256": "4e6f299e1c080ed0811cd40d1b30b645a0f45fc2f5955ca907cee1c2e0808e39"
+    }
+  ],
+  "focusedTests": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/docs/evidence/firefox-jit-integration-20261110/input-closure-tests.json",
+    "bytes": 28888,
+    "sha256": "5a25ed1b133f632ef24087c176f80ed52e23b2548576d8f37dc1c2d6ba216ee4",
+    "testsRun": 77,
+    "testsPassed": 77,
+    "innerDurationSeconds": 32.531659,
+    "ownerDurationSeconds": 34.008
+  },
+  "finalPreparation": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/docs/evidence/firefox-jit-integration-20261110/guarded-preparation-final.json",
+    "bytes": 96286,
+    "sha256": "6244557979acd5e064a337e676446808ac45d512494d5f4dba4ccd5a29ec7281",
+    "ownerDurationSeconds": 9.254,
+    "source": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-4",
+    "output": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-4",
+    "sourceHead": "525176a870d4ec4329e7decdb2ef7fdd5b87fb22",
+    "trackedSourceFiles": 483357
+  },
+  "independentReview": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/docs/evidence/firefox-jit-integration-20261110/input-closure-final-review.txt",
+    "bytes": 4787,
+    "sha256": "4e4e828f1be23f4d165639baa51548bd0a7a0fd8d788be0b8af95f3a4ec2a5b3"
+  },
+  "resourceGuard": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/guest-packages/bounded.py",
+    "bytes": 21203,
+    "sha256": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4",
+    "unchanged": true
+  },
+  "resourceReceipts": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/docs/evidence/firefox-jit-integration-20261110/input-closure-owner-receipts.json",
+    "bytes": 21637,
+    "sha256": "0fc926881d7d4c03d6749fdaa422fdf45e6fb4c5aa74e9f868749cbaf328e189"
+  },
+  "preservedFailures": [
+    "pin-capture-owner: source-original count assumed existing files instead of exact absent destinations",
+    "pin-capture-owner-2: overly narrow Nix-only capture assumption rejected already declared owned inputs",
+    "pin-tests-owner:44 checks passed before fixture mutation hit a copied read-only header; original input remained unchanged"
+  ],
+  "preservedEarlierPreparation": {
+    "source": "../linuxonweb-firefox-jit-20261110-native-source-3",
+    "output": "../linuxonweb-firefox-jit-20261110-native-build-3",
+    "ownerDurationSeconds": 11.259,
+    "scope": "Successful earlier closure preparation before repository mode portability exception and module-identity receipt addition."
+  },
+  "helperReplayBinding": "Fixed historical source2/build2 preparation SHA9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90; arbitrary new preparation receipts rejected.",
+  "requiredResume": "Administrator-supported stable inherited <=1.8CPU compiler scope under common <=3CPU, unchanged monitor; then unused dependency build/verify attempt4, reviewed updated dependency closure including libc++, and fresh source/build preparation. Complete new host/preflight/native/host-overlay/closure required for any array candidate.",
+  "compiled": false,
+  "nativeIntegrationReady": false,
+  "fullBuildReady": false,
+  "guestRuntimeAcceptance": false,
+  "fullJitAcceptance": false,
+  "newPerformanceAcceptance": false,
+  "remainingConfiguredFirefoxObjects": 2634,
+  "remainingGeneratedHeaderOrBackendPaths": 8,
+  "missingOriginalArchive": "native-unwind/runtimes-build/lib/libc++.a",
+  "missingArchiveIsPinnedAbsent": true
+}

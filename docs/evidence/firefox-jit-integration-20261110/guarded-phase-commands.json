@@ -1,0 +1,51 @@
+{
+  "configure": {
+    "argv": [
+      "/nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3",
+      "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3/mach",
+      "configure"
+    ],
+    "cwd": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3",
+    "environment": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/recipe/environment.sh",
+    "executeOnlyUnderUnchangedBoundedOwner": true,
+    "requiresStableProcessRoute": true
+  },
+  "pre-export": {
+    "argv": [
+      "/nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3",
+      "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3/mach",
+      "build",
+      "pre-export",
+      "-j1"
+    ],
+    "cwd": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3",
+    "environment": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/recipe/environment.sh",
+    "executeOnlyUnderUnchangedBoundedOwner": true,
+    "requiresStableProcessRoute": true
+  },
+  "export": {
+    "argv": [
+      "/nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3",
+      "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3/mach",
+      "build",
+      "export",
+      "-j1"
+    ],
+    "cwd": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3",
+    "environment": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/recipe/environment.sh",
+    "executeOnlyUnderUnchangedBoundedOwner": true,
+    "requiresStableProcessRoute": true
+  },
+  "build": {
+    "argv": [
+      "/nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin/python3",
+      "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3/mach",
+      "build",
+      "-j1"
+    ],
+    "cwd": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3",
+    "environment": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/recipe/environment.sh",
+    "executeOnlyUnderUnchangedBoundedOwner": true,
+    "requiresStableProcessRoute": true
+  }
+}

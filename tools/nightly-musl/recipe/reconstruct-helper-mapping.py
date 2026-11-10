@@ -14,10 +14,13 @@ import shutil
 import subprocess
 import sys
 
+sys.dont_write_bytecode = True
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 sys.path.insert(0,str(REPO/'tools/nightly-jit-safety'))
 from owned_paths import task_root, scoped_path
+sys.path.insert(0, str(REPO/'tools/nightly-jit-prep'))
+from input_closure import read_pinned
 spec=importlib.util.spec_from_file_location('preflight',REPO/'tools/nightly-jit-prep/rebuild-preflight.py')
 preflight=importlib.util.module_from_spec(spec);spec.loader.exec_module(preflight)
 spec=importlib.util.spec_from_file_location('dependencies',HERE/'replay-native-dependencies.py')
@@ -26,6 +29,9 @@ SOURCE_SHA='cf9f7592186c95dbe9589d8e86bd86fd724b8f06f9c539826ca3a3707c621e97'
 WRAPPED_SHA='d9109125a1b3cd0c0d4e0c42dfd0ba6c68f3b4fc4e4d0a5ff079cc93c885ff3a'
 OBJECT_SHA='bae2a8cc8dd968036e4cecec8dfbdc218923e5a6a8594f89baceb0cdd874e755'
 ARCHIVE_SHA='ce9bde472373b4d7d09555954006b94b3c0a8137d341d51d689371fb8e2c7561'
+# Independent review covers this exact historical preparation, not arbitrary
+# mutable receipt claims. A new prepared tree needs a new reviewed identity.
+PREPARATION_SHA='9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90'
 
 
 def need(ok,message):
@@ -117,13 +123,54 @@ def reconstruct(data):
     return result,renamed,unchanged
 
 
+def verify_prepared_linkage(build, unwrapped, wrapped_archive, expected_sha=PREPARATION_SHA):
+    build = task_root(Path(build))
+    preparation_path = build / 'preparation.json'
+    raw, _ = read_pinned(preparation_path, {
+        'bytes': preparation_path.stat().st_size, 'sha256': expected_sha, 'owned': True})
+    preparation = json.loads(raw)
+    need(preparation['output'] == str(build) and preparation['preparationComplete'] is True,
+         'preparation receipt does not bind this completed preparation')
+    prepared_source = task_root(Path(preparation['source']))
+    changes_path = build / 'source-changes.json'
+    changes_pin = preparation['sourceChanges']
+    need(changes_pin['path'] == str(changes_path), 'source-changes receipt escaped prepared build')
+    changes_raw, _ = read_pinned(changes_path, dict(changes_pin, owned=True))
+    changes = json.loads(changes_raw)
+    linkage = []
+    for path in [prepared_source/'defs.mk', prepared_source/'linuxonweb-build/adapters/defs.mk']:
+        rows = [row['after'] for row in changes if row['after']['path'] == str(path)]
+        need(len(rows) == 1, 'one pinned source-change record required for each defs file')
+        payload, _ = read_pinned(path, dict(rows[0], owned=True))
+        text = payload.decode('utf-8')
+        anchor = 'ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)'
+        need(text.count(anchor) == 1, 'browser program guard changed')
+        before, inside = text.split(anchor)
+        need('OS_LIBS += '+str(unwrapped) in before, 'helper archive not in original outer graph')
+        need('OS_LIBS := $(filter-out '+str(unwrapped)+',$'+'(OS_LIBS))' in inside,
+             'browser must remove helper archive')
+        need('OS_LIBS += '+str(wrapped_archive) in inside, 'browser wrapped archive must remain')
+        linkage.append(rows[0])
+    return linkage, {'preparation': {'path': str(preparation_path), 'bytes': len(raw), 'sha256': expected_sha},
+                     'sourceChanges': changes_pin,
+                     'scope': 'Static linkage assertion for the exact independently reviewed defs bytes; no executed helper or browser acceptance.'}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dependencies',type=Path,required=True)
     parser.add_argument('--prepared-build',type=Path,required=True)
     parser.add_argument('--historical-receipt',type=Path,required=True)
+    parser.add_argument('--verify-linkage-only', action='store_true', help='read-only check of the exact reviewed preparation and defs')
     args=parser.parse_args();root=task_root(args.dependencies.resolve(strict=True));build=task_root(args.prepared_build.resolve(strict=True))
-    out=scoped_path(root,root/'native-mapping-link',fresh=True)
+    out=scoped_path(root,root/'native-mapping-link',fresh=not args.verify_linkage_only)
+    linkage, linkage_binding = verify_prepared_linkage(build, out/'libnightly-native-mapping.a',
+                                                      root/'native-mapping-wrapped-shm/libnightly-native-mapping.a')
+    if args.verify_linkage_only:
+        print(json.dumps({'helperOnlyLinkage': True, 'readOnly': True, 'compiled': False,
+                          'helperLinkageFiles': linkage, 'linkageBinding': linkage_binding,
+                          'guestRuntimeAcceptance': False}, indent=2))
+        return
     historical=json.loads(args.historical_receipt.read_text())
     for suffix,size,sha in [('mmap-shim.c',15049,SOURCE_SHA),('mmap-shim.o',5835,OBJECT_SHA),('libnightly-native-mapping.a',6106,ARCHIVE_SHA)]:
         rows=[r for r in historical['pins'] if r['path'].endswith('/native-mapping-link/'+suffix)]
@@ -131,16 +178,6 @@ def main():
     wrapped=root/'native-mapping-wrapped-shm/mmap-shim.o';wrapped_archive=root/'native-mapping-wrapped-shm/libnightly-native-mapping.a'
     source=root/'inputs/mmap-shim.c';need(preflight.digest(source)==SOURCE_SHA,'source identity mismatch')
     wrapped_archive_before=preflight.pin(wrapped_archive);result,renamed,unchanged=reconstruct(wrapped.read_bytes())
-    preparation=json.loads((build/'preparation.json').read_text());prepared_source=task_root(Path(preparation['source']))
-    linkage=[]
-    for path in [prepared_source/'defs.mk',prepared_source/'linuxonweb-build/adapters/defs.mk']:
-        text=path.read_text();anchor='ifneq ($(filter firefox plugin-container xpcshell,$(notdir $(PROGRAM))),)'
-        need(text.count(anchor)==1,'browser program guard changed');before,inside=text.split(anchor)
-        unwrapped=str(out/'libnightly-native-mapping.a');browser=str(wrapped_archive)
-        need('OS_LIBS += '+unwrapped in before,'helper archive not in original outer graph')
-        need('OS_LIBS := $(filter-out '+unwrapped+',$'+'(OS_LIBS))' in inside,'browser must remove helper archive')
-        need('OS_LIBS += '+browser in inside,'browser wrapped archive must remain')
-        linkage.append(preflight.pin(path))
     env=dict(os.environ);env.update(preflight.parse_environment((root/'recipe/environment.sh').read_text()));env.pop('LD_LIBRARY_PATH',None)
     inputs=json.loads((root/'inputs.json').read_text());ar=env['AR']
     need(preflight.digest(ar)==inputs['tools']['AR']['sha256'],'archive tool identity changed')
@@ -162,7 +199,7 @@ def main():
     need({'mmap','munmap','mremap','msync','mprotect','madvise','posix_madvise','shm_open','shm_unlink','lowland_mmap_refresh'}<=symbols,'required helper symbols missing')
     need(not {'__wrap_shm_open','__wrap_shm_unlink'}&symbols,'wrapped symbols remained')
     need(preflight.pin(wrapped_archive)==wrapped_archive_before and preflight.digest(wrapped)==WRAPPED_SHA,'wrapped browser input changed')
-    report=dict(kind='exact-historical-helper-mapping-reconstruction-v1',passArtifactReconstruction=True,compiled=False,helperOnlyLinkage=True,nativeIntegrationReady=False,guestRuntimeAcceptance=False,fullJitAcceptance=False,recipe=preflight.pin(Path(__file__)),historicalReceipt=preflight.pin(args.historical_receipt),source=preflight.pin(source),wrappedObject=preflight.pin(wrapped),wrappedBrowserArchive=wrapped_archive_before,object=preflight.pin(obj),archive=preflight.pin(archive),renamedSymbols=renamed,unchangedSections=unchanged,importsUnchanged=True,codeUnchanged=True,relocationsUnchanged=True,helperLinkageFiles=linkage,commands=commands,tools=[preflight.pin(p) for p in [ar,validator,nm]])
+    report=dict(kind='exact-historical-helper-mapping-reconstruction-v1',passArtifactReconstruction=True,compiled=False,helperOnlyLinkage=True,nativeIntegrationReady=False,guestRuntimeAcceptance=False,fullJitAcceptance=False,recipe=preflight.pin(Path(__file__)),historicalReceipt=preflight.pin(args.historical_receipt),source=preflight.pin(source),wrappedObject=preflight.pin(wrapped),wrappedBrowserArchive=wrapped_archive_before,object=preflight.pin(obj),archive=preflight.pin(archive),renamedSymbols=renamed,unchangedSections=unchanged,importsUnchanged=True,codeUnchanged=True,relocationsUnchanged=True,helperLinkageFiles=linkage,linkageBinding=linkage_binding,commands=commands,tools=[preflight.pin(p) for p in [ar,validator,nm]])
     (out/'reconstruction.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:report[k] for k in ['passArtifactReconstruction','compiled','helperOnlyLinkage','object','archive','nativeIntegrationReady','guestRuntimeAcceptance']},indent=2))
 

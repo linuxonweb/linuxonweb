@@ -1,0 +1,679 @@
+{
+  "kind": "preparation-input-closure-regressions-v1",
+  "startedUtc": "2026-11-10T16:44:27.196269+00:00",
+  "finishedUtc": "2026-11-10T16:44:59.727925+00:00",
+  "durationSeconds": 32.531659,
+  "pass": true,
+  "testsPassed": 77,
+  "testsRun": 77,
+  "productionRecipes": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/test-input-closure.py",
+      "bytes": 29291,
+      "sha256": "5670ff1afb0e549034cced26277f44607b55689377155d52d4394bdfdfd0ac92"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/prepare-owned-build.py",
+      "bytes": 19178,
+      "sha256": "21b092c32f993b0cf6e88c5d019ce67c7eb848eb9f27d109d57d7e7ba2239c76"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-musl/recipe/reconstruct-helper-mapping.py",
+      "bytes": 13394,
+      "sha256": "4d36ab6a3689550163215c7a5baafb1a5d924c99eeecaa4921bbf37a05a5d03f"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/input_closure.py",
+      "bytes": 8617,
+      "sha256": "9b063f5a15f4ce973523d3e47bd34842282360d64a4880f879e7bea75a5ff1ce"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/final159-preparation-inputs-20261110.json",
+      "bytes": 481428,
+      "sha256": "b0f250c47e5938dbf3d4728a2ba43541207eda270b7be4f23779cda3092d0d49"
+    }
+  ],
+  "fixtures": {
+    "packet": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet",
+    "dependencies": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies",
+    "source": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-source",
+    "work": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work",
+    "helper-build": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-build",
+    "helper-source": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-source",
+    "helper-dependencies": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-dependencies"
+  },
+  "nativeCompilerInvoked": false,
+  "guestRuntimeAcceptance": false,
+  "fullJitAcceptance": false,
+  "scope": "Input rejection before mutation, verified cached copies, and static helper receipt binding only.",
+  "cases": [
+    {
+      "name": "reviewed-original-closure-positive",
+      "passTest": true,
+      "verifiedFiles": 1796,
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 1.648989
+    },
+    {
+      "name": "cloned-valid-closure-positive",
+      "passTest": true,
+      "verifiedFiles": 1796,
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 1.906171
+    },
+    {
+      "name": "packet-content:.mozconfig",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/.mozconfig",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.369064
+    },
+    {
+      "name": "packet-content:compile-commands.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/compile-commands.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.35648
+    },
+    {
+      "name": "packet-content:host-packet/fixtures/emit.cpp",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/fixtures/emit.cpp",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.323685
+    },
+    {
+      "name": "packet-content:host-packet/fixtures/nested-fixtures.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/fixtures/nested-fixtures.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.304938
+    },
+    {
+      "name": "packet-content:host-packet/fixtures/run-nested.mjs",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/fixtures/run-nested.mjs",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.315452
+    },
+    {
+      "name": "packet-content:host-packet/fixtures/run.mjs",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/fixtures/run.mjs",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.291351
+    },
+    {
+      "name": "packet-content:host-packet/manifest.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/manifest.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.304827
+    },
+    {
+      "name": "packet-content:host-packet/opcode-audit.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/opcode-audit.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.273049
+    },
+    {
+      "name": "packet-content:host-packet/overlay/PblCacheObserve.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/overlay/PblCacheObserve.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.346437
+    },
+    {
+      "name": "packet-content:host-packet/overlay/PblJit.cpp",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/overlay/PblJit.cpp",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.357105
+    },
+    {
+      "name": "packet-content:host-packet/overlay/PblTierObserve.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/overlay/PblTierObserve.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.322753
+    },
+    {
+      "name": "packet-content:host-packet/overlay/host-test/mock.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/overlay/host-test/mock.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.337657
+    },
+    {
+      "name": "packet-content:link/link.args",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/link/link.args",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.328754
+    },
+    {
+      "name": "packet-content:native-src/PblCacheObserve.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblCacheObserve.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.351209
+    },
+    {
+      "name": "packet-content:native-src/PblIc.inc",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblIc.inc",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.290618
+    },
+    {
+      "name": "packet-content:native-src/PblIcOps.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblIcOps.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.334225
+    },
+    {
+      "name": "packet-content:native-src/PblJit.cpp",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblJit.cpp",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.354566
+    },
+    {
+      "name": "packet-content:native-src/PblMethod.inc",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblMethod.inc",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.287154
+    },
+    {
+      "name": "packet-content:native-src/PblTierObserve.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PblTierObserve.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.328921
+    },
+    {
+      "name": "packet-content:native-src/PortableBaselineInterpret.cpp",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/PortableBaselineInterpret.cpp",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.322874
+    },
+    {
+      "name": "packet-content:native-src/host-test/mock.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/native-src/host-test/mock.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.375018
+    },
+    {
+      "name": "packet-content:preflight.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/preflight.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.374539
+    },
+    {
+      "name": "packet-content:recipe/cargo",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/cargo",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.348625
+    },
+    {
+      "name": "packet-content:recipe/environment.sh",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/environment.sh",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.34462
+    },
+    {
+      "name": "packet-content:recipe/rust-target/wasm32-unknown-linux-musl.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/rust-target/wasm32-unknown-linux-musl.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.331038
+    },
+    {
+      "name": "packet-content:recipe/rustc",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/rustc",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.372233
+    },
+    {
+      "name": "packet-content:recipe/shim/filesystem",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/shim/filesystem",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.4425
+    },
+    {
+      "name": "packet-content:recipe/shim/inttypes.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/shim/inttypes.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.324312
+    },
+    {
+      "name": "packet-content:recipe/shim/sys/mman.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/shim/sys/mman.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.379474
+    },
+    {
+      "name": "host-fixture-and-self-updated-manifest",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/host-packet/fixtures/emit.cpp",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.446041
+    },
+    {
+      "name": "dependency-content:header-replacement-paths.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/header-replacement-paths.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.503911
+    },
+    {
+      "name": "dependency-content:inputs.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/inputs.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.453722
+    },
+    {
+      "name": "dependency-content:native-mapping-link/libnightly-native-mapping.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-mapping-link/libnightly-native-mapping.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.350469
+    },
+    {
+      "name": "dependency-content:native-mapping-link/reconstruction.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-mapping-link/reconstruction.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.430048
+    },
+    {
+      "name": "dependency-content:native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.444791
+    },
+    {
+      "name": "dependency-content:native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.451002
+    },
+    {
+      "name": "dependency-content:native-stack-accepted-run1/libnightly-native-stack.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-stack-accepted-run1/libnightly-native-stack.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.513865
+    },
+    {
+      "name": "dependency-content:native-unwind/runtimes-build/lib/libc++abi.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-unwind/runtimes-build/lib/libc++abi.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.896914
+    },
+    {
+      "name": "dependency-content:native-unwind/runtimes-build/lib/libunwind.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-unwind/runtimes-build/lib/libunwind.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.833582
+    },
+    {
+      "name": "dependency-content:replacement-paths.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/replacement-paths.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.863449
+    },
+    {
+      "name": "dependency-content:source-closure.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/source-closure.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.808709
+    },
+    {
+      "name": "dependency-content:validation.json",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/validation.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.81414
+    },
+    {
+      "name": "dependency-content:native-unwind/include/CMakeLists.txt",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-unwind/include/CMakeLists.txt",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.363039
+    },
+    {
+      "name": "dependency-content:native-unwind/runtimes-build/include/c++/v1/__algorithm/adjacent_find.h",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-unwind/runtimes-build/include/c++/v1/__algorithm/adjacent_find.h",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.347989
+    },
+    {
+      "name": "egl-archive-content",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/egl/libEGL_mesa.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.799798
+    },
+    {
+      "name": "previously-missing:native-unwind/runtimes-build/lib/libc++.a",
+      "passTest": true,
+      "rejectedBy": "ValueError: declared missing input now exists; review a new closure: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-dependencies/native-unwind/runtimes-build/lib/libc++.a",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.279153
+    },
+    {
+      "name": "extra-tree-file:dependencies:native-unwind/include",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: dependencies:native-unwind/include",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.070872
+    },
+    {
+      "name": "extra-tree-file:dependencies:native-unwind/runtimes-build/include/c++/v1",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: dependencies:native-unwind/runtimes-build/include/c++/v1",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.298302
+    },
+    {
+      "name": "extra-tree-file:packet:host-packet",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: packet:host-packet",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.282012
+    },
+    {
+      "name": "extra-tree-file:packet:native-src",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: packet:native-src",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.287516
+    },
+    {
+      "name": "extra-tree-file:packet:recipe",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: packet:recipe",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.284338
+    },
+    {
+      "name": "extra-empty-directory",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: packet:recipe",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.269168
+    },
+    {
+      "name": "missing-tree-member",
+      "passTest": true,
+      "rejectedBy": "ValueError: closure tree membership changed: packet:recipe",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.281854
+    },
+    {
+      "name": "symlink-member-to-identical-original",
+      "passTest": true,
+      "rejectedBy": "ValueError: nonregular closure tree member: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/cargo",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.285165
+    },
+    {
+      "name": "executable-wrapper-mode-changed",
+      "passTest": true,
+      "rejectedBy": "ValueError: input mode changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/cargo",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.335606
+    },
+    {
+      "name": "symlink-directory-member",
+      "passTest": true,
+      "rejectedBy": "ValueError: nonregular closure tree member: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/recipe/unreviewed-alias",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.273294
+    },
+    {
+      "name": "missing-standalone-pinned-file",
+      "passTest": true,
+      "rejectedBy": "FileNotFoundError: [Errno 2] No such file or directory: '/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/compile-commands.json'",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.303738
+    },
+    {
+      "name": "symlink-standalone-to-identical-original",
+      "passTest": true,
+      "rejectedBy": "ValueError: input path is a symlink or changed target: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-packet/compile-commands.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.309083
+    },
+    {
+      "name": "self-updated-closure-manifest-still-needs-reviewed-digest",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/forged-closure.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.005936
+    },
+    {
+      "name": "verified-copy-does-not-reread-mutated-wrapper",
+      "passTest": true,
+      "cachedBytesUsed": true,
+      "wrapperModes": "0755",
+      "changedInputRecheckRejected": true,
+      "durationSeconds": 1.413523
+    },
+    {
+      "name": "owned-external-alias-positive",
+      "passTest": true,
+      "verifiedFiles": 1,
+      "durationSeconds": 0.000598
+    },
+    {
+      "name": "external-alias-retargeted-to-identical-bytes",
+      "passTest": true,
+      "rejectedBy": "ValueError: input path is a symlink or changed target: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/external-fixture/tool-alias",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.000834
+    },
+    {
+      "name": "external-target-content-changed",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/external-fixture/tool-alias",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.000982
+    },
+    {
+      "name": "external-target-mode-changed",
+      "passTest": true,
+      "rejectedBy": "ValueError: input mode changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/external-fixture/tool-alias",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.000801
+    },
+    {
+      "name": "git-style-repository-provenance-mode-0644-positive",
+      "passTest": true,
+      "verifiedFiles": 1796,
+      "repositoryFileModes": "0644",
+      "durationSeconds": 1.536977
+    },
+    {
+      "name": "git-style-repository-provenance-byte-tamper",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-work/repository-fixture/docs/evidence/firefox-jit-integration-20261110/input-dependencies-review.txt",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.90759
+    },
+    {
+      "name": "existing-ignored-source-config-before-null",
+      "passTest": true,
+      "rejectedBy": "ValueError: source destination must be absent: .mozconfig",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "simulatedGitMetadataOnly": true,
+      "originalsReadFromPinnedGitHead": true,
+      "durationSeconds": 1.769285
+    },
+    {
+      "name": "helper-reviewed-original-positive",
+      "passTest": true,
+      "reviewedPreparation": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-2/preparation.json",
+        "bytes": 86260,
+        "sha256": "9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90"
+      },
+      "defsFilesVerified": 2,
+      "readOnly": true,
+      "durationSeconds": 0.013052
+    },
+    {
+      "name": "helper-owned-fixture-positive",
+      "passTest": true,
+      "defsFilesVerified": 2,
+      "explicitFixtureAuthority": "8555f90cdc77b3dfca1d5a1bfa898e583e8f7b017ca30fcc8778c1c97333e286",
+      "durationSeconds": 0.00695
+    },
+    {
+      "name": "helper-fixture-cannot-self-authorize-default-receipt",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-build/preparation.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "durationSeconds": 0.00627
+    },
+    {
+      "name": "helper-defs-appended-after-guard:defs.mk",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-source/defs.mk",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "nativeToolInvocations": 0,
+      "productionMainExercised": true,
+      "durationSeconds": 0.017219
+    },
+    {
+      "name": "helper-defs-appended-after-guard:linuxonweb-build/adapters/defs.mk",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-source/linuxonweb-build/adapters/defs.mk",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "nativeToolInvocations": 0,
+      "productionMainExercised": true,
+      "durationSeconds": 0.017265
+    },
+    {
+      "name": "helper-defs-symlink-rejected",
+      "passTest": true,
+      "rejectedBy": "ValueError: input path is a symlink or changed target: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-source/defs.mk",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "nativeToolInvocations": 0,
+      "productionMainExercised": true,
+      "durationSeconds": 0.020864
+    },
+    {
+      "name": "helper-source-changes-incomplete",
+      "passTest": true,
+      "rejectedBy": "ValueError: input size changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-build/source-changes.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "nativeToolInvocations": 0,
+      "productionMainExercised": true,
+      "durationSeconds": 0.023228
+    },
+    {
+      "name": "helper-self-updated-defs-changes-and-preparation",
+      "passTest": true,
+      "rejectedBy": "ValueError: input digest changed: /mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-pin-negative-2-helper-build/preparation.json",
+      "sourceUnchanged": true,
+      "outputAbsent": true,
+      "nativeToolInvocations": 0,
+      "productionMainExercised": true,
+      "durationSeconds": 0.014551
+    }
+  ]
+}

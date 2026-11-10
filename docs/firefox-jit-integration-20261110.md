@@ -2,11 +2,67 @@
 
 ## Result and acceptance
 
+**Latest preparation:** the final guarded replay uses `../linuxonweb-firefox-jit-20261110-native-source-4` and `../linuxonweb-firefox-jit-20261110-native-build-4`. It passed in9.254s after77 focused regression checks and independent source/artifact review. This supersedes the recipe guard, while preserving the original source2/build2 evidence described below.
+
 The two reviewed preparation branches are integrated, a complete isolated Firefox159 source tree is prepared with the reviewed nested-loop candidate, and the missing helper mapping archive is reconstructed **byte-for-byte** from an existing owned object. The original six-archive dependency set still lacks `libc++.a`. No compiler, native Firefox link, package, guest, or new performance benchmark ran in this iteration. The project acceptance remains **45/100**.
 
 `preparationComplete: true` means paths and source inputs were prepared. `compiled`, `nativeIntegrationReady`, `fullBuildReady`, and `guestRuntimeAcceptance` remain false. The custom PBLIC/PBLBC/PBLJIT tiers are not upstream SpiderMonkey native JIT: the preserved target configuration contains `--disable-jit` and `--enable-portable-baseline-interp`.
 
 This work explicitly binds the **pre-array nested-loop candidate**. An independent array extension is being developed separately. It is absent from this prepared source and packet. The preparation recipe intentionally pins packet3a and its exact candidate; integrating a changed compiler requires a new complete host packet, including every new fixture/header/runner, fresh native-source adaptation and independent review. Do not relabel this receipt as covering a later candidate.
+
+## Reviewed input closure and replay guards
+
+Independent review found a preparation reproducibility gap: the earlier recipe authenticated `preflight.json` and the host manifest, but then consumed mutable configuration, commands, copied recipe files and dependency maps without authenticating all those bytes first. Recording output hashes afterward did not establish input identity. No actual packet corruption was found. The old packet, preparations and failure receipts remain unchanged.
+
+The corrected recipe requires the separate fixed manifest `tools/nightly-jit-prep/final159-preparation-inputs-20261110.json`, **481,428 bytes**, SHA-256 **`b0f250c47e5938dbf3d4728a2ba43541207eda270b7be4f23779cda3092d0d49`**. This is a new reviewed closure of the existing **pre-array packet3a**, not a new host-test result or retrospective native acceptance.
+
+| Authenticated input group | Files | Scope |
+|---|---:|---|
+| Packet |29|Preflight, configuration, native commands, link arguments, complete recipe/native-source/host-packet trees|
+| Dependencies |1,699|1,687 headers, validation and mapping metadata, provenance metadata, five original present archives and the separate helper archive/receipt|
+| Owned EGL |1|Exact previously validated Mesa EGL archive|
+| Repository |3|Canonical pre-array compiler and the two independent derivation/dependency review receipts|
+| External regular files |64|Already-declared toolchain, library and object pins from the previous successful preparation|
+| **Total** |**1,796**|Preparation inputs, not all future configured Firefox build outputs|
+
+The five recursively consumed trees have exact file and directory membership. Added, missing, nonregular or symlink members fail closed. Every original host-manifest file and compiler-source binding is checked, including the native mock's equality with the host mock. The dependency metadata must name exactly five present original archives and the missing `libc++.a`; the separately reconstructed helper remains a distinct artifact. Both generated header trees are bound to the earlier pinned 1,687-file inventory.
+
+Independent review reproduced all ten generated configuration, wrapper, target, shim, native-command and link-argument classes from already pinned source or historical command evidence. This supports their derivation, rather than merely accepting freshly observed hashes. The separate snapshot also pins the current reviewed dependency validation and replacement maps. Directory availability for external toolchain search paths remains an availability check; this is not a claim of recursive immutability for all future compiler or system inputs.
+
+`input_closure.py` reads regular files through one descriptor, checks content and read identity, and caches all bytes that the recipe later parses or copies. Explicit immutable toolchain aliases must resolve to their recorded targets. Owned packet trees cannot contain symlinks. The recipe checks the complete closure before source Git inspection or any source/output mutation, then checks exact source destination identities: four original files must match their recorded prior bytes and six originally absent destinations must remain absent. Cached inputs replace unchecked `copytree` traversal and subsequent packet rereads. A final identity/membership check precedes the first output directory. I/O failures during later writes still leave preserved incomplete attempts; only the final receipt declares preparation complete.
+
+Copied packet permissions remain strict, including executable mode0755 for `recipe/cargo` and `recipe/rustc`. Repository evidence/compiler files are read-only inputs, never copied or executed by this stage. Their manifest modes are observations, while their content, ownership, regular-file type and stable read identity are required; this permits the normal0600→0644 permission difference after a Git checkout. The preparation receipt records the exact main recipe and its verifier/preflight/owned-path module hashes.
+
+The helper reconstruction's static `helperOnlyLinkage` claim now first requires the exact independently reviewed historical preparation receipt **`9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90`**, its `source-changes.json` pin, and both current `defs.mk` after-pins. Existing guard substrings are insufficient if those files have changed. `--verify-linkage-only` performs that read-only check for the old source2/build2 preparation. It deliberately does not accept an arbitrary new preparation receipt; changing that binding requires a new independent review. The exact helper object/archive reconstruction algorithm and original wrapped browser artifacts are unchanged.
+
+Historical preparation receipts still identify the recipe bytes at Git commit `a03223f78b0fcefb45022e0da2c006baea0366fe`; they must not be audited as if the current live recipe file were those old bytes. New preparations and their exact code/module pins are recorded separately. The original preparation2 and intermediate preparation3 remain preserved.
+
+A separate array candidate is documented on branch `gpt-6-astra-pro_linuxonweb-array-jit_20261110` in `docs/firefox-jit-nested-arrays-20261110.md`. It is absent from packet3a and this closure. Its future integration requires a new completely validated host/preflight packet containing its shared proof header, every runner and fixture, both native and host overlays, and a new reviewed closure identity. The existing seven-member compiler binding deliberately rejects a SHA-only candidate substitution. Earlier array test counts do not accept the final refactored array source.
+
+### Focused validation and final replay
+
+The final production code passed **77/77** focused checks in32.532s inside the unchanged bounded owner (34.008s total). The suite mutates each packet file, dependency metadata and declared archives, representative files from both header trees, and membership/type/mode conditions. It checks exact source/output preservation on rejection, cached-copy identity, repository mode portability with content tampering still rejected, and stale/altered helper preparation/source-change/defs bindings. The source-before/null negative uses a transparently identified Git-metadata stub with real pinned source bytes; the final full source worktree replay below is separate actual Git evidence.
+
+| Operation | Guarded wall seconds | Result |
+|---|---:|---|
+| First closure capture |2.503|Retained script-model failure: four existing and six absent source destinations had been miscounted|
+| Second closure capture |1.753|Retained capture failure: already declared owned non-Nix inputs were initially excluded|
+| Corrected closure capture |2.753|Pass; original packet unchanged|
+| Read-only full input verification |2.503|Pass;1,796 regular-file pins and five exact trees|
+| Intermediate fresh source checkout / preparation3 |40.258 /11.259|Pass; retained before the Git mode portability refinement|
+| First focused suite |25.010|44 checks passed, then test-fixture setup hit a copied0444 header|
+| Final focused suite |34.008|77/77 pass; fresh fixture/prefix and owner|
+| Final fresh source checkout |45.262|Pass at exact source HEAD525176a|
+| **Final preparation4** |**9.254**|**Pass with exact final recipe and all three module hashes recorded**|
+
+The final source has483,357 tracked base files and exactly ten recorded source changes (nine Git-visible paths plus the ignored configuration). Independent review checked every source after-pin, all seven copied native sources, the recipe/module and output pins, executable wrappers, unchanged missing dependency scope, and no compiled objects in the fresh object directories. The final preparation sampled peak owned RSS215,433,216bytes and PSS94,410,752bytes. These are preparation measurements, not Firefox runtime memory or performance results.
+
+All recorded owners kept the unchanged shared-cap/membership policy, recorded no quota violation, and ended with zero owned processes and no cleanup inventory errors. CPU/RSS/available RAM/quota cadence remains1s; PSS5s and its peak is a sampled lower bound. The three failed attempts and the successful intermediate preparation are retained. No compiler, guest, image publication or new speed acceptance is implied.
+
+The manifest deliberately pins **libc++.a as absent**. After a legitimate stable-scope dependency build and verification supplies it—or changes dependency metadata/maps—the old closure must reject that changed state. Review the new complete dependency set and mappings, create a new closure identity, and prepare fresh source/build roots; do not simply edit one hash or rerun into old outputs. This is an intentional fail-closed boundary. The same full-review rule applies more broadly to any changed compiler/array packet.
+
+Evidence: [validation summary](evidence/firefox-jit-integration-20261110/input-closure-validation.json), [77-case receipt](evidence/firefox-jit-integration-20261110/input-closure-tests.json), [final preparation](evidence/firefox-jit-integration-20261110/guarded-preparation-final.json), [final source changes](evidence/firefox-jit-integration-20261110/guarded-source-changes-final.json), [independent review](evidence/firefox-jit-integration-20261110/input-closure-final-review.txt), and [complete owner receipts](evidence/firefox-jit-integration-20261110/input-closure-owner-receipts.json).
+
 
 ## Integrated work and exact prepared inputs
 

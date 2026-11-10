@@ -1,0 +1,61 @@
+{
+  "readOnly": true,
+  "checks": [
+    {
+      "file": "recipe/environment.sh",
+      "source": "pinned source HEAD + original evidence + exact derivation",
+      "match": true
+    },
+    {
+      "file": "recipe/cargo",
+      "source": "pinned source HEAD + original evidence + pathMappings",
+      "match": true
+    },
+    {
+      "file": "recipe/rustc",
+      "source": "pinned source HEAD + original evidence + pathMappings",
+      "match": true
+    },
+    {
+      "file": "recipe/rust-target/wasm32-unknown-linux-musl.json",
+      "source": "pinned source HEAD + original evidence, unchanged",
+      "match": true
+    },
+    {
+      "file": "recipe/shim/filesystem",
+      "source": "pinned source HEAD + original evidence, unchanged",
+      "match": true
+    },
+    {
+      "file": "recipe/shim/inttypes.h",
+      "source": "pinned source HEAD + original evidence, unchanged",
+      "match": true
+    },
+    {
+      "file": "recipe/shim/sys/mman.h",
+      "source": "pinned source HEAD + original evidence, unchanged",
+      "match": true
+    },
+    {
+      "file": ".mozconfig",
+      "source": "owned pinned source configuration + only MOZ_OBJDIR replacement",
+      "match": true
+    },
+    {
+      "file": "compile-commands.json",
+      "source": "two owned pinned historical command receipts + exact pathMappings",
+      "match": true
+    },
+    {
+      "file": "link/link.args",
+      "source": "owned pinned historical link-argument receipt + exact pathMappings",
+      "match": true
+    }
+  ]
+}
+exit_code: 0
+running: false
+terminal_id: 41298
+workspace_id: /mnt/p3/project/linux/linuxonweb
+chars: 1509
+snapshot: fb2b25782dd2def2
