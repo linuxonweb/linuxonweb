@@ -1,0 +1,205 @@
+{
+  "kind": "exact-historical-helper-mapping-reconstruction-v1",
+  "passArtifactReconstruction": true,
+  "compiled": false,
+  "helperOnlyLinkage": true,
+  "nativeIntegrationReady": false,
+  "guestRuntimeAcceptance": false,
+  "fullJitAcceptance": false,
+  "recipe": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-musl/recipe/reconstruct-helper-mapping.py",
+    "bytes": 11026,
+    "sha256": "287b104ab8e0cebf8dbd2abfd95f074769e49c8c0b4ba76e7f7f1c1156406bd9"
+  },
+  "historicalReceipt": {
+    "path": "tools/nightly-musl/evidence/native-mapping-link.json",
+    "bytes": 6494,
+    "sha256": "29f04581cb9c8bef91f06a288573032460fed85791a414739050095f8be54431"
+  },
+  "source": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/inputs/mmap-shim.c",
+    "bytes": 15049,
+    "sha256": "cf9f7592186c95dbe9589d8e86bd86fd724b8f06f9c539826ca3a3707c621e97"
+  },
+  "wrappedObject": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-wrapped-shm/mmap-shim.o",
+    "bytes": 5849,
+    "sha256": "d9109125a1b3cd0c0d4e0c42dfd0ba6c68f3b4fc4e4d0a5ff079cc93c885ff3a"
+  },
+  "wrappedBrowserArchive": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-wrapped-shm/libnightly-native-mapping.a",
+    "bytes": 6134,
+    "sha256": "d83706cc69d4dc478930c1d73584dd9469547c29fb7ce0bbb70f70d4e2f683fa"
+  },
+  "object": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/mmap-shim.o",
+    "bytes": 5835,
+    "sha256": "bae2a8cc8dd968036e4cecec8dfbdc218923e5a6a8594f89baceb0cdd874e755"
+  },
+  "archive": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a",
+    "bytes": 6106,
+    "sha256": "ce9bde472373b4d7d09555954006b94b3c0a8137d341d51d689371fb8e2c7561"
+  },
+  "renamedSymbols": [
+    {
+      "before": "__wrap_shm_open",
+      "after": "shm_open",
+      "functionIndex": 25,
+      "flags": 4
+    },
+    {
+      "before": "__wrap_shm_unlink",
+      "after": "shm_unlink",
+      "functionIndex": 26,
+      "flags": 4
+    }
+  ],
+  "unchangedSections": [
+    {
+      "kind": 1,
+      "name": null,
+      "sha256": "93306292f9afba0d566755a3a055af8c53c5f37cd020c07ac8035c28f36248cd",
+      "bytes": 71
+    },
+    {
+      "kind": 2,
+      "name": null,
+      "sha256": "da91d797c30ac3c042a8d3a5ea7ec82f649a99160fbe4824cc84195c649486b4",
+      "bytes": 253
+    },
+    {
+      "kind": 3,
+      "name": null,
+      "sha256": "fb227b8b2c5083714eef4ab6ce5ae42e2eb8139fdda74bc7eb362046156cc09e",
+      "bytes": 13
+    },
+    {
+      "kind": 12,
+      "name": null,
+      "sha256": "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71",
+      "bytes": 1
+    },
+    {
+      "kind": 10,
+      "name": null,
+      "sha256": "a4af39f41d046d6972fb82c7de3e9d2cc34c40123fb311897af3b6c39f70714e",
+      "bytes": 4220
+    },
+    {
+      "kind": 11,
+      "name": null,
+      "sha256": "f6e0d8e922a1141e672b91edea84dec0901c50d09c0a8d485fcb448ee965a11b",
+      "bytes": 40
+    },
+    {
+      "kind": 0,
+      "name": "reloc.CODE",
+      "sha256": "d9baa63efd503e2288b50d594d021e3768bc7b55e43e8a5500b80e2d71b8ec6a",
+      "bytes": 570
+    },
+    {
+      "kind": 0,
+      "name": "producers",
+      "sha256": "9233d382ed3793c4f68637ddc2f5ceaa5f13b34a37affb1163b060d79f30c774",
+      "bytes": 38
+    },
+    {
+      "kind": 0,
+      "name": "target_features",
+      "sha256": "a60554322e479702a7c5a058d2911904633594830c88d31b2dc0e1a874c43969",
+      "bytes": 177
+    }
+  ],
+  "importsUnchanged": true,
+  "codeUnchanged": true,
+  "relocationsUnchanged": true,
+  "helperLinkageFiles": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-2/defs.mk",
+      "bytes": 3344,
+      "sha256": "3e70769373e4f60292085accd9fc400fbea9f7fe8cfcbfd824dbc365d8484ea7"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-2/linuxonweb-build/adapters/defs.mk",
+      "bytes": 3344,
+      "sha256": "3e70769373e4f60292085accd9fc400fbea9f7fe8cfcbfd824dbc365d8484ea7"
+    }
+  ],
+  "commands": [
+    {
+      "name": "validate-object",
+      "argv": [
+        "/usr/bin/wasm-validate",
+        "--enable-all",
+        "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/mmap-shim.o"
+      ],
+      "exitCode": 0,
+      "log": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/validate-object.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "archive",
+      "argv": [
+        "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar",
+        "crs",
+        "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a",
+        "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/mmap-shim.o"
+      ],
+      "exitCode": 0,
+      "log": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/archive.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "defined-symbols",
+      "argv": [
+        "/nix/store/7hx2lqdpdaz7hprc97p1zalqbygznffb-llvm-binutils-21.1.8/bin/llvm-nm",
+        "--defined-only",
+        "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a"
+      ],
+      "exitCode": 0,
+      "log": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/defined-symbols.log",
+        "bytes": 366,
+        "sha256": "13defe1821e4435ef8e710713da933fde32d45cd57cd0f66504bbe704b55787d"
+      }
+    },
+    {
+      "name": "undefined-symbols",
+      "argv": [
+        "/nix/store/7hx2lqdpdaz7hprc97p1zalqbygznffb-llvm-binutils-21.1.8/bin/llvm-nm",
+        "--undefined-only",
+        "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a"
+      ],
+      "exitCode": 0,
+      "log": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/undefined-symbols.log",
+        "bytes": 322,
+        "sha256": "521f4d25119cc6b2febfdcff9e237aff77bc71b4a54ace01ac1df12548678d8e"
+      }
+    }
+  ],
+  "tools": [
+    {
+      "path": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar",
+      "bytes": 115000,
+      "sha256": "d6b9f113b4cbf607315291a0b29a9f1f51702bda904a3be2d0ac9a2aa116532b"
+    },
+    {
+      "path": "/usr/bin/wasm-validate",
+      "bytes": 1124712,
+      "sha256": "77c04d5445984b86ea1f830d20a1ede6d183ee2babc450b3d6d1d488cce40652"
+    },
+    {
+      "path": "/nix/store/7hx2lqdpdaz7hprc97p1zalqbygznffb-llvm-binutils-21.1.8/bin/llvm-nm",
+      "bytes": 216040,
+      "sha256": "557e008ce7727c5b5d071021202eaf70f8bb8bfbe50501b84aecdd91d114c9cb"
+    }
+  ]
+}

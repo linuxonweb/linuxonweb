@@ -1,3 +1,11 @@
+## Current native JIT checkpoint — 2026-11-10, 45/100
+
+The integration branch `gpt-6-astra-pro_linuxonweb-jit_20261110` adds reviewed owned-root and Mesa closure commits, then a fresh pinned **pre-array** Firefox159 source/build preparation. Read `docs/firefox-jit-integration-20261110.md` and its exact receipts before later historical notes. Prepared source/build are `../linuxonweb-firefox-jit-20261110-native-source-2` and `../linuxonweb-firefox-jit-20261110-native-build-2`; source base is525176a. The successful preparation and1,687-header/hash audit do not mean a native build.
+
+The extra unwrapped helper mapping archive was reconstructed from an owned wrapped object with exact independent historical object/archive hashes; no compiler was used and the wrapped browser archive is unchanged. Only libc++.a remains missing from the original six dependency archives. 2,634 Firefox objects and eight generated backend/header paths remain. Native integration, guest execution, full JIT and performance acceptance are false; no deployment changed. Host NVIDIA EGL/WebGL2 passed a bounded isolated probe, while hardware WebGPU/Vulkan and guest graphics remain unaccepted.
+
+Do not repeat the blocked compiler launch. Existing same-identity70→80 leaf migration fails the intentional AGENTS/owner continuity gate. A supported administrator-provided inherited scope honored by the host watcher, under shared<=3CPU and no greater than the current compiler1.8CPU cap, is required. Keep the exact guard unchanged. Attempt3 finalized cxxabi/unwind; libc++ resume must use unused attempt4 and fresh owner, then unused verify4. Do not reprepare/reconfigure the existing runtime tree. A later array candidate needs a new fully pinned host packet and fresh source/build preparation; this packet does not contain it. First failed preparation/source and every receipt remain preserved.
+
 # Exact continuation prompt
 
 Continue the real LinuxOnWeb desktop project through rubywebterm using the final capturedHead and original user goals. Read AGENTS.md, agent/task.md, agent/continue.md, this prompt and the final acceptance report before changing anything. Preserve the current work/checkpoint and use a fresh named task branch. Do not claim completion or95/100.

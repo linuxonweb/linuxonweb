@@ -1,0 +1,28 @@
+[
+  {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+    "directory": false,
+    "status": "unavailable",
+    "error": "FileNotFoundError",
+    "family": "environment",
+    "roles": [
+      "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+    ]
+  },
+  {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+    "directory": false,
+    "status": "unavailable",
+    "error": "FileNotFoundError",
+    "family": "cxx-abi-unwind",
+    "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++.a"
+  },
+  {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a",
+    "directory": false,
+    "status": "unavailable",
+    "error": "FileNotFoundError",
+    "family": "generated-graph-helper-mapping",
+    "reason": "unwrapped helpers in source defs.mk"
+  }
+]

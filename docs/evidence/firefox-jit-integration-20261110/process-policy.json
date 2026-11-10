@@ -1,0 +1,88 @@
+{
+  "kind": "native-build-membership-policy-diagnosis-v1",
+  "scope": "read-only host inspection; no compiler retry or host policy mutation",
+  "guard": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/guest-packages/bounded.py",
+    "bytes": 21203,
+    "sha256": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4"
+  },
+  "projectInstructions": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/AGENTS.md",
+    "bytes": 7851,
+    "sha256": "26d8a967496732dd7f2427e47f1aa024a02d575b8b5181d7accf663db2d0a451"
+  },
+  "requiredInstruction": "Fail closed on unknown/unlimited/migrated groups.",
+  "monitorBehavior": "same PID/startTicks changing membership is rejected even when the common capped ancestor remains unchanged",
+  "historicalTransitions": [
+    {
+      "label": "owner-build",
+      "receipt": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/owner-build/result.json",
+        "bytes": 3758,
+        "sha256": "54eefd286375d356f391e5bc0bde07eda65ffa3d3fff958c8a6f5d6919f1d51e"
+      },
+      "resources": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/owner-build/resources.jsonl",
+        "bytes": 18841,
+        "sha256": "ac4a16d58bd65af54f161d74b7a37366a8ef408f1294a2d11b4384b2cd6a6108"
+      },
+      "stopReason": "owned_process_shared_cpu_quota_policy_failed",
+      "ownedProcessesRemaining": 0,
+      "transitions": [
+        {
+          "pid": 2842029,
+          "startTicks": 88727853,
+          "from": "/cpulimit.slice/cpulimit-70.slice",
+          "to": "/cpulimit.slice/cpulimit-80.slice",
+          "utc": "2026-11-08T20:48:02.853056+00:00",
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "owner-build-attempt-2",
+      "receipt": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/owner-build-attempt-2/result.json",
+        "bytes": 3329,
+        "sha256": "01a432f3bc7168909fbfe8534f8ec042badca104fdf8c4646b5c30e5da648963"
+      },
+      "resources": {
+        "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/owner-build-attempt-2/resources.jsonl",
+        "bytes": 12628,
+        "sha256": "68bc6fe4836a93d41cbf862f43856e9cd27a1dcdf8838f1cc07ef770cca8344c"
+      },
+      "stopReason": "owned_process_shared_cpu_quota_policy_failed",
+      "ownedProcessesRemaining": 0,
+      "transitions": [
+        {
+          "pid": 2846665,
+          "startTicks": 88733160,
+          "from": "/cpulimit.slice/cpulimit-70.slice",
+          "to": "/cpulimit.slice/cpulimit-80.slice",
+          "utc": "2026-11-08T20:48:56.443020+00:00",
+          "commonSharedAncestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "maximumObservedCpuLimit": 3.0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "currentObservedCpuLimits": {
+    "commonAncestor": 3,
+    "inheritedLeaf70": 5.6,
+    "compilerLeaf80": 1.8
+  },
+  "readableWatcherBehavior": "Matches comm or argv[0] basename once per second and assigns configured leaf; parent settling does not settle later children",
+  "protectedMappingRead": "80.commands permission denied; no retry or bypass",
+  "supportedLaunchRouteFound": false,
+  "requiredExternalAction": "Administrator supplies a task-specific inherited launch scope honored by the host watcher, continuously capped under the common <=3 CPU ancestor and not exceeding the current compiler 1.8 CPU cap; preserve exact identity/membership guard",
+  "nativeAccepted": false
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "post-reconstruction-dependency-refresh-v1",
+  "recordedUtc": "2026-11-10T16:12:25.089408+00:00",
+  "preparation": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-2/preparation.json",
+    "bytes": 86260,
+    "sha256": "9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90"
+  },
+  "helperReconstruction": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/reconstruction.json",
+    "bytes": 7222,
+    "sha256": "7e1ffd63c6f08d1dd37536761661c7db5fa776074d3564b9cc066b0f09a9e4dc"
+  },
+  "currentMissingInputStatus": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a",
+      "available": true,
+      "bytes": 6106,
+      "sha256": "ce9bde472373b4d7d09555954006b94b3c0a8137d341d51d689371fb8e2c7561"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "available": false
+    }
+  ],
+  "remainingUniqueMissingFiles": [
+    "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a"
+  ],
+  "originalSixDependencyArchivesPresent": 5,
+  "originalSixDependencyArchivesRequired": 6,
+  "additionalHelperMappingArchivePresent": true,
+  "compiled": false,
+  "nativeIntegrationReady": false,
+  "fullBuildReady": false,
+  "guestRuntimeAcceptance": false
+}
