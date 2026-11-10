@@ -1,0 +1,76 @@
+ARRAY_CASE matrix 0 matrix
+ARRAY_CASE matrix 1 matrix
+ARRAY_CASE matrix 2 matrix
+ARRAY_CASE matrix 3 matrix
+ARRAY_CASE matrix 4 matrix
+ARRAY_CASE matrix 5 matrix
+ARRAY_CASE matrix 6 matrix
+ARRAY_CASE matrix 7 matrix
+ARRAY_CASE matrix 8 matrix
+ARRAY_CASE matrix 9 matrix
+ARRAY_CASE matrix 10 matrix
+ARRAY_CASE matrix 11 matrix
+ARRAY_CASE matrix 12 matrix
+ARRAY_CASE matrix 13 matrix
+ARRAY_CASE matrix 14 matrix
+ARRAY_CASE matrix 15 matrix
+ARRAY_CASE matrix 16 matrix
+ARRAY_CASE matrix 17 matrix
+ARRAY_CASE matrix 18 matrix
+ARRAY_CASE matrix 19 matrix
+ARRAY_CASE matrix 20 matrix
+ARRAY_CASE matrix 21 matrix
+ARRAY_CASE matrix 22 matrix
+ARRAY_CASE matrix 23 matrix
+ARRAY_CASE matrix 24 matrix
+ARRAY_CASE matrix 25 matrix
+ARRAY_CASE matrix 26 matrix
+ARRAY_CASE matrix 27 matrix
+ARRAY_CASE matrix 28 matrix
+ARRAY_CASE matrix 29 matrix
+ARRAY_CASE matrix 30 matrix
+ARRAY_CASE matrix 31 matrix
+ARRAY_CASE integer inputs widen safely matrix
+ARRAY_CASE existing holes matrix
+ARRAY_CASE numeric overwrite with proof matrix
+ARRAY_CASE numeric overwrite without init proof matrix-noinit
+ARRAY_CASE IEEE NaN matrix
+ARRAY_CASE IEEE Infinity matrix
+ARRAY_CASE IEEE -Infinity matrix
+ARRAY_CASE IEEE 0 matrix
+ARRAY_CASE IEEE 5e-324 matrix
+ARRAY_CASE IEEE 1e+200 matrix
+ARRAY_CASE read-only input alias allowed matrix
+ARRAY_CASE output alias A matrix
+ARRAY_CASE output alias B matrix
+ARRAY_CASE receiver shape matrix
+ARRAY_CASE receiver proxy class matrix
+ARRAY_CASE prototype dense addition 0 matrix
+ARRAY_CASE prototype sparse/accessor shape 0 matrix
+ARRAY_CASE prototype dense addition 1 matrix
+ARRAY_CASE prototype sparse/accessor shape 1 matrix
+ARRAY_CASE non-writable length matrix
+ARRAY_CASE non-extensible matrix
+ARRAY_CASE sealed matrix
+ARRAY_CASE frozen matrix
+ARRAY_CASE iteration matrix
+ARRAY_CASE shifted matrix
+ARRAY_CASE shared matrix
+ARRAY_CASE unknown matrix
+ARRAY_CASE partial capacity matrix
+ARRAY_CASE partial length matrix
+ARRAY_CASE old GC value matrix
+ARRAY_CASE old non-hole magic matrix
+ARRAY_CASE old TDZ magic matrix
+ARRAY_CASE old boolean matrix
+ARRAY_CASE old undefined matrix
+ARRAY_CASE input hole after prior appends matrix
+ARRAY_CASE input boolean after prior appends matrix
+ARRAY_CASE input object after prior appends matrix
+ARRAY_CASE input undefined after prior appends matrix
+ARRAY_CASE input initialized bound after appends matrix
+ARRAY_CASE no proof keeps hole bailout matrix-noinit
+ARRAY_CASE output key -1 copy
+ARRAY_CASE output key 1 copy
+ARRAY_CASE output key 16 copy
+ARRAY_CASE output key 2147483647 copy
