@@ -1,0 +1,69 @@
+{
+  "capturedUtc": "2026-11-10T16:20:48.392802+00:00",
+  "kind": "source snapshot captured after owner stopped, before subsequent edits",
+  "owner": "linuxonweb-firefox-array-jit-20261110-host-2-owner",
+  "nativeAcceptance": false,
+  "finalHostAcceptance": false,
+  "files": [
+    {
+      "path": "tools/pbl-jit/PblJit.cpp",
+      "bytes": 96271,
+      "sha256": "2e977217fb0e86cd932e241ae04c326814b83aecd13fa02723bc645be625acfc"
+    },
+    {
+      "path": "tools/pbl-jit/PblCacheObserve.h",
+      "bytes": 4635,
+      "sha256": "72df755ee48cfb5451d4f842774c06e4b74a50a73f78fe2fcb5cfc7766c1498a"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/mock.h",
+      "bytes": 4614,
+      "sha256": "d24353864472ca0b9007222d2651a0b35171fa31f447049b68b88368a3ead947"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/emit.cpp",
+      "bytes": 33017,
+      "sha256": "0e9da87b38b98f1b596ae357b635f5b2656f563b009ac336c91bc229c88a8f50"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/nested-fixtures.h",
+      "bytes": 9549,
+      "sha256": "387a1c5ccba2efdb5eeea6462b4b1278d9fe528aef63d5edcb70166422aa8757"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/array-fixtures.h",
+      "bytes": 11406,
+      "sha256": "4b95bd04fe72c1d9e9875c412324c1205cc0af5a3711df9ec5c15a97a48e366e"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run.mjs",
+      "bytes": 31810,
+      "sha256": "c0715c4ef697f52d22d4101f28145e004c0af39406040bc87e4963d5e201cf59"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run-nested.mjs",
+      "bytes": 15998,
+      "sha256": "222ea590342f11ce13744aed56b5cd78e43d00191ae3e9f2c5db672e077f4c86"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run-array.mjs",
+      "bytes": 20073,
+      "sha256": "3f0c45ae7e13e3f00c88d8d28004d51f0ac7615d4a05b775fd3db201b52864fc"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/check-array.py",
+      "bytes": 4422,
+      "sha256": "ae672a1f5a437d4c1a28964df7ca8fc5cbd82a08a7426453c7366de3e8f625d2"
+    },
+    {
+      "path": "tools/guest-rootfs/firefox-gpu-check/gpu-check.html",
+      "bytes": 31957,
+      "sha256": "19bc70f81ad4f6d56b5d1d30305dc73c4368160a36b2054871337505d05a0d4c"
+    },
+    {
+      "path": "tools/guest-packages/bounded.py",
+      "bytes": 21203,
+      "sha256": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4"
+    }
+  ]
+}

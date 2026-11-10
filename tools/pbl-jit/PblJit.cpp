@@ -8,7 +8,9 @@
 //
 // A hot loop (LoopHead .. its last backedge) whose ops are in the subset
 // below is translated into one wasm function. Properly nested numeric loops
-// up to depth three share that function; other nested shapes fail closed. The
+// up to depth three share that function; immutable numeric Array references and
+// frame-only lexical initialization are also supported. Other nested shapes
+// fail closed. The
 // function (23 x i64) -> i64 is installed with the private jit_install
 // syscall (docs/guest-jit-runtime-primitive-20260928.md). Values have static
 // types (Int32, Double, Boolean, undefined, null, the TDZ magic); frame locals
@@ -20,7 +22,9 @@
 // (if/else, &&, ||, ??, continue) become nested wasm blocks; their joins must
 // agree on all types. A head-live var holding an Array (class-guarded at
 // entry, never written in the loop) supports dense in-bounds GetElem/SetElem
-// of numbers and `.length`; holes, out-of-bounds indices, frozen elements and
+// of numbers and `.length`. Nested loops can initialize holes or append exactly
+// at initializedLength within existing capacity and array length only behind
+// receiver/prototype guards; other holes, bounds failures, frozen elements and
 // unexpected element types bail. Never-replaced PlainObjects support own
 // numeric slots behind entry shape guards; tenured global/object constants
 // support hoisted identity guards and allocation-free Math operations.
@@ -52,6 +56,7 @@
 
 #include <atomic>
 #include <new>
+#include <initializer_list>
 
 #ifdef PBLJIT_HOST_TEST
 #  include "host-test/mock.h"  // host emitter test (tools/pbl-jit/host-test)
@@ -317,6 +322,24 @@ struct ObjectInfo {
   uint32_t pointer = 0, shape = 0;
   bool plain = false, canWrite = false, tenured = false;
 };
+// A complete, bounded prototype-chain proof for an allocation-free dense add.
+// The receiver is reloaded from its rooted frame variable, never embedded.
+// Prototype constants are tenured and shapes are protected by the major epoch.
+constexpr uint32_t kMaxArrayProtos = 8;
+struct ArrayInitInfo {
+  uint32_t shape = 0, nprotos = 0;
+  ObjectInfo protos[kMaxArrayProtos];
+};
+// Raw object facts only. Host verification supplies independent object graphs;
+// the eligibility predicates and complete chain walk below are shared with the
+// native compiler. Reading native facts never invokes JS or allocates GC things.
+struct ArrayInitNode {
+  enum class Kind { Other, Array, Plain } kind = Kind::Other;
+  uint32_t shape = 0, prototype = 0, initializedLength = 0, flags = 0;
+  bool tenured = false, dictionary = false, indexed = false;
+  bool extensible = false, lengthWritable = false;
+  bool watchesAdd = false, watchesValue = false;
+};
 struct SlotInfo {
   uint32_t offset = 0;
   bool dynamic = false, writable = false;
@@ -425,8 +448,14 @@ int32_t OffClasp() { return 0; }
 int32_t OffElements() { return 8; }
 int32_t OffFlags() { return -16; }
 int32_t OffInitLen() { return -12; }
+int32_t OffCapacity() { return -8; }
 int32_t OffLength() { return -4; }
 uint32_t FrozenFlag() { return 0x40; }
+uint32_t InitForbiddenFlags() { return ~uint32_t(0x1 | 0x80); }
+uint64_t HoleBits() { return uint64_t(0xFFFFFF85u) << 32 | JS_ELEMENTS_HOLE; }
+bool ReadArrayInitNode(uint32_t pointer, ArrayInitNode& node) {
+  return MockReadArrayInitNode(pointer, node);
+}
 // -1: not an Array; 0: other element types; 1: Int32; 2: numbers.
 int ArrayKind(uint64_t bits) { return MockArrayKind(uint32_t(bits)); }
 bool AtomIsLength(JSScript*, jsbytecode* pc) { return MockAtomIsLength(pc); }
@@ -438,8 +467,36 @@ int32_t OffClasp() { return int32_t(BaseShape::offsetOfClasp()); }
 int32_t OffElements() { return int32_t(NativeObject::offsetOfElements()); }
 int32_t OffFlags() { return ObjectElements::offsetOfFlags(); }
 int32_t OffInitLen() { return ObjectElements::offsetOfInitializedLength(); }
+int32_t OffCapacity() { return ObjectElements::offsetOfCapacity(); }
 int32_t OffLength() { return ObjectElements::offsetOfLength(); }
 uint32_t FrozenFlag() { return ObjectElements::FROZEN; }
+// Permit only fixed storage and the non-packed marker. In particular, reject
+// non-writable length, non-extensible/sealed/frozen, shifted/shared elements,
+// active iteration and any future flag not explicitly reviewed here.
+uint32_t InitForbiddenFlags() {
+  return ~uint32_t(ObjectElements::FIXED | ObjectElements::NON_PACKED);
+}
+uint64_t HoleBits() { return MagicValue(JS_ELEMENTS_HOLE).asRawBits(); }
+bool ReadArrayInitNode(uint32_t pointer, ArrayInitNode& node) {
+  JSObject* obj = reinterpret_cast<JSObject*>(uintptr_t(pointer));
+  // This class restriction excludes proxies, resolve/set/add hooks, wrappers
+  // and typed arrays before using any NativeObject or static-prototype getter.
+  if (!obj->is<ArrayObject>() && !obj->is<PlainObject>()) return false;
+  NativeObject& native = obj->as<NativeObject>();
+  node.kind = obj->is<ArrayObject>() ? ArrayInitNode::Kind::Array : ArrayInitNode::Kind::Plain;
+  node.shape = uint32_t(uintptr_t(native.shape()));
+  node.prototype = uint32_t(uintptr_t(native.staticPrototype()));
+  node.initializedLength = native.getDenseInitializedLength();
+  node.flags = native.getElementsHeader()->getFlags();
+  node.tenured = native.isTenured();
+  node.dictionary = native.inDictionaryMode();
+  node.indexed = native.isIndexed();
+  node.extensible = native.isExtensible();
+  node.lengthWritable = obj->is<ArrayObject>() && obj->as<ArrayObject>().lengthIsWritable();
+  node.watchesAdd = Watchtower::watchesPropertyAdd(&native);
+  node.watchesValue = Watchtower::watchesPropertyValueChange(&native);
+  return true;
+}
 // Samples the first 64 dense elements (holes skipped) at compile time; the
 // generated code checks every element it reads.
 int ArrayKind(uint64_t bits) {
@@ -461,6 +518,31 @@ bool AtomIsLength(JSScript* script, jsbytecode* pc) {
   return StringEqualsLiteral(script->getAtom(pc), "length");
 }
 #endif
+
+bool InspectArrayForInit(uint32_t pointer, ArrayInitInfo& info) {
+  info = ArrayInitInfo();
+  ArrayInitNode node;
+  if (!ReadArrayInitNode(pointer, node) || node.kind != ArrayInitNode::Kind::Array ||
+      node.dictionary || node.indexed || !node.extensible || !node.lengthWritable ||
+      node.watchesAdd || node.watchesValue || (node.flags & InitForbiddenFlags())) return false;
+  // Shape identity captures sparse properties, extensibility, prototype links
+  // and Watchtower flags. Dictionary maps can change in place and are excluded.
+  info.shape = node.shape;
+  // A stricter subset than CacheIR CanAttachAddElement: no indexed property of
+  // any kind on any prototype. Shape guards alone do not detect dense additions,
+  // so every prototype's initialized length is also checked on every entry.
+  for (uint32_t proto = node.prototype; proto; proto = node.prototype) {
+    if (info.nprotos == kMaxArrayProtos || !ReadArrayInitNode(proto, node) ||
+        (node.kind != ArrayInitNode::Kind::Array && node.kind != ArrayInitNode::Kind::Plain) ||
+        !node.tenured || node.dictionary || node.indexed || node.initializedLength != 0) return false;
+    ObjectInfo& stored = info.protos[info.nprotos++];
+    stored.pointer = proto;
+    stored.shape = node.shape;
+    stored.plain = node.kind == ArrayInitNode::Kind::Plain;
+    stored.tenured = true;
+  }
+  return true;
+}
 
 // Wasm local layout: params 0..22 (i64); i32 locals frame, sp, interrupt
 // bits, out, argv; the frame variables; the operand stack; one i32 and one
@@ -524,6 +606,8 @@ struct Compiler {
   uint32_t nguards = 0;
   size_t guardInsertion = 0;
   Ty elemTy[kMaxVars];  // for Array vars: Int, Double or Unknown
+  ArrayInitInfo arrayInit[kMaxVars];
+  bool arrayCanInit[kMaxVars] = {}, arrayWrites[kMaxVars] = {};
   uint32_t maxArg = 0;  // 1 + highest argument index used
   // Forward targets, ascending. Each block opens inside its owning loop;
   // ancestor exit blocks surround all descendant loops.
@@ -673,7 +757,9 @@ struct Compiler {
       for (uint32_t v = 0; v < nvars; v++) {
         if (st.var[v] == Ty::Head && (l.liveMask >> v & 1))
           return reject("loop entry read", pc);
-        if (nloops > 1 && st.var[v] != Ty::Head && !IsNum(st.var[v]))
+        if (nloops > 1 && st.var[v] != Ty::Head && !IsNum(st.var[v]) &&
+            !IsArr(st.var[v]) &&
+            !(st.var[v] == Ty::Magic && !varLive[v] && !(l.liveMask >> v & 1)))
           return reject("nested variable type", pc);
       }
     }
@@ -767,9 +853,11 @@ struct Compiler {
     return same || reject("join type", pc);
   }
 
-  // This first nested-loop tier deliberately excludes objects, arrays, calls,
-  // allocations, lexical checks and exception operations. Single-loop coverage
-  // remains unchanged. Booleans may be temporary comparison/branch operands.
+  // Nested regions keep only numeric state and immutable head Array references.
+  // Formal arguments are unaliased/read-only; calls, object properties,
+  // allocations, environment creation and exception operations stay excluded.
+  // Frame-only TDZ sentinels may initialize dead locals, never flow into a read.
+  // Booleans may be temporary comparison/branch operands.
   static bool nestedOp(JSOp op) {
     switch (op) {
       case JSOp::LoopHead: case JSOp::JumpTarget:
@@ -777,7 +865,10 @@ struct Compiler {
       case JSOp::Zero: case JSOp::One: case JSOp::Int8: case JSOp::Uint16:
       case JSOp::Uint24: case JSOp::Int32: case JSOp::Double:
       case JSOp::True: case JSOp::False:
-      case JSOp::GetLocal: case JSOp::SetLocal: case JSOp::InitLexical:
+      case JSOp::GetLocal: case JSOp::GetArg: case JSOp::SetLocal:
+      case JSOp::InitLexical: case JSOp::Uninitialized: case JSOp::CheckLexical:
+      case JSOp::GetElem: case JSOp::SetElem: case JSOp::StrictSetElem:
+      case JSOp::ToPropertyKey:
       case JSOp::Pop: case JSOp::Dup: case JSOp::Dup2: case JSOp::Swap:
       case JSOp::Add: case JSOp::Sub: case JSOp::Mul: case JSOp::Div: case JSOp::Mod:
       case JSOp::BitOr: case JSOp::BitAnd: case JSOp::BitXor:
@@ -947,12 +1038,11 @@ struct Compiler {
       } else {
         memcpy(&bits, frame - 8 * (size_t(key) + 1), 8);
       }
-      if (nloops > 1 && !IsNum(TyOfTag(uint32_t(bits >> 32))))
-        return reject("nested variable type", head);
       if (uint32_t(bits >> 32) == kTagObject) {
         // An Array the loop never replaces: its local holds the pointer.
         int kind = ArrayKind(bits);
         if (kind < 0) {
+          if (nloops > 1) return reject("nested variable type", head);
           if (!InspectObject(uint32_t(bits), objects[v]) || !objects[v].plain)
             return reject("head type", head);
           if (varWritten[v]) return reject("object var written", head);
@@ -963,9 +1053,11 @@ struct Compiler {
         headTy[v] = ArrTy(v);
         elemTy[v] = kind == 0 ? Ty::Unknown : kind == 2 ? Ty::Double : Ty::Int;
         if (elemTy[v] == Ty::Int && (widen.elems >> v & 1)) elemTy[v] = Ty::Double;
+        if (nloops > 1) arrayCanInit[v] = InspectArrayForInit(uint32_t(bits), arrayInit[v]);
         continue;
       }
       headTy[v] = TyOfTag(uint32_t(bits >> 32));
+      if (nloops > 1 && !IsNum(headTy[v])) return reject("nested variable type", head);
       if (headTy[v] == Ty::Unknown) return reject("head type", head);
       if (headTy[v] == Ty::Int && (widen.vars >> v & 1)) headTy[v] = Ty::Double;
     }
@@ -1269,27 +1361,62 @@ struct Compiler {
     return true;
   }
 
-  // Dense element write of a number over a number: [arr, index, v] -> [v].
-  // Neither value is a GC thing, so no barriers are needed.
+  // Dense element write: [arr, index, v] -> [v]. Only numbers can be stored.
+  // An existing number or exact hole is not a GC thing, so no barriers are
+  // needed. New slots are never read before initialization. All failing guards
+  // precede the store and leave the original operands available for bailout.
   bool setElem(jsbytecode* pc) {
     if (st.depth < 3) return reject("underflow", pc);
     uint32_t s = st.depth - 3;
     Ty a = st.stack[s], i = st.stack[s + 1], t = st.stack[s + 2];
     if (!IsArr(a) || i != Ty::Int || !IsNum(t)) return reject("operand type", pc);
     uint32_t v = ArrVar(a);
+    if (nloops > 1 && (varKey[v] & kArgKey)) return reject("nested argument write", pc);
+    arrayWrites[v] = true;
     if (!IsNum(elemTy[v])) return reject("element type", pc);
     if (elemTy[v] == Ty::Int && t == Ty::Double) {
       want.elems |= 1u << v;
       return reject("element widen", pc);
     }
-    denseIndex(pc, s, s + 1);
-    lget(tmp32()), load32(OffFlags()), i32c(int32_t(FrozenFlag())), code.put(W_I32AND);
-    bailIf(pc);
-    elemAddr(s + 1);
-    lget(tmp32()), load32(4), i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
-    bailIf(pc);  // the old element is a hole or not a number
-    lget(tmp32());
-    boxStore(slotLocal(s + 2), t);
+    if (nloops > 1 && arrayCanInit[v]) {
+      lget(slotLocal(s)), load32(OffElements()), lset(tmp32());
+      lget(tmp32()), load32(OffFlags()), i32c(int32_t(InitForbiddenFlags())), code.put(W_I32AND);
+      bailIf(pc);
+      // Fixed-length initialization only: no growth, no length update and no
+      // skipped uninitialized slots. Unsigned comparisons reject negative keys.
+      for (int32_t off : {OffLength(), OffCapacity()}) {
+        lget(slotLocal(s + 1)), lget(tmp32()), load32(off), code.put(W_I32GEU);
+        bailIf(pc);
+      }
+      lget(slotLocal(s + 1)), lget(tmp32()), load32(OffInitLen()), code.put(W_I32GTU);
+      bailIf(pc);
+      lget(slotLocal(s + 1)), lget(tmp32()), load32(OffInitLen()), code.put(W_I32EQ);
+      code.put(W_IF), code.put(W_VOID);
+      elemAddr(s + 1);
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+      // Publish exactly one initialized element only after its numeric value is
+      // stored. There is no call, allocation, bailout or interrupt between them.
+      lget(slotLocal(s)), load32(OffElements()), i32c(OffInitLen()), code.put(W_I32ADD);
+      lget(slotLocal(s + 1)), i32c(1), code.put(W_I32ADD);
+      code.put(W_I32STORE), code.uleb(2), code.uleb(0);
+      code.put(W_ELSE);
+      elemAddr(s + 1);
+      lget(tmp32()), code.put(W_I64LOAD), code.uleb(3), code.uleb(0), lset(tmp64());
+      lget(tmp64()), i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
+      i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
+      lget(tmp64()), i64c(int64_t(HoleBits())), code.put(W_I64NE);
+      code.put(W_I32AND), bailIf(pc);  // old GC values and other magic bail
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+      code.put(W_END);
+    } else {
+      denseIndex(pc, s, s + 1);
+      lget(tmp32()), load32(OffFlags()), i32c(int32_t(FrozenFlag())), code.put(W_I32AND);
+      bailIf(pc);
+      elemAddr(s + 1);
+      lget(tmp32()), load32(4), i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
+      bailIf(pc);  // no initialization proof: old element must be a number
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+    }
     move(slotLocal(s + 2), slotLocal(s), t);
     st.depth -= 2;
     st.stack[s] = t;
@@ -1370,6 +1497,30 @@ struct Compiler {
       code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
       i64c(int64_t(g.slot.bits)), code.put(W_I64NE);
       noEntryIf();
+    }
+  }
+  void arrayEntryGuards() {
+    if (nloops <= 1) return;
+    for (uint32_t v = 0; v < nvars; v++) {
+      if (!arrayWrites[v]) continue;
+      // The new nested tier keeps formal/input arrays read-only. Reject an
+      // output alias before any loop work, including aliases of other outputs.
+      for (uint32_t other = 0; other < nvars; other++) {
+        if (other == v || !IsArr(headTy[other])) continue;
+        lget(varLocal(v)), lget(varLocal(other)), code.put(W_I32EQ), noEntryIf();
+      }
+      if (!arrayCanInit[v]) continue;
+      const ArrayInitInfo& info = arrayInit[v];
+      lget(varLocal(v)), load32(OffShape()), i32c(int32_t(info.shape));
+      code.put(W_I32NE), noEntryIf();
+      for (uint32_t i = 0; i < info.nprotos; i++) {
+        const ObjectInfo& proto = info.protos[i];
+        lget(varLocal(v)), i32c(int32_t(proto.pointer)), code.put(W_I32EQ), noEntryIf();
+        i32c(int32_t(proto.pointer)), load32(OffShape()), i32c(int32_t(proto.shape));
+        code.put(W_I32NE), noEntryIf();
+        i32c(int32_t(proto.pointer)), load32(OffElements()), load32(OffInitLen());
+        noEntryIf();
+      }
     }
   }
   bool getGlobal(jsbytecode* pc) {
@@ -1674,7 +1825,9 @@ struct Compiler {
           if (st.depth < 1) return reject("underflow", pc);
           uint32_t v = uint32_t(findVar(keyOf(pc)));
           Ty t = st.stack[top];
-          if (nloops > 1 && !IsNum(t)) return reject("nested variable type", pc);
+          if (nloops > 1 && !IsNum(t) &&
+              !(t == Ty::Magic && op == JSOp::InitLexical && !varLive[v]))
+            return reject("nested variable type", pc);
           if (t == Ty::Int && (widen.vars >> v & 1)) {
             lget(slotLocal(top)), code.put(W_F64CONVI32S), lset(fl(varLocal(v)));
             t = Ty::Double;
@@ -1893,6 +2046,7 @@ struct Compiler {
     saved.p = code.p; saved.n = code.n; saved.cap = code.cap;
     code.p = nullptr; code.n = code.cap = 0;
     constantEntryGuards();
+    arrayEntryGuards();
     if (code.oom) return reject("oom", head);
     body.putn(saved.p, guardInsertion);
     body.putn(code.p, code.n);

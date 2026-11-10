@@ -260,7 +260,7 @@ if (!isMainThread) {
     check('inner interrupt bounded latency', performance.now()-start < 5000, true);
   }
 
-  const rejects = { 'side-entry':'loop side entry', boundary:'jump target', 'no-backedge':'loop without backedge', crossing:'crossing loops', backward:'backward jump', depth:'loop nesting', stack:'loop entry depth', bool:'nested variable type', object:'nested variable type', call:'nested opcode', array:'nested opcode' };
+  const rejects = { 'side-entry':'loop side entry', boundary:'jump target', 'no-backedge':'loop without backedge', crossing:'crossing loops', backward:'backward jump', depth:'loop nesting', stack:'loop entry depth', bool:'nested variable type', object:'array var written', call:'nested opcode', array:'underflow' };
   for (const [name, reason] of Object.entries(rejects)) {
     const m = JSON.parse(fs.readFileSync(`${dir}/nested-reject-${name}.json`));
     check(`${name} rejected`, m.ok, false); check(`${name} rejection reason`, m.reason, reason);
