@@ -469,7 +469,16 @@ async function async_iterable(source) {
  * Neither policy enables DAX or a writeback cache.
  */
 export function fileSystemDevice(filesystem, options) {
-    const { tag, cache = true, cacheSeconds = 1 } = options;
+    const { tag, cache = true, cacheSeconds = 1, keepCache = false, maxPages = 16, stableReaddir = false } = options;
+    // keepCache: FOPEN_KEEP_CACHE on regular-file opens, so a reopened file's
+    // page cache survives (only valid when the guest is the only writer; size/mtime
+    // changes still invalidate through AUTO_INVAL_DATA). maxPages: FUSE request
+    // size in pages (the kernel clamps to its own virtqueue limit).
+    // stableReaddir: one directory listing per open handle, so a reader that
+    // deletes entries between READDIR calls (rm -r) does not skip entries.
+    if (!Number.isSafeInteger(maxPages) || maxPages < 1 || maxPages > 256) {
+        throw new RangeError("virtio-fs maxPages must be between 1 and 256");
+    }
     if (!Number.isSafeInteger(cacheSeconds) || cacheSeconds < 0) {
         throw new RangeError("virtio-fs cacheSeconds must be a non-negative integer");
     }
@@ -641,7 +650,7 @@ export function fileSystemDevice(filesystem, options) {
                     congestion_threshold: 9,
                     max_write: 1024 * 1024,
                     time_gran: 1,
-                    max_pages: (flags & FuseInitFlags.MAX_PAGES) === 0 ? 0 : 16,
+                    max_pages: (flags & FuseInitFlags.MAX_PAGES) === 0 ? 0 : maxPages,
                     map_alignment: 0,
                     flags2: 0,
                     max_stack_depth: 0,
@@ -809,10 +818,10 @@ export function fileSystemDevice(filesystem, options) {
                 const handle = await method.call(filesystem, node.node, request.flags);
                 payload.alloc(FuseOpenOut).value = {
                     fh: add_handle(node, handle, directory),
-                    // Keep open flags zero even when cache is false. Cache controls only
-                    // entry/attribute validity; FOPEN_DIRECT_IO would route private
-                    // owner-worker user buffers through unsupported page extraction.
-                    open_flags: 0,
+                    // Never FOPEN_DIRECT_IO: it would route private owner-worker
+                    // user buffers through unsupported page extraction. KEEP_CACHE (2)
+                    // only retains already-valid page cache across opens.
+                    open_flags: keepCache && cache && !directory ? 2 : 0,
                     backing_id: -1,
                 };
                 break;
@@ -830,7 +839,7 @@ export function fileSystemDevice(filesystem, options) {
                     // CREATE returns the same open flags as OPEN; direct I/O is
                     // unsupported by this wasm transport even when metadata/name
                     // validity is zero.
-                    open_flags: 0,
+                    open_flags: keepCache && cache ? 2 : 0,
                     backing_id: -1,
                 };
                 break;
@@ -906,7 +915,18 @@ export function fileSystemDevice(filesystem, options) {
                     { name: ".", record: handle.node },
                     { name: "..", record: handle.node.parent },
                 ];
-                const directory_entries = await filesystem.readdir(handle.node.node, handle.handle);
+                let directory_entries;
+                if (stableReaddir) {
+                    // Offset 0 (first read or rewinddir) takes a fresh listing.
+                    if (offset === 0 || !handle.listing) {
+                        handle.listing = [];
+                        for (const entry of await async_iterable(await filesystem.readdir(handle.node.node, handle.handle)))
+                            handle.listing.push({ name: entry.name, node: entry.node });
+                    }
+                    directory_entries = handle.listing;
+                } else {
+                    directory_entries = await filesystem.readdir(handle.node.node, handle.handle);
+                }
                 const transient = [];
                 const limit = Math.min(request.size, capacity - FuseOutHeader.size);
                 try {
@@ -925,7 +945,16 @@ export function fileSystemDevice(filesystem, options) {
                         const record_length = (24 + name.byteLength + 7) & ~7;
                         if (payload.length + record_length > limit)
                             break;
-                        const attributes = await filesystem.getattr(entry.record.node);
+                        let attributes;
+                        try {
+                            attributes = await filesystem.getattr(entry.record.node);
+                        }
+                        catch (error) {
+                            // A listed entry removed since the handle's listing is skipped.
+                            if (stableReaddir && error instanceof FSError && error.errno === Errno.ENOENT)
+                                continue;
+                            throw error;
+                        }
                         payload.alloc(FuseDirent).value = {
                             ino: entry.record.id,
                             off: BigInt(index + 1),

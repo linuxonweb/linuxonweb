@@ -59,6 +59,15 @@ function archiveReader(archive) {
   return { length, slice };
 }
 export function desktopInitOverlay(source) { return makeDesktopInitOverlay(source, ''); }
+// Opt-in candidate (?local-hostname=1): Firefox resolves the hostname while locking its
+// profile; with no /etc/hosts musl queries the unreachable 192.0.2.1 resolver and
+// startup idles ~10 s (2 x 5 s DNS timeout). Resolve the hostname locally instead.
+const LOCAL_HOSTNAME_INIT = '# Resolve the hostname locally; DNS timeouts stall Firefox profile locking.\n' +
+  'h=$(/bin/busybox hostname 2>/dev/null); case "$h" in ""|"(none)") h=linuxonweb; /bin/busybox hostname "$h";; esac\n' +
+  '[ -e /etc/hosts ] || printf \'127.0.0.1\\tlocalhost %s\\n::1\\tlocalhost %s\\n\' "$h" "$h" > /etc/hosts\n';
+export function localHostnameRequested(search = globalThis.location?.search ?? '') {
+  return new URLSearchParams(search).get('local-hostname') === '1';
+}
 function makeDesktopInitOverlay(source, proof, packageImage = false) {
   const archive = archiveReader(source);
   const decoder = new TextDecoder(); let original = null, offset = 0;
@@ -79,7 +88,7 @@ function makeDesktopInitOverlay(source, proof, packageImage = false) {
   }
   if (!original || !decoder.decode(original.subarray(0, 128)).startsWith('#!')) throw new Error('Desktop rootfs has no supported /init script.');
   const activation = packageAgentInit(original, packageImage); original = activation.original;
-  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\n' + activation.outerAgent + 'exec /init.desktop-original "$@"\n');
+  const wrapper = encoder.encode('#!/bin/busybox sh\n# Host clipboard is available only through explicit browser actions.\nexport DISPLAY=:0\n/bin/clipboard-bridge &\n' + (localHostnameRequested() ? LOCAL_HOSTNAME_INIT : '') + activation.outerAgent + 'exec /init.desktop-original "$@"\n');
   const entries = [cpioEntry('init.desktop-original', original), cpioEntry('init', wrapper),
     cpioEntry('bin/linuxonweb-run-agent', encoder.encode(guestRunAgent())), cpioEntry('bin/linuxonweb-run-shell', encoder.encode(guestRunShell())),
     // init's boot-time wget/curl self-tests compete with desktop and Firefox startup.
@@ -126,10 +135,49 @@ function assertNoReservedProof(source) {
     offset = (end + 3) & ~3;
   }
 }
+// Optional memo of deterministic composition work, keyed by verified content
+// identities (io-cache=1). It stores: the /init scan of a verified system image
+// (so warm boots skip decompressing ~370 MB only to find /init), the verified
+// raw desktop extras (no 60 MB re-download per boot) and their gzip encoding (no
+// CompressionStream per boot). Values are only ever derived from bytes whose
+// SHA-256 was checked against the fresh manifest before being stored.
+const COMPOSE_DB = 'linuxonweb.compose', COMPOSE_STORE = 'entries';
+export function composeCache({ idb = globalThis.indexedDB } = {}) {
+  let opened = null;
+  const open = () => opened ??= new Promise((resolve, reject) => {
+    const req = idb.open(COMPOSE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(COMPOSE_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }).catch(error => { opened = null; throw error; });
+  const run = async (mode, op) => {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(COMPOSE_STORE, mode); const req = op(tx.objectStore(COMPOSE_STORE));
+      let result; req.onsuccess = () => { result = req.result; };
+      tx.oncomplete = () => resolve(result); tx.onerror = tx.onabort = () => reject(tx.error ?? req.error);
+    });
+  };
+  return {
+    get: key => run('readonly', store => store.get(key)).catch(() => undefined),
+    put: (key, value) => run('readwrite', store => store.put(value, key)).catch(() => {}),
+    // Keep only the given keys (current image/extras identities).
+    retain: async keep => { try { for (const key of await run('readonly', store => store.getAllKeys())) if (!keep.has(key)) await run('readwrite', store => store.delete(key)); } catch { /* best effort */ } },
+  };
+}
+const blobBytes = async (value, length) => value instanceof Blob && value.size === length ? new Uint8Array(await value.arrayBuffer()) : null;
+async function gzipBytes(raw) {
+  const reader = new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip')).getReader();
+  const parts = []; let length = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); length += value.length; }
+  const out = new Uint8Array(length); let at = 0;
+  for (const part of parts) { out.set(part, at); at += part.length; }
+  return out;
+}
 // Starts at boot, alongside system image decompression. The manifest is always
 // fresh; the archive may come from the HTTP cache after revalidation because
 // its checksum is verified against that manifest.
-export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = false, cacheLifecycle } = {}) {
+export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = false, cacheLifecycle, composeCache: memo } = {}) {
   const cachePolicy = validateFirefoxCacheLifecycle(cacheLifecycle);
   const progress = { id: 'desktop-extras', label: 'Desktop extras' };
   const manifestResponse = await fetchImpl(new URL('./desktop-extras.cpio.json', import.meta.url), { cache: 'no-store' });
@@ -137,6 +185,30 @@ export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = fals
   const manifest = await manifestResponse.json();
   if (manifest.schema !== 1 || !Number.isSafeInteger(manifest.bytes) || manifest.bytes < 1 || manifest.bytes > 64 * 1024 ** 2 || !/^[0-9a-f]{64}$/.test(manifest.sha256)) throw new Error('Invalid desktop extras manifest.');
   if (cachePolicy) assertFirefoxDesktopExtras(cachePolicy, manifest);
+  // Memoized path: only for the plain (no cache-lifecycle proof) composition
+  // and when the server does not already provide a precompressed archive.
+  if (memo && !cachePolicy && !(preserveGzip && manifest.gzip !== undefined)) {
+    const rawKey = `extras-raw:v1:${manifest.sha256}:${manifest.bytes}`, gzKey = `extras-gz:v1:${manifest.sha256}:${manifest.bytes}`;
+    if (preserveGzip) {
+      const hit = await memo.get(gzKey);
+      if (hit?.blob && Number.isSafeInteger(hit.bytes)) {
+        const gz = await blobBytes(hit.blob, hit.bytes);
+        if (gz && gz[0] === 0x1f && gz[1] === 0x8b) return { encoding: 'gzip', bytes: gz };
+      }
+    }
+    let raw = await blobBytes((await memo.get(rawKey))?.blob, manifest.bytes);
+    if (!raw) {
+      ({ bytes: raw } = await downloadFile(new URL('./desktop-extras.cpio', import.meta.url), { ...progress, total: manifest.bytes, failure: 'Desktop extras unavailable', fetchImpl }));
+      if (raw.length !== manifest.bytes) throw new Error('Desktop extras download is incomplete.');
+      const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', raw))].map(x => x.toString(16).padStart(2, '0')).join('');
+      if (hash !== manifest.sha256) throw new Error('Desktop extras checksum mismatch.');
+      void memo.put(rawKey, { blob: new Blob([raw]) });
+    }
+    if (!preserveGzip) return raw;
+    const gz = await gzipBytes(raw);
+    void memo.put(gzKey, { blob: new Blob([gz]), bytes: gz.length });
+    return { encoding: 'gzip', bytes: gz };
+  }
   const compressed = preserveGzip && manifest.gzip !== undefined;
   const metadata = compressed ? manifest.gzip : manifest;
   if (compressed && (!metadata || !Number.isSafeInteger(metadata.bytes) || metadata.bytes < 18 || metadata.bytes > manifest.bytes + 65536 || !/^[0-9a-f]{64}$/.test(metadata.sha256))) throw new Error('Invalid desktop extras gzip manifest.');
@@ -224,7 +296,11 @@ export function useCompressedInitramfs(mode, search, rawRequired = false) {
   const choice = new URLSearchParams(search).get('compressed-initramfs');
   return mode === 'firefox' && !rawRequired && (choice === null || choice === '1');
 }
-export async function loadDesktopInitramfs(image, extras, { gzip = false, preserveGzip = false, compressExtras = false, signal, onImage = () => {}, onReady = () => {} } = {}) {
+function validScan(value) {
+  return value && Number.isSafeInteger(value.bytes) && value.bytes > 0 && value.original instanceof Uint8Array &&
+    value.original.length > 2 && value.original.length <= 1024 * 1024 && typeof value.packageImage === 'boolean' ? value : null;
+}
+export async function loadDesktopInitramfs(image, extras, { gzip = false, preserveGzip = false, compressExtras = false, composeCache: memo, signal, onImage = () => {}, onReady = () => {} } = {}) {
   const imageReady = Promise.resolve(image);
   const extrasReady = Promise.resolve(extras);
   imageReady.catch(() => {});
@@ -256,6 +332,23 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
     signal?.throwIfAborted();
     if (!response.body) throw new Error('System image response has no body.');
     const compressed = gzip && preserveGzip;
+    // The scan is a pure function of the verified image bytes; reuse it by SHA-256.
+    const imageSha = response.headers?.get?.('X-System-SHA256');
+    const scanKey = memo && compressed && /^[0-9a-f]{64}$/.test(imageSha ?? '') ? `scan:v1:${imageSha}` : null;
+    const memoScan = scanKey ? validScan(await wait(memo.get(scanKey))) : null;
+    signal?.throwIfAborted();
+    if (memoScan) {
+      parts.push(new Uint8Array(await wait(response.arrayBuffer())));
+      signal?.throwIfAborted();
+      onImage(memoScan.bytes);
+      const extraBytes = await wait(extrasReady);
+      signal?.throwIfAborted();
+      const overlay = makeDesktopInitOverlay(cpioEntry('init', memoScan.original), extraBytes?.[CACHE_VERIFIED] ?? '', memoScan.packageImage);
+      if (extraBytes?.encoding !== 'gzip' && compressExtras) throw new Error('Memoized composition requires gzip desktop extras.');
+      const archive = assembleInitramfs(parts, extraBytes?.encoding === 'gzip' ? extraBytes.bytes : extraBytes, overlay);
+      onReady();
+      return archive;
+    }
     const source = compressed ? response.body.pipeThrough(new TransformStream({ transform(value, controller) {
       parts.push(value);
       controller.enqueue(value);
@@ -264,6 +357,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
     reader = body.getReader();
     if (compressed) {
       const scanned = await scanInitOverlay(reader, signal);
+      if (scanKey) void memo.put(scanKey, { bytes: scanned.bytes, original: scanned.original, packageImage: scanned.packageImage });
       onImage(scanned.bytes);
       const extraBytes = await wait(extrasReady);
       signal?.throwIfAborted();

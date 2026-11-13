@@ -30,7 +30,12 @@ function offsetNumber(value) {
  * no beforeunload flush is needed, and a quota failure cannot leave half a write.
  * The guest uses its normal page cache; the transport does not enable writeback.
  */
-export async function openPersistentHome({ indexedDB = globalThis.indexedDB, name = HOME_DATABASE, onError = () => {}, readOnly = false } = {}) {
+// durability: 'strict' (default) asks for a stable-storage flush per committed
+// write; 'relaxed' (io-relaxed=1 experiment) still commits every write before
+// acknowledging it, so data survives Stop, tab close and browser crash, but may
+// be lost on OS crash or power loss.
+export async function openPersistentHome({ indexedDB = globalThis.indexedDB, name = HOME_DATABASE, onError = () => {}, readOnly = false, durability = 'strict' } = {}) {
+  if (!['strict', 'relaxed'].includes(durability)) throw new Error('Invalid home durability');
   if (!indexedDB) throw new Error('This browser does not provide IndexedDB storage.');
   const opening = indexedDB.open(name, HOME_VERSION);
   opening.onupgradeneeded = event => {
@@ -61,7 +66,7 @@ export async function openPersistentHome({ indexedDB = globalThis.indexedDB, nam
     let tx;
     try {
       // strict requests a stable-storage commit on engines which implement it.
-      try { tx = db.transaction(['nodes', 'chunks'], write ? 'readwrite' : 'readonly', write ? { durability: 'strict' } : {}); }
+      try { tx = db.transaction(['nodes', 'chunks'], write ? 'readwrite' : 'readonly', write ? { durability } : {}); }
       catch { tx = db.transaction(['nodes', 'chunks'], write ? 'readwrite' : 'readonly'); }
       const completed = new Promise((resolve, reject) => {
         tx.oncomplete = resolve;

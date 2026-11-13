@@ -29,7 +29,7 @@ import { installBuildInfo } from './build-info.mjs';
 import { installBrowserInfo } from './browser-info.mjs';
 import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
-import { loadDesktopInitramfs, loadDesktopExtras, useCompressedInitramfs } from './desktop-extras.mjs';
+import { loadDesktopInitramfs, loadDesktopExtras, useCompressedInitramfs, composeCache } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
 import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
 import { guestGpuHostcallOptions, guestGpuUrl } from './guest-gpu-config.mjs';
@@ -1007,7 +1007,17 @@ async function boot(mode) {
   );
   let initramfs;
   let gputestInit = false;
-  const rootfs = null;
+  // io-blockroot=<same-origin path> (default off, console-only experiment): mount an ext4 image
+  // read-only over virtio-blk, reading sectors on demand from a Blob instead of unpacking an initramfs.
+  const blockRootUrl = mode === 'console' && new URLSearchParams(location.search).get('io-blockroot');
+  const rootfs = blockRootUrl ? await (async () => {
+    const url = new URL(blockRootUrl, location.href);
+    if (url.origin !== location.origin) throw new Error('io-blockroot must be same-origin');
+    const response = await fetch(url); if (!response.ok) throw new Error(`io-blockroot HTTP ${response.status}`);
+    const blob = await response.blob();
+    hostLog(`boot timing: block root (${(blob.size / 1048576).toFixed(0)} MiB) fetched at ${bootTime()}`);
+    return { byteLength: blob.size, readOnly: true, subarray: async (start, end) => new Uint8Array(await blob.slice(start, end).arrayBuffer()) };
+  })() : null;
   if (mode === 'wgpu') {
     try {
       activeMachine = await bootWgpuTest({ backend: selectedGpuTest, canvas, log: writeConsole, onStatus: setStatus,
@@ -1041,7 +1051,8 @@ async function boot(mode) {
   try {
     await queueHomeLease(async () => {
       releaseHomeLock = await acquireHomeLock();
-      try { persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true) }); }
+      try { persistentHome = await openPersistentHome({ onError: error => storagePanel.message(`Home storage error: ${error.message}`, true),
+        ...(new URLSearchParams(location.search).get('io-relaxed') === '1' ? { durability: 'relaxed' } : {}) }); }
       catch (error) { await releaseHomeLock(); releaseHomeLock = null; throw error; }
     });
     hostLog(`boot timing: home ready at ${bootTime()}`);
@@ -1050,15 +1061,18 @@ async function boot(mode) {
     // Keep native purge-marker invalidation for those explicit test modes.
     const cacheLifecycle = mode === 'firefox' && !gputestMode && selectedGpuTest !== 'software'
       ? (await activeManifest()).assets.firefox.cacheLifecycle : undefined;
-    initramfs = loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs, cacheLifecycle }), {
+    // io-cache=1 (default off): memoize the verified /init scan and desktop extras by SHA-256.
+    const memo = new URLSearchParams(location.search).get('io-cache') === '1' && !gputestMode && selectedGpuTest !== 'software' ? composeCache() : undefined;
+    initramfs = rootfs ? null : loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs, cacheLifecycle, composeCache: memo }), {
       gzip: mode === 'firefox',
+      composeCache: memo,
       preserveGzip: compressedInitramfs,
       compressExtras: compressedInitramfs,
       signal: archiveController.signal,
       onImage: bytes => hostLog(`boot timing: system image (${(bytes / 1048576).toFixed(0)} MiB) ready at ${bootTime()}`),
       onReady: () => hostLog(`boot timing: desktop extras appended at ${bootTime()}`),
     });
-    initramfs.catch(() => {});
+    initramfs?.catch(() => {});
     if (gputestMode || selectedGpuTest === 'software') {
       initramfs = await initramfs;
       const demo = await loadGputestArchive(hostLog, fetch, GPUTEST_APPS[gputestAppParam(location.search)]);
@@ -1098,7 +1112,9 @@ async function boot(mode) {
     pointer,
     attached.attachment.device,
     // The exclusive home lease leaves the guest as the home's only writer, so its name and attribute caches stay exact.
-    fileSystemDevice(persistentHome, { tag: 'home', cache: true, cacheSeconds: 3600 }),
+    // io-fs=1 (default off): keep page cache across opens and a per-handle readdir listing.
+    fileSystemDevice(persistentHome, { tag: 'home', cache: true, cacheSeconds: 3600,
+      ...(new URLSearchParams(location.search).get('io-fs') === '1' ? { keepCache: true, stableReaddir: true } : {}) }),
   ];
   const vsock = vsockDevice();
   devices.push(vsock);
@@ -1107,9 +1123,9 @@ async function boot(mode) {
       blockDevice({
         capacity: rootfs.byteLength,
         read: (offset, length) => rootfs.subarray(offset, offset + length),
-        write: (offset, data) => {
+        ...(rootfs.readOnly ? {} : { write: (offset, data) => {
           rootfs.set(data, offset);
-        },
+        } }),
       }),
     );
   }
