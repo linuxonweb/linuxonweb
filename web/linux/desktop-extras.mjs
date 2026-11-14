@@ -59,14 +59,14 @@ function archiveReader(archive) {
   return { length, slice };
 }
 export function desktopInitOverlay(source) { return makeDesktopInitOverlay(source, ''); }
-// Opt-in candidate (?local-hostname=1): Firefox resolves the hostname while locking its
+// Default-on (?local-hostname=0 restores the old wrapper): Firefox resolves the hostname while locking its
 // profile; with no /etc/hosts musl queries the unreachable 192.0.2.1 resolver and
 // startup idles ~10 s (2 x 5 s DNS timeout). Resolve the hostname locally instead.
 const LOCAL_HOSTNAME_INIT = '# Resolve the hostname locally; DNS timeouts stall Firefox profile locking.\n' +
   'h=$(/bin/busybox hostname 2>/dev/null); case "$h" in ""|"(none)") h=linuxonweb; /bin/busybox hostname "$h";; esac\n' +
   '[ -e /etc/hosts ] || printf \'127.0.0.1\\tlocalhost %s\\n::1\\tlocalhost %s\\n\' "$h" "$h" > /etc/hosts\n';
 export function localHostnameRequested(search = globalThis.location?.search ?? '') {
-  return new URLSearchParams(search).get('local-hostname') === '1';
+  return new URLSearchParams(search).get('local-hostname') !== '0';
 }
 function makeDesktopInitOverlay(source, proof, packageImage = false) {
   const archive = archiveReader(source);
@@ -165,6 +165,25 @@ export function composeCache({ idb = globalThis.indexedDB } = {}) {
     retain: async keep => { try { for (const key of await run('readonly', store => store.getAllKeys())) if (!keep.has(key)) await run('readwrite', store => store.delete(key)); } catch { /* best effort */ } },
   };
 }
+// Identity of the extras manifest a memoized load used, so composition can
+// garbage-collect memo entries of other (older) extras without a second fetch.
+const EXTRAS_MEMO_ID = Symbol('desktop extras memo identity');
+const withExtrasId = (value, id) => Object.defineProperty(value, EXTRAS_MEMO_ID, { value: id });
+// Best-effort, fire-and-forget: drop memo entries for other identities of the
+// kinds this boot knows the current identity of. Only keys that are NOT current
+// are deleted (never clear-then-write), so concurrent fire-and-forget puts of
+// the current keys are never lost. Kinds whose identity is unknown this boot
+// (e.g. no scan in console mode) are left alone so modes do not thrash.
+function collectComposeGarbage(memo, { imageSha, extrasId }) {
+  if (typeof memo?.retain !== 'function' || (!imageSha && !extrasId)) return;
+  const current = key => {
+    const [kind, version, ...rest] = String(key).split(':');
+    if (kind === 'scan' && version === 'v1') return !imageSha || rest.join(':') === imageSha;
+    if ((kind === 'extras-raw' || kind === 'extras-gz' || kind === 'extras-pgz') && version === 'v1') return !extrasId || rest.join(':') === extrasId;
+    return true;
+  };
+  try { void Promise.resolve(memo.retain({ has: current })).catch(() => {}); } catch { /* best effort */ }
+}
 const blobBytes = async (value, length) => value instanceof Blob && value.size === length ? new Uint8Array(await value.arrayBuffer()) : null;
 async function gzipBytes(raw) {
   const reader = new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip')).getReader();
@@ -188,12 +207,13 @@ export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = fals
   // Memoized path: only for the plain (no cache-lifecycle proof) composition
   // and when the server does not already provide a precompressed archive.
   if (memo && !cachePolicy && !(preserveGzip && manifest.gzip !== undefined)) {
-    const rawKey = `extras-raw:v1:${manifest.sha256}:${manifest.bytes}`, gzKey = `extras-gz:v1:${manifest.sha256}:${manifest.bytes}`;
+    const extrasId = `${manifest.sha256}:${manifest.bytes}`;
+    const rawKey = `extras-raw:v1:${extrasId}`, gzKey = `extras-gz:v1:${extrasId}`;
     if (preserveGzip) {
       const hit = await memo.get(gzKey);
       if (hit?.blob && Number.isSafeInteger(hit.bytes)) {
         const gz = await blobBytes(hit.blob, hit.bytes);
-        if (gz && gz[0] === 0x1f && gz[1] === 0x8b) return { encoding: 'gzip', bytes: gz };
+        if (gz && gz[0] === 0x1f && gz[1] === 0x8b) return withExtrasId({ encoding: 'gzip', bytes: gz }, extrasId);
       }
     }
     let raw = await blobBytes((await memo.get(rawKey))?.blob, manifest.bytes);
@@ -204,20 +224,36 @@ export async function loadDesktopExtras(fetchImpl = fetch, { preserveGzip = fals
       if (hash !== manifest.sha256) throw new Error('Desktop extras checksum mismatch.');
       void memo.put(rawKey, { blob: new Blob([raw]) });
     }
-    if (!preserveGzip) return raw;
+    if (!preserveGzip) return withExtrasId(raw, extrasId);
     const gz = await gzipBytes(raw);
     void memo.put(gzKey, { blob: new Blob([gz]), bytes: gz.length });
-    return { encoding: 'gzip', bytes: gz };
+    return withExtrasId({ encoding: 'gzip', bytes: gz }, extrasId);
   }
   const compressed = preserveGzip && manifest.gzip !== undefined;
   const metadata = compressed ? manifest.gzip : manifest;
   if (compressed && (!metadata || !Number.isSafeInteger(metadata.bytes) || metadata.bytes < 18 || metadata.bytes > manifest.bytes + 65536 || !/^[0-9a-f]{64}$/.test(metadata.sha256))) throw new Error('Invalid desktop extras gzip manifest.');
+  // Memoized precompressed archive (plain composition only): the stored gzip
+  // was SHA-256-verified against this manifest before being stored, so a hit
+  // only rechecks the cheap identity (manifest gzip bytes/sha, size, magic).
+  const pgzId = memo && !cachePolicy && compressed ? `${manifest.sha256}:${manifest.bytes}` : null;
+  const pgzKey = pgzId && `extras-pgz:v1:${pgzId}`;
+  if (pgzKey) {
+    const hit = await memo.get(pgzKey);
+    if (hit?.blob && hit.bytes === metadata.bytes && hit.sha256 === metadata.sha256) {
+      const gz = await blobBytes(hit.blob, metadata.bytes);
+      if (gz && gz[0] === 0x1f && gz[1] === 0x8b) return withExtrasId({ encoding: 'gzip', bytes: gz }, pgzId);
+    }
+  }
   const asset = compressed ? './desktop-extras.cpio.gz' : './desktop-extras.cpio';
   const { bytes: extras } = await downloadFile(new URL(asset, import.meta.url), { ...progress, total: metadata.bytes, failure: 'Desktop extras unavailable', fetchImpl });
   if (extras.length !== metadata.bytes) throw new Error('Desktop extras download is incomplete.');
   const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', extras))].map(x => x.toString(16).padStart(2, '0')).join('');
   if (hash !== metadata.sha256) throw new Error('Desktop extras checksum mismatch.');
   const result = compressed ? { encoding: 'gzip', bytes: extras } : extras;
+  if (pgzKey) {
+    try { void Promise.resolve(memo.put(pgzKey, { blob: new Blob([extras]), bytes: metadata.bytes, sha256: metadata.sha256 })).catch(() => {}); } catch { /* best effort */ }
+    return withExtrasId(result, pgzId);
+  }
   if (cachePolicy) {
     const raw = compressed ? await decodePinnedExtras(extras, cachePolicy.desktopExtras.bytes) : extras;
     const rawHash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', raw))].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -346,6 +382,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
       const overlay = makeDesktopInitOverlay(cpioEntry('init', memoScan.original), extraBytes?.[CACHE_VERIFIED] ?? '', memoScan.packageImage);
       if (extraBytes?.encoding !== 'gzip' && compressExtras) throw new Error('Memoized composition requires gzip desktop extras.');
       const archive = assembleInitramfs(parts, extraBytes?.encoding === 'gzip' ? extraBytes.bytes : extraBytes, overlay);
+      collectComposeGarbage(memo, { imageSha, extrasId: extraBytes?.[EXTRAS_MEMO_ID] });
       onReady();
       return archive;
     }
@@ -390,6 +427,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
       } else {
         archive = assembleInitramfs(parts, extraBytes, overlay);
       }
+      collectComposeGarbage(memo, { imageSha: scanKey ? imageSha : null, extrasId: extraBytes?.[EXTRAS_MEMO_ID] });
       onReady();
       return archive;
     }
@@ -405,6 +443,7 @@ export async function loadDesktopInitramfs(image, extras, { gzip = false, preser
     signal?.throwIfAborted();
     if (overlay?.encoding === 'gzip') throw new Error('Compressed extras require a preserved gzip image.');
     const archive = desktopInitramfs(parts, overlay);
+    collectComposeGarbage(memo, { extrasId: overlay?.[EXTRAS_MEMO_ID] });
     onReady();
     return archive;
   } catch (error) {

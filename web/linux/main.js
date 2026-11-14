@@ -1061,8 +1061,9 @@ async function boot(mode) {
     // Keep native purge-marker invalidation for those explicit test modes.
     const cacheLifecycle = mode === 'firefox' && !gputestMode && selectedGpuTest !== 'software'
       ? (await activeManifest()).assets.firefox.cacheLifecycle : undefined;
-    // io-cache=1 (default off): memoize the verified /init scan and desktop extras by SHA-256.
-    const memo = new URLSearchParams(location.search).get('io-cache') === '1' && !gputestMode && selectedGpuTest !== 'software' ? composeCache() : undefined;
+    // io-cache (default on; ?io-cache=0 disables): memoize the verified /init scan and desktop
+    // extras by SHA-256. Entries for other image/extras identities are pruned after composition.
+    const memo = new URLSearchParams(location.search).get('io-cache') !== '0' && !gputestMode && selectedGpuTest !== 'software' ? composeCache() : undefined;
     initramfs = rootfs ? null : loadDesktopInitramfs(systemAsset(mode === 'firefox' ? 'firefox' : 'plain'), loadDesktopExtras(fetch, { preserveGzip: compressedInitramfs, cacheLifecycle, composeCache: memo }), {
       gzip: mode === 'firefox',
       composeCache: memo,
@@ -1112,9 +1113,9 @@ async function boot(mode) {
     pointer,
     attached.attachment.device,
     // The exclusive home lease leaves the guest as the home's only writer, so its name and attribute caches stay exact.
-    // io-fs=1 (default off): keep page cache across opens and a per-handle readdir listing.
+    // io-fs (default on; ?io-fs=0 disables): keep page cache across opens and a per-handle readdir listing.
     fileSystemDevice(persistentHome, { tag: 'home', cache: true, cacheSeconds: 3600,
-      ...(new URLSearchParams(location.search).get('io-fs') === '1' ? { keepCache: true, stableReaddir: true } : {}) }),
+      ...(new URLSearchParams(location.search).get('io-fs') !== '0' ? { keepCache: true, stableReaddir: true } : {}) }),
   ];
   const vsock = vsockDevice();
   devices.push(vsock);

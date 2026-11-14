@@ -47,6 +47,21 @@ class DesktopExtrasPackagingTests(unittest.TestCase):
         self.assertEqual(Path(str(first) + '.gz').read_bytes(), Path(str(second) + '.gz').read_bytes())
         self.assertEqual(Path(str(first) + '.json').read_bytes(), Path(str(second) + '.json').read_bytes())
 
+    def test_gzip_is_one_member_without_name_or_timestamp(self):
+        # Chromium DecompressionStream rejects concatenated members, while
+        # Python gzip.decompress accepts them, so check the stream structure.
+        import zlib
+        payload = os.urandom(4096) + b'compressible tail' * 4096
+        target = self.root / 'single.cpio'
+        PACKER.write_archive(target, payload, [])
+        compressed = Path(str(target) + '.gz').read_bytes()
+        self.assertEqual(compressed[:4], b'\x1f\x8b\x08\x00')  # deflate, no FNAME/FEXTRA/FCOMMENT
+        self.assertEqual(compressed[4:8], b'\0\0\0\0')  # mtime 0
+        decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        self.assertEqual(decoder.decompress(compressed) + decoder.flush(), payload)
+        self.assertTrue(decoder.eof)
+        self.assertEqual(decoder.unused_data, b'')
+
     def test_cli_publishes_gzip_and_preserves_every_original_record(self):
         build = self.root / 'build'
         build.mkdir()
