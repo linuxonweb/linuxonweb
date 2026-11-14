@@ -100,6 +100,42 @@ int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
 int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
                      int64_t ctx);
 uint32_t gRuns, gIcExits, gMismatch, gLoopRuns, gDirectPushes;
+// PBLBC_DIRECT outcome counters (CallScripted), printed at exit as one
+// "PBLBC direct:" line on stderr when PBLBC_LOG > 0 or PBLBC_HITS is set.
+enum DirectStat : uint32_t {
+  kDsNotCall, kDsCallerDebuggee, kDsNotFunction, kDsNotInterpreted,
+  kDsClassCtor, kDsNoBytecode, kDsNoJitScript, kDsRealm, kDsUnderflow,
+  kDsStack, kDsEnvObjects, kDsCalleeDebuggee, kDsCounts, kDsInterrupt,
+  kDsCalleeStack, kDsNotCompiled, kDsEntryExit,
+  kDsInline, kDsInlineRetRval0, kDsSwDepth, kDsSwIcCursor, kDsSwNested,
+  kDsSwIcError, kDsSwDebug, kDsSwExitOp, kDsCount
+};
+uint32_t gDs[kDsCount];
+inline int64_t Refuse(DirectStat s) {
+  gDs[s]++;
+  return 0;
+}
+void PrintDirectStats() {
+  const uint32_t* s = gDs;
+  uint32_t ref = 0;
+  for (uint32_t i = 0; i < kDsInline; i++) ref += s[i];
+  fprintf(stderr,
+          "PBLBC direct: pushes=%u inline=%u inline_retrval0=%u "
+          "switch_depth=%u switch_iccursor=%u switch_nested=%u "
+          "switch_icerror=%u switch_debug=%u switch_exitop=%u refused=%u "
+          "(notcall=%u callerdbg=%u notfunc=%u notinterp=%u classctor=%u "
+          "nobytecode=%u nojitscript=%u realm=%u underflow=%u stack=%u "
+          "envobj=%u calleedbg=%u counts=%u interrupt=%u calleestack=%u "
+          "notcompiled=%u entryexit=%u)\n",
+          gDirectPushes, s[kDsInline], s[kDsInlineRetRval0], s[kDsSwDepth],
+          s[kDsSwIcCursor], s[kDsSwNested], s[kDsSwIcError], s[kDsSwDebug],
+          s[kDsSwExitOp], ref, s[kDsNotCall], s[kDsCallerDebuggee],
+          s[kDsNotFunction], s[kDsNotInterpreted], s[kDsClassCtor],
+          s[kDsNoBytecode], s[kDsNoJitScript], s[kDsRealm], s[kDsUnderflow],
+          s[kDsStack], s[kDsEnvObjects], s[kDsCalleeDebuggee], s[kDsCounts],
+          s[kDsInterrupt], s[kDsCalleeStack], s[kDsNotCompiled],
+          s[kDsEntryExit]);
+}
 
 bool Enabled() {
   int e = gEnabled.load(std::memory_order_relaxed);
@@ -127,6 +163,7 @@ bool Enabled() {
               int(gLoopJit));
       if (gDirect) fprintf(stderr, "PBLBC direct scripted calls enabled\n");
     }
+    if (gDirect && (logBudget > 0 || (h && h[0]))) atexit(PrintDirectStats);
   }
   return e != 0;
 }
@@ -1928,42 +1965,53 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
   JSOp jop = JSOp(*pc);
-  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv) return 0;
-  if (frame->isDebuggee()) return 0;
+  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv) return Refuse(kDsNotCall);
+  if (frame->isDebuggee()) return Refuse(kDsCallerDebuggee);
   // Fast-path checks (same order as the interpreter; constructing == false).
   const uint32_t argc = GET_ARGC(pc);
   StackVal* firstArg = sp + argc - 1;
   const Value callee = firstArg[2].asValue();
-  if (!callee.isObject() || !callee.toObject().is<JSFunction>()) return 0;
+  if (!callee.isObject() || !callee.toObject().is<JSFunction>()) {
+    return Refuse(kDsNotFunction);
+  }
   JSFunction* func = &callee.toObject().as<JSFunction>();
-  if (!func->hasBaseScript() || !func->isInterpreted()) return 0;
-  if (func->isClassConstructor()) return 0;
-  if (!func->baseScript()->hasBytecode()) return 0;
+  if (!func->hasBaseScript() || !func->isInterpreted()) {
+    return Refuse(kDsNotInterpreted);
+  }
+  if (func->isClassConstructor()) return Refuse(kDsClassCtor);
+  if (!func->baseScript()->hasBytecode()) return Refuse(kDsNoBytecode);
   JSScript* calleeScript = func->baseScript()->asJSScript();
-  if (!calleeScript->hasJitScript()) return 0;
-  if (cx->realm() != calleeScript->realm()) return 0;
-  if (argc < func->nargs()) return 0;
+  if (!calleeScript->hasJitScript()) return Refuse(kDsNoJitScript);
+  if (cx->realm() != calleeScript->realm()) return Refuse(kDsRealm);
+  if (argc < func->nargs()) return Refuse(kDsUnderflow);
   const uint32_t totalArgs = argc + 1;
-  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) return 0;
+  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) {
+    return Refuse(kDsStack);
+  }
   // Extra: steps 9-12 of the fast path must be no-ops, and step 7 (callee
   // stack space, which would throw over-recursion) must pass. The space for
   // the exit frame (4 words + ExitFrameType), stub slot, args, token,
   // descriptor, fake return address and saved fp is added conservatively.
-  if (func->needsFunctionEnvironmentObjects()) return 0;
-  if (calleeScript->isDebuggee()) return 0;
+  if (func->needsFunctionEnvironmentObjects()) return Refuse(kDsEnvObjects);
+  if (calleeScript->isDebuggee()) return Refuse(kDsCalleeDebuggee);
   if (calleeScript->hasScriptCounts() || cx->realm()->collectCoverageForDebug())
-    return 0;
-  if (cx->hasAnyPendingInterrupt()) return 0;
+    return Refuse(kDsCounts);
+  if (cx->hasAnyPendingInterrupt()) return Refuse(kDsInterrupt);
   if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16) +
                                BaselineFrame::Size() +
                                sizeof(StackVal) * calleeScript->nslots())) {
-    return 0;
+    return Refuse(kDsCalleeStack);
   }
   // The callee must have compiled code enterable at op 0.
   Entry* e = FindExisting(calleeScript->immutableScriptData());
-  if (!e || e->state != 1) return 0;
+  if (!e || e->state != 1) return Refuse(kDsNotCompiled);
   uint32_t j0 = e->opAt[0];
-  if (j0 == 0xffff || e->exitOp[j0]) return 0;
+  // An exit op at op 0 is refused, except RetRval (e.g. an empty function's
+  // whole body): it is performed below without entering compiled code.
+  const bool retRval0 = JSOp(*calleeScript->code()) == JSOp::RetRval;
+  if (j0 == 0xffff || (e->exitOp[j0] && !retRval0)) {
+    return Refuse(kDsEntryExit);
+  }
 
   // Fast path steps 0-8 (no GC, no VM calls from here on).
   StackVal* origArgs = sp;
@@ -1997,10 +2045,18 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   // native nesting bound is reached or the IC cursor does not match (then
   // the interpreter starts the callee at pc 0; Hook enters it from there).
   JSOp op0 = JSOp(*calleePC);
-  if (tDirectDepth >= kMaxDirectDepth ||
+  uint32_t kind = kExit, exitOff = 0;
+  if (retRval0) {
+    // Op 0 is RetRval: nothing to run; return exactly as the interpreter's
+    // RetRval would (sp is the callee's initial sp, as at its op 0).
+    gDs[kDsInlineRetRval0]++;
+  } else {
+  const bool depthHit = tDirectDepth >= kMaxDirectDepth;
+  if (depthHit ||
       (op0 != JSOp::JumpTarget && op0 != JSOp::LoopHead &&
        newFrame->icScript()->numICEntries() != 0 &&
        calleeIcEntry != calleeIcEntries + e->icIdx[j0])) {
+    gDs[depthHit ? kDsSwDepth : kDsSwIcCursor]++;
     tSwitch.frame = newFrame;
     tSwitch.sp = sp;
     tSwitch.pc = calleePC;
@@ -2027,15 +2083,22 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
                   uintptr_t(cx->addressOfInterruptBits()), uintptr_t(calleePC),
                   uintptr_t(cx));
   tDirectDepth--;
-  const uint32_t kind = uint32_t(r >> 32);
-  if (kind == kFrameSwitch) return 1;  // tSwitch was set by a nested call
-  const uint32_t exitOff = uint32_t(r);
+  kind = uint32_t(r >> 32);
+  if (kind == kFrameSwitch) {
+    gDs[kDsSwNested]++;
+    return 1;  // tSwitch was set by a nested call
+  }
+  exitOff = uint32_t(r);
   sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
+  }
   jsbytecode* xpc = calleePC + exitOff;
   JSOp xop = JSOp(*xpc);
   if (kind == kIcError || newFrame->isDebuggee() ||
       newFrame->script()->hasScriptCounts() ||
       (xop != JSOp::Return && xop != JSOp::RetRval)) {
+    gDs[kind == kIcError ? kDsSwIcError
+        : (xop == JSOp::Return || xop == JSOp::RetRval) ? kDsSwDebug
+                                                        : kDsSwExitOp]++;
     uint32_t k = e->opAt[exitOff];
     tSwitch.frame = newFrame;
     tSwitch.sp = sp;
@@ -2065,6 +2128,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   sp += nargs + 2;
   *--sp = StackVal(ret);
   gDirectReturns++;
+  gDs[kDsInline]++;
   return int64_t(uintptr_t(sp));
 }
 
