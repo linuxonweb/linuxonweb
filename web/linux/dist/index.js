@@ -266,6 +266,34 @@ export async function spawnMachine(options) {
             throw new RangeError("This browser could not reserve the selected RAM. Select less memory or close other tabs.");
         }
         assert(wasm_memory.buffer.byteLength === pages * PAGE_SIZE);
+        // Opt-in (?memgrow_kernel_mb=N, default off): pre-grow the kernel memory to
+        // N MiB before any worker exists.  The kernel's arch_alloc_page() otherwise
+        // grows it page-by-page (memory.grow inside vmlinux.wasm) and every grow
+        // interrupts every worker isolate sharing it.  Guest RAM size is set by the
+        // devicetree from maximum_pages and is unchanged by this.
+        try {
+            const kernel_mb = Number(new URL(globalThis.location?.href ?? "").searchParams.get("memgrow_kernel_mb") ?? 0);
+            if (Number.isSafeInteger(kernel_mb) && kernel_mb > 0) {
+                const target_pages = Math.min(maximum_pages, Math.ceil(kernel_mb * 1024 * 1024 / PAGE_SIZE));
+                const before = wasm_memory.buffer.byteLength / PAGE_SIZE;
+                if (target_pages > before)
+                    wasm_memory.grow(target_pages - before);
+                console.log("MEMGROW kernel-pregrow", JSON.stringify({ before, after: wasm_memory.buffer.byteLength / PAGE_SIZE, maximum_pages }));
+            }
+            if (kernel_mb > 0 || new URL(globalThis.location?.href ?? "").searchParams.get("memgrow_log") === "1") {
+                // Diagnostic only: report kernel memory size changes for 180 s.
+                let last = -1, ticks = 0;
+                const timer = setInterval(() => {
+                    const now = wasm_memory.buffer.byteLength / PAGE_SIZE;
+                    if (now !== last) console.log("MEMGROW kernel-pages", JSON.stringify({ t: Math.round(performance.now()), pages: now }));
+                    last = now;
+                    if (++ticks >= 180) clearInterval(timer);
+                }, 1000);
+            }
+        }
+        catch (error) {
+            console.warn("MEMGROW kernel-pregrow failed", String(error));
+        }
         const devicetree = {
             "#address-cells": 1,
             "#size-cells": 1,

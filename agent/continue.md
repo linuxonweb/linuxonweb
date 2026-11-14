@@ -62,6 +62,51 @@ Work dirs: calls-diag/ (scripted-call diagnosis and V8 tier runs d2..d5), boot-p
 - Startup CPU profile (CDP worker sampling roughly doubles boot time, use as relative weights): after the second GL context, Firefox wasm is ~49% of sampled CPU and flat (1251 functions, top 100 = 36%); kernel spinlocks ~8% (sched_balance_rq, wake_up_new_task from kernel_clone); 53 Firefox threads are created between 8.7 s and 35 s, each paying new WebAssembly.Instance; V8 background compile threads use ~28 s CPU over the run. The published Firefox wasm has no name section, so per-function attribution needs a name map.
 - web/linux/dist/worker.js compile_end compiles every exec'd guest binary with synchronous new WebAssembly.Module(bytes) copied out of guest memory. V8 only caches optimized wasm code for WebAssembly.compileStreaming/instantiateStreaming of a URL-keyed Response (v8.dev/blog/wasm-code-caching: >=128 kB resource, TurboFan code only, about 150 MB of cached wasm code per profile, "very large modules may not fit"), so the 208 MB Firefox module is re-baselined and re-tiered on every boot. Unbuilt idea: opt-in path where the page compileStreaming()s the Firefox module from an immutable URL and compile_end substitutes that Module when the exec'd bytes match. Unverified: whether a 208 MB module's hot subset fits the cache, HTTP-cache entry limits for the resource, CacheStorage eligibility.
 
+## Continuation after 6a345f2 (2026-11-14; goals still unmet)
+
+Work dirs under /mnt/p3/codex-build/claude-20261113: jit/c7 (direct-call shell and guest test), wasm-cache/ (code-cache probe, traces w1/w2), io/runs/t0..t5 (boot vs Chromium flag runs), memgrow/ (memory-growth batching).
+
+### Boot time vs Chromium wasm tier flags (untraced, single runs, seconds: window / homepage / about:robots typed and painted)
+
+| run | window | homepage | typed |
+|---|---|---|---|
+| t0 cold default | 26.17 | 34.24 | 41.57 |
+| t1 warm default | 22.04 | 29.11 | 37.52 |
+| t5 warm default repeat | 23.12 | 29.14 | 35.48 |
+| --js-flags=--liftoff-only | 22.10 | 26.11 | 33.36 |
+| --no-wasm-lazy-compilation | 30.19 | 34.23 | 42.48 |
+| --wasm-tiering-budget=1000000 | 28.20 | 35.22 | 44.78 |
+
+Only liftoff-only is at or below the defaults, by about the run-to-run spread; a page cannot set V8 flags, so this only says optimizing-tier compile contention costs a few seconds at most.
+
+### Direct compiled-to-compiled scripted calls (4d0bd92, PBLBC_DIRECT=1, default OFF)
+
+pblbc::CallScripted pushes the callee frame from compiled code and runs the callee's compiled function; returns 0 (refused, caller exits at the Call as before), 1 (frame switch: interpreter resumes in the innermost frame) or the caller's new sp. Depth bound 32. Refuses on argc < nargs, class constructors, cross-realm, environment-object callees, debuggee/coverage, callee not compiled.
+
+Guest shell test jit/c7/test (boot.sh, tt.js, run.sh, gen.py; result runs/x1): 33 semantic cases (recursion, overflow, exceptions, finally, generators, async, getters, bound, classes, GC during calls, realm, redefinition) print identical output in 9 configurations (direct on/off twice, c6 shell, method tier off, loop tier off, logging, C++ interpreter); all benchmark checksums equal. ns per iteration, direct on vs off: add3 96-100 vs 270-274; method 108-117 vs 281-319; field getter fn 104-105 vs 266-293; calls case 223-234 vs 521-577; Math.abs 8 vs 8; empty callee 258-287 vs 209-211 (slower with direct on). C++ interpreter: 539-1028 on the same cases.
+
+Round 2 (ad1ce4a, shell jit/c8/shell/js.fpcast.wasm, test jit/c8/test run x2): the empty-callee slowdown was a refusal on every call because the callee's first op (RetRval) is an exit op; such callees now return inline. Same 33 cases identical in 7 configurations including the C++ interpreter (md5 prefix fcec16466853 as in x1). ns per iteration direct on vs off: empty 73-75 vs 205-222; add3 96-102 vs 251-270; method 112-141 vs 271-272; fget 103-104 vs 265-273; calls 217-228 vs 529-537. Counters print one "PBLBC direct:" line at exit with PBLBC_DIRECT=1 and PBLBC_HITS set. On this test: pushes 4,998,241; inline returns 4,143,922; frame switches because the callee left compiled code at a non-return op 795,837, nested 57,558, depth 924; refusals 154,029 (entry op is an exit op 90,885; argc < nargs 47,947; no JitScript 6,187; cross-realm 5,978; env objects 2,989). Underflow padding was not added: the interpreter's own fast path also refuses it.
+
+Not done: JIT safety suite (tools/nightly-jit-safety, Firefox-based), any Firefox candidate link. Do not default-on before those.
+
+### Wasm code cache probe (parked; files in wasm-cache/src, nothing in the repo tree)
+
+Test server on a spare port served the 208 MB Firefox module at an immutable URL; the page ran WebAssembly.compileStreaming on it (2.7-4.5 s to resolve) while the guest booted.
+- Worked: the guest's synchronous new WebAssembly.Module(bytes) for the same bytes hits V8's in-process native-module cache (wasm.GetNativeModuleFromCache, wire_bytes 208805368); SyncCompile then costs 0.7-0.9 s of decode/copy.
+- Worked: Chromium wrote code-cache entries (20 v8.wasm.cachedModule events, 3.4 -> 25.7 MB; Code Cache/wasm 302 MB after one boot).
+- Failed: the second boot never consumed it (no moduleCacheHit/Invalid event, full unconditional GET again, cache produced again from 3.4 MB). The profile HTTP cache was 496 kB afterwards, i.e. the 208 MB response was not stored, and the code cache hangs off the HTTP cache entry. A fix needs the response to be HTTP-cacheable (smaller transfer, e.g. Content-Encoding, or a different cache route); untested.
+- Timings were taken with heavy tracing and without a control run, so there is no boot-time number for this.
+
+### Memory growth during boot (from trace wasm-cache/runs/w1; tracing inflates absolute times)
+
+15,295 wasm.GrowMemory events and 582,436 V8.WasmGrowSharedMemory events (each grow of a shared memory interrupts every isolate sharing it). One worker does 14,301 grows between page-time 5 s and 10 s, each broadcast to ~37 isolates. The Firefox main thread does 410 grows costing 3.1 s wall / 2.6 s CPU, per-grow cost rising from ~0.03 ms early to 15-23 ms late in the boot. Analysis scripts: wasm-cache/scripts/grow.py, grow2.py, grow3.py.
+
+Source of the early grows (code reading plus two boots, memgrow/runs/mg-on1, mg-on2): the kernel grows its own memory inside vmlinux.wasm. The only memory.grow there is materialize_memory, called from arch_alloc_page on every page allocation that extends the high-water mark (kernel source arch/wasm/mm/page.c:7-31 in the nix store under /mnt/p3/project/linux/.tmp-firefox-build/nix-local-store, path mzbhr58f…-source). Every worker shares that memory, hence the broadcast. Opt-in page parameter ?memgrow_kernel_mb=N (web/linux/dist/index.js, default off) grows the kernel memory once before any worker starts; with N=2048 (full guest RAM in the harness) the kernel memory size never changed during boot and Firefox reached its window; with N=1024 it still grew 16384 -> 20992 pages by ~7 s. ?memgrow_log=1 logs kernel memory size changes without changing behaviour. Untraced A/B (io/runs/mgA1..3, mgB1..3, alternating, profile tier, about:robots typed; seconds window / homepage / typed): A 26.11/33.17/not reached (typing did not navigate in that run), 23.10/28.17/35.61, 23.15/28.21/33.54; B (memgrow_kernel_mb=2048) 21.05/27.08/34.32, 23.05/28.09/34.20, 22.14/26.16/34.70. B is about 1 s lower on window and homepage medians, which is within the run-to-run spread; typed-page time is unchanged (34.2-35.6). The harness did not capture the MEMGROW console line in these runs. Left default off. A kernel-side chunked grow would need a kernel rebuild (not attempted).
+
+Firefox's own ~410 grows most likely come from musl brk (src/linux/brk.c grows by exactly the requested pages with the wasm instruction), not from the JS adapter: an opt-in chunked grow in ensureUserBytes logged zero grows in one boot. That experiment is parked as memgrow/src/user-chunk.diff (not in the tree). Fixing it means chunked growth in musl _brk and relinking userspace (not attempted). Also unverified: growForSyscallResult ignores BigInt nr/ret while worker.js compares syscall numbers against BigInt literals, so the mmap/brk growth hook may never run. Same trace, whole process: wasm.TopTierCompilation 38.9 s CPU on 7 threads, wasm.SyncInstantiate 8.1 s CPU over 1942 events on 150 threads, wasm.CompileLazy 72k events 5.9 s.
+
+---
+
 # LinuxOnWeb continuation —45/100, original target unfinished
 
 Session start2026-11-03T13:22:11Z; normal deadline18:22:11Z. The exact user request remains in agent/task.md. Active branch is gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322; frozen parent81103b2ec04a8a4f8453617ca128448e831645bc and checkpoint tag remain intact. Read the final capturedHead from INCREMENT-MANIFEST.json rather than assuming the earlier runtime-capture commit is final source. Full historical notes are preserved under agent/archive and in Git.
