@@ -513,6 +513,7 @@ bool IsInlineOp(JSOp op) {
     case JSOp::CheckLexical:
     case JSOp::GetArg:
     case JSOp::SetArg:
+    case JSOp::FunctionThis:
     case JSOp::JumpTarget:
     case JSOp::LoopHead:
     case JSOp::Goto:
@@ -1188,6 +1189,24 @@ bool MT::translateOp() {
       }
       return true;
     }
+    case JSOp::FunctionThis:
+      // GetFunctionThis' first case: an object |this| (thisArgument(), the
+      // slot before argv) is pushed as is. Any other value (strict or not)
+      // exits: the interpreter boxes primitives / substitutes the global
+      // |this|, and strictness is not keyed per entry (entries are per
+      // ImmutableScriptData, which scripts may share). Not an IC op.
+      lget(L_AV);
+      i32c(8);
+      op(OP_I32SUB);
+      load64(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_OBJECT);
+      op(OP_I32EQZ);
+      ifThen();
+      exitHere();
+      end();
+      pushLocal(L_A);
+      return true;
     case JSOp::LoopHead:
       // Pending interrupts are handled by the interpreter's LoopHead.
       // The diagnostic reason originates only in this executed IRQ branch.
