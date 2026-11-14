@@ -30,6 +30,20 @@ test('invalid switch values cannot inject kernel arguments or environment variab
   assert.deepEqual(await flags('?pbljit=0&pbljit=1'), ['PBLJIT=0']);
 });
 
+test('direct-call and method threshold switches map to native environment variables', async () => {
+  assert.deepEqual(await flags('?pblbc_direct=0'), ['PBLBC_DIRECT=0']);
+  assert.deepEqual(await flags('?pblbc_direct=1'), ['PBLBC_DIRECT=1']);
+  assert.deepEqual(await flags('?pblbc_hits=2'), ['PBLBC_HITS=2']);
+  assert.deepEqual(await flags('?pblbc_hits=999999'), ['PBLBC_HITS=999999']);
+  assert.deepEqual(await flags('?pbljit=1&pblbc_direct=1&pblbc_hits=2'), ['PBLJIT=1', 'PBLBC_DIRECT=1', 'PBLBC_HITS=2']);
+  for (const value of ['', '2', '00', '-1', 'true', '1 PBLJIT=0', '1\nPBLJIT=0', '1;echo bad']) {
+    assert.deepEqual(await flags(new URLSearchParams({ pblbc_direct: value }).toString()), []);
+  }
+  for (const value of ['', '0', '000000', '1000000', '-1', '1.5', '1e3', ' 2', '2 PBLJIT=0', '2\nPBLJIT=0']) {
+    assert.deepEqual(await flags(new URLSearchParams({ pblbc_hits: value }).toString()), []);
+  }
+});
+
 test('off control disables all three compilers without altering the benchmark or preferences', async () => {
   const off = jitPlan('off');
   assert.deepEqual(await flags(off.query), ['pblic=0', 'pblbc=0', 'PBLJIT=0']);
