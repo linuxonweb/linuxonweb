@@ -13,6 +13,51 @@ const unavailable = () => {
 };
 const channel = platform.worker_channel();
 const postMessage = channel.post;
+// Spawn diagnostics (default off). spawndiag_log=1 logs each failed user-memory
+// allocation with prefix SPAWNDIAG; spawndiag=1 also retries it after short
+// synchronous sleeps and drops this isolate's stale memory references at task
+// end; spawndiag_noreuse=1 retires (closes) a worker after a task that ran user
+// code so its isolate, and every shared memory it referenced, is torn down.
+const spawndiag_flags = (() => {
+    const flags = { log: false, retry: false, noreuse: false };
+    try {
+        const params = new URL(globalThis.__linuxonwebExecutionURL ?? globalThis.location?.href ?? "").searchParams;
+        flags.retry = params.get("spawndiag") === "1";
+        flags.noreuse = params.get("spawndiag_noreuse") === "1";
+        flags.log = flags.retry || flags.noreuse || params.get("spawndiag_log") === "1";
+    }
+    catch {
+        // No URL (node): diagnostics stay off.
+    }
+    return flags;
+})();
+const spawndiag_counts = { fail: 0, recovered: 0 };
+function allocate_user_memory(initial_pages, maximum_pages, where) {
+    if (!spawndiag_flags.log)
+        return allocate_shared_memory(initial_pages, maximum_pages);
+    const delays = spawndiag_flags.retry ? [0, 2, 10, 25, 50, 100] : [0];
+    let last_error;
+    for (let attempt = 0; attempt < delays.length; attempt++) {
+        if (delays[attempt] > 0)
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delays[attempt]);
+        try {
+            const allocated = allocate_shared_memory(initial_pages, maximum_pages);
+            if (allocated.maximum_pages < maximum_pages)
+                console.warn(`SPAWNDIAG degraded where=${where} initial=${initial_pages} max=${maximum_pages} got_max=${allocated.maximum_pages}`);
+            if (attempt > 0) {
+                spawndiag_counts.recovered++;
+                console.warn(`SPAWNDIAG recovered where=${where} attempt=${attempt} initial=${initial_pages} max=${maximum_pages} got_max=${allocated.maximum_pages} fails=${spawndiag_counts.fail} recovered=${spawndiag_counts.recovered}`);
+            }
+            return allocated;
+        }
+        catch (error) {
+            last_error = error;
+            spawndiag_counts.fail++;
+            console.warn(`SPAWNDIAG fail where=${where} attempt=${attempt} initial=${initial_pages} max=${maximum_pages} name=${error?.name} msg=${String(error?.message ?? error).slice(0, 300)} fails=${spawndiag_counts.fail}`);
+        }
+    }
+    throw last_error;
+}
 // Guest GPU hostcall hub (guest-gpu-hostcall.js); one client per Worker/thread.
 let gpu_hub = null;
 let gpu_client = null;
@@ -536,7 +581,9 @@ function create_instance(context) {
                     pending_module_bytes = new Uint8Array(size >>> 0);
                     return 0;
                 }
-                catch {
+                catch (error) {
+                    if (spawndiag_flags.log)
+                        console.warn(`SPAWNDIAG fail where=compile_begin size=${size >>> 0} name=${error?.name} msg=${String(error?.message ?? error).slice(0, 300)}`);
                     return -12; // out of memory
                 }
             },
@@ -589,7 +636,7 @@ function create_instance(context) {
                     return -12; // out of memory
                 let allocated;
                 try {
-                    allocated = allocate_shared_memory(minimum, maximum);
+                    allocated = allocate_user_memory(minimum, maximum, "exec");
                 }
                 catch {
                     return -12; // out of memory
@@ -776,7 +823,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
             const source = memory_bytes(user_context.memory, 0);
             if (!source)
                 throw new RangeError("invalid source memory");
-            const copied = allocate_shared_memory(source.byteLength / 0x10000, user_context.maximum_pages);
+            const copied = allocate_user_memory(source.byteLength / 0x10000, user_context.maximum_pages, "fork-copy");
             const destination = memory_bytes(copied.memory, 0, source.byteLength);
             if (!destination)
                 throw new RangeError("invalid destination memory");
@@ -786,7 +833,9 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
             user_context = { module: user_context.module, ...copied, jit };
             Atomics.store(user_copy_status, 0, 1);
         }
-        catch {
+        catch (error) {
+            if (spawndiag_flags.log)
+                console.warn(`SPAWNDIAG fail where=fork-copy-final name=${error?.name} msg=${String(error?.message ?? error).slice(0, 300)}`);
             Atomics.store(user_copy_status, 0, -12);
         }
         Atomics.notify(user_copy_status, 0);
@@ -904,6 +953,7 @@ function start({ fn, arg, vmlinux, memory, user: initial_user_context, user_copy
 }
 function run_task(message) {
     let reusable;
+    let had_user = false;
     try {
         reusable = start(message);
     }
@@ -911,6 +961,13 @@ function run_task(message) {
         gpu_client?.release();
         gpu_client = null;
         gpu_hub = null;
+        had_user = Boolean(message.user);
+    }
+    if (reusable && spawndiag_flags.noreuse && had_user) {
+        // Tear down the isolate so its memory references die now, not at a GC.
+        postMessage({ type: "worker_exit", refill: true });
+        platform.quit();
+        return;
     }
     if (reusable)
         postMessage({ type: "worker_idle" });

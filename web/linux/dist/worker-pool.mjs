@@ -32,6 +32,10 @@ export function createWorkerPool({ capacity, load, retire }) {
             entry.slot.handlers = null;
             idle.push(entry);
         },
+        // Forget an active entry whose worker closed itself (spawndiag_noreuse).
+        retire_active(entry) {
+            active.delete(entry);
+        },
         close() {
             closed = true;
             idle.length = 0;

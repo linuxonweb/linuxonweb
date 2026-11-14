@@ -447,6 +447,11 @@ export async function spawnMachine(options) {
                             // terminate() here races that orderly shutdown and leaks the
                             // worker's address-space reservations in WebKit.
                             workers.delete(worker);
+                            // Only spawndiag_noreuse sends refill: keep spares loaded.
+                            if (message.refill === true && !closed) {
+                                worker_pool.retire_active?.(entry);
+                                worker_pool.prewarm();
+                            }
                             break;
                         }
                         default:
