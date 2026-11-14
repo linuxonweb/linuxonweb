@@ -123,6 +123,26 @@ export async function spawnMachine(options) {
     let finish_error;
     let finish_promise;
     let worker_pool;
+    // spawn_reclaim=1 (default off): see the memory_pressure message below.
+    // spawn_reclaim_ms: retire window after each pressure event (0-10000, default 2000);
+    // spawn_reclaim_max: busy workers retired per window (0-100000, default unlimited).
+    const spawn_reclaim = { enabled: false, until: 0, last: -Infinity, window_retired: 0, window_ms: 2000, max: Infinity, budget: 0 };
+    try {
+        const params = new URL(globalThis.location?.href ?? "").searchParams;
+        spawn_reclaim.enabled = params.get("spawn_reclaim") === "1";
+        if (spawn_reclaim.enabled) {
+            const int_param = (name, limit) => {
+                const text = params.get(name);
+                return text !== null && /^[0-9]{1,6}$/.test(text) && Number(text) <= limit ? Number(text) : null;
+            };
+            spawn_reclaim.window_ms = int_param("spawn_reclaim_ms", 10000) ?? 2000;
+            spawn_reclaim.max = int_param("spawn_reclaim_max", 100000) ?? Infinity;
+            console.warn(`SPAWNDIAG reclaim-config window_ms=${spawn_reclaim.window_ms} max=${spawn_reclaim.max}`);
+        }
+    }
+    catch {
+        // No page URL: stays off.
+    }
     let framebuffer_host = null;
     const audio_host = options.audio ? createAudioHost() : null;
     // Guest GPU hostcall hub; its owner Worker starts only at the first guest call.
@@ -439,9 +459,34 @@ export async function spawnMachine(options) {
                             gpu_host?.handle(message);
                             break;
                         case "worker_idle":
+                            // Only spawn_reclaim sends had_user: shortly after memory
+                            // pressure, retire such a worker instead of pooling it.
+                            if (!closed && message.had_user === true && performance.now() < spawn_reclaim.until && spawn_reclaim.budget > 0) {
+                                spawn_reclaim.budget--;
+                                worker_pool.retire_active(entry);
+                                worker.post({ type: "shutdown" });
+                                spawn_reclaim.window_retired++;
+                                worker_pool.prewarm();
+                                break;
+                            }
                             if (!closed)
                                 worker_pool.release(entry);
                             break;
+                        case "memory_pressure": {
+                            // Only spawn_reclaim sends this: drop idle isolates now.
+                            if (closed || !spawn_reclaim.enabled)
+                                break;
+                            const now = performance.now();
+                            spawn_reclaim.until = now + spawn_reclaim.window_ms;
+                            spawn_reclaim.budget = spawn_reclaim.max;
+                            if (now - spawn_reclaim.last < 30)
+                                break;
+                            spawn_reclaim.last = now;
+                            const terminated = worker_pool.reclaim_idle();
+                            worker_pool.prewarm();
+                            console.warn(`SPAWNDIAG reclaim idle_terminated=${terminated} window_retired=${spawn_reclaim.window_retired} where=${message.where}`);
+                            break;
+                        }
                         case "worker_exit": {
                             // The worker closes itself after posting this message. Calling
                             // terminate() here races that orderly shutdown and leaks the

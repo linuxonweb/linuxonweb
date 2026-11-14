@@ -40,7 +40,7 @@ export function worker_script_url(module_url, execution_url, override_url) {
     if (execution.searchParams.get("firefox_tls_adapter") === "1")
         url.searchParams.set("firefox_tls_adapter", "1");
     // Diagnostic (default off): log/retry failed user-memory allocations, see worker.js.
-    for (const name of ["spawndiag", "spawndiag_log", "spawndiag_noreuse"]) {
+    for (const name of ["spawndiag", "spawndiag_log", "spawndiag_noreuse", "spawn_reclaim"]) {
         if (execution.searchParams.get(name) === "1")
             url.searchParams.set(name, "1");
     }

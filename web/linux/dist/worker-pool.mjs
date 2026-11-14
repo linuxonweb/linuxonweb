@@ -36,6 +36,13 @@ export function createWorkerPool({ capacity, load, retire }) {
         retire_active(entry) {
             active.delete(entry);
         },
+        // Retire every idle worker (spawn_reclaim); returns how many.
+        reclaim_idle() {
+            const retired = idle.splice(0);
+            for (const entry of retired)
+                retire(entry, Boolean(entry.slot.error));
+            return retired.length;
+        },
         close() {
             closed = true;
             idle.length = 0;

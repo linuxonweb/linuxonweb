@@ -19,9 +19,10 @@ const postMessage = channel.post;
 // end; spawndiag_noreuse=1 retires (closes) a worker after a task that ran user
 // code so its isolate, and every shared memory it referenced, is torn down.
 const spawndiag_flags = (() => {
-    const flags = { log: false, retry: false, noreuse: false };
+    const flags = { log: false, retry: false, noreuse: false, reclaim: false };
     try {
         const params = new URL(globalThis.__linuxonwebExecutionURL ?? globalThis.location?.href ?? "").searchParams;
+        flags.reclaim = params.get("spawn_reclaim") === "1";
         flags.retry = params.get("spawndiag") === "1";
         flags.noreuse = params.get("spawndiag_noreuse") === "1";
         flags.log = flags.retry || flags.noreuse || params.get("spawndiag_log") === "1";
@@ -32,7 +33,41 @@ const spawndiag_flags = (() => {
     return flags;
 })();
 const spawndiag_counts = { fail: 0, recovered: 0 };
+// spawn_reclaim=1: on a failed allocation ask the page to tear down idle
+// workers (their isolates pin dead memories), wait briefly and retry the exact
+// request; the halving fallback in allocate_shared_memory runs only afterwards.
+function allocate_user_memory_reclaim(initial_pages, maximum_pages, where) {
+    const delays = [5, 15, 40, 80, 150];
+    let notified = false;
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+        if (attempt > 0)
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delays[attempt - 1]);
+        try {
+            const memory = new WebAssembly.Memory({ initial: initial_pages, maximum: maximum_pages, shared: true });
+            if (attempt > 0)
+                console.warn(`SPAWNDIAG reclaim-recovered attempt=${attempt} where=${where}`);
+            return { memory, maximum_pages };
+        }
+        catch (error) {
+            if (attempt === 0)
+                console.warn(`SPAWNDIAG reclaim-fail where=${where} initial=${initial_pages} max=${maximum_pages} name=${error?.name}`);
+            if (!notified) {
+                notified = true;
+                try {
+                    postMessage({ type: "memory_pressure", where, initial_pages, maximum_pages });
+                }
+                catch {
+                    // Best effort; the retries below still run.
+                }
+            }
+        }
+    }
+    console.warn(`SPAWNDIAG reclaim-exhausted where=${where} max=${maximum_pages}`);
+    return allocate_shared_memory(initial_pages, maximum_pages);
+}
 function allocate_user_memory(initial_pages, maximum_pages, where) {
+    if (spawndiag_flags.reclaim)
+        return allocate_user_memory_reclaim(initial_pages, maximum_pages, where);
     if (!spawndiag_flags.log)
         return allocate_shared_memory(initial_pages, maximum_pages);
     const delays = spawndiag_flags.retry ? [0, 2, 10, 25, 50, 100] : [0];
@@ -967,6 +1002,12 @@ function run_task(message) {
         // Tear down the isolate so its memory references die now, not at a GC.
         postMessage({ type: "worker_exit", refill: true });
         platform.quit();
+        return;
+    }
+    if (reusable && spawndiag_flags.reclaim) {
+        // The page may retire this worker instead of pooling it shortly after
+        // memory pressure (see index.js memory_pressure).
+        postMessage({ type: "worker_idle", had_user });
         return;
     }
     if (reusable)
