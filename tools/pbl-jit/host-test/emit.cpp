@@ -26,9 +26,15 @@ constexpr uint32_t INT = 0xFFFFFF81u, BOOL = 0xFFFFFF82u, UNDEF = 0xFFFFFF83u,
 static uint64_t gFrame[64], gArgs[8];
 // Compile-time array payloads and their element kinds (see MockArrayKind).
 constexpr uint32_t ARR_INT = 0x8000, ARR_NUM = 0x8100, ARR_OTHER = 0x8200, NOT_ARR = 0x8300;
+constexpr uint32_t ARR_ROWS = 0x8600;  // an Array of Int32 rows (see MockRowKind)
 int MockArrayKind(uint32_t payload) {
-  return payload == ARR_INT ? 1 : payload == ARR_NUM ? 2 : payload == ARR_OTHER ? 0 : -1;
+  return payload == ARR_INT ? 1 : payload == ARR_NUM ? 2 : (payload == ARR_OTHER || payload == ARR_ROWS) ? 0 : -1;
 }
+// Compile-time fixed-length typed array payloads: 1 Int32Array, 2 Float64Array.
+constexpr uint32_t TA_INT = 0x8400, TA_F64 = 0x8500;
+int MockTypedKind(uint32_t payload) { return payload == TA_INT ? 1 : payload == TA_F64 ? 2 : 0; }
+// Compile-time Array of Int32 rows (MockArrayKind 0, row kind 1).
+int MockRowKind(uint32_t payload) { return payload == ARR_ROWS ? 1 : 0; }
 // JIT8 object layouts: shape/slots pointers at 0/4, fixed slot at 16.
 constexpr uint32_t OBJ = 0x9000, OBJ_RO = 0x9200, OBJ_UNSAFE = 0x9300, OBJ_NURSERY = 0x9400;
 constexpr uint32_t GLOBAL = 0xa000, LEXICAL = 0xa100, MATH = 0xa200, FN = 0xa300;
@@ -463,6 +469,110 @@ int main(int argc, char** argv) {
     forTail(c, h, jf, 7);
     emit(dir, "arrinc", c, h);
   }
+  // Fixed-length typed arrays (a = local 3): the arrsum/arrinc bodies over
+  // an Int32Array and a Float64Array, and a rejected double Int32Array store.
+  // `.length` of a typed array is not compiled, so these bound by a number:
+  // for (; i < 100; i++) BODY
+  auto taHead = [](Code& c, size_t& h) {
+    h = c.head(0);
+    c.loc(JSOp::GetLocal, 1); c.op(JSOp::Int8); c.u(100, 1); c.op(JSOp::Lt);
+    size_t jf = c.jump(JSOp::JumpIfFalse);
+    c.target(2);  // Lt, JumpIfFalse
+    return jf;
+  };
+  for (uint32_t ta : {TA_INT, TA_F64}) {
+    setLocal(3, OBJECT, ta);
+    {
+      Code c;
+      size_t h, jf = taHead(c, h);
+      c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+      gMark[1] = int(c.op(JSOp::GetElem));
+      c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+      forTail(c, h, jf, 5);
+      emit(dir, ta == TA_INT ? "tasum-i32" : "tasum-f64", c, h);
+    }
+    {
+      Code c;
+      size_t h, jf = taHead(c, h);
+      c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.op(JSOp::ToPropertyKey); c.op(JSOp::Dup2);
+      gMark[1] = int(c.op(JSOp::GetElem));
+      c.loc(JSOp::GetLocal, 1); c.op(JSOp::Add); c.op(JSOp::NopIsAssignOp); c.op(JSOp::StrictSetElem); c.op(JSOp::Pop);
+      forTail(c, h, jf, 6);
+      emit(dir, ta == TA_INT ? "tainc-i32" : "tainc-f64", c, h);
+    }
+    {  // for (; i < a.length; i++) s = (s + a[i]) | 0  -- typed `.length` rejects
+      Code c;
+      size_t h, jf = arrHead(c, h);
+      c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+      c.op(JSOp::GetElem);
+      c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+      forTail(c, h, jf, 6);
+      emit(dir, ta == TA_INT ? "reject-typedlength-i32" : "reject-typedlength-f64", c, h);
+    }
+  }
+  {  // a[i] = 1.5 on an Int32Array (ToInt32 store not modelled)
+    setLocal(3, OBJECT, TA_INT);
+    Code c;
+    size_t h, jf = taHead(c, h);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1); c.dbl(1.5);
+    c.op(JSOp::SetElem); c.op(JSOp::Pop);
+    forTail(c, h, jf, 3);
+    emit(dir, "reject-typedstore", c, h);
+  }
+  // Int32 Mul whose -0 is unobservable (next op Add/Sub with an Int32, or
+  // `| 0`) versus one whose -0 is stored or added to a double (m = local 2).
+  const uint64_t saved0 = gFrame[63 - 0], saved2 = gFrame[63 - 2];
+  for (int form = 0; form < 4; form++) {
+    Code c;
+    size_t h, jf = forHead(c, h);
+    if (form == 0 || form == 3) c.loc(JSOp::GetLocal, 0);
+    c.loc(JSOp::GetLocal, 1); c.loc(JSOp::GetLocal, 2);
+    gMark[1] = int(c.op(JSOp::Mul));
+    if (form == 0 || form == 3) c.op(JSOp::Add);
+    if (form == 1) { c.op(JSOp::Zero); c.op(JSOp::BitOr); }
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 3);
+    if (form == 3) setLocal(0, DOUBLE_HI, 0); else setLocal(0, INT, 0);
+    setLocal(2, INT, 0);
+    static const char* names[] = {"mulneg-add", "mulneg-or", "mulneg-set", "mulneg-dbl"};
+    emit(dir, names[form], c, h);
+  }
+  // (s + m) | 0 and (s - m) | 0 wrap; s + m (stored) still bails on overflow.
+  for (int form = 0; form < 3; form++) {
+    Code c;
+    size_t h, jf = forHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 2);
+    gMark[1] = int(c.op(form == 1 ? JSOp::Sub : JSOp::Add));
+    if (form < 2) { c.op(JSOp::Zero); c.op(JSOp::BitOr); }
+    c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 3);
+    setLocal(0, INT, 0); setLocal(2, INT, 0);
+    static const char* names[] = {"wrap-add", "wrap-sub", "wrap-none"};
+    emit(dir, names[form], c, h);
+  }
+  gFrame[63 - 0] = saved0; gFrame[63 - 2] = saved2;
+  {  // s = (s + a[i][1]) | 0 over an Array of Int32 rows (row GetElem at mark[1] + 2)
+    setLocal(3, OBJECT, ARR_ROWS);
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 0); c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+    gMark[1] = int(c.op(JSOp::GetElem));
+    c.op(JSOp::One); c.op(JSOp::GetElem);
+    c.op(JSOp::Add); c.op(JSOp::Zero); c.op(JSOp::BitOr); c.loc(JSOp::SetLocal, 0); c.op(JSOp::Pop);
+    forTail(c, h, jf, 7);
+    emit(dir, "rowsum", c, h);
+  }
+  {  // a[i][0] = i over rows (row SetElem at mark[1] + 4)
+    Code c;
+    size_t h, jf = arrHead(c, h);
+    c.loc(JSOp::GetLocal, 3); c.loc(JSOp::GetLocal, 1);
+    gMark[1] = int(c.op(JSOp::GetElem));
+    c.op(JSOp::Zero); c.loc(JSOp::GetLocal, 1);
+    c.op(JSOp::SetElem); c.op(JSOp::Pop);
+    forTail(c, h, jf, 5);
+    emit(dir, "rowfill", c, h);
+  }
+  setLocal(3, OBJECT, ARR_INT);
   {  // ToPropertyKey must reject conversions beyond its Int32 fast path.
     for (JSOp value : {JSOp::True, JSOp::Undefined, JSOp::Null, JSOp::Double}) {
       Code c;
@@ -662,7 +772,7 @@ int main(int argc, char** argv) {
     cx.global = oldGlobal;
     test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "restore global");
     test(other->hits == 2, "restored global counts");
-    Evict(e); Evict(other); free(tCache); tCache = nullptr;
+    Evict(e, 0, &cx, "test"); Evict(other, 0, &cx, "test"); free(tCache); tCache = nullptr;
     char path[512]; snprintf(path, sizeof path, "%s/cache-tests.json", dir);
     FILE* f = fopen(path, "w");
     fprintf(f, "{\"pass\":%s,\"checks\":%u,\"failures\":%u}\n", failures ? "false" : "true", checks, failures);

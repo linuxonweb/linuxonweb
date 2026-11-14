@@ -413,6 +413,145 @@ r = run('nurseryhead', () => {
 check('nursery head kind', r.kind, 1); check('nursery head sum', localF(0), 30000);
 rej = JSON.parse(fs.readFileSync(`${dir}/reject-nurseryconstant.json`));
 check('nursery embedded constant rejects', rej.ok === false && rej.reason === 'constant object', true);
+// Fixed-length typed arrays: object TA -> shape -> base -> clasp, length
+// payload at TA+16, data pointer payload at TA+24.
+{
+  const TA = 0x34000, TDATA = 0x35000, I32C = 0x5100, F64C = 0x5200;
+  const setTyped = (clasp, vals, { length = vals.length } = {}) => {
+    dv.setUint32(TA, TA + 0x100, true); dv.setUint32(TA + 0x100, TA + 0x200, true); dv.setUint32(TA + 0x200, clasp, true);
+    dv.setUint32(TA + 16, length, true); dv.setUint32(TA + 20, 0, true);
+    dv.setUint32(TA + 24, TDATA, true); dv.setUint32(TA + 28, 0, true);
+    vals.forEach((x, i) => clasp === I32C ? dv.setInt32(TDATA + 4 * i, x, true) : dv.setFloat64(TDATA + 8 * i, x, true));
+    dv.setFloat64(TDATA + 8 * vals.length, 777.25, true);  // past the end (also covers Int32 words)
+    setLocal(3, TA, OBJECT);
+  };
+  const i32 = i => dv.getInt32(TDATA + 4 * i, true), f64 = i => dv.getFloat64(TDATA + 8 * i, true);
+  const ti = ints(100), tf = ints(100).map(x => x + 0.25);
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setTyped(I32C, ti); });
+  check('tasum-i32 kind', r.kind, 1); check('tasum-i32 s', local(0)[0], isum(ti)); check('tasum-i32 i', local(1)[0], 100);
+  check('tasum-i32 sp', r.sp, SP); check('tasum-i32 a kept', local(3)[0], TA);
+  // Loops bound by `i < 100`; a shorter length slot bails at the GetElem bounds check.
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setTyped(I32C, ti, { length: 40 }); });
+  check('tasum-i32 short kind', r.kind, 2); check('tasum-i32 short s', local(0)[0], isum(ti, 40)); check('tasum-i32 short i', local(1)[0], 40);
+  check('tasum-i32 short pc', r.pcDelta, r.meta.mark[1]); check('tasum-i32 short slot0', slot(0)[0], isum(ti, 40));
+  check('tasum-i32 short slot1', slot(1)[0], TA); check('tasum-i32 short slot1 tag', slot(1)[1], OBJECT); check('tasum-i32 short slot2', slot(2)[0], 40);
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setTyped(I32C, ti, { length: 0 }); });
+  check('tasum-i32 detached kind', r.kind, 2); check('tasum-i32 detached i', local(1)[0], 0); check('tasum-i32 detached s', local(0)[0], 0);
+  check('tasum-i32 detached pc', r.pcDelta, r.meta.mark[1]); check('tasum-i32 detached slot1', slot(1)[0], TA); check('tasum-i32 detached slot2', slot(2)[0], 0);
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setTyped(F64C, tf); });
+  check('tasum-i32 wrong clasp noentry', r.kind, 0); check('tasum-i32 wrong clasp untouched', local(0)[0], 0);
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setArray(a); });
+  check('tasum-i32 Array noentry', r.kind, 0);
+  r = run('tasum-i32', () => { setLocal(0, 0); setLocal(1, 0); setTyped(I32C, ti); dv.setUint32(INTR, 1, true); });
+  check('tasum-i32 interrupt kind', r.kind, 3); check('tasum-i32 interrupt s', local(0)[0], ti[0]);
+  // f64 elements make the sum a Double: s = (s + a[i]) | 0 truncates each step.
+  r = run('tasum-f64', () => { setLocal(0, 0); setLocal(1, 0); setTyped(F64C, tf); });
+  { let s = 0; for (const x of tf) s = (s + x) | 0;
+    check('tasum-f64 kind', r.kind, 1); check('tasum-f64 s', local(0)[0], s); check('tasum-f64 i', local(1)[0], 100); }
+  r = run('tasum-f64', () => { setLocal(0, 0); setLocal(1, 0); setTyped(F64C, [...tf.slice(0, 9), 3e10, ...tf.slice(10)]); });
+  { let s = 0; for (const x of tf.slice(0, 9)) s = (s + x) | 0;
+    check('tasum-f64 toint32 bail kind', r.kind, 2); check('tasum-f64 toint32 bail i', local(1)[0], 9); check('tasum-f64 toint32 bail s', local(0)[0], s); }
+  r = run('tainc-f64', () => { setLocal(1, 0); setTyped(F64C, tf); });
+  check('tainc-f64 kind', r.kind, 1); check('tainc-f64 i', local(1)[0], 100);
+  check('tainc-f64 elems', Array.from({ length: 100 }, (_, i) => f64(i) === tf[i] + i).every(Boolean), true);
+  check('tainc-f64 past end', f64(100), 777.25);
+  r = run('tainc-f64', () => { setLocal(1, 0); setTyped(F64C, [NaN, ...tf.slice(1)]); });
+  check('tainc-f64 nan kind', r.kind, 1); check('tainc-f64 nan elem', Number.isNaN(f64(0)), true);
+  r = run('tainc-f64', () => { setLocal(1, 0); setTyped(F64C, tf, { length: 30 }); });
+  check('tainc-f64 short kind', r.kind, 2); check('tainc-f64 short i', local(1)[0], 30); check('tainc-f64 short untouched', f64(30), tf[30]);
+  check('tainc-f64 short pc', r.pcDelta, r.meta.mark[1]); check('tainc-f64 short done', f64(29), tf[29] + 29);
+  r = run('tainc-i32', () => { setLocal(1, 0); setTyped(I32C, ti); });
+  check('tainc-i32 kind', r.kind, 1);
+  check('tainc-i32 elems', Array.from({ length: 100 }, (_, i) => i32(i) === ti[i] + i).every(Boolean), true);
+  r = run('tainc-i32', () => { setLocal(1, 0); setTyped(I32C, [...ti.slice(0, 50), 0x7ffffff0, ...ti.slice(51)]); });
+  check('tainc-i32 ovf kind', r.kind, 2); check('tainc-i32 ovf i', local(1)[0], 50); check('tainc-i32 ovf elem', i32(50), 0x7ffffff0);
+  check('tainc-i32 ovf pc', r.pcDelta, r.meta.mark[1] + 5); check('tainc-i32 ovf slot0', slot(0)[0], TA); check('tainc-i32 ovf slot0 tag', slot(0)[1], OBJECT);
+  r = run('tainc-i32', () => { setTyped(I32C, ti); setLocal(1, -1); });
+  check('tainc-i32 negative kind', r.kind, 2); check('tainc-i32 negative pc', r.pcDelta, r.meta.mark[1]); check('tainc-i32 negative i', local(1)[0], -1);
+  rej = JSON.parse(fs.readFileSync(`${dir}/reject-typedstore.json`));
+  check('typed double store into Int32Array rejects', rej.ok === false && rej.reason === 'typed element type', true);
+  for (const name of ['reject-typedlength-i32', 'reject-typedlength-f64']) {
+    rej = JSON.parse(fs.readFileSync(`${dir}/${name}.json`));
+    check(`${name} (redefinable typed .length) rejects`, rej.ok === false && rej.reason === 'typed length', true);
+  }
+}
+// Int32 Mul -0 elision only where -0 is unobservable.
+{
+  let e = 0; for (let i = 0; i < 10000; i++) e = e + i * -3;
+  r = run('mulneg-add', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, -3); });
+  check('mulneg-add kind', r.kind, 1); check('mulneg-add s', local(0)[0], e); check('mulneg-add i', local(1)[0], 10000);
+  r = run('mulneg-or', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, -3); });
+  check('mulneg-or kind', r.kind, 1); check('mulneg-or s', local(0)[0], -3 * 9999);
+  r = run('mulneg-set', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, -3); });
+  check('mulneg-set -0 bails', r.kind, 2); check('mulneg-set pc', r.pcDelta, r.meta.mark[1]); check('mulneg-set i', local(1)[0], 0);
+  r = run('mulneg-set', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, 3); });
+  check('mulneg-set positive kind', r.kind, 1); check('mulneg-set positive s', local(0)[0], 3 * 9999);
+  r = run('mulneg-dbl', () => { setLocalF(0, -0); setLocal(1, 0); setLocal(2, -3); });
+  check('mulneg-dbl -0 bails', r.kind, 2); check('mulneg-dbl pc', r.pcDelta, r.meta.mark[1]); check('mulneg-dbl s', Object.is(localF(0), -0), true);
+}
+// Truncated Int32 Add/Sub wrap instead of bailing.
+{
+  const m = 0x30000001;
+  let ea = 0, es = 0; for (let i = 0; i < 10000; i++) { ea = (ea + m) | 0; es = (es - m) | 0; }
+  r = run('wrap-add', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, m); });
+  check('wrap-add kind', r.kind, 1); check('wrap-add s', local(0)[0], ea); check('wrap-add i', local(1)[0], 10000);
+  r = run('wrap-sub', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, m); });
+  check('wrap-sub kind', r.kind, 1); check('wrap-sub s', local(0)[0], es);
+  r = run('wrap-sub', () => { setLocal(0, -0x80000000); setLocal(1, 0); setLocal(2, -0x80000000); });
+  { let e = -0x80000000; for (let i = 0; i < 10000; i++) e = (e - -0x80000000) | 0;
+    check('wrap-sub min kind', r.kind, 1); check('wrap-sub min s', local(0)[0], e); }
+  r = run('wrap-none', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, m); });
+  check('wrap-none overflow bails', r.kind, 2); check('wrap-none pc', r.pcDelta, r.meta.mark[1]); check('wrap-none i', local(1)[0], 2);
+  check('wrap-none s', local(0)[0], 2 * m);
+}
+// Arrays of Arrays: rows at ROWS + 0x100 * r (shape chain at +0/+0x40/+0x48,
+// elements at +0x80 with the ObjectElements header below).
+{
+  const ROWS = 0x36000;
+  const setRow = (r, vals, { clasp = CLASP, initLen = vals.length } = {}) => {
+    const o = ROWS + 0x100 * r;
+    dv.setUint32(o, o + 0x40, true); dv.setUint32(o + 0x40, o + 0x48, true); dv.setUint32(o + 0x48, clasp, true);
+    dv.setUint32(o + 8, o + 0x80, true);
+    dv.setUint32(o + 0x70, 0, true); dv.setUint32(o + 0x74, initLen, true);
+    dv.setUint32(o + 0x78, vals.length, true); dv.setUint32(o + 0x7c, vals.length, true);
+    vals.forEach((x, i) => {
+      if (Array.isArray(x)) { dv.setUint32(o + 0x80 + 8 * i, x[0], true); dv.setUint32(o + 0x84 + 8 * i, x[1], true); }
+      else if (Number.isInteger(x)) { dv.setInt32(o + 0x80 + 8 * i, x, true); dv.setUint32(o + 0x84 + 8 * i, INT, true); }
+      else dv.setFloat64(o + 0x80 + 8 * i, x, true);
+    });
+    return [o, OBJECT];
+  };
+  const rowElem = (r, i) => [dv.getInt32(ROWS + 0x100 * r + 0x80 + 8 * i, true), dv.getUint32(ROWS + 0x100 * r + 0x84 + 8 * i, true)];
+  const N = 60, rv = r => [r * 5 - 7, r * 3 - 50];
+  const rows = (edit = () => {}) => { const out = []; for (let r = 0; r < N; r++) out.push(edit(r) || setRow(r, rv(r))); setArray(out); };
+  const rsum = n => { let s = 0; for (let r = 0; r < n; r++) s = (s + rv(r)[1]) | 0; return s; };
+  r = run('rowsum', () => { setLocal(0, 0); setLocal(1, 0); rows(); });
+  check('rowsum kind', r.kind, 1); check('rowsum s', local(0)[0], rsum(N)); check('rowsum i', local(1)[0], N);
+  check('rowsum sp', r.sp, SP); check('rowsum a kept', local(3)[0], ARR);
+  for (const [what, edit, pc] of [
+    ['notarray', r => r === 7 && setRow(r, rv(r), { clasp: 0x5008 }), 0],
+    ['int element', r => r === 7 && [5, INT], 0],
+    ['hole row', r => r === 7 && [0, MAGIC], 0],
+    ['double cell', r => r === 7 && setRow(r, [1, 2.5]), 2],
+    ['short row', r => r === 7 && setRow(r, rv(r), { initLen: 1 }), 2]]) {
+    r = run('rowsum', () => { setLocal(0, 0); setLocal(1, 0); rows(edit); });
+    check(`rowsum ${what} kind`, r.kind, 2); check(`rowsum ${what} pc`, r.pcDelta, r.meta.mark[1] + pc);
+    check(`rowsum ${what} i`, local(1)[0], 7); check(`rowsum ${what} s`, local(0)[0], rsum(7));
+    if (pc === 0) {  // bailed at the outer GetElem: [s, arr, i] on the stack
+      check(`rowsum ${what} sp`, r.sp, SP - 24); check(`rowsum ${what} slot1`, slot(1)[0], ARR); check(`rowsum ${what} slot1 tag`, slot(1)[1], OBJECT);
+      check(`rowsum ${what} slot2`, slot(2)[0], 7);
+    } else {  // bailed at the row GetElem: [s, row, 1]
+      check(`rowsum ${what} sp`, r.sp, SP - 24); check(`rowsum ${what} slot1`, slot(1)[0], ROWS + 0x700); check(`rowsum ${what} slot1 tag`, slot(1)[1], OBJECT);
+      check(`rowsum ${what} slot2`, slot(2)[0], 1);
+    }
+  }
+  r = run('rowfill', () => { setLocal(1, 0); rows(); });
+  check('rowfill kind', r.kind, 1); check('rowfill i', local(1)[0], N);
+  check('rowfill cells', Array.from({ length: N }, (_, k) => rowElem(k, 0)[0] === k && rowElem(k, 0)[1] === INT && rowElem(k, 1)[0] === rv(k)[1]).every(Boolean), true);
+  r = run('rowfill', () => { setLocal(1, 0); rows(r => r === 9 && setRow(r, [[1, BOOL], 4])); });
+  check('rowfill oldbool kind', r.kind, 2); check('rowfill oldbool pc', r.pcDelta, r.meta.mark[1] + 6); check('rowfill oldbool i', local(1)[0], 9);
+  check('rowfill oldbool untouched', rowElem(9, 0)[1], BOOL); check('rowfill oldbool prefix', rowElem(8, 0)[0], 8);
+}
 const cacheTests = JSON.parse(fs.readFileSync(`${dir}/cache-tests.json`));
 check("cache identity/GC suite", cacheTests.pass, true);
 checks += cacheTests.checks; failures += cacheTests.failures;

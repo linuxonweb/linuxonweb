@@ -20,7 +20,13 @@
 // agree on all types. A head-live var holding an Array (class-guarded at
 // entry, never written in the loop) supports dense in-bounds GetElem/SetElem
 // of numbers and `.length`; holes, out-of-bounds indices, frozen elements and
-// unexpected element types bail. Never-replaced PlainObjects support own
+// unexpected element types bail. The same var may instead hold a
+// fixed-length Int32Array/Float64Array (bounds-checked against its current
+// length slot; Int32 stores only; `.length` is not compiled because it is an
+// inherited, redefinable accessor, so such loops must bound by a number, e.g.
+// `i < n`) or an Array whose elements are Arrays
+// ("rows": each row read checks the object tag and ArrayObject class, then
+// the dense element rules above apply). Never-replaced PlainObjects support own
 // numeric slots behind entry shape guards; tenured global/object constants
 // support hoisted identity guards and allocation-free Math operations.
 // Cache entries are invalidated on script/major-GC changes and skipped during
@@ -54,6 +60,8 @@
 
 #ifdef PBLJIT_HOST_TEST
 #  include "host-test/mock.h"  // host emitter test (tools/pbl-jit/host-test)
+int MockTypedKind(uint32_t payload);  // fixed-length typed arrays (emit.cpp)
+int MockRowKind(uint32_t payload);    // Arrays of Arrays (emit.cpp)
 #else
 #  include "jit/BaselineFrame.h"
 #  include "jit/InlinableNatives.h"
@@ -67,6 +75,7 @@
 #  include "vm/Watchtower.h"
 #  include "vm/JSAtomUtils-inl.h"
 #  include "vm/ArrayObject.h"
+#  include "vm/TypedArrayObject.h"
 #  include "vm/BytecodeUtil.h"
 #  include "vm/JSContext.h"
 #  include "vm/JSScript.h"
@@ -268,6 +277,7 @@ enum : uint8_t {
   W_F64CEIL = 0x9b, W_F64FLOOR = 0x9c, W_F64TRUNC = 0x9d,
   W_F64SQRT = 0x9f, W_F64MIN = 0xa4, W_F64MAX = 0xa5, W_F64COPYSIGN = 0xa6,
   W_I32TRUNCF64S = 0xaa, W_F64CONVI32S = 0xb7, W_F64REINTI64 = 0xbf,
+  W_F64LOAD = 0x2b,
 };
 
 // Value types of stack slots and frame variables. The numbering is
@@ -282,7 +292,12 @@ constexpr uint32_t kTagObject = 0xFFFFFF8Cu;
 constexpr bool IsArr(Ty t) { return uint8_t(t) >= 16 && uint8_t(t) < 48; }
 constexpr bool IsObj(Ty t) { return uint8_t(t) >= 48 && uint8_t(t) < 80; }
 constexpr bool IsConst(Ty t) { return uint8_t(t) >= 80 && uint8_t(t) < 96; }
-constexpr bool IsObject(Ty t) { return IsArr(t) || IsObj(t) || IsConst(t); }
+// A row: an Array object loaded from an element of another Array. Its wasm
+// local holds the pointer and its class was checked when it was loaded; its
+// elements are read as Int32 (kRowInt) or as numbers (kRowNum).
+constexpr Ty kRowInt = Ty(96), kRowNum = Ty(97);
+constexpr bool IsRow(Ty t) { return t == kRowInt || t == kRowNum; }
+constexpr bool IsObject(Ty t) { return IsArr(t) || IsObj(t) || IsConst(t) || IsRow(t); }
 constexpr Ty ObjTy(uint32_t v) { return Ty(48 + v); }
 constexpr uint32_t ObjVar(Ty t) { return uint8_t(t) - 48u; }
 constexpr Ty ConstTy(uint32_t v) { return Ty(80 + v); }
@@ -411,6 +426,9 @@ bool IncrementalGC(JSContext* cx) { return cx->runtime()->gc.isIncrementalGCInPr
 uint32_t CurrentGlobal(JSContext* cx) { return uint32_t(uintptr_t(cx->global().get())); }
 #endif
 
+// Typed array element kinds of an ArrTy variable (0: a dense ArrayObject).
+constexpr int kTypedInt32 = 1, kTypedFloat64 = 2;
+
 // Object layout used by the array ops: obj->shape->base->clasp identifies an
 // ArrayObject (class pointers are static; shapes may move), and the
 // ObjectElements header sits just below obj->elements_.
@@ -427,6 +445,16 @@ uint32_t FrozenFlag() { return 0x40; }
 // -1: not an Array; 0: other element types; 1: Int32; 2: numbers.
 int ArrayKind(uint64_t bits) { return MockArrayKind(uint32_t(bits)); }
 bool AtomIsLength(JSScript*, jsbytecode* pc) { return MockAtomIsLength(pc); }
+// Mock fixed-length typed arrays (see emit.cpp): length and data pointer
+// payloads in the low words of fixed slots at 16 and 24.
+constexpr uint32_t kMockInt32ArrayClasp = 0x5100, kMockFloat64ArrayClasp = 0x5200;
+int TypedKind(uint64_t bits) { return ::MockTypedKind(uint32_t(bits)); }
+int RowKind(uint64_t bits) { return ::MockRowKind(uint32_t(bits)); }
+uint32_t TypedClasp(int kind) {
+  return kind == kTypedInt32 ? kMockInt32ArrayClasp : kMockFloat64ArrayClasp;
+}
+int32_t OffTypedLength() { return 16; }
+int32_t OffTypedData() { return 24; }
 #else
 uint32_t ArrayClasp() { return uint32_t(uintptr_t(&ArrayObject::class_)); }
 int32_t OffShape() { return int32_t(offsetof(JS::shadow::Object, shape)); }  // offsetOfShape is protected
@@ -457,6 +485,39 @@ int ArrayKind(uint64_t bits) {
 bool AtomIsLength(JSScript* script, jsbytecode* pc) {
   return StringEqualsLiteral(script->getAtom(pc), "length");
 }
+// Fixed-length (not resizable or immutable) Int32Array and Float64Array only.
+// Their LENGTH_SLOT and DATA_SLOT hold PrivateValues (the size_t/pointer is
+// the low word on wasm32). Detaching the buffer stores length 0, so the
+// per-access bounds check against the current length slot also covers a
+// detached buffer; the compiled loop itself never runs JS or GC.
+int TypedKind(uint64_t bits) {
+  Value v = Value::fromRawBits(bits);
+  if (!v.isObject()) return 0;
+  const JSClass* c = v.toObject().getClass();
+  if (c == &TypedArrayObject::fixedLengthClasses[Scalar::Int32]) return kTypedInt32;
+  if (c == &TypedArrayObject::fixedLengthClasses[Scalar::Float64]) return kTypedFloat64;
+  return 0;
+}
+uint32_t TypedClasp(int kind) {
+  return uint32_t(uintptr_t(&TypedArrayObject::fixedLengthClasses[
+      kind == kTypedInt32 ? Scalar::Int32 : Scalar::Float64]));
+}
+// For an Array whose element 0 is an Array: that row's ArrayKind (1 or 2),
+// else 0. Only a compile-time hint; every row and element read is checked.
+int RowKind(uint64_t bits) {
+  Value v = Value::fromRawBits(bits);
+  if (!v.isObject() || !v.toObject().is<ArrayObject>()) return 0;
+  ArrayObject& a = v.toObject().as<ArrayObject>();
+  if (a.getDenseInitializedLength() == 0) return 0;
+  Value e = a.getDenseElement(0);
+  if (!e.isObject()) return 0;
+  int k = ArrayKind(e.asRawBits());
+  return k > 0 ? k : 0;
+}
+int32_t OffTypedLength() { return ArrayBufferViewObject::lengthOffset(); }
+int32_t OffTypedData() { return ArrayBufferViewObject::dataOffset(); }
+static_assert(sizeof(size_t) == 4 && sizeof(void*) == 4,
+              "typed array PrivateValue low-word loads assume wasm32");
 #endif
 
 // Wasm local layout: params 0..22 (i64); i32 locals frame, sp, interrupt
@@ -508,6 +569,8 @@ struct Compiler {
   uint32_t nguards = 0;
   size_t guardInsertion = 0;
   Ty elemTy[kMaxVars];  // for Array vars: Int, Double or Unknown
+  int typedKind[kMaxVars] = {};  // for Array vars: 0, kTypedInt32 or kTypedFloat64
+  Ty rowTy[kMaxVars] = {};  // for Array vars of other elements: kRowInt/kRowNum or Unknown
   uint32_t maxArg = 0;  // 1 + highest argument index used
   // Forward jump targets inside the region, ascending. Each one is the end
   // of a wasm block opened at the top of the loop body (innermost first).
@@ -821,6 +884,14 @@ struct Compiler {
       if (uint32_t(bits >> 32) == kTagObject) {
         // An Array the loop never replaces: its local holds the pointer.
         int kind = ArrayKind(bits);
+        typedKind[v] = kind < 0 ? TypedKind(bits) : 0;
+        if (typedKind[v]) {
+          // A fixed-length Int32Array/Float64Array the loop never replaces.
+          if (varWritten[v]) return reject("array var written", head);
+          headTy[v] = ArrTy(v);
+          elemTy[v] = typedKind[v] == kTypedInt32 ? Ty::Int : Ty::Double;
+          continue;
+        }
         if (kind < 0) {
           if (!InspectObject(uint32_t(bits), objects[v]) || !objects[v].plain)
             return reject("head type", head);
@@ -831,6 +902,11 @@ struct Compiler {
         if (varWritten[v]) return reject("array var written", head);
         headTy[v] = ArrTy(v);
         elemTy[v] = kind == 0 ? Ty::Unknown : kind == 2 ? Ty::Double : Ty::Int;
+        rowTy[v] = Ty::Unknown;
+        if (kind == 0) {
+          int rk = RowKind(bits);
+          if (rk) rowTy[v] = rk == 2 ? kRowNum : kRowInt;
+        }
         if (elemTy[v] == Ty::Int && (widen.elems >> v & 1)) elemTy[v] = Ty::Double;
         continue;
       }
@@ -898,11 +974,42 @@ struct Compiler {
     }
   }
 
+  // An Int32 Mul product of 0 stands for -0 only where -0 and +0 give the
+  // same result: the next op adds it to / subtracts it from an Int32
+  // (x + -0 == x - -0 == x + 0 for every Int32 x) or is `| 0` (ToInt32).
+  // The next ops must not be join targets, so only this path reaches them.
+  bool negZeroUnobservable(jsbytecode* pc) {
+    jsbytecode* n = pc + GetBytecodeLength(pc);
+    if (n >= end || findTarget(n) >= 0) return false;
+    JSOp op = JSOp(*n);
+    if (op == JSOp::Add || op == JSOp::Sub)
+      return st.depth >= 3 && st.stack[st.depth - 3] == Ty::Int;
+    return truncatedNext(pc);
+  }
+  // The next two ops are `Zero; BitOr` (`| 0`), neither a join target. Int32
+  // operands only meet there, and neither op can exit, so the value between
+  // the current op and the BitOr is never seen by the interpreter.
+  bool truncatedNext(jsbytecode* pc) {
+    jsbytecode* n = pc + GetBytecodeLength(pc);
+    if (n >= end || findTarget(n) >= 0 || JSOp(*n) != JSOp::Zero) return false;
+    jsbytecode* n2 = n + GetBytecodeLength(n);
+    return n2 < end && findTarget(n2) < 0 && JSOp(*n2) == JSOp::BitOr;
+  }
+
   bool binaryInt(jsbytecode* pc, JSOp op) {
     if (st.depth < 2) return reject("underflow", pc);
     if (st.stack[st.depth - 1] != Ty::Int || st.stack[st.depth - 2] != Ty::Int)
       return reject("operand type", pc);
     uint32_t lhs = slotLocal(st.depth - 2), rhs = slotLocal(st.depth - 1);
+    if ((op == JSOp::Add || op == JSOp::Sub) && truncatedNext(pc)) {
+      // (a + b) | 0 and (a - b) | 0 of Int32s: the exact sum is a double
+      // integer below 2^33, so its ToInt32 is the wrapped i32 result. (Not
+      // Mul: a double product above 2^53 is rounded before ToInt32.)
+      lget(lhs), lget(rhs), code.put(op == JSOp::Add ? W_I32ADD : W_I32SUB);
+      lset(lhs);
+      st.depth--;
+      return true;
+    }
     switch (op) {
       case JSOp::Add:
       case JSOp::Sub:
@@ -914,7 +1021,7 @@ struct Compiler {
         code.put(W_LTEE), code.uleb(tmp64());
         lget(tmp64()), code.put(W_I32WRAP), code.put(W_I64EXTS);
         code.put(W_I64NE);
-        if (op == JSOp::Mul) {
+        if (op == JSOp::Mul && !negZeroUnobservable(pc)) {
           // -0: product == 0 and exactly one operand negative.
           lget(tmp64()), code.put(W_I32WRAP), code.put(W_I32EQZ);
           lget(lhs), lget(rhs), code.put(W_I32XOR);
@@ -1095,6 +1202,15 @@ struct Compiler {
     lget(slotLocal(ix)), lget(tmp32()), load32(OffInitLen()), code.put(W_I32GEU);
     bailIf(pc);
   }
+  // Typed array element: bail unless the Int32 in slot `ix` is below the
+  // current length of the typed array in slot `s`; tmp32 = element address.
+  void typedAddr(jsbytecode* pc, int kind, uint32_t s, uint32_t ix) {
+    lget(slotLocal(ix)), lget(slotLocal(s)), load32(OffTypedLength()), code.put(W_I32GEU);
+    bailIf(pc);
+    lget(slotLocal(s)), load32(OffTypedData());
+    lget(slotLocal(ix)), i32c(kind == kTypedInt32 ? 2 : 3), code.put(W_I32SHL), code.put(W_I32ADD);
+    lset(tmp32());
+  }
   // [] -> [], tmp32 = address of element `ix` of elements tmp32.
   void elemAddr(uint32_t ix) {
     lget(tmp32()), lget(slotLocal(ix)), i32c(3), code.put(W_I32SHL), code.put(W_I32ADD);
@@ -1105,10 +1221,23 @@ struct Compiler {
   bool getElem(jsbytecode* pc) {
     if (st.depth < 2) return reject("underflow", pc);
     Ty a = st.stack[st.depth - 2], i = st.stack[st.depth - 1];
-    if (!IsArr(a) || i != Ty::Int) return reject("operand type", pc);
-    Ty et = elemTy[ArrVar(a)];
+    if (!(IsArr(a) || IsRow(a)) || i != Ty::Int) return reject("operand type", pc);
+    Ty et = IsRow(a) ? (a == kRowInt ? Ty::Int : Ty::Double) : elemTy[ArrVar(a)];
+    if (IsArr(a) && !IsNum(et) && IsRow(rowTy[ArrVar(a)])) return getRow(pc, rowTy[ArrVar(a)]);
     if (!IsNum(et)) return reject("element type", pc);
     uint32_t s = st.depth - 2, out = slotLocal(s);
+    if (int k = IsArr(a) ? typedKind[ArrVar(a)] : 0) {
+      typedAddr(pc, k, s, s + 1);  // bails when out of bounds (undefined)
+      if (k == kTypedInt32) {
+        lget(tmp32()), code.put(W_I32LOAD), code.uleb(2), code.uleb(0), lset(out);
+      } else {
+        // Any NaN bits stay in the f64 local; boxStore canonicalizes them.
+        lget(tmp32()), code.put(W_F64LOAD), code.uleb(3), code.uleb(0), lset(fl(out));
+      }
+      st.depth--;
+      st.stack[s] = et;
+      return true;
+    }
     denseIndex(pc, s, s + 1);
     elemAddr(s + 1);
     lget(tmp32()), code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
@@ -1134,17 +1263,57 @@ struct Compiler {
     return true;
   }
 
+  // Row read: [arr, index] -> [row]. Bails unless the element is an object
+  // whose class is ArrayObject. The row pointer is only kept in a wasm local
+  // and boxed back on exit; the loop runs no JS and no GC.
+  bool getRow(jsbytecode* pc, Ty row) {
+    uint32_t s = st.depth - 2, out = slotLocal(s);
+    denseIndex(pc, s, s + 1);
+    elemAddr(s + 1);
+    lget(tmp32()), code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
+    code.put(W_LTEE), code.uleb(tmp64());
+    i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
+    i32c(int32_t(kTagObject)), code.put(W_I32NE);
+    bailIf(pc);  // hole, or not an object
+    lget(tmp64()), code.put(W_I32WRAP), code.put(W_LTEE), code.uleb(tmp32());
+    load32(OffShape()), load32(OffBase()), load32(OffClasp());
+    i32c(int32_t(ArrayClasp())), code.put(W_I32NE);
+    bailIf(pc);  // not an Array (the stack still holds [arr, index])
+    lget(tmp32()), lset(out);
+    st.depth--;
+    st.stack[s] = row;
+    return true;
+  }
+
   // Dense element write of a number over a number: [arr, index, v] -> [v].
   // Neither value is a GC thing, so no barriers are needed.
   bool setElem(jsbytecode* pc) {
     if (st.depth < 3) return reject("underflow", pc);
     uint32_t s = st.depth - 3;
     Ty a = st.stack[s], i = st.stack[s + 1], t = st.stack[s + 2];
-    if (!IsArr(a) || i != Ty::Int || !IsNum(t)) return reject("operand type", pc);
-    uint32_t v = ArrVar(a);
-    if (!IsNum(elemTy[v])) return reject("element type", pc);
-    if (elemTy[v] == Ty::Int && t == Ty::Double) {
-      want.elems |= 1u << v;
+    bool row = IsRow(a);
+    if (!(IsArr(a) || row) || i != Ty::Int || !IsNum(t)) return reject("operand type", pc);
+    uint32_t v = row ? 0 : ArrVar(a);
+    Ty et = row ? (a == kRowInt ? Ty::Int : Ty::Double) : elemTy[v];
+    if (int k = row ? 0 : typedKind[v]) {
+      // ToInt32 of a double store result is not modelled; only Int32 values
+      // go to an Int32Array. Any number goes to a Float64Array.
+      if (k == kTypedInt32 && t != Ty::Int) return reject("typed element type", pc);
+      typedAddr(pc, k, s, s + 1);  // out of bounds: bail (PBL ignores the store)
+      lget(tmp32());
+      if (k == kTypedInt32) {
+        lget(slotLocal(s + 2)), code.put(W_I32STORE), code.uleb(2), code.uleb(0);
+      } else {
+        getNum(slotLocal(s + 2), t), code.put(W_F64STORE), code.uleb(3), code.uleb(0);
+      }
+      move(slotLocal(s + 2), slotLocal(s), t);
+      st.depth -= 2;
+      st.stack[s] = t;
+      return true;
+    }
+    if (!IsNum(et)) return reject("element type", pc);
+    if (et == Ty::Int && t == Ty::Double) {
+      if (!row) want.elems |= 1u << v;
       return reject("element widen", pc);
     }
     denseIndex(pc, s, s + 1);
@@ -1162,10 +1331,13 @@ struct Compiler {
   }
 
   // Array `.length`: [arr] -> [Int32]; lengths above INT32_MAX bail.
+  // Typed arrays are rejected: their `length` is an inherited accessor that
+  // JS can redefine, so the internal length slot need not be the JS result.
   bool getLength(jsbytecode* pc) {
     if (st.depth < 1) return reject("underflow", pc);
     uint32_t s = st.depth - 1;
-    if (!IsArr(st.stack[s])) return reject("operand type", pc);
+    if (!IsArr(st.stack[s]) && !IsRow(st.stack[s])) return reject("operand type", pc);
+    if (IsArr(st.stack[s]) && typedKind[ArrVar(st.stack[s])]) return reject("typed length", pc);
     lget(slotLocal(s)), load32(OffElements()), load32(OffLength());
     code.put(W_LTEE), code.uleb(tmp32());
     i32c(0), code.put(W_I32LTS);
@@ -1412,7 +1584,7 @@ struct Compiler {
         load32(OffShape());
         if (IsArr(headTy[v])) {
           load32(OffBase()), load32(OffClasp());
-          i32c(int32_t(ArrayClasp()));
+          i32c(int32_t(typedKind[v] ? TypedClasp(typedKind[v]) : ArrayClasp()));
         } else {
           i32c(int32_t(objects[v].shape));
         }
@@ -1706,7 +1878,7 @@ struct Compiler {
           icIndex++;
           break;
         case JSOp::GetProp:
-          if (st.depth && IsArr(st.stack[top])) {
+          if (st.depth && (IsArr(st.stack[top]) || IsRow(st.stack[top]))) {
             if (!AtomIsLength(script, pc)) return reject("GetProp", pc);
             if (!getLength(pc)) return false;
           } else if (!getProperty(pc)) return false;
