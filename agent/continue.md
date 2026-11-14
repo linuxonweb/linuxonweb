@@ -1,3 +1,57 @@
+# LinuxOnWeb continuation — claude-fable session 2026-11-13/14 (leading status)
+
+Branch claude-fable-linuxonweb-20261113, commits e8c07fc, 1dfe41c, 0ba489e on top of be48594. Request: improve I/O and boot, measure Firefox boot, extend the Firefox JIT toward native speed. Neither the30s usable-Firefox target nor near-native JS is met. The historical45/100 status below is unchanged apart from what is stated here; no rescoring was done. Nothing was published to web/desktop/latest-build; production Firefox image is still1a3951f0c48d/4b20a717.
+
+## Boot and I/O (committed, default-on in the working tree served by port3000)
+
+- local-hostname: guest hostname plus /etc/hosts entry; removes a ~10s musl DNS timeout in Firefox profile locking. Opt-out ?local-hostname=0.
+- io-cache: IndexedDB linuxonweb.compose memo (kinds scan, extras-raw, extras-gz, extras-pgz) keyed by image sha and extras identity, with GC of other identities. Opt-out ?io-cache=0.
+- io-fs: FUSE keepCache + stableReaddir for /home. Opt-out ?io-fs=0.
+- Precompressed single-member web/linux/desktop-extras.cpio.gz (18342831 bytes, sha256 1939fee9…d789) pinned in desktop-extras.cpio.json. The .gz is untracked like the raw cpio; regenerate both with tools/guest-rootfs/package-desktop-extras.py --existing-archive web/linux/desktop-extras.cpio --output <dir>/desktop-extras.cpio. Any publication MUST ship the .gz with the manifest.
+- Tests: node --test web/linux/io-compose-cache.test.mjs (10 pass); cd tools/guest-rootfs && python3 -m unittest test_gpt6_codex_desktop_extras (8 pass).
+
+Measured in headed Chromium,3 guest CPUs, one shared3CPU cap, about:robots typed into the URL bar, seconds from navigation start; single runs, run-to-run spread about5s:
+
+| run | Firefox window | homepage | robots painted |
+|---|---|---|---|
+| defaults, new browser profile | 27.1 | 36.2 | 42.5 |
+| defaults, warm | 25.1 | 30.1 | 39.4 |
+| defaults, warm repeat | 25.1 | 31.1 | 40.5 |
+| all three opt-outs, warm | 36.2 | 41.2 | 51.8 |
+
+Warm runs made no network fetches. Warm phases: image ready0.6s, initramfs unpack2.0s, Run /init5.8s, first GL context9.4–10.1s (20.6s with opt-outs). Remaining time is the CPU-bound GL-context→window→homepage phase (~15–20s at ~2.9 cores). V8 flags --no-wasm-tier-up / --no-wasm-lazy-compilation were within noise. Not attempted: startup-cache lifecycle (.purgecaches still present), block-root for Firefox mode, kernel unpack changes.
+
+## JIT (committed source; candidate image NOT published, NOT runtime-accepted)
+
+tools/pbl-jit/PblJit.cpp (0ba489e) now compiles loops over fixed-length Int32Array/Float64Array (exact class guard at entry, per-access bounds check, Int32 stores only), arrays of arrays, Int32 Mul with the −0 check elided only where provably unobservable, and (a±b)|0. Typed-array .length is rejected at compile time (reason "typed length") because it is a redefinable inherited accessor; a review caught the earlier version reading the internal slot. Proper support needs an entry-time shape/proto/getter purity check. Host test2101/2101 under ASan/UBSan: /mnt/p3/codex-build/claude-20261113/jit/scripts/hosttest.sh <OUT> <abs PblJit.cpp> <abs tools/pbl-jit> (absolute paths required; needs the external mock headers).
+
+Guest JS shell, steady ms/call, before → after: typed58–111 → 0.5–3.4; matmul10–31 → 6–7.6; intloop7.4–8.9 → 0.3–0.6 at the top tier. calls61–82, props13–59, strings11–21 unchanged; V8 optimized is0.3–0.8ms on the same cases. Remaining PBLJIT rejects: nested loops, Math natives, string heads, object elements, GetProp.
+
+In-Firefox comparison through the real browser path (benchmark data: URL typed into the guest URL bar, steady ms/call, each column one run, all checksums equal the reference in every run):
+
+| case | published jb-base | published jb-pub-2 | cand5 cold jb-c5-1 | cand5 warm jb-c5-2 |
+|---|---|---|---|---|
+| intloop | 8.8 | 11.6 | 0.4 | 0.3 |
+| typed | 90.8 | 65.6 | 0.5 | 0.4 |
+| matmul | 1.8 | 1.8 | 0.3 | 0.4 |
+| calls | 74.7 | 61.6 | 60.3 | 66.9 |
+| props | 19.8 | 11.5 | 12.3 | 19.1 |
+
+calls and props overlap between builds (published repeats differ by up to ~30%), so only the three loop cases show a change. cand5 booted without logged errors (window27.0/21.8s, homepage35.1/26.9s cold/warm; published repeat23.8/28.9s); the fetched image carried sha 2e79b6c25b58…. This is a narrow microbenchmark plus two boots, not runtime acceptance.
+
+Candidate packages (work dir, not repo): /mnt/p3/codex-build/claude-20261113/jit/cand5/package (built from 0ba489e; gzip sha256 2e79b6c25b58519ad9d7e5c7df37b749c700dfb7dfe71addab3065ac102da827,116031922 bytes; native wasm ebc827970bd8…,208809559 bytes; replaces native 26e380d2… in base1a3951f0c48d). cand4 in the sibling dir predates the .length fix and must never be published. Before any publication run the full release gate plus the original JIT safety workloads on cand5.
+
+Proposed order for real-page speed (estimates, unmeasured): profile which tier Firefox content actually spends time in; rate-based disable plus nested loops; shape-guarded object elements/properties in PBLJIT; direct compiled→compiled calls and small-function inlining (first step likely to move real pages); PBLBC unboxed registers with inline IC fast paths; strings/allocation with GC-safe stack maps.
+
+## Harness (work dir /mnt/p3/codex-build/claude-20261113, disk-backed)
+
+- io/scripts/run.sh <profile> <run> <secs> <url> [--input] boots under the cap and the shared lock runtime.lock; summ.py and robots.py summarize; results in io/runs/<run>.
+- In-Firefox JS bench: INPUT_TEXT="$(cat io/scripts/bench-url.txt)" BENCH_WAIT=40 INPUT_KEY_MS=20,30 io/scripts/runbench.sh <profile> <run>240 "<url>" --input; read io/runs/<run>/shots/zbench-*.png. Reference checksums: intloop −313053760, typed5201603248, matmul662400, calls705382704, props197984.
+- jit/scripts: compile-objects.sh, link.sh, link-shell.sh, candidate5.sh, package5.py, finish5.sh; jit/bench holds the shell benchmark.
+- cand-serve/serve-cand.mjs (3041, cand4) and serve-cand5.mjs (3042, cand5) are loopback test servers; they were stopped at session end.
+
+---
+
 # LinuxOnWeb continuation —45/100, original target unfinished
 
 Session start2026-11-03T13:22:11Z; normal deadline18:22:11Z. The exact user request remains in agent/task.md. Active branch is gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322; frozen parent81103b2ec04a8a4f8453617ca128448e831645bc and checkpoint tag remain intact. Read the final capturedHead from INCREMENT-MANIFEST.json rather than assuming the earlier runtime-capture commit is final source. Full historical notes are preserved under agent/archive and in Git.
