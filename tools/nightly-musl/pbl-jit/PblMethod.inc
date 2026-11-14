@@ -22,7 +22,13 @@
 // sets the hook threshold, PBLBC_IC=0 makes IC ops exits, PBLBC_LOOPEXIT=1
 // leaves every LoopHead to the interpreter (and its loop compiler), and
 // PBLBC_LOG=n limits log lines (default 40), PBLBC_LOOPJIT=0 stops offering
-// loop heads to the PBLJIT loop compiler.
+// loop heads to the PBLJIT loop compiler. PBLBC_DIRECT=1 (default off) makes
+// a compiled Call/CallIgnoresRv whose callee is a plain scripted function with
+// compiled code call CallScripted, which pushes the callee frame exactly like
+// the interpreter's Call fast path and reports a frame switch: the compiled
+// function returns kFrameSwitch, Hook returns kRanNewFrame and the
+// interpreter's bc_hook reloads all per-frame state for the callee frame
+// (round 1: the callee then starts in the interpreter at pc 0).
 //
 // At a LoopHead the code calls LoopHook, which runs pbljit::OnLoopHead just
 // like the interpreter's LoopHead does; a compiled loop returns the state at
@@ -63,7 +69,12 @@ constexpr uint32_t kNF64 = 2;
 
 // Exit kinds (high word of the result; low word is the op's pc offset).
 // Diagnostic reason changes no interpreter continuation or result semantics.
-enum : uint32_t { kExit = 0, kIcError = 1, kObservedIrqExit = 2 };
+enum : uint32_t {
+  kExit = 0,
+  kIcError = 1,
+  kObservedIrqExit = 2,
+  kFrameSwitch = 3  // PBLBC_DIRECT: a callee frame was pushed (see tSwitch)
+};
 // Flags parameter bits.
 enum : uint32_t { kFlagArgsAliased = 1 };
 
@@ -82,10 +93,13 @@ uint32_t gHits = 50;
 bool gIcInline = true;
 bool gLoopExit = false;
 bool gLoopJit = true;
+bool gDirect = false;
 constexpr uint32_t kLoopSkip = 0x80000000u, kLoopSkipMisses = 1500;
 int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
-uint32_t gRuns, gIcExits, gMismatch, gLoopRuns;
+int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
+                     int64_t ctx);
+uint32_t gRuns, gIcExits, gMismatch, gLoopRuns, gDirectPushes;
 
 bool Enabled() {
   int e = gEnabled.load(std::memory_order_relaxed);
@@ -100,6 +114,8 @@ bool Enabled() {
     gLoopExit = le && le[0] == '1';
     const char* lj = getenv("PBLBC_LOOPJIT");
     gLoopJit = !(lj && lj[0] == '0');
+    const char* dc = getenv("PBLBC_DIRECT");
+    gDirect = dc && dc[0] == '1';
     const char* l = getenv("PBLBC_LOG");
     const int logBudget = l ? atoi(l) : 40;
     gLogBudget.store(logBudget, std::memory_order_relaxed);
@@ -109,6 +125,7 @@ bool Enabled() {
       fprintf(stderr, "PBLBC %s (threshold=%u ic=%d loopexit=%d loopjit=%d)\n",
               e ? "enabled" : "disabled", gHits, int(gIcInline), int(gLoopExit),
               int(gLoopJit));
+      if (gDirect) fprintf(stderr, "PBLBC direct scripted calls enabled\n");
     }
   }
   return e != 0;
@@ -672,6 +689,47 @@ bool MT::nativeCall() {
   i32c(int32_t(FunctionFlags::BASESCRIPT | FunctionFlags::SELFHOSTLAZY));
   op(OP_I32AND);
   ifThen();
+  if (gDirect) {
+    // r = CallScripted(frame, sp, pc, icEntry, ctx); r == 1: the callee
+    // frame is pushed, return to the interpreter in it (Hook: kRanNewFrame).
+    // r == 0: nothing changed, exit at the Call op as without PBLBC_DIRECT.
+    const OpInfo& o = ops[cur];
+    lget(P_FRAME);
+    lget(L_SP);
+    op(OP_I64EXTU);
+    lget(L_EPC);
+    i32c(int32_t(o.pcOff));
+    op(OP_I32ADD);
+    op(OP_I64EXTU);
+    lget(L_ICE);
+    i32c(int32_t(o.icIdx * sizeof(ICEntry)));
+    op(OP_I32ADD);
+    op(OP_I64EXTU);
+    lget(P_CTX);
+    for (uint32_t i = 5; i < kNParams; i++) i64c(0);
+    i32c(int32_t(uintptr_t(&CallScripted)));
+    b.put(OP_CALLIND);
+    b.uleb(0);
+    b.uleb(0);
+    ltee(L_R);
+    i64c(1);
+    op(OP_I64EQ);
+    ifThen();
+    i64c(int64_t((uint64_t(kFrameSwitch) << 32) | o.pcOff));
+    op(OP_RETURN);
+    end();
+    // r > 1: the call completed inline; r is the sp after it.
+    i64c(1);
+    lget(L_R);
+    op(OP_I64LTU);
+    ifThen();
+    lget(L_R);
+    op(OP_I32WRAP);
+    lset(L_SP);
+    debugCheckNext();
+    jumpTo(cur + 1);
+    end();
+  }
   exitHere();
   end();
   lget(L_CTX);
@@ -1808,13 +1866,207 @@ void Compile(Entry* e, JSScript* script, JSContext* cx) {
 }
 
 // Hook results.
-enum : int { kNone = 0, kPending = 1, kRan = 2, kRanIcError = 3 };
+enum : int {
+  kNone = 0,
+  kPending = 1,
+  kRan = 2,
+  kRanIcError = 3,
+  kRanNewFrame = 4,  // frame is a new callee frame (PBLBC_DIRECT)
+  kRanNewFrameIcError = 5
+};
 
 struct Out {
   StackVal* sp;
   jsbytecode* pc;
   ICEntry* icEntry;
+  BaselineFrame* frame;  // only for kRanNewFrame*
 };
+
+// Innermost state after a PBLBC_DIRECT frame push (read by Hook when the
+// compiled code returns kFrameSwitch).
+struct Switch {
+  BaselineFrame* frame;
+  StackVal* sp;
+  jsbytecode* pc;
+  ICEntry* icEntry;
+  bool icError;
+};
+thread_local Switch tSwitch;
+thread_local uint32_t tDirectDepth;
+constexpr uint32_t kMaxDirectDepth = 32;
+uint32_t gDirectReturns;
+
+Entry* FindExisting(const ImmutableScriptData* isd) {
+  if (tLast && tLast->isd == isd) return tLast;
+  if (!tTable) return nullptr;
+  uint32_t h = Hash(isd);
+  for (uint32_t i = 0; i < kProbe; i++) {
+    Entry* c = &tTable[(h + i) & ((1u << kTableBits) - 1)];
+    if (c->isd == isd) return c;
+    if (!c->isd) return nullptr;
+  }
+  return nullptr;
+}
+
+// Called by compiled code at a Call/CallIgnoresRv whose callee has a
+// BaseScript (PBLBC_DIRECT). Mirrors the interpreter's scripted Call fast path
+// (CASE(Call) in PortableBaselineInterpret.cpp): returns 0 with no state
+// changed when any of its preconditions (or the extra ones below, which keep
+// everything that can GC, throw or call into the VM out of this helper) fails;
+// otherwise pushes the exit frame, arguments, callee token, descriptor and
+// callee BaselineFrame exactly like the fast path, records the callee state
+// in tSwitch, then runs the callee's compiled code from op 0. Returns 1 (frame
+// switch, tSwitch holds the innermost frame state) when the callee stops at
+// anything but Return/RetRval, otherwise performs the interpreter's return
+// sequence and returns the caller's sp after the call (value pushed).
+int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
+                     int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  auto* icEntry = reinterpret_cast<ICEntry*>(uintptr_t(iceA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
+  JSOp jop = JSOp(*pc);
+  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv) return 0;
+  if (frame->isDebuggee()) return 0;
+  // Fast-path checks (same order as the interpreter; constructing == false).
+  const uint32_t argc = GET_ARGC(pc);
+  StackVal* firstArg = sp + argc - 1;
+  const Value callee = firstArg[2].asValue();
+  if (!callee.isObject() || !callee.toObject().is<JSFunction>()) return 0;
+  JSFunction* func = &callee.toObject().as<JSFunction>();
+  if (!func->hasBaseScript() || !func->isInterpreted()) return 0;
+  if (func->isClassConstructor()) return 0;
+  if (!func->baseScript()->hasBytecode()) return 0;
+  JSScript* calleeScript = func->baseScript()->asJSScript();
+  if (!calleeScript->hasJitScript()) return 0;
+  if (cx->realm() != calleeScript->realm()) return 0;
+  if (argc < func->nargs()) return 0;
+  const uint32_t totalArgs = argc + 1;
+  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) return 0;
+  // Extra: steps 9-12 of the fast path must be no-ops, and step 7 (callee
+  // stack space, which would throw over-recursion) must pass. The space for
+  // the exit frame (4 words + ExitFrameType), stub slot, args, token,
+  // descriptor, fake return address and saved fp is added conservatively.
+  if (func->needsFunctionEnvironmentObjects()) return 0;
+  if (calleeScript->isDebuggee()) return 0;
+  if (calleeScript->hasScriptCounts() || cx->realm()->collectCoverageForDebug())
+    return 0;
+  if (cx->hasAnyPendingInterrupt()) return 0;
+  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16) +
+                               BaselineFrame::Size() +
+                               sizeof(StackVal) * calleeScript->nslots())) {
+    return 0;
+  }
+  // The callee must have compiled code enterable at op 0.
+  Entry* e = FindExisting(calleeScript->immutableScriptData());
+  if (!e || e->state != 1) return 0;
+  uint32_t j0 = e->opAt[0];
+  if (j0 == 0xffff || e->exitOp[j0]) return 0;
+
+  // Fast path steps 0-8 (no GC, no VM calls from here on).
+  StackVal* origArgs = sp;
+  frame->interpreterPC() = pc;
+  frame->interpreterICEntry() = icEntry;
+  StackVal* exitFP = ctx.stack.pushExitFrame(sp, frame);
+  if (!exitFP) MOZ_CRASH("PBLBC: exit frame after stack check");
+  sp = exitFP;
+  PUSHNATIVE(StackValNative(nullptr));
+  for (uint32_t i = 0; i < totalArgs; i++) {
+    *--sp = origArgs[i];
+  }
+  PUSHNATIVE(StackValNative(CalleeToToken(func, false)));
+  PUSHNATIVE(StackValNative(
+      MakeFrameDescriptorForJitCall(FrameType::BaselineStub, argc)));
+  PUSHNATIVE(StackValNative(nullptr));
+  BaselineFrame* newFrame = ctx.stack.pushFrame(sp, cx, func->environment());
+  if (!newFrame) MOZ_CRASH("PBLBC: callee frame after stack check");
+  ctx.frameMgr.switchToFrame(newFrame);
+  ctx.frame = newFrame;
+  sp = reinterpret_cast<StackVal*>(newFrame);
+  const uint32_t nfixed = calleeScript->nfixed();
+  for (uint32_t i = 0; i < nfixed; i++) {
+    *--sp = StackVal(UndefinedValue());
+  }
+  gDirectPushes++;
+  jsbytecode* calleePC = calleeScript->code();
+  ICEntry* calleeIcEntries = newFrame->icScript()->icEntries();
+  ICEntry* calleeIcEntry = newFrame->interpreterICEntry();
+  // Run the callee's compiled code from op 0 like Hook does, unless the
+  // native nesting bound is reached or the IC cursor does not match (then
+  // the interpreter starts the callee at pc 0; Hook enters it from there).
+  JSOp op0 = JSOp(*calleePC);
+  if (tDirectDepth >= kMaxDirectDepth ||
+      (op0 != JSOp::JumpTarget && op0 != JSOp::LoopHead &&
+       newFrame->icScript()->numICEntries() != 0 &&
+       calleeIcEntry != calleeIcEntries + e->icIdx[j0])) {
+    tSwitch.frame = newFrame;
+    tSwitch.sp = sp;
+    tSwitch.pc = calleePC;
+    tSwitch.icEntry = calleeIcEntry;
+    tSwitch.icError = false;
+    return 1;
+  }
+  struct {
+    uint32_t sp;
+  } io;
+  typedef uint64_t (*Fn)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+                         uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+                         uint64_t, uint64_t);
+  Fn fn = reinterpret_cast<Fn>(uintptr_t(e->fn));
+  const bool aliased = calleeScript->argsObjAliasesFormals();
+  gRuns++;
+  tDirectDepth++;
+  // func and calleeScript are not used after this call (it can GC).
+  uint64_t r = fn(uintptr_t(newFrame), uintptr_t(sp), j0,
+                  uintptr_t(calleeIcEntries), uintptr_t(&ctx), uintptr_t(&io),
+                  uintptr_t(newFrame->argv()),
+                  aliased ? kFlagArgsAliased : 0,
+                  uintptr_t(&cx->global()->lexicalEnvironment()),
+                  uintptr_t(cx->addressOfInterruptBits()), uintptr_t(calleePC),
+                  uintptr_t(cx));
+  tDirectDepth--;
+  const uint32_t kind = uint32_t(r >> 32);
+  if (kind == kFrameSwitch) return 1;  // tSwitch was set by a nested call
+  const uint32_t exitOff = uint32_t(r);
+  sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
+  jsbytecode* xpc = calleePC + exitOff;
+  JSOp xop = JSOp(*xpc);
+  if (kind == kIcError || newFrame->isDebuggee() ||
+      newFrame->script()->hasScriptCounts() ||
+      (xop != JSOp::Return && xop != JSOp::RetRval)) {
+    uint32_t k = e->opAt[exitOff];
+    tSwitch.frame = newFrame;
+    tSwitch.sp = sp;
+    tSwitch.pc = xpc;
+    tSwitch.icEntry =
+        calleeIcEntries + ((xop == JSOp::JumpTarget || xop == JSOp::LoopHead)
+                               ? uint32_t(GET_INT32(xpc))
+                               : e->icIdx[k]);
+    tSwitch.icError = kind == kIcError;
+    return 1;
+  }
+  // The interpreter's Return / RetRval (not a debuggee, not from unwind,
+  // never the entry frame) followed by its return fast path.
+  if (xop == JSOp::Return) {
+    newFrame->setReturnValue((*sp++).asValue());
+  }
+  const uint32_t nargs = newFrame->numActualArgs();
+  sp = ctx.stack.popFrame();
+  Value ret = newFrame->returnValue();
+  sp = ctx.stack.popFrame();
+  POPNNATIVE(2);
+  BaselineFrame* callerFrame = reinterpret_cast<BaselineFrame*>(
+      reinterpret_cast<uintptr_t>(ctx.stack.fp) - BaselineFrame::Size());
+  if (callerFrame != frame) MOZ_CRASH("PBLBC: direct return frame mismatch");
+  ctx.frameMgr.switchToFrame(callerFrame);
+  ctx.frame = callerFrame;
+  sp += nargs + 2;
+  *--sp = StackVal(ret);
+  gDirectReturns++;
+  return int64_t(uintptr_t(sp));
+}
 
 // Called at a DISPATCH with the hook pending (not a debuggee frame).
 int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
@@ -1873,6 +2125,13 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
     if ((r >> 32) == kObservedIrqExit)
       pbltier::Guard(pbltier::kIrqExit, frame->script(), cx, calledFn,
                      int32_t(exitOff));
+  }
+  if ((r >> 32) == kFrameSwitch) {
+    out->frame = tSwitch.frame;
+    out->sp = tSwitch.sp;
+    out->pc = tSwitch.pc;
+    out->icEntry = tSwitch.icEntry;
+    return tSwitch.icError ? kRanNewFrameIcError : kRanNewFrame;
   }
   out->sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
   out->pc = entryPC + exitOff;

@@ -22,7 +22,7 @@
  struct Exit { uint64_t* sp; int32_t pcDelta; uint32_t icIndex; };
  void ObserveSkip(JSScript* script, jsbytecode* pc, JSContext* cx,
                   const char* reason);
-@@ -83,7 +91,67 @@
+@@ -83,8 +91,68 @@
  namespace js {
  namespace pbl {
  
@@ -38,7 +38,7 @@
 +}
 +
  using namespace js::jit;
-+
+ 
 +// PBL adapter diagnostics: CacheOps that PBL does not implement make their
 +// stub fail on every use. Count them and print the most frequent now and
 +// then (PBLUNIMPL=0 silences it).
@@ -87,9 +87,10 @@
 +  }
 +  fprintf(stderr, "%s\n", buf);
 +}
- 
++
  /*
   * Debugging: enable `TRACE_INTERP` for an extremely detailed dump of
+  * what PBL is doing at every opcode step.
 @@ -490,6 +558,14 @@
    StackVal* sp_;
    PBIResult error;
@@ -290,15 +291,10 @@
            FAIL_IC();
          }
          retValue = Int32Value(result).asRawBits();
-@@ -4407,6 +4521,50 @@
-             return IC_ERROR_SENTINEL();
-           }
-           retValue = resultRooted.asRawBits();
-+        }
-+        PREDICT_RETURN();
-+        DISPATCH_CACHEOP();
-+      }
-+
+@@ -4412,6 +4526,50 @@
+         DISPATCH_CACHEOP();
+       }
+ 
 +      CACHEOP_CASE(CallDOMGetterResult) {
 +        // PBL adapter: the DOM getter through the same VM helper Baseline
 +        // calls (jit::CallDOMGetter); guards precede this op in the stub.
@@ -338,9 +334,14 @@
 +            ctx.error = PBIResult::Error;
 +            return IC_ERROR_SENTINEL();
 +          }
-         }
-         PREDICT_RETURN();
-         DISPATCH_CACHEOP();
++        }
++        PREDICT_RETURN();
++        DISPATCH_CACHEOP();
++      }
++
+       CACHEOP_CASE(CallNativeSetter) {
+         ValOperandId receiverId = cacheIRReader.valOperandId();
+         uint32_t setterOffset = cacheIRReader.stubOffset();
 @@ -5410,13 +5568,18 @@
  #define CACHEOP_UNIMPL(name, ...)               \
    cacheop_##name : __attribute__((unused));     \
@@ -415,7 +416,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -9160,6 +9333,29 @@
+@@ -9160,6 +9333,35 @@
  
    DISPATCH();
  
@@ -428,11 +429,17 @@
 +    if (r == pblbc::kPending) {
 +      bcPending = true;
 +    } else if (r >= pblbc::kRan) {
++      if (r >= pblbc::kRanNewFrame) {
++        // Compiled code pushed a callee frame (PBLBC_DIRECT) exactly like
++        // the Call fast path and stopped in it: switch all per-frame state.
++        frame = bo.frame;
++        RESET_PC(bo.pc, frame->script());
++      }
 +      sp = bo.sp;
 +      pc = bo.pc;
 +      icEntry = bo.icEntry;
 +      bcPending = true;
-+      if (r == pblbc::kRanIcError) {
++      if (r == pblbc::kRanIcError || r == pblbc::kRanNewFrameIcError) {
 +        ic_result = ctx.error;
 +        goto ic_fail;
 +      }
@@ -445,7 +452,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,6 +9544,20 @@
+@@ -9348,6 +9550,20 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -466,7 +473,7 @@
    if (state.script()->hasJitScript()) {
      return MethodStatus::Method_Compiled;
    }
-@@ -9368,18 +9578,27 @@
+@@ -9368,18 +9584,27 @@
        return MethodStatus::Method_CantCompile;
      }
    }

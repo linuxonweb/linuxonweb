@@ -37,7 +37,7 @@ before(() => {
     'void i32c(', 'void i64c(', 'void load32(', 'void load64(', 'void store32(',
     'void store64(', 'void ifThen(', 'void end(', 'void ld(', 'void stLocal(',
     'void spAdd(', 'void pushLocal(', 'void popLocal(', 'void exitAt(', 'void exitHere(',
-    'void tagIs(', 'void invokeIC(', 'void debugCheckNext('];
+    'void tagIs(', 'void invokeIC(', 'void debugCheckNext(', 'void br(', 'void jumpTo('];
   const nativeCall = source.includes('bool MT::nativeCall()')
     ? definition(source, 'bool MT::nativeCall()')
     : 'bool MT::nativeCall() { return false; }';
@@ -77,6 +77,8 @@ ${section(source, 'constexpr uint32_t P_FRAME =', '\nconstexpr uint32_t kMaxScri
 ${definition(source, 'int32_t FrameOff(')}
 struct OpInfo { uint32_t pcOff; uint32_t icIdx; JSOp op; bool exit; };
 bool gIcInline = true;
+bool gDirect = false;  // PBLBC_DIRECT off: default code
+int64_t CallScripted(int64_t, int64_t, int64_t, int64_t, int64_t) { return 0; }
 ${definition(source, 'bool IsIcCallOp(')}
 struct MT {
   Buf b;
