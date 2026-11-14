@@ -89,6 +89,28 @@ Round 2 (ad1ce4a, shell jit/c8/shell/js.fpcast.wasm, test jit/c8/test run x2): t
 
 Not done: JIT safety suite (tools/nightly-jit-safety, Firefox-based), any Firefox candidate link. Do not default-on before those.
 
+### Firefox candidate cand6 with the direct-call code (built from 9ea08f2 engine sources; NOT published, not runtime-accepted)
+
+Build: jit/scripts/build6.sh (candidate6.sh, package6.py are cand5 copies), 623 s total (compile 21 s, link 23 s, O2+fpcast 526 s, repack 37 s), log jit/cand6/logs/build6.log. Native wasm jit/cand6/obj/firefox.fpcast.wasm 208,816,776 bytes sha256 206adffd9316d64a344b7872bc38651d8b17be239a292543ea8cb5537af80d11; package jit/cand6/package/initramfs-firefox.cpio.gz 116,036,692 bytes sha256 124eb6a210b8868ef1a0c385366c302e15c0182d209473a730752b5388572cd0 (same base image as cand5, native 26e380d2... replaced). Strings PBLBC_DIRECT / "PBLBC direct:" present once in the wasm (absent in cand5).
+
+Switches (9df9910, web/linux/firefox-jit-config.mjs): ?pblbc_direct=0|1 -> kernel command line PBLBC_DIRECT=<v>, ?pblbc_hits=N (1-6 digits, >0) -> PBLBC_HITS=N; inert unless given; they reach Firefox as environment inherited from /init (confirmed in boots: cmdline token present and guest line "PBLBC direct scripted calls enabled" only with =1). firefox-jit-config.test.mjs: 6 pass, 1 fail ("safetyPlan is not defined" in tools/startup-benchmark/gpt6-codex-browser.mjs) — that failure predates the change.
+
+Test server: cand-serve/serve-cand6.mjs (loopback 3043; start: cd cand-serve && mkdir -p tmp6 && TMPDIR=$PWD/tmp6 LINUX_WEB_PORT=3043 setsid nohup node serve-cand6.mjs > server6.log 2>&1 &; stopped after each round). Use /linux/index.html?wm=1&firefox=1[&pblbc_direct=1]; /desktop/index.html waits for a click and produced two empty runs (c6d0a, c6d0a-r2, kept).
+
+In-Firefox benchmark through the real browser path (runbench.sh, profile cand6p, steady ms/call; all checksums equal the reference in every completed run; no host error/ReferenceError/TypeError/RangeError/Out of memory/SIGSEGV lines in any run):
+
+| run | option | intloop | typed | matmul | calls | props | window / homepage s |
+|---|---|---|---|---|---|---|---|
+| c6d0c | direct=0 | 12.4 | 61.8 | 0.3 | 66.0 | 29.4 | 24.2 / 33.2 |
+| c6d0e | direct=0 | 0.3 | 0.4 | 0.3 | 52.3 | 12.9 | 22.2 / 26.2 |
+| c6d0f | direct=0 | 0.3 | 0.4 | 0.3 | 58.6 | 13.1 | 22.1 / 27.1 |
+| c6ne | none | 0.4 | 0.4 | 1.6 | 57.7 | 11.3 | 22.1 / 27.1 |
+| c6d1c | direct=1 | 0.4 | 0.5 | 0.4 | 32.8 | 16.2 | 24.1 / 29.2 |
+| c6d1d | direct=1 | 0.3 | 0.4 | 0.3 | 28.3 | 11.9 | 22.0 / 27.1 |
+| c6d1e | direct=1 | 0.3 | 0.4 | 0.3 | 22.9 | 11.2 | 23.2 / 27.2 |
+
+Reading: calls 52-66 ms off vs 23-33 ms on (about 2x); props and the loop cases unchanged; boot times unchanged. c6d0c (first boot of a new browser profile) ran intloop/typed at the published-build speed while matmul was fast; not reproduced in c6d0e/c6d0f, cause not examined (loop tier not engaged for those two cases in that run). c6d0d (direct=0) booted but the typed address went to a Google search, no result. Still required before any default-on or publication: the Firefox JIT safety workloads (tools/nightly-jit-safety) with direct=1, the release gate, and real-page checks; V8 optimized is 0.3-0.8 ms on calls-like cases, so calls remain ~30-80x from native.
+
 ### Wasm code cache probe (parked; files in wasm-cache/src, nothing in the repo tree)
 
 Test server on a spare port served the 208 MB Firefox module at an immutable URL; the page ran WebAssembly.compileStreaming on it (2.7-4.5 s to resolve) while the guest booted.
