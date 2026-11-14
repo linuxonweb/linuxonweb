@@ -1,6 +1,6 @@
 # LinuxOnWeb continuation — claude-fable session 2026-11-13/14 (leading status)
 
-Branch claude-fable-linuxonweb-20261113, commits e8c07fc, 1dfe41c, 0ba489e on top of be48594. Request: improve I/O and boot, measure Firefox boot, extend the Firefox JIT toward native speed. Neither the30s usable-Firefox target nor near-native JS is met. The historical45/100 status below is unchanged apart from what is stated here; no rescoring was done. Nothing was published to web/desktop/latest-build; production Firefox image is still1a3951f0c48d/4b20a717.
+Branch claude-fable-linuxonweb-20261113, commits e8c07fc, 1dfe41c, 0ba489e, 0d98b06, 8cda69c on top of be48594. Request: improve I/O and boot, measure Firefox boot, extend the Firefox JIT toward native speed. Neither the30s usable-Firefox target nor near-native JS is met. The historical45/100 status below is unchanged apart from what is stated here; no rescoring was done. Nothing was published to web/desktop/latest-build; production Firefox image is still1a3951f0c48d/4b20a717.
 
 ## Boot and I/O (committed, default-on in the working tree served by port3000)
 
@@ -51,6 +51,16 @@ Proposed order for real-page speed (estimates, unmeasured): profile which tier F
 - cand-serve/serve-cand.mjs (3041, cand4) and serve-cand5.mjs (3042, cand5) are loopback test servers; they were stopped at session end.
 
 ---
+
+## Continuation after 0d98b06 (2026-11-14, same session; goals still unmet)
+
+Work dirs: calls-diag/ (scripted-call diagnosis and V8 tier runs d2..d5), boot-prof/ (startup CPU profiles prof1, prof2), jit/c6 (FunctionThis shell build and guest test), jit/c7 (direct-call work) under /mnt/p3/codex-build/claude-20261113.
+
+- 8cda69c PBLBC inlines FunctionThis for object receivers. Shell guest test: identical results with the method tier on/off and against c4; p.get() ~340-370 -> ~288 ns per iteration. Not linked into a Firefox candidate. tools/nightly-musl/pbl-jit/method-loop-gc.test.mjs fails on HEAD ('pbltier' has not been declared); unrelated, unfixed.
+- Scripted-call cost (c4 shell, ns per iteration, all tiers): empty loop 2-9, empty call 259-285, add3 291-301, p.get() 342-444, gx(p) 284-308, Math.abs 8, calls case 613-639. The method tier compiles caller and callee but every scripted call and return goes through the interpreter (caller exit, interpreter frame push, pblbc::Hook into callee, callee exit at Return, interpreter pop, Hook back into caller), about 230 ns per call. PBLJIT rejects loops containing scripted calls (reason "constant object": callee function object not tenured; only Math natives are allowed).
+- Pure PBL (PBLIC=0 PBLBC=0 PBLJIT=0) costs ~300 ns per empty-loop iteration, twice the C++ interpreter (148 ns). This is not a V8 baseline-compiler artifact: Chromium --js-flags=--no-liftoff 334 ns, --liftoff-only 257 ns, --no-wasm-dynamic-tiering 315 ns (single runs, calls-diag/runs/d3..d5; flags not recorded in argv logs, but --liftoff-only changed other cells by ~2.4x, e.g. all-tiers calls 639 -> 1540 ns). Cause still unmeasured.
+- Startup CPU profile (CDP worker sampling roughly doubles boot time, use as relative weights): after the second GL context, Firefox wasm is ~49% of sampled CPU and flat (1251 functions, top 100 = 36%); kernel spinlocks ~8% (sched_balance_rq, wake_up_new_task from kernel_clone); 53 Firefox threads are created between 8.7 s and 35 s, each paying new WebAssembly.Instance; V8 background compile threads use ~28 s CPU over the run. The published Firefox wasm has no name section, so per-function attribution needs a name map.
+- web/linux/dist/worker.js compile_end compiles every exec'd guest binary with synchronous new WebAssembly.Module(bytes) copied out of guest memory. V8 only caches optimized wasm code for WebAssembly.compileStreaming/instantiateStreaming of a URL-keyed Response (v8.dev/blog/wasm-code-caching: >=128 kB resource, TurboFan code only, about 150 MB of cached wasm code per profile, "very large modules may not fit"), so the 208 MB Firefox module is re-baselined and re-tiered on every boot. Unbuilt idea: opt-in path where the page compileStreaming()s the Firefox module from an immutable URL and compile_end substitutes that Module when the exec'd bytes match. Unverified: whether a 208 MB module's hot subset fits the cache, HTTP-cache entry limits for the resource, CacheStorage eligibility.
 
 # LinuxOnWeb continuation —45/100, original target unfinished
 
