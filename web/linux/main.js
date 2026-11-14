@@ -37,6 +37,10 @@ import { newGuestGpuState, observeGuestGpuMessage, guestGpuLabels } from './gues
 import { firefoxJitFlags } from './firefox-jit-config.mjs';
 import { H_STALL_MS, H_STARTUP_MS, H_OWNER_STATE, H_DEAD_REASON, H_HEARTBEAT, H_CALLS } from './dist/guest-gpu-hostcall.js';
 import { gputestEnabled, gpuBackendParam, gputestAppParam, gputestCmdlineFlags, loadGputestArchive, appendCpio, startGpuHost, GPUTEST_APPS, GPUTEST_RDINIT } from './gputest.mjs';
+// Opt-in wasm code-cache warmup (?wasm-precompile=<url>&wasm-precompile-sw=1); not loaded otherwise.
+if (/[?&]wasm-precompile(=|&|$)|[?&]wasm-precompile-sw=unregister(&|$)/.test(location.search)) {
+  import('./wasm-precompile.mjs').catch((error) => console.warn(`wasm-precompile: load failed: ${error?.message}`));
+}
 
 /** Same-origin demo proxy by default; override with ?proxy=wss://worker... */
 function proxyBaseUrl() {
