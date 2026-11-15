@@ -24,7 +24,15 @@
 // PBLBC_LOG=n limits log lines (default 40), PBLBC_LOOPJIT=0 stops offering
 // loop heads to the PBLJIT loop compiler. PBLBC_COVA=0 makes GetAliasedVar,
 // StrictConstantEq/Ne, IsConstructing, String, GetFrameArg,
-// CheckAliasedLexical, Hole and Uninitialized exits again. PBLBC_DIRECT=1 (default off) makes
+// CheckAliasedLexical, Hole and Uninitialized exits again. PBLBC_COVB=<mask>
+// (atoi; unset = 30, 0 = all off) adds coverage per bit: 1 non-number
+// Add/Sub/Mul/Div/Mod -> BinaryArith IC (off by default: hangs in the guest
+// covB test, cause not found yet), 2 string/BigInt StrictEq/StrictNe ->
+// Compare IC (magic exits), 4 non-trivial ToBool operands (JumpIfFalse/
+// JumpIfTrue/And/Or/Not) -> ToBool IC, 8 ToString of a string is a no-op,
+// 16 TypeofEq of a primitive inline (objects/magic exit). Bits off stay
+// exits. Bits 2|4|8|16 passed the covB differential, covA and the 19-workload
+// suite on 2026-11-15. PBLBC_DIRECT=1 (default off) makes
 // a compiled Call/CallIgnoresRv whose callee is a plain scripted function with
 // compiled code call CallScripted, which pushes the callee frame exactly like
 // the interpreter's Call fast path and reports a frame switch: the compiled
@@ -100,6 +108,12 @@ bool gDirect = false;
 // PBLBC_COVA=0: GetAliasedVar, StrictConstantEq/Ne, IsConstructing, String,
 // GetFrameArg, CheckAliasedLexical, Hole and Uninitialized become exits.
 bool gCova = true;
+// PBLBC_COVB bitmask: see the header comment.
+enum : unsigned { kCovbArith = 1, kCovbStrictEq = 2, kCovbToBool = 4,
+                  kCovbToString = 8, kCovbTypeofEq = 16 };
+constexpr unsigned kCovbDefault = kCovbStrictEq | kCovbToBool |
+                                  kCovbToString | kCovbTypeofEq;
+unsigned gCovb = kCovbDefault;
 constexpr uint32_t kLoopSkip = 0x80000000u, kLoopSkipMisses = 1500;
 int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
@@ -224,6 +238,8 @@ bool Enabled() {
     gLoopJit = !(lj && lj[0] == '0');
     const char* cv = getenv("PBLBC_COVA");
     gCova = !(cv && cv[0] == '0');
+    const char* cb = getenv("PBLBC_COVB");
+    gCovb = cb ? unsigned(atoi(cb)) : kCovbDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* l = getenv("PBLBC_LOG");
@@ -518,7 +534,16 @@ struct MT {
     isDouble(l);
     brIf(0);
     op(OP_DROP);
-    exitHere();
+    if ((gCovb & kCovbToBool) && gIcInline) {
+      // PBL's non-hybrid path: INVOKE_IC(ToBool) with the operand, which
+      // stays in its frame slot (sp unchanged) across the call. ToBoolean
+      // runs no script, so no debuggee check is needed.
+      invokeIC(l, ~0u, ~0u, false);
+      lget(L_R);
+      op(OP_I32WRAP);
+    } else {
+      exitHere();
+    }
     end();
   }
 
@@ -697,6 +722,10 @@ bool IsInlineOp(JSOp op) {
     case JSOp::Hole:
     case JSOp::Uninitialized:
       return gCova;
+    case JSOp::ToString:
+      return gCovb & kCovbToString;
+    case JSOp::TypeofEq:
+      return gCovb & kCovbTypeofEq;
     default:
       return false;
   }
@@ -966,7 +995,12 @@ bool MT::binaryArith(JSOp jop) {
     br(1);
     end();
   }
-  exitHere();
+  if (gCovb & kCovbArith) {
+    // PBL generic_binary: BinaryArith IC (strings, objects, BigInt, ...).
+    if (!generic(2)) return false;
+  } else {
+    exitHere();
+  }
   end();
   return true;
 }
@@ -1018,7 +1052,18 @@ bool MT::compare(JSOp jop) {
     stLocal(0, L_R);
     br(1);
     end();
-    exitHere();
+    if (gCovb & kCovbStrictEq) {
+      // Strings/BigInts: PBL generic_cmp (Compare IC); magic still exits.
+      tagIs(L_A, JSVAL_TAG_MAGIC);
+      tagIs(L_B, JSVAL_TAG_MAGIC);
+      op(OP_I32OR);
+      ifThen();
+      exitHere();
+      end();
+      if (!generic(2)) return false;
+    } else {
+      exitHere();
+    }
     end();
     return true;
   }
@@ -1352,6 +1397,63 @@ bool MT::translateOp() {
       exitHere();
       end();
       return true;
+    case JSOp::ToString:
+      // CASE(ToString): a string is left as is; anything else exits.
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_STRING);
+      op(OP_I32EQZ);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::TypeofEq: {
+      // CASE(TypeofEq) (HybridICs): js::TypeOfValue(v) == operand.type()
+      // for primitives (null is "object"); objects and magic exit.
+      TypeofEqOperand operand = TypeofEqOperand::fromRawValue(GET_UINT8(pc));
+      JSType t = operand.type();
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_OBJECT);
+      tagIs(L_A, JSVAL_TAG_MAGIC);
+      op(OP_I32OR);
+      ifThen();
+      exitHere();
+      end();
+      switch (t) {
+        case JSTYPE_UNDEFINED:
+          tagIs(L_A, JSVAL_TAG_UNDEFINED);
+          break;
+        case JSTYPE_OBJECT:
+          tagIs(L_A, JSVAL_TAG_NULL);
+          break;
+        case JSTYPE_FUNCTION:
+          i32c(0);
+          break;
+        case JSTYPE_STRING:
+          tagIs(L_A, JSVAL_TAG_STRING);
+          break;
+        case JSTYPE_NUMBER:
+          isNumber(L_A);
+          break;
+        case JSTYPE_BOOLEAN:
+          tagIs(L_A, JSVAL_TAG_BOOLEAN);
+          break;
+        case JSTYPE_SYMBOL:
+          tagIs(L_A, JSVAL_TAG_SYMBOL);
+          break;
+        case JSTYPE_BIGINT:
+          tagIs(L_A, JSVAL_TAG_BIGINT);
+          break;
+        default:
+          return reject("typeofeq type");
+      }
+      if (operand.compareOp() == JSOp::Ne) op(OP_I32EQZ);
+      boxI32(JSVAL_TAG_BOOLEAN);
+      lset(L_R);
+      stLocal(0, L_R);
+      return true;
+    }
     case JSOp::IsConstructing:
     case JSOp::Hole:
     case JSOp::Uninitialized: {
