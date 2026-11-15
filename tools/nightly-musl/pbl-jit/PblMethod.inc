@@ -32,7 +32,13 @@
 // JumpIfTrue/And/Or/Not) -> ToBool IC, 8 ToString of a string is a no-op,
 // 16 TypeofEq of a primitive inline (objects/magic exit). Bits off stay
 // exits. Bits 2|4|8|16 passed the covB differential, covA and the 19-workload
-// suite on 2026-11-15. PBLBC_DIRECT=1 (default off) makes
+// suite on 2026-11-15. PBLBC_COVC=<mask> (atoi; unset = 7, 0 = all off)
+// replaces exits by VM-helper calls that do exactly what the interpreter's
+// case does: 1 non-number Add -> AddHelper (CASE(Add) HybridICs slow path:
+// exit frame at sp, AddOperation on the operands in place, an error takes
+// the interpreter's error path via kIcError), 2 InitElemArray ->
+// InitElemArrayHelper, 4 SetAliasedVar -> SetAliasedVarHelper (pre/post
+// barriers via setAliasedBinding). PBLBC_DIRECT=1 (default off) makes
 // a compiled Call/CallIgnoresRv whose callee is a plain scripted function with
 // compiled code call CallScripted, which pushes the callee frame exactly like
 // the interpreter's Call fast path and reports a frame switch: the compiled
@@ -44,6 +50,11 @@
 // like the interpreter's LoopHead does; a compiled loop returns the state at
 // its exit, and the code continues at that op. A loop head that PBLJIT has
 // not taken for kLoopSkipMisses consecutive visits is not offered again.
+
+// Defined after this file in PortableBaselineInterpret.cpp (CASE(GetAliasedVar)/
+// CASE(SetAliasedVar)); used by SetAliasedVarHelper.
+static EnvironmentObject& getEnvironmentFromCoordinate(
+    BaselineFrame* frame, EnvironmentCoordinate ec);
 
 namespace pblbc {
 using namespace pblic;
@@ -119,6 +130,18 @@ int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
 int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
                      int64_t ctx);
+// PBLBC_COVC helpers (frame, sp, pc, ctx): see the header comment.
+enum : unsigned { kCovcAdd = 1, kCovcInitElemArray = 2, kCovcSetAliased = 4 };
+constexpr unsigned kCovcDefault = kCovcAdd | kCovcInitElemArray |
+                                  kCovcSetAliased;
+unsigned gCovc = kCovcDefault;
+// Helper results.
+enum : int64_t { kHelperOk = 0, kHelperNotHandled = 1, kHelperError = 2 };
+int64_t AddHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t InitElemArrayHelper(int64_t frame, int64_t sp, int64_t pc,
+                            int64_t ctx);
+int64_t SetAliasedVarHelper(int64_t frame, int64_t sp, int64_t pc,
+                            int64_t ctx);
 uint32_t gRuns, gIcExits, gMismatch, gLoopRuns, gDirectPushes;
 // PBLBC_DIRECT outcome counters (CallScripted), printed at exit as one
 // "PBLBC direct:" line on stderr when PBLBC_LOG > 0 or PBLBC_HITS is set.
@@ -240,6 +263,8 @@ bool Enabled() {
     gCova = !(cv && cv[0] == '0');
     const char* cb = getenv("PBLBC_COVB");
     gCovb = cb ? unsigned(atoi(cb)) : kCovbDefault;
+    const char* cc = getenv("PBLBC_COVC");
+    gCovc = cc ? unsigned(atoi(cc)) : kCovcDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* l = getenv("PBLBC_LOG");
@@ -627,6 +652,38 @@ struct MT {
     end();
   }
 
+  // r = fn(frame, sp, pc of op cur, ctx) -> L_R; kHelperError returns
+  // kIcError at op cur (ctx.error is set: the interpreter takes ic_fail ->
+  // its error path, like the op's own GOTO_ERROR); kHelperNotHandled exits
+  // at op cur (the interpreter runs the op itself).
+  void callHelper(int64_t (*fn)(int64_t, int64_t, int64_t, int64_t)) {
+    lget(P_FRAME);
+    lget(L_SP);
+    op(OP_I64EXTU);
+    lget(L_EPC);
+    i32c(int32_t(ops[cur].pcOff));
+    op(OP_I32ADD);
+    op(OP_I64EXTU);
+    lget(P_CTX);
+    for (uint32_t i = 4; i < kNParams; i++) i64c(0);
+    i32c(int32_t(uintptr_t(fn)));
+    b.put(OP_CALLIND);
+    b.uleb(0);
+    b.uleb(0);
+    ltee(L_R);
+    i64c(kHelperOk);
+    op(OP_I64NE);
+    ifThen();
+    lget(L_R);
+    i64c(kHelperError);
+    op(OP_I64EQ);
+    ifThen();
+    exitAt(cur, kIcError);
+    end();
+    exitHere();
+    end();
+  }
+
   bool scan();
   bool translateOp();
   bool run();
@@ -724,6 +781,10 @@ bool IsInlineOp(JSOp op) {
       return gCova;
     case JSOp::ToString:
       return gCovb & kCovbToString;
+    case JSOp::InitElemArray:
+      return gCovc & kCovcInitElemArray;
+    case JSOp::SetAliasedVar:
+      return gCovc & kCovcSetAliased;
     case JSOp::TypeofEq:
       return gCovb & kCovbTypeofEq;
     default:
@@ -995,7 +1056,12 @@ bool MT::binaryArith(JSOp jop) {
     br(1);
     end();
   }
-  if (gCovb & kCovbArith) {
+  if (jop == JSOp::Add && (gCovc & kCovcAdd)) {
+    // CASE(Add) HybridICs slow path in AddHelper; the result replaces lhs.
+    callHelper(AddHelper);
+    spAdd(1);
+    debugCheckNext();
+  } else if (gCovb & kCovbArith) {
     // PBL generic_binary: BinaryArith IC (strings, objects, BigInt, ...).
     if (!generic(2)) return false;
   } else {
@@ -1396,6 +1462,15 @@ bool MT::translateOp() {
       ifThen();
       exitHere();
       end();
+      return true;
+    case JSOp::InitElemArray:
+      // CASE(InitElemArray) in InitElemArrayHelper: array, val => array.
+      callHelper(InitElemArrayHelper);
+      spAdd(1);
+      return true;
+    case JSOp::SetAliasedVar:
+      // CASE(SetAliasedVar) in SetAliasedVarHelper (value stays on the stack).
+      callHelper(SetAliasedVarHelper);
       return true;
     case JSOp::ToString:
       // CASE(ToString): a string is left as is; anything else exits.
@@ -2613,6 +2688,68 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
     MOZ_CRASH("PBLBC: loop exit IC index mismatch");
   }
   return int64_t((uint64_t(k) + 1) << 32 | uint32_t(uintptr_t(jx.sp)));
+}
+
+// CASE(Add), HybridICs path, after its int32/number fast paths (which the
+// compiled code ran inline): root both operands in their stack slots, push the
+// exit frame at sp with interpreterPC = pc (PUSH_EXIT_FRAME), AddOperation,
+// pop, and the caller pops rhs. A failed AddOperation sets ctx.error like
+// PUSH_IC_FRAME and returns kHelperError: the compiled code returns kIcError
+// with sp unchanged, so the interpreter goes ic_fail -> RESTART -> error with
+// the same sp, pc and IC cursor as the op's own GOTO_ERROR. If the exit frame
+// cannot be pushed, nothing changed and the interpreter runs the op itself.
+int64_t AddHelper(int64_t frameA, int64_t spA, int64_t pcA, int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  MutableHandleValue lhs = Stack::handleMut(&sp[1]);
+  MutableHandleValue rhs = Stack::handleMut(&sp[0]);
+  MutableHandleValue result = Stack::handleMut(&sp[1]);
+  frame->interpreterPC() = pc;
+  VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+  if (!cx.success()) return kHelperNotHandled;
+  if (!AddOperation(cx, lhs, rhs, result)) {
+    ctx.error = PBIResult::Error;
+    return kHelperError;
+  }
+  return kHelperOk;
+}
+
+// CASE(InitElemArray): pop val, root it and the array in State (as the
+// interpreter does), exit frame at the popped sp, InitElemArrayOperation
+// (infallible). The caller pops val.
+int64_t InitElemArrayHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                            int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  {
+    ReservedRooted<Value> value0(&ctx.state.value0, sp[0].asValue());
+    ReservedRooted<JSObject*> obj0(&ctx.state.obj0, &sp[1].asValue().toObject());
+    {
+      frame->interpreterPC() = pc;
+      VMFrame cx(ctx.frameMgr, ctx.stack, sp + 1);
+      if (!cx.success()) return kHelperNotHandled;
+      InitElemArrayOperation(cx, pc, obj0.as<ArrayObject>(), value0);
+    }
+  }
+  return kHelperOk;
+}
+
+// CASE(SetAliasedVar): obj.setAliasedBinding(ec, sp[0]) on the environment
+// getEnvironmentFromCoordinate finds (setSlot: pre- and post-barrier).
+int64_t SetAliasedVarHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                            int64_t) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  EnvironmentCoordinate ec = EnvironmentCoordinate(pc);
+  EnvironmentObject& obj = getEnvironmentFromCoordinate(frame, ec);
+  MOZ_ASSERT(!IsUninitializedLexical(obj.aliasedBinding(ec)));
+  obj.setAliasedBinding(ec, sp[0].asValue());
+  return kHelperOk;
 }
 
 }  // namespace pblbc
