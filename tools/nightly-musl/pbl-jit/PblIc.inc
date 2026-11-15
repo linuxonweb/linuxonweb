@@ -301,6 +301,13 @@ constexpr uint32_t kF64Locals = 2;
 // Append the diagnostic i64 local after all original local groups.
 constexpr uint32_t L_OBSERVATION = L_D1 + 1;
 
+// Inline mode scratch locals (see EmitInline below).
+constexpr uint32_t kInlineI64Locals = 35;  // V[16] T[16] RET A B
+constexpr uint32_t kInlineI32Locals = 3;   // X Y Z
+constexpr uint32_t kInlineF64Locals = 2;   // D0 D1
+constexpr uint32_t kInlineLocals =
+    kInlineI64Locals + kInlineI32Locals + kInlineF64Locals;
+
 // JSObject::offsetOfShape() is reserved for MacroAssembler.
 constexpr uint32_t kShapeOffset = uint32_t(JSObject::offsetOfHeaderPtr());
 
@@ -317,8 +324,18 @@ struct Translator {
   uint32_t dirty = 0;  // registers whose locals are newer than ctx.icregs
   uint32_t sdo;        // stub data offset
   const char* reason = nullptr;
-  uint32_t nInline = 0, nStep = 0;
+  uint32_t nInline = 0, nStep = 0, nOps = 0;
   pbltier::IcDescriptor* observation = nullptr;
+  // Local indices, type/table indices and fail-branch base. The defaults are
+  // the standalone layout (shadowing the namespace constants above), so the
+  // standalone function is byte-identical; EmitInline() remaps them.
+  uint32_t L_V = pblic::L_V, L_T = pblic::L_T, L_RET = pblic::L_RET,
+           L_A = pblic::L_A, L_B = pblic::L_B, L_STUB = pblic::L_STUB,
+           L_CTX = pblic::L_CTX, L_X = pblic::L_X, L_Y = pblic::L_Y,
+           L_Z = pblic::L_Z, L_D0 = pblic::L_D0, L_D1 = pblic::L_D1;
+  uint32_t typeIdx = 0, tableIdx = 0;
+  uint32_t failBase = 0;    // extra depth from the op body to the fail label
+  bool inlineMode = false;  // no stepping, no observation, no returns
 
   bool reject(const char* why) {
     reason = why;
@@ -372,11 +389,11 @@ struct Translator {
   // Branch to the stub's failure path when the i32 on the stack is nonzero.
   void failIf() {
     b.put(OP_BRIF);
-    b.uleb(depth);
+    b.uleb(depth + failBase);
   }
   void fail() {
     b.put(OP_BR);
-    b.uleb(depth);
+    b.uleb(depth + failBase);
   }
   void ifThen() {
     b.put(OP_IF);
@@ -521,8 +538,8 @@ struct Translator {
     for (uint32_t i = nargs; i < kParams; i++) i64c(0);
     i32c(int32_t(fn));
     b.put(OP_CALLIND);
-    b.uleb(0);
-    b.uleb(0);
+    b.uleb(typeIdx);
+    b.uleb(tableIdx);
   }
   // Stores the value in L_A at the slot address in L_X. A plain store when
   // neither the old nor the new value is a GC thing (no barrier applies),
@@ -650,7 +667,13 @@ struct Translator {
   }
 
   bool translateOp(CacheOp cop, const uint8_t* a);
+  bool validate();
   bool run();
+  bool runStandalone();
+  bool runInlineTest();
+  bool inlineTest = false;
+  bool runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
+                 uint32_t doneDepth);
   bool assemble(Buf& m);
 };
 
@@ -1596,6 +1619,11 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
 }
 
 bool Translator::run() {
+  if (!validate()) return false;
+  return runStandalone();
+}
+
+bool Translator::validate() {
   sdo = info->stubDataOffset();
   // Validate: known ops, operand ids within ICRegs.
   uint32_t nops = 0;
@@ -1622,7 +1650,51 @@ bool Translator::run() {
     pos += 2 + n;
     if (++nops > kMaxOps) return reject("too many ops");
   }
+  nOps = nops;
+  return true;
+}
 
+// Inline body (see EmitInline). Registers 0..2 = arg0, arg1, ctx.arg2; every
+// op must translate inline; success stores L_RET into result and branches to
+// doneDepth; guards branch to failBase. No side effects precede a failed
+// guard (ops write only wasm locals before their guards, as standalone).
+bool Translator::runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
+                           uint32_t doneDepth) {
+  if (!validate()) return false;
+  if (observation) return reject("inline: observation");
+  lget(arg0);
+  writeValueReg(0);
+  lget(arg1);
+  writeValueReg(1);
+  lget(L_CTX);
+  load64(kCtxArg2);
+  writeValueReg(2);
+  i64c(0);
+  lset(L_RET);
+  for (uint32_t pos = 0; pos < len;) {
+    uint32_t o = uint32_t(code[pos]) | (uint32_t(code[pos + 1]) << 8);
+    uint32_t n = kIcOpInfo[o].len;
+    const uint8_t* a = code + pos + 2;
+    uint32_t savedDepth = depth;
+    if (!translateOp(CacheOp(o), a)) {
+      if (!reason) {
+        nStep++;
+        reason = "inline: stepped op";
+      }
+      return false;
+    }
+    nInline++;
+    if (depth != savedDepth) return reject("internal depth");
+    pos += 2 + n;
+  }
+  lget(L_RET);
+  lset(result);
+  b.put(OP_BR);
+  b.uleb(doneDepth);
+  return !b.oom || reject("oom");
+}
+
+bool Translator::runStandalone() {
   // Prologue: STUB, CTX; regs 0..2 = arg0, arg1, ctx.arg2 (WRITE_VALUE_REG).
   if (observation) {
     i64c(int64_t(uintptr_t(observation)));
@@ -1713,6 +1785,17 @@ bool Translator::assemble(Buf& m) {
   Buf c;
   Buf body;
   // Locals: i64, i32 and f64 groups.
+  if (inlineTest) {  // scratch at kParams, then STUB CTX (runInlineTest)
+    body.uleb(4);
+    body.uleb(kInlineI64Locals);
+    body.put(0x7e);
+    body.uleb(kInlineI32Locals);
+    body.put(0x7f);
+    body.uleb(kInlineF64Locals);
+    body.put(0x7c);
+    body.uleb(2);
+    body.put(0x7f);
+  } else {
   body.uleb(observation ? 4 : 3);
   body.uleb(kI64Locals);
   body.put(0x7e);
@@ -1723,6 +1806,7 @@ bool Translator::assemble(Buf& m) {
   if (observation) {
     body.uleb(1);
     body.put(0x7e);
+  }
   }
   body.putn(b.p, b.n);
 
@@ -1766,6 +1850,172 @@ bool Translator::assemble(Buf& m) {
   return true;
 }
 
+// ---- inline mode (for the method tier) --------------------------------------
+//
+// EmitInline(info, out, env, &numOps) appends to `out` a wasm instruction
+// sequence with net operand-stack effect zero that runs the stub's CacheIR
+// with the standalone function's semantics:
+//  - inputs: env.arg0Local / env.arg1Local (i64 IC operands, as passed to
+//    the stub function), env.stubLocal (i32 ICCacheIRStub*), env.ctxLocal
+//    (i32 ICCtx*). Register 2 is read from ctx.arg2 as in the standalone
+//    prologue, so the caller must first do MT::invokeIC's ctx/frame stores
+//    (sp, pc, icEntry, arg2).
+//  - scratch: locals env.localBase .. + kInlineLocals - 1, declared by the
+//    caller in this order: kInlineI64Locals i64, kInlineI32Locals i32,
+//    kInlineF64Locals f64. Contents on entry are irrelevant (registers are
+//    written before read; RET is zeroed by the sequence).
+//  - success: the i64 IC result is in env.resultLocal (any i64 local, may
+//    be outside the scratch range) and control branches to env.doneDepth.
+//  - guard failure: branches to env.failDepth with no side effects done
+//    (no stats counted either); the caller then calls stub->next's code
+//    with the same (arg0, arg1, next, ctx) as CallNextIC.
+//  - depths are relative to the start of the sequence; the sequence never
+//    falls through. Helper calls use call_indirect env.typeIndex
+//    (must be (23 x i64) -> i64) on env.tableIndex (the shared function
+//    table holding the helper/function indices).
+//  - returns false and leaves `out` unchanged when any op would be stepped
+//    through ICInterpretOps, on validation rejects (typed-array ops, too many
+//    ops, ids >= 16) or when IC observation (pbltier) is enabled.
+//  numOps (optional) receives the CacheIR op count on success.
+// EnsureCompiled(stub, ctx) returns the installed standalone function index
+// for the stub's CacheIR content (compiling now if still counting, ignoring
+// kHits, honouring kMaxInstalls and content reuse), sets the stub's code to
+// it, and returns 0 if PBLIC is disabled or the content is rejected (the
+// stub's code is then left unchanged).
+// The inline body equals the standalone body iff firstStub->code == K.
+
+struct InlineEnv {
+  uint32_t arg0Local, arg1Local;  // i64
+  uint32_t stubLocal, ctxLocal;   // i32
+  uint32_t localBase;             // first of kInlineLocals scratch locals
+  uint32_t resultLocal;           // i64
+  uint32_t doneDepth, failDepth;  // relative to the sequence start
+  uint32_t typeIndex = 0, tableIndex = 0;
+};
+
+uint32_t gInlineVia, gInlineFallback, gInlineTotal;  // PBLIC_INLINETEST
+
+void SetInlineLocals(Translator& t, const InlineEnv& env) {
+  uint32_t i = env.localBase;
+  t.L_V = i;
+  t.L_T = i + 16;
+  t.L_RET = i + 32;
+  t.L_A = i + 33;
+  t.L_B = i + 34;
+  i += kInlineI64Locals;
+  t.L_X = i;
+  t.L_Y = i + 1;
+  t.L_Z = i + 2;
+  i += kInlineI32Locals;
+  t.L_D0 = i;
+  t.L_D1 = i + 1;
+  t.L_STUB = env.stubLocal;
+  t.L_CTX = env.ctxLocal;
+  t.typeIdx = env.typeIndex;
+  t.tableIdx = env.tableIndex;
+  t.failBase = env.failDepth;
+  t.inlineMode = true;
+}
+
+bool EmitInline(const CacheIRStubInfo* info, Buf& out, const InlineEnv& env,
+                uint32_t* numOps) {
+  Translator t;
+  t.info = info;
+  t.code = info->code();
+  t.len = info->codeLength();
+  SetInlineLocals(t, env);
+  if (!t.runInline(env.arg0Local, env.arg1Local, env.resultLocal,
+                   env.doneDepth)) {
+    return false;
+  }
+  out.putn(t.b.p, t.b.n);
+  if (out.oom) return false;
+  if (numOps) *numOps = t.nOps;
+  return true;
+}
+
+bool InlineTestEnabled() {
+  static int e = -1;
+  if (e < 0) {
+    const char* v = getenv("PBLIC_INLINETEST");
+    e = (v && v[0] == '1') ? 1 : 0;
+    if (e) {
+      atexit([] {
+        fprintf(stderr,
+                "PBLIC inlinetest: via_inline=%u fallback=%u total=%u\n",
+                gInlineVia, gInlineFallback, gInlineTotal);
+      });
+    }
+  }
+  return e != 0;
+}
+
+// PBLIC_INLINETEST=1: the standalone function built through EmitInline.
+// Locals: 23 params, 35 i64, 3 i32, 2 f64 (= scratch at kParams), then
+// STUB CTX i32. Same entry/fail stats and fail path as runStandalone().
+bool Translator::runInlineTest() {
+  const uint32_t stubL = kParams + kInlineLocals, ctxL = stubL + 1;
+  lget(2);
+  op(OP_I32WRAP);
+  lset(stubL);
+  lget(3);
+  op(OP_I32WRAP);
+  lset(ctxL);
+  i32c(int32_t(uintptr_t(&gStats[kStatEntries])));
+  lset(kParams + kInlineI64Locals);
+  lget(kParams + kInlineI64Locals);
+  lget(kParams + kInlineI64Locals);
+  load32(0);
+  i32c(1);
+  op(OP_I32ADD);
+  store32(0);
+  b.put(OP_BLOCK);
+  b.put(OP_VOID);  // $done
+  b.put(OP_BLOCK);
+  b.put(OP_VOID);  // $fail
+  InlineEnv env;
+  env.arg0Local = 0;
+  env.arg1Local = 1;
+  env.stubLocal = stubL;
+  env.ctxLocal = ctxL;
+  env.localBase = kParams;
+  env.resultLocal = kParams + 32;
+  env.doneDepth = 1;
+  env.failDepth = 0;
+  Buf body;
+  if (!EmitInline(info, body, env, &nOps)) return reject("inline fallback");
+  nInline = nOps;
+  b.putn(body.p, body.n);
+  b.put(OP_END);  // $fail
+  i32c(int32_t(uintptr_t(&gStats[kStatFails])));
+  lset(kParams + kInlineI64Locals);
+  lget(kParams + kInlineI64Locals);
+  lget(kParams + kInlineI64Locals);
+  load32(0);
+  i32c(1);
+  op(OP_I32ADD);
+  store32(0);
+  lget(stubL);
+  load32(uint32_t(ICCacheIRStub::offsetOfNext()));
+  lset(kParams + kInlineI64Locals + 1);
+  lget(0);
+  lget(1);
+  lget(kParams + kInlineI64Locals + 1);
+  op(OP_I64EXTU);
+  lget(3);
+  padArgs();
+  lget(kParams + kInlineI64Locals + 1);
+  load32(uint32_t(ICStub::offsetOfStubCode()));
+  b.put(OP_CALLIND);
+  b.uleb(0);
+  b.uleb(0);
+  op(OP_RETURN);
+  b.put(OP_END);  // $done
+  lget(kParams + 32);
+  b.put(OP_END);  // function
+  return !b.oom || reject("oom");
+}
+
 // ---- per-thread cache keyed by stub info ------------------------------------
 
 struct Entry {
@@ -1802,7 +2052,27 @@ void Compile(Entry* e, const CacheIRStubInfo* info, ICCtx& ctx) {
   t.code = info->code();
   t.len = info->codeLength();
   Buf m;
-  bool ok = t.run() && t.assemble(m);
+  bool ok;
+  if (InlineTestEnabled() && !t.observation) {
+    gInlineTotal++;
+    Translator ti;
+    ti.info = info;
+    ti.code = t.code;
+    ti.len = t.len;
+    ti.inlineTest = true;
+    if (ti.runInlineTest() && ti.assemble(m)) {
+      gInlineVia++;
+      t.nInline = ti.nInline;
+      ok = true;
+    } else {
+      gInlineFallback++;
+      m.n = 0;
+      m.oom = false;
+      ok = t.run() && t.assemble(m);
+    }
+  } else {
+    ok = t.run() && t.assemble(m);
+  }
   uint32_t idx[1] = {0};
   long rc = 0;
   if (ok) {
@@ -1849,15 +2119,13 @@ void Compile(Entry* e, const CacheIRStubInfo* info, ICCtx& ctx) {
 
 // Returns the code this stub should use from now on, or null to keep
 // counting through PblIcEntry.
-uint8_t* Enter(ICCacheIRStub* stub, ICCtx& ctx) {
-  uint8_t* interp = reinterpret_cast<uint8_t*>(&ICInterpretOps);
-  if (!Enabled()) return interp;
+// Finds or (re)initializes the table entry for info; null without a table.
+Entry* Lookup(const CacheIRStubInfo* info) {
   if (!tTable) {
     tTable =
         static_cast<Entry*>(calloc(size_t(1) << kTableBits, sizeof(Entry)));
-    if (!tTable) return interp;
+    if (!tTable) return nullptr;
   }
-  const CacheIRStubInfo* info = stub->stubInfo();
   uint32_t h = Hash(info);
   Entry* e = nullptr;
   for (uint32_t i = 0; i < kProbe; i++) {
@@ -1884,10 +2152,31 @@ uint8_t* Enter(ICCacheIRStub* stub, ICCtx& ctx) {
     memset(e, 0, sizeof *e);
     e->info = info;
   }
+  return e;
+}
+
+uint8_t* Enter(ICCacheIRStub* stub, ICCtx& ctx) {
+  uint8_t* interp = reinterpret_cast<uint8_t*>(&ICInterpretOps);
+  if (!Enabled()) return interp;
+  const CacheIRStubInfo* info = stub->stubInfo();
+  Entry* e = Lookup(info);
+  if (!e) return interp;
   if (e->state == 0 && ++e->hits >= kHits) Compile(e, info, ctx);
   if (e->state == 1) return reinterpret_cast<uint8_t*>(uintptr_t(e->fn));
   if (e->state == 2) return interp;
   return nullptr;
+}
+
+// See the inline-mode comment block above EmitInline.
+uint32_t EnsureCompiled(ICCacheIRStub* stub, ICCtx& ctx) {
+  if (!Enabled()) return 0;
+  const CacheIRStubInfo* info = stub->stubInfo();
+  Entry* e = Lookup(info);
+  if (!e) return 0;
+  if (e->state == 0) Compile(e, info, ctx);
+  if (e->state != 1) return 0;
+  stub->updateRawJitCode(reinterpret_cast<uint8_t*>(uintptr_t(e->fn)));
+  return e->fn;
 }
 
 }  // namespace pblic
