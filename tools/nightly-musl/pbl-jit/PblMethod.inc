@@ -137,6 +137,72 @@ void PrintDirectStats() {
           s[kDsEntryExit]);
 }
 
+// PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
+// Counts every return of compiled code to the interpreter by [exit kind]
+// [JSOp at the exit pc] (for kFrameSwitch: the op where the innermost callee
+// stopped), plus Hook entries, compiles and rejects by reason. Plain counters
+// like gDs; printed at exit as "PBLBC exitstat:" lines on stderr.
+bool gExitStat = false;
+constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
+uint64_t gEsExit[kEsKinds][256];
+uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
+const char* gEsReason[kEsReasons];
+uint64_t gEsReasonCount[kEsReasons];
+void ExitStatReject(const char* why) {
+  gEsRejected++;
+  if (!why) why = "?";
+  for (uint32_t i = 0; i < kEsReasons; i++) {
+    if (!gEsReason[i]) gEsReason[i] = why;
+    if (gEsReason[i] == why || !strcmp(gEsReason[i], why)) {
+      gEsReasonCount[i]++;
+      return;
+    }
+  }
+}
+void PrintExitStats() {
+  uint64_t total = 0, perKind[kEsKinds] = {};
+  for (uint32_t k = 0; k < kEsKinds; k++)
+    for (uint32_t o = 0; o < 256; o++) perKind[k] += gEsExit[k][o];
+  for (uint32_t k = 0; k < kEsKinds; k++) total += perKind[k];
+  fprintf(stderr,
+          "PBLBC exitstat: entries=%llu exits=%llu kind0_exit=%llu "
+          "kind1_icerror=%llu kind2_irq=%llu kind3_frameswitch=%llu "
+          "compiled=%llu rejected=%llu frame_switches=%llu "
+          "direct_pushes=%u\n",
+          (unsigned long long)gEsEntries, (unsigned long long)total,
+          (unsigned long long)perKind[0], (unsigned long long)perKind[1],
+          (unsigned long long)perKind[2], (unsigned long long)perKind[3],
+          (unsigned long long)gEsCompiled, (unsigned long long)gEsRejected,
+          (unsigned long long)gEsSwitches, gDirectPushes);
+  for (uint32_t i = 0; i < kEsReasons && gEsReason[i]; i++) {
+    fprintf(stderr, "PBLBC exitstat: reject reason=\"%s\" count=%llu\n",
+            gEsReason[i], (unsigned long long)gEsReasonCount[i]);
+  }
+  for (uint32_t n = 0; n < 40; n++) {
+    uint32_t bk = 0, bo = 0;
+    uint64_t best = 0;
+    for (uint32_t k = 0; k < kEsKinds; k++)
+      for (uint32_t o = 0; o < 256; o++)
+        if (gEsExit[k][o] > best) {
+          best = gEsExit[k][o];
+          bk = k;
+          bo = o;
+        }
+    if (!best) break;
+    const char* name =
+        bo < uint32_t(JSOP_LIMIT) ? CodeName(JSOp(bo)) : nullptr;
+    char num[16];
+    if (!name) {
+      snprintf(num, sizeof num, "%u", bo);
+      name = num;
+    }
+    fprintf(stderr, "PBLBC exitstat: op=%s kind=%u count=%llu pct=%.1f\n",
+            name, bk, (unsigned long long)best,
+            total ? 100.0 * double(best) / double(total) : 0.0);
+    gEsExit[bk][bo] = 0;  // printed once at exit; consume for ordering
+  }
+}
+
 bool Enabled() {
   int e = gEnabled.load(std::memory_order_relaxed);
   if (e < 0) {
@@ -164,6 +230,11 @@ bool Enabled() {
       if (gDirect) fprintf(stderr, "PBLBC direct scripted calls enabled\n");
     }
     if (gDirect && (logBudget > 0 || (h && h[0]))) atexit(PrintDirectStats);
+    const char* xs = getenv("PBLBC_EXITSTAT");
+    if (xs && xs[0] == '1') {
+      gExitStat = true;
+      atexit(PrintExitStats);
+    }
   }
   return e != 0;
 }
@@ -1867,6 +1938,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx) {
   if (!ok) {
     e->state = 2;
     gRejects.fetch_add(1, std::memory_order_relaxed);
+    if (MOZ_UNLIKELY(gExitStat)) ExitStatReject(t.reason);
     if (TakeLog()) {
       fprintf(stderr,
               "PBLBC reject %s:%u len=%u ops=%u reason=%s op=%s rc=%ld "
@@ -1893,6 +1965,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx) {
   if (pbltier::Enabled())
     pbltier::Guard(pbltier::kInstall, script, cx, e->fn, -1);
   uint32_t nc = gCompiles.fetch_add(1, std::memory_order_relaxed) + 1;
+  if (MOZ_UNLIKELY(gExitStat)) gEsCompiled++;
   if (TakeLog()) {
     fprintf(stderr,
             "PBLBC compile #%u %s:%u ops=%u inline=%u ic=%u exit=%u wasm=%zu "
@@ -2189,6 +2262,14 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
     if ((r >> 32) == kObservedIrqExit)
       pbltier::Guard(pbltier::kIrqExit, frame->script(), cx, calledFn,
                      int32_t(exitOff));
+  }
+  if (MOZ_UNLIKELY(gExitStat)) {
+    gEsEntries++;
+    const uint32_t xk = uint32_t(r >> 32) < kEsKinds ? uint32_t(r >> 32) : 0;
+    if (xk == kFrameSwitch) gEsSwitches++;
+    const jsbytecode* xpc =
+        xk == kFrameSwitch ? tSwitch.pc : entryPC + exitOff;
+    gEsExit[xk][*xpc]++;
   }
   if ((r >> 32) == kFrameSwitch) {
     out->frame = tSwitch.frame;
