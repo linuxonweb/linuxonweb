@@ -119,11 +119,38 @@ function fakeGpu() {
   return { gpu, state, lose: reason => loseDevice({ reason }) };
 }
 
-test('Auto without WebGPU does not fall back: display pauses and asks for a choice', async () => {
+test('Auto without WebGPU keeps the display running on the next presenter and says why', async () => {
   await withHostGlobals(undefined, async frame => {
     const memory = new WebAssembly.Memory({ initial: 1 });
     const { canvas, painted, events } = fakeCanvas();
     const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'auto' });
+    await host.ready;
+    // WebGL does not exist under node, so Auto ends on Canvas 2D.
+    assert.equal(host.diagnostics.backend, 'canvas2d');
+    assert.equal(host.diagnostics.requested, 'auto');
+    assert.equal(host.diagnostics.awaitingChoice, false);
+    assert.equal(host.diagnostics.failure, null);
+    assert.equal(host.diagnostics.webgpuSkipped, 'WebGPU unavailable');
+    assert.ok(host.diagnostics.fallbackReason, 'the WebGL failure is reported too');
+    assert.equal(canvas.dataset.framebufferBackend, 'canvas2d');
+    assert.equal(canvas.dataset.framebufferRequested, 'auto');
+    assert.equal(canvas.dataset.webgpuSkipped, 'WebGPU unavailable');
+    assert.ok(events.every(detail => !detail.awaitingChoice), 'Auto never pauses for a choice');
+    new Uint8Array(memory.buffer).set([3,2,1,0, 6,5,4,0, 9,8,7,0, 12,11,10,0]);
+    host.present(0,2,2,8,32); frame();
+    assert.deepEqual(painted, [[1,2,3,255,4,5,6,255,7,8,9,255,10,11,12,255]], 'the display keeps painting');
+    await host.setBackend('canvas2d');
+    assert.equal(host.diagnostics.webgpuSkipped, null, 'an explicit choice clears the Auto reason');
+    assert.equal(canvas.dataset.webgpuSkipped, undefined);
+    host.close();
+  });
+});
+
+test('explicit WebGPU without WebGPU does not fall back: display pauses and asks for a choice', async () => {
+  await withHostGlobals(undefined, async frame => {
+    const memory = new WebAssembly.Memory({ initial: 1 });
+    const { canvas, painted, events } = fakeCanvas();
+    const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'webgpu' });
     await host.ready;
     assert.equal(host.diagnostics.backend, 'none');
     assert.equal(host.diagnostics.awaitingChoice, true);
@@ -160,12 +187,45 @@ test('a WebGPU start that never answers times out into the same choice', async (
   });
 });
 
-test('WebGPU presents frames, and device loss or draw failure pauses for a choice', async () => {
+test('Auto presents with WebGPU and continues on another presenter after device loss or draw failure', async () => {
+  const fake = fakeGpu();
+  await withHostGlobals(fake.gpu, async frame => {
+    const memory = new WebAssembly.Memory({ initial: 1 });
+    const { canvas, painted, events } = fakeCanvas();
+    const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'auto' });
+    await host.ready;
+    assert.equal(host.diagnostics.backend, 'webgpu');
+    assert.equal(host.diagnostics.webgpuSkipped, null);
+    host.present(0,2,2,8,32); frame();
+    assert.equal(fake.state.draws, 1);
+    fake.lose('unknown');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(host.diagnostics.backend, 'canvas2d');
+    assert.equal(host.diagnostics.awaitingChoice, false);
+    assert.equal(host.diagnostics.webgpuSkipped, 'WebGPU device lost: unknown');
+    frame();
+    assert.equal(painted.length, 1, 'the retained frame paints on the next presenter');
+    await host.setBackend('auto');
+    assert.equal(host.diagnostics.backend, 'webgpu', 'Auto probes WebGPU again');
+    assert.equal(host.diagnostics.webgpuSkipped, null);
+    fake.state.failDraw = true;
+    new Uint8Array(memory.buffer)[0] = 1;
+    host.present(0,2,2,8,32); frame();
+    assert.equal(host.diagnostics.backend, 'canvas2d');
+    assert.equal(host.diagnostics.webgpuSkipped, 'fake draw failure');
+    frame();
+    assert.equal(painted.length, 2, 'a draw failure does not pause Auto');
+    assert.ok(events.every(detail => !detail.awaitingChoice));
+    host.close();
+  });
+});
+
+test('explicit WebGPU presents frames, and device loss or draw failure pauses for a choice', async () => {
   const fake = fakeGpu();
   await withHostGlobals(fake.gpu, async frame => {
     const memory = new WebAssembly.Memory({ initial: 1 });
     const { canvas, painted, drawn, events } = fakeCanvas();
-    const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'auto' });
+    const host = createFramebufferHost(memory, { canvas, width: 2, height: 2, backend: 'webgpu' });
     await host.ready;
     assert.equal(host.diagnostics.backend, 'webgpu');
     assert.equal(host.diagnostics.fallbackAdapter, false);
@@ -180,7 +240,7 @@ test('WebGPU presents frames, and device loss or draw failure pauses for a choic
     frame();
     assert.deepEqual(painted, []);
     assert.equal(fake.state.draws, 1);
-    await host.setBackend('auto');
+    await host.setBackend('webgpu');
     assert.equal(host.diagnostics.backend, 'webgpu', 'retrying WebGPU is possible');
     frame();
     assert.equal(fake.state.draws, 2, 'the retained frame repaints on the next presenter');

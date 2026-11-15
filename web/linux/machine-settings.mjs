@@ -14,21 +14,22 @@ export function restoreConfiguration(saved, defaults, { resolutions, ramValues, 
   // Records without the current presentation version saved 'canvas2d' as the old
   // default, not as a choice; they now start with the WebGPU default.
   const oldDefault = saved.backend === 'canvas2d' && saved.presentationVersion !== PRESENTATION_VERSION;
-  if (['canvas2d', 'auto', 'webgl'].includes(saved.backend) && !oldDefault) configuration.backend = saved.backend;
+  if (['canvas2d', 'auto', 'webgpu', 'webgl'].includes(saved.backend) && !oldDefault) configuration.backend = saved.backend;
   if ('guestBackend' in defaults && ['webgpu', 'webgl'].includes(saved.guestBackend)) configuration.guestBackend = saved.guestBackend;
   return { configuration, ramChosen };
 }
 
 // The page URL's "renderer" parameter and the Settings display presentation
 // stay in sync: a valid parameter selects the presentation for this page load,
-// and the URL always shows the active one ("webgpu" for the Auto default).
-const RENDERER_PARAMS = { webgpu: 'auto', auto: 'auto', webgl: 'webgl', canvas2d: 'canvas2d' };
+// and the URL always shows the active one. "webgpu" stays an Auto alias because
+// earlier pages wrote it for Auto; "webgpu-only" is the explicit WebGPU choice.
+const RENDERER_PARAMS = { webgpu: 'auto', auto: 'auto', 'webgpu-only': 'webgpu', webgl: 'webgl', canvas2d: 'canvas2d' };
 export function presentationFromUrl(search) {
   return RENDERER_PARAMS[new URLSearchParams(search).get('renderer')] ?? null;
 }
 export function presentationUrl(href, backend) {
   const url = new URL(href);
-  url.searchParams.set('renderer', backend === 'auto' ? 'webgpu' : backend);
+  url.searchParams.set('renderer', backend === 'webgpu' ? 'webgpu-only' : backend);
   return url.href;
 }
 
@@ -46,7 +47,8 @@ export function needsFirefoxMemoryChoice(mode, ram, ramChosen) {
   return mode === 'firefox' && !ramChosen && ![1024, 2048].includes(ram);
 }
 
-// Display presentation: "auto" means WebGPU. When WebGPU fails the page asks
+// Display presentation: "auto" tries WebGPU and continues with WebGL or Canvas 2D
+// when it does not work. When an explicit "webgpu" choice fails the page asks
 // the user for one of these instead of falling back on its own.
 export const PRESENTATION_FALLBACKS = ['webgl', 'canvas2d'];
 const presenterNames = { webgpu: 'WebGPU', webgl: 'WebGL', canvas2d: 'Canvas 2D' };
@@ -58,8 +60,16 @@ export function presentationStatus(detail) {
   if (detail.backend === 'none') return 'starting WebGPU…';
   let text = presenterNames[detail.backend] ?? String(detail.backend);
   if (detail.backend === 'webgpu' && detail.fallbackAdapter === true) text += ' · software fallback adapter';
-  if (detail.fallbackReason) text += ` · ${presenterNames[detail.requested] ?? detail.requested} failed: ${detail.fallbackReason}`;
+  if (detail.webgpuSkipped) text += ` · Auto skipped WebGPU: ${detail.webgpuSkipped}`;
+  if (detail.fallbackReason) text += ` · ${presenterNames[detail.backend === 'canvas2d' && detail.webgpuSkipped ? 'webgl' : detail.requested] ?? detail.requested} failed: ${detail.fallbackReason}`;
   return text;
+}
+
+// Non-blocking notice when Auto continued without WebGPU, or null.
+export function autoFallbackNotice(detail) {
+  if (!detail || detail.requested !== 'auto' || !detail.webgpuSkipped || detail.backend === 'none') return null;
+  const name = presenterNames[detail.backend] ?? String(detail.backend);
+  return `Display uses ${name}: WebGPU is not working in this browser (${detail.webgpuSkipped}). Auto tries WebGPU again on the next page load.`;
 }
 
 // The dialog's return value, or null when the user cancelled.

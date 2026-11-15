@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, PRESENTATION_VERSION, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, PRESENTATION_VERSION, presentationFromUrl, presentationUrl, autoFallbackNotice } from './machine-settings.mjs';
 
 const firefoxDefaults = { resolution: '1280x720', cpus: 2, ram: 4096, backend: 'auto' };
 const options = { resolutions: ['400x300', '1280x720', '1920x1080'], ramValues: [128, 256, 512, 1024, 2048, 4096], maxCpus: 6 };
@@ -98,6 +98,7 @@ test('presentation status names the presenter, a paused WebGPU failure and WebGL
 test('the renderer URL parameter selects the display presentation', () => {
   assert.equal(presentationFromUrl('?firefox=1&renderer=webgpu'), 'auto');
   assert.equal(presentationFromUrl('?renderer=auto'), 'auto');
+  assert.equal(presentationFromUrl('?renderer=webgpu-only'), 'webgpu', 'explicit WebGPU (no fallback)');
   assert.equal(presentationFromUrl('?renderer=webgl'), 'webgl');
   assert.equal(presentationFromUrl('?renderer=canvas2d'), 'canvas2d');
   assert.equal(presentationFromUrl('?renderer=metal'), null);
@@ -105,7 +106,8 @@ test('the renderer URL parameter selects the display presentation', () => {
 });
 
 test('the URL shows the active presentation and keeps other parameters', () => {
-  assert.equal(presentationUrl('http://h/linux/index.html?firefox=1&debug=1', 'auto'), 'http://h/linux/index.html?firefox=1&debug=1&renderer=webgpu');
+  assert.equal(presentationUrl('http://h/linux/index.html?firefox=1&debug=1', 'auto'), 'http://h/linux/index.html?firefox=1&debug=1&renderer=auto');
+  assert.equal(presentationUrl('http://h/linux/index.html?renderer=webgpu', 'webgpu'), 'http://h/linux/index.html?renderer=webgpu-only');
   assert.equal(presentationUrl('http://h/linux/index.html?renderer=canvas2d&firefox=1', 'webgl'), 'http://h/linux/index.html?renderer=webgl&firefox=1');
 });
 
@@ -126,4 +128,21 @@ test('guest backend choice is independent and invalid saved auto stays explicit 
   assert.equal(displayOnlyChange(old, { ...old, backend: 'webgl' }), true);
   assert.equal(displayOnlyChange(old, { ...old, guestBackend: 'webgl' }), false);
   assert.equal(displayOnlyChange(old, { ...old, backend: 'webgl', guestBackend: 'webgl' }), false);
+});
+
+test('Auto fallback is reported truthfully and only for Auto', () => {
+  const detail = { backend: 'webgl', requested: 'auto', webgpuSkipped: 'WebGPU adapter unavailable', fallbackReason: null };
+  assert.equal(presentationStatus(detail), 'WebGL · Auto skipped WebGPU: WebGPU adapter unavailable');
+  assert.equal(autoFallbackNotice(detail), 'Display uses WebGL: WebGPU is not working in this browser (WebGPU adapter unavailable). Auto tries WebGPU again on the next page load.');
+  const canvas2d = { backend: 'canvas2d', requested: 'auto', webgpuSkipped: 'WebGPU unavailable', fallbackReason: 'WebGL unavailable' };
+  assert.equal(presentationStatus(canvas2d), 'Canvas 2D · Auto skipped WebGPU: WebGPU unavailable · WebGL failed: WebGL unavailable');
+  assert.match(autoFallbackNotice(canvas2d), /^Display uses Canvas 2D: /);
+  assert.equal(autoFallbackNotice({ backend: 'webgpu', requested: 'auto', webgpuSkipped: null }), null);
+  assert.equal(autoFallbackNotice({ backend: 'none', requested: 'webgpu', awaitingChoice: true, failure: 'x' }), null);
+  assert.equal(autoFallbackNotice({ backend: 'canvas2d', requested: 'webgl', fallbackReason: 'WebGL unavailable' }), null);
+});
+
+test('an explicit saved WebGPU choice is restored', () => {
+  const options = { resolutions: ['1280x720'], ramValues: [2048, 4096], maxCpus: 8 };
+  assert.equal(restoreConfiguration(settingsRecord({ ...firefoxDefaults, backend: 'webgpu' }), firefoxDefaults, options).configuration.backend, 'webgpu');
 });

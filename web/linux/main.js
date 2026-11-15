@@ -31,7 +31,7 @@ import { bootWgpuTest } from './gpu-test-boot.mjs';
 import { guestClipboard, readHostClipboard, writeHostClipboard, installClipboardButton } from './clipboard.mjs';
 import { loadDesktopInitramfs, loadDesktopExtras, useCompressedInitramfs, composeCache } from './desktop-extras.mjs';
 import { nonSharedBytes } from './console-bytes.mjs';
-import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl } from './machine-settings.mjs';
+import { restoreConfiguration, needsFirefoxMemoryChoice, presentationStatus, presentationChoice, withPresentationChoice, displayOnlyChange, settingsRecord, presentationFromUrl, presentationUrl, autoFallbackNotice } from './machine-settings.mjs';
 import { guestGpuHostcallOptions, guestGpuUrl } from './guest-gpu-config.mjs';
 import { newGuestGpuState, observeGuestGpuMessage, guestGpuLabels } from './guest-gpu-status.mjs';
 import { firefoxJitFlags } from './firefox-jit-config.mjs';
@@ -121,11 +121,24 @@ const guestVulkanStatus = document.getElementById('guest-vulkan-status');
 // The running framebuffer host switches presenter without a guest restart.
 let setPresenter = null;
 let presentationPromptOpen = false;
+// Auto continued without WebGPU: a small dismissible notice names the presenter
+// in use and why. A dismissed notice stays hidden for the same text.
+const presentationNotice = document.getElementById('presentation-notice');
+const presentationNoticeText = document.getElementById('presentation-notice-text');
+let presentationNoticeDismissed = null;
+document.getElementById('presentation-notice-close').addEventListener('click', () => {
+  presentationNoticeDismissed = presentationNoticeText.textContent;
+  presentationNotice.hidden = true;
+});
 canvas.addEventListener('framebuffer-backend', event => {
   const detail = event.detail;
   setPresenter = typeof detail.setBackend === 'function' ? detail.setBackend : null;
   graphicsStatus.textContent = presentationStatus(detail);
-  // Auto means WebGPU; when it fails, ask instead of falling back silently.
+  const notice = autoFallbackNotice(detail);
+  if (notice && notice !== presentationNoticeText.textContent) hostLog(notice, 'warn');
+  if (notice) presentationNoticeText.textContent = notice;
+  if (detail.backend !== 'none') presentationNotice.hidden = !notice || notice === presentationNoticeDismissed;
+  // Only an explicit WebGPU choice pauses and asks; Auto falls back on its own.
   if (detail.awaitingChoice) void choosePresentationFallback(detail.failure);
 });
 const settingsNote = document.getElementById("settings-note");

@@ -20,9 +20,10 @@ export interface FramebufferOptions {
     bpp?: number;
     /**
      * Host presentation only. Canvas2D remains the measured safe default.
-     * "auto" and "webgpu" use WebGPU without any automatic fallback: on failure
-     * the display pauses and diagnostics report awaitingChoice. Explicit WebGL
-     * still falls back to Canvas2D.
+     * "auto" tries WebGPU and, when it does not work, continues with WebGL
+     * (then Canvas2D) and reports the reason in webgpuSkipped. Explicit
+     * "webgpu" never falls back: on failure the display pauses and diagnostics
+     * report awaitingChoice. Explicit WebGL still falls back to Canvas2D.
      */
     backend?: "auto" | "webgpu" | "webgl" | "canvas2d";
     /** Bound on WebGPU adapter/device/pipeline start. Defaults to 10000 ms. */
@@ -39,6 +40,8 @@ export interface FramebufferDiagnostics {
     unchanged: number;
     fallbackReason: string | null;
     fallbackAdapter: boolean | null;
+    /** Auto only: why WebGPU was skipped and another presenter is in use. */
+    webgpuSkipped: string | null;
     /** Why WebGPU presentation stopped or could not start. */
     failure: string | null;
     /** True when WebGPU failed and the user must choose another presenter. */

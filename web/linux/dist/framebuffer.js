@@ -118,15 +118,18 @@ export function createFramebufferHost(memory, options) {
     let overlaySupport = false, holesChanged = false, holeCount = 0;
     let renderer = null;
     let generation = 0;
-    // "auto" means WebGPU. A WebGPU failure never falls back silently: the
-    // display pauses (frames are still snapshotted) and the host reports
-    // awaitingChoice so the page can ask the user for WebGL or Canvas2D.
+    // "auto" tries WebGPU first. When WebGPU does not start, is lost or fails
+    // to draw, Auto continues with WebGL (then Canvas2D) and reports the reason
+    // in webgpuSkipped; nothing is saved, so the next page load probes again.
+    // Only an explicit "webgpu" request never falls back: the display pauses
+    // (frames are still snapshotted) and the host reports awaitingChoice so the
+    // page can ask the user for WebGL or Canvas2D.
     // An explicit WebGL request keeps its Canvas2D fallback.
     const backends = ["auto", "webgpu", "webgl", "canvas2d"];
     const webgpuTimeoutMs = options.webgpuTimeoutMs ?? 10000;
     const diagnostics = { backend: "canvas2d", requested: options.backend ?? "canvas2d",
         frames: 0, presents: 0, coalesced: 0, unchanged: 0, overlayFrames: 0, overlayDropped: 0, overlays: 0,
-        fallbackReason: null, fallbackAdapter: null,
+        fallbackReason: null, fallbackAdapter: null, webgpuSkipped: null,
         failure: null, awaitingChoice: false, diff: fast ? "simd" : "js" };
     if (!backends.includes(diagnostics.requested))
         throw new Error("unknown framebuffer backend");
@@ -149,7 +152,12 @@ export function createFramebufferHost(memory, options) {
             }
             options.onOverlaySupport?.(support);
         }
-        if (canvas.dataset) canvas.dataset.framebufferBackend = diagnostics.backend;
+        if (canvas.dataset) {
+            canvas.dataset.framebufferBackend = diagnostics.backend;
+            canvas.dataset.framebufferRequested = diagnostics.requested;
+            if (diagnostics.webgpuSkipped) canvas.dataset.webgpuSkipped = diagnostics.webgpuSkipped;
+            else delete canvas.dataset.webgpuSkipped;
+        }
         if (canvas.dispatchEvent && globalThis.CustomEvent)
             canvas.dispatchEvent(new CustomEvent("framebuffer-backend", { detail: { ...diagnostics, setBackend } }));
     };
@@ -219,28 +227,36 @@ export function createFramebufferHost(memory, options) {
         catch (error) { pending.then(late => late.close(), () => { }); throw error; }
         finally { clearTimeout(timer); }
     };
-    const select = async (backend, reason = null) => {
+    // skipped: why Auto did not use WebGPU (kept while Auto runs on WebGL/Canvas2D).
+    const select = async (backend, reason = null, skipped = null) => {
         const token = ++generation;
         renderer?.close(); renderer = null;
         const webgpu = backend === "auto" || backend === "webgpu";
         diagnostics.backend = webgpu ? "none" : "canvas2d";
         diagnostics.fallbackAdapter = null;
         diagnostics.fallbackReason = reason;
+        diagnostics.webgpuSkipped = skipped;
         diagnostics.failure = null;
         diagnostics.awaitingChoice = false;
         publish();
         if (closed) return;
         if (backend === "canvas2d") { repaint(); return; }
         const current = () => !closed && token === generation;
-        const lost = reason => {
+        const lost = why => {
             if (!current()) return;
-            if (webgpu) { awaitChoice(reason); return; }
-            void select("canvas2d", reason);
+            if (backend === "webgpu") { awaitChoice(why); return; }
+            if (backend === "auto") { void select("webgl", null, why); return; }
+            void select("canvas2d", why, skipped);
         };
         if (webgpu) {
             let candidate;
             try { candidate = await startWebGPU(lost); }
-            catch (error) { if (current()) awaitChoice(message(error)); return; }
+            catch (error) {
+                if (!current()) return;
+                if (backend === "auto") return select("webgl", null, message(error));
+                awaitChoice(message(error));
+                return;
+            }
             if (!current()) { candidate.close(); return; }
             renderer = candidate;
             diagnostics.backend = candidate.backend;
@@ -360,8 +376,9 @@ export function createFramebufferHost(memory, options) {
                     finally { frame.close?.(); }
                 } else paint2d(from, to, x0, x1);
             } catch (error) {
+                if (diagnostics.backend === "webgpu" && diagnostics.requested === "auto") { void select("webgl", null, message(error)); return; }
                 if (diagnostics.backend === "webgpu") { awaitChoice(message(error)); return; }
-                void select("canvas2d", message(error));
+                void select("canvas2d", message(error), diagnostics.webgpuSkipped);
                 paint2d();
             }
             diagnostics.frames++;

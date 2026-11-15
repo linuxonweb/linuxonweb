@@ -87,6 +87,8 @@
       .restart-dialog::backdrop { background: #020807bb; backdrop-filter: blur(3px); }
       .restart-dialog p { color: var(--muted); line-height: 1.5; }
       .restart-dialog .restart-warning { color: var(--danger); }
+      .presentation-notice { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 20; display: flex; gap: 12px; align-items: center; max-width: min(640px, calc(100vw - 32px)); padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-solid); color: var(--fg); font-size: 13px; box-shadow: 0 8px 24px #0006; }
+      .presentation-notice[hidden] { display: none; }
       .settings-heading { margin: 0 0 4px; font-size: 1.05rem; }
       .settings-copy { margin: 0 0 18px; color: var(--muted); font-size: 0.82rem; }
       .field { display: grid; gap: 7px; margin-top: 15px; }
@@ -387,7 +389,7 @@
 
     <dialog id="presentation-dialog" class="restart-dialog" aria-labelledby="presentation-title" aria-describedby="presentation-summary presentation-reason">
       <h2 id="presentation-title" class="settings-heading">WebGPU display is not working</h2>
-      <p id="presentation-summary">Auto display presentation uses WebGPU, which is not working in this browser, so the display is paused. Choose another presenter. Your choice is saved, and the guest keeps running.</p>
+      <p id="presentation-summary">You selected the WebGPU display presenter, which is not working in this browser, so the display is paused. Choose another presenter (or Auto in Settings, which falls back automatically). Your choice is saved, and the guest keeps running.</p>
       <p id="presentation-reason" class="restart-warning"></p>
       <form method="dialog" class="settings-actions">
         <button class="action" value="cancel" type="submit">Cancel</button>
@@ -400,6 +402,11 @@
       <div class="info-heading"><h2 id="browser-info-title">Host browser information</h2><button id="browser-info-close" class="action" type="button" aria-label="Close browser information" autofocus>Close</button></div>
       <div id="browser-info-content" aria-live="polite"></div>
     </dialog>
+
+    <div id="presentation-notice" class="presentation-notice" role="status" aria-live="polite" hidden>
+      <span id="presentation-notice-text"></span>
+      <button id="presentation-notice-close" class="action" type="button" aria-label="Dismiss display notice">Dismiss</button>
+    </div>
 
     <main>
       <div class="workspace">
@@ -483,10 +490,11 @@
               <label for="graphics-backend">Display presentation</label>
               <select id="graphics-backend">
                 <option value="auto">Auto (WebGPU, default)</option>
+                <option value="webgpu">WebGPU only (no fallback)</option>
                 <option value="webgl">WebGL</option>
                 <option value="canvas2d">Canvas 2D</option>
               </select>
-              <span class="settings-copy">How this page draws the guest display. Auto uses WebGPU; if WebGPU does not work you are asked to choose WebGL or Canvas 2D. Guest graphics are reported separately below. Video hardware acceleration has not been established.</span>
+              <span class="settings-copy">How this page draws the guest display. Auto uses WebGPU and continues with WebGL or Canvas 2D when WebGPU does not work (tried again on every page load). WebGPU only pauses the display and asks when WebGPU fails. Guest graphics are reported separately below. Video hardware acceleration has not been established.</span>
               <output id="graphics-status" aria-live="polite"></output>
             </div>
             <div class="field">
