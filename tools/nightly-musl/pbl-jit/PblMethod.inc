@@ -22,7 +22,9 @@
 // sets the hook threshold, PBLBC_IC=0 makes IC ops exits, PBLBC_LOOPEXIT=1
 // leaves every LoopHead to the interpreter (and its loop compiler), and
 // PBLBC_LOG=n limits log lines (default 40), PBLBC_LOOPJIT=0 stops offering
-// loop heads to the PBLJIT loop compiler. PBLBC_DIRECT=1 (default off) makes
+// loop heads to the PBLJIT loop compiler. PBLBC_COVA=0 makes GetAliasedVar,
+// StrictConstantEq/Ne, IsConstructing, String, GetFrameArg,
+// CheckAliasedLexical, Hole and Uninitialized exits again. PBLBC_DIRECT=1 (default off) makes
 // a compiled Call/CallIgnoresRv whose callee is a plain scripted function with
 // compiled code call CallScripted, which pushes the callee frame exactly like
 // the interpreter's Call fast path and reports a frame switch: the compiled
@@ -45,6 +47,7 @@ enum : uint8_t {
   OP_LOOP = 0x03,
   OP_BRTABLE = 0x0e,
   OP_I64LTU = 0x54,
+  OP_I64GTU = 0x56,
   OP_I64GEU = 0x5a,
   OP_I32REMS = 0x6f,
   OP_F64NEG = 0x9a,
@@ -94,6 +97,9 @@ bool gIcInline = true;
 bool gLoopExit = false;
 bool gLoopJit = true;
 bool gDirect = false;
+// PBLBC_COVA=0: GetAliasedVar, StrictConstantEq/Ne, IsConstructing, String,
+// GetFrameArg, CheckAliasedLexical, Hole and Uninitialized become exits.
+bool gCova = true;
 constexpr uint32_t kLoopSkip = 0x80000000u, kLoopSkipMisses = 1500;
 int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
@@ -216,6 +222,8 @@ bool Enabled() {
     gLoopExit = le && le[0] == '1';
     const char* lj = getenv("PBLBC_LOOPJIT");
     gLoopJit = !(lj && lj[0] == '0');
+    const char* cv = getenv("PBLBC_COVA");
+    gCova = !(cv && cv[0] == '0');
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* l = getenv("PBLBC_LOG");
@@ -679,6 +687,16 @@ bool IsInlineOp(JSOp op) {
     case JSOp::ToNumeric:
     case JSOp::SetRval:
       return true;
+    case JSOp::GetAliasedVar:
+    case JSOp::StrictConstantEq:
+    case JSOp::StrictConstantNe:
+    case JSOp::IsConstructing:
+    case JSOp::String:
+    case JSOp::GetFrameArg:
+    case JSOp::CheckAliasedLexical:
+    case JSOp::Hole:
+    case JSOp::Uninitialized:
+      return gCova;
     default:
       return false;
   }
@@ -1334,6 +1352,170 @@ bool MT::translateOp() {
       exitHere();
       end();
       return true;
+    case JSOp::IsConstructing:
+    case JSOp::Hole:
+    case JSOp::Uninitialized: {
+      // CASE(IsConstructing/Hole/Uninitialized): push a magic constant.
+      JSWhyMagic why = o.op == JSOp::IsConstructing ? JS_IS_CONSTRUCTING
+                       : o.op == JSOp::Hole         ? JS_ELEMENTS_HOLE
+                                                    : JS_UNINITIALIZED_LEXICAL;
+      spAdd(-1);
+      lget(L_SP);
+      i64c(int64_t(MagicValue(why).asRawBits()));
+      store64(0);
+      return true;
+    }
+    case JSOp::CheckAliasedLexical:
+      // CASE(CheckAliasedLexical): only the uninitialized magic throws; any
+      // magic exits (the interpreter then decides), anything else is a no-op.
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_MAGIC);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::GetFrameArg:
+      // CASE(GetFrameArg): push frame->argv()[i] (no aliasing check there).
+      lget(L_AV);
+      load64(8 * GET_ARGNO(pc));
+      lset(L_A);
+      pushLocal(L_A);
+      return true;
+    case JSOp::String: {
+      // CASE(String): StringValue(frame->script()->getString(pc)). The script
+      // is read at run time from the frame's interpreterScript_ (set by
+      // pushFrame's setInterpreterFieldsForPrologue, traced by the GC), then
+      // the GCCellPtr in its PrivateScriptData gcthings (String kind tag 2,
+      // removed with xor exactly like BaselineCodeGen::loadScriptGCThing).
+      static_assert(uintptr_t(JS::TraceKind::String) == 2);
+      static_assert(sizeof(JS::GCCellPtr) == 4);
+      uint32_t idx = GET_GCTHING_INDEX(pc);
+      lget(L_FR);
+      load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfInterpreterScript())));
+      load32(uint32_t(JSScript::offsetOfPrivateData()));
+      load32(uint32_t(PrivateScriptData::offsetOfGCThings() + 4 * idx));
+      i32c(2);
+      op(OP_I32XOR);
+      boxI32(JSVAL_TAG_STRING);
+      lset(L_A);
+      pushLocal(L_A);
+      return true;
+    }
+    case JSOp::StrictConstantEq:
+    case JSOp::StrictConstantNe: {
+      // CASE(StrictConstantEq/Ne) with js::ConstantStrictEqual: the operand
+      // is decoded here at compile time, the value compared at run time.
+      ConstantCompareOperand c =
+          ConstantCompareOperand::fromRawValue(GET_UINT16(pc));
+      ld(0);
+      lset(L_A);
+      switch (c.type()) {
+        case ConstantCompareOperand::EncodedType::Int32:
+          // val.isNumber() && val.toNumber() == double(int32)
+          tagIs(L_A, JSVAL_TAG_INT32);
+          ifThen(T_I32);
+          lget(L_A);
+          op(OP_I32WRAP);
+          i32c(c.toInt32());
+          op(OP_I32EQ);
+          elseThen();
+          isDouble(L_A);
+          ifThen(T_I32);
+          lget(L_A);
+          op(OP_F64REINTI64);
+          i32c(c.toInt32());
+          op(OP_F64CONVI32S);
+          op(OP_F64EQ);
+          elseThen();
+          i32c(0);
+          end();
+          end();
+          break;
+        case ConstantCompareOperand::EncodedType::Boolean:
+          lget(L_A);
+          i64c(int64_t(BooleanValue(c.toBoolean()).asRawBits()));
+          op(OP_I64EQ);
+          break;
+        case ConstantCompareOperand::EncodedType::Undefined:
+          tagIs(L_A, JSVAL_TAG_UNDEFINED);
+          break;
+        case ConstantCompareOperand::EncodedType::Null:
+          tagIs(L_A, JSVAL_TAG_NULL);
+          break;
+        default:
+          return reject("constant compare operand");
+      }
+      if (o.op == JSOp::StrictConstantNe) op(OP_I32EQZ);
+      boxI32(JSVAL_TAG_BOOLEAN);
+      lset(L_A);
+      stLocal(0, L_A);
+      return true;
+    }
+    case JSOp::GetAliasedVar: {
+      // CASE(GetAliasedVar) / getEnvironmentFromCoordinate: walk hops
+      // enclosing environments from frame->environmentChain(), then
+      // obj.aliasedBinding(ec) == getSlot(ec.slot()). Any proxy on the walk
+      // (DebugEnvironmentProxy, the only non-EnvironmentObject the
+      // interpreter allows there) exits. The fixed-slot count is read from
+      // the object's shape at run time.
+      EnvironmentCoordinate ec(pc);
+      uint32_t hops = ec.hops(), slot = ec.slot();
+      auto proxyExit = [&]() {
+        lget(L_X);
+        load32(uint32_t(offsetof(JS::shadow::Object, shape)));
+        load32(uint32_t(Shape::offsetOfBaseShape()));
+        load32(uint32_t(BaseShape::offsetOfClasp()));
+        load32(uint32_t(JSClass::offsetOfFlags()));
+        i32c(int32_t(JSCLASS_IS_PROXY));
+        op(OP_I32AND);
+        ifThen();
+        exitHere();
+        end();
+      };
+      lget(L_FR);
+      load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfEnvironmentChain())));
+      lset(L_X);
+      for (uint32_t h = 0; h < hops; h++) {
+        proxyExit();
+        lget(L_X);
+        load32(uint32_t(EnvironmentObject::offsetOfEnclosingEnvironment()));
+        lset(L_X);
+      }
+      proxyExit();
+      // nfixed = shape->numFixedSlots()
+      lget(L_X);
+      load32(uint32_t(offsetof(JS::shadow::Object, shape)));
+      load32(uint32_t(Shape::offsetOfImmutableFlags()));
+      i32c(int32_t(NativeShape::fixedSlotsShift()));
+      op(OP_I32SHRU);
+      i32c(int32_t(NativeShape::fixedSlotsMask() >> NativeShape::fixedSlotsShift()));
+      op(OP_I32AND);
+      op(OP_I64EXTU);
+      lset(L_B);
+      lget(L_B);
+      i64c(int64_t(slot));
+      op(OP_I64GTU);
+      ifThen(T_I64);
+      lget(L_X);
+      load64(uint32_t(NativeObject::getFixedSlotOffset(slot)));
+      elseThen();
+      // slots_[slot - nfixed]
+      lget(L_X);
+      load32(uint32_t(NativeObject::offsetOfSlots()));
+      i32c(int32_t(8 * slot));
+      op(OP_I32ADD);
+      lget(L_B);
+      op(OP_I32WRAP);
+      i32c(3);
+      op(OP_I32SHL);
+      op(OP_I32SUB);
+      load64(0);
+      end();
+      lset(L_A);
+      pushLocal(L_A);
+      return true;
+    }
     case JSOp::GetArg:
     case JSOp::SetArg: {
       uint32_t i = GET_ARGNO(pc);
