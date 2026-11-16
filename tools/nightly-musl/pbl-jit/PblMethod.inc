@@ -263,6 +263,13 @@ void PrintDirectStats() {
 // stopped), plus Hook entries, compiles and rejects by reason. Plain counters
 // like gDs; printed at exit as "PBLBC exitstat:" lines on stderr.
 bool gExitStat = false;
+// PBLBC_CALLCACHE=0 disables the CallScripted callee cache (default on).
+bool gCallCache = true;
+// PBLBC_PADARGS=1 lets CallScripted push a non-constructing callee with
+// argc < nargs, padding the missing formals with undefined like the
+// interpreter's scripted-call IC (descriptor keeps the actual argc). Default
+// off until verified.
+bool gPadArgs = false;
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -367,6 +374,10 @@ bool Enabled() {
     }
     if (gDirect && (logBudget > 0 || (h && h[0]))) atexit(PrintDirectStats);
     if (gInl && (logBudget > 0 || gInlStat)) atexit(PrintInlineStats);
+    const char* ccv = getenv("PBLBC_CALLCACHE");
+    if (ccv && ccv[0] == '0') gCallCache = false;
+    const char* pav = getenv("PBLBC_PADARGS");
+    if (pav && pav[0] == '1') gPadArgs = true;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -2602,6 +2613,10 @@ struct Entry {
 thread_local Entry* tTable;
 thread_local Entry* tLast;
 thread_local uint32_t tEntries;
+// Entry-table generation: bumped whenever an Entry is created or changes
+// state (entries are never removed and the table is never reallocated).
+// CallScripted's callee cache entries are only used when it is unchanged.
+thread_local uint32_t tEntryGen;
 
 uint32_t Hash(const void* p) {
   uint32_t h = uint32_t(uintptr_t(p)) * 2654435761u;
@@ -2625,6 +2640,7 @@ Entry* Find(const ImmutableScriptData* isd) {
       if (tEntries >= kMaxEntries) return nullptr;
       tEntries++;
       c->isd = isd;
+      tEntryGen++;
       return tLast = c;
     }
   }
@@ -2664,6 +2680,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
   }
   if (!ok) {
     e->state = 2;
+    tEntryGen++;
     gRejects.fetch_add(1, std::memory_order_relaxed);
     if (MOZ_UNLIKELY(gExitStat)) ExitStatReject(t.reason);
     if (TakeLog()) {
@@ -2689,6 +2706,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
   e->shared = script->sharedData();
   e->shared->AddRef();
   e->state = 1;
+  tEntryGen++;
   for (uint32_t i = 0; i < kInlCount; i++) gInlSite[i] += t.inlSite[i];
   if (pbltier::Enabled())
     pbltier::Guard(pbltier::kInstall, script, cx, e->fn, -1);
@@ -2746,6 +2764,35 @@ Entry* FindExisting(const ImmutableScriptData* isd) {
   return nullptr;
 }
 
+// CallScripted callee cache (PBLBC_CALLCACHE, default on): direct-mapped,
+// keyed by the callee's BaseScript*, holding values that are functions of the
+// script / its compiled Entry. Raw untraced pointers: an entry is only used
+// when its GC epoch (gcNumber + minorGCCount, both monotonic: changes on every
+// major slice and every minor GC) and the entry-table generation both equal
+// the current ones, and the script's ImmutableScriptData is still the cached
+// one. Nothing is read from a stale entry except key/epoch/gen.
+struct CallCacheEntry {
+  const void* key;  // BaseScript*
+  uint64_t epoch;
+  uint32_t gen;
+  uint32_t j0;
+  JSScript* script;
+  JS::Realm* realm;
+  const ImmutableScriptData* isd;
+  Entry* e;
+  jsbytecode* code;
+  uint32_t nfixed;
+  uint32_t nslots;
+  bool needEnv;
+  bool retRval0;
+};
+constexpr uint32_t kCallCacheBits = 6;
+thread_local CallCacheEntry tCallCache[1u << kCallCacheBits];
+inline uint64_t GcEpoch(JSContext* cx) {
+  const js::gc::GCRuntime& gc = cx->runtime()->gc;
+  return gc.gcNumber() + gc.minorGCCount();
+}
+
 // Called by compiled code at a Call/CallIgnoresRv whose callee has a
 // BaseScript (PBLBC_DIRECT). Mirrors the interpreter's scripted Call fast path
 // (CASE(Call) in PortableBaselineInterpret.cpp): returns 0 with no state
@@ -2794,13 +2841,44 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     return Refuse(kDsClassCtor);
   }
   if (constructing && !func->isConstructor()) return Refuse(kDsClassCtor);
-  if (!func->baseScript()->hasBytecode()) return Refuse(kDsNoBytecode);
-  JSScript* calleeScript = func->baseScript()->asJSScript();
-  if (!calleeScript->hasJitScript()) return Refuse(kDsNoJitScript);
-  if (cx->realm() != calleeScript->realm()) return Refuse(kDsRealm);
-  if (argc < func->nargs()) return Refuse(kDsUnderflow);
-  // Includes newTarget when constructing (excludes the callee).
-  const uint32_t totalArgs = argc + 1 + (constructing ? 1 : 0);
+  // Callee cache lookup (key, GC epoch, table generation; see above).
+  BaseScript* bscript = func->baseScript();
+  CallCacheEntry* ce = nullptr;
+  uint64_t epoch = 0;
+  if (gCallCache) {
+    epoch = GcEpoch(cx);
+    CallCacheEntry* c =
+        &tCallCache[(uint32_t(uintptr_t(bscript)) >> 4) &
+                    ((1u << kCallCacheBits) - 1)];
+    if (c->key == bscript && c->epoch == epoch && c->gen == tEntryGen) ce = c;
+  }
+  JSScript* calleeScript;
+  Entry* e;
+  uint32_t j0;
+  bool needEnv, retRval0;
+  if (ce) {
+    calleeScript = ce->script;
+    // Kept per call: can change without a GC or an Entry change.
+    if (!calleeScript->hasJitScript()) return Refuse(kDsNoJitScript);
+    if (cx->realm() != ce->realm) return Refuse(kDsRealm);
+    if (argc < func->nargs() && (constructing || !gPadArgs))
+      return Refuse(kDsUnderflow);
+    needEnv = ce->needEnv;
+  } else {
+    if (!bscript->hasBytecode()) return Refuse(kDsNoBytecode);
+    calleeScript = bscript->asJSScript();
+    if (!calleeScript->hasJitScript()) return Refuse(kDsNoJitScript);
+    if (cx->realm() != calleeScript->realm()) return Refuse(kDsRealm);
+    if (argc < func->nargs() && (constructing || !gPadArgs))
+      return Refuse(kDsUnderflow);
+    needEnv = func->needsFunctionEnvironmentObjects();
+  }
+  // Missing formals pushed as undefined (non-constructing, PBLBC_PADARGS).
+  const uint32_t undefArgs =
+      (!constructing && argc < func->nargs()) ? func->nargs() - argc : 0;
+  // Includes newTarget when constructing (excludes the callee) and the
+  // padding.
+  const uint32_t totalArgs = argc + undefArgs + 1 + (constructing ? 1 : 0);
   // newTarget must be the callee itself: re-running CreateThis in the
   // interpreter (the state-changed exit below) is then unobservable (a
   // scripted function's prototype is a plain data property); an arbitrary
@@ -2816,7 +2894,6 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   // stack space, which would throw over-recursion) must pass. The space for
   // the exit frame (4 words + ExitFrameType), stub slot, args, token,
   // descriptor, fake return address and saved fp is added conservatively.
-  const bool needEnv = func->needsFunctionEnvironmentObjects();
   if (needEnv && !(gCovd & kCovdEnv)) return Refuse(kDsEnvObjects);
   if (calleeScript->isDebuggee()) return Refuse(kDsCalleeDebuggee);
   if (calleeScript->hasScriptCounts() || cx->realm()->collectCoverageForDebug())
@@ -2826,22 +2903,60 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   // checked without margin) is pushed below the callee's nfixed slots; it is
   // added explicitly on top of the first exit frame (4 words), stub slot,
   // args, token, descriptor, return address and saved fp (totalArgs + 8).
+  const uint32_t nslots = ce ? ce->nslots : calleeScript->nslots();
   if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16 +
                                                (needEnv ? 4 : 0)) +
                                BaselineFrame::Size() +
-                               sizeof(StackVal) * calleeScript->nslots())) {
+                               sizeof(StackVal) * nslots)) {
     return Refuse(kDsCalleeStack);
   }
-  // The callee must have compiled code enterable at op 0.
-  Entry* e = FindExisting(calleeScript->immutableScriptData());
-  if (!e || e->state != 1) return Refuse(kDsNotCompiled);
-  uint32_t j0 = e->opAt[0];
-  // An exit op at op 0 is refused, except RetRval (e.g. an empty function's
-  // whole body): it is performed below without entering compiled code.
-  const bool retRval0 = JSOp(*calleeScript->code()) == JSOp::RetRval;
-  if (j0 == 0xffff || (e->exitOp[j0] && !retRval0)) {
-    return Refuse(kDsEntryExit);
+  if (ce) {
+    // The Entry for this script data is unchanged (generation), but the
+    // script's data pointer is re-validated anyway.
+    if (calleeScript->immutableScriptData() != ce->isd) {
+      ce = nullptr;
+      return Refuse(kDsNotCompiled);
+    }
+    e = ce->e;
+    j0 = ce->j0;
+    retRval0 = ce->retRval0;
+  } else {
+    // The callee must have compiled code enterable at op 0.
+    e = FindExisting(calleeScript->immutableScriptData());
+    if (!e || e->state != 1) return Refuse(kDsNotCompiled);
+    j0 = e->opAt[0];
+    // An exit op at op 0 is refused, except RetRval (e.g. an empty
+    // function's whole body): it is performed below without entering
+    // compiled code.
+    retRval0 = JSOp(*calleeScript->code()) == JSOp::RetRval;
+    if (j0 == 0xffff || (e->exitOp[j0] && !retRval0)) {
+      return Refuse(kDsEntryExit);
+    }
+    if (gCallCache) {
+      CallCacheEntry* c =
+          &tCallCache[(uint32_t(uintptr_t(bscript)) >> 4) &
+                      ((1u << kCallCacheBits) - 1)];
+      c->key = bscript;
+      c->epoch = epoch;
+      c->gen = tEntryGen;
+      c->j0 = j0;
+      c->script = calleeScript;
+      c->realm = calleeScript->realm();
+      c->isd = calleeScript->immutableScriptData();
+      c->e = e;
+      c->code = calleeScript->code();
+      c->nfixed = calleeScript->nfixed();
+      c->nslots = calleeScript->nslots();
+      c->needEnv = needEnv;
+      c->retRval0 = retRval0;
+    }
   }
+  // Copies of the cached values (the cache slot can be overwritten by nested
+  // calls); only used while nothing could have GC'd (useCached).
+  bool useCached = ce != nullptr;
+  JSScript* cScript = useCached ? ce->script : nullptr;
+  jsbytecode* cCode = useCached ? ce->code : nullptr;
+  const uint32_t cNfixed = useCached ? ce->nfixed : 0;
 
   // Constructing: CreateThis when the this slot is not an object, like the
   // fast path (exit frame at the caller's sp, AutoKeepJitScripts). It can
@@ -2891,6 +3006,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
       firstArg[1] = StackVal(origThis);
       return Refuse(kDsCtorChanged);
     }
+    useCached = false;  // CreateThis can GC: re-derive from calleeScript
   }
 
   // Fast path steps 0-8 (no GC, no VM calls from here on).
@@ -2899,7 +3015,12 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   if (!exitFP) MOZ_CRASH("PBLBC: exit frame after stack check");
   sp = exitFP;
   PUSHNATIVE(StackValNative(nullptr));
-  for (uint32_t i = 0; i < totalArgs; i++) {
+  // Padding first (highest addresses: argv[argc .. nargs-1]), then the actual
+  // args and this; the descriptor below keeps the actual argc.
+  for (uint32_t i = 0; i < undefArgs; i++) {
+    *--sp = StackVal(UndefinedValue());
+  }
+  for (uint32_t i = 0; i < totalArgs - undefArgs; i++) {
     *--sp = origArgs[i];
   }
   PUSHNATIVE(StackValNative(CalleeToToken(func, constructing)));
@@ -2911,7 +3032,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   ctx.frameMgr.switchToFrame(newFrame);
   ctx.frame = newFrame;
   sp = reinterpret_cast<StackVal*>(newFrame);
-  const uint32_t nfixed = calleeScript->nfixed();
+  const uint32_t nfixed = useCached ? cNfixed : calleeScript->nfixed();
   for (uint32_t i = 0; i < nfixed; i++) {
     *--sp = StackVal(UndefinedValue());
   }
@@ -2929,6 +3050,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
       ok = js::InitFunctionEnvironmentObjects(vcx, newFrame);
     }
     calleeScript = newFrame->script();
+    useCached = false;  // InitFunctionEnvironmentObjects can GC
     if (!ok || cx->hasAnyPendingInterrupt()) {
       if (!ok) ctx.error = PBIResult::Error;
       gDs[kDsEnvObjects]++;
@@ -2940,7 +3062,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
       return 1;
     }
   }
-  jsbytecode* calleePC = calleeScript->code();
+  jsbytecode* calleePC = useCached ? cCode : calleeScript->code();
   ICEntry* calleeIcEntries = newFrame->icScript()->icEntries();
   ICEntry* calleeIcEntry = newFrame->interpreterICEntry();
   // Run the callee's compiled code from op 0 like Hook does, unless the
@@ -2995,8 +3117,13 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   }
   jsbytecode* xpc = calleePC + exitOff;
   JSOp xop = JSOp(*xpc);
+  // The cached script stands for newFrame->script() only if no GC happened
+  // since the lookup (the callee's code can GC).
+  JSScript* retScript = (useCached && GcEpoch(cx) == epoch)
+                            ? cScript
+                            : newFrame->script();
   if (kind == kIcError || newFrame->isDebuggee() ||
-      newFrame->script()->hasScriptCounts() ||
+      retScript->hasScriptCounts() ||
       (xop != JSOp::Return && xop != JSOp::RetRval)) {
     gDs[kind == kIcError ? kDsSwIcError
         : (xop == JSOp::Return || xop == JSOp::RetRval) ? kDsSwDebug
