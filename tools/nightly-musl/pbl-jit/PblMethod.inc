@@ -135,6 +135,35 @@ enum : unsigned { kCovcAdd = 1, kCovcInitElemArray = 2, kCovcSetAliased = 4 };
 constexpr unsigned kCovcDefault = kCovcAdd | kCovcInitElemArray |
                                   kCovcSetAliased;
 unsigned gCovc = kCovcDefault;
+// PBLBC_INL (default on; 0 = off): inline the site's first CacheIR stub body
+// (pblic::EmitInline) at IC call sites, guarded at run time by
+// firstStub->code == K (the stub's PBLIC function index, which identifies its
+// CacheIR content). A guard failure inside the body continues with
+// firstStub->next exactly like the standalone function; any other first stub
+// takes the normal call. PBLBC_INLOPS=n caps CacheIR ops per site (default
+// 32); at most kInlBudget inline bytes per method function. PBLBC_INLSTAT=1
+// adds run-time hit counters (code only emitted then).
+bool gInl = true;
+bool gInlStat = false;
+uint32_t gInlOps = 32;
+constexpr uint32_t kInlBudget = 48 * 1024;
+enum : uint32_t { kInlSites, kInlInlined, kInlFallback, kInlRejected,
+                  kInlOverBudget, kInlCount };
+uint32_t gInlSite[kInlCount];
+enum : uint32_t { kInlHitEnter, kInlHitSlow, kInlHitFail, kInlHitCount };
+uint32_t gInlHits[kInlHitCount];  // bumped by generated code (PBLBC_INLSTAT=1)
+void PrintInlineStats() {
+  fprintf(stderr,
+          "PBLBC inline: sites=%u inlined=%u fallbackstub=%u rejected=%u "
+          "overbudget=%u\n",
+          gInlSite[kInlSites], gInlSite[kInlInlined], gInlSite[kInlFallback],
+          gInlSite[kInlRejected], gInlSite[kInlOverBudget]);
+  if (gInlStat) {
+    fprintf(stderr, "PBLBC inline: hits_inline=%u hits_slow=%u hits_fail=%u\n",
+            gInlHits[kInlHitEnter] - gInlHits[kInlHitFail],
+            gInlHits[kInlHitSlow], gInlHits[kInlHitFail]);
+  }
+}
 // Helper results.
 enum : int64_t { kHelperOk = 0, kHelperNotHandled = 1, kHelperError = 2 };
 int64_t AddHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
@@ -267,6 +296,12 @@ bool Enabled() {
     gCovc = cc ? unsigned(atoi(cc)) : kCovcDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
+    const char* in = getenv("PBLBC_INL");
+    gInl = !(in && in[0] == '0');
+    const char* io = getenv("PBLBC_INLOPS");
+    if (io && atoi(io) >= 0) gInlOps = uint32_t(atoi(io));
+    const char* is = getenv("PBLBC_INLSTAT");
+    gInlStat = gInl && is && is[0] == '1';
     const char* l = getenv("PBLBC_LOG");
     const int logBudget = l ? atoi(l) : 40;
     gLogBudget.store(logBudget, std::memory_order_relaxed);
@@ -279,6 +314,7 @@ bool Enabled() {
       if (gDirect) fprintf(stderr, "PBLBC direct scripted calls enabled\n");
     }
     if (gDirect && (logBudget > 0 || (h && h[0]))) atexit(PrintDirectStats);
+    if (gInl && (logBudget > 0 || gInlStat)) atexit(PrintInlineStats);
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -321,6 +357,19 @@ struct MT {
   uint32_t cur = 0;  // current op index
   uint32_t nInline = 0, nIc = 0, nExit = 0;
   const char* reason = nullptr;
+  // PBLBC_INL: the IC entries this compile sees (Hook's icEntries) and the
+  // ICCtx for pblic::EnsureCompiled; null/0 disables inlining.
+  ICEntry* icEntries = nullptr;
+  uint32_t nIcEntries = 0;
+  ICCtx* ictx = nullptr;
+  bool inlUsed = false;     // scratch locals declared (some site inlined)
+  uint32_t inlBytes = 0;    // inline body bytes in this function
+  uint32_t inlSite[kInlCount] = {};
+  // Scratch locals after the existing ones: kInlineI64Locals i64,
+  // kInlineI32Locals i32, kInlineF64Locals f64, then one never-written i64
+  // (zero) standing in for absent IC operands.
+  static constexpr uint32_t kInlBase = kNParams + kNI64 + kNI32 + kNF64;
+  static constexpr uint32_t kInlZero = kInlBase + kInlineLocals;
 
   ~MT() {
     free(ops);
@@ -600,6 +649,35 @@ struct MT {
     lget(L_ICE);
     load32(uint32_t(o.icIdx * sizeof(ICEntry) + ICEntry::offsetOfFirstStub()));
     lset(L_X);
+    Buf inl;
+    uint32_t k = inlineCandidate(o, a0, a1, inl);
+    if (k) {
+      // block $done { block $slow { L_X->code != K -> $slow;
+      //   block $fail { body } L_X = L_X->next } L_R = call L_X->code }
+      block();  // $done
+      block();  // $slow
+      lget(L_X);
+      load32(uint32_t(ICStub::offsetOfStubCode()));
+      i32c(int32_t(k));
+      op(OP_I32NE);
+      if (gInlStat) {
+        ifThen();
+        bumpInlHit(kInlHitSlow);
+        br(1);  // $slow
+        end();
+        bumpInlHit(kInlHitEnter);
+      } else {
+        brIf(0);  // $slow
+      }
+      block();  // $fail: body depths fail=0, slow=1, done=2
+      b.putn(inl.p, inl.n);
+      end();  // $fail
+      if (gInlStat) bumpInlHit(kInlHitFail);
+      lget(L_X);
+      load32(uint32_t(ICCacheIRStub::offsetOfNext()));
+      lset(L_X);
+      end();  // $slow
+    }
     if (a0 != ~0u) {
       lget(a0);
     } else {
@@ -620,13 +698,80 @@ struct MT {
     b.put(OP_CALLIND);
     b.uleb(0);
     b.uleb(0);
-    ltee(L_R);
+    if (k) {
+      lset(L_R);
+      end();  // $done
+      lget(L_R);
+    } else {
+      ltee(L_R);
+    }
     i64c(int64_t(IC_ERROR_SENTINEL()));
     op(OP_I64EQ);
     ifThen();
     exitAt(cur, kIcError);
     end();
     nIc++;
+  }
+  void bumpInlHit(uint32_t which) {
+    i32c(int32_t(uintptr_t(&gInlHits[which])));
+    i32c(int32_t(uintptr_t(&gInlHits[which])));
+    load32(0);
+    i32c(1);
+    op(OP_I32ADD);
+    store32(0);
+  }
+  // PBLBC_INL: K (> 0) and the inline body in `out` when op o's site can be
+  // inlined now; 0 otherwise (today's code is emitted). The body reads the
+  // stub through L_X (the current first stub) at run time.
+  uint32_t inlineCandidate(const OpInfo& o, uint32_t a0, uint32_t a1,
+                           Buf& out) {
+    if (!gInl || !icEntries || !ictx) return 0;
+    inlSite[kInlSites]++;
+    if (o.icIdx >= nIcEntries) {
+      inlSite[kInlRejected]++;
+      return 0;
+    }
+    ICStub* first = icEntries[o.icIdx].firstStub();
+    if (!first || first->isFallback()) {
+      inlSite[kInlFallback]++;
+      return 0;
+    }
+    if (inlBytes >= kInlBudget) {
+      inlSite[kInlOverBudget]++;
+      return 0;
+    }
+    ICCacheIRStub* stub = first->toCacheIRStub();
+    InlineEnv env;
+    env.arg0Local = a0 != ~0u ? a0 : kInlZero;
+    env.arg1Local = a1 != ~0u ? a1 : kInlZero;
+    env.stubLocal = L_X;
+    env.ctxLocal = L_CTX;
+    env.localBase = kInlBase;
+    env.resultLocal = L_R;
+    env.doneDepth = 2;
+    env.failDepth = 0;
+    uint32_t nops = 0;
+    if (!EmitInline(stub->stubInfo(), out, env, &nops)) {
+      out.n = 0;
+      out.oom = false;
+      inlSite[kInlRejected]++;
+      return 0;
+    }
+    if (nops > gInlOps || inlBytes + out.n > kInlBudget) {
+      out.n = 0;
+      inlSite[kInlOverBudget]++;
+      return 0;
+    }
+    uint32_t k = EnsureCompiled(stub, *ictx);
+    if (!k) {
+      out.n = 0;
+      inlSite[kInlRejected]++;
+      return 0;
+    }
+    inlBytes += uint32_t(out.n);
+    inlUsed = true;
+    inlSite[kInlInlined]++;
+    return k;
   }
   // After an IC call: a frame that became a debuggee continues in the
   // interpreter (whose DISPATCH checks for debug traps) at the next op.
@@ -2173,13 +2318,23 @@ bool MT::run() {
 bool MT::assemble(Buf& m) {
   Buf c;
   Buf body;
-  body.uleb(3);
+  body.uleb(inlUsed ? 7 : 3);
   body.uleb(kNI64);
   body.put(T_I64);
   body.uleb(kNI32);
   body.put(T_I32);
   body.uleb(kNF64);
   body.put(T_F64);
+  if (inlUsed) {  // PBLBC_INL scratch at kInlBase, then the zero i64
+    body.uleb(kInlineI64Locals);
+    body.put(T_I64);
+    body.uleb(kInlineI32Locals);
+    body.put(T_I32);
+    body.uleb(kInlineF64Locals);
+    body.put(T_F64);
+    body.uleb(1);
+    body.put(T_I64);
+  }
   body.putn(b.p, b.n);
 
   m.putn("\0asm\1\0\0\0", 8);
@@ -2267,9 +2422,13 @@ Entry* Find(const ImmutableScriptData* isd) {
   return nullptr;
 }
 
-void Compile(Entry* e, JSScript* script, JSContext* cx) {
+void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
+             ICEntry* icEntries, uint32_t nIcEntries) {
   MT t;
   t.entry = e;
+  t.icEntries = icEntries;
+  t.nIcEntries = nIcEntries;
+  t.ictx = &ctx;
   t.code = script->code();
   t.codeLen = script->length();
   t.resumeOffsets = script->immutableScriptData()->resumeOffsets().data();
@@ -2321,6 +2480,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx) {
   e->shared = script->sharedData();
   e->shared->AddRef();
   e->state = 1;
+  for (uint32_t i = 0; i < kInlCount; i++) gInlSite[i] += t.inlSite[i];
   if (pbltier::Enabled())
     pbltier::Guard(pbltier::kInstall, script, cx, e->fn, -1);
   uint32_t nc = gCompiles.fetch_add(1, std::memory_order_relaxed) + 1;
@@ -2577,7 +2737,8 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
     if (script->hasScriptCounts() || script->immutableScriptData() != isd) {
       return kNone;
     }
-    Compile(e, script, ctx.frameMgr.cxForLocalUseOnly());
+    Compile(e, script, ctx.frameMgr.cxForLocalUseOnly(), ctx, icEntries,
+            frame->icScript()->numICEntries());
     if (e->state != 1) return kNone;
   }
   uint32_t off = uint32_t(pc - entryPC);
