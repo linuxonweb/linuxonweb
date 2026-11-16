@@ -141,12 +141,22 @@ unsigned gCovc = kCovcDefault;
 // (IterHelper), 2 direct scripted calls to callees that need function
 // environment objects (CallScripted runs InitFunctionEnvironmentObjects).
 // 0 = all of them exit.
-enum : unsigned { kCovdCall = 1, kCovdEnv = 2, kCovdNewObj = 4, kCovdIter = 8 };
-constexpr unsigned kCovdDefault = kCovdCall | kCovdEnv | kCovdNewObj | kCovdIter;
+enum : unsigned {
+  kCovdCall = 1,
+  kCovdEnv = 2,
+  kCovdNewObj = 4,
+  kCovdIter = 8,
+  kCovdNew = 16,   // New/NewContent through the Call IC (scripted: exit)
+  kCovdThis = 32,  // FunctionThis slow path and Callee in helpers
+};
+constexpr unsigned kCovdDefault =
+    kCovdCall | kCovdEnv | kCovdNewObj | kCovdIter | kCovdNew | kCovdThis;
 unsigned gCovd = kCovdDefault;
 int64_t NewObjectHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t NewArrayHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t IterHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t FunctionThisHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t CalleeHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // PBLBC_INL (default on; 0 = off): inline the site's first CacheIR stub body
 // (pblic::EmitInline) at IC call sites, guarded at run time by
 // firstStub->code == K (the stub's PBLIC function index, which identifies its
@@ -953,6 +963,8 @@ bool IsInlineOp(JSOp op) {
     case JSOp::IsNoIter:
     case JSOp::EndIter:
       return gCovd & kCovdIter;
+    case JSOp::Callee:
+      return gCovd & kCovdThis;
     default:
       return false;
   }
@@ -997,6 +1009,9 @@ bool IsIcCallOp(JSOp op) {
     case JSOp::CallIter:
     case JSOp::CallContentIter:
       return gCovd & kCovdCall;
+    case JSOp::New:
+    case JSOp::NewContent:
+      return gCovd & kCovdNew;
     default:
       return false;
   }
@@ -1047,7 +1062,11 @@ bool MT::scan() {
 bool MT::nativeCall() {
   if (cur + 1 >= n) return reject("call at end");
   const uint32_t argc = GET_ARGC(code + ops[cur].pcOff);
-  ld(argc + 1);
+  // CASE(Call) with constructing = New/NewContent: callee at sp[argc + 1 +
+  // constructing], newTarget at sp[0]; the IC gets extraArgs 2 + constructing.
+  const uint32_t ctor =
+      (ops[cur].op == JSOp::New || ops[cur].op == JSOp::NewContent) ? 1 : 0;
+  ld(argc + 1 + ctor);
   lset(L_A);
   tagIs(L_A, JSVAL_TAG_OBJECT);
   op(OP_I32EQZ);
@@ -1075,7 +1094,7 @@ bool MT::nativeCall() {
   i32c(int32_t(FunctionFlags::BASESCRIPT | FunctionFlags::SELFHOSTLAZY));
   op(OP_I32AND);
   ifThen();
-  if (gDirect) {
+  if (gDirect && !ctor) {
     // r = CallScripted(frame, sp, pc, icEntry, ctx); r == 1: the callee
     // frame is pushed, return to the interpreter in it (Hook: kRanNewFrame).
     // r == 0: nothing changed, exit at the Call op as without PBLBC_DIRECT.
@@ -1119,12 +1138,12 @@ bool MT::nativeCall() {
   exitHere();
   end();
   lget(L_CTX);
-  i32c(2);
+  i32c(int32_t(2 + ctor));
   store32(kCtxExtraArgs);
   i64c(argc);
   lset(L_A);
   invokeIC(L_A, ~0u, ~0u, false);
-  spAdd(int32_t(argc + 2));
+  spAdd(int32_t(argc + 2 + ctor));
   pushLocal(L_R);
   debugCheckNext();
   return true;
@@ -1496,6 +1515,24 @@ bool MT::translateOp() {
         return true;
       }
       return nativeCall();
+    case JSOp::New:
+    case JSOp::NewContent:
+      // Same CASE(Call) path, constructing == true. Scripted callees exit
+      // (the interpreter's constructing fast path); others use the Call IC.
+      if (!(gCovd & kCovdNew)) {
+        exitHere();
+        return true;
+      }
+      return nativeCall();
+    case JSOp::Callee:
+      // CASE(Callee): push frame->calleev() (helper stores it at sp[-1]).
+      if (!(gCovd & kCovdThis)) {
+        exitHere();
+        return true;
+      }
+      callHelper(CalleeHelper);
+      spAdd(-1);
+      return true;
     case JSOp::Nop:
     case JSOp::NopDestructuring:
     case JSOp::NopIsAssignOp:
@@ -1930,7 +1967,17 @@ bool MT::translateOp() {
       tagIs(L_A, JSVAL_TAG_OBJECT);
       op(OP_I32EQZ);
       ifThen();
-      exitHere();
+      if (gCovd & kCovdThis) {
+        // Not an object: CASE(FunctionThis)'s GetFunctionThis in the helper
+        // (strictness checked at run time), result at sp[-1].
+        callHelper(FunctionThisHelper);
+        spAdd(-1);
+        ld(0);
+        lset(L_A);
+        spAdd(1);
+      } else {
+        exitHere();
+      }
       end();
       pushLocal(L_A);
       return true;
@@ -2652,7 +2699,12 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   if (calleeScript->hasScriptCounts() || cx->realm()->collectCoverageForDebug())
     return Refuse(kDsCounts);
   if (cx->hasAnyPendingInterrupt()) return Refuse(kDsInterrupt);
-  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16) +
+  // needEnv: the second exit frame (VMFrame in the callee frame, 4 words,
+  // checked without margin) is pushed below the callee's nfixed slots; it is
+  // added explicitly on top of the first exit frame (4 words), stub slot,
+  // args, token, descriptor, return address and saved fp (totalArgs + 8).
+  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16 +
+                                               (needEnv ? 4 : 0)) +
                                BaselineFrame::Size() +
                                sizeof(StackVal) * calleeScript->nslots())) {
     return Refuse(kDsCalleeStack);
@@ -3066,6 +3118,43 @@ int64_t IterHelper(int64_t, int64_t spA, int64_t pcA, int64_t) {
       CloseIterator(&sp[1].asValue().toObject());
       break;
   }
+  return kHelperOk;
+}
+
+// CASE(FunctionThis) slow path (|this| is not an object): PUSH_EXIT_FRAME
+// at sp with interpreterPC = pc, GetFunctionThis (boxes primitives or takes
+// the global |this| in sloppy functions; strict functions get |this| as is),
+// result rooted in State then stored at sp[-1]. Failure sets ctx.error and
+// returns kHelperError with sp unchanged (the op's GOTO_ERROR).
+int64_t FunctionThisHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                           int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  Value v;
+  {
+    ReservedRooted<Value> result(&ctx.state.value0, UndefinedValue());
+    {
+      frame->interpreterPC() = pc;
+      VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+      if (!cx.success()) return kHelperNotHandled;
+      if (!js::GetFunctionThis(cx, frame, &result)) {
+        ctx.error = PBIResult::Error;
+        return kHelperError;
+      }
+    }
+    v = result;
+  }
+  sp[-1] = StackVal(v);
+  return kHelperOk;
+}
+
+// CASE(Callee): frame->calleev() (cannot GC or fail), stored at sp[-1].
+int64_t CalleeHelper(int64_t frameA, int64_t spA, int64_t, int64_t) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  sp[-1] = StackVal(frame->calleev());
   return kHelperOk;
 }
 
