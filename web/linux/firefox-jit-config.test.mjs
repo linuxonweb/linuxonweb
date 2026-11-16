@@ -75,3 +75,10 @@ test('the owner rejects an off control served by the old frozen boot path', () =
   assert.doesNotThrow(() => admit({ jitArm: 'off', candidate: true }));
   assert.doesNotThrow(() => admit({ jitArm: 'method', candidate: false }));
 });
+
+test('the try/catch admission policy is forwarded only for 0 or 1', async () => {
+  assert.deepEqual(await flags('?firefox=1&pblbc_direct=1&pbl_trypolicy=0'), ['PBLBC_DIRECT=1', 'PBL_TRYPOLICY=0']);
+  assert.deepEqual(await flags('?pbl_trypolicy=1'), ['PBL_TRYPOLICY=1']);
+  assert.deepEqual(await flags('?pbl_trypolicy=2'), []);
+  assert.deepEqual(await flags('?pbl_trypolicy=0%20init=/bin/sh'), []);
+});

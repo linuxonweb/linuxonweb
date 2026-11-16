@@ -13,5 +13,9 @@ export function firefoxJitFlags(search) {
   // Method-tier compile threshold: 1 to 6 digits, greater than zero.
   const hits = params.get('pblbc_hits');
   if (/^[0-9]{1,6}$/.test(hits ?? '') && Number(hits) > 0) flags.push(`PBLBC_HITS=${hits}`);
+  // Try/catch admission policy for the method tier (image default rejects
+  // scripts with Catch/Finally; 0 admits them).
+  const tryPolicy = params.get('pbl_trypolicy');
+  if (tryPolicy === '0' || tryPolicy === '1') flags.push(`PBL_TRYPOLICY=${tryPolicy}`);
   return flags;
 }
