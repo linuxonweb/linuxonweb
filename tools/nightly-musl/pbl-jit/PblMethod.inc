@@ -163,6 +163,25 @@ int64_t NewArrayHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t IterHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t FunctionThisHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t CalleeHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_COVG bitmask: 1 Try/TryDestructuring (no-op, as in the interpreter:
+// handlers are found through try notes when an error unwinds in PBL), 2
+// DebugLeaveLexicalEnv (no-op unless the frame is a debuggee, which exits),
+// 4 CheckIsObj (object: continue; else exit, the interpreter throws), 8
+// Lambda (LambdaHelper: CASE(Lambda) HybridICs path), 16 PushLexicalEnv /
+// PopLexicalEnv / FreshenLexicalEnv / RecreateLexicalEnv / InitAliasedLexical
+// (LexEnvHelper; a debuggee frame exits). 0 = all of them exit. Default 31.
+enum : unsigned {
+  kCovgTry = 1,
+  kCovgDebugLeave = 2,
+  kCovgCheckIsObj = 4,
+  kCovgLambda = 8,
+  kCovgLexEnv = 16,
+};
+constexpr unsigned kCovgDefault = kCovgTry | kCovgDebugLeave |
+                                  kCovgCheckIsObj | kCovgLambda | kCovgLexEnv;
+unsigned gCovg = kCovgDefault;
+int64_t LambdaHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t LexEnvHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // PBLBC_INL (default on; 0 = off): inline the site's first CacheIR stub body
 // (pblic::EmitInline) at IC call sites, guarded at run time by
 // firstStub->code == K (the stub's PBLIC function index, which identifies its
@@ -325,6 +344,8 @@ bool Enabled() {
     gCovc = cc ? unsigned(atoi(cc)) : kCovcDefault;
     const char* cd = getenv("PBLBC_COVD");
     gCovd = cd ? unsigned(atoi(cd)) : kCovdDefault;
+    const char* cg = getenv("PBLBC_COVG");
+    gCovg = cg ? unsigned(atoi(cg)) : kCovgDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* in = getenv("PBLBC_INL");
@@ -972,6 +993,21 @@ bool IsInlineOp(JSOp op) {
       return gCovd & kCovdIter;
     case JSOp::Callee:
       return gCovd & kCovdThis;
+    case JSOp::Try:
+    case JSOp::TryDestructuring:
+      return gCovg & kCovgTry;
+    case JSOp::DebugLeaveLexicalEnv:
+      return gCovg & kCovgDebugLeave;
+    case JSOp::CheckIsObj:
+      return gCovg & kCovgCheckIsObj;
+    case JSOp::Lambda:
+      return gCovg & kCovgLambda;
+    case JSOp::PushLexicalEnv:
+    case JSOp::PopLexicalEnv:
+    case JSOp::FreshenLexicalEnv:
+    case JSOp::RecreateLexicalEnv:
+    case JSOp::InitAliasedLexical:
+      return gCovg & kCovgLexEnv;
     default:
       return false;
   }
@@ -1540,6 +1576,67 @@ bool MT::translateOp() {
       }
       callHelper(CalleeHelper);
       spAdd(-1);
+      return true;
+    case JSOp::Try:
+    case JSOp::TryDestructuring:
+      // CASE(Try): no-op (catch/finally are found via try notes on unwind,
+      // which happens in the interpreter after an error exit).
+      if (!(gCovg & kCovgTry)) {
+        exitHere();
+        return true;
+      }
+      return true;
+    case JSOp::DebugLeaveLexicalEnv:
+      // CASE(DebugLeaveLexicalEnv): nothing unless frame->isDebuggee(); a
+      // debuggee frame exits (the interpreter runs the op).
+      if (!(gCovg & kCovgDebugLeave)) {
+        exitHere();
+        return true;
+      }
+      lget(L_FR);
+      load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfFlags())));
+      i32c(int32_t(BaselineFrame::DEBUGGEE));
+      op(OP_I32AND);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::CheckIsObj:
+      // CASE(CheckIsObj): an object continues; anything else exits (the
+      // interpreter throws).
+      if (!(gCovg & kCovgCheckIsObj)) {
+        exitHere();
+        return true;
+      }
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_OBJECT);
+      op(OP_I32EQZ);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::Lambda:
+      // CASE(Lambda) HybridICs path in LambdaHelper (result at sp[-1]).
+      if (!(gCovg & kCovgLambda)) {
+        exitHere();
+        return true;
+      }
+      callHelper(LambdaHelper);
+      spAdd(-1);
+      return true;
+    case JSOp::PushLexicalEnv:
+    case JSOp::PopLexicalEnv:
+    case JSOp::FreshenLexicalEnv:
+    case JSOp::RecreateLexicalEnv:
+    case JSOp::InitAliasedLexical:
+      // CASE(...) in LexEnvHelper; the stack is unchanged (InitAliasedLexical
+      // keeps the value on the stack).
+      if (!(gCovg & kCovgLexEnv)) {
+        exitHere();
+        return true;
+      }
+      callHelper(LexEnvHelper);
       return true;
     case JSOp::Nop:
     case JSOp::NopDestructuring:
@@ -3224,6 +3321,86 @@ int64_t FunctionThisHelper(int64_t frameA, int64_t spA, int64_t pcA,
     v = result;
   }
   sp[-1] = StackVal(v);
+  return kHelperOk;
+}
+
+// CASE(Lambda), HybridICs path: PUSH_EXIT_FRAME at sp with interpreterPC =
+// pc, function and frame->environmentChain() rooted in State, Lambda(); the
+// clone is stored at sp[-1] (the caller pushes it). Failure sets ctx.error and
+// returns kHelperError with sp unchanged (the op's GOTO_ERROR). A debuggee
+// frame is left to the interpreter.
+int64_t LambdaHelper(int64_t frameA, int64_t spA, int64_t pcA, int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  if (frame->isDebuggee()) return kHelperNotHandled;
+  JSObject* clone;
+  {
+    frame->interpreterPC() = pc;
+    VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+    if (!cx.success()) return kHelperNotHandled;
+    ReservedRooted<JSFunction*> fun0(&ctx.state.fun0,
+                                     frame->script()->getFunction(pc));
+    ReservedRooted<JSObject*> obj0(&ctx.state.obj0, frame->environmentChain());
+    clone = Lambda(cx, fun0, obj0);
+    if (!clone) {
+      ctx.error = PBIResult::Error;
+      return kHelperError;
+    }
+  }
+  sp[-1] = StackVal(ObjectValue(*clone));
+  return kHelperOk;
+}
+
+// CASE(PushLexicalEnv) / CASE(PopLexicalEnv) / CASE(FreshenLexicalEnv) /
+// CASE(RecreateLexicalEnv) non-debuggee paths, CASE(InitAliasedLexical).
+// The frame's environment chain is updated in the frame itself (the compiled
+// code always reloads it from the frame). Ops that can GC push the exit frame
+// at sp with interpreterPC = pc; failure sets ctx.error and returns
+// kHelperError (the op's GOTO_ERROR). A debuggee frame is left to the
+// interpreter (Debug* variants).
+int64_t LexEnvHelper(int64_t frameA, int64_t spA, int64_t pcA, int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  const JSOp jop = JSOp(*pc);
+  if (jop == JSOp::InitAliasedLexical) {
+    EnvironmentCoordinate ec = EnvironmentCoordinate(pc);
+    EnvironmentObject& obj = getEnvironmentFromCoordinate(frame, ec);
+    obj.setAliasedBinding(ec, sp[0].asValue());
+    return kHelperOk;
+  }
+  if (frame->isDebuggee()) return kHelperNotHandled;
+  if (jop == JSOp::PopLexicalEnv) {
+    frame->popOffEnvironmentChain<LexicalEnvironmentObject>();
+    return kHelperOk;
+  }
+  if (jop == JSOp::PushLexicalEnv) {
+    ReservedRooted<Scope*> scope0(&ctx.state.scope0,
+                                  frame->script()->getScope(pc));
+    {
+      frame->interpreterPC() = pc;
+      VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+      if (!cx.success()) return kHelperNotHandled;
+      if (!frame->pushLexicalEnvironment(cx, scope0.as<LexicalScope>())) {
+        ctx.error = PBIResult::Error;
+        return kHelperError;
+      }
+    }
+    return kHelperOk;
+  }
+  frame->interpreterPC() = pc;
+  VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+  if (!cx.success()) return kHelperNotHandled;
+  bool ok = jop == JSOp::FreshenLexicalEnv
+                ? frame->freshenLexicalEnvironment<false>(cx)
+                : frame->recreateLexicalEnvironment<false>(cx);
+  if (!ok) {
+    ctx.error = PBIResult::Error;
+    return kHelperError;
+  }
   return kHelperOk;
 }
 
