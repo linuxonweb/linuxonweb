@@ -362,7 +362,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +5931,12 @@
+@@ -5768,8 +5931,23 @@
    }
  }
  
@@ -370,13 +370,24 @@
 +#include "PblIc.inc"
 +#include "PblMethod.inc"
 +
++// PBL_GENRESUME=1 admits generator/async scripts to PBL and resumes suspended
++// generators in a PBL frame (JSOp::Resume); unset/other keeps the C++
++// interpreter for generator bodies.
++static bool PblGenResumeOn() {
++  static const bool on = [] {
++    const char* e = getenv("PBL_GENRESUME");
++    return e && e[0] == '1' && e[1] == '\0';
++  }();
++  return on;
++}
++
  uint8_t* GetICInterpreter() {
 -  return reinterpret_cast<uint8_t*>(&ICInterpretOps);
 +  return reinterpret_cast<uint8_t*>(&PblIcEntry);
  }
  
  /*
-@@ -5810,8 +5977,9 @@
+@@ -5810,8 +5988,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -388,7 +399,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5935,7 +6103,8 @@
+@@ -5935,7 +6114,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -398,7 +409,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6143,9 @@
+@@ -5974,6 +6154,9 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -408,7 +419,105 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -8240,6 +8412,7 @@
+@@ -8208,6 +8391,97 @@
+ 
+       CASE(Resume) {
+         // rval, gen, resumeKind => rval
++        if (PblGenResumeOn()) {
++          // Resume in a PBL frame, as Baseline's emit_Resume plus
++          // emitGeneratorResumePrologueBody do. Nothing below can GC until
++          // DISPATCH; every check happens before the first push.
++          AbstractGeneratorObject* gen =
++              &VIRTSP(2).asValue().toObject().as<AbstractGeneratorObject>();
++          JSContext* lcx = ctx.frameMgr.cxForLocalUseOnly();
++          do {
++            if (!gen->isSuspended() || gen->isModuleGenerator()) {
++              break;
++            }
++            JSFunction* gfun = &gen->callee();
++            if (!gfun->hasBaseScript() || !gfun->baseScript()->hasBytecode()) {
++              break;
++            }
++            JSScript* gscript = gfun->baseScript()->asJSScript();
++            if (!gscript->hasJitScript() || gscript->isDebuggee() ||
++                gscript->hasScriptCounts() || frame->isDebuggee()) {
++              break;
++            }
++            if (lcx->realm() != gscript->realm() ||
++                lcx->realm()->collectCoverageForDebug()) {
++              break;
++            }
++            const bool needsArgsObj = gscript->needsArgsObj();
++            if (needsArgsObj && !gen->hasArgsObj()) {
++              break;
++            }
++            ArrayObject* storage =
++                gen->hasStackStorage() ? &gen->stackStorage() : nullptr;
++            uint32_t len = storage ? storage->getDenseInitializedLength() : 0;
++            uint32_t nfixed = gscript->nfixed();
++            uint32_t nslots = gscript->nslots();
++            if (len > nslots) {
++              break;
++            }
++            uint32_t nformals = gfun->nargs();
++            if (!ctx.stack.check(sp, sizeof(StackVal) *
++                                             (nformals + 1 + nslots + 2 + 16) +
++                                         BaselineFrame::Size())) {
++              break;
++            }
++            Value resumeVal = VIRTSP(1).asValue();
++            Value resumeKindVal = VIRTSP(0).asValue();
++            uint32_t resumeIndex = gen->resumeIndex();
++
++            frame->interpreterPC() = pc;
++            frame->interpreterICEntry() = icEntry;
++            StackVal* exitFP = ctx.stack.pushExitFrame(sp, frame);
++            MOZ_ASSERT(exitFP);  // safety: checked above.
++            sp = exitFP;
++            PUSHNATIVE(StackValNative(nullptr));
++            // Formals and `this` are undefined (numActualArgs = 0), as in
++            // Baseline and InterpreterFrame resumption.
++            for (uint32_t i = 0; i < nformals + 1; i++) {
++              VIRTPUSH(StackVal(UndefinedValue()));
++            }
++            PUSHNATIVE(StackValNative(CalleeToToken(gfun, false)));
++            PUSHNATIVE(StackValNative(
++                MakeFrameDescriptorForJitCall(FrameType::BaselineStub, 0)));
++            PUSHNATIVE(StackValNative(nullptr));
++            BaselineFrame* newFrame =
++                ctx.stack.pushFrame(sp, lcx, &gen->environmentChain());
++            MOZ_ASSERT(newFrame);  // safety: checked above.
++            frame = newFrame;
++            ctx.frameMgr.switchToFrame(frame);
++            ctx.frame = frame;
++            frame->setFlag(BaselineFrame::Flags::HAS_INITIAL_ENV);
++            if (needsArgsObj) {
++              frame->initArgsObjUnchecked(gen->argsObj());
++            }
++            sp = reinterpret_cast<StackVal*>(frame);
++            gen->setRunning();
++            for (uint32_t i = 0; i < len; i++) {
++              VIRTPUSH(StackVal(storage->getDenseElement(i)));
++            }
++            for (uint32_t i = len; i < nfixed; i++) {
++              VIRTPUSH(StackVal(UndefinedValue()));
++            }
++            if (len) {
++              // Pre-barriered by NativeObject.
++              storage->setDenseInitializedLength(0);
++            }
++            VIRTPUSH(StackVal(resumeVal));
++            VIRTPUSH(StackVal(resumeKindVal));
++            ret->setUndefined();
++            RESET_PC(gscript->code() + gscript->resumeOffsets()[resumeIndex],
++                     gscript);
++            DISPATCH();
++          } while (0);
++        }
+         {
+           GeneratorResumeKind resumeKind =
+               IntToResumeKind(VIRTSP(0).asValue().toInt32());
+@@ -8240,6 +8514,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -416,7 +525,24 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -9160,6 +9333,35 @@
+@@ -8405,6 +8680,16 @@
+           // Adjust caller's stack to complete the call op that PC still points
+           // to in that frame (pop args, push return value).
+           JSOp op = JSOp(*pc);
++          if (op == JSOp::Resume) {
++            // PBL_GENRESUME frame: rval, gen, resumeKind => rval.
++            VIRTPOPN(3);
++            VIRTPUSH(StackVal(ret));
++            if (!ok) {
++              GOTO_ERROR();
++            }
++            ADVANCE(JSOpLength_Resume);
++            DISPATCH();
++          }
+           bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
+                                op == JSOp::SuperCall);
+           // Fix-up return value; EnterJit would do this if we hadn't bypassed
+@@ -9160,6 +9445,35 @@
  
    DISPATCH();
  
@@ -452,7 +578,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,6 +9550,20 @@
+@@ -9348,10 +9662,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -473,7 +599,13 @@
    if (state.script()->hasJitScript()) {
      return MethodStatus::Method_Compiled;
    }
-@@ -9368,18 +9584,33 @@
+-  if (state.script()->isAsync() || state.script()->isGenerator()) {
++  if (!PblGenResumeOn() &&
++      (state.script()->isAsync() || state.script()->isGenerator())) {
+     return MethodStatus::Method_CantCompile;
+   }
+   if (cx->runtime()->geckoProfiler().enabled()) {
+@@ -9368,18 +9697,33 @@
        return MethodStatus::Method_CantCompile;
      }
    }
