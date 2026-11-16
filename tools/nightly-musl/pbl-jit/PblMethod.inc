@@ -139,8 +139,12 @@ unsigned gCovc = kCovcDefault;
 // direct scripted calls), 4 NewObject/NewArray (NewObjectHelper /
 // NewArrayHelper: the HybridICs path), 8 MoreIter/IsNoIter/EndIter
 // (IterHelper), 2 direct scripted calls to callees that need function
-// environment objects (CallScripted runs InitFunctionEnvironmentObjects).
-// 0 = all of them exit.
+// environment objects (CallScripted runs InitFunctionEnvironmentObjects),
+// 16 New/NewContent through the Call IC (native constructors; scripted callees
+// exit unless 64), 32 FunctionThis slow path and Callee in helpers, 64 (with
+// 16) direct scripted constructing calls for New/NewContent through
+// CallScripted (CreateThis; newTarget must be the callee itself).
+// 0 = all of them exit. Default 127.
 enum : unsigned {
   kCovdCall = 1,
   kCovdEnv = 2,
@@ -148,9 +152,11 @@ enum : unsigned {
   kCovdIter = 8,
   kCovdNew = 16,   // New/NewContent through the Call IC (scripted: exit)
   kCovdThis = 32,  // FunctionThis slow path and Callee in helpers
+  kCovdNewScripted = 64,  // with kCovdNew: scripted New/NewContent direct
 };
 constexpr unsigned kCovdDefault =
-    kCovdCall | kCovdEnv | kCovdNewObj | kCovdIter | kCovdNew | kCovdThis;
+    kCovdCall | kCovdEnv | kCovdNewObj | kCovdIter | kCovdNew | kCovdThis |
+    kCovdNewScripted;
 unsigned gCovd = kCovdDefault;
 int64_t NewObjectHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t NewArrayHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
@@ -202,7 +208,8 @@ enum DirectStat : uint32_t {
   kDsStack, kDsEnvObjects, kDsCalleeDebuggee, kDsCounts, kDsInterrupt,
   kDsCalleeStack, kDsNotCompiled, kDsEntryExit,
   kDsInline, kDsInlineRetRval0, kDsSwDepth, kDsSwIcCursor, kDsSwNested,
-  kDsSwIcError, kDsSwDebug, kDsSwExitOp, kDsCount
+  kDsSwIcError, kDsSwDebug, kDsSwExitOp, kDsCtorError, kDsCtorChanged,
+  kDsCount
 };
 uint32_t gDs[kDsCount];
 inline int64_t Refuse(DirectStat s) {
@@ -220,7 +227,7 @@ void PrintDirectStats() {
           "(notcall=%u callerdbg=%u notfunc=%u notinterp=%u classctor=%u "
           "nobytecode=%u nojitscript=%u realm=%u underflow=%u stack=%u "
           "envobj=%u calleedbg=%u counts=%u interrupt=%u calleestack=%u "
-          "notcompiled=%u entryexit=%u)\n",
+          "notcompiled=%u entryexit=%u) ctor_error=%u ctor_changed=%u\n",
           gDirectPushes, s[kDsInline], s[kDsInlineRetRval0], s[kDsSwDepth],
           s[kDsSwIcCursor], s[kDsSwNested], s[kDsSwIcError], s[kDsSwDebug],
           s[kDsSwExitOp], ref, s[kDsNotCall], s[kDsCallerDebuggee],
@@ -228,7 +235,7 @@ void PrintDirectStats() {
           s[kDsNoBytecode], s[kDsNoJitScript], s[kDsRealm], s[kDsUnderflow],
           s[kDsStack], s[kDsEnvObjects], s[kDsCalleeDebuggee], s[kDsCounts],
           s[kDsInterrupt], s[kDsCalleeStack], s[kDsNotCompiled],
-          s[kDsEntryExit]);
+          s[kDsEntryExit], s[kDsCtorError], s[kDsCtorChanged]);
 }
 
 // PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
@@ -1094,7 +1101,8 @@ bool MT::nativeCall() {
   i32c(int32_t(FunctionFlags::BASESCRIPT | FunctionFlags::SELFHOSTLAZY));
   op(OP_I32AND);
   ifThen();
-  if (gDirect && !ctor) {
+  if (gDirect && (!ctor || ((gCovd & kCovdNewScripted) &&
+                            (gCovd & kCovdNew)))) {
     // r = CallScripted(frame, sp, pc, icEntry, ctx); r == 1: the callee
     // frame is pushed, return to the interpreter in it (Hook: kRanNewFrame).
     // r == 0: nothing changed, exit at the Call op as without PBLBC_DIRECT.
@@ -2661,16 +2669,22 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
   JSOp jop = JSOp(*pc);
-  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
+  // kCovdNewScripted: New/NewContent (constructing) like CASE(Call) with
+  // constructing == 1: callee at sp[argc + 2], this at sp[argc + 1], args,
+  // newTarget at sp[0].
+  const bool constructing =
+      (jop == JSOp::New || jop == JSOp::NewContent) &&
+      (gCovd & kCovdNewScripted) && (gCovd & kCovdNew);
+  if (!constructing && jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
       !((gCovd & kCovdCall) &&
         (jop == JSOp::CallContent || jop == JSOp::CallIter ||
          jop == JSOp::CallContentIter))) {
     return Refuse(kDsNotCall);
   }
   if (frame->isDebuggee()) return Refuse(kDsCallerDebuggee);
-  // Fast-path checks (same order as the interpreter; constructing == false).
+  // Fast-path checks (same order as the interpreter).
   const uint32_t argc = GET_ARGC(pc);
-  StackVal* firstArg = sp + argc - 1;
+  StackVal* firstArg = sp + argc + (constructing ? 1 : 0) - 1;
   const Value callee = firstArg[2].asValue();
   if (!callee.isObject() || !callee.toObject().is<JSFunction>()) {
     return Refuse(kDsNotFunction);
@@ -2679,13 +2693,25 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   if (!func->hasBaseScript() || !func->isInterpreted()) {
     return Refuse(kDsNotInterpreted);
   }
-  if (func->isClassConstructor()) return Refuse(kDsClassCtor);
+  if (!constructing && func->isClassConstructor()) {
+    return Refuse(kDsClassCtor);
+  }
+  if (constructing && !func->isConstructor()) return Refuse(kDsClassCtor);
   if (!func->baseScript()->hasBytecode()) return Refuse(kDsNoBytecode);
   JSScript* calleeScript = func->baseScript()->asJSScript();
   if (!calleeScript->hasJitScript()) return Refuse(kDsNoJitScript);
   if (cx->realm() != calleeScript->realm()) return Refuse(kDsRealm);
   if (argc < func->nargs()) return Refuse(kDsUnderflow);
-  const uint32_t totalArgs = argc + 1;
+  // Includes newTarget when constructing (excludes the callee).
+  const uint32_t totalArgs = argc + 1 + (constructing ? 1 : 0);
+  // newTarget must be the callee itself: re-running CreateThis in the
+  // interpreter (the state-changed exit below) is then unobservable (a
+  // scripted function's prototype is a plain data property); an arbitrary
+  // newTarget (e.g. a Proxy with a get trap) could observe it.
+  if (constructing && (!sp[0].asValue().isObject() ||
+                       &sp[0].asValue().toObject() != func)) {
+    return Refuse(kDsNotFunction);
+  }
   if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) {
     return Refuse(kDsStack);
   }
@@ -2720,10 +2746,58 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     return Refuse(kDsEntryExit);
   }
 
-  // Fast path steps 0-8 (no GC, no VM calls from here on).
-  StackVal* origArgs = sp;
+  // Constructing: CreateThis when the this slot is not an object, like the
+  // fast path (exit frame at the caller's sp, AutoKeepJitScripts). It can
+  // GC (func/calleeScript/e are re-read from the rooted stack slots and
+  // re-checked; if anything changed, the this slot is restored and the op
+  // exits with nothing pushed) and fail: then the interpreter takes its
+  // error path at the New op in the caller frame (no callee frame exists
+  // yet), exactly where the fast path's GOTO_ERROR is.
   frame->interpreterPC() = pc;
   frame->interpreterICEntry() = icEntry;
+  if (constructing && !firstArg[1].asValue().isObject()) {
+    const Value origThis = firstArg[1].asValue();
+    bool ok;
+    {
+      VMFrame vcx(ctx.frameMgr, ctx.stack, sp);
+      if (!vcx.success()) MOZ_CRASH("PBLBC: ctor exit frame after stack check");
+      JS::Rooted<JSFunction*> rfun(vcx, func);
+      JS::Rooted<JSObject*> rnt(vcx, &sp[0].asValue().toObject());
+      AutoKeepJitScripts keepJitScript(vcx);
+      ok = js::CreateThis(vcx, rfun, rnt, GenericObject,
+                          Stack::handleMut(firstArg + 1));
+    }
+    if (!ok) {
+      ctx.error = PBIResult::Error;
+      gDs[kDsCtorError]++;
+      tSwitch.frame = frame;
+      tSwitch.sp = sp;
+      tSwitch.pc = pc;
+      tSwitch.icEntry = icEntry;
+      tSwitch.icError = true;
+      return 1;
+    }
+    // Re-read everything that can have moved or changed.
+    func = &firstArg[2].asValue().toObject().as<JSFunction>();
+    Entry* e2 = nullptr;
+    bool same = func->hasBaseScript() && func->baseScript()->hasBytecode();
+    if (same) {
+      calleeScript = func->baseScript()->asJSScript();
+      same = calleeScript->hasJitScript() && !cx->hasAnyPendingInterrupt() &&
+             !calleeScript->isDebuggee() && !calleeScript->hasScriptCounts();
+    }
+    if (same) {
+      e2 = FindExisting(calleeScript->immutableScriptData());
+      same = e2 == e && e2->state == 1 && e2->opAt[0] == j0;
+    }
+    if (!same) {
+      firstArg[1] = StackVal(origThis);
+      return Refuse(kDsCtorChanged);
+    }
+  }
+
+  // Fast path steps 0-8 (no GC, no VM calls from here on).
+  StackVal* origArgs = sp;
   StackVal* exitFP = ctx.stack.pushExitFrame(sp, frame);
   if (!exitFP) MOZ_CRASH("PBLBC: exit frame after stack check");
   sp = exitFP;
@@ -2731,7 +2805,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   for (uint32_t i = 0; i < totalArgs; i++) {
     *--sp = origArgs[i];
   }
-  PUSHNATIVE(StackValNative(CalleeToToken(func, false)));
+  PUSHNATIVE(StackValNative(CalleeToToken(func, constructing)));
   PUSHNATIVE(StackValNative(
       MakeFrameDescriptorForJitCall(FrameType::BaselineStub, argc)));
   PUSHNATIVE(StackValNative(nullptr));
@@ -2856,7 +2930,10 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   if (callerFrame != frame) MOZ_CRASH("PBLBC: direct return frame mismatch");
   ctx.frameMgr.switchToFrame(callerFrame);
   ctx.frame = callerFrame;
-  sp += nargs + 2;
+  // The interpreter's return fix-up for New/NewContent: a primitive return
+  // value is replaced by the this slot.
+  if (constructing && ret.isPrimitive()) ret = sp[nargs + 1].asValue();
+  sp += nargs + 2 + (constructing ? 1 : 0);
   *--sp = StackVal(ret);
   gDirectReturns++;
   gDs[kDsInline]++;
