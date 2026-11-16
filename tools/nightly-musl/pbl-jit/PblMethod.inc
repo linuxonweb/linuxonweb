@@ -180,6 +180,18 @@ enum : unsigned {
 constexpr unsigned kCovgDefault = kCovgTry | kCovgDebugLeave |
                                   kCovgCheckIsObj | kCovgLambda | kCovgLexEnv;
 unsigned gCovg = kCovgDefault;
+// PBLBC_ALLOC bitmask (0 = the plain VM paths below, exactly as before):
+// 1 NewObject tries a NoGC nursery allocation without an exit frame (NewInit
+// is accepted but always takes the slow path),
+// 2 NewArray likewise (fixed elements only), 4 InitElemArray without an exit
+// frame (InitElemArrayOperation cannot GC, fail or report).
+enum : unsigned {
+  kAllocObj = 1,
+  kAllocArr = 2,
+  kAllocInitElem = 4,
+};
+constexpr unsigned kAllocDefault = kAllocObj | kAllocArr | kAllocInitElem;
+unsigned gAlloc = kAllocDefault;
 int64_t LambdaHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t LexEnvHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // PBLBC_INL (default on; 0 = off): inline the site's first CacheIR stub body
@@ -265,11 +277,14 @@ void PrintDirectStats() {
 bool gExitStat = false;
 // PBLBC_CALLCACHE=0 disables the CallScripted callee cache (default on).
 bool gCallCache = true;
-// PBLBC_PADARGS=1 lets CallScripted push a non-constructing callee with
-// argc < nargs, padding the missing formals with undefined like the
-// interpreter's scripted-call IC (descriptor keeps the actual argc). Default
-// off until verified.
-bool gPadArgs = false;
+// PBLBC_THISCACHE=0 disables the CallScripted constructing |this| shape cache
+// (default on).
+bool gThisCache = true;
+// PBLBC_PADARGS (default on; a value starting with '0' disables it) lets
+// CallScripted push a non-constructing callee with argc < nargs, padding the
+// missing formals with undefined like the interpreter's scripted-call IC
+// (descriptor keeps the actual argc).
+bool gPadArgs = true;
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -353,6 +368,8 @@ bool Enabled() {
     gCovd = cd ? unsigned(atoi(cd)) : kCovdDefault;
     const char* cg = getenv("PBLBC_COVG");
     gCovg = cg ? unsigned(atoi(cg)) : kCovgDefault;
+    const char* al = getenv("PBLBC_ALLOC");
+    gAlloc = al ? unsigned(atoi(al)) : kAllocDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* in = getenv("PBLBC_INL");
@@ -376,8 +393,10 @@ bool Enabled() {
     if (gInl && (logBudget > 0 || gInlStat)) atexit(PrintInlineStats);
     const char* ccv = getenv("PBLBC_CALLCACHE");
     if (ccv && ccv[0] == '0') gCallCache = false;
+    const char* tcv = getenv("PBLBC_THISCACHE");
+    if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
-    if (pav && pav[0] == '1') gPadArgs = true;
+    if (pav && pav[0] == '0') gPadArgs = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -2793,6 +2812,135 @@ inline uint64_t GcEpoch(JSContext* cx) {
   return gc.gcNumber() + gc.minorGCCount();
 }
 
+// Conditions under which the CanGC allocation paths would do more than
+// Nursery::tryAllocateCell (+ object init): allocation metadata builder
+// (also covers Debugger allocation tracking / SavedStacks) which runs
+// SetNewObjectMetadata, GC zeal (PreAllocGCChecks runs debug GCs and
+// MaybeGenerateMissingAllocSite substitutes sites), or object nursery
+// allocation disabled / pretenured zone-wide (minHeapToTenure), where the
+// NoGC path would go straight to the tenured heap without the CanGC path's
+// MajorGCIfRequested.
+static inline bool PblNoGCAllocOk(JSContext* cx) {
+  if (MOZ_UNLIKELY(cx->realm()->hasAllocationMetadataBuilder())) {
+    return false;
+  }
+#ifdef JS_GC_ZEAL
+  if (MOZ_UNLIKELY(*cx->runtime()->gc.addressOfZealModeBits() != 0)) {
+    return false;
+  }
+#endif
+  JS::Zone* zone = cx->zone();
+  return zone->allocKindInNursery(JS::TraceKind::Object) &&
+         gc::Heap::Default < zone->minHeapToTenure(JS::TraceKind::Object);
+}
+
+// CallScripted constructing |this| cache (PBLBC_THISCACHE, default on):
+// direct-mapped, keyed by the callee JSFunction*, holding the shape
+// js::CreateThis(cx, F, newTarget = F, GenericObject) produced, filled right
+// after a successful slow-path CreateThis. Raw untraced pointers, trusted only
+// while the GC epoch is unchanged (no minor/major GC: nothing moved, no shape
+// table/script swept). The result of CreateThis is a pure function of:
+//  - F->constructorNeedsUninitializedThis() (refused; fixed per function);
+//  - Get(F, "prototype"): F's shape is the cached one, a non-dictionary shape
+//    in which "prototype" is a non-configurable own data property (checked at
+//    fill, like CacheIR's hasNonConfigurablePrototypeDataProperty + guardShape)
+//    in slot |slot|, so the get reads that slot with no resolve hook, getter or
+//    proxy involved; the slot value is the cached object (protoIsObj), or any
+//    non-object (!protoIsObj: default proto of F's realm == cx->realm());
+//  - the alloc kind (F's script's ImmutableScriptData::propertyCountEstimate:
+//    the ISD pointer is cached and compared);
+//  - getInitialShape(PlainObject, cx->realm(), proto, nfixed) or the global's
+//    default-proto shape: same realm (CallScripted requires cx->realm() ==
+//    callee realm) and, without a GC, the same table entry / global slot.
+struct ThisCacheEntry {
+  const JSFunction* key;
+  uint64_t epoch;
+  const Shape* funShape;
+  const ImmutableScriptData* isd;
+  const JSObject* proto;  // slot value when protoIsObj
+  SharedShape* thisShape;
+  uint32_t slot;
+  bool protoIsObj;
+};
+constexpr uint32_t kThisCacheBits = 5;
+thread_local ThisCacheEntry tThisCache[1u << kThisCacheBits];
+inline ThisCacheEntry* ThisCacheSlot(const JSFunction* f) {
+  return &tThisCache[(uint32_t(uintptr_t(f)) >> 4) &
+                     ((1u << kThisCacheBits) - 1)];
+}
+// Same environment conditions as the PBLBC_ALLOC NoGC allocation paths.
+inline bool ThisCacheEnvOk(JSContext* cx) { return PblNoGCAllocOk(cx); }
+// Returns the new |this| object (nursery or tenured, never GCs) or nullptr
+// (miss, or the NoGC allocation failed): then the slow path runs.
+inline PlainObject* ThisCacheTryCreate(JSContext* cx, JSFunction* func,
+                                       JSScript* calleeScript) {
+  ThisCacheEntry* c = ThisCacheSlot(func);
+  if (c->key != func || c->epoch != GcEpoch(cx)) return nullptr;
+  if (func->shape() != c->funShape ||
+      calleeScript->immutableScriptData() != c->isd || !ThisCacheEnvOk(cx)) {
+    return nullptr;
+  }
+  const Value& pv = func->getSlot(c->slot);
+  if (c->protoIsObj ? (!pv.isObject() || &pv.toObject() != c->proto)
+                    : pv.isObject()) {
+    return nullptr;
+  }
+  // PlainObject::createWithShape(cx, shape, GenericObject) ->
+  // NativeObject::create(cx, GetGCObjectKind(nfixed), Heap::Default, shape)
+  // with slotSpan 0 (initial shape, checked at fill): no dynamic slots, no
+  // slot init; metadata builder refused above.
+  SharedShape* shape = c->thisShape;
+  const JSClass* clasp = &PlainObject::class_;
+  gc::AllocKind kind = gc::GetGCObjectKind(shape->numFixedSlots());
+  gc::Heap heap = GetInitialHeap(GenericObject, clasp);
+  NativeObject* nobj = cx->newCell<NativeObject, NoGC>(kind, heap, clasp,
+                                                       nullptr);
+  if (!nobj) return nullptr;
+  nobj->initShape(shape);
+  nobj->setEmptyElements();
+  nobj->initEmptyDynamicSlots();
+  js::gc::gcprobes::CreateObject(nobj);
+  return &nobj->as<PlainObject>();
+}
+// After a successful slow-path CreateThis(func, func) (no script ran since:
+// thisObj still has the shape CreateThis gave it).
+inline void ThisCacheFill(JSContext* cx, JSFunction* func,
+                          JSScript* calleeScript, JSObject* thisObj) {
+  if (!ThisCacheEnvOk(cx) || func->constructorNeedsUninitializedThis() ||
+      !thisObj->is<PlainObject>() || func->shape()->isDictionary() ||
+      !func->hasNonConfigurablePrototypeDataProperty()) {
+    return;
+  }
+  Shape* ts = thisObj->shape();
+  if (ts->isDictionary() || ts->asShared().slotSpan() != 0 ||
+      ts->realm() != cx->realm() ||
+      NativeObject::calculateDynamicSlots(&ts->asShared()) != 0) {
+    return;
+  }
+  mozilla::Maybe<PropertyInfo> prop =
+      func->lookupPure(cx->names().prototype);
+  if (prop.isNothing() || !prop->isDataProperty() || prop->configurable()) {
+    return;
+  }
+  const Value& pv = func->getSlot(prop->slot());
+  // The shape's proto must be what GetPrototypeFromConstructor returned.
+  if (pv.isObject()) {
+    if (ts->proto().toObjectOrNull() != &pv.toObject()) return;
+  } else if (ts->proto().toObjectOrNull() !=
+             cx->global()->maybeGetPrototype(JSProto_Object)) {
+    return;
+  }
+  ThisCacheEntry* c = ThisCacheSlot(func);
+  c->key = func;
+  c->epoch = GcEpoch(cx);
+  c->funShape = func->shape();
+  c->isd = calleeScript->immutableScriptData();
+  c->proto = pv.isObject() ? &pv.toObject() : nullptr;
+  c->thisShape = &ts->asShared();
+  c->slot = prop->slot();
+  c->protoIsObj = pv.isObject();
+}
+
 // Called by compiled code at a Call/CallIgnoresRv whose callee has a
 // BaseScript (PBLBC_DIRECT). Mirrors the interpreter's scripted Call fast path
 // (CASE(Call) in PortableBaselineInterpret.cpp): returns 0 with no state
@@ -2967,6 +3115,13 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   // yet), exactly where the fast path's GOTO_ERROR is.
   frame->interpreterPC() = pc;
   frame->interpreterICEntry() = icEntry;
+  PlainObject* fastThis = nullptr;
+  if (constructing && !firstArg[1].asValue().isObject() && gThisCache &&
+      !func->constructorNeedsUninitializedThis()) {
+    // Cache hit: allocated without GC (nothing to re-read).
+    fastThis = ThisCacheTryCreate(cx, func, calleeScript);
+    if (fastThis) firstArg[1] = StackVal(ObjectValue(*fastThis));
+  }
   if (constructing && !firstArg[1].asValue().isObject()) {
     const Value origThis = firstArg[1].asValue();
     bool ok;
@@ -3005,6 +3160,10 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     if (!same) {
       firstArg[1] = StackVal(origThis);
       return Refuse(kDsCtorChanged);
+    }
+    if (gThisCache && firstArg[1].asValue().isObject() &&
+        &sp[0].asValue().toObject() == func) {
+      ThisCacheFill(cx, func, calleeScript, &firstArg[1].asValue().toObject());
     }
     useCached = false;  // CreateThis can GC: re-derive from calleeScript
   }
@@ -3326,6 +3485,22 @@ int64_t InitElemArrayHelper(int64_t frameA, int64_t spA, int64_t pcA,
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
   auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  if (gAlloc & kAllocInitElem) {
+    // InitElemArrayOperation (Interpreter-inl.h) only bumps the initialized
+    // length (growing: prepareElementRangeForOverwrite has an empty range, no
+    // pre-barrier) and does initDenseElementHole / initDenseElement (HeapSlot
+    // init: post-barrier into the store buffer, whose overflow only requests
+    // a minor GC through the interrupt). It cannot GC, fail or report, so no
+    // exit frame or rooting is needed; the handles point at locals that stay
+    // valid for the call.
+    frame->interpreterPC() = pc;
+    ArrayObject* arr = &sp[1].asValue().toObject().as<ArrayObject>();
+    Value val = sp[0].asValue();
+    InitElemArrayOperation(ctx.frameMgr.cxForLocalUseOnly(), pc,
+                           Handle<ArrayObject*>::fromMarkedLocation(&arr),
+                           HandleValue::fromMarkedLocation(&val));
+    return kHelperOk;
+  }
   {
     ReservedRooted<Value> value0(&ctx.state.value0, sp[0].asValue());
     ReservedRooted<JSObject*> obj0(&ctx.state.obj0, &sp[1].asValue().toObject());
@@ -3353,6 +3528,120 @@ int64_t SetAliasedVarHelper(int64_t frameA, int64_t spA, int64_t pcA,
   return kHelperOk;
 }
 
+// PBLBC_ALLOC fast paths: no exit frame, cannot GC. They mirror the CanGC
+// engine paths exactly and return nullptr (caller takes the unchanged slow
+// path) whenever those would do anything but a default-heap nursery
+// allocation with no extra work.
+
+// Access to NativeObject::initSlots (protected) through a pointer to member
+// named via a derived class; called on the real NativeObject.
+struct PblNativeAccess : public NativeObject {
+  static void InitSlots(NativeObject* obj, uint32_t nfixed, uint32_t span) {
+    void (NativeObject::*init)(uint32_t, uint32_t) =
+        &PblNativeAccess::initSlots;
+    (obj->*init)(nfixed, span);
+  }
+};
+
+// PlainObject::createWithShape(cx, shape, kind, GenericObject) +
+// NativeObject::create(cx, kind, heap, shape, nullptr), NoGC allocation.
+// Only shapes without dynamic slots (allocateInitialSlots can GC/report).
+static PlainObject* PblNewPlainObjectNoGC(JSContext* cx, SharedShape* shape,
+                                          gc::AllocKind kind) {
+  const JSClass* clasp = &PlainObject::class_;
+  MOZ_ASSERT(shape->getObjectClass() == clasp);
+  MOZ_ASSERT(!IsFinalizedKind(kind));
+  if (cx->realm() != shape->realm()) {
+    return nullptr;
+  }
+  const gc::Heap heap = GetInitialHeap(GenericObject, clasp);
+  if (heap != gc::Heap::Default) {
+    return nullptr;
+  }
+  const uint32_t nfixed = shape->numFixedSlots();
+  const uint32_t slotSpan = shape->slotSpan();
+  if (NativeObject::calculateDynamicSlots(nfixed, slotSpan, clasp) != 0) {
+    return nullptr;
+  }
+  NativeObject* nobj =
+      cx->newCell<NativeObject, NoGC>(kind, heap, clasp, nullptr);
+  if (!nobj) {
+    return nullptr;
+  }
+  nobj->initShape(shape);
+  nobj->setEmptyElements();
+  nobj->initEmptyDynamicSlots();
+  if (slotSpan > 0) {
+    PblNativeAccess::InitSlots(nobj, nfixed, slotSpan);
+  }
+  // hasAllocationMetadataBuilder() is false (PblNoGCAllocOk).
+  gc::gcprobes::CreateObject(nobj);
+  return &nobj->as<PlainObject>();
+}
+
+// NewObjectOperation(cx, script, pc) for NewObject (script->getShape(pc),
+// kind GetGCObjectKind(nfixed)). NewInit always takes the slow path
+// (nullptr): NewPlainObject(cx) / NewPlainObjectWithAllocKind need the
+// per-kind default shape, which may have to be created (CanGC) and has no
+// public non-creating accessor, so no exact NoGC mirror exists here.
+static JSObject* PblTryNewObjectNoGC(JSContext* cx, JSScript* script,
+                                     jsbytecode* pc) {
+  if (!PblNoGCAllocOk(cx)) {
+    return nullptr;
+  }
+  if (JSOp(*pc) == JSOp::NewObject) {
+    SharedShape* shape = script->getShape(pc);
+    return PblNewPlainObjectNoGC(cx, shape,
+                                 gc::GetGCObjectKind(shape->numFixedSlots()));
+  }
+  MOZ_ASSERT(JSOp(*pc) == JSOp::NewInit);
+  return nullptr;
+}
+
+// NewArrayOperation(cx, length) = NewDenseFullyAllocatedArray(cx, length,
+// GenericObject) = NewArray<UINT32_MAX> -> NewArrayWithShape ->
+// ArrayObject::create + EnsureNewArrayElements, NoGC allocation. Only when
+// the default array shape exists and length fits the fixed elements of
+// GuessArrayGCKind(length) (EnsureNewArrayElements is then a no-op).
+static ArrayObject* PblTryNewArrayNoGC(JSContext* cx, uint32_t length) {
+  if (!PblNoGCAllocOk(cx)) {
+    return nullptr;
+  }
+  SharedShape* shape = cx->global()->maybeArrayShapeWithDefaultProto();
+  if (!shape) {
+    return nullptr;
+  }
+  const gc::AllocKind kind = GuessArrayGCKind(length);
+  if (length >
+      gc::GetGCKindSlots(kind) - ObjectElements::VALUES_PER_HEADER) {
+    return nullptr;
+  }
+  const JSClass* clasp = &ArrayObject::class_;
+  MOZ_ASSERT(shape->getObjectClass() == clasp);
+  MOZ_ASSERT(shape->numFixedSlots() == 0);
+  if (shape->slotSpan() != 0) {
+    return nullptr;
+  }
+  const gc::Heap heap = GetInitialHeap(GenericObject, clasp, nullptr);
+  if (heap != gc::Heap::Default) {
+    return nullptr;
+  }
+  ArrayObject* aobj =
+      cx->newCell<ArrayObject, NoGC>(kind, heap, clasp, nullptr);
+  if (!aobj) {
+    return nullptr;
+  }
+  aobj->initShape(shape);
+  aobj->initFixedElements(kind, length);
+  // length <= capacity < INT32_MAX: no hasSeenArrayExceedsInt32LengthFuse.
+  aobj->initEmptyDynamicSlots();
+  // setObjectPendingMetadata is a no-op without a metadata builder.
+  gc::gcprobes::CreateObject(aobj);
+  // probes::CreateObject (vm/Probes.h) is an unconditional `return true`.
+  MOZ_ASSERT(aobj->getDenseCapacity() >= length);
+  return aobj;
+}
+
 // CASE(NewObject), HybridICs path: exit frame at sp with interpreterPC = pc,
 // NewObjectOperation with the script rooted in State; the object is stored at
 // sp[-1] (the caller pushes it; nothing can GC in between). Failure sets
@@ -3364,6 +3653,15 @@ int64_t NewObjectHelper(int64_t frameA, int64_t spA, int64_t pcA,
   auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   JSObject* obj;
+  if (gAlloc & kAllocObj) {
+    frame->interpreterPC() = pc;
+    obj = PblTryNewObjectNoGC(ctx.frameMgr.cxForLocalUseOnly(),
+                              frame->script(), pc);
+    if (obj) {
+      sp[-1] = StackVal(ObjectValue(*obj));
+      return kHelperOk;
+    }
+  }
   {
     frame->interpreterPC() = pc;
     VMFrame cx(ctx.frameMgr, ctx.stack, sp);
@@ -3387,6 +3685,14 @@ int64_t NewArrayHelper(int64_t frameA, int64_t spA, int64_t pcA,
   auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   ArrayObject* obj;
+  if (gAlloc & kAllocArr) {
+    frame->interpreterPC() = pc;
+    obj = PblTryNewArrayNoGC(ctx.frameMgr.cxForLocalUseOnly(), GET_UINT32(pc));
+    if (obj) {
+      sp[-1] = StackVal(ObjectValue(*obj));
+      return kHelperOk;
+    }
+  }
   {
     frame->interpreterPC() = pc;
     VMFrame cx(ctx.frameMgr, ctx.stack, sp);

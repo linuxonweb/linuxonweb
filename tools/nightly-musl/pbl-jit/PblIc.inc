@@ -1593,6 +1593,24 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
         lget(L_A);
       });
       return true;
+    case CacheOp::StoreFixedSlotUndefinedResult:
+      // StoreFixedSlot (same barriered store) + undefined result, as
+      // CacheIRCompiler::emitStoreFixedSlotUndefinedResult.
+      if (!PblForOfIcOn()) return false;
+      readReg32(a[0]);
+      field32(fieldOff(1));
+      op(OP_I32ADD);
+      lset(L_X);
+      readValue(a[2]);
+      lset(L_A);
+      storeSlot(uintptr_t(&StoreFixedSlotBarriered), 2, [&] {
+        lget(L_X);
+        op(OP_I64EXTU);
+        lget(L_A);
+      });
+      i64c(int64_t(UndefinedValue().asRawBits()));
+      lset(L_RET);
+      return true;
     case CacheOp::StoreDynamicSlot:
       // slots[offset / sizeof(Value)]
       readReg32(a[0]);
