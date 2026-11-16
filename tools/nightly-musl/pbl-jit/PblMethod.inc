@@ -135,6 +135,18 @@ enum : unsigned { kCovcAdd = 1, kCovcInitElemArray = 2, kCovcSetAliased = 4 };
 constexpr unsigned kCovcDefault = kCovcAdd | kCovcInitElemArray |
                                   kCovcSetAliased;
 unsigned gCovc = kCovcDefault;
+// PBLBC_COVD bitmask: 1 CallContent/CallIter/CallContentIter like Call (also
+// direct scripted calls), 4 NewObject/NewArray (NewObjectHelper /
+// NewArrayHelper: the HybridICs path), 8 MoreIter/IsNoIter/EndIter
+// (IterHelper), 2 direct scripted calls to callees that need function
+// environment objects (CallScripted runs InitFunctionEnvironmentObjects).
+// 0 = all of them exit.
+enum : unsigned { kCovdCall = 1, kCovdEnv = 2, kCovdNewObj = 4, kCovdIter = 8 };
+constexpr unsigned kCovdDefault = kCovdCall | kCovdEnv | kCovdNewObj | kCovdIter;
+unsigned gCovd = kCovdDefault;
+int64_t NewObjectHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t NewArrayHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t IterHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // PBLBC_INL (default on; 0 = off): inline the site's first CacheIR stub body
 // (pblic::EmitInline) at IC call sites, guarded at run time by
 // firstStub->code == K (the stub's PBLIC function index, which identifies its
@@ -294,6 +306,8 @@ bool Enabled() {
     gCovb = cb ? unsigned(atoi(cb)) : kCovbDefault;
     const char* cc = getenv("PBLBC_COVC");
     gCovc = cc ? unsigned(atoi(cc)) : kCovcDefault;
+    const char* cd = getenv("PBLBC_COVD");
+    gCovd = cd ? unsigned(atoi(cd)) : kCovdDefault;
     const char* dc = getenv("PBLBC_DIRECT");
     gDirect = dc && dc[0] == '1';
     const char* in = getenv("PBLBC_INL");
@@ -932,6 +946,13 @@ bool IsInlineOp(JSOp op) {
       return gCovc & kCovcSetAliased;
     case JSOp::TypeofEq:
       return gCovb & kCovbTypeofEq;
+    case JSOp::NewObject:
+    case JSOp::NewArray:
+      return gCovd & kCovdNewObj;
+    case JSOp::MoreIter:
+    case JSOp::IsNoIter:
+    case JSOp::EndIter:
+      return gCovd & kCovdIter;
     default:
       return false;
   }
@@ -972,6 +993,10 @@ bool IsIcCallOp(JSOp op) {
     case JSOp::OptimizeSpreadCall:
     case JSOp::GetPropSuper:
       return true;
+    case JSOp::CallContent:
+    case JSOp::CallIter:
+    case JSOp::CallContentIter:
+      return gCovd & kCovdCall;
     default:
       return false;
   }
@@ -1462,6 +1487,15 @@ bool MT::translateOp() {
     case JSOp::Call:
     case JSOp::CallIgnoresRv:
       return nativeCall();
+    case JSOp::CallContent:
+    case JSOp::CallIter:
+    case JSOp::CallContentIter:
+      // CASE(Call) shares one path for all five ops (constructing == false).
+      if (!(gCovd & kCovdCall)) {
+        exitHere();
+        return true;
+      }
+      return nativeCall();
     case JSOp::Nop:
     case JSOp::NopDestructuring:
     case JSOp::NopIsAssignOp:
@@ -1607,6 +1641,29 @@ bool MT::translateOp() {
       ifThen();
       exitHere();
       end();
+      return true;
+    case JSOp::NewObject:
+    case JSOp::NewArray:
+      // CASE(NewObject)/CASE(NewArray), HybridICs path, in the helper, which
+      // stores the new object at sp[-1]: => obj.
+      if (!(gCovd & kCovdNewObj)) {
+        exitHere();
+        return true;
+      }
+      callHelper(o.op == JSOp::NewObject ? NewObjectHelper : NewArrayHelper);
+      spAdd(-1);
+      return true;
+    case JSOp::MoreIter:
+    case JSOp::IsNoIter:
+    case JSOp::EndIter:
+      // CASE(MoreIter) iter => iter, name; CASE(IsNoIter) iter => iter, bool
+      // (both store at sp[-1]); CASE(EndIter) iter, interval =>.
+      if (!(gCovd & kCovdIter)) {
+        exitHere();
+        return true;
+      }
+      callHelper(IterHelper);
+      spAdd(o.op == JSOp::EndIter ? 2 : -1);
       return true;
     case JSOp::InitElemArray:
       // CASE(InitElemArray) in InitElemArrayHelper: array, val => array.
@@ -2557,7 +2614,12 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
   JSOp jop = JSOp(*pc);
-  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv) return Refuse(kDsNotCall);
+  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
+      !((gCovd & kCovdCall) &&
+        (jop == JSOp::CallContent || jop == JSOp::CallIter ||
+         jop == JSOp::CallContentIter))) {
+    return Refuse(kDsNotCall);
+  }
   if (frame->isDebuggee()) return Refuse(kDsCallerDebuggee);
   // Fast-path checks (same order as the interpreter; constructing == false).
   const uint32_t argc = GET_ARGC(pc);
@@ -2584,7 +2646,8 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   // stack space, which would throw over-recursion) must pass. The space for
   // the exit frame (4 words + ExitFrameType), stub slot, args, token,
   // descriptor, fake return address and saved fp is added conservatively.
-  if (func->needsFunctionEnvironmentObjects()) return Refuse(kDsEnvObjects);
+  const bool needEnv = func->needsFunctionEnvironmentObjects();
+  if (needEnv && !(gCovd & kCovdEnv)) return Refuse(kDsEnvObjects);
   if (calleeScript->isDebuggee()) return Refuse(kDsCalleeDebuggee);
   if (calleeScript->hasScriptCounts() || cx->realm()->collectCoverageForDebug())
     return Refuse(kDsCounts);
@@ -2630,6 +2693,30 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     *--sp = StackVal(UndefinedValue());
   }
   gDirectPushes++;
+  if (needEnv) {
+    // Fast path step 9: PUSH_EXIT_FRAME in the callee frame at its pc 0,
+    // InitFunctionEnvironmentObjects (can GC: func/calleeScript are reloaded
+    // from the frame). On failure the interpreter takes its error path in
+    // the callee frame at pc 0, exactly where the fast path's GOTO_ERROR is.
+    newFrame->interpreterPC() = calleeScript->code();
+    bool ok;
+    {
+      VMFrame vcx(ctx.frameMgr, ctx.stack, sp);
+      if (!vcx.success()) MOZ_CRASH("PBLBC: env exit frame after stack check");
+      ok = js::InitFunctionEnvironmentObjects(vcx, newFrame);
+    }
+    calleeScript = newFrame->script();
+    if (!ok || cx->hasAnyPendingInterrupt()) {
+      if (!ok) ctx.error = PBIResult::Error;
+      gDs[kDsEnvObjects]++;
+      tSwitch.frame = newFrame;
+      tSwitch.sp = sp;
+      tSwitch.pc = calleeScript->code();
+      tSwitch.icEntry = newFrame->interpreterICEntry();
+      tSwitch.icError = !ok;
+      return 1;
+    }
+  }
   jsbytecode* calleePC = calleeScript->code();
   ICEntry* calleeIcEntries = newFrame->icScript()->icEntries();
   ICEntry* calleeIcEntry = newFrame->interpreterICEntry();
@@ -2910,6 +2997,75 @@ int64_t SetAliasedVarHelper(int64_t frameA, int64_t spA, int64_t pcA,
   EnvironmentObject& obj = getEnvironmentFromCoordinate(frame, ec);
   MOZ_ASSERT(!IsUninitializedLexical(obj.aliasedBinding(ec)));
   obj.setAliasedBinding(ec, sp[0].asValue());
+  return kHelperOk;
+}
+
+// CASE(NewObject), HybridICs path: exit frame at sp with interpreterPC = pc,
+// NewObjectOperation with the script rooted in State; the object is stored at
+// sp[-1] (the caller pushes it; nothing can GC in between). Failure sets
+// ctx.error and returns kHelperError with sp unchanged (the op's GOTO_ERROR).
+int64_t NewObjectHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSObject* obj;
+  {
+    frame->interpreterPC() = pc;
+    VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+    if (!cx.success()) return kHelperNotHandled;
+    ReservedRooted<JSScript*> script0(&ctx.state.script0, frame->script());
+    obj = NewObjectOperation(cx, script0, pc);
+    if (!obj) {
+      ctx.error = PBIResult::Error;
+      return kHelperError;
+    }
+  }
+  sp[-1] = StackVal(ObjectValue(*obj));
+  return kHelperOk;
+}
+
+// CASE(NewArray), HybridICs path; same conventions as NewObjectHelper.
+int64_t NewArrayHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                       int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  ArrayObject* obj;
+  {
+    frame->interpreterPC() = pc;
+    VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+    if (!cx.success()) return kHelperNotHandled;
+    uint32_t length = GET_UINT32(pc);
+    obj = NewArrayOperation(cx, length);
+    if (!obj) {
+      ctx.error = PBIResult::Error;
+      return kHelperError;
+    }
+  }
+  sp[-1] = StackVal(ObjectValue(*obj));
+  return kHelperOk;
+}
+
+// CASE(MoreIter) / CASE(IsNoIter) / CASE(EndIter): IteratorMore and
+// CloseIterator take no cx and cannot GC or fail. Results go to sp[-1].
+int64_t IterHelper(int64_t, int64_t spA, int64_t pcA, int64_t) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  switch (JSOp(*pc)) {
+    case JSOp::MoreIter:
+      sp[-1] = StackVal(IteratorMore(&sp[0].asValue().toObject()));
+      break;
+    case JSOp::IsNoIter:
+      sp[-1] = StackVal(
+          BooleanValue(sp[0].asValue().isMagic(JS_NO_ITER_VALUE)));
+      break;
+    default:
+      CloseIterator(&sp[1].asValue().toObject());
+      break;
+  }
   return kHelperOk;
 }
 
