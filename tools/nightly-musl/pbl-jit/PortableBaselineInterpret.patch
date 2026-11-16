@@ -473,7 +473,7 @@
    if (state.script()->hasJitScript()) {
      return MethodStatus::Method_Compiled;
    }
-@@ -9368,18 +9584,27 @@
+@@ -9368,18 +9584,33 @@
        return MethodStatus::Method_CantCompile;
      }
    }
@@ -490,9 +490,17 @@
 +  // Before first JitScript allocation, retain the C++ exception policy for both
 +  // warmed scripts and first-invocation loops.
    bool reject = false;
++  // PBL_TRYPOLICY=0 admits Catch/Finally scripts (PBL unwinds them itself);
++  // unset or 1 keeps the C++ interpreter exception policy.
++  static const bool tryPolicy = [] {
++    const char* e = getenv("PBL_TRYPOLICY");
++    return !(e && e[0] == '0' && e[1] == '\0');
++  }();
    for (const auto& note : state.script()->trynotes()) {
-     reject |= note.kind() == TryNoteKind::Catch ||
-               note.kind() == TryNoteKind::Finally;
+-    reject |= note.kind() == TryNoteKind::Catch ||
+-              note.kind() == TryNoteKind::Finally;
++    reject |= tryPolicy && (note.kind() == TryNoteKind::Catch ||
++                            note.kind() == TryNoteKind::Finally);
    }
 +  // Throw ops alone no longer keep a script in the C++ interpreter: hot
 +  // functions with cold error paths (WebGL helper libraries) ran there
