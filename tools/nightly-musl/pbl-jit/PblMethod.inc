@@ -373,6 +373,15 @@ bool gCheckOps = true;
 int64_t TypeofExprHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t TypeofEqHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t ModNumberHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_ITEROPS (default on; a value starting with '0' restores the old
+// exits): OptimizeGetIterator and Iter call their ICs (OptimizeGetIterator /
+// GetIterator) from generated code with the interpreter's argument order;
+// NewTarget, SuperBase and SuperFun run CASE(...)'s non-GC operations
+// (frame->newTarget(), HomeObjectSuperBase, SuperFunOperation) in helpers.
+bool gIterOps = true;
+int64_t NewTargetHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t SuperBaseHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t SuperFunHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -509,6 +518,8 @@ bool Enabled() {
     if (aov && aov[0] == '0') gArgsOp = false;
     const char* cov = getenv("PBLBC_CHECKOPS");
     if (cov && cov[0] == '0') gCheckOps = false;
+    const char* iov = getenv("PBLBC_ITEROPS");
+    if (iov && iov[0] == '0') gIterOps = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -1308,6 +1319,10 @@ bool IsInlineOp(JSOp op) {
     case JSOp::Typeof:
     case JSOp::TypeofExpr:
       return gCheckOps;
+    case JSOp::NewTarget:
+    case JSOp::SuperBase:
+    case JSOp::SuperFun:
+      return gIterOps;
     case JSOp::Try:
     case JSOp::TryDestructuring:
       return gCovg & kCovgTry;
@@ -1363,6 +1378,9 @@ bool IsIcCallOp(JSOp op) {
     case JSOp::OptimizeSpreadCall:
     case JSOp::GetPropSuper:
       return true;
+    case JSOp::OptimizeGetIterator:
+    case JSOp::Iter:
+      return gIterOps;
     case JSOp::CallContent:
     case JSOp::CallIter:
     case JSOp::CallContentIter:
@@ -2721,6 +2739,32 @@ bool MT::translateOp() {
       end();
       return true;
     }
+    case JSOp::NewTarget:
+      // CASE(NewTarget): frame->newTarget() at sp[-1] (helper), pushed.
+      if (!gIterOps) {
+        exitHere();
+        return true;
+      }
+      callHelper(NewTargetHelper);
+      spAdd(-1);
+      return true;
+    case JSOp::SuperBase:
+      // CASE(SuperBase): HomeObjectSuperBase of the callee's home object
+      // replaces sp[0] (helper).
+      if (!gIterOps) {
+        exitHere();
+        return true;
+      }
+      callHelper(SuperBaseHelper);
+      return true;
+    case JSOp::SuperFun:
+      // CASE(SuperFun): SuperFunOperation(callee) replaces sp[0] (helper).
+      if (!gIterOps) {
+        exitHere();
+        return true;
+      }
+      callHelper(SuperFunHelper);
+      return true;
     case JSOp::Typeof:
     case JSOp::TypeofExpr:
       // CASE(Typeof/TypeofExpr) (HybridICs): TypeOfOperation in the helper.
@@ -3186,6 +3230,8 @@ bool MT::translateOp() {
     case JSOp::GetBoundName:
     case JSOp::ToPropertyKey:
     case JSOp::OptimizeSpreadCall:
+    case JSOp::OptimizeGetIterator:  // gIterOps (see IsIcCallOp)
+    case JSOp::Iter:                 // gIterOps: the GetIterator IC
       popLocal(L_A);
       invokeIC(L_A, ~0u, ~0u, false);
       pushLocal(L_R);
@@ -4799,6 +4845,42 @@ int64_t ModNumberHelper(int64_t frameA, int64_t spA, int64_t pcA,
   double lhs = sp[1].asValue().toNumber();
   double rhs = sp[0].asValue().toNumber();
   sp[1] = StackVal(DoubleValue(NumberMod(lhs, rhs)));
+  return kHelperOk;
+}
+
+// CASE(NewTarget): sp[-1] = frame->newTarget() (no GC); the caller pushes.
+int64_t NewTargetHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  sp[-1] = StackVal(frame->newTarget());
+  return kHelperOk;
+}
+
+// CASE(SuperBase): sp[0] (the super-env function) is replaced by
+// ObjectOrNullValue(HomeObjectSuperBase(home object)) (no GC).
+int64_t SuperBaseHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  JSFunction& superEnvFunc = sp[0].asValue().toObject().as<JSFunction>();
+  MOZ_ASSERT(superEnvFunc.allowSuperProperty());
+  MOZ_ASSERT(superEnvFunc.baseScript()->needsHomeObject());
+  const Value& homeObjVal =
+      superEnvFunc.getExtendedSlot(FunctionExtended::METHOD_HOMEOBJECT_SLOT);
+  JSObject* homeObj = &homeObjVal.toObject();
+  JSObject* superBase = HomeObjectSuperBase(homeObj);
+  sp[0] = StackVal(ObjectOrNullValue(superBase));
+  return kHelperOk;
+}
+
+// CASE(SuperFun): sp[0] is replaced by
+// ObjectOrNullValue(SuperFunOperation(callee)) (no GC).
+int64_t SuperFunHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                       int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  JSObject* superEnvFunc = &sp[0].asValue().toObject();
+  JSObject* superFun = SuperFunOperation(superEnvFunc);
+  sp[0] = StackVal(ObjectOrNullValue(superFun));
   return kHelperOk;
 }
 
