@@ -1,6 +1,6 @@
 # LinuxOnWeb continuation — claude-fable JIT status 2026-11-16 (leading status; read first)
 
-Branch claude-fable-linuxonweb-20261113, HEAD 7296b0b. Goal of this session: make the Firefox JIT fast. Nothing is published; the public image is unchanged.
+Branch claude-fable-linuxonweb-20261113, HEAD 7296b0b at first writing; see the 2026-11-17 update below for later commits. Goal of this session: make the Firefox JIT fast. Nothing is published; the public image is unchanged.
 
 Commits since 7d82127 (engine files tools/nightly-musl/pbl-jit, tools/pbl-jit):
 - f1be7a8: more compiled CacheIR ops in PBLIC (PBLIC_OPS2 bitmask), per-call-site callee cache in the method tier (PBLBC_SITECACHE), thread-safe one-time init and per-runtime GC epoch, and a fix for a hang: the method tier cached the global lexical environment pointer per activation, and a compacting GC (relazifyFunctions, shrinking or last-ditch GC) moved it. It is now loaded from cx at each GetGName/BindUnqualifiedGName. The published image has the same hazard in principle.
@@ -28,6 +28,17 @@ Calls are still the slowest primitive (about 80 ns per scripted call in the shel
 Shell build of the tiers takes about 25 s: /mnt/p3/codex-build/claude-20261115/c61/scripts/compile-objects.sh OUT && link-shell.sh OUT (under flock /mnt/p3/codex-build/claude-20261113/runtime.lock). Harness: c9/run-js.sh (run names at most 13 characters; never list c9/runs).
 
 Local servers owned by this session (stop by exact PID when done): 127.0.0.1:3044 cand7 (PID 2658799), :3045 published image (3136835), :3046 cand8 (3328821), :3047 cand9 (1484116).
+
+## Update 2026-11-17: method-tier commits after 7296b0b (shell only; no new Firefox candidate yet)
+
+All in tools/nightly-musl/pbl-jit/PblMethod.inc. Every commit passed the suite checksums (19/19), tier-stress and compaction-stress, and the shell-tests listed with it. The last two commits also passed jit-test chunks 1 and 4 (identical to the plain interpreter). Each switch is on by default; a value of 0 turns it off.
+- cde0735: cheaper GC epoch check on the direct-call hit path (high part cached per ICCtx). A plain call costs about 71 ns, down from about 80.
+- 3a1df98 (PBLBC_ARGSOP, PBLBC_ENTRYSWITCH): compiles the Arguments op; callees whose first op exits are now direct-pushed and frame-switched at pc 0. Suite 1863 → 1776 ms; call-heavy subset (c65/sub.js) 508 → 451 ms. New shell-tests/arguments.js.
+- 08704e7 (PBLBC_CHECKOPS): CheckObjCoercible, CheckThis*, CheckReturn, Mod and Typeof* are compiled; total exits down 22%; the suite total changed within noise. New shell-tests/checkops.js.
+- f65e611 (PBLBC_ITEROPS): OptimizeGetIterator and Iter go through their ICs; SuperBase, SuperFun and NewTarget use non-GC helpers. Entries/exits 7.75M → 5.47M, frame switches 863k → 209k, suite 1733 → 1701 ms (mean of 3). New shell-tests/iterops.js. CloseIter is still an exit op.
+
+Profile of the call-heavy subset at cde0735: generated code 36%, call helpers 26% (CallScriptedHit 15%, Hook 6%, CallScripted 4%), interpreter loop 8%, fpcast thunks 4%, GC 3%. The largest remaining exits are Return/RetRval (about 4.3M; these are compiled functions entered from the interpreter returning to it), then SuperCall, Finally, refused calls (about 351k notcompiled) and RegExp. for…of over an array still costs about 280 ns per element; the cost is in the loop-body ops.
+Next: find where the Hook entries come from (work dir c73), then stage 2 of the call path (c49/notes.md). A new Firefox candidate from HEAD still needs build9.sh, ffsuite.sh, the tools/nightly-jit-safety workloads and the release gate before it can be considered for publication.
 
 # LinuxOnWeb continuation — claude-fable session 2026-11-13/14 (leading status)
 
