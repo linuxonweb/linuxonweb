@@ -12,3 +12,6 @@ proves the run did not hang.
 - `compaction-stress.js`: shrinking GCs and relazification while method-tier,
   IC and loop-tier code is live on the stack (globals, callee chains, shape
   guards, constructors, arrays, for-of, closures, try/catch).
+
+`arguments.js` has no `.expected` file: its whole stdout must be identical
+across the three modes (tiers off, defaults, `PBLBC_HITS=2`).
