@@ -362,6 +362,17 @@ bool gEntrySwitch = true;
 // initArgsObj), result pushed.
 bool gArgsOp = true;
 int64_t ArgumentsHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_CHECKOPS (default on; a value starting with '0' restores the old
+// exits): CheckObjCoercible, CheckThis, CheckThisReinit and CheckReturn take
+// their no-throw paths in generated code (anything else exits at the op, so
+// the interpreter throws); Typeof/TypeofExpr and TypeofEq of objects run
+// js::TypeOfOperation / js::TypeOfValue in a non-GC helper; Mod of two
+// numbers outside the int32 lhs>0 && rhs>0 path runs CASE(Mod)'s
+// DoubleValue(NumberMod(lhs, rhs)) in a non-GC helper.
+bool gCheckOps = true;
+int64_t TypeofExprHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t TypeofEqHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+int64_t ModNumberHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -496,6 +507,8 @@ bool Enabled() {
     if (esv && esv[0] == '0') gEntrySwitch = false;
     const char* aov = getenv("PBLBC_ARGSOP");
     if (aov && aov[0] == '0') gArgsOp = false;
+    const char* cov = getenv("PBLBC_CHECKOPS");
+    if (cov && cov[0] == '0') gCheckOps = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -1288,6 +1301,13 @@ bool IsInlineOp(JSOp op) {
       return gCovd & kCovdThis;
     case JSOp::Arguments:
       return gArgsOp;
+    case JSOp::CheckObjCoercible:
+    case JSOp::CheckThis:
+    case JSOp::CheckThisReinit:
+    case JSOp::CheckReturn:
+    case JSOp::Typeof:
+    case JSOp::TypeofExpr:
+      return gCheckOps;
     case JSOp::Try:
     case JSOp::TryDestructuring:
       return gCovg & kCovgTry;
@@ -1607,6 +1627,17 @@ bool MT::binaryArith(JSOp jop) {
       br(2);
       end();
     }
+    end();
+  }
+  if (jop == JSOp::Mod && gCheckOps) {
+    // CASE(Mod) number path: DoubleValue(NumberMod(lhs, rhs)) at sp[1].
+    isNumber(L_A);
+    isNumber(L_B);
+    op(OP_I32AND);
+    ifThen();
+    callHelper(ModNumberHelper);
+    spAdd(1);
+    br(1);
     end();
   }
   if (jop != JSOp::Mod) {
@@ -2555,6 +2586,15 @@ bool MT::translateOp() {
       JSType t = operand.type();
       ld(0);
       lset(L_A);
+      block();  // $done
+      if (gCheckOps) {
+        // Objects: js::TypeOfValue in TypeofEqHelper (stores the boolean).
+        tagIs(L_A, JSVAL_TAG_OBJECT);
+        ifThen();
+        callHelper(TypeofEqHelper);
+        br(1);
+        end();
+      }
       tagIs(L_A, JSVAL_TAG_OBJECT);
       tagIs(L_A, JSVAL_TAG_MAGIC);
       op(OP_I32OR);
@@ -2593,8 +2633,103 @@ bool MT::translateOp() {
       boxI32(JSVAL_TAG_BOOLEAN);
       lset(L_R);
       stLocal(0, L_R);
+      end();
       return true;
     }
+    case JSOp::CheckObjCoercible:
+      // CASE(CheckObjCoercible): null/undefined exit (the interpreter
+      // throws); anything else is a no-op.
+      if (!gCheckOps) {
+        exitHere();
+        return true;
+      }
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_UNDEFINED);
+      tagIs(L_A, JSVAL_TAG_NULL);
+      op(OP_I32OR);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::CheckThis:
+      // CASE(CheckThis): any magic exits (the interpreter throws for the
+      // uninitialized lexical); anything else is a no-op.
+      if (!gCheckOps) {
+        exitHere();
+        return true;
+      }
+      ld(0);
+      lset(L_A);
+      tagIs(L_A, JSVAL_TAG_MAGIC);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::CheckThisReinit:
+      // CASE(CheckThisReinit): exactly MagicValue(JS_UNINITIALIZED_LEXICAL)
+      // is a no-op; anything else exits (the interpreter throws).
+      if (!gCheckOps) {
+        exitHere();
+        return true;
+      }
+      ld(0);
+      i64c(int64_t(MagicValue(JS_UNINITIALIZED_LEXICAL).asRawBits()));
+      op(OP_I64NE);
+      ifThen();
+      exitHere();
+      end();
+      return true;
+    case JSOp::CheckReturn: {
+      // CASE(CheckReturn): thisval => result. frame->returnValue() first
+      // (without HAS_RVAL the slot is set to undefined, as there); an object
+      // return value replaces thisval; undefined with a non-magic thisval
+      // leaves thisval; anything else exits (the interpreter throws).
+      if (!gCheckOps) {
+        exitHere();
+        return true;
+      }
+      const uint32_t rvOff =
+          uint32_t(FrameOff(BaselineFrame::reverseOffsetOfReturnValue()));
+      lget(L_FR);
+      load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfFlags())));
+      i32c(int32_t(BaselineFrame::HAS_RVAL));
+      op(OP_I32AND);
+      op(OP_I32EQZ);
+      ifThen();
+      lget(L_FR);
+      i64c(int64_t(UndefinedValue().asRawBits()));
+      store64(rvOff);
+      end();
+      lget(L_FR);
+      load64(rvOff);
+      lset(L_B);
+      ld(0);
+      lset(L_A);
+      block();  // $done
+      tagIs(L_B, JSVAL_TAG_OBJECT);
+      ifThen();
+      stLocal(0, L_B);
+      br(1);
+      end();
+      tagIs(L_B, JSVAL_TAG_UNDEFINED);
+      tagIs(L_A, JSVAL_TAG_MAGIC);
+      op(OP_I32EQZ);
+      op(OP_I32AND);
+      brIf(0);
+      exitHere();
+      end();
+      return true;
+    }
+    case JSOp::Typeof:
+    case JSOp::TypeofExpr:
+      // CASE(Typeof/TypeofExpr) (HybridICs): TypeOfOperation in the helper.
+      if (!gCheckOps) {
+        exitHere();
+        return true;
+      }
+      callHelper(TypeofExprHelper);
+      return true;
     case JSOp::IsConstructing:
     case JSOp::Hole:
     case JSOp::Uninitialized: {
@@ -4626,6 +4761,44 @@ int64_t FunctionThisHelper(int64_t frameA, int64_t spA, int64_t pcA,
     v = result;
   }
   sp[-1] = StackVal(v);
+  return kHelperOk;
+}
+
+// CASE(Typeof/TypeofExpr), HybridICs path: sp[0] = the type name atom
+// (TypeOfOperation cannot GC or run script).
+int64_t TypeofExprHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                         int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  Value v = sp[0].asValue();
+  sp[0] = StackVal(StringValue(TypeOfOperation(
+      HandleValue::fromMarkedLocation(&v),
+      ctx.frameMgr.cxForLocalUseOnly()->runtime())));
+  return kHelperOk;
+}
+
+// CASE(TypeofEq), HybridICs path: sp[0] = js::TypeOfValue(v) == type,
+// negated for Ne (TypeOfValue cannot GC or run script).
+int64_t TypeofEqHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                       int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  TypeofEqOperand operand = TypeofEqOperand::fromRawValue(GET_UINT8(pc));
+  Value v = sp[0].asValue();
+  bool result = js::TypeOfValue(v) == operand.type();
+  if (operand.compareOp() == JSOp::Ne) result = !result;
+  sp[0] = StackVal(BooleanValue(result));
+  return kHelperOk;
+}
+
+// CASE(Mod), HybridICs number path (both operands are numbers):
+// sp[1] = DoubleValue(NumberMod(lhs, rhs)); the caller pops rhs.
+int64_t ModNumberHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  double lhs = sp[1].asValue().toNumber();
+  double rhs = sp[0].asValue().toNumber();
+  sp[1] = StackVal(DoubleValue(NumberMod(lhs, rhs)));
   return kHelperOk;
 }
 
