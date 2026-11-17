@@ -286,10 +286,15 @@ enum DirectStat : uint32_t {
   kDsStack, kDsEnvObjects, kDsCalleeDebuggee, kDsCounts, kDsInterrupt,
   kDsCalleeStack, kDsNotCompiled, kDsEntryExit,
   kDsInline, kDsInlineRetRval0, kDsSwDepth, kDsSwIcCursor, kDsSwNested,
-  kDsSwIcError, kDsSwDebug, kDsSwExitOp, kDsCtorError, kDsCtorChanged,
+  kDsSwIcError, kDsSwDebug, kDsSwExitOp, kDsSwEntryExit, kDsCtorError,
+  kDsCtorChanged,
   kDsCount
 };
 uint32_t gDs[kDsCount];
+// Callees whose op 0 is an exit op, by that op (index 256: no op entry);
+// counted where CallScripted looks the callee up (call-cache and site-cache
+// hits are not counted), printed with the "PBLBC direct:" line.
+uint32_t gEntryExitOp[257];
 inline int64_t Refuse(DirectStat s) {
   gDs[s]++;
   return 0;
@@ -301,19 +306,25 @@ void PrintDirectStats() {
   fprintf(stderr,
           "PBLBC direct: pushes=%u inline=%u inline_retrval0=%u "
           "switch_depth=%u switch_iccursor=%u switch_nested=%u "
-          "switch_icerror=%u switch_debug=%u switch_exitop=%u refused=%u "
+          "switch_icerror=%u switch_debug=%u switch_exitop=%u "
+          "switch_entryexit=%u refused=%u "
           "(notcall=%u callerdbg=%u notfunc=%u notinterp=%u classctor=%u "
           "nobytecode=%u nojitscript=%u realm=%u underflow=%u stack=%u "
           "envobj=%u calleedbg=%u counts=%u interrupt=%u calleestack=%u "
           "notcompiled=%u entryexit=%u) ctor_error=%u ctor_changed=%u\n",
           gDirectPushes, s[kDsInline], s[kDsInlineRetRval0], s[kDsSwDepth],
           s[kDsSwIcCursor], s[kDsSwNested], s[kDsSwIcError], s[kDsSwDebug],
-          s[kDsSwExitOp], ref, s[kDsNotCall], s[kDsCallerDebuggee],
+          s[kDsSwExitOp], s[kDsSwEntryExit], ref, s[kDsNotCall],
+          s[kDsCallerDebuggee],
           s[kDsNotFunction], s[kDsNotInterpreted], s[kDsClassCtor],
           s[kDsNoBytecode], s[kDsNoJitScript], s[kDsRealm], s[kDsUnderflow],
           s[kDsStack], s[kDsEnvObjects], s[kDsCalleeDebuggee], s[kDsCounts],
           s[kDsInterrupt], s[kDsCalleeStack], s[kDsNotCompiled],
           s[kDsEntryExit], s[kDsCtorError], s[kDsCtorChanged]);
+  for (int i = 0; i < 257; i++)
+    if (gEntryExitOp[i])
+      fprintf(stderr, "PBLBC entryexitop: %s %u\n",
+              i == 256 ? "j0none" : CodeName(JSOp(i)), gEntryExitOp[i]);
   if (gSiteCache)
     fprintf(stderr, "PBLBC sitecache: fills=%u stale=%u recheck_fail=%u\n",
             gSiteFills, gSiteStale, gSiteRecheck);
@@ -338,6 +349,19 @@ bool gPadArgs = true;
 // PBLBC_VSTACK (default on): virtual operand stack in the method tier; 0
 // emits exactly the code without it.
 bool gVstack = true;
+// PBLBC_ENTRYSWITCH (default on; a value starting with '0' disables it): a
+// compiled callee whose op 0 is an exit op is pushed directly by
+// CallScripted and the interpreter continues in the callee frame at pc 0
+// (the same frame switch as the depth/IC-cursor switch in CallTail), instead
+// of refusing (entryexit) and taking the IC fallback / RunScript route.
+bool gEntrySwitch = true;
+// PBLBC_ARGSOP (default on; a value starting with '0' makes it an exit op):
+// compile JSOp::Arguments through ArgumentsHelper, exactly CASE(Arguments):
+// exit frame at sp with interpreterPC = pc, jit::NewArgumentsObject (which
+// creates the mapped/unmapped object and stores it in the frame via
+// initArgsObj), result pushed.
+bool gArgsOp = true;
+int64_t ArgumentsHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -468,6 +492,10 @@ bool Enabled() {
     if (pav && pav[0] == '0') gPadArgs = false;
     const char* vsv = getenv("PBLBC_VSTACK");
     if (vsv && vsv[0] == '0') gVstack = false;
+    const char* esv = getenv("PBLBC_ENTRYSWITCH");
+    if (esv && esv[0] == '0') gEntrySwitch = false;
+    const char* aov = getenv("PBLBC_ARGSOP");
+    if (aov && aov[0] == '0') gArgsOp = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -1258,6 +1286,8 @@ bool IsInlineOp(JSOp op) {
       return gCovd & kCovdIter;
     case JSOp::Callee:
       return gCovd & kCovdThis;
+    case JSOp::Arguments:
+      return gArgsOp;
     case JSOp::Try:
     case JSOp::TryDestructuring:
       return gCovg & kCovgTry;
@@ -2258,6 +2288,15 @@ bool MT::translateOp() {
         return true;
       }
       callHelper(CalleeHelper);
+      spAdd(-1);
+      return true;
+    case JSOp::Arguments:
+      // CASE(Arguments) in ArgumentsHelper (result at sp[-1]).
+      if (!gArgsOp) {
+        exitHere();
+        return true;
+      }
+      callHelper(ArgumentsHelper);
       spAdd(-1);
       return true;
     case JSOp::Try:
@@ -3698,11 +3737,15 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
     gDs[kDsInlineRetRval0]++;
   } else {
   const bool depthHit = tDirectDepth >= kMaxDirectDepth;
-  if (depthHit ||
+  // Op 0 is an exit op (PBLBC_ENTRYSWITCH; CallScripted refuses such callees
+  // when it is off): the interpreter performs it in the callee frame, as
+  // after any switch at pc 0, and Hook re-enters compiled code after it.
+  const bool entryExit = e->exitOp[j0] != 0;
+  if (depthHit || entryExit ||
       (op0 != JSOp::JumpTarget && op0 != JSOp::LoopHead &&
        newFrame->icScript()->numICEntries() != 0 &&
        calleeIcEntry != calleeIcEntries + icIdx0)) {
-    gDs[depthHit ? kDsSwDepth : kDsSwIcCursor]++;
+    gDs[depthHit ? kDsSwDepth : entryExit ? kDsSwEntryExit : kDsSwIcCursor]++;
     tSwitch.frame = newFrame;
     tSwitch.sp = sp;
     tSwitch.pc = calleePC;
@@ -3910,12 +3953,14 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     e = FindExisting(calleeScript->immutableScriptData());
     if (!e || e->state != 1) return Refuse(kDsNotCompiled);
     j0 = e->opAt[0];
-    // An exit op at op 0 is refused, except RetRval (e.g. an empty
-    // function's whole body): it is performed below without entering
-    // compiled code.
+    // An exit op at op 0: RetRval (e.g. an empty function's whole body) is
+    // performed below without entering compiled code; any other exit op is
+    // pushed and switched to the interpreter at pc 0 in CallTail
+    // (PBLBC_ENTRYSWITCH), or refused when that is off.
     retRval0 = JSOp(*calleeScript->code()) == JSOp::RetRval;
     if (j0 == 0xffff || (e->exitOp[j0] && !retRval0)) {
-      return Refuse(kDsEntryExit);
+      gEntryExitOp[j0 == 0xffff ? 256 : uint8_t(*calleeScript->code())]++;
+      if (j0 == 0xffff || !gEntrySwitch) return Refuse(kDsEntryExit);
     }
     if (gCallCache) {
       CallCacheEntry* c =
@@ -4574,6 +4619,36 @@ int64_t FunctionThisHelper(int64_t frameA, int64_t spA, int64_t pcA,
       VMFrame cx(ctx.frameMgr, ctx.stack, sp);
       if (!cx.success()) return kHelperNotHandled;
       if (!js::GetFunctionThis(cx, frame, &result)) {
+        ctx.error = PBIResult::Error;
+        return kHelperError;
+      }
+    }
+    v = result;
+  }
+  sp[-1] = StackVal(v);
+  return kHelperOk;
+}
+
+// CASE(Arguments): PUSH_EXIT_FRAME at sp with interpreterPC = pc,
+// jit::NewArgumentsObject(cx, frame, &res) (ArgumentsObject::createExpected:
+// mapped or unmapped per the script, frame->initArgsObj), the object is
+// stored at sp[-1] (the caller pushes it; nothing can GC in between).
+// Failure sets ctx.error and returns kHelperError with sp unchanged (the op's
+// GOTO_ERROR).
+int64_t ArgumentsHelper(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  Value v;
+  {
+    ReservedRooted<Value> result(&ctx.state.value0, UndefinedValue());
+    {
+      frame->interpreterPC() = pc;
+      VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+      if (!cx.success()) return kHelperNotHandled;
+      if (!NewArgumentsObject(cx, frame, &result)) {
         ctx.error = PBIResult::Error;
         return kHelperError;
       }
