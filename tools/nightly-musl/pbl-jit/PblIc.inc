@@ -56,6 +56,10 @@ const uint32_t kCtxRegTags =
 const uint32_t kCtxExtraArgs =
     uint32_t(offsetof(ICCtx, icregs) + offsetof(ICRegs, extraArgs));
 const uint32_t kCtxSp = uint32_t(offsetof(ICCtx, sp_));
+// VMFrameManager is {cx, frame} (standard layout), so cx is at its offset 0.
+static_assert(std::is_standard_layout_v<VMFrameManager>);
+static_assert(sizeof(VMFrameManager) == 2 * sizeof(void*));
+const uint32_t kCtxCx = uint32_t(offsetof(ICCtx, frameMgr));
 const uint32_t kCtxArg2 = uint32_t(offsetof(ICCtx, arg2));
 const uint32_t kCtxStepOff = uint32_t(offsetof(ICCtx, stepOff));
 const uint32_t kCtxStepEnd = uint32_t(offsetof(ICCtx, stepEnd));
@@ -74,6 +78,11 @@ std::atomic<int> gLogBudget{0};
 std::atomic<bool> gLogEnabled{false};
 std::atomic<int> gEnabled{-1};
 uint32_t gNextStatSteps = 1u << 20;
+// PBLIC_DYNSTAT=1: dynamic accounting of whole-stub ICInterpretOps runs by
+// reason (per stub info) and of stepped ops, printed at exit.
+bool gDynStat = false;
+uint64_t gStepOps64[size_t(CacheOp::NumOpcodes)];
+void PrintDynStat();
 
 bool Enabled() {
   int e = gEnabled.load(std::memory_order_relaxed);
@@ -85,6 +94,11 @@ bool Enabled() {
     gLogBudget.store(logBudget, std::memory_order_relaxed);
     gLogEnabled.store(logBudget > 0, std::memory_order_relaxed);
     gEnabled.store(e, std::memory_order_relaxed);
+    const char* ds = getenv("PBLIC_DYNSTAT");
+    if (ds && ds[0] == '1') {
+      gDynStat = true;
+      atexit(PrintDynStat);
+    }
     if (logBudget > 0) {
       fprintf(stderr, "PBLIC %s (threshold=%u)\n", e ? "enabled" : "disabled",
               kHits);
@@ -131,7 +145,10 @@ void PrintStats(const char* why) {
 // Called by ICInterpretOps when it starts a step.
 void CountStep(const uint8_t* at) {
   uint32_t op = uint32_t(at[0]) | (uint32_t(at[1]) << 8);
-  if (op < uint32_t(CacheOp::NumOpcodes)) gStepOps[op]++;
+  if (op < uint32_t(CacheOp::NumOpcodes)) {
+    gStepOps[op]++;
+    if (gDynStat) gStepOps64[op]++;
+  }
   if (++gStats[kStatSteps] == gNextStatSteps) {
     gNextStatSteps *= 4;
     PrintStats("steps");
@@ -152,6 +169,207 @@ uint64_t StoreDynamicSlotBarriered(uintptr_t obj, uint32_t offset,
   size_t slot = dynSlot + nobj->numFixedSlots();
   slots[dynSlot].set(nobj, HeapSlot::Slot, slot, Value::fromRawBits(bits));
   return 0;
+}
+
+// PBLIC_OPS2: bitmask of the ops translated since the dynamic step census
+// (default all on; 0 steps them through ICInterpretOps as before):
+// 1 MathImulResult, 2 TruncateDoubleToUInt32, 4 LoadInstanceOfObjectResult,
+// 8 CompareNullUndefinedResult, 16 LoadObjectTruthyResult,
+// 32 AddAndStoreFixedSlot, 64 GuardArrayIsPacked, 128 GuardFuse,
+// 256 HasClassResult, 512 IsCallableResult, 1024 LoadArgumentsObjectLength
+// (Result), 2048 LoadArgumentsObjectArgResult, 4096 LoadStringCharCodeResult,
+// 8192 ArrayPush (helper), 16384 StoreDenseElementHole (helper),
+// 32768 CallSubstringKernelResult (helper), 65536
+// RegExpSearcherLastLimitResult, 131072 MegamorphicLoadSlotResult (helper),
+// 262144 CallNativeFunction (helper).
+uint32_t Ops2() {
+  static const uint32_t m = [] {
+    const char* v = getenv("PBLIC_OPS2");
+    return v ? uint32_t(strtoul(v, nullptr, 0)) : 0xffffffffu;
+  }();
+  return m;
+}
+
+// TruncateDoubleToUInt32 slow path (|d| >= 2^63 or NaN): JS::ToInt32,
+// returned sign-extended as WRITE_REG stores an int32.
+uint64_t TruncToInt32Slow(uint64_t dbits) {
+  double d = mozilla::BitwiseCast<double>(dbits);
+  return uint64_t(int64_t(JS::ToInt32(d)));
+}
+// AddAndStoreFixedSlot (preserveWrapper == false): the interpreter's exact
+// barriered shape change (JSObject::setShape pre-barriers the old shape) and
+// slot init (post-barrier).
+uint64_t AddAndStoreFixedSlotHelper(uintptr_t obj, uint32_t offset,
+                                    uint64_t bits, uintptr_t shape) {
+  JSObject* o = reinterpret_cast<JSObject*>(obj);
+  o->setShape(reinterpret_cast<Shape*>(shape));
+  reinterpret_cast<GCPtr<Value>*>(obj + offset)->init(Value::fromRawBits(bits));
+  return 0;
+}
+
+// LoadStringCharCodeResult for a non-linear string: the interpreter's exact
+// str->getChar(nullptr, index, &c) (preceded by LinearizeForCharAccess).
+uint64_t StringCharHelper(uintptr_t str, uint32_t index) {
+  char16_t c;
+  MOZ_ALWAYS_TRUE(
+      reinterpret_cast<JSString*>(str)->getChar(nullptr, index, &c));
+  return c;
+}
+// ArrayPush: the CACHEOP_CASE body; returns Int32Value(initLength + 1) bits,
+// or 0 (never a valid Int32 Value) where it does FAIL_IC (before mutating).
+uint64_t ArrayPushHelper(uintptr_t ctxp, uintptr_t obj, uint64_t rhsBits) {
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(ctxp);
+  Value rhs = Value::fromRawBits(rhsBits);
+  ArrayObject* aobj = &reinterpret_cast<JSObject*>(obj)->as<ArrayObject>();
+  uint32_t initLength = aobj->getDenseInitializedLength();
+  if (aobj->length() != initLength) {
+    return 0;
+  }
+  if (initLength >= aobj->getDenseCapacity()) {
+    if (!NativeObject::addDenseElementPure(ctx.frameMgr.cxForLocalUseOnly(),
+                                           aobj)) {
+      return 0;
+    }
+  }
+  aobj->setDenseInitializedLength(initLength + 1);
+  aobj->setLengthToInitializedLength();
+  aobj->initDenseElement(initLength, rhs);
+  return Int32Value(initLength + 1).asRawBits();
+}
+// StoreDenseElementHole: the CACHEOP_CASE body; 1 on success, 0 for FAIL_IC
+// (before mutating).
+uint64_t StoreDenseElementHoleHelper(uintptr_t ctxp, uintptr_t obj,
+                                     uint32_t index, uint64_t rhsBits,
+                                     uint32_t handleAdd) {
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(ctxp);
+  Value rhs = Value::fromRawBits(rhsBits);
+  NativeObject* nobj = &reinterpret_cast<JSObject*>(obj)->as<NativeObject>();
+  uint32_t initLength = nobj->getDenseInitializedLength();
+  if (index < initLength) {
+    nobj->setDenseElement(index, rhs);
+  } else if (!handleAdd || index > initLength) {
+    return 0;
+  } else {
+    if (index >= nobj->getDenseCapacity()) {
+      if (!NativeObject::addDenseElementPure(ctx.frameMgr.cxForLocalUseOnly(),
+                                             nobj)) {
+        return 0;
+      }
+    }
+    nobj->setDenseInitializedLength(initLength + 1);
+    if (nobj->is<ArrayObject>()) {
+      ArrayObject* aobj = &nobj->as<ArrayObject>();
+      uint32_t len = aobj->length();
+      if (len <= index) {
+        aobj->setLength(ctx.frameMgr.cxForLocalUseOnly(), len + 1);
+      }
+    }
+    nobj->initDenseElement(index, rhs);
+  }
+  return 1;
+}
+
+// Helpers that can GC or throw copy their CACHEOP_CASE body including its
+// PUSH_IC_FRAME exit frame and ReservedRooted roots; on error they set
+// ctx.error and return IC_ERROR_SENTINEL, which the stub returns as is
+// (exactly what a stepped op's ICInterpretOps call returns). No other IC
+// register is rooted, as when stepped (ctx.icregs is not traced either).
+
+// CallSubstringKernelResult: string Value bits or IC_ERROR_SENTINEL.
+uint64_t SubstringKernelHelper(uintptr_t ctxp, uintptr_t strp, uint32_t begin,
+                               uint32_t length) {
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(ctxp);
+  JSString* str = reinterpret_cast<JSString*>(strp);
+  PUSH_IC_FRAME();
+  ReservedRooted<JSString*> str0(&ctx.state.str0, str);
+  auto* result = SubstringKernel(cx, str0, int32_t(begin), int32_t(length));
+  if (!result) {
+    ctx.error = PBIResult::Error;
+    return IC_ERROR_SENTINEL();
+  }
+  return StringValue(result).asRawBits();
+}
+// MegamorphicLoadSlotResult (cannot GC): 1 with the result in ctx.stepRet
+// (any Value, including bits 0), 0 where the case does FAIL_IC.
+uint64_t MegamorphicLoadSlotHelper(uintptr_t ctxp, uintptr_t objp,
+                                   uintptr_t nameBits) {
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(ctxp);
+  JSObject* obj = reinterpret_cast<JSObject*>(objp);
+  jsid name = jsid::fromRawBits(nameBits);
+  if (!obj->shape()->isNative()) {
+    return 0;
+  }
+  Value result;
+  if (!GetNativeDataPropertyPureWithCacheLookup(
+          ctx.frameMgr.cxForLocalUseOnly(), obj, name, nullptr, &result)) {
+    return 0;
+  }
+  ctx.stepRet = result.asRawBits();
+  return 1;
+}
+// CallNativeFunction (same-realm, Standard arg format: checked statically by
+// the translator, which steps the op otherwise). mode bit 0 isConstructing,
+// bit 1 ignoresRv. The ICInterpretOps case body for isNative == true:
+// 0 where it does FAIL_IC (before any side effect), 1 with the result in
+// ctx.stepRet, IC_ERROR_SENTINEL with ctx.error = Error on overrecursion or
+// a failed native.
+uint64_t CallNativeHelper(uintptr_t ctxp, uintptr_t stubp, uintptr_t calleep,
+                          uint32_t argc, uint32_t mode) {
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(ctxp);
+  ICCacheIRStub* cstub = reinterpret_cast<ICCacheIRStub*>(stubp);
+  JSFunction* callee = reinterpret_cast<JSFunction*>(calleep);
+  const bool isConstructing = mode & 1;
+  const bool ignoresRv = mode & 2;
+  if (isConstructing && !callee->isConstructor()) {
+    return 0;
+  }
+  uint32_t extra = 1 + isConstructing + 1;
+  uint32_t totalArgs = argc + extra;
+  StackVal* origArgs = ctx.sp();
+  uint64_t retValue;
+  {
+    PUSH_IC_FRAME();
+    if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 6))) {
+      ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
+      ctx.error = PBIResult::Error;
+      return IC_ERROR_SENTINEL();
+    }
+    AutoKeepJitScripts keepJitScripts(cx);
+    POPNNATIVE(1);
+    PUSHNATIVE(StackValNative(cstub));
+    if (isConstructing) {
+      PUSH(origArgs[0]);
+      origArgs++;
+    }
+    for (uint32_t i = 0; i < argc + 1 + 1; i++) {
+      PUSH(origArgs[i]);
+    }
+    Value* args = reinterpret_cast<Value*>(sp);
+    PUSHNATIVE(StackValNative(argc));
+    PUSHNATIVE(StackValNative(MakeFrameDescriptor(FrameType::BaselineStub)));
+    StackVal* trampolinePrevFP = ctx.stack.fp;
+    PUSHNATIVE(StackValNative(nullptr));  // fake return address.
+    PUSHNATIVE(StackValNative(ctx.stack.fp));
+    ctx.stack.fp = sp;
+    PUSHNATIVE(StackValNative(uint32_t(
+        isConstructing ? ExitFrameType::ConstructNative
+                       : ExitFrameType::CallNative)));
+    cx.getCx()->activation()->asJit()->setJSExitFP(
+        reinterpret_cast<uint8_t*>(ctx.stack.fp));
+    cx.getCx()->portableBaselineStack().top = reinterpret_cast<void*>(sp);
+    JSNative native = ignoresRv ? callee->jitInfo()->ignoresReturnValueMethod
+                                : callee->native();
+    bool success = native(cx, argc, args);
+    ctx.stack.fp = trampolinePrevFP;
+    POPNNATIVE(4);
+    if (!success) {
+      ctx.error = PBIResult::Error;
+      return IC_ERROR_SENTINEL();
+    }
+    retValue = args[0].asRawBits();
+  }
+  ctx.stepRet = retValue;
+  return 1;
 }
 
 // ---- wasm emitter ---------------------------------------------------------
@@ -209,6 +427,8 @@ struct Buf {
 
 enum : uint8_t {
   OP_BLOCK = 0x02,
+  OP_LOOP = 0x03,
+  OP_F64CONST = 0x44,
   OP_IF = 0x04,
   OP_ELSE = 0x05,
   OP_END = 0x0b,
@@ -225,6 +445,8 @@ enum : uint8_t {
   OP_I64LOAD = 0x29,
   OP_I32STORE = 0x36,
   OP_I64STORE = 0x37,
+  OP_I32LOAD8U = 0x2d,
+  OP_I32LOAD16U = 0x2f,
   OP_I32CONST = 0x41,
   OP_I64CONST = 0x42,
   OP_I32EQZ = 0x45,
@@ -336,6 +558,7 @@ struct Translator {
   uint32_t typeIdx = 0, tableIdx = 0;
   uint32_t failBase = 0;    // extra depth from the op body to the fail label
   bool inlineMode = false;  // no stepping, no observation, no returns
+  uint32_t inlResult = 0, inlDone = 0;  // runInline's result / doneDepth
 
   bool reject(const char* why) {
     reason = why;
@@ -619,6 +842,25 @@ struct Translator {
   void returnValue() {
     observeReturn();
     op(OP_RETURN);
+  }
+
+  // The i64 in L_A (a helper's result): when it is IC_ERROR_SENTINEL, end
+  // the stub with it now, as a stepped op's error result does (standalone:
+  // return it; inline: it is the sequence's result, branch to done).
+  void returnIfErrorSentinel() {
+    lget(L_A);
+    i64c(int64_t(IC_ERROR_SENTINEL()));
+    op(OP_I64EQ);
+    ifThen();
+    lget(L_A);
+    if (inlineMode) {
+      lset(inlResult);
+      b.put(OP_BR);
+      b.uleb(depth + inlDone);
+    } else {
+      returnValue();
+    }
+    endIf();
   }
 
   // Run [start, end) in ICInterpretOps.
@@ -1580,6 +1822,493 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       boxBool();
       lset(L_RET);
       return true;
+    case CacheOp::MathImulResult:
+      if (!(Ops2() & 1)) return false;
+      readReg32(a[0]);
+      readReg32(a[1]);
+      op(OP_I32MUL);
+      boxPayload(JSVAL_TAG_INT32);
+      lset(L_RET);
+      return true;
+    case CacheOp::TruncateDoubleToUInt32: {
+      // JS::ToInt32(toNumber()): |d| < 2^63 -> i64.trunc_sat_f64_s then
+      // wrap (exact modular result); NaN/large -> TruncToInt32Slow.
+      if (!(Ops2() & 2)) return false;
+      readValue(a[0]);
+      toNumber();
+      ltee(L_D0);
+      op(OP_F64ABS);
+      b.put(OP_F64CONST);
+      {
+        double lim = 9223372036854775808.0;
+        uint64_t bits = mozilla::BitwiseCast<uint64_t>(lim);
+        for (int i = 0; i < 8; i++) b.put(uint8_t(bits >> (8 * i)));
+      }
+      op(OP_F64LT);
+      b.put(OP_IF);
+      b.put(0x7e);
+      lget(L_D0);
+      b.put(OP_PREFIX_FC);
+      b.uleb(6);  // i64.trunc_sat_f64_s
+      op(OP_I32WRAP);
+      op(OP_I64EXTS);
+      b.put(OP_ELSE);
+      lget(L_D0);
+      op(OP_I64REINTF64);
+      callHelper(uintptr_t(&TruncToInt32Slow), 1);
+      b.put(OP_END);
+      writeReg(a[1], JSVAL_TAG_INT32);
+      return true;
+    }
+    case CacheOp::LoadInstanceOfObjectResult: {
+      // Walk lhs's proto chain: lazy proto (1) fails, null -> false,
+      // rhsProto -> true; non-object lhs -> false.
+      if (!(Ops2() & 4)) return false;
+      i32c(0);
+      lset(L_Z);
+      readReg32(a[1]);
+      lset(L_Y);
+      readValue(a[0]);
+      ltee(L_A);
+      tagIs(JSVAL_TAG_OBJECT);
+      ifThen();
+      lget(L_A);
+      op(OP_I32WRAP);
+      lset(L_X);
+      b.put(OP_BLOCK);
+      b.put(OP_VOID);
+      depth++;
+      b.put(OP_LOOP);
+      b.put(OP_VOID);
+      depth++;
+      lget(L_X);
+      protoOf();
+      ltee(L_X);
+      i32c(1);
+      op(OP_I32EQ);
+      failIf();
+      lget(L_X);
+      op(OP_I32EQZ);
+      b.put(OP_BRIF);
+      b.uleb(1);  // $out, result false
+      lget(L_X);
+      lget(L_Y);
+      op(OP_I32EQ);
+      ltee(L_Z);
+      b.put(OP_BRIF);
+      b.uleb(1);  // $out, result true
+      b.put(OP_BR);
+      b.uleb(0);  // loop
+      b.put(OP_END);
+      depth--;
+      b.put(OP_END);
+      depth--;
+      endIf();
+      lget(L_Z);
+      boxBool();
+      lset(L_RET);
+      return true;
+    }
+    case CacheOp::CompareNullUndefinedResult: {
+      // a: jsop, isUndefined, inputId. Proxy objects fail for every op.
+      if (!(Ops2() & 8)) return false;
+      JSOp jop = JSOp(a[0]);
+      bool isUndef = a[1] != 0;
+      if (jop != JSOp::Eq && jop != JSOp::Ne && jop != JSOp::StrictEq &&
+          jop != JSOp::StrictNe) {
+        return false;
+      }
+      i32c(0);
+      lset(L_Z);  // emulatesUndefined
+      readValue(a[2]);
+      ltee(L_A);
+      tagIs(JSVAL_TAG_OBJECT);
+      ifThen();
+      lget(L_A);
+      op(OP_I32WRAP);
+      classOf();
+      load32(uint32_t(offsetof(JSClass, flags)));
+      ltee(L_X);
+      i32c(int32_t(JSCLASS_IS_PROXY));
+      op(OP_I32AND);
+      failIf();
+      lget(L_X);
+      i32c(int32_t(JSCLASS_EMULATES_UNDEFINED));
+      op(OP_I32AND);
+      op(OP_I32EQZ);
+      op(OP_I32EQZ);
+      lset(L_Z);
+      endIf();
+      if (jop == JSOp::Eq || jop == JSOp::Ne) {
+        lget(L_A);
+        tagIs(JSVAL_TAG_UNDEFINED);
+        lget(L_A);
+        tagIs(JSVAL_TAG_NULL);
+        op(OP_I32OR);
+        lget(L_Z);
+        op(OP_I32OR);
+        if (jop == JSOp::Ne) op(OP_I32EQZ);
+      } else {
+        lget(L_A);
+        tagIs(isUndef ? JSVAL_TAG_UNDEFINED : JSVAL_TAG_NULL);
+        if (jop == JSOp::StrictNe) op(OP_I32EQZ);
+      }
+      boxBool();
+      lset(L_RET);
+      return true;
+    }
+    case CacheOp::LoadObjectTruthyResult:
+      if (!(Ops2() & 16)) return false;
+      readReg32(a[0]);
+      classOf();
+      load32(uint32_t(offsetof(JSClass, flags)));
+      ltee(L_X);
+      i32c(int32_t(JSCLASS_IS_PROXY));
+      op(OP_I32AND);
+      failIf();
+      lget(L_X);
+      i32c(int32_t(JSCLASS_EMULATES_UNDEFINED));
+      op(OP_I32AND);
+      op(OP_I32EQZ);
+      boxBool();
+      lset(L_RET);
+      return true;
+    case CacheOp::AddAndStoreFixedSlot:
+      // a: objId, offsetOffset, rhsId, newShapeOffset, preserveWrapper.
+      if (!(Ops2() & 32) || a[4]) return false;
+      readReg(a[0]);
+      field32(fieldOff(1));
+      op(OP_I64EXTU);
+      readValue(a[2]);
+      field32(fieldOff(3));
+      op(OP_I64EXTU);
+      callHelper(uintptr_t(&AddAndStoreFixedSlotHelper), 4);
+      op(OP_DROP);
+      return true;
+    case CacheOp::GuardArrayIsPacked:
+      // IsPackedArray: ArrayObject, initializedLength == length, !NON_PACKED.
+      if (!(Ops2() & 64)) return false;
+      readReg32(a[0]);
+      ltee(L_X);
+      classOf();
+      i32c(int32_t(uintptr_t(&ArrayObject::class_)));
+      op(OP_I32NE);
+      failIf();
+      lget(L_X);
+      load32(uint32_t(NativeObject::offsetOfElements()));
+      lset(L_Y);
+      lget(L_Y);
+      i32c(ObjectElements::offsetOfInitializedLength());
+      op(OP_I32ADD);
+      load32(0);
+      lget(L_Y);
+      i32c(ObjectElements::offsetOfLength());
+      op(OP_I32ADD);
+      load32(0);
+      op(OP_I32NE);
+      failIf();
+      lget(L_Y);
+      i32c(ObjectElements::offsetOfFlags());
+      op(OP_I32ADD);
+      load32(0);
+      i32c(int32_t(ObjectElements::NON_PACKED));
+      op(OP_I32AND);
+      failIf();
+      return true;
+    case CacheOp::GuardFuse: {
+      // cx->realm()->realmFuses.getFuseByIndex(i)->intact(): fuse word == 0.
+      if (!(Ops2() & 128)) return false;
+      if (a[0] >= uint32_t(RealmFuses::FuseIndex::LastFuseIndex)) return false;
+      int32_t fuseOff = RealmFuses::offsetOfFuseWordRelativeToRealm(
+          RealmFuses::FuseIndex(a[0]));
+      if (fuseOff < 0) return false;
+      lget(L_CTX);
+      load32(kCtxCx);
+      load32(uint32_t(JSContext::offsetOfRealm()));
+      load32(uint32_t(fuseOff));
+      failIf();
+      return true;
+    }
+    case CacheOp::HasClassResult:
+      if (!(Ops2() & 256)) return false;
+      readReg32(a[0]);
+      classOf();
+      field32(fieldOff(1));
+      op(OP_I32EQ);
+      boxBool();
+      lset(L_RET);
+      return true;
+    case CacheOp::IsCallableResult:
+      // Non-object false; proxy fails; JSFunction or clasp->getCall().
+      if (!(Ops2() & 512)) return false;
+      i32c(0);
+      lset(L_Z);
+      readValue(a[0]);
+      ltee(L_A);
+      tagIs(JSVAL_TAG_OBJECT);
+      ifThen();
+      lget(L_A);
+      op(OP_I32WRAP);
+      classOf();
+      ltee(L_X);
+      load32(uint32_t(offsetof(JSClass, flags)));
+      i32c(int32_t(JSCLASS_IS_PROXY));
+      op(OP_I32AND);
+      failIf();
+      lget(L_X);
+      i32c(int32_t(uintptr_t(js::FunctionClassPtr)));
+      op(OP_I32EQ);
+      lget(L_X);
+      i32c(int32_t(uintptr_t(js::FunctionExtendedClassPtr)));
+      op(OP_I32EQ);
+      op(OP_I32OR);
+      ltee(L_Z);
+      op(OP_I32EQZ);
+      ifThen();
+      lget(L_X);
+      load32(uint32_t(offsetof(JSClass, cOps)));
+      ltee(L_Y);
+      ifThen();
+      lget(L_Y);
+      load32(uint32_t(offsetof(JSClassOps, call)));
+      op(OP_I32EQZ);
+      op(OP_I32EQZ);
+      lset(L_Z);
+      endIf();
+      endIf();
+      endIf();
+      lget(L_Z);
+      boxBool();
+      lset(L_RET);
+      return true;
+    case CacheOp::LoadArgumentsObjectLengthResult:
+    case CacheOp::LoadArgumentsObjectLength:
+      if (!(Ops2() & 1024)) return false;
+      readReg32(a[0]);
+      load32(uint32_t(ArgumentsObject::getInitialLengthSlotOffset()));
+      ltee(L_X);
+      i32c(int32_t(ArgumentsObject::LENGTH_OVERRIDDEN_BIT));
+      op(OP_I32AND);
+      failIf();
+      lget(L_X);
+      i32c(int32_t(ArgumentsObject::PACKED_BITS_COUNT));
+      op(OP_I32SHRU);
+      if (cop == CacheOp::LoadArgumentsObjectLength) {
+        op(OP_I64EXTU);
+        writeReg(a[1], JSVAL_TAG_INT32);
+      } else {
+        RET_INT32_FROM_I32();
+      }
+      return true;
+    case CacheOp::LoadArgumentsObjectArgResult:
+      // index >= initialLength or overridden element fails; forwarded args
+      // (magic scope slot) fail. Other magic values (the interpreter's
+      // MOZ_RELEASE_ASSERT in arg()) fail too, as in the JIT.
+      if (!(Ops2() & 2048)) return false;
+      readReg32(a[0]);
+      ltee(L_Y);
+      load32(uint32_t(ArgumentsObject::getInitialLengthSlotOffset()));
+      ltee(L_X);
+      i32c(int32_t(ArgumentsObject::ELEMENT_OVERRIDDEN_BIT));
+      op(OP_I32AND);
+      failIf();
+      readReg32(a[1]);
+      ltee(L_Z);
+      lget(L_X);
+      i32c(int32_t(ArgumentsObject::PACKED_BITS_COUNT));
+      op(OP_I32SHRU);
+      op(OP_I32GEU);
+      failIf();
+      lget(L_Y);
+      load32(uint32_t(ArgumentsObject::getDataSlotOffset()));
+      lget(L_Z);
+      i32c(3);
+      op(OP_I32SHL);
+      op(OP_I32ADD);
+      load64(uint32_t(ArgumentsData::offsetOfArgs()));
+      ltee(L_A);
+      tagIs(JSVAL_TAG_MAGIC);
+      failIf();
+      lget(L_A);
+      lset(L_RET);
+      return true;
+    case CacheOp::LoadStringCharCodeResult: {
+      // a: strId, indexId, handleOOB. Linear strings inline; others use the
+      // interpreter's getChar through StringCharHelper.
+      if (!(Ops2() & 4096)) return false;
+      bool handleOOB = a[2] != 0;
+      readReg32(a[0]);
+      lset(L_Y);
+      readReg32(a[1]);
+      lset(L_X);
+      lget(L_X);
+      lget(L_Y);
+      load32(uint32_t(JSString::offsetOfLength()));
+      op(OP_I32GEU);  // unsigned: also index < 0
+      if (handleOOB) {
+        ifThen();
+        i64c(int64_t(JS::NaNValue().asRawBits()));
+        lset(L_RET);
+        elseThen();
+      } else {
+        failIf();
+      }
+      const uint32_t inl =
+          uint32_t(offsetof(JS::shadow::String, inlineStorageLatin1));
+      const uint32_t noninl =
+          uint32_t(offsetof(JS::shadow::String, nonInlineCharsLatin1));
+      auto chars = [&] {
+        lget(L_Z);
+        i32c(int32_t(JS::shadow::String::INLINE_CHARS_BIT));
+        op(OP_I32AND);
+        b.put(OP_IF);
+        b.put(0x7f);
+        lget(L_Y);
+        i32c(int32_t(inl));
+        op(OP_I32ADD);
+        b.put(OP_ELSE);
+        lget(L_Y);
+        load32(noninl);
+        b.put(OP_END);
+      };
+      lget(L_Y);
+      load32(uint32_t(JSString::offsetOfFlags()));
+      ltee(L_Z);
+      i32c(int32_t(JS::shadow::String::LINEAR_BIT));
+      op(OP_I32AND);
+      op(OP_I32EQZ);
+      ifThen();
+      lget(L_Y);
+      op(OP_I64EXTU);
+      lget(L_X);
+      op(OP_I64EXTU);
+      callHelper(uintptr_t(&StringCharHelper), 2);
+      op(OP_I32WRAP);
+      lset(L_Z);
+      elseThen();
+      lget(L_Z);
+      i32c(int32_t(JS::shadow::String::LATIN1_CHARS_BIT));
+      op(OP_I32AND);
+      b.put(OP_IF);
+      b.put(0x7f);
+      chars();
+      lget(L_X);
+      op(OP_I32ADD);
+      b.put(OP_I32LOAD8U);
+      b.uleb(0);
+      b.uleb(0);
+      b.put(OP_ELSE);
+      chars();
+      lget(L_X);
+      i32c(1);
+      op(OP_I32SHL);
+      op(OP_I32ADD);
+      b.put(OP_I32LOAD16U);
+      b.uleb(1);
+      b.uleb(0);
+      b.put(OP_END);
+      lset(L_Z);
+      endIf();
+      lget(L_Z);
+      RET_INT32_FROM_I32();
+      if (handleOOB) endIf();
+      return true;
+    }
+    case CacheOp::ArrayPush:
+      // a: objId, rhsId. ArrayPushHelper returns 0 where the case fails.
+      if (!(Ops2() & 8192)) return false;
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      readReg(a[0]);
+      readValue(a[1]);
+      callHelper(uintptr_t(&ArrayPushHelper), 3);
+      ltee(L_A);
+      op(OP_I64EQZ);
+      failIf();
+      lget(L_A);
+      lset(L_RET);
+      return true;
+    case CacheOp::StoreDenseElementHole:
+      // a: objId, indexId, rhsId, handleAdd. Helper returns 0 for FAIL_IC.
+      if (!(Ops2() & 16384)) return false;
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      readReg(a[0]);
+      readReg(a[1]);
+      readValue(a[2]);
+      i64c(a[3] ? 1 : 0);
+      callHelper(uintptr_t(&StoreDenseElementHoleHelper), 5);
+      op(OP_I64EQZ);
+      failIf();
+      return true;
+    case CacheOp::CallSubstringKernelResult:
+      // a: strId, beginId, lengthId.
+      if (!(Ops2() & 32768)) return false;
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      readReg(a[0]);
+      readReg(a[1]);
+      readReg(a[2]);
+      callHelper(uintptr_t(&SubstringKernelHelper), 4);
+      lset(L_A);
+      returnIfErrorSentinel();
+      lget(L_A);
+      lset(L_RET);
+      return true;
+    case CacheOp::RegExpSearcherLastLimitResult:
+      // Int32Value(cx->regExpSearcherLastLimit) (read only, as the case).
+      if (!(Ops2() & 65536)) return false;
+      lget(L_CTX);
+      load32(kCtxCx);
+      load32(uint32_t(JSContext::offsetOfRegExpSearcherLastLimit()));
+      RET_INT32_FROM_I32();
+      return true;
+    case CacheOp::MegamorphicLoadSlotResult:
+      // a: objId, nameOffset. Helper: 0 = FAIL_IC, else result in stepRet.
+      if (!(Ops2() & 131072)) return false;
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      readReg(a[0]);
+      field32(fieldOff(1));
+      op(OP_I64EXTU);
+      callHelper(uintptr_t(&MegamorphicLoadSlotHelper), 3);
+      op(OP_I64EQZ);
+      failIf();
+      lget(L_CTX);
+      load64(kCtxStepRet);
+      lset(L_RET);
+      return true;
+    case CacheOp::CallNativeFunction: {
+      // a: calleeId, argcId, flags, argcFixed (u32), ignoresRv. Other realms
+      // and non-Standard formats FAIL_IC in the case: left stepped.
+      if (!(Ops2() & 262144)) return false;
+      CacheIRReader r(a, a + kIcOpInfo[uint32_t(cop)].len);
+      (void)r.objOperandId();
+      (void)r.int32OperandId();
+      CallFlags flags = r.callFlags();
+      (void)r.uint32Immediate();
+      bool ignoresRv = r.readBool();
+      if (!flags.isSameRealm() ||
+          flags.getArgFormat() != CallFlags::Standard) {
+        return false;
+      }
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      lget(L_STUB);
+      op(OP_I64EXTU);
+      readReg(a[0]);
+      readReg(a[1]);
+      i64c((flags.isConstructing() ? 1 : 0) | (ignoresRv ? 2 : 0));
+      callHelper(uintptr_t(&CallNativeHelper), 5);
+      ltee(L_A);
+      op(OP_I64EQZ);
+      failIf();
+      returnIfErrorSentinel();
+      lget(L_CTX);
+      load64(kCtxStepRet);
+      lset(L_RET);
+      return true;
+    }
     case CacheOp::StoreFixedSlot:
       readReg32(a[0]);
       field32(fieldOff(1));
@@ -1680,6 +2409,8 @@ bool Translator::runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
                            uint32_t doneDepth) {
   if (!validate()) return false;
   if (observation) return reject("inline: observation");
+  inlResult = result;
+  inlDone = doneDepth;
   lget(arg0);
   writeValueReg(0);
   lget(arg1);
@@ -2044,6 +2775,7 @@ struct Entry {
   uint32_t fn;
   uint8_t sdo;
   uint8_t state;  // 0 counting, 1 compiled, 2 rejected
+  const char* why;  // reject reason (PBLIC_DYNSTAT)
 };
 
 thread_local Entry* tTable;
@@ -2062,6 +2794,7 @@ bool SameContent(const Entry* e, const CacheIRStubInfo* info) {
 void Compile(Entry* e, const CacheIRStubInfo* info, ICCtx& ctx) {
   if (gInstalls.load(std::memory_order_relaxed) >= kMaxInstalls) {
     e->state = 2;
+    e->why = "max installs";
     return;
   }
   Translator t;
@@ -2110,6 +2843,7 @@ void Compile(Entry* e, const CacheIRStubInfo* info, ICCtx& ctx) {
   }
   if (!ok) {
     e->state = 2;
+    e->why = t.reason ? t.reason : "?";
     gRejects.fetch_add(1, std::memory_order_relaxed);
     if (TakeLog()) {
       fprintf(stderr, "PBLIC reject len=%u reason=%s rc=%ld bytes=%zu\n", t.len,
@@ -2183,6 +2917,108 @@ uint8_t* Enter(ICCacheIRStub* stub, ICCtx& ctx) {
   if (e->state == 1) return reinterpret_cast<uint8_t*>(uintptr_t(e->fn));
   if (e->state == 2) return interp;
   return nullptr;
+}
+
+// PBLIC_DYNSTAT: whole-stub interpreter runs keyed by stub info.
+struct DynEnt {
+  const CacheIRStubInfo* info;
+  uint64_t n;
+  const char* why;
+};
+constexpr uint32_t kDynBits = 14;
+DynEnt* gDyn;
+uint64_t gDynWhole, gDynLost;
+
+void CountInterp(ICCacheIRStub* stub) {
+  const CacheIRStubInfo* info = stub->stubInfo();
+  gDynWhole++;
+  if (!gDyn) {
+    gDyn = static_cast<DynEnt*>(calloc(size_t(1) << kDynBits, sizeof(DynEnt)));
+    if (!gDyn) return;
+  }
+  const char* why = "no table entry";
+  if (!Enabled()) {
+    why = "PBLIC disabled";
+  } else if (tTable) {
+    uint32_t h = Hash(info);
+    for (uint32_t i = 0; i < kProbe; i++) {
+      Entry* c = &tTable[(h + i) & ((1u << kTableBits) - 1)];
+      if (c->info == info) {
+        why = c->state == 0   ? "counting (below kHits)"
+              : c->state == 2 ? (c->why ? c->why : "rejected")
+                              : "compiled entry but interp code";
+        break;
+      }
+    }
+  }
+  uint32_t h = (uint32_t(uintptr_t(info)) * 2654435761u) >> (32 - kDynBits);
+  for (uint32_t i = 0; i < 64; i++) {
+    DynEnt* d = &gDyn[(h + i) & ((1u << kDynBits) - 1)];
+    if (d->info == info || !d->info) {
+      d->info = info;
+      d->n++;
+      d->why = why;
+      return;
+    }
+  }
+  gDynLost++;
+}
+
+void PrintDynStat() {
+  fprintf(stderr, "PBLIC dynstat: whole_interp=%llu lost=%llu entries=%u fails=%u steps=%u\n",
+          (unsigned long long)gDynWhole, (unsigned long long)gDynLost,
+          gStats[kStatEntries], gStats[kStatFails], gStats[kStatSteps]);
+  // Stepped ops, top 30.
+  for (uint32_t k = 0; k < 30; k++) {
+    uint32_t best = 0;
+    uint64_t bn = 0;
+    for (uint32_t i = 0; i < uint32_t(CacheOp::NumOpcodes); i++) {
+      if (gStepOps64[i] > bn) bn = gStepOps64[i], best = i;
+    }
+    if (!bn) break;
+    fprintf(stderr, "PBLIC dynstat: step op=%s n=%llu\n", CacheIROpNames[best],
+            (unsigned long long)bn);
+    gStepOps64[best] = 0;
+  }
+  if (!gDyn) return;
+  // Whole-stub runs by reason (aggregate), then top 40 stub infos.
+  const char* rs[32];
+  uint64_t rn[32];
+  uint32_t nr = 0;
+  for (uint32_t i = 0; i < (1u << kDynBits); i++) {
+    DynEnt* d = &gDyn[i];
+    if (!d->info) continue;
+    uint32_t k = 0;
+    while (k < nr && strcmp(rs[k], d->why)) k++;
+    if (k == nr && nr < 32) rs[nr] = d->why, rn[nr++] = 0;
+    if (k < nr) rn[k] += d->n;
+  }
+  for (uint32_t k = 0; k < nr; k++) {
+    fprintf(stderr, "PBLIC dynstat: whole reason=\"%s\" n=%llu\n", rs[k],
+            (unsigned long long)rn[k]);
+  }
+  for (uint32_t k = 0; k < 40; k++) {
+    DynEnt* best = nullptr;
+    for (uint32_t i = 0; i < (1u << kDynBits); i++) {
+      DynEnt* d = &gDyn[i];
+      if (d->info && d->n && (!best || d->n > best->n)) best = d;
+    }
+    if (!best) break;
+    char buf[600];
+    int len = 0;
+    const uint8_t* code = best->info->code();
+    uint32_t clen = best->info->codeLength();
+    for (uint32_t pos = 0; pos + 2 <= clen && len < 520;) {
+      uint32_t o = uint32_t(code[pos]) | (uint32_t(code[pos + 1]) << 8);
+      if (o >= uint32_t(CacheOp::NumOpcodes)) break;
+      len += snprintf(buf + len, sizeof buf - len, " %s", CacheIROpNames[o]);
+      pos += 2 + kIcOpInfo[o].len;
+    }
+    buf[len] = 0;
+    fprintf(stderr, "PBLIC dynstat: stub n=%llu why=\"%s\" ops:%s\n",
+            (unsigned long long)best->n, best->why, buf);
+    best->n = 0;
+  }
 }
 
 // See the inline-mode comment block above EmitInline.

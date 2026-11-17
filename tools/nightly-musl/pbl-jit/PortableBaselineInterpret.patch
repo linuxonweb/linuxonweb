@@ -116,12 +116,14 @@
  
    ICCtx(JSContext* cx, BaselineFrame* frame_, State& state_, Stack& stack_)
        : frame(frame_),
-@@ -545,9 +631,14 @@
+@@ -545,9 +631,16 @@
    }
  }
  
 +namespace pblic {
 +void CountStep(const uint8_t* at);
++extern bool gDynStat;
++void CountInterp(ICCacheIRStub* stub);
 +}
 +
  // Interpreter for CacheIR.
@@ -131,7 +133,7 @@
    {
  #define DECLARE_CACHEOP_CASE(name) __label__ cacheop_##name
  
-@@ -668,6 +759,7 @@
+@@ -668,6 +761,7 @@
      DECLARE_CACHEOP_CASE(MegamorphicSetElement);
      DECLARE_CACHEOP_CASE(StoreFixedSlot);
      DECLARE_CACHEOP_CASE(StoreDynamicSlot);
@@ -139,7 +141,7 @@
      DECLARE_CACHEOP_CASE(AddAndStoreFixedSlot);
      DECLARE_CACHEOP_CASE(AddAndStoreDynamicSlot);
      DECLARE_CACHEOP_CASE(AllocateAndStoreDynamicSlot);
-@@ -829,6 +921,10 @@
+@@ -829,6 +923,10 @@
      DECLARE_CACHEOP_CASE(LoadStringAtResult);
      DECLARE_CACHEOP_CASE(LoadStringCodePointResult);
      DECLARE_CACHEOP_CASE(CallNativeGetterResult);
@@ -150,7 +152,7 @@
      DECLARE_CACHEOP_CASE(LoadUndefinedResult);
      DECLARE_CACHEOP_CASE(LoadDoubleConstant);
      DECLARE_CACHEOP_CASE(LoadBooleanConstant);
-@@ -884,7 +980,8 @@
+@@ -884,7 +982,8 @@
  
  #define PREDICT_NEXT(name)                            \
    static_assert(CacheOp::name != CacheOp::PblReturn); \
@@ -160,7 +162,7 @@
      cacheIRReader.readOp();                           \
      cacheop = CacheOp::name;                          \
      goto cacheop_##name;                              \
-@@ -893,18 +990,29 @@
+@@ -893,18 +992,30 @@
  #define PREDICT_RETURN()                                 \
    if (!cacheIRReader.more()) {                           \
      TRACE_PRINTF("stub successful, predicted return\n"); \
@@ -187,6 +189,7 @@
 +      ctx.stepDone = 0;
 +      pblic::CountStep(stepCode + ctx.stepOff);
 +    } else {
++      if (pblic::gDynStat) pblic::CountInterp(cstub);
 +      WRITE_VALUE_REG(0, Value::fromRawBits(arg0));
 +      WRITE_VALUE_REG(1, Value::fromRawBits(arg1));
 +      WRITE_VALUE_REG(2, Value::fromRawBits(ctx.arg2));
@@ -194,7 +197,7 @@
  
      DISPATCH_CACHEOP();
  
-@@ -916,6 +1024,7 @@
+@@ -916,6 +1027,7 @@
  
        CACHEOP_CASE(PblReturn) {
          TRACE_PRINTF("stub successful!\n");
@@ -202,7 +205,7 @@
          return retValue;
        }
  
-@@ -1071,8 +1180,9 @@
+@@ -1071,8 +1183,9 @@
            DISPATCH_CACHEOP();
          } else if (val.isDouble()) {
            double doubleVal = val.toDouble();
@@ -214,7 +217,7 @@
              DISPATCH_CACHEOP();
            }
          }
-@@ -1935,6 +2045,31 @@
+@@ -1935,6 +2048,31 @@
          DISPATCH_CACHEOP();
        }
  
@@ -246,7 +249,7 @@
        CACHEOP_CASE(StoreDynamicSlot) {
          ObjOperandId objId = cacheIRReader.objOperandId();
          uint32_t offsetOffset = cacheIRReader.stubOffset();
-@@ -2258,16 +2393,31 @@
+@@ -2258,16 +2396,31 @@
        }
  
        CACHEOP_CASE(CallScriptedFunction)
@@ -281,7 +284,7 @@
            ignoresRv = cacheIRReader.readBool();
          }
  
-@@ -3818,8 +3968,8 @@
+@@ -3818,8 +3971,8 @@
            FAIL_IC();
          }
          double result = std::floor(input);
@@ -292,7 +295,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3834,8 +3984,8 @@
+@@ -3834,8 +3987,8 @@
            FAIL_IC();
          }
          double result = std::ceil(input);
@@ -303,7 +306,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3846,12 +3996,12 @@
+@@ -3846,12 +3999,12 @@
        CACHEOP_CASE(MathTruncToInt32Result) {
          NumberOperandId inputId = cacheIRReader.numberOperandId();
          double input = READ_VALUE_REG(inputId.id()).toNumber();
@@ -319,7 +322,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3865,8 +4015,8 @@
+@@ -3865,8 +4018,8 @@
          if (input == 0.0 && std::signbit(input)) {
            FAIL_IC();
          }
@@ -330,7 +333,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3978,8 +4128,8 @@
+@@ -3978,8 +4131,8 @@
          if (std::isnan(input)) {
            FAIL_IC();
          }
@@ -341,7 +344,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(result).asRawBits();
-@@ -4412,6 +4562,50 @@
+@@ -4412,6 +4565,50 @@
          DISPATCH_CACHEOP();
        }
  
@@ -392,7 +395,7 @@
        CACHEOP_CASE(CallNativeSetter) {
          ValOperandId receiverId = cacheIRReader.valOperandId();
          uint32_t setterOffset = cacheIRReader.stubOffset();
-@@ -5410,13 +5604,18 @@
+@@ -5410,13 +5607,18 @@
  #define CACHEOP_UNIMPL(name, ...)               \
    cacheop_##name : __attribute__((unused));     \
    TRACE_PRINTF("unknown CacheOp: " #name "\n"); \
@@ -412,7 +415,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +5967,23 @@
+@@ -5768,8 +5970,23 @@
    }
  }
  
@@ -437,7 +440,7 @@
  }
  
  /*
-@@ -5810,8 +6024,9 @@
+@@ -5810,8 +6027,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -449,7 +452,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5935,7 +6150,8 @@
+@@ -5935,7 +6153,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -459,7 +462,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6190,9 @@
+@@ -5974,6 +6193,9 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -469,7 +472,7 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -8208,6 +8427,97 @@
+@@ -8208,6 +8430,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -567,7 +570,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8550,7 @@
+@@ -8240,6 +8553,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -575,7 +578,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8716,16 @@
+@@ -8405,6 +8719,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -592,7 +595,7 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -9160,6 +9481,35 @@
+@@ -9160,6 +9484,35 @@
  
    DISPATCH();
  
@@ -628,7 +631,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9698,25 @@
+@@ -9348,10 +9701,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -655,7 +658,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9733,33 @@
+@@ -9368,18 +9736,33 @@
        return MethodStatus::Method_CantCompile;
      }
    }

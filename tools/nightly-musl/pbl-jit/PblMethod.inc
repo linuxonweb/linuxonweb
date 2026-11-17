@@ -75,7 +75,7 @@ constexpr uint8_t T_I32 = 0x7f, T_I64 = 0x7e, T_F64 = 0x7c;
 
 // Parameters (all i64 under fpcast-emu).
 constexpr uint32_t P_FRAME = 0, P_SP = 1, P_OP = 2, P_ICE = 3, P_CTX = 4,
-                   P_IO = 5, P_ARGV = 6, P_FLAGS = 7, P_GLEX = 8, P_IRQ = 9,
+                   P_IO = 5, P_ARGV = 6, P_FLAGS = 7, P_GLEX = 8 /* 0 */, P_IRQ = 9,
                    P_EPC = 10, P_CX = 11;
 constexpr uint32_t kNParams = 23;
 // Locals.
@@ -129,7 +129,54 @@ constexpr uint32_t kLoopSkip = 0x80000000u, kLoopSkipMisses = 1500;
 int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
 int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
-                     int64_t ctx);
+                     int64_t ctx, int64_t site);
+int64_t CallScriptedHit(int64_t frame, int64_t sp, int64_t pc,
+                        int64_t icEntry, int64_t ctx, int64_t site);
+struct Entry;
+// PBLBC_SITECACHE (default on; 0: generated code and CallScripted exactly as
+// without it). One CallSite per compiled direct-call op (Call/CallIgnoresRv/
+// CallContent/CallIter/CallContentIter/New/NewContent), owned by the caller
+// script's Entry (allocated with the compiled code, never moved or freed while
+// the Entry exists; Entries are never removed). Zero-initialised = empty.
+// The generated code compares the callee Value's 64 bits with calleeBits:
+// equal -> CallScriptedHit (re-validates only what can change while the
+// callee function object stays the same), else the inline callee pre-checks
+// and CallScripted (full checks; fills the site when every precondition
+// passed). Raw untraced pointers: nothing but calleeBits/epoch/gen is trusted
+// unless epoch == GcEpoch (no minor/major GC since the fill: the function
+// object did not move or die, no script/JitScript/Entry data was swept) and
+// gen == tEntryGen (no Entry created or changed state).
+struct CallSite {
+  uint64_t calleeBits;  // raw boxed callee Value; 0 = empty
+  uint64_t epoch;       // GcEpoch at fill (never 0 for a filled site)
+  uint32_t gen;         // tEntryGen at fill
+  uint32_t j0;          // callee Entry opAt[0]
+  JSFunction* func;
+  JSScript* script;
+  JS::Realm* realm;     // callee realm (cx->realm() must equal it)
+  const ImmutableScriptData* isd;
+  Entry* e;
+  jsbytecode* code;
+  uint32_t fn;          // e->fn
+  uint32_t icIdx0;      // e->icIdx[j0]
+  uint32_t nfixed;
+  uint32_t argc;
+  uint32_t undefArgs;
+  uint32_t totalArgs;
+  uint32_t stackBytes;  // callee stack check (dominates the caller check)
+  bool constructing;
+  bool needEnv;
+  bool retRval0;
+  bool aliased;         // argsObjAliasesFormals
+  bool thisCacheOk;     // gThisCache && !constructorNeedsUninitializedThis
+  uint32_t refills;     // fills replacing a different live callee
+};
+bool gSiteCache = true;
+// A site whose callee keeps changing (e.g. a fresh closure per iteration) is
+// no longer refilled after this many replacements (the fill costs more than
+// it saves); it keeps its last callee.
+constexpr uint32_t kSiteMaxRefills = 16;
+uint32_t gSiteFills, gSiteStale, gSiteRecheck;  // racy stats
 // PBLBC_COVC helpers (frame, sp, pc, ctx): see the header comment.
 enum : unsigned { kCovcAdd = 1, kCovcInitElemArray = 2, kCovcSetAliased = 4 };
 constexpr unsigned kCovcDefault = kCovcAdd | kCovcInitElemArray |
@@ -267,6 +314,9 @@ void PrintDirectStats() {
           s[kDsStack], s[kDsEnvObjects], s[kDsCalleeDebuggee], s[kDsCounts],
           s[kDsInterrupt], s[kDsCalleeStack], s[kDsNotCompiled],
           s[kDsEntryExit], s[kDsCtorError], s[kDsCtorChanged]);
+  if (gSiteCache)
+    fprintf(stderr, "PBLBC sitecache: fills=%u stale=%u recheck_fail=%u\n",
+            gSiteFills, gSiteStale, gSiteRecheck);
 }
 
 // PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
@@ -345,9 +395,23 @@ void PrintExitStats() {
   }
 }
 
+// One-time env init. Main thread and DOM workers can reach Enabled()
+// concurrently: exactly one thread (CAS on gInitState) writes the plain
+// configuration globals, then publishes gEnabled with release; every reader
+// loads gEnabled with acquire, so it sees the complete configuration. Losers
+// wait for the winner (init is a few getenv calls).
+std::atomic<int> gInitState{0};  // 0 not started, 1 running, 2 done
 bool Enabled() {
-  int e = gEnabled.load(std::memory_order_relaxed);
-  if (e < 0) {
+  int e = gEnabled.load(std::memory_order_acquire);
+  if (MOZ_UNLIKELY(e < 0)) {
+    int expected = 0;
+    if (!gInitState.compare_exchange_strong(expected, 1,
+                                            std::memory_order_acq_rel)) {
+      while ((e = gEnabled.load(std::memory_order_acquire)) < 0) {
+        sched_yield();
+      }
+      return e != 0;
+    }
     const char* v = getenv("PBLBC");
     e = (v && v[0] == '0') || !pblic::Enabled() ? 0 : 1;
     const char* h = getenv("PBLBC_HITS");
@@ -382,7 +446,6 @@ bool Enabled() {
     const int logBudget = l ? atoi(l) : 40;
     gLogBudget.store(logBudget, std::memory_order_relaxed);
     gLogEnabled.store(logBudget > 0, std::memory_order_relaxed);
-    gEnabled.store(e, std::memory_order_relaxed);
     if (logBudget > 0) {
       fprintf(stderr, "PBLBC %s (threshold=%u ic=%d loopexit=%d loopjit=%d)\n",
               e ? "enabled" : "disabled", gHits, int(gIcInline), int(gLoopExit),
@@ -393,6 +456,8 @@ bool Enabled() {
     if (gInl && (logBudget > 0 || gInlStat)) atexit(PrintInlineStats);
     const char* ccv = getenv("PBLBC_CALLCACHE");
     if (ccv && ccv[0] == '0') gCallCache = false;
+    const char* scv = getenv("PBLBC_SITECACHE");
+    if (scv && scv[0] == '0') gSiteCache = false;
     const char* tcv = getenv("PBLBC_THISCACHE");
     if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
@@ -402,6 +467,9 @@ bool Enabled() {
       gExitStat = true;
       atexit(PrintExitStats);
     }
+    // Publish last: all configuration globals above are complete.
+    gEnabled.store(e, std::memory_order_release);
+    gInitState.store(2, std::memory_order_release);
   }
   return e != 0;
 }
@@ -434,6 +502,8 @@ struct MT {
   uint16_t* opAt = nullptr;  // pc offset -> op index (0xffff: none)
   void* entry = nullptr;     // cache entry (constant in the code)
   uint32_t* loopState = nullptr;  // per op: LoopHook misses | kLoopSkip
+  CallSite* sites = nullptr;  // PBLBC_SITECACHE: one per direct-call op
+  uint32_t nSites = 0, capSites = 0;
   Buf b;
   uint32_t lvl = 0;  // blocks open inside the current op's code
   uint32_t cur = 0;  // current op index
@@ -457,6 +527,7 @@ struct MT {
     free(ops);
     free(opAt);
     free(loopState);
+    free(sites);
   }
   bool reject(const char* why) {
     reason = why;
@@ -703,6 +774,21 @@ struct MT {
     end();
   }
 
+  // i64 = cx->realm()->activeGlobal()->data().lexicalEnvironment (wasm32,
+  // JS_NUNBOX32: the GlobalObjectData* PrivateValue payload is the low word).
+#if !defined(JS_NUNBOX32)
+#  error "loadGlobalLexical assumes the JS_NUNBOX32 PrivateValue layout"
+#endif
+  void loadGlobalLexical() {
+    static_assert(sizeof(void*) == 4, "wasm32 pointers");
+    lget(P_CX);
+    op(OP_I32WRAP);
+    load32(uint32_t(JSContext::offsetOfRealm()));
+    load32(uint32_t(JS::Realm::offsetOfActiveGlobal()));
+    load32(uint32_t(GlobalObject::offsetOfGlobalDataSlot()));
+    load32(uint32_t(GlobalObjectData::offsetOfLexicalEnvironment()));
+    op(OP_I64EXTU);
+  }
   // INVOKE_IC for op cur with args in i64 locals (or zero when ~0u). The
   // result is left in L_R; an error result returns kIcError at this op.
   void invokeIC(uint32_t a0, uint32_t a1, uint32_t a2, bool hasArg2) {
@@ -1139,8 +1225,90 @@ bool MT::nativeCall() {
   // constructing], newTarget at sp[0]; the IC gets extraArgs 2 + constructing.
   const uint32_t ctor =
       (ops[cur].op == JSOp::New || ops[cur].op == JSOp::NewContent) ? 1 : 0;
+  const bool direct =
+      gDirect && (!ctor || ((gCovd & kCovdNewScripted) && (gCovd & kCovdNew)));
+  // r = helper(frame, sp, pc, icEntry, ctx, site); r == 1: the callee frame
+  // is pushed, return to the interpreter in it (Hook: kRanNewFrame). r == 0:
+  // nothing changed, falls through (the caller emits the exit at the op).
+  auto directCall = [&](int64_t (*helper)(int64_t, int64_t, int64_t, int64_t,
+                                          int64_t, int64_t),
+                        CallSite* site) {
+    const OpInfo& o = ops[cur];
+    lget(P_FRAME);
+    lget(L_SP);
+    op(OP_I64EXTU);
+    lget(L_EPC);
+    i32c(int32_t(o.pcOff));
+    op(OP_I32ADD);
+    op(OP_I64EXTU);
+    lget(L_ICE);
+    i32c(int32_t(o.icIdx * sizeof(ICEntry)));
+    op(OP_I32ADD);
+    op(OP_I64EXTU);
+    lget(P_CTX);
+    uint32_t i = 5;
+    if (site) {
+      i64c(int64_t(uintptr_t(site)));
+      i++;
+    }
+    for (; i < kNParams; i++) i64c(0);
+    i32c(int32_t(uintptr_t(helper)));
+    b.put(OP_CALLIND);
+    b.uleb(0);
+    b.uleb(0);
+    ltee(L_R);
+    i64c(1);
+    op(OP_I64EQ);
+    ifThen();
+    i64c(int64_t((uint64_t(kFrameSwitch) << 32) | o.pcOff));
+    op(OP_RETURN);
+    end();
+    // r > 1: the call completed inline; r is the sp after it.
+    i64c(1);
+    lget(L_R);
+    op(OP_I64LTU);
+    ifThen();
+    lget(L_R);
+    op(OP_I32WRAP);
+    lset(L_SP);
+    debugCheckNext();
+    jumpTo(cur + 1);
+    end();
+  };
+  CallSite* site = nullptr;
+  if (direct && gSiteCache) {
+    if (!sites) {
+      for (uint32_t k = 0; k < n; k++) {
+        switch (ops[k].op) {
+          case JSOp::Call: case JSOp::CallIgnoresRv: case JSOp::CallContent:
+          case JSOp::CallIter: case JSOp::CallContentIter: case JSOp::New:
+          case JSOp::NewContent:
+            capSites++;
+            break;
+          default:
+            break;
+        }
+      }
+      sites = static_cast<CallSite*>(calloc(capSites, sizeof(CallSite)));
+      if (!sites) return reject("oom");
+    }
+    if (nSites >= capSites) return reject("call sites");
+    site = &sites[nSites++];
+  }
   ld(argc + 1 + ctor);
   lset(L_A);
+  if (site) {
+    // Site hit: the callee is exactly the function object the site was filled
+    // for; the tag/class/flags pre-checks below are skipped.
+    lget(L_A);
+    i32c(int32_t(uintptr_t(site)));
+    load64(uint32_t(offsetof(CallSite, calleeBits)));
+    op(OP_I64EQ);
+    ifThen();
+    directCall(&CallScriptedHit, site);
+    exitHere();
+    end();
+  }
   tagIs(L_A, JSVAL_TAG_OBJECT);
   op(OP_I32EQZ);
   ifThen();
@@ -1167,47 +1335,8 @@ bool MT::nativeCall() {
   i32c(int32_t(FunctionFlags::BASESCRIPT | FunctionFlags::SELFHOSTLAZY));
   op(OP_I32AND);
   ifThen();
-  if (gDirect && (!ctor || ((gCovd & kCovdNewScripted) &&
-                            (gCovd & kCovdNew)))) {
-    // r = CallScripted(frame, sp, pc, icEntry, ctx); r == 1: the callee
-    // frame is pushed, return to the interpreter in it (Hook: kRanNewFrame).
-    // r == 0: nothing changed, exit at the Call op as without PBLBC_DIRECT.
-    const OpInfo& o = ops[cur];
-    lget(P_FRAME);
-    lget(L_SP);
-    op(OP_I64EXTU);
-    lget(L_EPC);
-    i32c(int32_t(o.pcOff));
-    op(OP_I32ADD);
-    op(OP_I64EXTU);
-    lget(L_ICE);
-    i32c(int32_t(o.icIdx * sizeof(ICEntry)));
-    op(OP_I32ADD);
-    op(OP_I64EXTU);
-    lget(P_CTX);
-    for (uint32_t i = 5; i < kNParams; i++) i64c(0);
-    i32c(int32_t(uintptr_t(&CallScripted)));
-    b.put(OP_CALLIND);
-    b.uleb(0);
-    b.uleb(0);
-    ltee(L_R);
-    i64c(1);
-    op(OP_I64EQ);
-    ifThen();
-    i64c(int64_t((uint64_t(kFrameSwitch) << 32) | o.pcOff));
-    op(OP_RETURN);
-    end();
-    // r > 1: the call completed inline; r is the sp after it.
-    i64c(1);
-    lget(L_R);
-    op(OP_I64LTU);
-    ifThen();
-    lget(L_R);
-    op(OP_I32WRAP);
-    lset(L_SP);
-    debugCheckNext();
-    jumpTo(cur + 1);
-    end();
+  if (direct) {
+    directCall(&CallScripted, site);
   }
   exitHere();
   end();
@@ -2478,7 +2607,14 @@ bool MT::translateOp() {
       return true;
     case JSOp::GetGName:
     case JSOp::BindUnqualifiedGName:
-      lget(P_GLEX);
+      // CASE(GetGName): &cx->global()->lexicalEnvironment(), read at the op.
+      // Never cache it across the activation: a compacting GC (shrinking GC,
+      // e.g. relazifyFunctions or a last-ditch GC) can relocate the global
+      // lexical environment object while this frame is on the stack, and a
+      // pointer taken at entry would then name its forwarded old cell.
+      // Same chain as MacroAssembler::loadGlobalObjectData (no read barrier
+      // for the context's active global, as in JIT code).
+      loadGlobalLexical();
       lset(L_A);
       invokeIC(L_A, ~0u, ~0u, false);
       pushLocal(L_R);
@@ -2626,6 +2762,7 @@ struct Entry {
   uint32_t* icIdx;  // per op
   uint8_t* exitOp;  // per op
   uint32_t* loopState;  // per op (LoopHook)
+  CallSite* sites;      // PBLBC_SITECACHE call sites (constants in the code)
   uint8_t state;    // 0 counting, 1 compiled, 2 rejected
 };
 
@@ -2720,6 +2857,8 @@ void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
   t.opAt = nullptr;
   e->loopState = t.loopState;
   t.loopState = nullptr;
+  e->sites = t.sites;
+  t.sites = nullptr;
   e->nops = t.n;
   e->fn = idx[0];
   e->shared = script->sharedData();
@@ -2807,9 +2946,27 @@ struct CallCacheEntry {
 };
 constexpr uint32_t kCallCacheBits = 6;
 thread_local CallCacheEntry tCallCache[1u << kCallCacheBits];
+// gcNumber/minorGCCount are per runtime and restart at 0 in a new runtime,
+// while tCallCache/tThisCache are per thread. A thread can host several
+// runtimes over its lifetime (a worker runtime destroyed, a new one created on
+// the same thread, possibly at the same address and with recycled GC heap
+// addresses): entries filled under the old runtime must never match. The high
+// 16 bits carry a per-thread runtime serial, bumped whenever the runtime's
+// identity (address + GC statistics creation timestamp) changes; the GC counts
+// stay far below 2^48.
+thread_local const JSRuntime* tEpochRt;
+thread_local mozilla::TimeStamp tEpochRtBirth;
+thread_local uint64_t tEpochRtSerial;
 inline uint64_t GcEpoch(JSContext* cx) {
-  const js::gc::GCRuntime& gc = cx->runtime()->gc;
-  return gc.gcNumber() + gc.minorGCCount();
+  JSRuntime* rt = cx->runtime();
+  const js::gc::GCRuntime& gc = rt->gc;
+  const mozilla::TimeStamp birth = gc.stats().creationTime();
+  if (MOZ_UNLIKELY(rt != tEpochRt || birth != tEpochRtBirth)) {
+    tEpochRt = rt;
+    tEpochRtBirth = birth;
+    tEpochRtSerial++;
+  }
+  return (tEpochRtSerial << 48) + gc.gcNumber() + gc.minorGCCount();
 }
 
 // Conditions under which the CanGC allocation paths would do more than
@@ -2952,8 +3109,177 @@ inline void ThisCacheFill(JSContext* cx, JSFunction* func,
 // switch, tSwitch holds the innermost frame state) when the callee stops at
 // anything but Return/RetRval, otherwise performs the interpreter's return
 // sequence and returns the caller's sp after the call (value pushed).
+// Fast path steps 0-8 onwards, shared by CallScripted and CallScriptedHit.
+// Every precondition has been checked by the caller (nothing below refuses).
+// cScript: the callee script when it is known that no GC happened since
+// |epoch| was read (the return check may then use it instead of
+// newFrame->script()), else nullptr. calleePC/nfixed/aliased/icIdx0 are
+// functions of the callee script (its code/ImmutableScriptData/flags) and of
+// its Entry.
+MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
+                                   BaselineFrame* frame, StackVal* sp,
+                                   JSFunction* func, Entry* e, uint32_t j0,
+                                   uint32_t icIdx0, uint32_t argc,
+                                   uint32_t undefArgs, uint32_t totalArgs,
+                                   bool constructing, bool needEnv,
+                                   bool retRval0, bool aliased,
+                                   uint32_t nfixed, jsbytecode* calleePC,
+                                   JSScript* cScript, uint64_t epoch) {
+  // Fast path steps 0-8 (no GC, no VM calls from here on).
+  StackVal* origArgs = sp;
+  StackVal* exitFP = ctx.stack.pushExitFrame(sp, frame);
+  if (!exitFP) MOZ_CRASH("PBLBC: exit frame after stack check");
+  sp = exitFP;
+  PUSHNATIVE(StackValNative(nullptr));
+  // Padding first (highest addresses: argv[argc .. nargs-1]), then the actual
+  // args and this; the descriptor below keeps the actual argc.
+  for (uint32_t i = 0; i < undefArgs; i++) {
+    *--sp = StackVal(UndefinedValue());
+  }
+  for (uint32_t i = 0; i < totalArgs - undefArgs; i++) {
+    *--sp = origArgs[i];
+  }
+  PUSHNATIVE(StackValNative(CalleeToToken(func, constructing)));
+  PUSHNATIVE(StackValNative(
+      MakeFrameDescriptorForJitCall(FrameType::BaselineStub, argc)));
+  PUSHNATIVE(StackValNative(nullptr));
+  BaselineFrame* newFrame = ctx.stack.pushFrame(sp, cx, func->environment());
+  if (!newFrame) MOZ_CRASH("PBLBC: callee frame after stack check");
+  ctx.frameMgr.switchToFrame(newFrame);
+  ctx.frame = newFrame;
+  sp = reinterpret_cast<StackVal*>(newFrame);
+  for (uint32_t i = 0; i < nfixed; i++) {
+    *--sp = StackVal(UndefinedValue());
+  }
+  gDirectPushes++;
+  if (needEnv) {
+    // Fast path step 9: PUSH_EXIT_FRAME in the callee frame at its pc 0,
+    // InitFunctionEnvironmentObjects (can GC: func/calleeScript are reloaded
+    // from the frame). On failure the interpreter takes its error path in
+    // the callee frame at pc 0, exactly where the fast path's GOTO_ERROR is.
+    newFrame->interpreterPC() = calleePC;
+    bool ok;
+    {
+      VMFrame vcx(ctx.frameMgr, ctx.stack, sp);
+      if (!vcx.success()) MOZ_CRASH("PBLBC: env exit frame after stack check");
+      ok = js::InitFunctionEnvironmentObjects(vcx, newFrame);
+    }
+    JSScript* calleeScript = newFrame->script();
+    cScript = nullptr;  // InitFunctionEnvironmentObjects can GC
+    calleePC = calleeScript->code();
+    if (!ok || cx->hasAnyPendingInterrupt()) {
+      if (!ok) ctx.error = PBIResult::Error;
+      gDs[kDsEnvObjects]++;
+      tSwitch.frame = newFrame;
+      tSwitch.sp = sp;
+      tSwitch.pc = calleeScript->code();
+      tSwitch.icEntry = newFrame->interpreterICEntry();
+      tSwitch.icError = !ok;
+      return 1;
+    }
+  }
+  ICEntry* calleeIcEntries = newFrame->icScript()->icEntries();
+  ICEntry* calleeIcEntry = newFrame->interpreterICEntry();
+  // Run the callee's compiled code from op 0 like Hook does, unless the
+  // native nesting bound is reached or the IC cursor does not match (then
+  // the interpreter starts the callee at pc 0; Hook enters it from there).
+  JSOp op0 = JSOp(*calleePC);
+  uint32_t kind = kExit, exitOff = 0;
+  if (retRval0) {
+    // Op 0 is RetRval: nothing to run; return exactly as the interpreter's
+    // RetRval would (sp is the callee's initial sp, as at its op 0).
+    gDs[kDsInlineRetRval0]++;
+  } else {
+  const bool depthHit = tDirectDepth >= kMaxDirectDepth;
+  if (depthHit ||
+      (op0 != JSOp::JumpTarget && op0 != JSOp::LoopHead &&
+       newFrame->icScript()->numICEntries() != 0 &&
+       calleeIcEntry != calleeIcEntries + icIdx0)) {
+    gDs[depthHit ? kDsSwDepth : kDsSwIcCursor]++;
+    tSwitch.frame = newFrame;
+    tSwitch.sp = sp;
+    tSwitch.pc = calleePC;
+    tSwitch.icEntry = calleeIcEntry;
+    tSwitch.icError = false;
+    return 1;
+  }
+  struct {
+    uint32_t sp;
+  } io;
+  typedef uint64_t (*Fn)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+                         uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+                         uint64_t, uint64_t);
+  Fn fn = reinterpret_cast<Fn>(uintptr_t(e->fn));
+  gRuns++;
+  tDirectDepth++;
+  // func is not used after this call (it can GC).
+  uint64_t r = fn(uintptr_t(newFrame), uintptr_t(sp), j0,
+                  uintptr_t(calleeIcEntries), uintptr_t(&ctx), uintptr_t(&io),
+                  uintptr_t(newFrame->argv()),
+                  aliased ? kFlagArgsAliased : 0,
+                  0,  // P_GLEX: unused (loaded at each GetGName, can move)
+                  uintptr_t(cx->addressOfInterruptBits()), uintptr_t(calleePC),
+                  uintptr_t(cx));
+  tDirectDepth--;
+  kind = uint32_t(r >> 32);
+  if (kind == kFrameSwitch) {
+    gDs[kDsSwNested]++;
+    return 1;  // tSwitch was set by a nested call
+  }
+  exitOff = uint32_t(r);
+  sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
+  }
+  jsbytecode* xpc = calleePC + exitOff;
+  JSOp xop = JSOp(*xpc);
+  // The cached script stands for newFrame->script() only if no GC happened
+  // since the lookup (the callee's code can GC).
+  JSScript* retScript =
+      (cScript && GcEpoch(cx) == epoch) ? cScript : newFrame->script();
+  if (kind == kIcError || newFrame->isDebuggee() ||
+      retScript->hasScriptCounts() ||
+      (xop != JSOp::Return && xop != JSOp::RetRval)) {
+    gDs[kind == kIcError ? kDsSwIcError
+        : (xop == JSOp::Return || xop == JSOp::RetRval) ? kDsSwDebug
+                                                        : kDsSwExitOp]++;
+    uint32_t k = e->opAt[exitOff];
+    tSwitch.frame = newFrame;
+    tSwitch.sp = sp;
+    tSwitch.pc = xpc;
+    tSwitch.icEntry =
+        calleeIcEntries + ((xop == JSOp::JumpTarget || xop == JSOp::LoopHead)
+                               ? uint32_t(GET_INT32(xpc))
+                               : e->icIdx[k]);
+    tSwitch.icError = kind == kIcError;
+    return 1;
+  }
+  // The interpreter's Return / RetRval (not a debuggee, not from unwind,
+  // never the entry frame) followed by its return fast path.
+  if (xop == JSOp::Return) {
+    newFrame->setReturnValue((*sp++).asValue());
+  }
+  const uint32_t nargs = newFrame->numActualArgs();
+  sp = ctx.stack.popFrame();
+  Value ret = newFrame->returnValue();
+  sp = ctx.stack.popFrame();
+  POPNNATIVE(2);
+  BaselineFrame* callerFrame = reinterpret_cast<BaselineFrame*>(
+      reinterpret_cast<uintptr_t>(ctx.stack.fp) - BaselineFrame::Size());
+  if (callerFrame != frame) MOZ_CRASH("PBLBC: direct return frame mismatch");
+  ctx.frameMgr.switchToFrame(callerFrame);
+  ctx.frame = callerFrame;
+  // The interpreter's return fix-up for New/NewContent: a primitive return
+  // value is replaced by the this slot.
+  if (constructing && ret.isPrimitive()) ret = sp[nargs + 1].asValue();
+  sp += nargs + 2 + (constructing ? 1 : 0);
+  *--sp = StackVal(ret);
+  gDirectReturns++;
+  gDs[kDsInline]++;
+  return int64_t(uintptr_t(sp));
+}
+
 int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
-                     int64_t ctxA) {
+                     int64_t ctxA, int64_t siteA) {
+  auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
   auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
@@ -3099,6 +3425,39 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
       c->retRval0 = retRval0;
     }
   }
+  // Every precondition passed: fill the call site (PBLBC_SITECACHE). Nothing
+  // could have GC'd since the checks above.
+  if (site && (site->calleeBits == 0 || site->refills < kSiteMaxRefills)) {
+    if (site->calleeBits && site->calleeBits != callee.asRawBits())
+      site->refills++;
+    gSiteFills++;
+    site->calleeBits = callee.asRawBits();
+    site->epoch = gCallCache ? epoch : GcEpoch(cx);
+    site->gen = tEntryGen;
+    site->j0 = j0;
+    site->func = func;
+    site->script = calleeScript;
+    site->realm = calleeScript->realm();
+    site->isd = calleeScript->immutableScriptData();
+    site->e = e;
+    site->code = calleeScript->code();
+    site->fn = e->fn;
+    site->icIdx0 = e->icIdx[j0];
+    site->nfixed = calleeScript->nfixed();
+    site->argc = argc;
+    site->undefArgs = undefArgs;
+    site->totalArgs = totalArgs;
+    site->stackBytes = uint32_t(sizeof(StackVal) * (totalArgs + 16 +
+                                                    (needEnv ? 4 : 0)) +
+                                BaselineFrame::Size() +
+                                sizeof(StackVal) * nslots);
+    site->constructing = constructing;
+    site->needEnv = needEnv;
+    site->retRval0 = retRval0;
+    site->aliased = calleeScript->argsObjAliasesFormals();
+    site->thisCacheOk =
+        gThisCache && !func->constructorNeedsUninitializedThis();
+  }
   // Copies of the cached values (the cache slot can be overwritten by nested
   // calls); only used while nothing could have GC'd (useCached).
   bool useCached = ce != nullptr;
@@ -3168,159 +3527,92 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     useCached = false;  // CreateThis can GC: re-derive from calleeScript
   }
 
-  // Fast path steps 0-8 (no GC, no VM calls from here on).
-  StackVal* origArgs = sp;
-  StackVal* exitFP = ctx.stack.pushExitFrame(sp, frame);
-  if (!exitFP) MOZ_CRASH("PBLBC: exit frame after stack check");
-  sp = exitFP;
-  PUSHNATIVE(StackValNative(nullptr));
-  // Padding first (highest addresses: argv[argc .. nargs-1]), then the actual
-  // args and this; the descriptor below keeps the actual argc.
-  for (uint32_t i = 0; i < undefArgs; i++) {
-    *--sp = StackVal(UndefinedValue());
+  const uint32_t nfixedT = useCached ? cNfixed : calleeScript->nfixed();
+  jsbytecode* calleePCT = useCached ? cCode : calleeScript->code();
+  return CallTail(ctx, cx, frame, sp, func, e, j0, e->icIdx[j0], argc,
+                  undefArgs, totalArgs, constructing, needEnv, retRval0,
+                  calleeScript->argsObjAliasesFormals(), nfixedT, calleePCT,
+                  useCached ? cScript : nullptr, epoch);
+}
+
+// PBLBC_SITECACHE hit: the callee Value's bits equal site->calleeBits.
+// Re-validates only what can change while the callee function object stays
+// the same; on any failure it behaves exactly like the full path (stale site
+// identity: the site is emptied first, so the generated code's own pre-checks
+// run again next time; an empty site has epoch 0 which never equals GcEpoch,
+// so a callee Value of +0.0 matching calleeBits == 0 also lands here).
+//
+// Fixed per (site, function), not re-checked here:
+//  - opcode kind / constructing / argc: the site is one bytecode op (sites
+//    are per Entry = per ImmutableScriptData, i.e. the same bytecode).
+//  - JSObject class / isInterpreted / hasBaseScript: same object (no GC: not
+//    moved or finalized); a function's BASESCRIPT flag is only cleared by
+//    self-hosted relazification, which happens during GC (epoch).
+//  - isClassConstructor / isConstructor / nargs: FunctionFlags bits and arg
+//    count set at function creation, never changed afterwards.
+//  - callee realm: the callee script's realm (script == func->baseScript()
+//    re-checked). The CALLER realm is NOT fixed per site: Entries are keyed
+//    by ImmutableScriptData, which is shared by identical scripts in
+//    different realms, so cx->realm() == site->realm stays a per-call check.
+//  - undefArgs / totalArgs: functions of argc, nargs, constructing, gPadArgs.
+//  - needEnv, argsObjAliasesFormals, constructorNeedsUninitializedThis:
+//    immutable script flags of the (re-checked) script.
+//  - j0 / e / fn / icIdx0 / retRval0: Entry data; tEntryGen unchanged and
+//    an Entry in state 1 never changes. nfixed / nslots / code: the
+//    ImmutableScriptData (re-checked).
+int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
+                        int64_t iceA, int64_t ctxA, int64_t siteA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
+  const uint64_t epoch = GcEpoch(cx);
+  JSFunction* func = site->func;
+  JSScript* calleeScript = site->script;
+  if (MOZ_UNLIKELY(site->epoch != epoch || site->gen != tEntryGen ||
+                   func->baseScript() != calleeScript ||
+                   calleeScript->immutableScriptData() != site->isd)) {
+    site->calleeBits = 0;
+    gSiteStale++;
+    return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
   }
-  for (uint32_t i = 0; i < totalArgs - undefArgs; i++) {
-    *--sp = origArgs[i];
+  if (MOZ_UNLIKELY(!calleeScript->hasJitScript() ||
+                   cx->realm() != site->realm || frame->isDebuggee() ||
+                   calleeScript->isDebuggee() ||
+                   calleeScript->hasScriptCounts() ||
+                   cx->realm()->collectCoverageForDebug() ||
+                   cx->hasAnyPendingInterrupt() ||
+                   !ctx.stack.check(sp, site->stackBytes))) {
+    gSiteRecheck++;
+    return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
   }
-  PUSHNATIVE(StackValNative(CalleeToToken(func, constructing)));
-  PUSHNATIVE(StackValNative(
-      MakeFrameDescriptorForJitCall(FrameType::BaselineStub, argc)));
-  PUSHNATIVE(StackValNative(nullptr));
-  BaselineFrame* newFrame = ctx.stack.pushFrame(sp, cx, func->environment());
-  if (!newFrame) MOZ_CRASH("PBLBC: callee frame after stack check");
-  ctx.frameMgr.switchToFrame(newFrame);
-  ctx.frame = newFrame;
-  sp = reinterpret_cast<StackVal*>(newFrame);
-  const uint32_t nfixed = useCached ? cNfixed : calleeScript->nfixed();
-  for (uint32_t i = 0; i < nfixed; i++) {
-    *--sp = StackVal(UndefinedValue());
-  }
-  gDirectPushes++;
-  if (needEnv) {
-    // Fast path step 9: PUSH_EXIT_FRAME in the callee frame at its pc 0,
-    // InitFunctionEnvironmentObjects (can GC: func/calleeScript are reloaded
-    // from the frame). On failure the interpreter takes its error path in
-    // the callee frame at pc 0, exactly where the fast path's GOTO_ERROR is.
-    newFrame->interpreterPC() = calleeScript->code();
-    bool ok;
-    {
-      VMFrame vcx(ctx.frameMgr, ctx.stack, sp);
-      if (!vcx.success()) MOZ_CRASH("PBLBC: env exit frame after stack check");
-      ok = js::InitFunctionEnvironmentObjects(vcx, newFrame);
+  const bool constructing = site->constructing;
+  const uint32_t argc = site->argc;
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  auto* icEntry = reinterpret_cast<ICEntry*>(uintptr_t(iceA));
+  if (constructing) {
+    // newTarget must be the callee itself (same object <=> same bits).
+    if (sp[0].asValue().asRawBits() != site->calleeBits) {
+      return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
     }
-    calleeScript = newFrame->script();
-    useCached = false;  // InitFunctionEnvironmentObjects can GC
-    if (!ok || cx->hasAnyPendingInterrupt()) {
-      if (!ok) ctx.error = PBIResult::Error;
-      gDs[kDsEnvObjects]++;
-      tSwitch.frame = newFrame;
-      tSwitch.sp = sp;
-      tSwitch.pc = calleeScript->code();
-      tSwitch.icEntry = newFrame->interpreterICEntry();
-      tSwitch.icError = !ok;
-      return 1;
+    StackVal* thisSlot = sp + argc + 1;  // firstArg[1] of the full path
+    if (!thisSlot->asValue().isObject()) {
+      // Last check (allocates): only the NoGC |this| cache; anything else
+      // takes the full path (CreateThis).
+      PlainObject* fastThis =
+          site->thisCacheOk ? ThisCacheTryCreate(cx, func, calleeScript)
+                            : nullptr;
+      if (!fastThis) return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
+      *thisSlot = StackVal(ObjectValue(*fastThis));
     }
   }
-  jsbytecode* calleePC = useCached ? cCode : calleeScript->code();
-  ICEntry* calleeIcEntries = newFrame->icScript()->icEntries();
-  ICEntry* calleeIcEntry = newFrame->interpreterICEntry();
-  // Run the callee's compiled code from op 0 like Hook does, unless the
-  // native nesting bound is reached or the IC cursor does not match (then
-  // the interpreter starts the callee at pc 0; Hook enters it from there).
-  JSOp op0 = JSOp(*calleePC);
-  uint32_t kind = kExit, exitOff = 0;
-  if (retRval0) {
-    // Op 0 is RetRval: nothing to run; return exactly as the interpreter's
-    // RetRval would (sp is the callee's initial sp, as at its op 0).
-    gDs[kDsInlineRetRval0]++;
-  } else {
-  const bool depthHit = tDirectDepth >= kMaxDirectDepth;
-  if (depthHit ||
-      (op0 != JSOp::JumpTarget && op0 != JSOp::LoopHead &&
-       newFrame->icScript()->numICEntries() != 0 &&
-       calleeIcEntry != calleeIcEntries + e->icIdx[j0])) {
-    gDs[depthHit ? kDsSwDepth : kDsSwIcCursor]++;
-    tSwitch.frame = newFrame;
-    tSwitch.sp = sp;
-    tSwitch.pc = calleePC;
-    tSwitch.icEntry = calleeIcEntry;
-    tSwitch.icError = false;
-    return 1;
-  }
-  struct {
-    uint32_t sp;
-  } io;
-  typedef uint64_t (*Fn)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
-                         uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
-                         uint64_t, uint64_t);
-  Fn fn = reinterpret_cast<Fn>(uintptr_t(e->fn));
-  const bool aliased = calleeScript->argsObjAliasesFormals();
-  gRuns++;
-  tDirectDepth++;
-  // func and calleeScript are not used after this call (it can GC).
-  uint64_t r = fn(uintptr_t(newFrame), uintptr_t(sp), j0,
-                  uintptr_t(calleeIcEntries), uintptr_t(&ctx), uintptr_t(&io),
-                  uintptr_t(newFrame->argv()),
-                  aliased ? kFlagArgsAliased : 0,
-                  uintptr_t(&cx->global()->lexicalEnvironment()),
-                  uintptr_t(cx->addressOfInterruptBits()), uintptr_t(calleePC),
-                  uintptr_t(cx));
-  tDirectDepth--;
-  kind = uint32_t(r >> 32);
-  if (kind == kFrameSwitch) {
-    gDs[kDsSwNested]++;
-    return 1;  // tSwitch was set by a nested call
-  }
-  exitOff = uint32_t(r);
-  sp = reinterpret_cast<StackVal*>(uintptr_t(io.sp));
-  }
-  jsbytecode* xpc = calleePC + exitOff;
-  JSOp xop = JSOp(*xpc);
-  // The cached script stands for newFrame->script() only if no GC happened
-  // since the lookup (the callee's code can GC).
-  JSScript* retScript = (useCached && GcEpoch(cx) == epoch)
-                            ? cScript
-                            : newFrame->script();
-  if (kind == kIcError || newFrame->isDebuggee() ||
-      retScript->hasScriptCounts() ||
-      (xop != JSOp::Return && xop != JSOp::RetRval)) {
-    gDs[kind == kIcError ? kDsSwIcError
-        : (xop == JSOp::Return || xop == JSOp::RetRval) ? kDsSwDebug
-                                                        : kDsSwExitOp]++;
-    uint32_t k = e->opAt[exitOff];
-    tSwitch.frame = newFrame;
-    tSwitch.sp = sp;
-    tSwitch.pc = xpc;
-    tSwitch.icEntry =
-        calleeIcEntries + ((xop == JSOp::JumpTarget || xop == JSOp::LoopHead)
-                               ? uint32_t(GET_INT32(xpc))
-                               : e->icIdx[k]);
-    tSwitch.icError = kind == kIcError;
-    return 1;
-  }
-  // The interpreter's Return / RetRval (not a debuggee, not from unwind,
-  // never the entry frame) followed by its return fast path.
-  if (xop == JSOp::Return) {
-    newFrame->setReturnValue((*sp++).asValue());
-  }
-  const uint32_t nargs = newFrame->numActualArgs();
-  sp = ctx.stack.popFrame();
-  Value ret = newFrame->returnValue();
-  sp = ctx.stack.popFrame();
-  POPNNATIVE(2);
-  BaselineFrame* callerFrame = reinterpret_cast<BaselineFrame*>(
-      reinterpret_cast<uintptr_t>(ctx.stack.fp) - BaselineFrame::Size());
-  if (callerFrame != frame) MOZ_CRASH("PBLBC: direct return frame mismatch");
-  ctx.frameMgr.switchToFrame(callerFrame);
-  ctx.frame = callerFrame;
-  // The interpreter's return fix-up for New/NewContent: a primitive return
-  // value is replaced by the this slot.
-  if (constructing && ret.isPrimitive()) ret = sp[nargs + 1].asValue();
-  sp += nargs + 2 + (constructing ? 1 : 0);
-  *--sp = StackVal(ret);
-  gDirectReturns++;
-  gDs[kDsInline]++;
-  return int64_t(uintptr_t(sp));
+  frame->interpreterPC() = pc;
+  frame->interpreterICEntry() = icEntry;
+  return CallTail(ctx, cx, frame, sp, func, site->e, site->j0, site->icIdx0,
+                  argc, site->undefArgs, site->totalArgs, constructing,
+                  site->needEnv, site->retRval0, site->aliased, site->nfixed,
+                  site->code, calleeScript, epoch);
 }
 
 // Called at a DISPATCH with the hook pending (not a debuggee frame).
@@ -3371,7 +3663,7 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
   uint64_t r = fn(uintptr_t(frame), uintptr_t(sp), j, uintptr_t(icEntries),
                   uintptr_t(&ctx), uintptr_t(&io), uintptr_t(frame->argv()),
                   argsObjAliasesFormals ? kFlagArgsAliased : 0,
-                  uintptr_t(&cx->global()->lexicalEnvironment()),
+                  0,  // P_GLEX: unused (loaded at each GetGName, can move)
                   uintptr_t(cx->addressOfInterruptBits()), uintptr_t(entryPC),
                   uintptr_t(cx));
   uint32_t exitOff = uint32_t(r);
