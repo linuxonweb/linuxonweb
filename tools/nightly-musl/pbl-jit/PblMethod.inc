@@ -382,6 +382,16 @@ bool gIterOps = true;
 int64_t NewTargetHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t SuperBaseHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t SuperFunHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_TRAMPENTRY (default on; a value starting with '0' restores the old
+// path): a PortableBaselineInterpret run that starts at op 0 of a script
+// whose Entry is already compiled (state 1, op 0 enterable) calls Hook at op
+// 0 after the run's own prologue (frame push, recursion and stack checks,
+// nfixed init, environment objects, debug prologue, coverage, interrupt
+// check), instead of interpreting op 0 and calling Hook at op 1. Exits,
+// frame switches and errors take the normal bc_hook continuation; a
+// Return/RetRval exit returns through the interpreter's own return sequence.
+bool gTrampEntry = true;
+uint64_t gTeDirect, gTeFallback;
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -407,12 +417,13 @@ void PrintExitStats() {
           "PBLBC exitstat: entries=%llu exits=%llu kind0_exit=%llu "
           "kind1_icerror=%llu kind2_irq=%llu kind3_frameswitch=%llu "
           "compiled=%llu rejected=%llu frame_switches=%llu "
-          "direct_pushes=%u\n",
+          "direct_pushes=%u tramp_direct=%llu tramp_fallback=%llu\n",
           (unsigned long long)gEsEntries, (unsigned long long)total,
           (unsigned long long)perKind[0], (unsigned long long)perKind[1],
           (unsigned long long)perKind[2], (unsigned long long)perKind[3],
           (unsigned long long)gEsCompiled, (unsigned long long)gEsRejected,
-          (unsigned long long)gEsSwitches, gDirectPushes);
+          (unsigned long long)gEsSwitches, gDirectPushes,
+          (unsigned long long)gTeDirect, (unsigned long long)gTeFallback);
   for (uint32_t i = 0; i < kEsReasons && gEsReason[i]; i++) {
     fprintf(stderr, "PBLBC exitstat: reject reason=\"%s\" count=%llu\n",
             gEsReason[i], (unsigned long long)gEsReasonCount[i]);
@@ -520,6 +531,8 @@ bool Enabled() {
     if (cov && cov[0] == '0') gCheckOps = false;
     const char* iov = getenv("PBLBC_ITEROPS");
     if (iov && iov[0] == '0') gIterOps = false;
+    const char* tev = getenv("PBLBC_TRAMPENTRY");
+    if (tev && tev[0] == '0') gTrampEntry = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -4458,6 +4471,27 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
     return kRanIcError;
   }
   return kRan;
+}
+
+// PBLBC_TRAMPENTRY gate, called once at the start of a (non-restart)
+// interpreter run after its prologue, with pc at op 0. True when Hook would
+// enter compiled code at op 0 without compiling or counting a hit: the Entry
+// exists and is compiled, op 0 maps to an op index that is not an exit op,
+// and the script has no script counts. Hook itself re-checks everything
+// (IC cursor, debuggee via bc_hook) and may still return kPending/kNone,
+// after which the interpreter runs op 0 as before. False leaves the old
+// path untouched (Hook at op 1, counting hits / compiling there).
+bool TrampEntryReady(BaselineFrame* frame, jsbytecode* pc,
+                     ImmutableScriptData* isd) {
+  if (!gTrampEntry) return false;
+  JSScript* script = frame->script();
+  Entry* e = FindExisting(isd);
+  bool ok = e && e->state == 1 && pc == script->code() &&
+            script->immutableScriptData() == isd &&
+            !script->hasScriptCounts() && !frame->isDebuggee() &&
+            e->opAt[0] != 0xffff && !e->exitOp[e->opAt[0]];
+  if (MOZ_UNLIKELY(gExitStat)) (ok ? gTeDirect : gTeFallback)++;
+  return ok;
 }
 
 // Called by compiled code at a LoopHead (see MT::translateOp). Returns 0, or

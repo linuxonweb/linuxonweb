@@ -13,5 +13,5 @@ proves the run did not hang.
   IC and loop-tier code is live on the stack (globals, callee chains, shape
   guards, constructors, arrays, for-of, closures, try/catch).
 
-`arguments.js`, `checkops.js` and `iterops.js` have no `.expected` file: their whole stdout must be identical
+`arguments.js`, `checkops.js`, `iterops.js` and `trampentry.js` have no `.expected` file: their whole stdout must be identical
 across the three modes (tiers off, defaults, `PBLBC_HITS=2`).

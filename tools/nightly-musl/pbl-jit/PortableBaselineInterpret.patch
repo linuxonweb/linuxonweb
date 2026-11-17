@@ -472,7 +472,22 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -8208,6 +8430,97 @@
+@@ -6058,6 +6280,14 @@
+   TRACE_PRINTF("nslots = %d nfixed = %d\n", int(frame->script()->nslots()),
+                int(frame->script()->nfixed()));
+ 
++  // PBLBC_TRAMPENTRY: the prologue above is complete; enter already-compiled
++  // method-tier code at op 0 through the normal Hook continuation (exits,
++  // frame switches, errors and Return/RetRval all continue in this run
++  // exactly as after a Hook at any other op).
++  if (bcOn && pblbc::TrampEntryReady(frame, pc, isd)) {
++    goto bc_hook;
++  }
++
+   while (true) {
+     DEBUG_CHECK();
+ 
+@@ -8208,6 +8438,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -570,7 +585,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8553,7 @@
+@@ -8240,6 +8561,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -578,7 +593,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8719,16 @@
+@@ -8405,6 +8727,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -595,7 +610,7 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -9160,6 +9484,35 @@
+@@ -9160,6 +9492,35 @@
  
    DISPATCH();
  
@@ -631,7 +646,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9701,25 @@
+@@ -9348,10 +9709,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -658,7 +673,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9736,34 @@
+@@ -9368,18 +9744,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }
