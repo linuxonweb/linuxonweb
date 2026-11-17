@@ -335,6 +335,9 @@ bool gThisCache = true;
 // missing formals with undefined like the interpreter's scripted-call IC
 // (descriptor keeps the actual argc).
 bool gPadArgs = true;
+// PBLBC_VSTACK (default on): virtual operand stack in the method tier; 0
+// emits exactly the code without it.
+bool gVstack = true;
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -463,6 +466,8 @@ bool Enabled() {
     if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
     if (pav && pav[0] == '0') gPadArgs = false;
+    const char* vsv = getenv("PBLBC_VSTACK");
+    if (vsv && vsv[0] == '0') gVstack = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -491,6 +496,7 @@ struct OpInfo {
   uint32_t icIdx;  // static IC index before the op runs
   JSOp op;
   bool exit;  // never handled inline
+  bool noEntry = false;  // PBLBC_VSTACK: virtual entries live at op start
 };
 
 struct MT {
@@ -529,6 +535,7 @@ struct MT {
     free(opAt);
     free(loopState);
     free(sites);
+    free(isTgt);
   }
   bool reject(const char* why) {
     reason = why;
@@ -642,6 +649,14 @@ struct MT {
 
   // Jump to op k from inside op cur's code.
   void jumpTo(uint32_t k) {
+    if (k <= cur && ops[k].noEntry) {
+      reject("vstack jump target");
+      return;
+    }
+    if (vsN) {
+      reject("vstack live at jump");
+      return;
+    }
     if (k > cur) {
       br(k - (cur + 1) + lvl);
     } else {
@@ -654,8 +669,141 @@ struct MT {
     int64_t t = int64_t(ops[cur].pcOff) + delta;
     if (t < 0 || t >= int64_t(codeLen) || opAt[t] == 0xffff) return false;
     *k = opAt[t];
+    if (isTgt) isTgt[*k] = 1;
     return true;
   }
+
+  // ---- PBLBC_VSTACK: virtual operand stack ----
+  // vs[0..vsN) are the topmost operand-stack values (vs[vsN-1] on top) that
+  // are not in memory; L_SP does not count them. Each is a constant (boxed
+  // bits) or a pool i64 local. flush() stores them and moves L_SP once. The
+  // model is empty at every op boundary that can be entered or jumped to,
+  // at every jump and before every call/exit (vsExitHere spills first).
+  enum : uint8_t { VT_UNK = 0, VT_I32, VT_BOOL, VT_UNDNULL };
+  struct VEnt {
+    bool isConst;
+    uint8_t type;
+    uint32_t loc;
+    uint64_t bits;
+  };
+  static constexpr uint32_t kVsPool = 16;
+  static constexpr uint32_t kVsMax = 32;
+  static constexpr uint32_t kVsBase = kInlZero + 1;
+  VEnt vs[kVsMax];
+  uint32_t vsN = 0;
+  uint32_t vsFree = (1u << kVsPool) - 1;
+  bool vsUsed = false;
+  uint8_t* isTgt = nullptr;  // per op: some jump targets it
+
+  int vsAlloc() {
+    if (!vsFree) return -1;
+    int i = __builtin_ctz(vsFree);
+    vsFree &= ~(1u << i);
+    vsUsed = true;
+    return int(kVsBase) + i;
+  }
+  void vsRelease(const VEnt& e) {
+    if (!e.isConst) vsFree |= 1u << (e.loc - kVsBase);
+  }
+  void vsValue(const VEnt& e) {
+    if (e.isConst) {
+      i64c(int64_t(e.bits));
+    } else {
+      lget(e.loc);
+    }
+  }
+  // i32 payload of an entry.
+  void vsI32(const VEnt& e) {
+    if (e.isConst) {
+      i32c(int32_t(uint32_t(e.bits)));
+    } else {
+      lget(e.loc);
+      op(OP_I32WRAP);
+    }
+  }
+  // Emit: store vs[0..m) below L_SP and lower L_SP by m (model unchanged).
+  void vsEmitStore(uint32_t m) {
+    if (!m) return;
+    spAdd(-int32_t(m));
+    for (uint32_t i = 0; i < m; i++) {
+      lget(L_SP);
+      vsValue(vs[i]);
+      store64(8 * (m - 1 - i));
+    }
+  }
+  // Flush all but the top `keep` entries.
+  void vsFlushBelow(uint32_t keep) {
+    if (vsN <= keep) return;
+    uint32_t m = vsN - keep;
+    vsEmitStore(m);
+    for (uint32_t i = 0; i < m; i++) vsRelease(vs[i]);
+    memmove(vs, vs + m, keep * sizeof(VEnt));
+    vsN = keep;
+  }
+  void flush() { vsFlushBelow(0); }
+  // Exit at op cur from inside a branch of an aware op (the branch returns,
+  // so the compile-time model stays as it is for the other path).
+  void vsExitHere() {
+    vsEmitStore(vsN);
+    exitHere();
+  }
+  void vsPushConst(uint64_t bits, uint8_t type) {
+    if (vsN == kVsMax) flush();
+    vs[vsN++] = VEnt{true, type, 0, bits};
+  }
+  // A fresh pool local for a new top entry (flushes when exhausted).
+  uint32_t vsFreshLocal() {
+    if (vsN == kVsMax) flush();
+    int l = vsAlloc();
+    if (l < 0) {
+      flush();
+      l = vsAlloc();
+    }
+    return uint32_t(l);
+  }
+  void vsPushLocal(uint32_t l, uint8_t type) {
+    vs[vsN++] = VEnt{false, type, l, 0};
+  }
+  // Make the top m stack values virtual (pulling them from memory).
+  void vsMaterialize(uint32_t m) {
+    if (vsN >= m) return;
+    uint32_t k = m - vsN;
+    if (uint32_t(__builtin_popcount(vsFree)) < k || vsN + k > kVsMax) {
+      flush();
+      k = m;
+    }
+    memmove(vs + k, vs, vsN * sizeof(VEnt));
+    for (uint32_t i = 0; i < k; i++) {
+      int l = vsAlloc();
+      ld(k - 1 - i);
+      lset(uint32_t(l));
+      vs[i] = VEnt{false, VT_UNK, uint32_t(l), 0};
+    }
+    spAdd(int32_t(k));
+    vsN += k;
+  }
+  bool vsAware(JSOp jop) const {
+    switch (jop) {
+      case JSOp::Undefined: case JSOp::Null: case JSOp::True:
+      case JSOp::False: case JSOp::Zero: case JSOp::One: case JSOp::Int8:
+      case JSOp::Uint16: case JSOp::Uint24: case JSOp::Int32:
+      case JSOp::Double: case JSOp::GetLocal: case JSOp::GetArg:
+      case JSOp::SetLocal: case JSOp::InitLexical: case JSOp::Pop:
+      case JSOp::Dup: case JSOp::Dup2: case JSOp::Swap: case JSOp::Add:
+      case JSOp::Sub: case JSOp::Mul: case JSOp::BitOr: case JSOp::BitAnd:
+      case JSOp::BitXor: case JSOp::Lsh: case JSOp::Rsh: case JSOp::Ursh:
+      case JSOp::Inc: case JSOp::Dec: case JSOp::Eq: case JSOp::Ne:
+      case JSOp::Lt: case JSOp::Le: case JSOp::Gt: case JSOp::Ge:
+      case JSOp::StrictEq: case JSOp::StrictNe: case JSOp::Not:
+      case JSOp::JumpIfFalse: case JSOp::JumpIfTrue:
+        return true;
+      default:
+        return false;
+    }
+  }
+  int vsOp(const OpInfo& o, const jsbytecode* pc);
+  bool vsArith(JSOp jop);
+  bool bitArith(JSOp jop);
 
   // Tag tests on local l -> i32.
   void tagIs(uint32_t l, JSValueTag tag) {
@@ -1207,7 +1355,7 @@ bool MT::scan() {
     if (!len || off + len > codeLen) return reject("bad length");
     bool inl = IsInlineOp(jop) || (gIcInline && IsIcCallOp(jop));
     if (jop == JSOp::LoopHead && gLoopExit) inl = false;
-    ops[n] = OpInfo{off, ic, jop, !inl};
+    ops[n] = OpInfo{off, ic, jop, !inl, false};
     opAt[off] = uint16_t(n);
     n++;
     if (BytecodeOpHasIC(jop)) ic++;
@@ -1589,6 +1737,70 @@ bool MT::compare(JSOp jop) {
 
 // generic_binary / generic_cmp (nargs 2) and generic_unary (nargs 1): pop the
 // args, call the IC, push its result. Without inline ICs: exit.
+bool MT::bitArith(JSOp jop) {
+  ld(0);
+  lset(L_A);
+  ld(1);
+  lset(L_B);
+  block();
+  tagIs(L_A, JSVAL_TAG_INT32);
+  tagIs(L_B, JSVAL_TAG_INT32);
+  op(OP_I32AND);
+  ifThen();
+  lget(L_B);
+  op(OP_I32WRAP);
+  lget(L_A);
+  op(OP_I32WRAP);
+  if (jop == JSOp::Lsh || jop == JSOp::Rsh || jop == JSOp::Ursh) {
+    i32c(31);
+    op(OP_I32AND);
+  }
+  switch (jop) {
+    case JSOp::BitOr:
+      op(OP_I32OR);
+      break;
+    case JSOp::BitAnd:
+      op(OP_I32AND);
+      break;
+    case JSOp::BitXor:
+      op(OP_I32XOR);
+      break;
+    case JSOp::Lsh:
+      op(OP_I32SHL);
+      break;
+    case JSOp::Rsh:
+      op(OP_I32SHRS);
+      break;
+    default:
+      op(OP_I32SHRU);
+      break;
+  }
+  if (jop == JSOp::Ursh) {
+    lset(L_X);
+    lget(L_X);
+    i32c(0);
+    op(OP_I32GES);
+    ifThen(T_I64);
+    lget(L_X);
+    boxI32(JSVAL_TAG_INT32);
+    elseThen();
+    lget(L_X);
+    op(OP_F64CONVI32U);
+    op(OP_I64REINTF64);
+    end();
+  } else {
+    boxI32(JSVAL_TAG_INT32);
+  }
+  lset(L_R);
+  spAdd(1);
+  stLocal(0, L_R);
+  br(1);
+  end();
+  if (!generic(2)) return false;
+  end();
+  return true;
+}
+
 bool MT::generic(uint32_t nargs) {
   if (!gIcInline) {
     exitHere();
@@ -1697,6 +1909,312 @@ bool MT::unary(JSOp jop) {
   return true;
 }
 
+// ---- PBLBC_VSTACK op translation -------------------------------------------
+
+// Int32 arithmetic / bitwise / compare with the operands (and result)
+// virtual. Entries below the operands are flushed first. Fast arm: int32
+// payloads straight from the locals/constants (tag tests skipped when the
+// type is known). Slow arm: operands stored to memory with L_SP exactly as
+// the existing code expects, the existing code unchanged (it may call ICs,
+// helpers or exit; nothing else is virtual then), result reloaded into the
+// same local and L_SP restored, so both arms merge in the same state.
+bool MT::vsArith(JSOp jop) {
+  const bool un = jop == JSOp::Inc || jop == JSOp::Dec;
+  const uint32_t nin = un ? 1 : 2;
+  const bool cmp = jop == JSOp::Eq || jop == JSOp::Ne || jop == JSOp::Lt ||
+                   jop == JSOp::Le || jop == JSOp::Gt || jop == JSOp::Ge ||
+                   jop == JSOp::StrictEq || jop == JSOp::StrictNe;
+  const bool bit = jop == JSOp::BitOr || jop == JSOp::BitAnd ||
+                   jop == JSOp::BitXor || jop == JSOp::Lsh ||
+                   jop == JSOp::Rsh || jop == JSOp::Ursh;
+  vsMaterialize(nin);
+  vsFlushBelow(nin);
+  const VEnt lhs = vs[0];
+  const VEnt rhs =
+      un ? VEnt{true, VT_I32, 0, Int32Value(1).asRawBits()} : vs[1];
+  const bool known = lhs.type == VT_I32 && rhs.type == VT_I32;
+  // A constant that is not an int32 never takes the int32 arm.
+  const bool fast = known || ((!lhs.isConst || lhs.type == VT_I32) &&
+                              (!rhs.isConst || rhs.type == VT_I32));
+  int rvi = vsAlloc();  // at most two pool locals are in use here
+  if (rvi < 0) return reject("vstack pool");
+  const uint32_t rv = uint32_t(rvi);
+  bool needSlow = true;
+  block();  // $done
+  const uint32_t done = lvl;
+  if (fast) {
+    if (!known) {
+      bool any = false;
+      if (lhs.type != VT_I32) {
+        tagIs(lhs.loc, JSVAL_TAG_INT32);
+        any = true;
+      }
+      if (rhs.type != VT_I32) {
+        tagIs(rhs.loc, JSVAL_TAG_INT32);
+        if (any) op(OP_I32AND);
+      }
+      ifThen();
+    }
+    if (cmp) {
+      uint8_t i32op;
+      switch (jop) {
+        case JSOp::Eq: case JSOp::StrictEq: i32op = OP_I32EQ; break;
+        case JSOp::Ne: case JSOp::StrictNe: i32op = OP_I32NE; break;
+        case JSOp::Lt: i32op = OP_I32LTS; break;
+        case JSOp::Le: i32op = OP_I32LES; break;
+        case JSOp::Gt: i32op = OP_I32GTS; break;
+        default: i32op = OP_I32GES; break;
+      }
+      vsI32(lhs);
+      vsI32(rhs);
+      op(i32op);
+      boxI32(JSVAL_TAG_BOOLEAN);
+      lset(rv);
+      br(lvl - done);
+      if (known) needSlow = false;
+    } else if (bit) {
+      vsI32(lhs);
+      vsI32(rhs);
+      if (jop == JSOp::Lsh || jop == JSOp::Rsh || jop == JSOp::Ursh) {
+        i32c(31);
+        op(OP_I32AND);
+      }
+      switch (jop) {
+        case JSOp::BitOr: op(OP_I32OR); break;
+        case JSOp::BitAnd: op(OP_I32AND); break;
+        case JSOp::BitXor: op(OP_I32XOR); break;
+        case JSOp::Lsh: op(OP_I32SHL); break;
+        case JSOp::Rsh: op(OP_I32SHRS); break;
+        default: op(OP_I32SHRU); break;
+      }
+      if (jop == JSOp::Ursh) {
+        // Results >= 2^31 are doubles: the slow arm computes them.
+        lset(L_X);
+        lget(L_X);
+        i32c(0);
+        op(OP_I32GES);
+        ifThen();
+        lget(L_X);
+        boxI32(JSVAL_TAG_INT32);
+        lset(rv);
+        br(lvl - done);
+        end();
+      } else {
+        boxI32(JSVAL_TAG_INT32);
+        lset(rv);
+        br(lvl - done);
+        if (known) needSlow = false;
+      }
+    } else {
+      vsI32(lhs);
+      op(OP_I64EXTS);
+      vsI32(rhs);
+      op(OP_I64EXTS);
+      op(jop == JSOp::Add || jop == JSOp::Inc   ? OP_I64ADD
+         : jop == JSOp::Sub || jop == JSOp::Dec ? OP_I64SUB
+                                                : OP_I64MUL);
+      lset(L_R);
+      lget(L_R);
+      op(OP_I32WRAP);
+      op(OP_I64EXTS);
+      lget(L_R);
+      op(OP_I64EQ);
+      if (jop == JSOp::Mul) {
+        // product != 0 || !((lhs < 0) ^ (rhs < 0))
+        lget(L_R);
+        i64c(0);
+        op(OP_I64NE);
+        vsI32(lhs);
+        vsI32(rhs);
+        op(OP_I32XOR);
+        i32c(0);
+        op(OP_I32GES);
+        op(OP_I32OR);
+        op(OP_I32AND);
+      }
+      ifThen();
+      lget(L_R);
+      op(OP_I32WRAP);
+      boxI32(JSVAL_TAG_INT32);
+      lset(rv);
+      br(lvl - done);
+      end();
+    }
+    if (!known) end();
+  }
+  if (needSlow) {
+    vsEmitStore(nin);
+    bool ok = un    ? unary(jop)
+              : cmp ? compare(jop)
+              : bit ? bitArith(jop)
+                    : binaryArith(jop);
+    if (!ok) return false;
+    ld(0);
+    lset(rv);
+    spAdd(1);
+  }
+  end();  // $done
+  for (uint32_t i = 0; i < nin; i++) vsRelease(vs[i]);
+  vsN = 0;
+  vsPushLocal(rv, cmp ? VT_BOOL
+                  : (bit && known && jop != JSOp::Ursh) ? VT_I32
+                                                        : VT_UNK);
+  return true;
+}
+
+// 1: handled with the model; 0: run the existing code (model flushed by the
+// caller); -1: rejected.
+int MT::vsOp(const OpInfo& o, const jsbytecode* pc) {
+  switch (o.op) {
+    case JSOp::Undefined:
+      vsPushConst(UndefinedValue().asRawBits(), VT_UNDNULL);
+      return 1;
+    case JSOp::Null:
+      vsPushConst(NullValue().asRawBits(), VT_UNDNULL);
+      return 1;
+    case JSOp::True:
+    case JSOp::False:
+      vsPushConst(BooleanValue(o.op == JSOp::True).asRawBits(), VT_BOOL);
+      return 1;
+    case JSOp::Zero:
+    case JSOp::One:
+    case JSOp::Int8:
+    case JSOp::Uint16:
+    case JSOp::Uint24:
+    case JSOp::Int32: {
+      int32_t i = o.op == JSOp::Zero    ? 0
+                  : o.op == JSOp::One   ? 1
+                  : o.op == JSOp::Int8  ? int32_t(GET_INT8(pc))
+                  : o.op == JSOp::Uint16 ? int32_t(GET_UINT16(pc))
+                  : o.op == JSOp::Uint24 ? int32_t(GET_UINT24(pc))
+                                         : int32_t(GET_INT32(pc));
+      vsPushConst(Int32Value(i).asRawBits(), VT_I32);
+      return 1;
+    }
+    case JSOp::Double:
+      vsPushConst(GET_INLINE_VALUE(pc).asRawBits(), VT_UNK);
+      return 1;
+    case JSOp::GetLocal: {
+      uint32_t i = GET_LOCALNO(pc);
+      if (i >= nfixed) return reject("local index") ? 1 : -1;
+      uint32_t l = vsFreshLocal();
+      lget(L_LB);
+      load64(8 * (nfixed - 1 - i));
+      lset(l);
+      vsPushLocal(l, VT_UNK);
+      return 1;
+    }
+    case JSOp::GetArg: {
+      uint32_t i = GET_ARGNO(pc);
+      uint32_t l = vsFreshLocal();
+      lget(L_FLG);
+      i32c(kFlagArgsAliased);
+      op(OP_I32AND);
+      ifThen();
+      vsExitHere();
+      end();
+      lget(L_AV);
+      load64(8 * i);
+      lset(l);
+      vsPushLocal(l, VT_UNK);
+      return 1;
+    }
+    case JSOp::SetLocal:
+    case JSOp::InitLexical: {
+      if (!vsN) return 0;
+      uint32_t i = GET_LOCALNO(pc);
+      if (i >= nfixed) return reject("local index") ? 1 : -1;
+      lget(L_LB);
+      vsValue(vs[vsN - 1]);
+      store64(8 * (nfixed - 1 - i));
+      return 1;
+    }
+    case JSOp::Pop:
+      if (!vsN) return 0;
+      vsRelease(vs[vsN - 1]);
+      vsN--;
+      return 1;
+    case JSOp::Dup:
+    case JSOp::Dup2: {
+      uint32_t m = o.op == JSOp::Dup ? 1 : 2;
+      vsMaterialize(m);
+      if (vsN + m > kVsMax || uint32_t(__builtin_popcount(vsFree)) < m) {
+        flush();
+        return 0;
+      }
+      uint32_t base = vsN - m;
+      for (uint32_t j = 0; j < m; j++) {
+        VEnt e = vs[base + j];
+        if (e.isConst) {
+          vsPushConst(e.bits, e.type);
+        } else {
+          uint32_t l = uint32_t(vsAlloc());
+          lget(e.loc);
+          lset(l);
+          vsPushLocal(l, e.type);
+        }
+      }
+      return 1;
+    }
+    case JSOp::Swap: {
+      vsMaterialize(2);
+      VEnt e = vs[vsN - 1];
+      vs[vsN - 1] = vs[vsN - 2];
+      vs[vsN - 2] = e;
+      return 1;
+    }
+    case JSOp::Add: case JSOp::Sub: case JSOp::Mul: case JSOp::BitOr:
+    case JSOp::BitAnd: case JSOp::BitXor: case JSOp::Lsh: case JSOp::Rsh:
+    case JSOp::Ursh: case JSOp::Inc: case JSOp::Dec: case JSOp::Eq:
+    case JSOp::Ne: case JSOp::Lt: case JSOp::Le: case JSOp::Gt:
+    case JSOp::Ge: case JSOp::StrictEq: case JSOp::StrictNe:
+      // Operands already in memory (e.g. GetElem/IC results): the model
+      // would load them, fail the int32 arm for doubles and store them back
+      // for the existing code (navier-stokes +80%). Run the existing code.
+      if (vsN < ((o.op == JSOp::Inc || o.op == JSOp::Dec) ? 1u : 2u))
+        return 0;
+      return vsArith(o.op) ? 1 : -1;
+    case JSOp::Not: {
+      if (!vsN || (vs[vsN - 1].type != VT_I32 && vs[vsN - 1].type != VT_BOOL))
+        return 0;
+      VEnt& e = vs[vsN - 1];
+      if (e.isConst) {
+        e.bits = BooleanValue(uint32_t(e.bits) == 0).asRawBits();
+      } else {
+        lget(e.loc);
+        op(OP_I32WRAP);
+        op(OP_I32EQZ);
+        boxI32(JSVAL_TAG_BOOLEAN);
+        lset(e.loc);
+      }
+      e.type = VT_BOOL;
+      return 1;
+    }
+    case JSOp::JumpIfFalse:
+    case JSOp::JumpIfTrue: {
+      // Known booleans / int32 test the payload; anything else runs the
+      // existing ToBoolean code (which may call the ToBool IC) on memory.
+      if (!vsN || (vs[vsN - 1].type != VT_I32 && vs[vsN - 1].type != VT_BOOL))
+        return 0;
+      uint32_t k;
+      if (!target(GET_JUMP_OFFSET(const_cast<jsbytecode*>(pc)), &k))
+        return reject("jump target") ? 1 : -1;
+      vsFlushBelow(1);
+      VEnt e = vs[0];
+      vsI32(e);
+      vsRelease(e);
+      vsN = 0;
+      if (o.op == JSOp::JumpIfFalse) op(OP_I32EQZ);
+      ifThen();
+      jumpTo(k);
+      end();
+      return 1;
+    }
+    default:
+      return 0;
+  }
+}
+
 bool MT::translateOp() {
   const OpInfo& o = ops[cur];
   jsbytecode* pc = const_cast<jsbytecode*>(code + o.pcOff);
@@ -1706,6 +2224,11 @@ bool MT::translateOp() {
     return true;
   }
   nInline++;
+  if (gVstack && vsAware(o.op)) {
+    int r = vsOp(o, pc);
+    if (r != 0) return r > 0;
+  }
+  if (vsN) flush();
   switch (o.op) {
     case JSOp::Call:
     case JSOp::CallIgnoresRv:
@@ -2284,6 +2807,25 @@ bool MT::translateOp() {
         lget(L_R);
         op(OP_I32WRAP);
         lset(L_SP);
+        if (gVstack) {
+          // LoopHook exits at an op that starts with live virtual entries
+          // (never a dispatch entry): high word 0x80000000 | pc offset;
+          // return to the interpreter there.
+          lget(L_R);
+          i64c(0);
+          op(OP_I64LTS);
+          ifThen();
+          lget(L_IO);
+          lget(L_SP);
+          store32(0);
+          lget(L_R);
+          i64c(32);
+          op(OP_I64SHRU);
+          i64c(0x7fffffff);
+          op(OP_I64AND);
+          op(OP_RETURN);
+          end();
+        }
         lget(L_R);
         i64c(32);
         op(OP_I64SHRU);
@@ -2434,67 +2976,7 @@ bool MT::translateOp() {
     case JSOp::Lsh:
     case JSOp::Rsh:
     case JSOp::Ursh: {
-      ld(0);
-      lset(L_A);
-      ld(1);
-      lset(L_B);
-      block();
-      tagIs(L_A, JSVAL_TAG_INT32);
-      tagIs(L_B, JSVAL_TAG_INT32);
-      op(OP_I32AND);
-      ifThen();
-      lget(L_B);
-      op(OP_I32WRAP);
-      lget(L_A);
-      op(OP_I32WRAP);
-      if (o.op == JSOp::Lsh || o.op == JSOp::Rsh || o.op == JSOp::Ursh) {
-        i32c(31);
-        op(OP_I32AND);
-      }
-      switch (o.op) {
-        case JSOp::BitOr:
-          op(OP_I32OR);
-          break;
-        case JSOp::BitAnd:
-          op(OP_I32AND);
-          break;
-        case JSOp::BitXor:
-          op(OP_I32XOR);
-          break;
-        case JSOp::Lsh:
-          op(OP_I32SHL);
-          break;
-        case JSOp::Rsh:
-          op(OP_I32SHRS);
-          break;
-        default:
-          op(OP_I32SHRU);
-          break;
-      }
-      if (o.op == JSOp::Ursh) {
-        lset(L_X);
-        lget(L_X);
-        i32c(0);
-        op(OP_I32GES);
-        ifThen(T_I64);
-        lget(L_X);
-        boxI32(JSVAL_TAG_INT32);
-        elseThen();
-        lget(L_X);
-        op(OP_F64CONVI32U);
-        op(OP_I64REINTF64);
-        end();
-      } else {
-        boxI32(JSVAL_TAG_INT32);
-      }
-      lset(L_R);
-      spAdd(1);
-      stLocal(0, L_R);
-      br(1);
-      end();
-      if (!generic(2)) return false;
-      end();
-      return true;
+      return bitArith(o.op);
     }
     case JSOp::Eq:
     case JSOp::Ne:
@@ -2678,13 +3160,27 @@ bool MT::run() {
   b.uleb(n);
   for (uint32_t j = 0; j < n; j++) b.uleb(j);
   b.uleb(n - 1);
+  if (gVstack) {
+    isTgt = static_cast<uint8_t*>(calloc(n, 1));
+    if (!isTgt) return reject("oom");
+  }
   for (cur = 0; cur < n; cur++) {
+    // PBLBC_VSTACK: a jump target, an op the model cannot carry into, or the
+    // end of the function gets an empty model (stores at the end of op
+    // cur-1's code, before B_cur ends); ops starting with a non-empty model
+    // are never entered by Hook/LoopHook (Entry::exitOp == 2).
+    lvl = 0;
+    if (vsN && (ops[cur].exit || isTgt[cur] || !vsAware(ops[cur].op))) {
+      flush();
+    }
+    ops[cur].noEntry = vsN != 0;
     b.put(OP_END);  // B_cur
     lvl = 0;
     if (!translateOp() || reason) return false;
     if (lvl != 0) return reject("unbalanced blocks");
     if (b.oom) return reject("oom");
   }
+  if (vsN) flush();
   b.put(OP_END);  // loop
   b.put(OP_UNREACH);
   b.put(OP_END);  // function
@@ -2694,14 +3190,15 @@ bool MT::run() {
 bool MT::assemble(Buf& m) {
   Buf c;
   Buf body;
-  body.uleb(inlUsed ? 7 : 3);
+  // PBLBC_VSTACK pool after the PBLBC_INL scratch (declared with it).
+  body.uleb((inlUsed || vsUsed) ? (vsUsed ? 8 : 7) : 3);
   body.uleb(kNI64);
   body.put(T_I64);
   body.uleb(kNI32);
   body.put(T_I32);
   body.uleb(kNF64);
   body.put(T_F64);
-  if (inlUsed) {  // PBLBC_INL scratch at kInlBase, then the zero i64
+  if (inlUsed || vsUsed) {  // PBLBC_INL scratch at kInlBase, zero i64
     body.uleb(kInlineI64Locals);
     body.put(T_I64);
     body.uleb(kInlineI32Locals);
@@ -2709,6 +3206,10 @@ bool MT::assemble(Buf& m) {
     body.uleb(kInlineF64Locals);
     body.put(T_F64);
     body.uleb(1);
+    body.put(T_I64);
+  }
+  if (vsUsed) {
+    body.uleb(kVsPool);
     body.put(T_I64);
   }
   body.putn(b.p, b.n);
@@ -2852,7 +3353,7 @@ void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
   }
   for (uint32_t j = 0; j < t.n; j++) {
     e->icIdx[j] = t.ops[j].icIdx;
-    e->exitOp[j] = t.ops[j].exit;
+    e->exitOp[j] = t.ops[j].exit ? 1 : t.ops[j].noEntry ? 2 : 0;
   }
   e->opAt = t.opAt;
   t.opAt = nullptr;
@@ -3739,6 +4240,10 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
   if (xop != JSOp::JumpTarget && xop != JSOp::LoopHead &&
       e->icIdx[k] != jx.icIndex) {
     MOZ_CRASH("PBLBC: loop exit IC index mismatch");
+  }
+  if (e->exitOp[k] == 2) {  // PBLBC_VSTACK: not a dispatch entry
+    return int64_t((uint64_t(0x80000000u | off)) << 32 |
+                   uint32_t(uintptr_t(jx.sp)));
   }
   return int64_t((uint64_t(k) + 1) << 32 | uint32_t(uintptr_t(jx.sp)));
 }
