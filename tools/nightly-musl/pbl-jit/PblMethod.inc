@@ -3470,6 +3470,11 @@ inline uint64_t GcEpoch(JSContext* cx) {
   }
   return (tEpochRtSerial << 48) + gc.gcNumber() + gc.minorGCCount();
 }
+constexpr uint64_t kEpochLowMask = (uint64_t(1) << 48) - 1;
+inline uint64_t GcEpochLow(JSContext* cx) {
+  const js::gc::GCRuntime& gc = cx->runtime()->gc;
+  return gc.gcNumber() + gc.minorGCCount();
+}
 
 // Conditions under which the CanGC allocation paths would do more than
 // Nursery::tryAllocateCell (+ object init): allocation metadata builder
@@ -3712,7 +3717,7 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
                          uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
                          uint64_t, uint64_t);
   Fn fn = reinterpret_cast<Fn>(uintptr_t(e->fn));
-  gRuns++;
+  // (gRuns is not counted here: it has no reader.)
   tDirectDepth++;
   // func is not used after this call (it can GC).
   uint64_t r = fn(uintptr_t(newFrame), uintptr_t(sp), j0,
@@ -3735,8 +3740,13 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
   JSOp xop = JSOp(*xpc);
   // The cached script stands for newFrame->script() only if no GC happened
   // since the lookup (the callee's code can GC).
+  // Only the GC counts are compared: cx (hence cx->runtime()) is fixed for
+  // this activation and the per-thread runtime serial in the high bits cannot
+  // change while one of its activations is on this thread's stack (see
+  // GcEpochHit), so the high part of GcEpoch(cx) is still epoch's.
   JSScript* retScript =
-      (cScript && GcEpoch(cx) == epoch) ? cScript : newFrame->script();
+      (cScript && GcEpochLow(cx) == (epoch & kEpochLowMask))
+          ? cScript : newFrame->script();
   if (kind == kIcError || newFrame->isDebuggee() ||
       retScript->hasScriptCounts() ||
       (xop != JSOp::Return && xop != JSOp::RetRval)) {
@@ -3774,7 +3784,6 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
   if (constructing && ret.isPrimitive()) ret = sp[nargs + 1].asValue();
   sp += nargs + 2 + (constructing ? 1 : 0);
   *--sp = StackVal(ret);
-  gDirectReturns++;
   gDs[kDsInline]++;
   return int64_t(uintptr_t(sp));
 }
@@ -4062,6 +4071,26 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
 //  - j0 / e / fn / icIdx0 / retRval0: Entry data; tEntryGen unchanged and
 //    an Entry in state 1 never changes. nfixed / nslots / code: the
 //    ImmutableScriptData (re-checked).
+MOZ_ALWAYS_INLINE uint64_t GcEpochHit(ICCtx& ctx, JSContext* cx) {
+  // Same value as GcEpoch(cx), with the runtime-identity part (high 16 bits:
+  // per-thread runtime serial) computed once per interpreter activation and
+  // kept in ctx.pblEpochHi (0 = not yet computed; a serial is never 0).
+  // Why it cannot change during the activation: an ICCtx lives on the C++
+  // stack of one PortableBaselineInterpret activation and is used only with
+  // its own cx, whose runtime is fixed for the context's lifetime. The serial
+  // only moves when GcEpoch runs on this thread with a different runtime
+  // address or GC-statistics creation time. The runtime cannot be destroyed
+  // (and a new one created at its address) while an activation of it is on
+  // this thread's stack, its stats creation time is set once at
+  // construction, and a thread runs a single JSContext (TlsContext), so no
+  // other runtime can run GcEpoch on this thread before the activation ends.
+  // Hence the high part is still the one GcEpoch(cx) would compute; the GC
+  // counts are read fresh on every call.
+  if (MOZ_UNLIKELY(ctx.pblEpochHi == 0)) {
+    ctx.pblEpochHi = GcEpoch(cx) & ~kEpochLowMask;
+  }
+  return ctx.pblEpochHi + GcEpochLow(cx);
+}
 int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
                         int64_t iceA, int64_t ctxA, int64_t siteA) {
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
@@ -4069,7 +4098,7 @@ int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
   auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
   ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
   JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
-  const uint64_t epoch = GcEpoch(cx);
+  const uint64_t epoch = GcEpochHit(ctx, cx);
   JSFunction* func = site->func;
   JSScript* calleeScript = site->script;
   if (MOZ_UNLIKELY(site->epoch != epoch || site->gen != tEntryGen ||

@@ -112,7 +112,7 @@
 +  uint32_t stepOff = 0;
 +  uint32_t stepEnd = 0;
 +  uint32_t stepDone = 0;
-+  uint64_t stepRet = 0;
++  uint64_t stepRet = 0; uint64_t pblEpochHi = 0;  // PblMethod.inc GcEpochHit
  
    ICCtx(JSContext* cx, BaselineFrame* frame_, State& state_, Stack& stack_)
        : frame(frame_),
