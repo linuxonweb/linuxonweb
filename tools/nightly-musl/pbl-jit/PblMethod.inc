@@ -38,7 +38,7 @@
 // exit frame at sp, AddOperation on the operands in place, an error takes
 // the interpreter's error path via kIcError), 2 InitElemArray ->
 // InitElemArrayHelper, 4 SetAliasedVar -> SetAliasedVarHelper (pre/post
-// barriers via setAliasedBinding). PBLBC_DIRECT=1 (default off) makes
+// barriers via setAliasedBinding). PBLBC_DIRECT (default on; =0 off) makes
 // a compiled Call/CallIgnoresRv whose callee is a plain scripted function with
 // compiled code call CallScripted, which pushes the callee frame exactly like
 // the interpreter's Call fast path and reports a frame switch: the compiled
@@ -435,7 +435,8 @@ bool Enabled() {
     const char* al = getenv("PBLBC_ALLOC");
     gAlloc = al ? unsigned(atoi(al)) : kAllocDefault;
     const char* dc = getenv("PBLBC_DIRECT");
-    gDirect = dc && dc[0] == '1';
+    // Default on; PBLBC_DIRECT=0 (any explicit value other than 1) turns it off.
+    gDirect = !dc || dc[0] == '1';
     const char* in = getenv("PBLBC_INL");
     gInl = !(in && in[0] == '0');
     const char* io = getenv("PBLBC_INLOPS");

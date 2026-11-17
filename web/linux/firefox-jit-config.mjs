@@ -7,14 +7,15 @@ export function firefoxJitFlags(search) {
   }
   const loop = params.get('pbljit');
   if (loop === '0' || loop === '1') flags.push(`PBLJIT=${loop}`);
-  // Direct compiled-to-compiled calls in the method tier (default off in the image).
+  // Direct compiled-to-compiled calls in the method tier (default on in the image;
+  // 0 turns them off).
   const direct = params.get('pblbc_direct');
   if (direct === '0' || direct === '1') flags.push(`PBLBC_DIRECT=${direct}`);
   // Method-tier compile threshold: 1 to 6 digits, greater than zero.
   const hits = params.get('pblbc_hits');
   if (/^[0-9]{1,6}$/.test(hits ?? '') && Number(hits) > 0) flags.push(`PBLBC_HITS=${hits}`);
-  // Try/catch admission policy for the method tier (image default rejects
-  // scripts with Catch/Finally; 0 admits them).
+  // Try/catch admission policy for the method tier (image default admits
+  // scripts with Catch/Finally; 1 rejects them).
   const tryPolicy = params.get('pbl_trypolicy');
   if (tryPolicy === '0' || tryPolicy === '1') flags.push(`PBL_TRYPOLICY=${tryPolicy}`);
   return flags;

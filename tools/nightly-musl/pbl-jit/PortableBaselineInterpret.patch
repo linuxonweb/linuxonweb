@@ -658,7 +658,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9736,33 @@
+@@ -9368,18 +9736,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }
@@ -675,11 +675,12 @@
 +  // Before first JitScript allocation, retain the C++ exception policy for both
 +  // warmed scripts and first-invocation loops.
    bool reject = false;
-+  // PBL_TRYPOLICY=0 admits Catch/Finally scripts (PBL unwinds them itself);
-+  // unset or 1 keeps the C++ interpreter exception policy.
++  // Unset or PBL_TRYPOLICY=0 admits Catch/Finally scripts (PBL unwinds them
++  // itself); PBL_TRYPOLICY=1 (any other set value) keeps the C++ interpreter
++  // exception policy.
 +  static const bool tryPolicy = [] {
 +    const char* e = getenv("PBL_TRYPOLICY");
-+    return !(e && e[0] == '0' && e[1] == '\0');
++    return e && !(e[0] == '0' && e[1] == '\0');
 +  }();
    for (const auto& note : state.script()->trynotes()) {
 -    reject |= note.kind() == TryNoteKind::Catch ||
