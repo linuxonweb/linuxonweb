@@ -1,3 +1,34 @@
+# LinuxOnWeb continuation — claude-fable JIT status 2026-11-16 (leading status; read first)
+
+Branch claude-fable-linuxonweb-20261113, HEAD 7296b0b. Goal of this session: make the Firefox JIT fast. Nothing is published; the public image is unchanged.
+
+Commits since 7d82127 (engine files tools/nightly-musl/pbl-jit, tools/pbl-jit):
+- f1be7a8: more compiled CacheIR ops in PBLIC (PBLIC_OPS2 bitmask), per-call-site callee cache in the method tier (PBLBC_SITECACHE), thread-safe one-time init and per-runtime GC epoch, and a fix for a hang: the method tier cached the global lexical environment pointer per activation, and a compacting GC (relazifyFunctions, shrinking or last-ditch GC) moved it. It is now loaded from cx at each GetGName/BindUnqualifiedGName. The published image has the same hazard in principle.
+- 5d8949b: defaults flipped — PBLBC_DIRECT on, scripts with Catch/Finally admitted (PBL_TRYPOLICY=1 rejects). Opt-outs: ?pblbc_direct=0, ?pbl_trypolicy=1.
+- 7296b0b: virtual operand stack in the method tier (PBLBC_VSTACK=0 turns it off).
+
+Evidence (guest JS shell, 3 guest CPUs, all runs serialized on the shared lock):
+- Suite checksums 19/19; jit-test chunks 1, 4, 6 identical to the plain interpreter (90/90). Chunks 2c/3/5/7 stall in the plain interpreter too and are not covered.
+- tools/nightly-musl/pbl-jit/shell-tests/{tier-stress,compaction-stress}.js give identical checksums with tiers off, defaults, and PBLBC_HITS=2.
+- A read-only audit of PBLIC, PBLBC and PBLJIT found no other raw GC pointer that survives a compacting GC unguarded. Not checked op by op: CacheIR ops that a compiled stub hands back to ICInterpretOps.
+- Shell suite steady total: 7d82127 with full flags about 2100 ms, HEAD with no flags about 1830 ms.
+
+In guest Firefox (candidate cand9 = HEAD, /mnt/p3/codex-build/claude-20261113/jit/cand9, image sha256 e7e35f75050f…, built by jit/scripts/build9.sh with REV=7296b0b; suite page typed into the URL bar via c36/ffsuite.sh, 19/19 checksums in every run):
+
+| image, URL flags | suite steady total ms (each value one run) |
+|---|---|
+| published 1a3951f0c48d, none | 4309 (earlier runs 4523, 5446) |
+| cand8 (7d82127), pblbc_direct=1&pbl_trypolicy=0 | 3378, 2817 |
+| cand9 (HEAD), none | 2595, 2896, 2832 |
+
+Run-to-run spread is large (strings-json 89–782 ms in the same build; splay, boyer and regexp also swing), so only the totals are meaningful. cand9 is NOT runtime-accepted: tools/nightly-jit-safety workloads and the production-browser release gate have not been run on it.
+
+Calls are still the slowest primitive (about 80 ns per scripted call in the shell against 2 ns for an array read in a compiled loop). Next step: stage 2 of the call path in /mnt/p3/codex-build/claude-20261115/c49/notes.md (hit path inline in generated code, direct call of the callee, inline return). Then remaining stepped IC ops, generator bodies, try-loops in PBLJIT.
+
+Shell build of the tiers takes about 25 s: /mnt/p3/codex-build/claude-20261115/c61/scripts/compile-objects.sh OUT && link-shell.sh OUT (under flock /mnt/p3/codex-build/claude-20261113/runtime.lock). Harness: c9/run-js.sh (run names at most 13 characters; never list c9/runs).
+
+Local servers owned by this session (stop by exact PID when done): 127.0.0.1:3044 cand7 (PID 2658799), :3045 published image (3136835), :3046 cand8 (3328821), :3047 cand9 (1484116).
+
 # LinuxOnWeb continuation — claude-fable session 2026-11-13/14 (leading status)
 
 Branch claude-fable-linuxonweb-20261113, commits e8c07fc, 1dfe41c, 0ba489e, 0d98b06, 8cda69c on top of be48594. Request: improve I/O and boot, measure Firefox boot, extend the Firefox JIT toward native speed. Neither the30s usable-Firefox target nor near-native JS is met. The historical45/100 status below is unchanged apart from what is stated here; no rescoring was done. Nothing was published to web/desktop/latest-build; production Firefox image is still1a3951f0c48d/4b20a717.
