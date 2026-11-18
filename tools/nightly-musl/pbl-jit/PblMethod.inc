@@ -475,6 +475,14 @@ int64_t SuperFunHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // Return/RetRval exit returns through the interpreter's own return sequence.
 bool gTrampEntry = true;
 uint64_t gTeDirect, gTeFallback;
+// PBLBC_NATENTRY (default on; '0' restores the old path): a
+// PortableBaselineTrampoline call of a script that PBLBC_TRAMPENTRY would
+// enter at op 0 runs the interpreter prologue in the small PblNatEnter
+// instead of a full PortableBaselineInterpret run and calls Hook directly. A
+// Return/RetRval exit of the entry frame completes there; every other
+// outcome continues in a restart-mode interpreter run (see PblNatEnter).
+bool gNatEntry = true;
+uint64_t gNeDirect, gNeFallback;
 constexpr uint32_t kEsKinds = 4, kEsReasons = 32;
 uint64_t gEsExit[kEsKinds][256];
 uint64_t gEsEntries, gEsCompiled, gEsRejected, gEsSwitches;
@@ -500,13 +508,15 @@ void PrintExitStats() {
           "PBLBC exitstat: entries=%llu exits=%llu kind0_exit=%llu "
           "kind1_icerror=%llu kind2_irq=%llu kind3_frameswitch=%llu "
           "compiled=%llu rejected=%llu frame_switches=%llu "
-          "direct_pushes=%u tramp_direct=%llu tramp_fallback=%llu\n",
+          "direct_pushes=%u tramp_direct=%llu tramp_fallback=%llu "
+          "nat_direct=%llu nat_fallback=%llu\n",
           (unsigned long long)gEsEntries, (unsigned long long)total,
           (unsigned long long)perKind[0], (unsigned long long)perKind[1],
           (unsigned long long)perKind[2], (unsigned long long)perKind[3],
           (unsigned long long)gEsCompiled, (unsigned long long)gEsRejected,
           (unsigned long long)gEsSwitches, gDirectPushes,
-          (unsigned long long)gTeDirect, (unsigned long long)gTeFallback);
+          (unsigned long long)gTeDirect, (unsigned long long)gTeFallback,
+          (unsigned long long)gNeDirect, (unsigned long long)gNeFallback);
   for (uint32_t i = 0; i < kEsReasons && gEsReason[i]; i++) {
     fprintf(stderr, "PBLBC exitstat: reject reason=\"%s\" count=%llu\n",
             gEsReason[i], (unsigned long long)gEsReasonCount[i]);
@@ -629,6 +639,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (iov && iov[0] == '0') gIterOps = false;
     const char* tev = getenv("PBLBC_TRAMPENTRY");
     if (tev && tev[0] == '0') gTrampEntry = false;
+    const char* nev = getenv("PBLBC_NATENTRY");
+    if (nev && nev[0] == '0') gNatEntry = false;
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -5009,6 +5021,16 @@ Entry* TrampEntryReady(BaselineFrame* frame, jsbytecode* pc,
             e->opAt[0] != 0xffff && !e->exitOp[e->opAt[0]];
   if (MOZ_UNLIKELY(gExitStat)) (ok ? gTeDirect : gTeFallback)++;
   return ok ? e : nullptr;
+}
+
+// PBLBC_NATENTRY gate before any frame exists: the script-level part of
+// TrampEntryReady (the frame-level checks run again after the prologue).
+bool NatEntryReady(JSScript* script, ImmutableScriptData* isd) {
+  if (!gNatEntry || !gTrampEntry) return false;
+  Entry* e = FindExisting(isd);
+  return e && e->state == 1 && script->immutableScriptData() == isd &&
+         !script->hasScriptCounts() && !script->isDebuggee() &&
+         e->opAt[0] != 0xffff && !e->exitOp[e->opAt[0]];
 }
 
 // Called by compiled code at a LoopHead (see MT::translateOp). Returns 0, or

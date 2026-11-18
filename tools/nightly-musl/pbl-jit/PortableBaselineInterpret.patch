@@ -599,7 +599,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +6048,71 @@
+@@ -5768,8 +6048,80 @@
    }
  }
  
@@ -666,13 +666,22 @@
 +  bool overLimit() const { return counted_ && tPblNest > PblNestMax(); }
 +};
 +
++// PBLBC_NATENTRY resume state handed from PblNatEnter to the restart-mode
++// run it continues in (restartCode Ok): the IC cursor and bcPending that the
++// non-restart run would have had at that dispatch.
++struct PblNatResume {
++  ICEntry* icEntry;
++  bool pending;
++};
++static thread_local PblNatResume tPblNatResume;
++
  uint8_t* GetICInterpreter() {
 -  return reinterpret_cast<uint8_t*>(&ICInterpretOps);
 +  return reinterpret_cast<uint8_t*>(&PblIcEntry);
  }
  
  /*
-@@ -5810,8 +6153,9 @@
+@@ -5810,8 +6162,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -684,7 +693,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5911,6 +6255,9 @@
+@@ -5911,6 +6264,9 @@
      JSObject* envChain, Value* ret, jsbytecode* pc, ImmutableScriptData* isd,
      jsbytecode* restartEntryPC, BaselineFrame* restartFrame,
      StackVal* restartEntryFrame, PBIResult restartCode) {
@@ -694,7 +703,7 @@
  #define RESTART(code)                                                 \
    if (!IsRestart) {                                                   \
      TRACE_PRINTF("Restarting (code %d sp %p fp %p)\n", int(code), sp, \
-@@ -5935,7 +6282,8 @@
+@@ -5935,7 +6291,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -704,7 +713,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6322,12 @@
+@@ -5974,14 +6331,34 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -716,8 +725,18 @@
 +  pblbc::Entry* bcKnown = nullptr;
  
    if (IsRestart) {
++    if (restartCode == PBIResult::Ok) {
++      // PBLBC_NATENTRY: PblNatEnter ran the prologue (and possibly compiled
++      // code); continue at pc exactly like the non-restart run at the
++      // dispatch after its prologue / its bc_hook.
++      icEntry = tPblNatResume.icEntry;
++      bcPending = tPblNatResume.pending;
++      DEBUG_CHECK();
++      goto* addresses[*pc];
++    }
      ic_result = restartCode;
-@@ -5982,6 +6336,11 @@
+     TRACE_PRINTF(
+         "Enter from restart: sp = %p ctx.stack.fp = %p ctx.frame = %p\n", sp,
          ctx.stack.fp, ctx.frame);
      goto ic_fail;
    } else {
@@ -729,7 +748,7 @@
      AutoCheckRecursionLimit recursion(ctx.frameMgr.cxForLocalUseOnly());
      if (!recursion.checkDontReport(ctx.frameMgr.cxForLocalUseOnly())) {
        PUSH_EXIT_FRAME();
-@@ -6058,6 +6417,14 @@
+@@ -6058,6 +6435,14 @@
    TRACE_PRINTF("nslots = %d nfixed = %d\n", int(frame->script()->nslots()),
                 int(frame->script()->nfixed()));
  
@@ -744,7 +763,7 @@
    while (true) {
      DEBUG_CHECK();
  
-@@ -7820,7 +8187,7 @@
+@@ -7820,7 +8205,7 @@
                  "Call fastpath: argc = %d origArgs = %p callee = %" PRIx64 "\n",
                  argc, origArgs, callee.get().asRawBits());
  
@@ -753,7 +772,7 @@
                TRACE_PRINTF("missed fastpath: would cause stack overrun\n");
                break;
              }
-@@ -7888,7 +8255,7 @@
+@@ -7888,7 +8273,7 @@
              sp = reinterpret_cast<StackVal*>(frame);
              RESET_PC(calleeScript->code(), calleeScript);
              // 7. Check callee stack space for max stack depth.
@@ -762,7 +781,7 @@
                PUSH_EXIT_FRAME();
                ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
                GOTO_ERROR();
-@@ -8208,6 +8575,97 @@
+@@ -8208,6 +8593,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -860,7 +879,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8698,7 @@
+@@ -8240,6 +8716,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -868,7 +887,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8864,16 @@
+@@ -8405,6 +8882,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -885,7 +904,7 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -8426,7 +8895,9 @@
+@@ -8426,7 +8913,9 @@
  
            // Advance past call instruction, and advance past IC.
            NEXT_IC();
@@ -896,7 +915,7 @@
  
            DISPATCH();
          }
-@@ -9160,6 +9631,37 @@
+@@ -9160,6 +9649,37 @@
  
    DISPATCH();
  
@@ -934,7 +953,184 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9850,25 @@
+@@ -9256,6 +9776,158 @@
+  * -----------------------------------------------
+  */
+ 
++// PBLBC_NATENTRY (PblMethod.inc gNatEntry): the prologue of a non-restart
++// PortableBaselineInterpret run, in the same order with the same checks and
++// error returns, then the PBLBC_TRAMPENTRY Hook at op 0, without entering
++// the interpreter's large function. A Return/RetRval exit of this (entry)
++// frame completes as CASE(Return)/do_return does for the entry frame. Every
++// other outcome (TrampEntryReady null, Hook kNone/kPending, exits mid-script,
++// frame switches) continues in a restart-mode run at the same dispatch
++// (restartCode Ok, tPblNatResume); errors after the frame push restart with
++// PBIResult::Error exactly as GOTO_ERROR / ic_fail's RESTART do. The nest
++// guard counts this level once for the whole call, as the non-restart run
++// does (its restart continuation runs inside it).
++template <bool HybridICs>
++static PBIResult PblNatEnter(JSContext* cx_, State& state, Stack& stack,
++                             StackVal* sp, JSObject* envChain, Value* ret,
++                             jsbytecode* pc, ImmutableScriptData* isd) {
++  PblNestGuard nestGuard(true);
++  PUSHNATIVE(StackValNative(nullptr));  // Fake return address.
++  BaselineFrame* frame = stack.pushFrame(sp, cx_, envChain);
++  MOZ_ASSERT(frame);  // safety: stack margin.
++  sp = reinterpret_cast<StackVal*>(frame);
++  StackVal* const entryFrame = sp;
++  jsbytecode* entryPC = pc;
++  const uint32_t nfixed = frame->script()->nfixed();
++  ICCtx ctx(cx_, frame, state, stack);
++  ICEntry* const icEntries = frame->icScript()->icEntries();
++  PBIResult restartCode = PBIResult::Ok;
++  pblbc::Entry* known = nullptr;
++  pblbc::Out bo;
++  int r = pblbc::kNone;
++  tPblNatResume.icEntry = icEntries;
++  tPblNatResume.pending = true;
++
++  if (MOZ_UNLIKELY(nestGuard.overLimit())) {
++    PUSH_EXIT_FRAME();
++    ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
++    return PBIResult::Error;
++  }
++  {
++    AutoCheckRecursionLimit recursion(ctx.frameMgr.cxForLocalUseOnly());
++    if (!recursion.checkDontReport(ctx.frameMgr.cxForLocalUseOnly())) {
++      PUSH_EXIT_FRAME();
++      ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
++      return PBIResult::Error;
++    }
++  }
++  if (!ctx.stack.check(sp, sizeof(StackVal) * frame->script()->nslots())) {
++    PUSH_EXIT_FRAME();
++    ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
++    return PBIResult::Error;
++  }
++
++  sp -= nfixed;
++  for (uint32_t i = 0; i < nfixed; i++) {
++    sp[i] = StackVal(UndefinedValue());
++  }
++  ret->setUndefined();
++
++  if (frame->script()->isDebuggee()) {
++    frame->setIsDebuggee();
++  }
++  if (CalleeTokenIsFunction(frame->calleeToken())) {
++    JSFunction* func = CalleeTokenToFunction(frame->calleeToken());
++    frame->setEnvironmentChain(func->environment());
++    if (func->needsFunctionEnvironmentObjects()) {
++      PUSH_EXIT_FRAME();
++      if (!js::InitFunctionEnvironmentObjects(cx, frame)) {
++        restartCode = PBIResult::Error;
++        goto restart;
++      }
++    }
++  }
++  if (frame->script()->isDebuggee()) {
++    PUSH_EXIT_FRAME();
++    if (!DebugPrologue(cx, frame)) {
++      restartCode = PBIResult::Error;
++      goto restart;
++    }
++  }
++  if (!frame->script()->hasScriptCounts()) {
++    if (ctx.frameMgr.cxForLocalUseOnly()->realm()->collectCoverageForDebug()) {
++      PUSH_EXIT_FRAME();
++      if (!frame->script()->initScriptCounts(cx)) {
++        restartCode = PBIResult::Error;
++        goto restart;
++      }
++    }
++  }
++  COUNT_COVERAGE_MAIN();
++#ifdef ENABLE_INTERRUPT_CHECKS
++  if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
++    PUSH_EXIT_FRAME();
++    if (!InterruptCheck(cx)) {
++      restartCode = PBIResult::Error;
++      goto restart;
++    }
++  }
++#endif
++
++  // As the non-restart run: TrampEntryReady, then bc_hook (not a debuggee
++  // frame: TrampEntryReady checked it and nothing ran since).
++  known = pblbc::TrampEntryReady(frame, pc, isd);
++  if (!known) {
++    goto resume;  // dispatch op 0 with bcPending = bcOn (true)
++  }
++  r = pblbc::Hook(frame, sp, pc, entryPC, isd, icEntries, icEntries,
++                  frame->script()->argsObjAliasesFormals(), ctx, &bo, known);
++  if (r == pblbc::kNone || r == pblbc::kPending) {
++    tPblNatResume.pending = (r == pblbc::kPending);
++    goto resume;
++  }
++  if (r == pblbc::kRan) {
++    JSOp xop = JSOp(*bo.pc);
++    if ((xop == JSOp::Return || xop == JSOp::RetRval) &&
++        !frame->isDebuggee() &&
++        reinterpret_cast<uintptr_t>(stack.fp) ==
++            reinterpret_cast<uintptr_t>(entryFrame) + BaselineFrame::Size() &&
++        reinterpret_cast<uintptr_t>(
++            reinterpret_cast<StackValNative*>(stack.fp)->asVoidPtr()) >
++            reinterpret_cast<uintptr_t>(entryFrame)) {
++      // CASE(Return) / do_return for the entry frame (not a debuggee, not
++      // from unwind): pop the frame and hand back the return value.
++      if (xop == JSOp::Return) {
++        frame->setReturnValue(bo.sp->asValue());
++      }
++      (void)stack.popFrame();
++      *ret = frame->returnValue();
++      if (MOZ_UNLIKELY(pblbc::gExitStat)) pblbc::gNeDirect++;
++      return PBIResult::Ok;
++    }
++  }
++  if (r >= pblbc::kRanNewFrame) {
++    frame = bo.frame;
++    entryPC = frame->script()->code();
++    isd = frame->script()->immutableScriptData();
++  }
++  sp = bo.sp;
++  pc = bo.pc;
++  tPblNatResume.icEntry = bo.icEntry;
++  if (r == pblbc::kRanIcError || r == pblbc::kRanNewFrameIcError) {
++    restartCode = ctx.error;
++    goto restart;
++  }
++
++resume:
++  if (MOZ_UNLIKELY(pblbc::gExitStat)) pblbc::gNeFallback++;
++  restartCode = PBIResult::Ok;
++restart:
++  return PortableBaselineInterpret<true, HybridICs>(
++      ctx.frameMgr.cxForLocalUseOnly(), ctx.state, ctx.stack, sp, envChain, ret,
++      pc, isd, entryPC, frame, entryFrame, restartCode);
++}
++
+ bool PortableBaselineTrampoline(JSContext* cx, size_t argc, Value* argv,
+                                 size_t numFormals, CalleeToken calleeToken,
+                                 JSObject* envChain, Value* result) {
+@@ -9314,9 +9986,14 @@
+   jsbytecode* pc = script->code();
+   ImmutableScriptData* isd = script->immutableScriptData();
+   PBIResult ret;
+-  ret = PortableBaselineInterpret<false, kHybridICsInterp>(
+-      cx, state, stack, sp, envChain, result, pc, isd, nullptr, nullptr,
+-      nullptr, PBIResult::Ok);
++  if (pblbc::Enabled() && pblbc::NatEntryReady(script, isd)) {
++    ret = PblNatEnter<kHybridICsInterp>(cx, state, stack, sp, envChain, result,
++                                        pc, isd);
++  } else {
++    ret = PortableBaselineInterpret<false, kHybridICsInterp>(
++        cx, state, stack, sp, envChain, result, pc, isd, nullptr, nullptr,
++        nullptr, PBIResult::Ok);
++  }
+   switch (ret) {
+     case PBIResult::Ok:
+     case PBIResult::UnwindRet:
+@@ -9348,10 +10025,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -961,7 +1157,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9885,34 @@
+@@ -9368,18 +10060,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }
