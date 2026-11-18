@@ -101,7 +101,53 @@
  /*
   * Debugging: enable `TRACE_INTERP` for an extremely detailed dump of
   * what PBL is doing at every opcode step.
-@@ -490,6 +568,14 @@
+@@ -138,6 +216,31 @@
+ // Large enough for an exit frame.
+ static const size_t kStackMargin = 1024;
+ 
++// Reserve at the end of the portable-baseline stack that JS->JS frame pushes
++// inside a run (Stack::checkJS) must leave free. Native->JS entries
++// (PortablebaselineInterpreterStackCheck, a non-restart run's own entry check
++// and the IC stubs that start one) keep the small kStackMargin and may use
++// it: they are limited to PBL_NESTMAX by tPblNest, so the reserve keeps
++// EnterJit from failing (NotEntered -> C++ js::Interpret, whose nested
++// native->JS levels nothing counts and which overflow the host wasm stack).
++// Sized for PBL_NESTMAX (80) nested entries of typical frames (c84 notes).
++// PBL_STACKRESERVE=N bytes overrides, read once.
++static constexpr size_t kPblStackReserveDefault = 64 * 1024;
++static size_t PblStackReserve() {
++  static const size_t reserve = [] {
++    const char* e = getenv("PBL_STACKRESERVE");
++    if (e && e[0] >= '0' && e[0] <= '9') {
++      char* end = nullptr;
++      unsigned long v = strtoul(e, &end, 10);
++      if (end && *end == '\0') {
++        return v > (64ul << 20) ? size_t(64ul << 20) : size_t(v);
++      }
++    }
++    return kPblStackReserveDefault;
++  }();
++  return reserve;
++}
++
+ /*
+  * A 64-bit value on the auxiliary stack. May either be a raw uint64_t
+  * or a `Value` (JS NaN-boxed value).
+@@ -215,6 +318,13 @@
+            reinterpret_cast<uintptr_t>(sp);
+   }
+ 
++  // JS->JS frame pushes within a run: also leave PblStackReserve() free.
++  MOZ_ALWAYS_INLINE bool checkJS(StackVal* sp, size_t size) {
++    return reinterpret_cast<uintptr_t>(base) + size + kStackMargin +
++               PblStackReserve() <=
++           reinterpret_cast<uintptr_t>(sp);
++  }
++
+   [[nodiscard]] MOZ_ALWAYS_INLINE StackVal* allocate(StackVal* sp,
+                                                      size_t size) {
+     if (!check(sp, size, false)) {
+@@ -490,6 +600,14 @@
    StackVal* sp_;
    PBIResult error;
    uint64_t arg2;
@@ -116,7 +162,7 @@
  
    ICCtx(JSContext* cx, BaselineFrame* frame_, State& state_, Stack& stack_)
        : frame(frame_),
-@@ -545,9 +631,16 @@
+@@ -545,9 +663,16 @@
    }
  }
  
@@ -133,7 +179,7 @@
    {
  #define DECLARE_CACHEOP_CASE(name) __label__ cacheop_##name
  
-@@ -668,6 +761,7 @@
+@@ -668,6 +793,7 @@
      DECLARE_CACHEOP_CASE(MegamorphicSetElement);
      DECLARE_CACHEOP_CASE(StoreFixedSlot);
      DECLARE_CACHEOP_CASE(StoreDynamicSlot);
@@ -141,7 +187,7 @@
      DECLARE_CACHEOP_CASE(AddAndStoreFixedSlot);
      DECLARE_CACHEOP_CASE(AddAndStoreDynamicSlot);
      DECLARE_CACHEOP_CASE(AllocateAndStoreDynamicSlot);
-@@ -829,6 +923,10 @@
+@@ -829,6 +955,10 @@
      DECLARE_CACHEOP_CASE(LoadStringAtResult);
      DECLARE_CACHEOP_CASE(LoadStringCodePointResult);
      DECLARE_CACHEOP_CASE(CallNativeGetterResult);
@@ -152,7 +198,7 @@
      DECLARE_CACHEOP_CASE(LoadUndefinedResult);
      DECLARE_CACHEOP_CASE(LoadDoubleConstant);
      DECLARE_CACHEOP_CASE(LoadBooleanConstant);
-@@ -884,7 +982,8 @@
+@@ -884,7 +1014,8 @@
  
  #define PREDICT_NEXT(name)                            \
    static_assert(CacheOp::name != CacheOp::PblReturn); \
@@ -162,7 +208,7 @@
      cacheIRReader.readOp();                           \
      cacheop = CacheOp::name;                          \
      goto cacheop_##name;                              \
-@@ -893,18 +992,30 @@
+@@ -893,18 +1024,30 @@
  #define PREDICT_RETURN()                                 \
    if (!cacheIRReader.more()) {                           \
      TRACE_PRINTF("stub successful, predicted return\n"); \
@@ -197,7 +243,7 @@
  
      DISPATCH_CACHEOP();
  
-@@ -916,6 +1027,7 @@
+@@ -916,6 +1059,7 @@
  
        CACHEOP_CASE(PblReturn) {
          TRACE_PRINTF("stub successful!\n");
@@ -205,7 +251,7 @@
          return retValue;
        }
  
-@@ -1071,8 +1183,9 @@
+@@ -1071,8 +1215,9 @@
            DISPATCH_CACHEOP();
          } else if (val.isDouble()) {
            double doubleVal = val.toDouble();
@@ -217,7 +263,7 @@
              DISPATCH_CACHEOP();
            }
          }
-@@ -1935,6 +2048,31 @@
+@@ -1935,6 +2080,31 @@
          DISPATCH_CACHEOP();
        }
  
@@ -249,7 +295,7 @@
        CACHEOP_CASE(StoreDynamicSlot) {
          ObjOperandId objId = cacheIRReader.objOperandId();
          uint32_t offsetOffset = cacheIRReader.stubOffset();
-@@ -2258,16 +2396,31 @@
+@@ -2258,16 +2428,31 @@
        }
  
        CACHEOP_CASE(CallScriptedFunction)
@@ -284,7 +330,7 @@
            ignoresRv = cacheIRReader.readBool();
          }
  
-@@ -3818,8 +3971,8 @@
+@@ -3818,8 +4003,8 @@
            FAIL_IC();
          }
          double result = std::floor(input);
@@ -295,7 +341,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3834,8 +3987,8 @@
+@@ -3834,8 +4019,8 @@
            FAIL_IC();
          }
          double result = std::ceil(input);
@@ -306,7 +352,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3846,12 +3999,12 @@
+@@ -3846,12 +4031,12 @@
        CACHEOP_CASE(MathTruncToInt32Result) {
          NumberOperandId inputId = cacheIRReader.numberOperandId();
          double input = READ_VALUE_REG(inputId.id()).toNumber();
@@ -322,7 +368,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3865,8 +4018,8 @@
+@@ -3865,8 +4050,8 @@
          if (input == 0.0 && std::signbit(input)) {
            FAIL_IC();
          }
@@ -333,7 +379,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3978,8 +4131,8 @@
+@@ -3978,8 +4163,8 @@
          if (std::isnan(input)) {
            FAIL_IC();
          }
@@ -344,7 +390,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(result).asRawBits();
-@@ -4412,6 +4565,50 @@
+@@ -4412,6 +4597,50 @@
          DISPATCH_CACHEOP();
        }
  
@@ -395,7 +441,7 @@
        CACHEOP_CASE(CallNativeSetter) {
          ValOperandId receiverId = cacheIRReader.valOperandId();
          uint32_t setterOffset = cacheIRReader.stubOffset();
-@@ -5410,13 +5607,18 @@
+@@ -5410,13 +5639,18 @@
  #define CACHEOP_UNIMPL(name, ...)               \
    cacheop_##name : __attribute__((unused));     \
    TRACE_PRINTF("unknown CacheOp: " #name "\n"); \
@@ -415,7 +461,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +5970,71 @@
+@@ -5768,8 +6002,71 @@
    }
  }
  
@@ -488,7 +534,7 @@
  }
  
  /*
-@@ -5810,8 +6075,9 @@
+@@ -5810,8 +6107,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -500,7 +546,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5911,6 +6177,9 @@
+@@ -5911,6 +6209,9 @@
      JSObject* envChain, Value* ret, jsbytecode* pc, ImmutableScriptData* isd,
      jsbytecode* restartEntryPC, BaselineFrame* restartFrame,
      StackVal* restartEntryFrame, PBIResult restartCode) {
@@ -510,7 +556,7 @@
  #define RESTART(code)                                                 \
    if (!IsRestart) {                                                   \
      TRACE_PRINTF("Restarting (code %d sp %p fp %p)\n", int(code), sp, \
-@@ -5935,7 +6204,8 @@
+@@ -5935,7 +6236,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -520,7 +566,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6244,9 @@
+@@ -5974,6 +6276,9 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -530,7 +576,7 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -5982,6 +6255,11 @@
+@@ -5982,6 +6287,11 @@
          ctx.stack.fp, ctx.frame);
      goto ic_fail;
    } else {
@@ -542,7 +588,7 @@
      AutoCheckRecursionLimit recursion(ctx.frameMgr.cxForLocalUseOnly());
      if (!recursion.checkDontReport(ctx.frameMgr.cxForLocalUseOnly())) {
        PUSH_EXIT_FRAME();
-@@ -6058,6 +6336,14 @@
+@@ -6058,6 +6368,14 @@
    TRACE_PRINTF("nslots = %d nfixed = %d\n", int(frame->script()->nslots()),
                 int(frame->script()->nfixed()));
  
@@ -557,7 +603,25 @@
    while (true) {
      DEBUG_CHECK();
  
-@@ -8208,6 +8494,97 @@
+@@ -7820,7 +8138,7 @@
+                 "Call fastpath: argc = %d origArgs = %p callee = %" PRIx64 "\n",
+                 argc, origArgs, callee.get().asRawBits());
+ 
+-            if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) {
++            if (!ctx.stack.checkJS(sp, sizeof(StackVal) * (totalArgs + 3))) {
+               TRACE_PRINTF("missed fastpath: would cause stack overrun\n");
+               break;
+             }
+@@ -7888,7 +8206,7 @@
+             sp = reinterpret_cast<StackVal*>(frame);
+             RESET_PC(calleeScript->code(), calleeScript);
+             // 7. Check callee stack space for max stack depth.
+-            if (!stack.check(sp, sizeof(StackVal) * calleeScript->nslots())) {
++            if (!stack.checkJS(sp, sizeof(StackVal) * calleeScript->nslots())) {
+               PUSH_EXIT_FRAME();
+               ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
+               GOTO_ERROR();
+@@ -8208,6 +8526,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -598,9 +662,9 @@
 +              break;
 +            }
 +            uint32_t nformals = gfun->nargs();
-+            if (!ctx.stack.check(sp, sizeof(StackVal) *
-+                                             (nformals + 1 + nslots + 2 + 16) +
-+                                         BaselineFrame::Size())) {
++            if (!ctx.stack.checkJS(sp, sizeof(StackVal) *
++                                               (nformals + 1 + nslots + 2 + 16) +
++                                           BaselineFrame::Size())) {
 +              break;
 +            }
 +            Value resumeVal = VIRTSP(1).asValue();
@@ -655,7 +719,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8617,7 @@
+@@ -8240,6 +8649,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -663,7 +727,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8783,16 @@
+@@ -8405,6 +8815,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -680,7 +744,7 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -9160,6 +9548,35 @@
+@@ -9160,6 +9580,35 @@
  
    DISPATCH();
  
@@ -716,7 +780,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9765,25 @@
+@@ -9348,10 +9797,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -743,7 +807,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9800,34 @@
+@@ -9368,18 +9832,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }

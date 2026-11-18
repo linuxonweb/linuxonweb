@@ -147,7 +147,35 @@ int64_t CallScriptedHit(int64_t frame, int64_t sp, int64_t pc,
 int64_t CallFunCall(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
                     int64_t ctx, int64_t site);
 bool gFunCall = true;
-uint32_t gFcDirect, gFcRefused;  // racy stats
+uint32_t gFcDirect, gFcRefused, gFcOverRec;  // racy stats
+// PBLBC_FUNAPPLY (default on; value starting with 0: off). The same for a
+// callee whose native is js::fun_apply with argc <= 2: the second argument
+// must be null/undefined/absent (no args), an ArgumentsObject passing
+// CacheIR's FunApplyArgsObj guards (no overridden/deleted element, no
+// forwarded arg, no overridden length) or a packed ArrayObject (CacheIR's
+// FunApplyArray), with at most JIT_ARGS_LENGTH_MAX elements. The argc + 2
+// operands are replaced by [target, thisArg, elements...] ending at the same
+// top (sp + argc + 2), growing the operand area downwards when there are more
+// than argc elements (checked against the stack limit first), so the return
+// sequence (numActualArgs + 2) pops exactly the original operands. Nothing
+// can GC between reading the elements and CallScriptedA's last refusal; any
+// refusal restores the original operands and the IC runs as before.
+int64_t CallFunApply(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
+                     int64_t ctx, int64_t site);
+bool gFunApply = true;
+uint32_t gFaDirect, gFaRefused, gFaOverRec;  // racy stats
+// Over-recursion in CallFunCall/CallFunApply: when the rewritten call was
+// refused only for portable-baseline stack space (CallScriptedA's two stack
+// checks, or CallFunApply's operand growth; all Stack::checkJS, which leaves
+// PblStackReserve() free), the IC must not run: native fun_call/fun_apply ->
+// js::Call -> EnterJit would nest a run inside the reserve kept for genuine
+// native->JS entries (or, past it, fail PortablebaselineInterpreterStackCheck
+// and fall back to a nested C++ js::Interpret whose browser wasm stack use
+// neither tPblNest nor tDirectDepth sees). Instead the original operands are
+// restored and over-recursion is reported like the interpreter's callee
+// stack check (CASE(Call) step 7: exit frame, ReportOverRecursed,
+// GOTO_ERROR), at the Call op in the caller frame (kFrameSwitch with
+// icError, like CallScriptedA's CreateThis failure).
 struct Entry;
 // PBLBC_SITECACHE (default on; 0: generated code and CallScripted exactly as
 // without it). One CallSite per compiled direct-call op (Call/CallIgnoresRv/
@@ -344,9 +372,12 @@ void PrintDirectStats() {
   if (gSiteCache)
     fprintf(stderr, "PBLBC sitecache: fills=%u stale=%u recheck_fail=%u\n",
             gSiteFills, gSiteStale, gSiteRecheck);
-  if (gFunCall)
-    fprintf(stderr, "PBLBC funcall: direct=%u refused=%u\n", gFcDirect,
-            gFcRefused);
+  if (gFunCall || gFunApply)
+    fprintf(stderr,
+            "PBLBC funcall: direct=%u refused=%u apply_direct=%u "
+            "apply_refused=%u overrecursed=%u apply_overrecursed=%u\n",
+            gFcDirect, gFcRefused, gFaDirect, gFaRefused, gFcOverRec,
+            gFaOverRec);
 }
 
 // PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
@@ -538,6 +569,8 @@ bool Enabled() {
     if (scv && scv[0] == '0') gSiteCache = false;
     const char* fcv = getenv("PBLBC_FUNCALL");
     if (fcv && fcv[0] == '0') gFunCall = false;
+    const char* fav = getenv("PBLBC_FUNAPPLY");
+    if (fav && fav[0] == '0') gFunApply = false;
     const char* tcv = getenv("PBLBC_THISCACHE");
     if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
@@ -1603,6 +1636,19 @@ bool MT::nativeCall() {
     op(OP_I32EQ);
     ifThen();
     directCall(&CallFunCall, nullptr);
+    end();
+  }
+  if (direct && gFunApply && !ctor && argc <= 2 &&
+      (ops[cur].op == JSOp::Call || ops[cur].op == JSOp::CallIgnoresRv ||
+       ops[cur].op == JSOp::CallContent)) {
+    // PBLBC_FUNAPPLY: the same for js::fun_apply.
+    lget(L_A);
+    op(OP_I32WRAP);
+    load32(uint32_t(JSFunction::offsetOfNativeOrEnv()));
+    i32c(int32_t(uintptr_t(&js::fun_apply)));
+    op(OP_I32EQ);
+    ifThen();
+    directCall(&CallFunApply, nullptr);
     end();
   }
   lget(L_CTX);
@@ -4061,10 +4107,14 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
 }
 
 // argcIn: GET_ARGC(pc), or the rewritten argc (CallFunCall).
+// stackFull: CallFunCall/CallFunApply only; a refusal by one of the two
+// stack-space checks returns kRefuseStack (no state changed) instead of 0.
+constexpr int64_t kRefuseStack = 2;  // never an sp (StackVal-aligned)
 static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
                                                int64_t pcA, int64_t iceA,
                                                int64_t ctxA, int64_t siteA,
-                                               uint32_t argcIn) {
+                                               uint32_t argcIn,
+                                               bool stackFull = false) {
   auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
@@ -4147,8 +4197,9 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
                        &sp[0].asValue().toObject() != func)) {
     return Refuse(kDsNotFunction);
   }
-  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 3))) {
-    return Refuse(kDsStack);
+  if (!ctx.stack.checkJS(sp, sizeof(StackVal) * (totalArgs + 3))) {
+    Refuse(kDsStack);
+    return stackFull ? kRefuseStack : 0;
   }
   // Extra: steps 9-12 of the fast path must be no-ops, and step 7 (callee
   // stack space, which would throw over-recursion) must pass. The space for
@@ -4164,11 +4215,12 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
   // added explicitly on top of the first exit frame (4 words), stub slot,
   // args, token, descriptor, return address and saved fp (totalArgs + 8).
   const uint32_t nslots = ce ? ce->nslots : calleeScript->nslots();
-  if (!ctx.stack.check(sp, sizeof(StackVal) * (totalArgs + 16 +
-                                               (needEnv ? 4 : 0)) +
-                               BaselineFrame::Size() +
-                               sizeof(StackVal) * nslots)) {
-    return Refuse(kDsCalleeStack);
+  if (!ctx.stack.checkJS(sp, sizeof(StackVal) * (totalArgs + 16 +
+                                                 (needEnv ? 4 : 0)) +
+                                 BaselineFrame::Size() +
+                                 sizeof(StackVal) * nslots)) {
+    Refuse(kDsCalleeStack);
+    return stackFull ? kRefuseStack : 0;
   }
   if (ce) {
     // The Entry for this script data is unchanged (generation), but the
@@ -4329,6 +4381,33 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
                        GET_ARGC(reinterpret_cast<jsbytecode*>(uintptr_t(pcA))));
 }
 
+// The operands at sp are the original (restored) ones. Exit frame at sp with
+// interpreterPC = pc (as for the IC), ReportOverRecursed, then the
+// interpreter's error path at this op (ctx.error, tSwitch with icError).
+// Returns 0 (refuse: the IC runs as before) only if the exit frame cannot be
+// pushed (not expected: every frame and operand growth was checked with
+// kStackMargin plus the reserve).
+static int64_t DirectOverRecursed(ICCtx& ctx, int64_t frameA, StackVal* sp,
+                                  int64_t pcA, int64_t iceA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  auto* icEntry = reinterpret_cast<ICEntry*>(uintptr_t(iceA));
+  frame->interpreterPC() = pc;
+  frame->interpreterICEntry() = icEntry;
+  {
+    VMFrame vcx(ctx.frameMgr, ctx.stack, sp);
+    if (!vcx.success()) return 0;
+    ReportOverRecursed(vcx);
+  }
+  ctx.error = PBIResult::Error;
+  tSwitch.frame = frame;
+  tSwitch.sp = sp;
+  tSwitch.pc = pc;
+  tSwitch.icEntry = icEntry;
+  tSwitch.icError = true;
+  return 1;
+}
+
 int64_t CallFunCall(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
                     int64_t ctxA, int64_t siteA) {
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
@@ -4376,8 +4455,8 @@ int64_t CallFunCall(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
     nargc = argc - 1;
   }
   int64_t r = CallScriptedA(frameA, int64_t(uintptr_t(nsp)), pcA, iceA, ctxA,
-                            0, nargc);
-  if (r == 0) {
+                            0, nargc, /* stackFull = */ true);
+  if (r == 0 || r == kRefuseStack) {
     // Non-constructing refusals happen before anything that can GC: the
     // saved callee Value is still valid.
     if (argc == 0) {
@@ -4386,10 +4465,110 @@ int64_t CallFunCall(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
       memmove(sp, sp + 1, sizeof(StackVal) * (argc + 1));
     }
     sp[argc + 1] = saved;
+    if (r == kRefuseStack) {
+      gFcOverRec++;
+      return DirectOverRecursed(ctx, frameA, sp, pcA, iceA);
+    }
     gFcRefused++;
     return 0;
   }
   gFcDirect++;
+  return r;
+}
+
+int64_t CallFunApply(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
+                     int64_t ctxA, int64_t siteA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
+  const JSOp jop = JSOp(*pc);
+  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
+      jop != JSOp::CallContent) {
+    return 0;
+  }
+  const uint32_t argc = GET_ARGC(pc);
+  if (argc > 2) return 0;
+  const Value callee = sp[argc + 1].asValue();
+  if (!callee.isObject() || !callee.toObject().is<JSFunction>()) return 0;
+  JSFunction* cf = &callee.toObject().as<JSFunction>();
+  if (!cf->isNativeFun() || cf->native() != js::fun_apply) return 0;
+  if (cf->realm() != cx->realm()) {
+    gFaRefused++;
+    return 0;
+  }
+  const Value target = sp[argc].asValue();
+  if (!target.isObject() || !target.toObject().is<JSFunction>()) {
+    gFaRefused++;
+    return 0;
+  }
+  JSFunction* tf = &target.toObject().as<JSFunction>();
+  if (!tf->hasBaseScript() || !tf->isInterpreted() ||
+      tf->isClassConstructor()) {
+    gFaRefused++;
+    return 0;
+  }
+  const Value thisv = argc >= 1 ? sp[argc - 1].asValue() : UndefinedValue();
+  const Value arg = argc >= 2 ? sp[argc - 2].asValue() : UndefinedValue();
+  // Raw pointers below: nothing can GC until CallScriptedA's refusals are
+  // over (the elements are on the operand stack by then).
+  ArgumentsObject* ao = nullptr;
+  const Value* elems = nullptr;
+  uint32_t n = 0;
+  if (arg.isNullOrUndefined()) {
+    n = 0;
+  } else if (arg.isObject() && arg.toObject().is<ArgumentsObject>()) {
+    ao = &arg.toObject().as<ArgumentsObject>();
+    if (ao->hasOverriddenElement() || ao->anyArgIsForwarded() ||
+        ao->hasOverriddenLength() ||
+        ao->initialLength() > JIT_ARGS_LENGTH_MAX) {
+      gFaRefused++;
+      return 0;
+    }
+    n = ao->initialLength();
+  } else if (arg.isObject() && IsPackedArray(&arg.toObject())) {
+    ArrayObject* arr = &arg.toObject().as<ArrayObject>();
+    if (arr->length() > JIT_ARGS_LENGTH_MAX ||
+        arr->getDenseInitializedLength() != arr->length()) {
+      gFaRefused++;
+      return 0;
+    }
+    n = arr->length();
+    elems = arr->getDenseElements();
+  } else {
+    gFaRefused++;
+    return 0;
+  }
+  // New operands [target, thisv, e0..e(n-1)] end at sp + argc + 2.
+  StackVal* nsp = sp + int32_t(argc) - int32_t(n);
+  if (nsp < sp &&
+      !ctx.stack.checkJS(sp, sizeof(StackVal) * size_t(sp - nsp))) {
+    // Nothing rewritten yet.
+    gFaOverRec++;
+    return DirectOverRecursed(ctx, frameA, sp, pcA, iceA);
+  }
+  uint64_t saved[4];
+  for (uint32_t i = 0; i < argc + 2; i++) saved[i] = sp[i].asUInt64();
+  nsp[n + 1] = StackVal(target);
+  nsp[n] = StackVal(thisv);
+  for (uint32_t i = 0; i < n; i++) {
+    // ArgumentsObject::arg: element(i) without forwarding (refused above;
+    // a deleted element sets the overridden-element flag).
+    nsp[n - 1 - i] = StackVal(ao ? ao->arg(i) : elems[i]);
+  }
+  int64_t r = CallScriptedA(frameA, int64_t(uintptr_t(nsp)), pcA, iceA, ctxA,
+                            0, n, /* stackFull = */ true);
+  if (r == 0 || r == kRefuseStack) {
+    // Non-constructing refusals happen before anything that can GC.
+    for (uint32_t i = 0; i < argc + 2; i++) sp[i] = StackVal(saved[i]);
+    if (r == kRefuseStack) {
+      gFaOverRec++;
+      return DirectOverRecursed(ctx, frameA, sp, pcA, iceA);
+    }
+    gFaRefused++;
+    return 0;
+  }
+  gFaDirect++;
   return r;
 }
 
@@ -4461,7 +4640,7 @@ int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
                    calleeScript->hasScriptCounts() ||
                    cx->realm()->collectCoverageForDebug() ||
                    cx->hasAnyPendingInterrupt() ||
-                   !ctx.stack.check(sp, site->stackBytes))) {
+                   !ctx.stack.checkJS(sp, site->stackBytes))) {
     gSiteRecheck++;
     return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
   }

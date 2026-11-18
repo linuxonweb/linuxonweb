@@ -13,5 +13,12 @@ proves the run did not hang.
   IC and loop-tier code is live on the stack (globals, callee chains, shape
   guards, constructors, arrays, for-of, closures, try/catch).
 
-`arguments.js`, `checkops.js`, `iterops.js`, `trampentry.js`, `funcall.js` and `nest.js` have no `.expected` file: their whole stdout must be identical
+`arguments.js`, `checkops.js`, `iterops.js`, `trampentry.js`, `funcall.js`, `funapply.js` and `nest.js` have no `.expected` file: their whole stdout must be identical
 across the three modes (tiers off, defaults, `PBLBC_HITS=2`).
+
+`deep.js` (deep recursion through f.call/f.apply, near-full stack plus native
+recursion, generators, eval) must complete with identical stdout in defaults and
+`PBLBC_HITS=2`. With tiers off or `PBLBC_FUNCALL=0 PBLBC_FUNAPPLY=0` it still loses
+the browser thread: scripts that run in the C++ interpreter (tiers off rejects
+scripts containing Throw; every script's first 10 calls are cold) nest
+uncounted. Known limitation, not a regression.
