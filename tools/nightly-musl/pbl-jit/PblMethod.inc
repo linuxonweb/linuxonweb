@@ -132,6 +132,22 @@ int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
                      int64_t ctx, int64_t site);
 int64_t CallScriptedHit(int64_t frame, int64_t sp, int64_t pc,
                         int64_t icEntry, int64_t ctx, int64_t site);
+// PBLBC_FUNCALL (default on; value starting with 0: off). At a non-
+// constructing Call/CallIgnoresRv/CallContent whose callee is a native
+// JSFunction whose native is js::fun_call (inline pointer check in the
+// generated code, re-checked in CallFunCall), of the current realm, with a
+// scripted non-class-constructor JSFunction as |this|: the operand stack is
+// rewritten in place to an ordinary call (callee = |this|, this = first arg
+// or undefined, remaining args, argc - 1; the values move up one slot so the
+// return sequence, which pops numActualArgs + 2, still pops the original
+// argc + 2 values) and CallScripted's checks/direct path run with that argc
+// and no call site (the site cache is untouched). Any refusal restores the
+// original operands (no GC can happen between the rewrite and a
+// non-constructing refusal) and the IC runs as before.
+int64_t CallFunCall(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
+                    int64_t ctx, int64_t site);
+bool gFunCall = true;
+uint32_t gFcDirect, gFcRefused;  // racy stats
 struct Entry;
 // PBLBC_SITECACHE (default on; 0: generated code and CallScripted exactly as
 // without it). One CallSite per compiled direct-call op (Call/CallIgnoresRv/
@@ -328,6 +344,9 @@ void PrintDirectStats() {
   if (gSiteCache)
     fprintf(stderr, "PBLBC sitecache: fills=%u stale=%u recheck_fail=%u\n",
             gSiteFills, gSiteStale, gSiteRecheck);
+  if (gFunCall)
+    fprintf(stderr, "PBLBC funcall: direct=%u refused=%u\n", gFcDirect,
+            gFcRefused);
 }
 
 // PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
@@ -517,6 +536,8 @@ bool Enabled() {
     if (ccv && ccv[0] == '0') gCallCache = false;
     const char* scv = getenv("PBLBC_SITECACHE");
     if (scv && scv[0] == '0') gSiteCache = false;
+    const char* fcv = getenv("PBLBC_FUNCALL");
+    if (fcv && fcv[0] == '0') gFunCall = false;
     const char* tcv = getenv("PBLBC_THISCACHE");
     if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
@@ -1570,6 +1591,20 @@ bool MT::nativeCall() {
   }
   exitHere();
   end();
+  if (direct && gFunCall && !ctor &&
+      (ops[cur].op == JSOp::Call || ops[cur].op == JSOp::CallIgnoresRv ||
+       ops[cur].op == JSOp::CallContent)) {
+    // PBLBC_FUNCALL: native callee whose native is js::fun_call (the low
+    // word of the native slot's PrivateValue); r == 0 falls through to the IC.
+    lget(L_A);
+    op(OP_I32WRAP);
+    load32(uint32_t(JSFunction::offsetOfNativeOrEnv()));
+    i32c(int32_t(uintptr_t(&js::fun_call)));
+    op(OP_I32EQ);
+    ifThen();
+    directCall(&CallFunCall, nullptr);
+    end();
+  }
   lget(L_CTX);
   i32c(int32_t(2 + ctor));
   store32(kCtxExtraArgs);
@@ -4025,8 +4060,11 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
   return int64_t(uintptr_t(sp));
 }
 
-int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
-                     int64_t ctxA, int64_t siteA) {
+// argcIn: GET_ARGC(pc), or the rewritten argc (CallFunCall).
+static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
+                                               int64_t pcA, int64_t iceA,
+                                               int64_t ctxA, int64_t siteA,
+                                               uint32_t argcIn) {
   auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
@@ -4049,7 +4087,7 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   }
   if (frame->isDebuggee()) return Refuse(kDsCallerDebuggee);
   // Fast-path checks (same order as the interpreter).
-  const uint32_t argc = GET_ARGC(pc);
+  const uint32_t argc = argcIn;
   StackVal* firstArg = sp + argc + (constructing ? 1 : 0) - 1;
   const Value callee = firstArg[2].asValue();
   if (!callee.isObject() || !callee.toObject().is<JSFunction>()) {
@@ -4283,6 +4321,76 @@ int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
                   undefArgs, totalArgs, constructing, needEnv, retRval0,
                   calleeScript->argsObjAliasesFormals(), nfixedT, calleePCT,
                   useCached ? cScript : nullptr, epoch);
+}
+
+int64_t CallScripted(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
+                     int64_t ctxA, int64_t siteA) {
+  return CallScriptedA(frameA, spA, pcA, iceA, ctxA, siteA,
+                       GET_ARGC(reinterpret_cast<jsbytecode*>(uintptr_t(pcA))));
+}
+
+int64_t CallFunCall(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
+                    int64_t ctxA, int64_t siteA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
+  const JSOp jop = JSOp(*pc);
+  if (jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
+      jop != JSOp::CallContent) {
+    return 0;
+  }
+  const uint32_t argc = GET_ARGC(pc);
+  const Value callee = sp[argc + 1].asValue();
+  if (!callee.isObject() || !callee.toObject().is<JSFunction>()) return 0;
+  JSFunction* cf = &callee.toObject().as<JSFunction>();
+  if (!cf->isNativeFun() || cf->native() != js::fun_call) return 0;
+  if (cf->realm() != cx->realm()) {
+    gFcRefused++;
+    return 0;
+  }
+  const Value target = sp[argc].asValue();
+  if (!target.isObject() || !target.toObject().is<JSFunction>()) {
+    gFcRefused++;
+    return 0;
+  }
+  JSFunction* tf = &target.toObject().as<JSFunction>();
+  if (!tf->hasBaseScript() || !tf->isInterpreted() ||
+      tf->isClassConstructor()) {
+    gFcRefused++;
+    return 0;
+  }
+  // Rewrite: [fun_call, f, t, a1..an] -> [f, t, a1..an] one slot up
+  // (argc - 1 args), or [fun_call, f] -> [f, undefined] (argc 0 stays 0).
+  const StackVal saved = sp[argc + 1];
+  StackVal* nsp;
+  uint32_t nargc;
+  if (argc == 0) {
+    sp[1] = sp[0];
+    sp[0] = StackVal(UndefinedValue());
+    nsp = sp;
+    nargc = 0;
+  } else {
+    memmove(sp + 1, sp, sizeof(StackVal) * (argc + 1));
+    nsp = sp + 1;
+    nargc = argc - 1;
+  }
+  int64_t r = CallScriptedA(frameA, int64_t(uintptr_t(nsp)), pcA, iceA, ctxA,
+                            0, nargc);
+  if (r == 0) {
+    // Non-constructing refusals happen before anything that can GC: the
+    // saved callee Value is still valid.
+    if (argc == 0) {
+      sp[0] = sp[1];
+    } else {
+      memmove(sp, sp + 1, sizeof(StackVal) * (argc + 1));
+    }
+    sp[argc + 1] = saved;
+    gFcRefused++;
+    return 0;
+  }
+  gFcDirect++;
+  return r;
 }
 
 // PBLBC_SITECACHE hit: the callee Value's bits equal site->calleeBits.
