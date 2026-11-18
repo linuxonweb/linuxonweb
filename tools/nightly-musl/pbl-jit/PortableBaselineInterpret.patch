@@ -147,7 +147,108 @@
    [[nodiscard]] MOZ_ALWAYS_INLINE StackVal* allocate(StackVal* sp,
                                                       size_t size) {
      if (!check(sp, size, false)) {
-@@ -490,6 +600,14 @@
+@@ -349,43 +459,66 @@
+   int extraArgs;
+ };
+ 
++// Scratch roots for one PortableBaselineTrampoline activation. One
++// RootedTuple is a single stack-root list entry (push/pop) instead of one
++// per field; each RootedField is a drop-in replacement for the Rooted it
++// replaces (same Handle/MutableHandle conversions, same tracing).
+ struct State {
+-  RootedValue value0;
+-  RootedValue value1;
+-  RootedValue value2;
+-  RootedValue value3;
+-  RootedValue res;
+-  RootedObject obj0;
+-  RootedObject obj1;
+-  RootedObject obj2;
+-  RootedString str0;
+-  RootedString str1;
+-  RootedString str2;
+-  RootedScript script0;
+-  Rooted<PropertyName*> name0;
+-  Rooted<jsid> id0;
+-  Rooted<JSAtom*> atom0;
+-  RootedFunction fun0;
+-  Rooted<Scope*> scope0;
++  JS::RootedTuple<Value,
++                  Value,
++                  Value,
++                  Value,
++                  Value,
++                  JSObject*,
++                  JSObject*,
++                  JSObject*,
++                  JSString*,
++                  JSString*,
++                  JSString*,
++                  JSScript*,
++                  PropertyName*,
++                  jsid,
++                  JSAtom*,
++                  JSFunction*,
++                  Scope*>
++      roots;
++  JS::RootedField<Value, 0> value0;
++  JS::RootedField<Value, 1> value1;
++  JS::RootedField<Value, 2> value2;
++  JS::RootedField<Value, 3> value3;
++  JS::RootedField<Value, 4> res;
++  JS::RootedField<JSObject*, 5> obj0;
++  JS::RootedField<JSObject*, 6> obj1;
++  JS::RootedField<JSObject*, 7> obj2;
++  JS::RootedField<JSString*, 8> str0;
++  JS::RootedField<JSString*, 9> str1;
++  JS::RootedField<JSString*, 10> str2;
++  JS::RootedField<JSScript*, 11> script0;
++  JS::RootedField<PropertyName*, 12> name0;
++  JS::RootedField<jsid, 13> id0;
++  JS::RootedField<JSAtom*, 14> atom0;
++  JS::RootedField<JSFunction*, 15> fun0;
++  JS::RootedField<Scope*, 16> scope0;
+ 
+   explicit State(JSContext* cx)
+-      : value0(cx),
+-        value1(cx),
+-        value2(cx),
+-        value3(cx),
+-        res(cx),
+-        obj0(cx),
+-        obj1(cx),
+-        obj2(cx),
+-        str0(cx),
+-        str1(cx),
+-        str2(cx),
+-        script0(cx),
+-        name0(cx),
+-        id0(cx),
+-        atom0(cx),
+-        fun0(cx),
+-        scope0(cx) {}
++      : roots(cx),
++        value0(roots),
++        value1(roots),
++        value2(roots),
++        value3(roots),
++        res(roots),
++        obj0(roots),
++        obj1(roots),
++        obj2(roots),
++        str0(roots),
++        str1(roots),
++        str2(roots),
++        script0(roots),
++        name0(roots),
++        id0(roots),
++        atom0(roots),
++        fun0(roots),
++        scope0(roots) {}
+ };
+ 
+ /*
+@@ -490,6 +623,14 @@
    StackVal* sp_;
    PBIResult error;
    uint64_t arg2;
@@ -162,7 +263,7 @@
  
    ICCtx(JSContext* cx, BaselineFrame* frame_, State& state_, Stack& stack_)
        : frame(frame_),
-@@ -545,9 +663,16 @@
+@@ -545,9 +686,16 @@
    }
  }
  
@@ -179,7 +280,7 @@
    {
  #define DECLARE_CACHEOP_CASE(name) __label__ cacheop_##name
  
-@@ -668,6 +793,7 @@
+@@ -668,6 +816,7 @@
      DECLARE_CACHEOP_CASE(MegamorphicSetElement);
      DECLARE_CACHEOP_CASE(StoreFixedSlot);
      DECLARE_CACHEOP_CASE(StoreDynamicSlot);
@@ -187,7 +288,7 @@
      DECLARE_CACHEOP_CASE(AddAndStoreFixedSlot);
      DECLARE_CACHEOP_CASE(AddAndStoreDynamicSlot);
      DECLARE_CACHEOP_CASE(AllocateAndStoreDynamicSlot);
-@@ -829,6 +955,10 @@
+@@ -829,6 +978,10 @@
      DECLARE_CACHEOP_CASE(LoadStringAtResult);
      DECLARE_CACHEOP_CASE(LoadStringCodePointResult);
      DECLARE_CACHEOP_CASE(CallNativeGetterResult);
@@ -198,7 +299,7 @@
      DECLARE_CACHEOP_CASE(LoadUndefinedResult);
      DECLARE_CACHEOP_CASE(LoadDoubleConstant);
      DECLARE_CACHEOP_CASE(LoadBooleanConstant);
-@@ -884,7 +1014,8 @@
+@@ -884,7 +1037,8 @@
  
  #define PREDICT_NEXT(name)                            \
    static_assert(CacheOp::name != CacheOp::PblReturn); \
@@ -208,7 +309,7 @@
      cacheIRReader.readOp();                           \
      cacheop = CacheOp::name;                          \
      goto cacheop_##name;                              \
-@@ -893,18 +1024,30 @@
+@@ -893,18 +1047,30 @@
  #define PREDICT_RETURN()                                 \
    if (!cacheIRReader.more()) {                           \
      TRACE_PRINTF("stub successful, predicted return\n"); \
@@ -243,7 +344,7 @@
  
      DISPATCH_CACHEOP();
  
-@@ -916,6 +1059,7 @@
+@@ -916,6 +1082,7 @@
  
        CACHEOP_CASE(PblReturn) {
          TRACE_PRINTF("stub successful!\n");
@@ -251,7 +352,7 @@
          return retValue;
        }
  
-@@ -1071,8 +1215,9 @@
+@@ -1071,8 +1238,9 @@
            DISPATCH_CACHEOP();
          } else if (val.isDouble()) {
            double doubleVal = val.toDouble();
@@ -263,7 +364,7 @@
              DISPATCH_CACHEOP();
            }
          }
-@@ -1935,6 +2080,31 @@
+@@ -1935,6 +2103,31 @@
          DISPATCH_CACHEOP();
        }
  
@@ -295,7 +396,7 @@
        CACHEOP_CASE(StoreDynamicSlot) {
          ObjOperandId objId = cacheIRReader.objOperandId();
          uint32_t offsetOffset = cacheIRReader.stubOffset();
-@@ -2258,16 +2428,31 @@
+@@ -2258,16 +2451,31 @@
        }
  
        CACHEOP_CASE(CallScriptedFunction)
@@ -330,7 +431,7 @@
            ignoresRv = cacheIRReader.readBool();
          }
  
-@@ -3818,8 +4003,8 @@
+@@ -3818,8 +4026,8 @@
            FAIL_IC();
          }
          double result = std::floor(input);
@@ -341,7 +442,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3834,8 +4019,8 @@
+@@ -3834,8 +4042,8 @@
            FAIL_IC();
          }
          double result = std::ceil(input);
@@ -352,7 +453,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3846,12 +4031,12 @@
+@@ -3846,12 +4054,12 @@
        CACHEOP_CASE(MathTruncToInt32Result) {
          NumberOperandId inputId = cacheIRReader.numberOperandId();
          double input = READ_VALUE_REG(inputId.id()).toNumber();
@@ -368,7 +469,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3865,8 +4050,8 @@
+@@ -3865,8 +4073,8 @@
          if (input == 0.0 && std::signbit(input)) {
            FAIL_IC();
          }
@@ -379,7 +480,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(intResult).asRawBits();
-@@ -3978,8 +4163,8 @@
+@@ -3978,8 +4186,8 @@
          if (std::isnan(input)) {
            FAIL_IC();
          }
@@ -390,7 +491,7 @@
            FAIL_IC();
          }
          retValue = Int32Value(result).asRawBits();
-@@ -4412,6 +4597,50 @@
+@@ -4412,6 +4620,50 @@
          DISPATCH_CACHEOP();
        }
  
@@ -441,7 +542,7 @@
        CACHEOP_CASE(CallNativeSetter) {
          ValOperandId receiverId = cacheIRReader.valOperandId();
          uint32_t setterOffset = cacheIRReader.stubOffset();
-@@ -5410,13 +5639,18 @@
+@@ -5410,13 +5662,18 @@
  #define CACHEOP_UNIMPL(name, ...)               \
    cacheop_##name : __attribute__((unused));     \
    TRACE_PRINTF("unknown CacheOp: " #name "\n"); \
@@ -461,7 +562,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +6002,71 @@
+@@ -5768,8 +6025,71 @@
    }
  }
  
@@ -534,7 +635,7 @@
  }
  
  /*
-@@ -5810,8 +6107,9 @@
+@@ -5810,8 +6130,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -546,7 +647,7 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5911,6 +6209,9 @@
+@@ -5911,6 +6232,9 @@
      JSObject* envChain, Value* ret, jsbytecode* pc, ImmutableScriptData* isd,
      jsbytecode* restartEntryPC, BaselineFrame* restartFrame,
      StackVal* restartEntryFrame, PBIResult restartCode) {
@@ -556,7 +657,7 @@
  #define RESTART(code)                                                 \
    if (!IsRestart) {                                                   \
      TRACE_PRINTF("Restarting (code %d sp %p fp %p)\n", int(code), sp, \
-@@ -5935,7 +6236,8 @@
+@@ -5935,7 +6259,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -566,17 +667,20 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6276,9 @@
+@@ -5974,6 +6299,12 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
 +  // PblMethod hook: pending at entry, calls, returns, catches and loop heads.
 +  const bool bcOn = pblbc::Enabled();
 +  bool bcPending = bcOn;
++  // PBLBC_TRAMPENTRY: the compiled Entry TrampEntryReady found, handed to
++  // the first Hook call so it does not look the Entry up again.
++  pblbc::Entry* bcKnown = nullptr;
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -5982,6 +6287,11 @@
+@@ -5982,6 +6313,11 @@
          ctx.stack.fp, ctx.frame);
      goto ic_fail;
    } else {
@@ -588,7 +692,7 @@
      AutoCheckRecursionLimit recursion(ctx.frameMgr.cxForLocalUseOnly());
      if (!recursion.checkDontReport(ctx.frameMgr.cxForLocalUseOnly())) {
        PUSH_EXIT_FRAME();
-@@ -6058,6 +6368,14 @@
+@@ -6058,6 +6394,14 @@
    TRACE_PRINTF("nslots = %d nfixed = %d\n", int(frame->script()->nslots()),
                 int(frame->script()->nfixed()));
  
@@ -596,14 +700,14 @@
 +  // method-tier code at op 0 through the normal Hook continuation (exits,
 +  // frame switches, errors and Return/RetRval all continue in this run
 +  // exactly as after a Hook at any other op).
-+  if (bcOn && pblbc::TrampEntryReady(frame, pc, isd)) {
++  if (bcOn && (bcKnown = pblbc::TrampEntryReady(frame, pc, isd))) {
 +    goto bc_hook;
 +  }
 +
    while (true) {
      DEBUG_CHECK();
  
-@@ -7820,7 +8138,7 @@
+@@ -7820,7 +8164,7 @@
                  "Call fastpath: argc = %d origArgs = %p callee = %" PRIx64 "\n",
                  argc, origArgs, callee.get().asRawBits());
  
@@ -612,7 +716,7 @@
                TRACE_PRINTF("missed fastpath: would cause stack overrun\n");
                break;
              }
-@@ -7888,7 +8206,7 @@
+@@ -7888,7 +8232,7 @@
              sp = reinterpret_cast<StackVal*>(frame);
              RESET_PC(calleeScript->code(), calleeScript);
              // 7. Check callee stack space for max stack depth.
@@ -621,7 +725,7 @@
                PUSH_EXIT_FRAME();
                ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
                GOTO_ERROR();
-@@ -8208,6 +8526,97 @@
+@@ -8208,6 +8552,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -719,7 +823,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8649,7 @@
+@@ -8240,6 +8675,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -727,7 +831,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8815,16 @@
+@@ -8405,6 +8841,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -744,16 +848,18 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -9160,6 +9580,35 @@
+@@ -9160,6 +9606,37 @@
  
    DISPATCH();
  
 +bc_hook: {
 +  bcPending = false;
++  pblbc::Entry* const known = bcKnown;
++  bcKnown = nullptr;
 +  if (!frame->isDebuggee()) {
 +    pblbc::Out bo;
 +    int r = pblbc::Hook(frame, sp, pc, entryPC, isd, icEntries, icEntry,
-+                        argsObjAliasesFormals, ctx, &bo);
++                        argsObjAliasesFormals, ctx, &bo, known);
 +    if (r == pblbc::kPending) {
 +      bcPending = true;
 +    } else if (r >= pblbc::kRan) {
@@ -780,7 +886,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9797,25 @@
+@@ -9348,10 +9825,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -807,7 +913,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9832,34 @@
+@@ -9368,18 +9860,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }

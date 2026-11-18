@@ -509,7 +509,14 @@ void PrintExitStats() {
 // loads gEnabled with acquire, so it sees the complete configuration. Losers
 // wait for the winner (init is a few getenv calls).
 std::atomic<int> gInitState{0};  // 0 not started, 1 running, 2 done
-bool Enabled() {
+MOZ_NEVER_INLINE bool EnabledSlow();
+// Hot (every interpreter run): one acquire load once initialized.
+MOZ_ALWAYS_INLINE bool Enabled() {
+  int e = gEnabled.load(std::memory_order_acquire);
+  if (MOZ_LIKELY(e >= 0)) return e != 0;
+  return EnabledSlow();
+}
+MOZ_NEVER_INLINE bool EnabledSlow() {
   int e = gEnabled.load(std::memory_order_acquire);
   if (MOZ_UNLIKELY(e < 0)) {
     int expected = 0;
@@ -4676,8 +4683,16 @@ int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
 int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
          jsbytecode* entryPC, ImmutableScriptData* isd, ICEntry* icEntries,
          ICEntry* icEntry, bool argsObjAliasesFormals, ICCtx& ctx,
-         Out* out) {
-  Entry* e = Find(isd);
+         Out* out, Entry* known) {
+  // known: the compiled Entry TrampEntryReady found for this frame at op 0
+  // (state 1, op 0 enterable, isd matches); skips the second lookup.
+  Entry* e;
+  if (known) {
+    MOZ_ASSERT(known->isd == isd && known->state == 1);
+    e = tLast = known;
+  } else {
+    e = Find(isd);
+  }
   if (!e || e->state == 2) return kNone;
   if (e->state == 0) {
     if (++e->hits < gHits) return kNone;
@@ -4766,11 +4781,12 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
 // exists and is compiled, op 0 maps to an op index that is not an exit op,
 // and the script has no script counts. Hook itself re-checks everything
 // (IC cursor, debuggee via bc_hook) and may still return kPending/kNone,
-// after which the interpreter runs op 0 as before. False leaves the old
-// path untouched (Hook at op 1, counting hits / compiling there).
-bool TrampEntryReady(BaselineFrame* frame, jsbytecode* pc,
-                     ImmutableScriptData* isd) {
-  if (!gTrampEntry) return false;
+// after which the interpreter runs op 0 as before. Null leaves the old
+// path untouched (Hook at op 1, counting hits / compiling there); otherwise
+// returns the Entry, which the caller passes to that Hook call.
+Entry* TrampEntryReady(BaselineFrame* frame, jsbytecode* pc,
+                       ImmutableScriptData* isd) {
+  if (!gTrampEntry) return nullptr;
   JSScript* script = frame->script();
   Entry* e = FindExisting(isd);
   bool ok = e && e->state == 1 && pc == script->code() &&
@@ -4778,7 +4794,7 @@ bool TrampEntryReady(BaselineFrame* frame, jsbytecode* pc,
             !script->hasScriptCounts() && !frame->isDebuggee() &&
             e->opAt[0] != 0xffff && !e->exitOp[e->opAt[0]];
   if (MOZ_UNLIKELY(gExitStat)) (ok ? gTeDirect : gTeFallback)++;
-  return ok;
+  return ok ? e : nullptr;
 }
 
 // Called by compiled code at a LoopHead (see MT::translateOp). Returns 0, or
