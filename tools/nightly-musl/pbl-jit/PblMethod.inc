@@ -472,6 +472,27 @@ bool gIterOps = true;
 int64_t NewTargetHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t SuperBaseHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 int64_t SuperFunHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_RESUME (default on; a value starting with '0' restores the old
+// rejection): scripts containing JSOp::Resume (the self-hosted GeneratorNext /
+// GeneratorReturn / GeneratorThrow / async resume helpers, not generator
+// bodies) are compiled; ResumeKind pushes its int32 constant; Resume runs CASE(Resume)'s C++ ResumeGenerator in
+// ResumeHelper. With PBL_GENRESUME=1 the helper leaves the op to the
+// interpreter (its PBL-frame resume).
+bool gResumeOp = true;
+int64_t ResumeHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// PBLBC_SYMBOL (default on; '0' restores the exit): JSOp::Symbol pushes the
+// well-known symbol in SymbolHelper (cannot GC or fail).
+bool gSymbolOp = true;
+int64_t SymbolHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
+// Same parsing as PblGenResumeOn() in PortableBaselineInterpret.cpp (defined
+// after this file is included): exactly "1" turns PBL_GENRESUME on.
+static bool GenResumeEnvOn() {
+  static const bool on = [] {
+    const char* e = getenv("PBL_GENRESUME");
+    return e && e[0] == '1' && e[1] == '\0';
+  }();
+  return on;
+}
 // PBLBC_TRAMPENTRY (default on; a value starting with '0' restores the old
 // path): a PortableBaselineInterpret run that starts at op 0 of a script
 // whose Entry is already compiled (state 1, op 0 enterable) calls Hook at op
@@ -646,6 +667,10 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (cov && cov[0] == '0') gCheckOps = false;
     const char* iov = getenv("PBLBC_ITEROPS");
     if (iov && iov[0] == '0') gIterOps = false;
+    const char* rsv = getenv("PBLBC_RESUME");
+    if (rsv && rsv[0] == '0') gResumeOp = false;
+    const char* syv = getenv("PBLBC_SYMBOL");
+    if (syv && syv[0] == '0') gSymbolOp = false;
     const char* tev = getenv("PBLBC_TRAMPENTRY");
     if (tev && tev[0] == '0') gTrampEntry = false;
     const char* nev = getenv("PBLBC_NATENTRY");
@@ -1538,6 +1563,11 @@ bool IsInlineOp(JSOp op) {
       return gCovd & kCovdIter;
     case JSOp::Callee:
       return gCovd & kCovdThis;
+    case JSOp::Resume:
+    case JSOp::ResumeKind:
+      return gResumeOp;
+    case JSOp::Symbol:
+      return gSymbolOp;
     case JSOp::Arguments:
       return gArgsOp;
     case JSOp::CheckObjCoercible:
@@ -1642,8 +1672,10 @@ bool MT::scan() {
       case JSOp::Await:
       case JSOp::AfterYield:
       case JSOp::FinalYieldRval:
-      case JSOp::Resume:
         return reject("generator");
+      case JSOp::Resume:
+        if (!gResumeOp) return reject("generator");
+        break;
       default:
         break;
     }
@@ -2696,9 +2728,18 @@ bool MT::translateOp() {
     case JSOp::Uint16:
     case JSOp::Uint24:
     case JSOp::Int32:
-    case JSOp::Double: {
+    case JSOp::Double:
+    case JSOp::ResumeKind: {
+      // CASE(ResumeKind): Int32Value(GET_UINT8(pc)) (PBLBC_RESUME).
+      if (o.op == JSOp::ResumeKind && !gResumeOp) {
+        exitHere();
+        return true;
+      }
       Value v;
       switch (o.op) {
+        case JSOp::ResumeKind:
+          v = Int32Value(GET_UINT8(pc));
+          break;
         case JSOp::Undefined:
           v = UndefinedValue();
           break;
@@ -3028,6 +3069,24 @@ bool MT::translateOp() {
         return true;
       }
       callHelper(SuperBaseHelper);
+      return true;
+    case JSOp::Resume:
+      // rval, gen, resumeKind => rval (ResumeHelper; result at sp[2]).
+      if (!gResumeOp) {
+        exitHere();
+        return true;
+      }
+      callHelper(ResumeHelper);
+      spAdd(2);
+      return true;
+    case JSOp::Symbol:
+      // CASE(Symbol): the well-known symbol at sp[-1] (SymbolHelper).
+      if (!gSymbolOp) {
+        exitHere();
+        return true;
+      }
+      callHelper(SymbolHelper);
+      spAdd(-1);
       return true;
     case JSOp::SuperFun:
       // CASE(SuperFun): SuperFunOperation(callee) replaces sp[0] (helper).
@@ -5633,6 +5692,56 @@ int64_t SuperBaseHelper(int64_t frameA, int64_t spA, int64_t pcA,
 
 // CASE(SuperFun): sp[0] is replaced by
 // ObjectOrNullValue(SuperFunOperation(callee)) (no GC).
+// CASE(Resume) (PBL_GENRESUME off): rval, gen, resumeKind => rval. As the
+// interpreter: PUSH_EXIT_FRAME at sp (the three operands stay on the frame's
+// stack) with interpreterPC = pc, value and generator rooted in State,
+// ResumeGenerator in the generator's realm; the result is stored at sp[2]
+// (the caller pops two). Failure sets ctx.error and returns kHelperError
+// with sp unchanged (the op's GOTO_ERROR). PBL_GENRESUME=1 or a debuggee
+// frame leaves the op to the interpreter.
+int64_t ResumeHelper(int64_t frameA, int64_t spA, int64_t pcA, int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  if (GenResumeEnvOn() || frame->isDebuggee()) return kHelperNotHandled;
+  GeneratorResumeKind resumeKind = IntToResumeKind(sp[0].asValue().toInt32());
+  Value v;
+  {
+    ReservedRooted<Value> value0(&ctx.state.value0, sp[1].asValue());
+    ReservedRooted<JSObject*> obj0(&ctx.state.obj0,
+                                   &sp[2].asValue().toObject());
+    ReservedRooted<Value> value1(&ctx.state.value1);
+    {
+      frame->interpreterPC() = pc;
+      VMFrame cx(ctx.frameMgr, ctx.stack, sp);
+      if (!cx.success()) return kHelperNotHandled;
+      Handle<AbstractGeneratorObject*> genObj =
+          obj0.as<AbstractGeneratorObject>();
+      AutoRealm ar(cx, genObj);
+      if (!ResumeGenerator(cx, genObj, value0, resumeKind, &value1)) {
+        ctx.error = PBIResult::Error;
+        return kHelperError;
+      }
+    }
+    v = value1;
+  }
+  sp[2] = StackVal(v);
+  return kHelperOk;
+}
+
+// CASE(Symbol): the well-known symbol (permanent, cannot GC or fail) at
+// sp[-1] (the caller pushes it).
+int64_t SymbolHelper(int64_t, int64_t spA, int64_t pcA, int64_t ctxA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  JSContext* cx = ctx.frameMgr.cxForLocalUseOnly();
+  sp[-1] = StackVal(
+      SymbolValue(cx->wellKnownSymbols().get(GET_UINT8(pc))));
+  return kHelperOk;
+}
+
 int64_t SuperFunHelper(int64_t frameA, int64_t spA, int64_t pcA,
                        int64_t ctxA) {
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
