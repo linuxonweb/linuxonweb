@@ -30,9 +30,15 @@ scripts containing Throw; every script's first 10 calls are cold) nest
 uncounted. Known limitation, not a regression.
 
 `generators.js` (generators, async functions, for-of/spread over generators,
-return/throw into generators, try/finally, yield*, recursion, early close) must
-give identical stdout (same as node) in tiers off, defaults, `PBLBC_HITS=2`,
-`PBLBC_RESUME=0 PBLBC_SYMBOL=0` and `PBL_GENRESUME=1 PBLBC_HITS=2`.
+return/throw into generators, try/finally, yield*, recursion, early close) and
+`asyncfn.js` (await chains, rejection and try/catch/finally around await,
+async generators and for-await, await in loops, async recursion, closures
+across await, Promise.all/allSettled over async calls)
+must give identical stdout, equal to node's, in five modes: tiers off,
+defaults (`PBL_GENRESUME` on: generator/async bodies run and resume in PBL
+frames and the method tier compiles them), `PBLBC_HITS=2`, `PBLBC_GENBODY=0`
+(bodies resumed in PBL but not compiled) and `PBL_GENRESUME=0` (bodies in the
+C++ interpreter, as before).
 
 `supercall.js` (`super(...)` in derived constructors: multi-level chains,
 base/derived return values, double/missing super, arrows, Reflect.construct

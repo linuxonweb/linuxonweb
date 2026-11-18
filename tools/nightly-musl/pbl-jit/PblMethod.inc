@@ -476,20 +476,30 @@ int64_t SuperFunHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // rejection): scripts containing JSOp::Resume (the self-hosted GeneratorNext /
 // GeneratorReturn / GeneratorThrow / async resume helpers, not generator
 // bodies) are compiled; ResumeKind pushes its int32 constant; Resume runs CASE(Resume)'s C++ ResumeGenerator in
-// ResumeHelper. With PBL_GENRESUME=1 the helper leaves the op to the
+// ResumeHelper. With PBL_GENRESUME on the helper leaves the op to the
 // interpreter (its PBL-frame resume).
 bool gResumeOp = true;
 int64_t ResumeHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // PBLBC_SYMBOL (default on; '0' restores the exit): JSOp::Symbol pushes the
 // well-known symbol in SymbolHelper (cannot GC or fail).
 bool gSymbolOp = true;
+// PBLBC_GENBODY (a value starting with '0' restores the old rejection):
+// with PBL_GENRESUME on (default), generator and async function bodies are compiled;
+// Generator, InitialYield, Yield, Await, AfterYield and FinalYieldRval are
+// exit ops (the interpreter suspends / resumes the frame exactly as before).
+// A frame resumed by CASE(Resume) starts at its AfterYield with the Hook
+// pending (RESET_PC), so the interpreter performs AfterYield and Hook enters
+// compiled code at the next op (IC cursor set by AfterYield). Without
+// PBL_GENRESUME (PBL_GENRESUME=0) generator bodies never run in PBL, so nothing changes.
+bool gGenBody = true;
 int64_t SymbolHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 // Same parsing as PblGenResumeOn() in PortableBaselineInterpret.cpp (defined
-// after this file is included): exactly "1" turns PBL_GENRESUME on.
+// after this file is included): PBL_GENRESUME is on by default; a value
+// starting with '0' turns it off.
 static bool GenResumeEnvOn() {
   static const bool on = [] {
     const char* e = getenv("PBL_GENRESUME");
-    return e && e[0] == '1' && e[1] == '\0';
+    return !(e && e[0] == '0');
   }();
   return on;
 }
@@ -669,6 +679,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (iov && iov[0] == '0') gIterOps = false;
     const char* rsv = getenv("PBLBC_RESUME");
     if (rsv && rsv[0] == '0') gResumeOp = false;
+    const char* gbv = getenv("PBLBC_GENBODY");
+    if (gbv && gbv[0] == '0') gGenBody = false;
     const char* syv = getenv("PBLBC_SYMBOL");
     if (syv && syv[0] == '0') gSymbolOp = false;
     const char* tev = getenv("PBLBC_TRAMPENTRY");
@@ -1672,14 +1684,18 @@ bool MT::scan() {
       case JSOp::Await:
       case JSOp::AfterYield:
       case JSOp::FinalYieldRval:
-        return reject("generator");
+        // PBLBC_GENBODY: compiled as exit ops (never IsInlineOp); only with
+        // PBL_GENRESUME on, the only mode in which generator bodies run in PBL.
+        if (!gGenBody || !GenResumeEnvOn()) return reject("generator");
+        break;
       case JSOp::Resume:
         if (!gResumeOp) return reject("generator");
         break;
       default:
         break;
     }
-    if (jop == JSOp::JumpTarget || jop == JSOp::LoopHead) {
+    if (jop == JSOp::JumpTarget || jop == JSOp::LoopHead ||
+        jop == JSOp::AfterYield) {
       ic = uint32_t(GET_INT32(pc));
     }
     uint32_t len = GetBytecodeLength(pc);
@@ -5697,7 +5713,7 @@ int64_t SuperBaseHelper(int64_t frameA, int64_t spA, int64_t pcA,
 // stack) with interpreterPC = pc, value and generator rooted in State,
 // ResumeGenerator in the generator's realm; the result is stored at sp[2]
 // (the caller pops two). Failure sets ctx.error and returns kHelperError
-// with sp unchanged (the op's GOTO_ERROR). PBL_GENRESUME=1 or a debuggee
+// with sp unchanged (the op's GOTO_ERROR). PBL_GENRESUME on or a debuggee
 // frame leaves the op to the interpreter.
 int64_t ResumeHelper(int64_t frameA, int64_t spA, int64_t pcA, int64_t ctxA) {
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
