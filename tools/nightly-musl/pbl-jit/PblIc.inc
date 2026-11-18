@@ -61,6 +61,7 @@ static_assert(std::is_standard_layout_v<VMFrameManager>);
 static_assert(sizeof(VMFrameManager) == 2 * sizeof(void*));
 const uint32_t kCtxCx = uint32_t(offsetof(ICCtx, frameMgr));
 const uint32_t kCtxArg2 = uint32_t(offsetof(ICCtx, arg2));
+const uint32_t kCtxGetterReq = uint32_t(offsetof(ICCtx, getterReq));
 const uint32_t kCtxStepOff = uint32_t(offsetof(ICCtx, stepOff));
 const uint32_t kCtxStepEnd = uint32_t(offsetof(ICCtx, stepEnd));
 const uint32_t kCtxStepDone = uint32_t(offsetof(ICCtx, stepDone));
@@ -370,6 +371,45 @@ uint64_t CallNativeHelper(uintptr_t ctxp, uintptr_t stubp, uintptr_t calleep,
   }
   ctx.stepRet = retValue;
   return 1;
+}
+
+// PBLBC_GETTER refusal: exactly the remainder of ICInterpretOps'
+// CallScriptedGetterResult case after its checks (the nested run), for the
+// getter, receiver and stub it stored in ctx. Called by the compiled GetProp
+// op right after the IC returned PBL_GETTER_SENTINEL() (ctx.sp() and the
+// frame's interpreterPC/ICEntry are still the IC call's). Returns the value
+// bits or IC_ERROR_SENTINEL with ctx.error set.
+uint64_t ScriptedGetterNested(ICCtx& ctx, JSFunction* callee, Value receiver,
+                              ICCacheIRStub* cstub) {
+  uint64_t retValue;
+  {
+    PUSH_IC_FRAME();
+    if (!ctx.stack.check(sp, sizeof(StackVal) * 8)) {
+      ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
+      ctx.error = PBIResult::Error;
+      return IC_ERROR_SENTINEL();
+    }
+    POPNNATIVE(1);
+    PUSHNATIVE(StackValNative(cstub));
+    PUSH(StackVal(receiver));
+    PUSHNATIVE(StackValNative(
+        CalleeToToken(callee, /* isConstructing = */ false)));
+    PUSHNATIVE(StackValNative(
+        MakeFrameDescriptorForJitCall(FrameType::BaselineStub, /* argc = */ 0)));
+    JSScript* script = callee->nonLazyScript();
+    jsbytecode* pc = script->code();
+    ImmutableScriptData* isd = script->immutableScriptData();
+    Value ret;
+    PBIResult result = PortableBaselineInterpret<false, kHybridICsInterp>(
+        cx, ctx.state, ctx.stack, sp, /* envChain = */ nullptr, &ret, pc, isd,
+        nullptr, nullptr, nullptr, PBIResult::Ok);
+    if (result != PBIResult::Ok) {
+      ctx.error = result;
+      return IC_ERROR_SENTINEL();
+    }
+    retValue = ret.asRawBits();
+  }
+  return retValue;
 }
 
 // ---- wasm emitter ---------------------------------------------------------

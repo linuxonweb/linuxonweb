@@ -16,6 +16,12 @@ proves the run did not hang.
 `arguments.js`, `checkops.js`, `iterops.js`, `trampentry.js`, `funcall.js`, `funapply.js` and `nest.js` have no `.expected` file: their whole stdout must be identical
 across the three modes (tiers off, defaults, `PBLBC_HITS=2`).
 
+`getters.js` and `getters2.js` (direct scripted-getter calls: receivers, realms,
+compartments, Debugger, generator/async getters, GC, exceptions, getter
+recursion) must give identical stdout in four modes: tiers off, `PBLBC_GETTER=0`,
+defaults and `PBLBC_HITS=2`. In defaults the `PBLBC funcall:` stats line (printed
+when `PBLBC_HITS` is set or `PBLBC_LOG` > 0) must show `getter_direct` > 0.
+
 `deep.js` (deep recursion through f.call/f.apply, near-full stack plus native
 recursion, generators, eval) must complete with identical stdout in defaults and
 `PBLBC_HITS=2`. With tiers off or `PBLBC_FUNCALL=0 PBLBC_FUNAPPLY=0` it still loses

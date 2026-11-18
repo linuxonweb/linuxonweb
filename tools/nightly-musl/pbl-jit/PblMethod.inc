@@ -64,6 +64,7 @@ static_assert(sizeof(ICEntry) == sizeof(void*));
 enum : uint8_t {
   OP_UNREACH = 0x00,
   OP_LOOP = 0x03,
+  OP_CALL = 0x10,
   OP_BRTABLE = 0x0e,
   OP_I64LTU = 0x54,
   OP_I64GTU = 0x56,
@@ -164,6 +165,37 @@ int64_t CallFunApply(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
                      int64_t ctx, int64_t site);
 bool gFunApply = true;
 uint32_t gFaDirect, gFaRefused, gFaOverRec;  // racy stats
+// PBLBC_GETTER (default on; value starting with 0: off). Compiled GetProp
+// sets ctx.getterReq around its IC call; a CallScriptedGetterResult stub
+// that passed all its guards and checks (ICInterpretOps, or the PblIc step
+// of a stub's last op, whose result the compiled stub returns as is) then
+// returns PBL_GETTER_SENTINEL() with getter/receiver/stub in ctx instead of
+// running the getter nested. CallGetter pushes [getter, receiver] (argc 0)
+// and takes CallScriptedA's checks and direct path (the interpreter's
+// return fix-up after a frame switch pops numActualArgs + 2 = 2 and advances
+// JSOpLength_GetProp at a GetProp; one IC entry like Call). A refusal
+// pops them and runs ScriptedGetterNested (the stub's own nested run);
+// stack space refusal: DirectOverRecursed.
+int64_t CallGetter(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
+                   int64_t ctx, int64_t site);
+// The compiled GetProp's out-of-line sentinel path: CallGetter with the
+// pc/ICEntry its invokeIC stored in the frame; returns the getter's value
+// bits (popped again: the op pushes L_R), IC_ERROR_SENTINEL (ctx.error is
+// set) or PBL_GETTER_SENTINEL() for a frame switch.
+int64_t GetterCallOOL(int64_t frame, int64_t sp, int64_t ctx);
+// ctx.getterReq after a getter frame switch in a compiled GetProp: its
+// kIcError exit is a kFrameSwitch (see emitGetterHelper).
+constexpr uint32_t kGetterSwitch = 2;
+static MOZ_ALWAYS_INLINE uint64_t FixGetterSwitch(uint64_t r, ICCtx& ctx) {
+  if (MOZ_UNLIKELY(ctx.getterReq == kGetterSwitch)) {
+    MOZ_ASSERT((r >> 32) == kIcError);
+    ctx.getterReq = 0;
+    r = (uint64_t(kFrameSwitch) << 32) | uint32_t(r);
+  }
+  return r;
+}
+bool gGetter = true;
+uint32_t gGtDirect, gGtRefused, gGtOverRec;  // racy stats
 // Over-recursion in CallFunCall/CallFunApply: when the rewritten call was
 // refused only for portable-baseline stack space (CallScriptedA's two stack
 // checks, or CallFunApply's operand growth; all Stack::checkJS, which leaves
@@ -372,12 +404,13 @@ void PrintDirectStats() {
   if (gSiteCache)
     fprintf(stderr, "PBLBC sitecache: fills=%u stale=%u recheck_fail=%u\n",
             gSiteFills, gSiteStale, gSiteRecheck);
-  if (gFunCall || gFunApply)
+  if (gFunCall || gFunApply || gGetter)
     fprintf(stderr,
             "PBLBC funcall: direct=%u refused=%u apply_direct=%u "
-            "apply_refused=%u overrecursed=%u apply_overrecursed=%u\n",
+            "apply_refused=%u overrecursed=%u apply_overrecursed=%u "
+            "getter_direct=%u getter_refused=%u getter_overrecursed=%u\n",
             gFcDirect, gFcRefused, gFaDirect, gFaRefused, gFcOverRec,
-            gFaOverRec);
+            gFaOverRec, gGtDirect, gGtRefused, gGtOverRec);
 }
 
 // PBLBC_EXITSTAT=1: runtime exit histogram (Hook only, not generated wasm).
@@ -578,6 +611,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (fcv && fcv[0] == '0') gFunCall = false;
     const char* fav = getenv("PBLBC_FUNAPPLY");
     if (fav && fav[0] == '0') gFunApply = false;
+    const char* gtv = getenv("PBLBC_GETTER");
+    if (gtv && gtv[0] == '0') gGetter = false;
     const char* tcv = getenv("PBLBC_THISCACHE");
     if (tcv && tcv[0] == '0') gThisCache = false;
     const char* pav = getenv("PBLBC_PADARGS");
@@ -648,6 +683,7 @@ struct MT {
   uint32_t nIcEntries = 0;
   ICCtx* ictx = nullptr;
   bool inlUsed = false;     // scratch locals declared (some site inlined)
+  bool gpUsed = false;      // PBLBC_GETTER helper function 1 emitted
   uint32_t inlBytes = 0;    // inline body bytes in this function
   uint32_t inlSite[kInlCount] = {};
   // Scratch locals after the existing ones: kInlineI64Locals i64,
@@ -1066,7 +1102,8 @@ struct MT {
   }
   // INVOKE_IC for op cur with args in i64 locals (or zero when ~0u). The
   // result is left in L_R; an error result returns kIcError at this op.
-  void invokeIC(uint32_t a0, uint32_t a1, uint32_t a2, bool hasArg2) {
+  void invokeIC(uint32_t a0, uint32_t a1, uint32_t a2, bool hasArg2,
+                bool getterReq = false) {
     const OpInfo& o = ops[cur];
     lget(L_CTX);
     lget(L_SP);
@@ -1121,26 +1158,41 @@ struct MT {
       lset(L_X);
       end();  // $slow
     }
-    if (a0 != ~0u) {
+    // PBLBC_GETTER: only the out-of-line IC call carries the request (an
+    // inlined stub hit never returns the sentinel and pays nothing). The
+    // whole out-of-line call is the module's helper function 1 (see
+    // emitGetterHelper): L_R = $gp(a0, L_X, frame, sp, ctx).
+    if (getterReq) {
       lget(a0);
+      lget(L_X);
+      lget(P_FRAME);
+      lget(L_SP);
+      lget(P_CTX);
+      b.put(OP_CALL);
+      b.uleb(1);
+      gpUsed = true;
     } else {
-      i64c(0);
+      if (a0 != ~0u) {
+        lget(a0);
+      } else {
+        i64c(0);
+      }
+      if (a1 != ~0u) {
+        lget(a1);
+      } else {
+        i64c(0);
+      }
+      lget(L_X);
+      op(OP_I64EXTU);
+      lget(L_CTX);
+      op(OP_I64EXTU);
+      for (uint32_t i = 4; i < kNParams; i++) i64c(0);
+      lget(L_X);
+      load32(uint32_t(ICStub::offsetOfStubCode()));
+      b.put(OP_CALLIND);
+      b.uleb(0);
+      b.uleb(0);
     }
-    if (a1 != ~0u) {
-      lget(a1);
-    } else {
-      i64c(0);
-    }
-    lget(L_X);
-    op(OP_I64EXTU);
-    lget(L_CTX);
-    op(OP_I64EXTU);
-    for (uint32_t i = 4; i < kNParams; i++) i64c(0);
-    lget(L_X);
-    load32(uint32_t(ICStub::offsetOfStubCode()));
-    b.put(OP_CALLIND);
-    b.uleb(0);
-    b.uleb(0);
     if (k) {
       lset(L_R);
       end();  // $done
@@ -1154,6 +1206,87 @@ struct MT {
     exitAt(cur, kIcError);
     end();
     nIc++;
+  }
+  // PBLBC_GETTER: body of the module's function 1, type
+  // (a0 i64, stub i32, frame i64, sp i32, ctx i64) -> i64, called by each
+  // compiled GetProp instead of its out-of-line IC call: sets ctx.getterReq,
+  // calls stub->code like invokeIC, clears the request; on
+  // PBL_GETTER_SENTINEL() returns GetterCallOOL(frame, sp, ctx) (the value
+  // bits or IC_ERROR_SENTINEL). A frame switch (GetterCallOOL returned the
+  // sentinel again) returns IC_ERROR_SENTINEL with ctx.getterReq =
+  // kGetterSwitch: the GetProp's error exit then returns kIcError at its pc
+  // and the module's caller turns that into kFrameSwitch (FixGetterSwitch).
+  static void emitGetterHelper(Buf& h) {
+    auto lg = [&](uint32_t l) { h.put(OP_LGET); h.uleb(l); };
+    auto setReq = [&](int32_t v) {
+      lg(4);
+      h.put(OP_I32WRAP);
+      h.put(OP_I32CONST);
+      h.sleb(v);
+      h.put(OP_I32STORE);
+      h.uleb(2);
+      h.uleb(kCtxGetterReq);
+    };
+    auto zeros = [&](uint32_t from) {
+      for (uint32_t i = from; i < kNParams; i++) {
+        h.put(OP_I64CONST);
+        h.sleb(0);
+      }
+    };
+    h.uleb(1);  // locals: r (5)
+    h.uleb(1);
+    h.put(T_I64);
+    setReq(1);
+    lg(0);
+    h.put(OP_I64CONST);
+    h.sleb(0);
+    lg(1);
+    h.put(OP_I64EXTU);
+    lg(4);
+    zeros(4);
+    lg(1);
+    h.put(OP_I32LOAD);
+    h.uleb(2);
+    h.uleb(uint32_t(ICStub::offsetOfStubCode()));
+    h.put(OP_CALLIND);
+    h.uleb(0);
+    h.uleb(0);
+    h.put(OP_LSET);
+    h.uleb(5);
+    setReq(0);
+    h.put(OP_BLOCK);
+    h.put(OP_VOID);
+    lg(5);
+    h.put(OP_I64CONST);
+    h.sleb(int64_t(PBL_GETTER_SENTINEL()));
+    h.put(OP_I64NE);
+    h.put(OP_BRIF);
+    h.uleb(0);
+    lg(2);
+    lg(3);
+    h.put(OP_I64EXTU);
+    lg(4);
+    zeros(3);
+    h.put(OP_I32CONST);
+    h.sleb(int32_t(uintptr_t(&GetterCallOOL)));
+    h.put(OP_CALLIND);
+    h.uleb(0);
+    h.uleb(0);
+    h.put(OP_LTEE);
+    h.uleb(5);
+    h.put(OP_I64CONST);
+    h.sleb(int64_t(PBL_GETTER_SENTINEL()));
+    h.put(OP_I64NE);
+    h.put(OP_BRIF);
+    h.uleb(0);
+    setReq(int32_t(kGetterSwitch));
+    h.put(OP_I64CONST);
+    h.sleb(int64_t(IC_ERROR_SENTINEL()));
+    h.put(OP_LSET);
+    h.uleb(5);
+    h.put(OP_END);
+    lg(5);
+    h.put(OP_END);
   }
   void bumpInlHit(uint32_t which) {
     i32c(int32_t(uintptr_t(&gInlHits[which])));
@@ -3328,6 +3461,14 @@ bool MT::translateOp() {
 
     // ---- IC ops (INVOKE_IC with the interpreter's argument order) ----
     case JSOp::GetProp:
+      if (gGetter && gDirect) {
+        popLocal(L_A);
+        invokeIC(L_A, ~0u, ~0u, false, /* getterReq = */ true);
+        pushLocal(L_R);
+        debugCheckNext();
+        return true;
+      }
+      [[fallthrough]];
     case JSOp::GetBoundName:
     case JSOp::ToPropertyKey:
     case JSOp::OptimizeSpreadCall:
@@ -3536,12 +3677,26 @@ bool MT::assemble(Buf& m) {
   body.putn(b.p, b.n);
 
   m.putn("\0asm\1\0\0\0", 8);
-  c.uleb(1);
+  Buf gh;  // PBLBC_GETTER helper body (function 1, type 1)
+  if (gpUsed) emitGetterHelper(gh);
+  const uint32_t nfn = gpUsed ? 2 : 1;
+  c.uleb(nfn);
   c.put(0x60);
   c.uleb(kNParams);
   for (uint32_t i = 0; i < kNParams; i++) c.put(T_I64);
   c.uleb(1);
   c.put(T_I64);
+  if (gpUsed) {
+    c.put(0x60);
+    c.uleb(5);
+    c.put(T_I64);
+    c.put(T_I32);
+    c.put(T_I64);
+    c.put(T_I32);
+    c.put(T_I64);
+    c.uleb(1);
+    c.put(T_I64);
+  }
   m.section(1, c);
   c.uleb(2);
   c.name("env");
@@ -3557,19 +3712,24 @@ bool MT::assemble(Buf& m) {
   c.uleb(1);
   c.uleb(65536);
   m.section(2, c);
-  c.uleb(1);
+  c.uleb(nfn);
   c.uleb(0);
+  if (gpUsed) c.uleb(1);
   m.section(3, c);
   c.uleb(1);
   c.name("f0");
   c.put(0);
   c.uleb(0);
   m.section(7, c);
-  c.uleb(1);
+  c.uleb(nfn);
   c.uleb(uint32_t(body.n));
   c.putn(body.p, body.n);
+  if (gpUsed) {
+    c.uleb(uint32_t(gh.n));
+    c.putn(gh.p, gh.n);
+  }
   m.section(10, c);
-  if (m.oom || c.oom || body.oom) return reject("oom");
+  if (m.oom || c.oom || body.oom || gh.oom) return reject("oom");
   return true;
 }
 
@@ -4053,6 +4213,7 @@ MOZ_ALWAYS_INLINE int64_t CallTail(ICCtx& ctx, JSContext* cx,
                   uintptr_t(cx->addressOfInterruptBits()), uintptr_t(calleePC),
                   uintptr_t(cx));
   tDirectDepth--;
+  r = FixGetterSwitch(r, ctx);
   kind = uint32_t(r >> 32);
   if (kind == kFrameSwitch) {
     gDs[kDsSwNested]++;
@@ -4121,7 +4282,8 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
                                                int64_t pcA, int64_t iceA,
                                                int64_t ctxA, int64_t siteA,
                                                uint32_t argcIn,
-                                               bool stackFull = false) {
+                                               bool stackFull = false,
+                                               bool getterOp = false) {
   auto* site = reinterpret_cast<CallSite*>(uintptr_t(siteA));
   auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
   auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
@@ -4136,7 +4298,10 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
   const bool constructing =
       (jop == JSOp::New || jop == JSOp::NewContent) &&
       (gCovd & kCovdNewScripted) && (gCovd & kCovdNew);
+  // getterOp (CallGetter): [getter, receiver] (argc 0) pushed at a GetProp
+  // whose CallScriptedGetterResult stub passed every guard and check.
   if (!constructing && jop != JSOp::Call && jop != JSOp::CallIgnoresRv &&
+      !(getterOp && jop == JSOp::GetProp) &&
       !((gCovd & kCovdCall) &&
         (jop == JSOp::CallContent || jop == JSOp::CallIter ||
          jop == JSOp::CallContentIter))) {
@@ -4579,6 +4744,54 @@ int64_t CallFunApply(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
   return r;
 }
 
+int64_t CallGetter(int64_t frameA, int64_t spA, int64_t pcA, int64_t iceA,
+                   int64_t ctxA, int64_t siteA) {
+  auto* sp = reinterpret_cast<StackVal*>(uintptr_t(spA));
+  ICCtx& ctx = *reinterpret_cast<ICCtx*>(uintptr_t(ctxA));
+  // Nothing can GC between the IC's return and the push below.
+  JSFunction* fn = static_cast<JSFunction*>(ctx.getterFn);
+  const Value recv = Value::fromRawBits(ctx.getterRecv);
+  ICCacheIRStub* stub = static_cast<ICCacheIRStub*>(ctx.getterStub);
+  ctx.getterFn = nullptr;
+  ctx.getterStub = nullptr;
+  StackVal* nsp = sp - 2;
+  int64_t r = kRefuseStack;
+  if (ctx.stack.checkJS(sp, sizeof(StackVal) * 2)) {
+    nsp[1] = StackVal(ObjectValue(*fn));
+    nsp[0] = StackVal(recv);
+    r = CallScriptedA(frameA, int64_t(uintptr_t(nsp)), pcA, iceA, ctxA, 0, 0,
+                      /* stackFull = */ true, /* getterOp = */ true);
+  }
+  if (r == kRefuseStack) {
+    gGtOverRec++;
+    // 0 only if its exit frame cannot be pushed (no GC): run nested below.
+    if (int64_t o = DirectOverRecursed(ctx, frameA, sp, pcA, iceA)) return o;
+  } else if (r != 0) {
+    gGtDirect++;
+    return r;
+  } else {
+    gGtRefused++;
+  }
+  // Non-constructing refusals happen before anything that can GC: fn, recv
+  // and stub are still valid.
+  uint64_t v = ScriptedGetterNested(ctx, fn, recv, stub);
+  if (v == IC_ERROR_SENTINEL()) return 0;  // the op's kIcError exit
+  *--sp = StackVal(Value::fromRawBits(v));
+  return int64_t(uintptr_t(sp));
+}
+
+int64_t GetterCallOOL(int64_t frameA, int64_t spA, int64_t ctxA) {
+  auto* frame = reinterpret_cast<BaselineFrame*>(uintptr_t(frameA));
+  int64_t pcA = int64_t(uintptr_t(frame->interpreterPC()));
+  int64_t iceA = int64_t(uintptr_t(frame->interpreterICEntry()));
+  int64_t r = CallGetter(frameA, spA, pcA, iceA, ctxA, 0);
+  if (r == 1) return int64_t(PBL_GETTER_SENTINEL());
+  if (r == 0) return int64_t(IC_ERROR_SENTINEL());
+  // r: the sp after the value push; the caller's sp (spA) is r + 1.
+  MOZ_ASSERT(uintptr_t(r) + sizeof(StackVal) == uintptr_t(spA));
+  return int64_t(reinterpret_cast<StackVal*>(uintptr_t(r))->asUInt64());
+}
+
 // PBLBC_SITECACHE hit: the callee Value's bits equal site->calleeBits.
 // Re-validates only what can change while the callee function object stays
 // the same; on any failure it behaves exactly like the full path (stale site
@@ -4738,6 +4951,7 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
                   0,  // P_GLEX: unused (loaded at each GetGName, can move)
                   uintptr_t(cx->addressOfInterruptBits()), uintptr_t(entryPC),
                   uintptr_t(cx));
+  r = FixGetterSwitch(r, ctx);
   uint32_t exitOff = uint32_t(r);
   if (observing) {
     pbltier::End(frame->script(), cx, calledFn, observation, exitOff,
