@@ -245,6 +245,8 @@ struct CallSite {
   bool retRval0;
   bool aliased;         // argsObjAliasesFormals
   bool thisCacheOk;     // gThisCache && !constructorNeedsUninitializedThis
+  bool superCall;       // SuperCall site (newTarget may differ from callee)
+  bool uninitThis;      // callee constructorNeedsUninitializedThis
   uint32_t refills;     // fills replacing a different live callee
 };
 bool gSiteCache = true;
@@ -424,6 +426,11 @@ bool gCallCache = true;
 // PBLBC_THISCACHE=0 disables the CallScripted constructing |this| shape cache
 // (default on).
 bool gThisCache = true;
+// PBLBC_SUPERCALL=0: SuperCall stays an exit op (the interpreter's CASE(Call)
+// constructing fast path). Default: compiled like a scripted New (direct
+// call, CallScripted/CallScriptedHit), with newTarget = the frame's
+// new.target (see SuperNewTargetOk); anything refused exits as before.
+bool gSuperCall = true;
 // PBLBC_PADARGS (default on; a value starting with '0' disables it) lets
 // CallScripted push a non-constructing callee with argc < nargs, padding the
 // missing formals with undefined like the interpreter's scripted-call IC
@@ -625,6 +632,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (gtv && gtv[0] == '0') gGetter = false;
     const char* tcv = getenv("PBLBC_THISCACHE");
     if (tcv && tcv[0] == '0') gThisCache = false;
+    const char* supv = getenv("PBLBC_SUPERCALL");
+    if (supv && supv[0] == '0') gSuperCall = false;
     const char* pav = getenv("PBLBC_PADARGS");
     if (pav && pav[0] == '0') gPadArgs = false;
     const char* vsv = getenv("PBLBC_VSTACK");
@@ -1607,6 +1616,9 @@ bool IsIcCallOp(JSOp op) {
     case JSOp::New:
     case JSOp::NewContent:
       return gCovd & kCovdNew;
+    case JSOp::SuperCall:
+      return gSuperCall && gDirect && (gCovd & kCovdNew) &&
+             (gCovd & kCovdNewScripted);
     default:
       return false;
   }
@@ -1659,8 +1671,11 @@ bool MT::nativeCall() {
   const uint32_t argc = GET_ARGC(code + ops[cur].pcOff);
   // CASE(Call) with constructing = New/NewContent: callee at sp[argc + 1 +
   // constructing], newTarget at sp[0]; the IC gets extraArgs 2 + constructing.
-  const uint32_t ctor =
-      (ops[cur].op == JSOp::New || ops[cur].op == JSOp::NewContent) ? 1 : 0;
+  const bool isSuper = ops[cur].op == JSOp::SuperCall;
+  const uint32_t ctor = (ops[cur].op == JSOp::New ||
+                         ops[cur].op == JSOp::NewContent || isSuper)
+                            ? 1
+                            : 0;
   const bool direct =
       gDirect && (!ctor || ((gCovd & kCovdNewScripted) && (gCovd & kCovdNew)));
   // r = helper(frame, sp, pc, icEntry, ctx, site); r == 1: the callee frame
@@ -1718,7 +1733,7 @@ bool MT::nativeCall() {
         switch (ops[k].op) {
           case JSOp::Call: case JSOp::CallIgnoresRv: case JSOp::CallContent:
           case JSOp::CallIter: case JSOp::CallContentIter: case JSOp::New:
-          case JSOp::NewContent:
+          case JSOp::NewContent: case JSOp::SuperCall:
             capSites++;
             break;
           default:
@@ -1776,6 +1791,12 @@ bool MT::nativeCall() {
   }
   exitHere();
   end();
+  if (isSuper) {
+    // SuperCall: only the direct scripted path is compiled; any other callee
+    // exits to the interpreter (CASE(Call) + its Call IC) as before.
+    exitHere();
+    return true;
+  }
   if (direct && gFunCall && !ctor &&
       (ops[cur].op == JSOp::Call || ops[cur].op == JSOp::CallIgnoresRv ||
        ops[cur].op == JSOp::CallContent)) {
@@ -2575,6 +2596,11 @@ bool MT::translateOp() {
         exitHere();
         return true;
       }
+      return nativeCall();
+    case JSOp::SuperCall:
+      // CASE(Call), constructing == true: [callee (SuperFun), this
+      // (IsConstructing magic), args, newTarget (NewTarget)]. Only reached
+      // when IsInlineOp(SuperCall) (PBLBC_SUPERCALL, direct calls on).
       return nativeCall();
     case JSOp::Callee:
       // CASE(Callee): push frame->calleev() (helper stores it at sp[-1]).
@@ -4025,6 +4051,20 @@ inline ThisCacheEntry* ThisCacheSlot(const JSFunction* f) {
   return &tThisCache[(uint32_t(uintptr_t(f)) >> 4) &
                      ((1u << kThisCacheBits) - 1)];
 }
+// SuperCall newTarget (the frame's new.target) accepted by the direct path:
+// a non-self-hosted interpreted constructor JSFunction. Its own "prototype"
+// is a non-configurable data property (ordinary functions: writable; class
+// constructors: read-only), so CreateThis's GetProperty is unobservable and
+// may be re-run by the interpreter after a refusal. Natives (e.g. Proxy,
+// which has no own prototype), bound functions and proxies are refused.
+// The constructing |this| slot holds JS_IS_CONSTRUCTING magic until CreateThis
+// (Value::isMagic(why) release-asserts the reason: never test it that way).
+inline bool SuperNewTargetOk(const Value& nt) {
+  if (!nt.isObject() || !nt.toObject().is<JSFunction>()) return false;
+  JSFunction* f = &nt.toObject().as<JSFunction>();
+  return f->hasBaseScript() && f->isInterpreted() && f->isConstructor() &&
+         !f->isSelfHostedBuiltin();
+}
 // Same environment conditions as the PBLBC_ALLOC NoGC allocation paths.
 inline bool ThisCacheEnvOk(JSContext* cx) { return PblNoGCAllocOk(cx); }
 // Returns the new |this| object (nursery or tenured, never GCs) or nullptr
@@ -4091,6 +4131,97 @@ inline void ThisCacheFill(JSContext* cx, JSFunction* func,
   c->key = func;
   c->epoch = GcEpoch(cx);
   c->funShape = func->shape();
+  c->isd = calleeScript->immutableScriptData();
+  c->proto = pv.isObject() ? &pv.toObject() : nullptr;
+  c->thisShape = &ts->asShared();
+  c->slot = prop->slot();
+  c->protoIsObj = pv.isObject();
+}
+// SuperCall |this| cache: CreateThis(func, nt) for a base callee func with
+// newTarget nt != func (the derived class's new.target). The shape depends
+// on func (getAllocKindForThis: guarded by its script data) and on nt's
+// "prototype" (GetPrototypeFromConstructor(nt): guarded by nt's shape, the
+// non-configurable data slot and its value), exactly like the tThisCache
+// entry for func == nt. Separate table so New/NewContent are unaffected.
+struct SuperThisCacheEntry {
+  const JSFunction* key;
+  const JSFunction* nt;
+  uint64_t epoch;
+  const Shape* ntShape;
+  const ImmutableScriptData* isd;
+  const JSObject* proto;  // nt slot value when protoIsObj
+  SharedShape* thisShape;
+  uint32_t slot;
+  bool protoIsObj;
+};
+thread_local SuperThisCacheEntry tSuperThisCache[1u << kThisCacheBits];
+inline SuperThisCacheEntry* SuperThisCacheSlot(const JSFunction* f,
+                                               const JSFunction* nt) {
+  return &tSuperThisCache[((uint32_t(uintptr_t(f)) ^
+                            (uint32_t(uintptr_t(nt)) >> 3)) >> 4) &
+                          ((1u << kThisCacheBits) - 1)];
+}
+inline PlainObject* SuperThisCacheTryCreate(JSContext* cx, JSFunction* func,
+                                            JSScript* calleeScript,
+                                            JSFunction* nt) {
+  SuperThisCacheEntry* c = SuperThisCacheSlot(func, nt);
+  if (c->key != func || c->nt != nt || c->epoch != GcEpoch(cx)) {
+    return nullptr;
+  }
+  if (nt->shape() != c->ntShape ||
+      calleeScript->immutableScriptData() != c->isd || !ThisCacheEnvOk(cx)) {
+    return nullptr;
+  }
+  const Value& pv = nt->getSlot(c->slot);
+  if (c->protoIsObj ? (!pv.isObject() || &pv.toObject() != c->proto)
+                    : pv.isObject()) {
+    return nullptr;
+  }
+  // Same NoGC allocation as ThisCacheTryCreate.
+  SharedShape* shape = c->thisShape;
+  const JSClass* clasp = &PlainObject::class_;
+  gc::AllocKind kind = gc::GetGCObjectKind(shape->numFixedSlots());
+  gc::Heap heap = GetInitialHeap(GenericObject, clasp);
+  NativeObject* nobj = cx->newCell<NativeObject, NoGC>(kind, heap, clasp,
+                                                       nullptr);
+  if (!nobj) return nullptr;
+  nobj->initShape(shape);
+  nobj->setEmptyElements();
+  nobj->initEmptyDynamicSlots();
+  js::gc::gcprobes::CreateObject(nobj);
+  return &nobj->as<PlainObject>();
+}
+// After a successful slow-path CreateThis(func, nt), nt != func.
+inline void SuperThisCacheFill(JSContext* cx, JSFunction* func,
+                               JSScript* calleeScript, JSFunction* nt,
+                               JSObject* thisObj) {
+  if (!ThisCacheEnvOk(cx) || func->constructorNeedsUninitializedThis() ||
+      !thisObj->is<PlainObject>() || nt->shape()->isDictionary() ||
+      !nt->hasNonConfigurablePrototypeDataProperty()) {
+    return;
+  }
+  Shape* ts = thisObj->shape();
+  if (ts->isDictionary() || ts->asShared().slotSpan() != 0 ||
+      ts->realm() != cx->realm() ||
+      NativeObject::calculateDynamicSlots(&ts->asShared()) != 0) {
+    return;
+  }
+  mozilla::Maybe<PropertyInfo> prop = nt->lookupPure(cx->names().prototype);
+  if (prop.isNothing() || !prop->isDataProperty() || prop->configurable()) {
+    return;
+  }
+  const Value& pv = nt->getSlot(prop->slot());
+  if (pv.isObject()) {
+    if (ts->proto().toObjectOrNull() != &pv.toObject()) return;
+  } else if (ts->proto().toObjectOrNull() !=
+             cx->global()->maybeGetPrototype(JSProto_Object)) {
+    return;
+  }
+  SuperThisCacheEntry* c = SuperThisCacheSlot(func, nt);
+  c->key = func;
+  c->nt = nt;
+  c->epoch = GcEpoch(cx);
+  c->ntShape = nt->shape();
   c->isd = calleeScript->immutableScriptData();
   c->proto = pv.isObject() ? &pv.toObject() : nullptr;
   c->thisShape = &ts->asShared();
@@ -4307,8 +4438,9 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
   // kCovdNewScripted: New/NewContent (constructing) like CASE(Call) with
   // constructing == 1: callee at sp[argc + 2], this at sp[argc + 1], args,
   // newTarget at sp[0].
+  const bool superCall = jop == JSOp::SuperCall && gSuperCall;
   const bool constructing =
-      (jop == JSOp::New || jop == JSOp::NewContent) &&
+      (jop == JSOp::New || jop == JSOp::NewContent || superCall) &&
       (gCovd & kCovdNewScripted) && (gCovd & kCovdNew);
   // getterOp (CallGetter): [getter, receiver] (argc 0) pushed at a GetProp
   // whose CallScriptedGetterResult stub passed every guard and check.
@@ -4377,8 +4509,13 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
   // interpreter (the state-changed exit below) is then unobservable (a
   // scripted function's prototype is a plain data property); an arbitrary
   // newTarget (e.g. a Proxy with a get trap) could observe it.
+  // SuperCall: newTarget is the frame's new.target, normally a different
+  // function; SuperNewTargetOk limits it to non-self-hosted interpreted
+  // constructors, whose own "prototype" is a non-configurable data property
+  // (so CreateThis's lookup is unobservable as well).
   if (constructing && (!sp[0].asValue().isObject() ||
-                       &sp[0].asValue().toObject() != func)) {
+                       (&sp[0].asValue().toObject() != func &&
+                        !(superCall && SuperNewTargetOk(sp[0].asValue()))))) {
     return Refuse(kDsNotFunction);
   }
   if (!ctx.stack.checkJS(sp, sizeof(StackVal) * (totalArgs + 3))) {
@@ -4481,6 +4618,8 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
     site->aliased = calleeScript->argsObjAliasesFormals();
     site->thisCacheOk =
         gThisCache && !func->constructorNeedsUninitializedThis();
+    site->superCall = superCall;
+    site->uninitThis = func->constructorNeedsUninitializedThis();
   }
   // Copies of the cached values (the cache slot can be overwritten by nested
   // calls); only used while nothing could have GC'd (useCached).
@@ -4499,13 +4638,29 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
   frame->interpreterPC() = pc;
   frame->interpreterICEntry() = icEntry;
   PlainObject* fastThis = nullptr;
-  if (constructing && !firstArg[1].asValue().isObject() && gThisCache &&
-      !func->constructorNeedsUninitializedThis()) {
+  // superDone: SuperCall whose |this| needs no CreateThis call (derived
+  // callee: the uninitialized-lexical magic, CreateThis's first step).
+  bool superDone = false;
+  if (MOZ_UNLIKELY(superCall)) {
+    if (!firstArg[1].asValue().isObject()) {
+      if (func->constructorNeedsUninitializedThis()) {
+        firstArg[1] = StackVal(MagicValue(JS_UNINITIALIZED_LEXICAL));
+        superDone = true;
+      } else if (gThisCache) {
+        JSFunction* ntf = &sp[0].asValue().toObject().as<JSFunction>();
+        fastThis = ntf == func
+                       ? ThisCacheTryCreate(cx, func, calleeScript)
+                       : SuperThisCacheTryCreate(cx, func, calleeScript, ntf);
+        if (fastThis) firstArg[1] = StackVal(ObjectValue(*fastThis));
+      }
+    }
+  } else if (constructing && !firstArg[1].asValue().isObject() &&
+             gThisCache && !func->constructorNeedsUninitializedThis()) {
     // Cache hit: allocated without GC (nothing to re-read).
     fastThis = ThisCacheTryCreate(cx, func, calleeScript);
     if (fastThis) firstArg[1] = StackVal(ObjectValue(*fastThis));
   }
-  if (constructing && !firstArg[1].asValue().isObject()) {
+  if (constructing && !superDone && !firstArg[1].asValue().isObject()) {
     const Value origThis = firstArg[1].asValue();
     bool ok;
     {
@@ -4544,9 +4699,15 @@ static MOZ_ALWAYS_INLINE int64_t CallScriptedA(int64_t frameA, int64_t spA,
       firstArg[1] = StackVal(origThis);
       return Refuse(kDsCtorChanged);
     }
-    if (gThisCache && firstArg[1].asValue().isObject() &&
-        &sp[0].asValue().toObject() == func) {
-      ThisCacheFill(cx, func, calleeScript, &firstArg[1].asValue().toObject());
+    if (gThisCache && firstArg[1].asValue().isObject()) {
+      JSObject* nto = &sp[0].asValue().toObject();
+      if (nto == func) {
+        ThisCacheFill(cx, func, calleeScript,
+                      &firstArg[1].asValue().toObject());
+      } else if (superCall) {
+        SuperThisCacheFill(cx, func, calleeScript, &nto->as<JSFunction>(),
+                           &firstArg[1].asValue().toObject());
+      }
     }
     useCached = false;  // CreateThis can GC: re-derive from calleeScript
   }
@@ -4881,19 +5042,43 @@ int64_t CallScriptedHit(int64_t frameA, int64_t spA, int64_t pcA,
   auto* pc = reinterpret_cast<jsbytecode*>(uintptr_t(pcA));
   auto* icEntry = reinterpret_cast<ICEntry*>(uintptr_t(iceA));
   if (constructing) {
-    // newTarget must be the callee itself (same object <=> same bits).
-    if (sp[0].asValue().asRawBits() != site->calleeBits) {
-      return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
-    }
+    // newTarget must be the callee itself (same object <=> same bits), or
+    // for SuperCall an allowed new.target (see CallScriptedA).
     StackVal* thisSlot = sp + argc + 1;  // firstArg[1] of the full path
-    if (!thisSlot->asValue().isObject()) {
-      // Last check (allocates): only the NoGC |this| cache; anything else
-      // takes the full path (CreateThis).
-      PlainObject* fastThis =
-          site->thisCacheOk ? ThisCacheTryCreate(cx, func, calleeScript)
-                            : nullptr;
-      if (!fastThis) return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
-      *thisSlot = StackVal(ObjectValue(*fastThis));
+    if (MOZ_LIKELY(sp[0].asValue().asRawBits() == site->calleeBits)) {
+      if (!thisSlot->asValue().isObject()) {
+        // Last check (allocates): only the NoGC |this| cache; anything else
+        // takes the full path (CreateThis).
+        PlainObject* fastThis =
+            site->thisCacheOk ? ThisCacheTryCreate(cx, func, calleeScript)
+                              : nullptr;
+        if (!fastThis) {
+          return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
+        }
+        *thisSlot = StackVal(ObjectValue(*fastThis));
+      }
+    } else {
+      // Only SuperCall sites reach here with an allowed newTarget.
+      if (!site->superCall || !SuperNewTargetOk(sp[0].asValue())) {
+        return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
+      }
+      if (!thisSlot->asValue().isObject()) {
+        if (site->uninitThis) {
+          // Derived callee: CreateThis only stores this magic value.
+          *thisSlot = StackVal(MagicValue(JS_UNINITIALIZED_LEXICAL));
+        } else {
+          PlainObject* fastThis =
+              site->thisCacheOk
+                  ? SuperThisCacheTryCreate(
+                        cx, func, calleeScript,
+                        &sp[0].asValue().toObject().as<JSFunction>())
+                  : nullptr;
+          if (!fastThis) {
+            return CallScripted(frameA, spA, pcA, iceA, ctxA, siteA);
+          }
+          *thisSlot = StackVal(ObjectValue(*fastThis));
+        }
+      }
     }
   }
   frame->interpreterPC() = pc;

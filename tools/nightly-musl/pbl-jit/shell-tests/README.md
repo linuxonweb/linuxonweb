@@ -28,3 +28,10 @@ recursion, generators, eval) must complete with identical stdout in defaults and
 the browser thread: scripts that run in the C++ interpreter (tiers off rejects
 scripts containing Throw; every script's first 10 calls are cold) nest
 uncounted. Known limitation, not a regression.
+
+`supercall.js` (`super(...)` in derived constructors: multi-level chains,
+base/derived return values, double/missing super, arrows, Reflect.construct
+newTargets incl. bound/proxy/native, built-in and null/bound/proxy/function
+superclasses, superclass change, exceptions, spread, recursion depth 200, eval)
+must give identical stdout in four modes: tiers off, defaults, `PBLBC_HITS=2`
+and `PBLBC_SUPERCALL=0`.
