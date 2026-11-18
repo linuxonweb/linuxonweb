@@ -415,7 +415,7 @@
  }
  
  static MOZ_NEVER_INLINE uint64_t CallNextIC(uint64_t arg0, uint64_t arg1,
-@@ -5768,8 +5970,23 @@
+@@ -5768,8 +5970,71 @@
    }
  }
  
@@ -434,13 +434,61 @@
 +  return on;
 +}
 +
++// Nesting depth of PortableBaselineInterpret runs on this thread. Every
++// nested C++ -> JS entry (PortableBaselineTrampoline and ICInterpretOps'
++// scripted getter/setter/call stubs) starts a non-restart run that nests
++// several KB of the host engine's own wasm call stack, which
++// AutoCheckRecursionLimit and Stack::check (linear memory only) cannot see;
++// past ~150 levels the host traps and the thread is lost. The non-restart
++// run counts itself for its whole C++ lifetime (its restart continuation is
++// called from, and returns through, that same frame), so an RAII guard
++// decrements exactly once on every return path. Over the limit the run
++// reports over-recursion like the stack checks. PBL_NESTMAX=N (N > 0)
++// overrides the default, read once. Default 80 is ~2/3 of the shallowest
++// level measured safe in a browser worker (120 with tiers on; c80 notes).
++static constexpr uint32_t kPblNestMaxDefault = 80;
++static thread_local uint32_t tPblNest;
++static uint32_t PblNestMax() {
++  static const uint32_t max = [] {
++    const char* e = getenv("PBL_NESTMAX");
++    if (e && e[0] >= '1' && e[0] <= '9') {
++      char* end = nullptr;
++      unsigned long v = strtoul(e, &end, 10);
++      if (end && *end == '\0') {
++        return v > 0xFFFFFFF0ul ? uint32_t(0xFFFFFFF0u) : uint32_t(v);
++      }
++    }
++    return kPblNestMaxDefault;
++  }();
++  return max;
++}
++class MOZ_RAII PblNestGuard {
++  const bool counted_;
++
++ public:
++  explicit PblNestGuard(bool count) : counted_(count) {
++    if (counted_) {
++      tPblNest++;
++    }
++  }
++  ~PblNestGuard() {
++    if (counted_) {
++      MOZ_ASSERT(tPblNest > 0);
++      tPblNest--;
++    }
++  }
++  PblNestGuard(const PblNestGuard&) = delete;
++  void operator=(const PblNestGuard&) = delete;
++  bool overLimit() const { return counted_ && tPblNest > PblNestMax(); }
++};
++
  uint8_t* GetICInterpreter() {
 -  return reinterpret_cast<uint8_t*>(&ICInterpretOps);
 +  return reinterpret_cast<uint8_t*>(&PblIcEntry);
  }
  
  /*
-@@ -5810,8 +6027,9 @@
+@@ -5810,8 +6075,9 @@
  #define LABEL(op) (&&label_##op)
  #ifdef ENABLE_COMPUTED_GOTO_DISPATCH
  #  define CASE(op) label_##op:
@@ -452,7 +500,17 @@
      goto* addresses[*pc]
  #else
  #  define CASE(op) label_##op : case JSOp::op:
-@@ -5935,7 +6153,8 @@
+@@ -5911,6 +6177,9 @@
+     JSObject* envChain, Value* ret, jsbytecode* pc, ImmutableScriptData* isd,
+     jsbytecode* restartEntryPC, BaselineFrame* restartFrame,
+     StackVal* restartEntryFrame, PBIResult restartCode) {
++  // Declared before any label so no goto can bypass it; see PblNestGuard.
++  PblNestGuard nestGuard(!IsRestart);
++
+ #define RESTART(code)                                                 \
+   if (!IsRestart) {                                                   \
+     TRACE_PRINTF("Restarting (code %d sp %p fp %p)\n", int(code), sp, \
+@@ -5935,7 +6204,8 @@
    icEntries = frame->icScript()->icEntries();                       \
    icEntry = frame->interpreterICEntry();                            \
    argsObjAliasesFormals = frame->script()->argsObjAliasesFormals(); \
@@ -462,7 +520,7 @@
  
  #define OPCODE_LABEL(op, ...) LABEL(op),
  #define TRAILING_LABEL(v) LABEL(default),
-@@ -5974,6 +6193,9 @@
+@@ -5974,6 +6244,9 @@
    auto* icEntries = frame->icScript()->icEntries();
    auto* icEntry = icEntries;
    const uint32_t* resumeOffsets = isd->resumeOffsets().data();
@@ -472,7 +530,19 @@
  
    if (IsRestart) {
      ic_result = restartCode;
-@@ -6058,6 +6280,14 @@
+@@ -5982,6 +6255,11 @@
+         ctx.stack.fp, ctx.frame);
+     goto ic_fail;
+   } else {
++    if (MOZ_UNLIKELY(nestGuard.overLimit())) {
++      PUSH_EXIT_FRAME();
++      ReportOverRecursed(ctx.frameMgr.cxForLocalUseOnly());
++      return PBIResult::Error;
++    }
+     AutoCheckRecursionLimit recursion(ctx.frameMgr.cxForLocalUseOnly());
+     if (!recursion.checkDontReport(ctx.frameMgr.cxForLocalUseOnly())) {
+       PUSH_EXIT_FRAME();
+@@ -6058,6 +6336,14 @@
    TRACE_PRINTF("nslots = %d nfixed = %d\n", int(frame->script()->nslots()),
                 int(frame->script()->nfixed()));
  
@@ -487,7 +557,7 @@
    while (true) {
      DEBUG_CHECK();
  
-@@ -8208,6 +8438,97 @@
+@@ -8208,6 +8494,97 @@
  
        CASE(Resume) {
          // rval, gen, resumeKind => rval
@@ -585,7 +655,7 @@
          {
            GeneratorResumeKind resumeKind =
                IntToResumeKind(VIRTSP(0).asValue().toInt32());
-@@ -8240,6 +8561,7 @@
+@@ -8240,6 +8617,7 @@
        CASE(LoopHead) {
          int32_t icIndex = GET_INT32(pc);
          icEntry = icEntries + icIndex;
@@ -593,7 +663,7 @@
  #ifdef ENABLE_INTERRUPT_CHECKS
          if (ctx.frameMgr.cxForLocalUseOnly()->hasAnyPendingInterrupt()) {
            PUSH_EXIT_FRAME();
-@@ -8405,6 +8727,16 @@
+@@ -8405,6 +8783,16 @@
            // Adjust caller's stack to complete the call op that PC still points
            // to in that frame (pop args, push return value).
            JSOp op = JSOp(*pc);
@@ -610,7 +680,7 @@
            bool constructing = (op == JSOp::New || op == JSOp::NewContent ||
                                 op == JSOp::SuperCall);
            // Fix-up return value; EnterJit would do this if we hadn't bypassed
-@@ -9160,6 +9492,35 @@
+@@ -9160,6 +9548,35 @@
  
    DISPATCH();
  
@@ -646,7 +716,7 @@
  ic_fail:
    RESTART(ic_result);
    switch (ic_result) {
-@@ -9348,10 +9709,25 @@
+@@ -9348,10 +9765,25 @@
    if (!JitOptions.portableBaselineInterpreter) {
      return MethodStatus::Method_CantCompile;
    }
@@ -673,7 +743,7 @@
      return MethodStatus::Method_CantCompile;
    }
    if (cx->runtime()->geckoProfiler().enabled()) {
-@@ -9368,18 +9744,34 @@
+@@ -9368,18 +9800,34 @@
        return MethodStatus::Method_CantCompile;
      }
    }

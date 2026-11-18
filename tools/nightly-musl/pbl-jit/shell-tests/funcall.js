@@ -91,7 +91,7 @@ run("stack2", () => stkStrict.call(1));
 function fib(n) { return n < 2 ? n : fib.call(this, n - 1) + fib.call(this, n - 2); }
 run("fibcall", () => fib.call(null, 12));
 function deep(n) { return n === 0 ? 0 : 1 + deep.call(null, n - 1); }
-run("deepok", () => deep.call(null, 80));
+run("deepok", () => deep.call(null, 40));
 // Generators / async-ish
 function* gen(a) { yield show(this); yield a; }
 run("gen", () => { var g = gen.call(obj, 4); return g.next().value + "," + g.next().value; });
