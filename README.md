@@ -1,5 +1,5 @@
 # linuxonweb
-
+by claude codex  and @ecooai 
 Index of the source repositories used by the linuxonweb browser guest: a Linux
 kernel, X server, Mesa, the Mesa-based graphics test programs, musl libc and a
 few small userspace programs. Each one is a git submodule pinned to a commit.
