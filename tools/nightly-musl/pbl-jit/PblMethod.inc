@@ -483,6 +483,13 @@ bool gSuperCall = true;
 // missing formals with undefined like the interpreter's scripted-call IC
 // (descriptor keeps the actual argc).
 bool gPadArgs = true;
+// PBLBC_CALLTRAMP (default on; a value starting with '0' gives the old code):
+// a helper call_indirect site pushes only its N real args and the table
+// index and calls a per-module trampoline $tN(a1..aN i64, idx i32) -> i64
+// that adds the fpcast-emu zero padding (to kNParams i64) and does the
+// call_indirect with type 0. Trampolines are functions 2.. (function 1 is
+// the PBLBC_GETTER helper, or an unreachable stub when it is unused).
+bool gCallTramp = true;
 // PBLBC_VSTACK (default on): virtual operand stack in the method tier; 0
 // emits exactly the code without it.
 bool gVstack = true;
@@ -724,6 +731,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (supv && supv[0] == '0') gSuperCall = false;
     const char* pav = getenv("PBLBC_PADARGS");
     if (pav && pav[0] == '0') gPadArgs = false;
+    const char* ctv = getenv("PBLBC_CALLTRAMP");
+    if (ctv && ctv[0] == '0') gCallTramp = false;
     const char* vsv = getenv("PBLBC_VSTACK");
     if (vsv && vsv[0] == '0') gVstack = false;
     const char* vsicv = getenv("PBLBC_VSIC");
@@ -813,6 +822,33 @@ struct MT {
   ICCtx* ictx = nullptr;
   bool inlUsed = false;     // scratch locals declared (some site inlined)
   bool gpUsed = false;      // PBLBC_GETTER helper function 1 emitted
+  // PBLBC_CALLTRAMP: function index (2 + k) per real-arg count, 0 = none.
+  uint32_t trampFn[kNParams + 1] = {};
+  uint8_t trampN[kNParams + 1];
+  uint32_t nTramp = 0;
+  uint32_t padN = 0;  // real-arg count of the pending call (padTo .. callUni)
+  // A uniform-signature call: the site pushed n real i64 args; padTo(n)
+  // pushes the zero padding (old code) or records n; then the site pushes
+  // the i32 table index and callUni() emits the call.
+  void padTo(uint32_t n) {
+    padN = n;
+    if (gCallTramp) return;
+    for (uint32_t i = n; i < kNParams; i++) i64c(0);
+  }
+  void callUni() {
+    if (!gCallTramp) {
+      b.put(OP_CALLIND);
+      b.uleb(0);
+      b.uleb(0);
+      return;
+    }
+    if (!trampFn[padN]) {
+      trampFn[padN] = 2 + nTramp;
+      trampN[nTramp++] = uint8_t(padN);
+    }
+    b.put(OP_CALL);
+    b.uleb(trampFn[padN]);
+  }
   uint32_t inlBytes = 0;    // inline body bytes in this function
   uint32_t inlSite[kInlCount] = {};
   // Scratch locals after the existing ones: kInlineI64Locals i64,
@@ -1351,12 +1387,10 @@ struct MT {
       op(OP_I64EXTU);
       lget(L_CTX);
       op(OP_I64EXTU);
-      for (uint32_t i = 4; i < kNParams; i++) i64c(0);
+      padTo(4);
       lget(L_X);
       load32(uint32_t(ICStub::offsetOfStubCode()));
-      b.put(OP_CALLIND);
-      b.uleb(0);
-      b.uleb(0);
+      callUni();
     }
     if (pure) {
       // Slow arm only: sentinel test, then mark that an IC call ran.
@@ -1603,11 +1637,9 @@ struct MT {
     op(OP_I32ADD);
     op(OP_I64EXTU);
     lget(P_CTX);
-    for (uint32_t i = 4; i < kNParams; i++) i64c(0);
+    padTo(4);
     i32c(int32_t(uintptr_t(fn)));
-    b.put(OP_CALLIND);
-    b.uleb(0);
-    b.uleb(0);
+    callUni();
     ltee(L_R);
     i64c(kHelperOk);
     op(OP_I64NE);
@@ -1909,11 +1941,9 @@ bool MT::nativeCall() {
       i64c(int64_t(uintptr_t(site)));
       i++;
     }
-    for (; i < kNParams; i++) i64c(0);
+    padTo(i);
     i32c(int32_t(uintptr_t(helper)));
-    b.put(OP_CALLIND);
-    b.uleb(0);
-    b.uleb(0);
+    callUni();
     ltee(L_R);
     i64c(1);
     op(OP_I64EQ);
@@ -3600,11 +3630,9 @@ bool MT::translateOp() {
         i64c(int64_t(ops[cur].pcOff));
         lget(P_CX);
         i64c(int64_t(uintptr_t(entry)));
-        for (uint32_t i = 5; i < kNParams; i++) i64c(0);
+        padTo(5);
         i32c(int32_t(uintptr_t(&LoopHook)));
-        b.put(OP_CALLIND);
-        b.uleb(0);
-        b.uleb(0);
+        callUni();
         ltee(L_R);
         op(OP_I64EQZ);
         op(OP_I32EQZ);
@@ -4033,8 +4061,12 @@ bool MT::assemble(Buf& m) {
   m.putn("\0asm\1\0\0\0", 8);
   Buf gh;  // PBLBC_GETTER helper body (function 1, type 1)
   if (gpUsed) emitGetterHelper(gh);
-  const uint32_t nfn = gpUsed ? 2 : 1;
-  c.uleb(nfn);
+  // Functions: 0 main, 1 getter helper (or an unreachable type-0 stub when
+  // only trampolines need index 1 occupied), 2 + k trampoline k.
+  const bool fn1 = gpUsed || nTramp;
+  const uint32_t nfn = (fn1 ? 2 : 1) + nTramp;
+  const uint32_t trampType0 = gpUsed ? 2 : 1;
+  c.uleb((gpUsed ? 2 : 1) + nTramp);
   c.put(0x60);
   c.uleb(kNParams);
   for (uint32_t i = 0; i < kNParams; i++) c.put(T_I64);
@@ -4048,6 +4080,14 @@ bool MT::assemble(Buf& m) {
     c.put(T_I64);
     c.put(T_I32);
     c.put(T_I64);
+    c.uleb(1);
+    c.put(T_I64);
+  }
+  for (uint32_t k = 0; k < nTramp; k++) {
+    c.put(0x60);
+    c.uleb(trampN[k] + 1u);
+    for (uint32_t i = 0; i < trampN[k]; i++) c.put(T_I64);
+    c.put(T_I32);
     c.uleb(1);
     c.put(T_I64);
   }
@@ -4068,7 +4108,8 @@ bool MT::assemble(Buf& m) {
   m.section(2, c);
   c.uleb(nfn);
   c.uleb(0);
-  if (gpUsed) c.uleb(1);
+  if (fn1) c.uleb(gpUsed ? 1 : 0);
+  for (uint32_t k = 0; k < nTramp; k++) c.uleb(trampType0 + k);
   m.section(3, c);
   c.uleb(1);
   c.name("f0");
@@ -4081,6 +4122,33 @@ bool MT::assemble(Buf& m) {
   if (gpUsed) {
     c.uleb(uint32_t(gh.n));
     c.putn(gh.p, gh.n);
+  } else if (fn1) {
+    c.uleb(3);  // no locals; unreachable; end
+    c.put(0);
+    c.put(OP_UNREACH);
+    c.put(0x0b);
+  }
+  for (uint32_t k = 0; k < nTramp; k++) {
+    // $tN(a1..aN, idx): a1..aN, zero padding to kNParams, call_indirect.
+    Buf t;
+    t.uleb(0);
+    for (uint32_t i = 0; i < trampN[k]; i++) {
+      t.put(OP_LGET);
+      t.uleb(i);
+    }
+    for (uint32_t i = trampN[k]; i < kNParams; i++) {
+      t.put(OP_I64CONST);
+      t.sleb(0);
+    }
+    t.put(OP_LGET);
+    t.uleb(trampN[k]);
+    t.put(OP_CALLIND);
+    t.uleb(0);
+    t.uleb(0);
+    t.put(0x0b);
+    if (t.oom) return reject("oom");
+    c.uleb(uint32_t(t.n));
+    c.putn(t.p, t.n);
   }
   m.section(10, c);
   if (m.oom || c.oom || body.oom || gh.oom) return reject("oom");
