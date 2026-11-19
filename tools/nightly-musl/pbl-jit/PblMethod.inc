@@ -486,6 +486,12 @@ bool gPadArgs = true;
 // PBLBC_VSTACK (default on): virtual operand stack in the method tier; 0
 // emits exactly the code without it.
 bool gVstack = true;
+// PBLBC_VSIC (default on; a value starting with '0' disables it): GetProp,
+// GetGName and GetElem take their operands from the virtual operand stack
+// and leave the IC result there (in a pool local) instead of round-tripping
+// both through the in-memory stack. Entries below the operands are flushed
+// first, so nothing else is virtual across the IC (which can GC or throw).
+bool gVsIc = true;
 // PBLBC_ENTRYSWITCH (default on; a value starting with '0' disables it): a
 // compiled callee whose op 0 is an exit op is pushed directly by
 // CallScripted and the interpreter continues in the callee frame at pc 0
@@ -720,6 +726,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (pav && pav[0] == '0') gPadArgs = false;
     const char* vsv = getenv("PBLBC_VSTACK");
     if (vsv && vsv[0] == '0') gVstack = false;
+    const char* vsicv = getenv("PBLBC_VSIC");
+    if (vsicv && vsicv[0] == '0') gVsIc = false;
     const char* esv = getenv("PBLBC_ENTRYSWITCH");
     if (esv && esv[0] == '0') gEntrySwitch = false;
     const char* aov = getenv("PBLBC_ARGSOP");
@@ -1030,6 +1038,12 @@ struct MT {
     vsEmitStore(vsN);
     exitHere();
   }
+  // Same before op cur+1 (debugCheckNext after a PBLBC_VSIC op: the result
+  // is virtual; without it the model is empty here and this is exitAt).
+  void vsExitNext() {
+    vsEmitStore(vsN);
+    exitAt(cur + 1);
+  }
   void vsPushConst(uint64_t bits, uint8_t type) {
     if (vsN == kVsMax) flush();
     vs[vsN++] = VEnt{true, type, 0, bits};
@@ -1080,12 +1094,27 @@ struct MT {
       case JSOp::StrictEq: case JSOp::StrictNe: case JSOp::Not:
       case JSOp::JumpIfFalse: case JSOp::JumpIfTrue:
         return true;
+      case JSOp::GetProp: case JSOp::GetGName: case JSOp::GetElem:
+      case JSOp::SetProp: case JSOp::StrictSetProp:
+      case JSOp::SetElem: case JSOp::StrictSetElem:
+        return gVsIc;
       default:
         return false;
     }
   }
   int vsOp(const OpInfo& o, const jsbytecode* pc);
   bool vsArith(JSOp jop);
+  bool vsIcOp(JSOp jop);
+  int vsSetOp(JSOp jop);
+  // Local holding entry e's value (constants copied into scratch).
+  uint32_t vsLocalOf(const VEnt& e, uint32_t scratch) {
+    if (!e.isConst) return e.loc;
+    i64c(int64_t(e.bits));
+    lset(scratch);
+    return scratch;
+  }
+  // invokeIC's result local (PBLBC_VSIC points it at a pool local).
+  uint32_t icRes = L_R;
   bool bitArith(JSOp jop);
 
   // Tag tests on local l -> i32.
@@ -1331,7 +1360,7 @@ struct MT {
     }
     if (pure) {
       // Slow arm only: sentinel test, then mark that an IC call ran.
-      ltee(L_R);
+      ltee(icRes);
       i64c(int64_t(IC_ERROR_SENTINEL()));
       op(OP_I64EQ);
       ifThen();
@@ -1341,7 +1370,7 @@ struct MT {
       lset(L_DBG);
       end();  // $done
       if (gPureIcCheck) {  // a pure hit never yields the sentinel
-        lget(L_R);
+        lget(icRes);
         i64c(int64_t(IC_ERROR_SENTINEL()));
         op(OP_I64EQ);
         ifThen();
@@ -1352,11 +1381,11 @@ struct MT {
       return;
     }
     if (k) {
-      lset(L_R);
+      lset(icRes);
       end();  // $done
-      lget(L_R);
+      lget(icRes);
     } else {
-      ltee(L_R);
+      ltee(icRes);
     }
     i64c(int64_t(IC_ERROR_SENTINEL()));
     op(OP_I64EQ);
@@ -1482,7 +1511,7 @@ struct MT {
     env.stubLocal = L_X;
     env.ctxLocal = L_CTX;
     env.localBase = kInlBase;
-    env.resultLocal = L_R;
+    env.resultLocal = icRes;
     env.doneDepth = 2;
     env.failDepth = 0;
     uint32_t nops = 0;
@@ -1543,16 +1572,21 @@ struct MT {
     load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfFlags())));
     i32c(int32_t(BaselineFrame::DEBUGGEE));
     op(OP_I32AND);
-    ifThen();
-    if (trap) op(OP_UNREACH); else exitAt(cur + 1);
-    end();
+    if (!gVsIc) {
+      ifThen();
+      if (trap) op(OP_UNREACH); else vsExitNext();
+      end();
+    }
     lget(L_FR);
     load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfInterpreterScript())));
     load32(uint32_t(JSScript::offsetOfMutableFlags()));
     i32c(int32_t(MutableScriptFlagsEnum::HasScriptCounts));
     op(OP_I32AND);
+    // PBLBC_VSIC: one merged exit (either flag set), so a virtual IC result
+    // is stored by one exit path rather than two.
+    if (gVsIc) op(OP_I32OR);
     ifThen();
-    if (trap) op(OP_UNREACH); else exitAt(cur + 1);
+    if (trap) op(OP_UNREACH); else vsExitNext();
     end();
   }
 
@@ -2581,10 +2615,91 @@ bool MT::vsArith(JSOp jop) {
   return true;
 }
 
+// PBLBC_VSIC: GetProp (receiver), GetElem (receiver, key) and GetGName (no
+// operand) with the operands taken from the model and the IC result left in
+// a fresh pool local as the new top entry. Entries below the operands are
+// flushed and the operands leave the model before the IC, so across the IC
+// (slow call, getter, error exit) memory and L_SP are exactly what the
+// existing code has after its pops; the debug check after the op stores the
+// result before exiting at op cur+1 (vsExitNext). The GetElem string-receiver
+// exit stores both operands first (vsExitHere), as the existing code has them.
+bool MT::vsIcOp(JSOp jop) {
+  const uint32_t nin =
+      jop == JSOp::GetGName ? 0 : jop == JSOp::GetProp ? 1 : 2;
+  uint32_t a = ~0u, k = ~0u;
+  if (nin == 1 && !vsN) {
+    popLocal(L_A);  // receiver already in memory: as the existing code
+    a = L_A;
+  } else if (nin) {
+    vsMaterialize(nin);
+  }
+  vsFlushBelow(nin);
+  int rvi = vsAlloc();  // at most two pool locals are in use here
+  if (rvi < 0) return reject("vstack pool");
+  const uint32_t rv = uint32_t(rvi);
+  if (nin && a == ~0u) {
+    a = vsLocalOf(vs[0], L_A);
+    if (nin == 2) k = vsLocalOf(vs[1], L_B);
+  }
+  if (jop == JSOp::GetElem) {
+    // String receivers take the interpreter's static-string fast path.
+    tagIs(a, JSVAL_TAG_STRING);
+    ifThen();
+    vsExitHere();
+    end();
+  }
+  for (uint32_t i = 0; i < vsN; i++) vsRelease(vs[i]);
+  vsN = 0;
+  if (jop == JSOp::GetGName) {
+    // See the existing GetGName case: read at the op, never cached.
+    loadGlobalLexical();
+    lset(L_A);
+    a = L_A;
+  }
+  icRes = rv;
+  invokeIC(a, k, ~0u, false,
+           /* getterReq = */ jop == JSOp::GetProp && gGetter && gDirect);
+  icRes = L_R;
+  vsPushLocal(rv, VT_UNK);
+  debugCheckNext();
+  return !reason;
+}
+
+// PBLBC_VSIC: SetProp ([obj, val] -> [val]) and SetElem ([obj, key, val] ->
+// [val]) with the operands taken from the model. As in the existing code,
+// memory holds the entries below plus val (stored once) across the IC, so the
+// slow call / error exit / debug check see the same stack. An empty model
+// runs the existing code (0).
+int MT::vsSetOp(JSOp jop) {
+  if (!vsN) return 0;
+  const bool elem = jop == JSOp::SetElem || jop == JSOp::StrictSetElem;
+  const uint32_t nin = elem ? 3 : 2;
+  vsMaterialize(nin);
+  vsFlushBelow(nin);
+  const uint32_t a = vsLocalOf(vs[0], L_A);
+  const uint32_t b = vsLocalOf(vs[1], L_B);
+  const uint32_t c = elem ? vsLocalOf(vs[2], L_C) : ~0u;
+  for (uint32_t i = 0; i < vsN; i++) vsRelease(vs[i]);
+  vsN = 0;
+  pushLocal(elem ? c : b);
+  invokeIC(a, b, c, elem);
+  debugCheckNext();
+  return reason ? -1 : 1;
+}
+
 // 1: handled with the model; 0: run the existing code (model flushed by the
 // caller); -1: rejected.
 int MT::vsOp(const OpInfo& o, const jsbytecode* pc) {
   switch (o.op) {
+    case JSOp::GetProp:
+    case JSOp::GetGName:
+    case JSOp::GetElem:
+      return vsIcOp(o.op) ? 1 : -1;
+    case JSOp::SetProp:
+    case JSOp::StrictSetProp:
+    case JSOp::SetElem:
+    case JSOp::StrictSetElem:
+      return vsSetOp(o.op);
     case JSOp::Undefined:
       vsPushConst(UndefinedValue().asRawBits(), VT_UNDNULL);
       return 1;
