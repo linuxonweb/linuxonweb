@@ -13,6 +13,15 @@ proves the run did not hang.
   IC and loop-tier code is live on the stack (globals, callee chains, shape
   guards, constructors, arrays, for-of, closures, try/catch).
 
+`incr-loop.js`: hot loops (array SetElem and rows, plain-object number
+stores with shape changes, global gets with `let`/`const` shadowing added
+mid-GC, Math constants, typed arrays) between `startgc(1)`/`gcslice(1)`
+slices with allocation in between, then again under `startgc(1, "shrinking")`
+(compacting GCs must still refuse the loop tier). Its `ST3 ` lines must be
+identical with tiers off, defaults, `PBLBC_HITS=2` and `PBLJIT_INCRGC=0`. With
+`PBL_TIERSTAT=1`, `loop_incr_skip` must be far lower in defaults than with
+`PBLJIT_INCRGC=0`.
+
 `arguments.js`, `checkops.js`, `iterops.js`, `trampentry.js`, `funcall.js`, `funapply.js` and `nest.js` have no `.expected` file: their whole stdout must be identical
 across the three modes (tiers off, defaults, `PBLBC_HITS=2`).
 

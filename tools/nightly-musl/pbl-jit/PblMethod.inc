@@ -128,6 +128,43 @@ constexpr unsigned kCovbDefault = kCovbStrictEq | kCovbToBool |
                                   kCovbToString | kCovbTypeofEq;
 unsigned gCovb = kCovbDefault;
 constexpr uint32_t kLoopSkip = 0x80000000u, kLoopSkipMisses = 1500;
+// PBL_TIERSTAT=1 (default off): "PBLSTAT t=.. major=.. ..." tier counters on
+// stderr at most once per second of wall time (checked from Hook and
+// LoopHook), plus "PBLSTAT latch file:line off=n" per kLoopSkip latch. Its
+// own line budget PBL_TIERSTAT_LOG (default 2000), independent of PBLBC_LOG.
+// PBLBC_LATCHFIX (default on; 0: old behaviour): only persistent PBLJIT
+// refusals (see gPblLoopMiss in PblJit.cpp) count toward kLoopSkipMisses;
+// incremental-GC, counting-phase, collision and global misses do not, a GC
+// eviction of the loop's own entry clears the count, and latches set before
+// a major GC are cleared once it is seen (PBLJIT re-decides after a GC).
+// PBLBC_TABLEEVICT (default on; 0: old behaviour): when an insert finds no
+// free slot in its probe window (or the table is at kMaxEntries), the
+// coldest counting entry (state 0, hits < gHits) in the window is reused.
+bool gTierStat = false;
+bool gLatchFix = false;  // default off: in-Firefox cand15 was slower with it on
+bool gTableEvict = false;  // default off (see gLatchFix)
+std::atomic<int> gTsLogBudget{0};
+uint32_t gTsBcFindNull = 0, gTsLatched = 0, gTsBcEvict = 0;
+extern "C" {
+extern bool gPblTierStat;
+extern uint32_t gPblTsIncrSkip, gPblTsEvictGc, gPblTsDisable;
+// gPblLoopMiss is read through a function: an extern thread_local
+// declared here would be accessed via its TLS wrapper, which calls the
+// weak-undefined _ZTH init routine; in the PIC wasm32 link its address
+// test is __table_base+0 (non-null), so it calls an unreachable stub.
+int PblJitLoopMiss();
+uint32_t PblJitCompiles();
+bool PblJitIncrGCAllowed();  // PBLJIT_INCRGC (PblJit.cpp)
+}
+bool TsTakeLog() {
+  return gTsLogBudget.fetch_sub(1, std::memory_order_relaxed) > 0;
+}
+// Latched loopState words (Entry::loopState is never freed once installed)
+// and the major GC number when the first of them was latched.
+constexpr uint32_t kMaxLatched = 1024;
+thread_local uint32_t* tLatched[kMaxLatched];
+thread_local uint32_t tLatchedN;
+thread_local uint64_t tLatchGC;
 int64_t LoopHook(int64_t frame, int64_t sp, int64_t pcOff, int64_t cx,
                  int64_t entry);
 int64_t CallScripted(int64_t frame, int64_t sp, int64_t pc, int64_t icEntry,
@@ -701,6 +738,18 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (tev && tev[0] == '0') gTrampEntry = false;
     const char* nev = getenv("PBLBC_NATENTRY");
     if (nev && nev[0] == '0') gNatEntry = false;
+    const char* tsv = getenv("PBL_TIERSTAT");
+    gTierStat = tsv && tsv[0] == '1';
+    gPblTierStat = gTierStat;
+    const char* tsl = getenv("PBL_TIERSTAT_LOG");
+    gTsLogBudget.store(tsl ? atoi(tsl) : 2000, std::memory_order_relaxed);
+    const char* lfv = getenv("PBLBC_LATCHFIX");
+    if (lfv) gLatchFix = lfv[0] == '1';
+    const char* tev2 = getenv("PBLBC_TABLEEVICT");
+    if (tev2) gTableEvict = tev2[0] == '1';
+    if (gTierStat && TsTakeLog())
+      fprintf(stderr, "PBLSTAT config latchfix=%d tableevict=%d pid=%d\n",
+              int(gLatchFix), int(gTableEvict), int(getpid()));
     const char* xs = getenv("PBLBC_EXITSTAT");
     if (xs && xs[0] == '1') {
       gExitStat = true;
@@ -3961,19 +4010,79 @@ Entry* Find(const ImmutableScriptData* isd) {
     if (!tTable) return nullptr;
   }
   uint32_t h = Hash(isd);
+  // PBLBC_TABLEEVICT victim: the coldest counting entry seen in the window.
+  // Safe to reuse: a state-0 entry owns no allocation or script reference
+  // (Compile sets opAt/icIdx/exitOp/loopState/sites/shared only with state
+  // 1), no compiled code embeds it (code is generated only for state 1),
+  // and the CallScripted/site caches hold only state-1 entries and are
+  // validated against tEntryGen, bumped below. Slots never become empty, so
+  // the lookup invariant (an isd sits before the first empty slot of its
+  // window) is kept. The one live state-0 pointer, Hook's e during
+  // Compile, has hits >= gHits and is never chosen.
+  Entry* victim = nullptr;
   for (uint32_t i = 0; i < kProbe; i++) {
     Entry* c = &tTable[(h + i) & ((1u << kTableBits) - 1)];
     if (c->isd == isd) return tLast = c;
     if (!c->isd) {
-      // Entries are never evicted (each holds its script data alive).
-      if (tEntries >= kMaxEntries) return nullptr;
+      // Compiled entries are never evicted (each holds its script data
+      // alive).
+      if (tEntries >= kMaxEntries) break;
       tEntries++;
       c->isd = isd;
       tEntryGen++;
       return tLast = c;
     }
+    if (gTableEvict && c->state == 0 && c->hits < gHits &&
+        (!victim || c->hits < victim->hits))
+      victim = c;
   }
+  if (victim) {
+    victim->isd = isd;
+    victim->hits = 0;
+    tEntryGen++;
+    if (MOZ_UNLIKELY(gTierStat)) gTsBcEvict++;
+    return tLast = victim;
+  }
+  if (MOZ_UNLIKELY(gTierStat)) gTsBcFindNull++;
   return nullptr;
+}
+
+// PBL_TIERSTAT: at most one PBLSTAT line per second of wall time.
+thread_local uint64_t tTsNextMs;
+thread_local uint32_t tTsTick;
+uint64_t TsNowMs() {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return uint64_t(ts.tv_sec) * 1000 + uint64_t(ts.tv_nsec) / 1000000;
+}
+MOZ_NEVER_INLINE void TierStatTick(JSContext* cx) {
+  if ((++tTsTick & 63) != 1) return;
+  uint64_t now = TsNowMs();
+  if (now < tTsNextMs) return;
+  tTsNextMs = now + 1000;
+  if (!TsTakeLog()) return;
+  const js::gc::GCRuntime& gc = cx->runtime()->gc;
+  fprintf(stderr,
+          "PBLSTAT t=%llu pid=%d major=%llu minor=%llu incr=%d "
+          "bc_compiles=%u bc_findnull=%u bc_entries=%u bc_evict=%u "
+          "loop_incr_skip=%u loop_latched=%u jit_evict_gc=%u "
+          "jit_compiles=%u jit_disable=%u\n",
+          (unsigned long long)now, int(getpid()),
+          (unsigned long long)gc.majorGCCount(),
+          (unsigned long long)gc.minorGCCount(),
+          int(gc.isIncrementalGCInProgress()),
+          gCompiles.load(std::memory_order_relaxed), gTsBcFindNull, tEntries,
+          gTsBcEvict, gPblTsIncrSkip, gTsLatched, gPblTsEvictGc,
+          PblJitCompiles(), gPblTsDisable);
+}
+
+// PBLBC_LATCHFIX: after a major GC PBLJIT has evicted every loop entry, so
+// latched loop heads are offered again.
+inline void ClearLatchesAfterGC(JSContext* cx) {
+  if (MOZ_LIKELY(!tLatchedN)) return;
+  if (cx->runtime()->gc.majorGCCount() == tLatchGC) return;
+  for (uint32_t i = 0; i < tLatchedN; i++) *tLatched[i] = 0;
+  tLatchedN = 0;
 }
 
 void Compile(Entry* e, JSScript* script, JSContext* cx, ICCtx& ctx,
@@ -5255,6 +5364,9 @@ int Hook(BaselineFrame* frame, StackVal* sp, jsbytecode* pc,
   } else {
     e = Find(isd);
   }
+  if (MOZ_UNLIKELY(gTierStat))
+    TierStatTick(ctx.frameMgr.cxForLocalUseOnly());
+  if (gLatchFix) ClearLatchesAfterGC(ctx.frameMgr.cxForLocalUseOnly());
   if (!e || e->state == 2) return kNone;
   if (e->state == 0) {
     if (++e->hits < gHits) return kNone;
@@ -5381,7 +5493,13 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
   uint32_t& st = e->loopState[e->opAt[pcOff]];
   JSScript* script = frame->script();
   if (frame->isDebuggee() || script->hasScriptCounts()) return 0;
-  if (cx->runtime()->gc.isIncrementalGCInProgress()) {
+  if (MOZ_UNLIKELY(gTierStat)) TierStatTick(cx);
+  if (gLatchFix) ClearLatchesAfterGC(cx);
+  // Same gate as pbljit::OnLoopHead: loop code may run during an
+  // incremental GC unless it compacts (or PBLJIT_INCRGC=0); see there.
+  if (cx->runtime()->gc.isIncrementalGCInProgress() &&
+      (!PblJitIncrGCAllowed() || cx->runtime()->gc.isCompactingGc())) {
+    if (MOZ_UNLIKELY(gTierStat)) gPblTsIncrSkip++;
     if (pbltier::Enabled())
       pbltier::Guard(pbltier::kIncremental, script, cx, e->fn,
                      int32_t(pcOff));
@@ -5391,7 +5509,39 @@ int64_t LoopHook(int64_t frameA, int64_t spA, int64_t pcOffA, int64_t cxA,
   if (!js::pbljit::OnLoopHead(script, frame,
                               reinterpret_cast<uint64_t*>(uintptr_t(spA)),
                               script->code() + pcOff, cx, &jx)) {
-    if (++st >= kLoopSkipMisses) st |= kLoopSkip;
+    if (!gLatchFix) {
+      if (++st >= kLoopSkipMisses) {
+        if (MOZ_UNLIKELY(gTierStat) && !(st & kLoopSkip)) {
+          gTsLatched++;
+          if (TsTakeLog())
+            fprintf(stderr, "PBLSTAT latch %s:%u off=%u\n",
+                    script->filename() ? script->filename() : "?",
+                    script->lineno(), pcOff);
+        }
+        st |= kLoopSkip;
+      }
+      return 0;
+    }
+    int miss = PblJitLoopMiss();
+    if (miss == 2) {
+      st = 0;  // the loop's code was evicted by a GC: start over
+    } else if (miss == 0 && ++st >= kLoopSkipMisses) {
+      // Latch only if it can be cleared after the next major GC.
+      if (tLatchedN < kMaxLatched) {
+        if (!tLatchedN) tLatchGC = cx->runtime()->gc.majorGCCount();
+        tLatched[tLatchedN++] = &st;
+        st |= kLoopSkip;
+        if (MOZ_UNLIKELY(gTierStat)) {
+          gTsLatched++;
+          if (TsTakeLog())
+            fprintf(stderr, "PBLSTAT latch %s:%u off=%u\n",
+                    script->filename() ? script->filename() : "?",
+                    script->lineno(), pcOff);
+        }
+      } else {
+        st = kLoopSkipMisses - 1;
+      }
+    }
     return 0;
   }
   st = 0;

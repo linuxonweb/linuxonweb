@@ -81,6 +81,7 @@ struct JSContext {
   uint32_t bits;
   uint64_t majorGC = 0;
   bool incrementalGC = false;
+  bool compactingGC = false;
   uint32_t global = 0xa000;
   void* addressOfInterruptBits() { return &bits; }
 };

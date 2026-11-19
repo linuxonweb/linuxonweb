@@ -745,7 +745,8 @@ int main(int argc, char** argv) {
     test(!OnLoopHead(&first, &frame, stack, c.b.data(), &cx, &exit), "same identity rejected");
     test(e->state == 2 && e->hits == 1 && e->bytes != nullptr, "same identity retained");
     e->state = 1; // A compiled entry: epoch mismatch must prevent invocation.
-    cx.incrementalGC = true; cx.majorGC = 1;
+    gFastRecomp.store(0);
+    cx.incrementalGC = true; cx.compactingGC = true; cx.majorGC = 1;
     test(!OnLoopHead(second, &frame, stack, c.b.data(), &cx, &exit), "incremental skips");
     test(e->state == 1 && e->script == &first && e->majorGC == 0, "incremental no cache access");
     cx.incrementalGC = false;

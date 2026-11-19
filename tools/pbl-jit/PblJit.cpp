@@ -30,7 +30,8 @@
 // numeric slots behind entry shape guards; tenured global/object constants
 // support hoisted identity guards and allocation-free Math operations.
 // Cache entries are invalidated on script/major-GC changes and skipped during
-// incremental GC. Vars read before
+// compacting incremental GCs (all incremental GCs with PBLJIT_INCRGC=0; see
+// OnLoopHead for the invariant). Vars read before
 // being written in an iteration are type-guarded at entry and must keep that
 // type around the loop; the others are reloaded from the frame each
 // iteration. The code leaves the loop at:
@@ -178,6 +179,33 @@ uint32_t CacheIndex(JSScript* script, const jsbytecode* pc) {
 
 std::atomic<uint32_t> gInstalls{0};
 std::atomic<uint32_t> gCompiles{0};
+}  // namespace
+}  // namespace pbljit
+}  // namespace js
+// PBL_TIERSTAT / PBLBC_LATCHFIX interface with PblMethod.inc (another TU;
+// C linkage so it can be declared there without touching the PBI patch).
+// gPblTierStat is set once by PblMethod.inc's configuration; the counters
+// are main-thread statistics (racy across threads; diagnostics only).
+// gPblLoopMiss: why the last OnLoopHead on this thread returned false:
+// 0 a persistent refusal (rejected/disabled loop, NoEntry, argv refusal,
+// disabled), 1 a transient miss (incremental GC, counting phase, slot
+// collision, global mismatch, byte mismatch), 2 the loop's own entry was
+// just evicted because of a major GC.
+extern "C" {
+bool gPblTierStat = false;
+uint32_t gPblTsIncrSkip = 0, gPblTsEvictGc = 0, gPblTsDisable = 0;
+thread_local int gPblLoopMiss = 0;
+uint32_t PblJitCompiles() {
+  return js::pbljit::gCompiles.load(std::memory_order_relaxed);
+}
+// Accessor for PblMethod.inc: never declare gPblLoopMiss extern
+// thread_local in another TU (see PblMethod.inc).
+int PblJitLoopMiss() { return gPblLoopMiss; }
+bool PblJitIncrGCAllowed();
+}
+namespace js {
+namespace pbljit {
+namespace {
 std::atomic<uint32_t> gRejects{0};
 std::atomic<uint32_t> gRuns{0};
 std::atomic<uint32_t> gBails{0};
@@ -201,6 +229,32 @@ bool Enabled() {
   }
   return e != 0;
 }
+
+// PBLJIT_INCRGC (default on; 0: old behaviour, refuse during any incremental
+// GC): enter/compile loops during non-compacting incremental GCs.
+// PBLJIT_FASTRECOMP (default on; 0: old behaviour): a loop whose compiled
+// code was dropped by a major-GC epoch change recompiles on its next hit
+// instead of counting kCompileHits again.
+std::atomic<int> gIncrGC{-1};
+std::atomic<int> gFastRecomp{-1};
+bool EnvSwitch(std::atomic<int>& cell, const char* name) {
+  int v = cell.load(std::memory_order_relaxed);
+  if (v < 0) {
+    const char* s = getenv(name);
+    v = (s && s[0] == '0') ? 0 : 1;
+    cell.store(v, std::memory_order_relaxed);
+  }
+  return v != 0;
+}
+bool IncrGCAllowed() { return EnvSwitch(gIncrGC, "PBLJIT_INCRGC"); }
+bool FastRecomp() { return EnvSwitch(gFastRecomp, "PBLJIT_FASTRECOMP"); }
+}  // namespace
+}  // namespace pbljit
+}  // namespace js
+extern "C" bool PblJitIncrGCAllowed() { return js::pbljit::IncrGCAllowed(); }
+namespace js {
+namespace pbljit {
+namespace {
 
 bool TakeLog() {
   return gLogEnabled.load(std::memory_order_relaxed) &&
@@ -357,6 +411,7 @@ MathOp IdentifyMath(uint32_t pointer) { return MathOp(MockIdentifyMath(pointer))
 int32_t OffSlots() { return 4; }
 uint64_t MajorGC(JSContext* cx) { return cx->majorGC; }
 bool IncrementalGC(JSContext* cx) { return cx->incrementalGC; }
+bool CompactingGC(JSContext* cx) { return cx->compactingGC; }
 uint32_t CurrentGlobal(JSContext* cx) { return cx->global; }
 #else
 bool InspectObject(uint32_t pointer, ObjectInfo& info) {
@@ -423,6 +478,10 @@ MathOp IdentifyMath(uint32_t pointer) {
 int32_t OffSlots() { return int32_t(NativeObject::offsetOfSlots()); }
 uint64_t MajorGC(JSContext* cx) { return cx->runtime()->gc.majorGCCount(); }
 bool IncrementalGC(JSContext* cx) { return cx->runtime()->gc.isIncrementalGCInProgress(); }
+// Set once at the start of a collection (GCRuntime::startCollection); it can
+// only be cleared afterwards (reset before the Compact state), so a GC that
+// did not start compacting never moves cells.
+bool CompactingGC(JSContext* cx) { return cx->runtime()->gc.isCompactingGc(); }
 uint32_t CurrentGlobal(JSContext* cx) { return uint32_t(uintptr_t(cx->global().get())); }
 #endif
 
@@ -2184,12 +2243,33 @@ void ObservePolicy(JSScript* script, JSContext* cx) {
 
 bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
                 jsbytecode* pc, JSContext* cx, Exit* exit) {
-  // The generated module contains untraced shape/object constants. Never
-  // dereference them while incremental GC is active or after any major GC.
-  if (IncrementalGC(cx)) {
+  // The generated module embeds untraced shape/object/script pointers. They
+  // are safe to use exactly while every embedded cell is alive and unmoved:
+  //  - Entries are stamped with the major GC number, which is bumped in the
+  //    first slice of every major GC, before any cell is marked, swept or
+  //    moved; entries from an older epoch are evicted, never run.
+  //  - The compiler takes pointers only through strong edges from what the
+  //    running program can reach now (frame values, obj->shape(), slots,
+  //    the current global and its lexical environment, property maps; no
+  //    weak tables or IC stub fields). Under snapshot-at-the-beginning
+  //    marking with allocate-black, every such cell is marked by this GC
+  //    (reachable at its start, or allocated during it), so sweeping never
+  //    finalizes it; it stays alive until the next epoch bump. Unmarked
+  //    cells are unreachable through strong edges, also during sweeping.
+  //  - Only a compacting GC moves tenured cells (embedded object constants
+  //    must be tenured; shapes always are). isCompactingGc() is fixed at
+  //    the start of the GC and can only be cleared before compaction.
+  //  - Loop code never stores GC things, allocates or calls, and leaves at
+  //    backedges on interrupt, so it needs no pre/post/read barriers.
+  // Hence: refuse during a compacting incremental GC only (any incremental
+  // GC with PBLJIT_INCRGC=0).
+  if (IncrementalGC(cx) && (!IncrGCAllowed() || CompactingGC(cx))) {
     ObserveSkip(script, pc, cx, "skip-incremental");
+    if (MOZ_UNLIKELY(gPblTierStat)) gPblTsIncrSkip++;
+    gPblLoopMiss = 1;
     return false;
   }
+  gPblLoopMiss = 0;
   uint64_t gc = MajorGC(cx);
   Entry* cache = tCache;
   if (MOZ_UNLIKELY(!cache)) {
@@ -2201,11 +2281,17 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
   uint32_t h = CacheIndex(script, pc);
   Entry* e = &cache[h];
   if (MOZ_UNLIKELY(e->pc != pc || e->script != script || e->majorGC != gc)) {
+    // Own entry from an older GC epoch: 2; another loop's slot: 1.
+    gPblLoopMiss = (e->pc == pc && e->script == script) ? 2 : 1;
+    if (MOZ_UNLIKELY(gPblTierStat) && e->state == 1 && e->majorGC != gc)
+      gPblTsEvictGc++;
     if (e->state == 1 && e->majorGC != gc && TakeLog()) {
       fprintf(stderr, "PBLJIT GC evict oldEpoch=%llu newEpoch=%llu\n",
               static_cast<unsigned long long>(e->majorGC),
               static_cast<unsigned long long>(gc));
     }
+    bool gcOwn = e->state == 1 && e->majorGC != gc && e->pc == pc &&
+                 e->script == script;
     Evict(e, h, cx,
           cacheobs::ReplacementCause(e->pc == pc && e->script == script, e->majorGC == gc),
           e->state == 1 && e->majorGC != gc);
@@ -2213,10 +2299,19 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
     e->script = script;
     e->majorGC = gc;
     e->global = CurrentGlobal(cx);
+    // Its own code was just dropped by an epoch change: recompile now.
+    if (gcOwn && FastRecomp()) e->hits = kCompileHits - 1;
   }
-  if (e->global != CurrentGlobal(cx)) return false;
+  if (e->global != CurrentGlobal(cx)) {
+    gPblLoopMiss = 1;
+    return false;
+  }
   if (e->state != 1) {
-    if (e->state == 2 || ++e->hits < kCompileHits) return false;
+    if (e->state == 2) return false;  // persistent (gPblLoopMiss 0)
+    if (++e->hits < kCompileHits) {
+      if (gPblLoopMiss == 0) gPblLoopMiss = 1;  // counting phase
+      return false;
+    }
     e->state = Compile(script, frame, pc, e, cx, h) ? 1 : 2;
     if (e->state != 1) { ObserveSkip(script, pc, cx, "reject"); return false; }
     Observe(script, pc, cx, "install", e->fn);
@@ -2226,6 +2321,7 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
                    memcmp(pc, e->bytes, e->len) != 0)) {
     Evict(e, h, cx, "bytes");
     e->pc = pc;
+    gPblLoopMiss = 1;
     return false;
   }
   // The code was specialized for a frame whose argv has >= nargs unaliased
@@ -2258,6 +2354,7 @@ bool OnLoopHead(JSScript* script, jit::BaselineFrame* frame, uint64_t* sp,
       FreeNative(e->fn, h, cx, "bail-limit");
       e->fn = 0;
       e->state = 2;
+      if (MOZ_UNLIKELY(gPblTierStat)) gPblTsDisable++;
       if (TakeLog()) {
         fprintf(stderr, "PBLJIT disable %s:%u off=%u after %u bails\n",
                 script->filename() ? script->filename() : "?",
