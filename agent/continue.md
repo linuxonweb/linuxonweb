@@ -1,4 +1,23 @@
-# LinuxOnWeb continuation — claude-fable JIT status 2026-11-16 (leading status; read first)
+# LinuxOnWeb continuation — claude-fable JIT status 2026-11-19 (leading status; read first)
+
+Branch claude-fable-linuxonweb-20261113, HEAD b988ffc. Nothing published; the public image is unchanged.
+
+Commits after 66da1b8:
+- c03c7ed (PBLBC_PUREIC): pure inlined IC hits skip IC state stores and the sentinel test. Shell suite 1635 → 1591 ms (3 runs each).
+- 66ef479 (PBLJIT_INCRGC, PBLJIT_FASTRECOMP, PBL_TIERSTAT): the loop tier stays usable during non-compacting incremental GC; new shell-tests/incr-loop.js. PBLBC_LATCHFIX/PBLBC_TABLEEVICT are experimental and off by default (in-Firefox slower).
+- b988ffc tools/nightly-musl/sbrk-chunked: link-time replacement of libc.a(brk.o); grows wasm memory in 16–64 MiB chunks. Must be put on the Firefox wasm-ld line after crt1.o (see its README; candidate scripts /mnt/p3/codex-build/claude-20261115/c127/build18.sh, link18.sh).
+
+Root cause of the large in-Firefox variance and slow minor GCs (work dirs /mnt/p3/codex-build/claude-20261115/c124–c126): musl sbrk grew SHARED wasm memory by exactly the missing pages. In V8 every shared-memory grow interrupts every worker, which then runs WasmMemoryObject::UpdateInstances over every instance importing the memory; the guest JIT adds one instance per install (guest-jit.js place()), so grows got slower as Firefox ran (host perf: 24% of all samples). It was not V8 Liftoff and not memory.copy (shared vs unshared copy speed is equal).
+
+In-Firefox suite (19 workloads, c36-style harness copies in c130/c131, every run 19/19 correct), steady totals ms:
+| candidate | runs | minor GC in suite window |
+|---|---|---|
+| cand14 (66da1b8) | 2500, 3263 | 4.6–5.8 s |
+| cand17 (c03c7ed + chunked sbrk) | 2859, 2190, 2271, 1928, 2328 | 0.2–0.7 s |
+| cand18 (b988ffc + chunked sbrk) | 2163, 1888, 1958 | 0.4 s |
+cand17/18: /mnt/p3/codex-build/claude-20261113/jit/cand17, cand18 (serve-cand17.mjs :3057, serve-cand18.mjs :3058). Not runtime-accepted: tools/nightly-jit-safety workloads and the release gate have not been run.
+
+Next options: guest JIT instance design in c132/design.md (free private JIT code, make the loop tier private instead of replayed to all threads, burst-batch method/IC installs); a fresh cand18 profile (c133). Harness pitfalls: concurrent c9/run-js.sh callers need distinct PORT values; build-script OUT paths must be absolute.
 
 Branch claude-fable-linuxonweb-20261113, HEAD 7296b0b at first writing; see the 2026-11-17 update below for later commits. Goal of this session: make the Firefox JIT fast. Nothing is published; the public image is unchanged.
 
