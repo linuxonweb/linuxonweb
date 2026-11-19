@@ -599,6 +599,12 @@ struct Translator {
   uint32_t failBase = 0;    // extra depth from the op body to the fail label
   bool inlineMode = false;  // no stepping, no observation, no returns
   uint32_t inlResult = 0, inlDone = 0;  // runInline's result / doneDepth
+  // Inline purity (PBLBC_PUREIC): set by every emitted call (callHelper is
+  // the only call an inline body can contain) and by every read of ctx.sp.
+  // A body that never sets it is straight-line loads/stores/arith/guards
+  // with no call: it cannot GC, throw, re-enter or observe the published
+  // ctx.sp / frame pc / ICEntry, and never yields IC_ERROR_SENTINEL.
+  bool impure = false;
 
   bool reject(const char* why) {
     reason = why;
@@ -798,6 +804,7 @@ struct Translator {
   }
   // Calls fn with the nargs i64 arguments on the stack; leaves its i64.
   void callHelper(uintptr_t fn, uint32_t nargs) {
+    impure = true;
     for (uint32_t i = nargs; i < kParams; i++) i64c(0);
     i32c(int32_t(fn));
     b.put(OP_CALLIND);
@@ -955,7 +962,7 @@ struct Translator {
   bool runInlineTest();
   bool inlineTest = false;
   bool runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
-                 uint32_t doneDepth);
+                 uint32_t doneDepth, uint32_t arg2 = ~0u);
   bool assemble(Buf& m);
 };
 
@@ -1267,12 +1274,14 @@ bool Translator::translateOp(CacheOp cop, const uint8_t* a) {
       writeReg(a[1], JSVAL_TAG_STRING);
       return true;
     case CacheOp::LoadArgumentFixedSlot:
+      impure = true;
       lget(L_CTX);
       load32(kCtxSp);
       load64(uint32_t(a[1]) * 8);
       writeValueReg(a[0]);
       return true;
     case CacheOp::LoadArgumentDynamicSlot:
+      impure = true;
       lget(L_CTX);
       load32(kCtxSp);
       readReg32(a[1]);
@@ -2446,7 +2455,7 @@ bool Translator::validate() {
 // doneDepth; guards branch to failBase. No side effects precede a failed
 // guard (ops write only wasm locals before their guards, as standalone).
 bool Translator::runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
-                           uint32_t doneDepth) {
+                           uint32_t doneDepth, uint32_t arg2) {
   if (!validate()) return false;
   if (observation) return reject("inline: observation");
   inlResult = result;
@@ -2455,8 +2464,12 @@ bool Translator::runInline(uint32_t arg0, uint32_t arg1, uint32_t result,
   writeValueReg(0);
   lget(arg1);
   writeValueReg(1);
-  lget(L_CTX);
-  load64(kCtxArg2);
+  if (arg2 != ~0u) {  // the local the caller stored to ctx.arg2 (or zero)
+    lget(arg2);
+  } else {
+    lget(L_CTX);
+    load64(kCtxArg2);
+  }
   writeValueReg(2);
   i64c(0);
   lset(L_RET);
@@ -2675,6 +2688,7 @@ bool Translator::assemble(Buf& m) {
 
 struct InlineEnv {
   uint32_t arg0Local, arg1Local;  // i64
+  uint32_t arg2Local = ~0u;       // i64 holding ctx.arg2; ~0u: load ctx
   uint32_t stubLocal, ctxLocal;   // i32
   uint32_t localBase;             // first of kInlineLocals scratch locals
   uint32_t resultLocal;           // i64
@@ -2707,19 +2721,20 @@ void SetInlineLocals(Translator& t, const InlineEnv& env) {
 }
 
 bool EmitInline(const CacheIRStubInfo* info, Buf& out, const InlineEnv& env,
-                uint32_t* numOps) {
+                uint32_t* numOps, bool* pure = nullptr) {
   Translator t;
   t.info = info;
   t.code = info->code();
   t.len = info->codeLength();
   SetInlineLocals(t, env);
   if (!t.runInline(env.arg0Local, env.arg1Local, env.resultLocal,
-                   env.doneDepth)) {
+                   env.doneDepth, env.arg2Local)) {
     return false;
   }
   out.putn(t.b.p, t.b.n);
   if (out.oom) return false;
   if (numOps) *numOps = t.nOps;
+  if (pure) *pure = !t.impure && !t.observation && t.nStep == 0;
   return true;
 }
 

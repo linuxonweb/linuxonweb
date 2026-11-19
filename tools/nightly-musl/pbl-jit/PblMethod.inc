@@ -85,8 +85,9 @@ constexpr uint32_t kNI64 = 4;
 constexpr uint32_t L_FR = kNParams + kNI64, L_SP = L_FR + 1, L_ST = L_FR + 2,
                    L_ICE = L_FR + 3, L_CTX = L_FR + 4, L_IO = L_FR + 5,
                    L_X = L_FR + 6, L_LB = L_FR + 7, L_AV = L_FR + 8,
-                   L_FLG = L_FR + 9, L_EPC = L_FR + 10;
-constexpr uint32_t kNI32 = 11;
+                   L_FLG = L_FR + 9, L_EPC = L_FR + 10,
+                   L_DBG = L_FR + 11 /* PBLBC_PUREIC: an IC call ran */;
+constexpr uint32_t kNI32 = 12;
 constexpr uint32_t L_D0 = L_FR + kNI32, L_D1 = L_D0 + 1;
 constexpr uint32_t kNF64 = 2;
 
@@ -330,6 +331,15 @@ int64_t LexEnvHelper(int64_t frame, int64_t sp, int64_t pc, int64_t ctx);
 bool gInl = true;
 bool gInlStat = false;
 uint32_t gInlOps = 32;
+// PBLBC_PUREIC (default 1): an inlined IC whose body is pure (pblic purity:
+// no call, no ctx.sp read; see Translator::impure) publishes ctx.sp, frame
+// pc/ICEntry and ctx.arg2 and tests IC_ERROR_SENTINEL only on its slow arm,
+// and the op's debugCheckNext runs only when an out-of-line IC call ran
+// since the last check (L_DBG). PBLBC_PUREIC=0: the old code.
+// PBLBC_PUREIC_CHECK=1: old stores on every path, plus traps if a pure hit
+// returns the sentinel or a skipped debug check would have exited.
+bool gPureIc = true;
+bool gPureIcCheck = false;
 constexpr uint32_t kInlBudget = 48 * 1024;
 enum : uint32_t { kInlSites, kInlInlined, kInlFallback, kInlRejected,
                   kInlOverBudget, kInlCount };
@@ -637,6 +647,10 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     gInl = !(in && in[0] == '0');
     const char* io = getenv("PBLBC_INLOPS");
     if (io && atoi(io) >= 0) gInlOps = uint32_t(atoi(io));
+    const char* pu = getenv("PBLBC_PUREIC");
+    gPureIc = !(pu && pu[0] == '0');
+    const char* pc = getenv("PBLBC_PUREIC_CHECK");
+    gPureIcCheck = gPureIc && pc && pc[0] == '1';
     const char* is = getenv("PBLBC_INLSTAT");
     gInlStat = gInl && is && is[0] == '1';
     const char* l = getenv("PBLBC_LOG");
@@ -1135,6 +1149,7 @@ struct MT {
       // stays in its frame slot (sp unchanged) across the call. ToBoolean
       // runs no script, so no debuggee check is needed.
       invokeIC(l, ~0u, ~0u, false);
+      lastPure = false;  // no debugCheckNext follows this IC
       lget(L_R);
       op(OP_I32WRAP);
     } else {
@@ -1160,8 +1175,8 @@ struct MT {
   }
   // INVOKE_IC for op cur with args in i64 locals (or zero when ~0u). The
   // result is left in L_R; an error result returns kIcError at this op.
-  void invokeIC(uint32_t a0, uint32_t a1, uint32_t a2, bool hasArg2,
-                bool getterReq = false) {
+  // Publishes ctx.sp, frame.interpreterPC/ICEntry and ctx.arg2 for op cur.
+  void publishIcState(uint32_t a2, bool hasArg2) {
     const OpInfo& o = ops[cur];
     lget(L_CTX);
     lget(L_SP);
@@ -1184,11 +1199,24 @@ struct MT {
       i64c(0);
     }
     store64(kCtxArg2);
+  }
+  // Set by invokeIC: the op's inlined body is pure (PBLBC_PUREIC), so its
+  // debugCheckNext may test L_DBG first.
+  bool lastPure = false;
+  void invokeIC(uint32_t a0, uint32_t a1, uint32_t a2, bool hasArg2,
+                bool getterReq = false) {
+    const OpInfo& o = ops[cur];
+    Buf inl;
+    bool pure = false;
+    uint32_t k = inlineCandidate(o, a0, a1, hasArg2 ? a2 : ~0u, inl, &pure);
+    pure = pure && k && gPureIc;
+    lastPure = pure;
+    // Pure: the hit arm needs none of the published state (see above).
+    bool early = !pure || gPureIcCheck;
+    if (early) publishIcState(a2, hasArg2);
     lget(L_ICE);
     load32(uint32_t(o.icIdx * sizeof(ICEntry) + ICEntry::offsetOfFirstStub()));
     lset(L_X);
-    Buf inl;
-    uint32_t k = inlineCandidate(o, a0, a1, inl);
     if (k) {
       // block $done { block $slow { L_X->code != K -> $slow;
       //   block $fail { body } L_X = L_X->next } L_R = call L_X->code }
@@ -1215,6 +1243,7 @@ struct MT {
       load32(uint32_t(ICCacheIRStub::offsetOfNext()));
       lset(L_X);
       end();  // $slow
+      if (!early) publishIcState(a2, hasArg2);
     }
     // PBLBC_GETTER: only the out-of-line IC call carries the request (an
     // inlined stub hit never returns the sentinel and pays nothing). The
@@ -1250,6 +1279,28 @@ struct MT {
       b.put(OP_CALLIND);
       b.uleb(0);
       b.uleb(0);
+    }
+    if (pure) {
+      // Slow arm only: sentinel test, then mark that an IC call ran.
+      ltee(L_R);
+      i64c(int64_t(IC_ERROR_SENTINEL()));
+      op(OP_I64EQ);
+      ifThen();
+      exitAt(cur, kIcError);
+      end();
+      i32c(1);
+      lset(L_DBG);
+      end();  // $done
+      if (gPureIcCheck) {  // a pure hit never yields the sentinel
+        lget(L_R);
+        i64c(int64_t(IC_ERROR_SENTINEL()));
+        op(OP_I64EQ);
+        ifThen();
+        op(OP_UNREACH);
+        end();
+      }
+      nIc++;
+      return;
     }
     if (k) {
       lset(L_R);
@@ -1358,7 +1409,7 @@ struct MT {
   // inlined now; 0 otherwise (today's code is emitted). The body reads the
   // stub through L_X (the current first stub) at run time.
   uint32_t inlineCandidate(const OpInfo& o, uint32_t a0, uint32_t a1,
-                           Buf& out) {
+                           uint32_t a2, Buf& out, bool* pure) {
     if (!gInl || !icEntries || !ictx) return 0;
     inlSite[kInlSites]++;
     if (o.icIdx >= nIcEntries) {
@@ -1378,6 +1429,7 @@ struct MT {
     InlineEnv env;
     env.arg0Local = a0 != ~0u ? a0 : kInlZero;
     env.arg1Local = a1 != ~0u ? a1 : kInlZero;
+    if (gPureIc) env.arg2Local = a2 != ~0u ? a2 : kInlZero;
     env.stubLocal = L_X;
     env.ctxLocal = L_CTX;
     env.localBase = kInlBase;
@@ -1385,7 +1437,7 @@ struct MT {
     env.doneDepth = 2;
     env.failDepth = 0;
     uint32_t nops = 0;
-    if (!EmitInline(stub->stubInfo(), out, env, &nops)) {
+    if (!EmitInline(stub->stubInfo(), out, env, &nops, pure)) {
       out.n = 0;
       out.oom = false;
       inlSite[kInlRejected]++;
@@ -1414,12 +1466,36 @@ struct MT {
       reject("ic op at end");
       return;
     }
+    // PBLBC_PUREIC: after a pure inline IC the hit arm made no call, so the
+    // frame's DEBUGGEE flag and script counts are as at the last check
+    // (every call-out is followed by one); check only when an IC call ran.
+    if (lastPure) {
+      lastPure = false;
+      if (gPureIcCheck) {
+        lget(L_DBG);
+        op(OP_I32EQZ);
+        ifThen();
+        debugCheckBody(true);
+        end();
+      }
+      lget(L_DBG);
+      ifThen();
+      i32c(0);
+      lset(L_DBG);
+      debugCheckBody(false);
+      end();
+      return;
+    }
+    debugCheckBody(false);
+  }
+  // trap: assert instead of exiting (PBLBC_PUREIC_CHECK on a pure hit).
+  void debugCheckBody(bool trap) {
     lget(L_FR);
     load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfFlags())));
     i32c(int32_t(BaselineFrame::DEBUGGEE));
     op(OP_I32AND);
     ifThen();
-    exitAt(cur + 1);
+    if (trap) op(OP_UNREACH); else exitAt(cur + 1);
     end();
     lget(L_FR);
     load32(uint32_t(FrameOff(BaselineFrame::reverseOffsetOfInterpreterScript())));
@@ -1427,7 +1503,7 @@ struct MT {
     i32c(int32_t(MutableScriptFlagsEnum::HasScriptCounts));
     op(OP_I32AND);
     ifThen();
-    exitAt(cur + 1);
+    if (trap) op(OP_UNREACH); else exitAt(cur + 1);
     end();
   }
 
@@ -3740,6 +3816,7 @@ bool MT::run() {
     if (!isTgt) return reject("oom");
   }
   for (cur = 0; cur < n; cur++) {
+    lastPure = false;
     // PBLBC_VSTACK: a jump target, an op the model cannot carry into, or the
     // end of the function gets an empty model (stores at the end of op
     // cur-1's code, before B_cur ends); ops starting with a non-empty model
