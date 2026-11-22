@@ -1,0 +1,88 @@
+{
+  "kind": "successful owned build before packaging the same phases as a reusable runner",
+  "artifact": {
+    "archive": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+    "sha256": "b87506ed6dcb83778bf7ba53d1bc56587b330d68dff54b0838bc97e281f6efc8",
+    "bytes": 152038,
+    "object_count": 16,
+    "members": [
+      "drivers_dri2_egl_dri2.c.o",
+      "drivers_dri2_platform_device.c.o",
+      "drivers_dri2_platform_surfaceless.c.o",
+      "main_eglapi.c.o",
+      "main_eglarray.c.o",
+      "main_eglconfig.c.o",
+      "main_eglconfigdebug.c.o",
+      "main_eglcontext.c.o",
+      "main_eglcurrent.c.o",
+      "main_egldevice.c.o",
+      "main_egldisplay.c.o",
+      "main_eglglobals.c.o",
+      "main_eglimage.c.o",
+      "main_egllog.c.o",
+      "main_eglsurface.c.o",
+      "main_eglsync.c.o"
+    ],
+    "all_objects_wasm_version_1": true,
+    "targets": [
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_egl_dri2.c.o",
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_device.c.o",
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_surfaceless.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglapi.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglarray.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglconfig.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglconfigdebug.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglcontext.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglcurrent.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_egldevice.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_egldisplay.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglglobals.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglimage.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_egllog.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglsurface.c.o",
+      "src/egl/libEGL.so.1.0.0.p/main_eglsync.c.o"
+    ],
+    "object_sha256": {
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_egl_dri2.c.o": "98bd5fde766139fa241ae1f2c020074169ea630bdf727bffd4954bd70bd30e6a",
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_device.c.o": "1459324446646282ccd9419ee1d07ec2f3080a2b59432a138ba7499298dbebb6",
+      "src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_surfaceless.c.o": "8c29b45aa6392e26926e663e3ae5321ab40b9d101608497986c1dcdfa2cd2e6a",
+      "src/egl/libEGL.so.1.0.0.p/main_eglapi.c.o": "fd4e27b46a3ad857158010eeac44735b29467d5ca0f40aea91e399a8af8ed0ba",
+      "src/egl/libEGL.so.1.0.0.p/main_eglarray.c.o": "703f1a37a2f03043e571c7c9b167f283de67e205b2658d679c49817ea9c586de",
+      "src/egl/libEGL.so.1.0.0.p/main_eglconfig.c.o": "ae45c508da192f5273b5e6fb3c57248111a2703a2d0ec8ea1d92d376f168e91d",
+      "src/egl/libEGL.so.1.0.0.p/main_eglconfigdebug.c.o": "553003e4b0443f61ed828be99ffdb76a46621c31d32112e4e5eacc56340d89cd",
+      "src/egl/libEGL.so.1.0.0.p/main_eglcontext.c.o": "3f4061e7e91b49bd410a4a222653980e1cf1481aa18ed507f9843b5b3c296070",
+      "src/egl/libEGL.so.1.0.0.p/main_eglcurrent.c.o": "95d2303d8455623e570dc44fbac2e75b494f7c737264ad50d8bc0f967cac4418",
+      "src/egl/libEGL.so.1.0.0.p/main_egldevice.c.o": "9c27e993e6faf05a9815e8667d2228612a9c86d1fbb4cb5b21b931c17add5dde",
+      "src/egl/libEGL.so.1.0.0.p/main_egldisplay.c.o": "a540d3419a73c9f86b93a5addc93d14f01f4fe34148b31074d47ed7a0a731ded",
+      "src/egl/libEGL.so.1.0.0.p/main_eglglobals.c.o": "46fb77c5e89c278074890fd38aed42f2199b2a2e7870d8febd3559f68153dbab",
+      "src/egl/libEGL.so.1.0.0.p/main_eglimage.c.o": "a6b07ea6e602ac695b9e764884d04ce0c0adaa6157764b11ba59a13fb737fc7e",
+      "src/egl/libEGL.so.1.0.0.p/main_egllog.c.o": "968ae8eed7be3268d8fe6890cba3a2508e40d68c039d7090e79e8bd05cfad2d6",
+      "src/egl/libEGL.so.1.0.0.p/main_eglsurface.c.o": "a845284fe7bbf6fde08977ac0c5d51412bcbe6d512206342b35587adae1f42fd",
+      "src/egl/libEGL.so.1.0.0.p/main_eglsync.c.o": "996623237979b99f6fb1888911f3bea364b34f8cbb67f4096d74825cc112a7bb"
+    }
+  },
+  "recipe_files_sha256": {
+    "tools/zink/owned-egl/bootstrap.py": "2a8fa07b4d066f7e7de35d682585313c0a0b74252af0d70c15b3d3dadbbd205f",
+    "tools/zink/owned-egl/build-egl.py": "83e2647ccfa19a6c574925b0c5b8deb9f9356ff02ad29a73c55fe6a2df22eb75",
+    "tools/zink/owned-egl/configure.py": "1ef1e12fd49a804a50aa7a5ca8a677e62bd84d838e1af422b55c9dfd8ea230ff",
+    "tools/zink/owned-egl/pins.json": "91e42a536c8a2729295fae689fa7ae7ceed6f34dbb2dea485b83f7ca55283005",
+    "tools/zink/owned-egl/prepare-source.py": "fbc898ed8036036221644d51f4153b98652d84eedd558c78d1fa3f47751727d7",
+    "tools/zink/owned-egl/requirements-cpython312-linux-x86_64.txt": "0d5cb8490dc66b17c7dbe887f16965bb1da0159d5d93a214979e3208bf3a723e",
+    "tools/zink/owned-egl/run.py": "4f8d2c3e574309913fde3de4261b323edec4f0a89d70fe7af21ec5829d23cccb",
+    "tools/zink/owned-egl/symbol-check.py": "3ae818af1ce06ed48681c1bcb5e7ff2fa3a3ba2a2ddb896a39cfeb64aa831af3"
+  },
+  "source_archive_sha512": "ec621735ae4679762ea27b979a5314c7aecfdd4165afea19c8c55f933d79b40f01fa041a95874fc4347e732ac565786d9b616a9aa8856a422204d9ecc9a12ec4",
+  "packaged_recipe_validation": {
+    "python_ast": "pass",
+    "pinned_repo_inputs": "pass",
+    "full_runner_replayed": false,
+    "reason": "Original bounded phases already built the exact historical artifact; heavy slot released to native Firefox agent."
+  },
+  "original_executed_phase_sha256": {
+    "prepare-source.py": "a1de0ac5f4cb0833b4b570359f76161f016ba56849018ebdd15999b444285d51",
+    "bootstrap.py": "c79caed0a3b097ffa5d0bf11cca4eae4980d339a37de0cdbd5dcad1644a97225",
+    "configure.py": "d69aa0c0995e2d451beb14dddf6570d6a8f307dd96ab2177d1b3f8f70d1274b1",
+    "build-egl.py": "23392870191a5ff3b8f18d7b79bde12f2aedcac59ba47c8fe3c2d2beafe6d4ea",
+    "symbol-check.py": "1e97a47f801e9778d2989b66ac6d7aef1253d1a867d0acb66e187dbc1b391222"
+  }
+}

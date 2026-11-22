@@ -1,0 +1,568 @@
+[
+  {
+    "phase": "owner-adapters",
+    "startedUtc": "2026-11-08T20:49:32.998090+00:00",
+    "finishedUtc": "2026-11-08T20:49:35.000938+00:00",
+    "durationSeconds": 2.003,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "adapters"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 323584,
+    "ownedTreePeakRssBytes": 323584,
+    "ownedTreePeakPssBytes": 372736,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 1.002,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-build",
+    "startedUtc": "2026-11-08T20:47:51.839013+00:00",
+    "finishedUtc": "2026-11-08T20:48:02.974269+00:00",
+    "durationSeconds": 11.135,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "build"
+    ],
+    "cwd": ".",
+    "exitCode": -15,
+    "stopReason": "owned_process_shared_cpu_quota_policy_failed",
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 20602880,
+    "ownedTreePeakRssBytes": 394117120,
+    "ownedTreePeakPssBytes": 260191232,
+    "resourceSamples": 11,
+    "pssSamples": 3,
+    "quotaReadySeconds": 1.002,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": {
+      "valid": false,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3.0
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3.0,
+          "processes": [
+            {
+              "pid": 2838912,
+              "startTicks": 88726975,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2838914,
+              "startTicks": 88726979,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2842072,
+              "startTicks": 88727965,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2842074,
+              "startTicks": 88727967,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2842025,
+              "startTicks": 88727851,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2841808,
+              "startTicks": 88727675,
+              "affinityCpus": 3
+            }
+          ]
+        },
+        {
+          "membership": "/cpulimit.slice/cpulimit-80.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-80.slice",
+              "cpuMax": "180000 100000",
+              "cpus": 1.8
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3.0
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 1.8,
+          "processes": [
+            {
+              "pid": 2842029,
+              "startTicks": 88727853,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2841832,
+              "startTicks": 88727677,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3.0
+        }
+      ],
+      "violations": [
+        {
+          "pid": 2842029,
+          "startTicks": 88727853,
+          "reason": "owned_process_changed_cgroup"
+        }
+      ]
+    },
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": false
+  },
+  {
+    "phase": "owner-build-attempt-2",
+    "startedUtc": "2026-11-08T20:48:50.188115+00:00",
+    "finishedUtc": "2026-11-08T20:48:56.544989+00:00",
+    "durationSeconds": 6.357,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "build",
+      "--jobs",
+      "1",
+      "--attempt",
+      "2"
+    ],
+    "cwd": ".",
+    "exitCode": -15,
+    "stopReason": "owned_process_shared_cpu_quota_policy_failed",
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 20733952,
+    "ownedTreePeakRssBytes": 197619712,
+    "ownedTreePeakPssBytes": 130974720,
+    "resourceSamples": 7,
+    "pssSamples": 2,
+    "quotaReadySeconds": 0.251,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": {
+      "valid": false,
+      "groups": [
+        {
+          "membership": "/cpulimit.slice/cpulimit-70.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+              "cpuMax": "560000 100000",
+              "cpus": 5.6
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3.0
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 3.0,
+          "processes": [
+            {
+              "pid": 2846518,
+              "startTicks": 88732735,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2846520,
+              "startTicks": 88732739,
+              "affinityCpus": 3
+            },
+            {
+              "pid": 2846663,
+              "startTicks": 88733158,
+              "affinityCpus": 3
+            }
+          ]
+        },
+        {
+          "membership": "/cpulimit.slice/cpulimit-80.slice",
+          "ancestors": [
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-80.slice",
+              "cpuMax": "180000 100000",
+              "cpus": 1.8
+            },
+            {
+              "path": "/sys/fs/cgroup/cpulimit.slice",
+              "cpuMax": "300000 100000",
+              "cpus": 3.0
+            },
+            {
+              "path": "/sys/fs/cgroup",
+              "cpuMax": null,
+              "cpus": null,
+              "readError": "FileNotFoundError"
+            }
+          ],
+          "ancestorCpuLimit": 1.8,
+          "processes": [
+            {
+              "pid": 2846665,
+              "startTicks": 88733160,
+              "affinityCpus": 3
+            }
+          ]
+        }
+      ],
+      "commonSharedAncestors": [
+        {
+          "path": "/sys/fs/cgroup/cpulimit.slice",
+          "maximumObservedCpuLimit": 3.0
+        }
+      ],
+      "violations": [
+        {
+          "pid": 2846665,
+          "startTicks": 88733160,
+          "reason": "owned_process_changed_cgroup"
+        }
+      ]
+    },
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": false
+  },
+  {
+    "phase": "owner-configure",
+    "startedUtc": "2026-11-08T20:47:29.368360+00:00",
+    "finishedUtc": "2026-11-08T20:47:37.121792+00:00",
+    "durationSeconds": 7.753,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "configure"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 20668416,
+    "ownedTreePeakRssBytes": 106696704,
+    "ownedTreePeakPssBytes": 44232704,
+    "resourceSamples": 7,
+    "pssSamples": 2,
+    "quotaReadySeconds": 0.752,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-prepare",
+    "startedUtc": "2026-11-08T20:46:11.763101+00:00",
+    "finishedUtc": "2026-11-08T20:46:13.267169+00:00",
+    "durationSeconds": 1.504,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--source-export",
+      "../linuxonweb-org-push/firefox-src",
+      "--phase",
+      "prepare"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 323584,
+    "ownedTreePeakRssBytes": 323584,
+    "ownedTreePeakPssBytes": 219136,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.502,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-unwind-abi",
+    "startedUtc": "2026-11-08T20:50:29.395358+00:00",
+    "finishedUtc": "2026-11-08T20:50:31.398390+00:00",
+    "durationSeconds": 2.003,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "build",
+      "--jobs",
+      "1",
+      "--attempt",
+      "3",
+      "--targets",
+      "cxxabi_static",
+      "unwind_static"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 454656,
+    "ownedTreePeakRssBytes": 454656,
+    "ownedTreePeakPssBytes": 306176,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 1.002,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-verify",
+    "startedUtc": "2026-11-08T20:50:37.523317+00:00",
+    "finishedUtc": "2026-11-08T20:50:39.526350+00:00",
+    "durationSeconds": 2.003,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "verify"
+    ],
+    "cwd": ".",
+    "exitCode": 1,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 454656,
+    "ownedTreePeakRssBytes": 454656,
+    "ownedTreePeakPssBytes": 194560,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 1.002,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": false
+  },
+  {
+    "phase": "owner-verify-attempt-2",
+    "startedUtc": "2026-11-08T20:51:12.477113+00:00",
+    "finishedUtc": "2026-11-08T20:51:13.979308+00:00",
+    "durationSeconds": 1.502,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "verify",
+      "--attempt",
+      "2"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 454656,
+    "ownedTreePeakRssBytes": 454656,
+    "ownedTreePeakPssBytes": 195584,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.501,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-verify-attempt-3",
+    "startedUtc": "2026-11-08T20:54:49.424257+00:00",
+    "finishedUtc": "2026-11-08T20:54:50.676202+00:00",
+    "durationSeconds": 1.252,
+    "argv": [
+      "python3",
+      "tools/nightly-musl/recipe/replay-native-dependencies.py",
+      "--out",
+      "../linuxonweb-firefox-jit-20261108-native-deps-build",
+      "--packet",
+      "../linuxonweb-firefox-jit-20261108-preflight-3a",
+      "--phase",
+      "verify",
+      "--attempt",
+      "3"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 454656,
+    "ownedTreePeakRssBytes": 454656,
+    "ownedTreePeakPssBytes": 364544,
+    "resourceSamples": 1,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.251,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  {
+    "phase": "owner-worktree",
+    "startedUtc": "2026-11-08T20:44:16.043776+00:00",
+    "finishedUtc": "2026-11-08T20:44:18.297891+00:00",
+    "durationSeconds": 2.254,
+    "argv": [
+      "git",
+      "worktree",
+      "add",
+      "-b",
+      "gpt-6-linuxonweb-firefox-jit-native-deps-20261108",
+      "../linuxonweb-firefox-jit-20261108-native-deps",
+      "aa44c9459135f0449bd27b23dde21ce875710cb3"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 7909376,
+    "ownedTreePeakRssBytes": 316989440,
+    "ownedTreePeakPssBytes": 332800,
+    "resourceSamples": 2,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.251,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  }
+]

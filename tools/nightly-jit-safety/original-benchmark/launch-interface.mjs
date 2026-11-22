@@ -1,3 +1,4 @@
+import {ownedTaskRoot,scopedPath} from '../owned-paths.mjs';
 // Pure host planning/packaging helper. No browser, guest, subprocess or launch.
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -5,10 +6,8 @@ import {createHash} from 'node:crypto';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const required=['OriginalBenchmarkChild.sys.mjs','OriginalBenchmarkParent.sys.mjs','benchmark-diagnostics.sys.mjs','original-content.sys.mjs','original-entry.sys.mjs','original-hash.sys.mjs','original-source.sys.mjs','contract.json'];
 export async function producerInterface(installDirectory,taskRoot) {
- const root=path.resolve(taskRoot),buildRoot='/mnt/p6/project/build';
- if(root===buildRoot||!root.startsWith(buildRoot+'/')||await fs.realpath(root)!==root||!(await fs.stat(root)).isDirectory()||(await fs.stat(root)).dev!==(await fs.stat(buildRoot)).dev) throw Error('existing canonical disk-backed task root required');
- const dir=path.resolve(installDirectory);
- if(!dir.startsWith(root+'/')||await fs.realpath(dir)!==dir) throw Error('owned install tree required');
+ const root=await ownedTaskRoot(taskRoot);
+ const dir=await scopedPath(root,installDirectory,{directory:true});
  const manifest=JSON.parse(await fs.readFile(path.join(dir,'install-manifest.json'),'utf8'));
  const contract=JSON.parse(await fs.readFile(path.join(dir,'contract.json'),'utf8'));
  const names=[...required,`pblbench-${contract.label}.html`];

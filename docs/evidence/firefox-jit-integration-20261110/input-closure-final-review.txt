@@ -1,0 +1,132 @@
+FINAL_PREPARATION_REVIEW
+{
+  "sourceChangesCount": 10,
+  "allTenSourceAfterPinsMatch": true,
+  "sourceHeadMatches": true,
+  "changedTrackedPaths": "M defs.mk\n M js/src/vm/PblJit.cpp\n M js/src/vm/PortableBaselineInterpret.cpp\n M linuxonweb-build/adapters/defs.mk\n?? js/src/vm/PblCacheObserve.h\n?? js/src/vm/PblIc.inc\n?? js/src/vm/PblIcOps.h\n?? js/src/vm/PblMethod.inc\n?? js/src/vm/PblTierObserve.h",
+  "recipeAndModulesMatch": true,
+  "recipeModules": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/prepare-owned-build.py",
+      "bytes": 19178,
+      "sha256": "21b092c32f993b0cf6e88c5d019ce67c7eb848eb9f27d109d57d7e7ba2239c76"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/input_closure.py",
+      "bytes": 8617,
+      "sha256": "9b063f5a15f4ce973523d3e47bd34842282360d64a4880f879e7bea75a5ff1ce"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/rebuild-preflight.py",
+      "bytes": 34094,
+      "sha256": "f2d075883e2e27de257fcabc30100a03837222c2dcbb38157b3e968d3f294d73"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-safety/owned_paths.py",
+      "bytes": 3060,
+      "sha256": "4e6f299e1c080ed0811cd40d1b30b645a0f45fc2f5955ca907cee1c2e0808e39"
+    }
+  ],
+  "outputPinsMatch": true,
+  "sourceBindingMatchesCopiedNativeFiles": true,
+  "cargoRustcModes": {
+    "cargo": "0o755",
+    "rustc": "0o755"
+  },
+  "noCompiledNativeObjects": true,
+  "acceptanceFlags": {
+    "preparationComplete": true,
+    "inputClosureVerifiedBeforeMutation": true,
+    "compiled": false,
+    "nativeIntegrationReady": false,
+    "fullBuildReady": false,
+    "guestRuntimeAcceptance": false
+  },
+  "trackedSourceFilesRecorded": 483357,
+  "missingConfiguredObjects": 2634,
+  "configuredHeadersAndBackendMustBeGenerated": 8,
+  "currentMissingInputs": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++.a"
+    }
+  ],
+  "allCurrentMissingInputsActuallyAbsent": true
+}
+PREPARATION_OWNER
+{
+  "startedUtc": "2026-11-10T16:46:59.363047+00:00",
+  "finishedUtc": "2026-11-10T16:47:08.616545+00:00",
+  "durationSeconds": 9.254,
+  "argv": [
+    "python3",
+    "-B",
+    "tools/nightly-jit-prep/prepare-owned-build.py",
+    "--packet",
+    "../linuxonweb-firefox-jit-20261108-preflight-3a",
+    "--source",
+    "../linuxonweb-firefox-jit-20261110-native-source-4",
+    "--dependencies",
+    "../linuxonweb-firefox-jit-20261108-native-deps-build",
+    "--egl",
+    "../linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+    "--output",
+    "../linuxonweb-firefox-jit-20261110-native-build-4"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "stopReason": null,
+  "ownedProcessesRemaining": 0,
+  "cleanupInventoryErrors": [],
+  "ownerPeakRssBytes": 105730048,
+  "ownedTreePeakRssBytes": 215433216,
+  "ownedTreePeakPssBytes": 94410752,
+  "resourceSamples": 9,
+  "pssSamples": 2,
+  "quotaReadySeconds": 0.251,
+  "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+  "quotaFailure": null,
+  "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+  "sampling": {
+    "cpuRssAvailableRamQuotaSeconds": 1,
+    "pssSeconds": 5,
+    "pssPeakIsSampledLowerBound": true
+  },
+  "pass": true
+}
+
+WORKTREE_STATUS
+{
+  "integration": {
+    "head": "a03223f78b0fcefb45022e0da2c006baea0366fe",
+    "trackedStatus": "M docs/firefox-jit-integration-20261110.md\n M tools/nightly-jit-prep/prepare-owned-build.py\n M tools/nightly-musl/recipe/reconstruct-helper-mapping.py"
+  },
+  "primary": {
+    "head": "be485941a4c0368a13eb31640976f59810a4d2b1",
+    "trackedStatus": ""
+  },
+  "array": {
+    "head": "feb3459fd04478231b50d96d809e6e73ac08bbbf",
+    "trackedStatus": ""
+  }
+}
+exit_code: 0
+running: false
+terminal_id: 41474
+workspace_id: /mnt/p3/project/linux/linuxonweb
+chars: 4655
+snapshot: 9ab713dc40e8106a

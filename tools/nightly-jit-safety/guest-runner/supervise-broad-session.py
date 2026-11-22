@@ -5,6 +5,8 @@ TASK=None
 TASK_OUT=None
 TASK_ID=None
 HERE=pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from owned_paths import task_root, owned_directory, scoped_path
 GIB=1024**3
 LIMITS={'addressSpaceBytes':2*1024**4,'coreBytes':0,'groupRssBytes':12*GIB,'availableFloorBytes':4*GIB,'sessionWallSeconds':150,'supervisorWallSeconds':170,'naturalDrainSeconds':10,'taskCapBytes':4*GIB,'freeReserveBytes':20*GIB,'nodeOomScoreAdj':1000}
 def write(path,value):
@@ -83,8 +85,8 @@ def parse(argv):
  assert len(argv)%2==0
  args={}
  for key,value in zip(argv[::2],argv[1::2]):
-  assert key in ['--task-root','--out','--arm','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256'] and key not in args;args[key]=value
- assert set(args)=={'--task-root','--out','--arm','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256'}
+  assert key in ['--task-root','--repo','--out','--arm','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256'] and key not in args;args[key]=value
+ assert set(args)-{'--repo'}=={'--task-root','--out','--arm','--launch','--launch-sha256','--implementation','--implementation-sha256','--prelaunch-review','--prelaunch-review-sha256'}
  return args
 def check_guard():
  if available()<LIMITS['availableFloorBytes']:return 'hostAvailableRAM'
@@ -94,8 +96,10 @@ def check_guard():
 def main():
  global TASK,TASK_OUT,TASK_ID
  assert len(sys.argv)>2 and sys.argv[1]=='--run';args=parse(sys.argv[2:]);TASK=pathlib.Path(args['--task-root']);out=pathlib.Path(args['--out']);TASK_OUT=out
- assert TASK.is_absolute() and TASK.resolve()==TASK and TASK.is_dir() and TASK.parent in [pathlib.Path('/mnt/p6/build'),pathlib.Path('/mnt/p6/project/build')] and TASK.name!='nightly-broad-guest-runner-20261004'
- assert out.is_absolute() and out.parent.resolve()==TASK and not out.exists() and args['--arm'] in ['enabled','disabled']
+ TASK=task_root(TASK);repo=owned_directory(args.get('--repo','/mnt/p6/project/linux/linuxonweb'))
+ assert TASK.name!='nightly-broad-guest-runner-20261004'
+ scoped_path(TASK,out,fresh=True)
+ assert out.parent==TASK and args['--arm'] in ['enabled','disabled']
  st=TASK.stat();TASK_ID=(st.st_dev,st.st_ino)
  assert not check_guard()
  for key in ['--launch','--implementation','--prelaunch-review']:
@@ -104,19 +108,19 @@ def main():
  for row in implementation['files']:
   assert hashlib.file_digest(open(row['path'],'rb'),'sha256').hexdigest()==row['sha256']
  assert any(row['path']==str(pathlib.Path(__file__).resolve()) for row in implementation['files'])
- scratch=TASK/'t';assert scratch.resolve()==scratch and scratch.is_dir()
+ scratch=scoped_path(TASK,TASK/'t',directory=True)
  # Orphans from a failed owned browser remain ours to reap, rather than
  # leaving zombies to PID1. No unowned process receives a wait or a signal.
  assert ctypes.CDLL(None,use_errno=True).prctl(36,1,0,0,0)==0
  env=dict(os.environ,TMPDIR=str(scratch),TMP=str(scratch),TEMP=str(scratch),PYTHONDONTWRITEBYTECODE='1',NIGHTLY_BROAD_SUPERVISOR=str(os.getpid()))
  command=['/usr/bin/node',str(HERE/'run-broad-session.mjs'),'--run',*sys.argv[2:]]
  started=time.monotonic();peak=0;minimum=available();reason=None;forced=False;browser=None;browser_limits=None;drain_started=None;terminate_started=None
- log=TASK/(out.name+'-supervisor.log');status=TASK/(out.name+'-supervisor.json');assert not log.exists() and not status.exists()
+ log=scoped_path(TASK,TASK/(out.name+'-supervisor.log'),fresh=True);status=scoped_path(TASK,TASK/(out.name+'-supervisor.json'),fresh=True)
  node=None;node_limits=None
  record={'kind':'actual-nightly-broad-owned-supervision-v1','pass':False,'guestAcceptance':False,'jitAcceptance':False,'gpuAcceptance':False,'limits':LIMITS,'argv':command,'spawnPID':None,'nodeOwner':None,'nodeObservedLimits':None}
  spawn_tick_bound=int(time.clock_gettime(time.CLOCK_BOOTTIME)*os.sysconf('SC_CLK_TCK'))
  with log.open('xb') as output:
-  child=subprocess.Popen(command,env=env,cwd='/mnt/p6/project/linux/linuxonweb',stdout=output,stderr=subprocess.STDOUT,start_new_session=True,preexec_fn=guards)
+  child=subprocess.Popen(command,env=env,cwd=repo,stdout=output,stderr=subprocess.STDOUT,start_new_session=True,preexec_fn=guards)
   try:
    record['spawnPID']=child.pid
    while node is None and time.monotonic()-started<2:node=proc(child.pid);time.sleep(.01)

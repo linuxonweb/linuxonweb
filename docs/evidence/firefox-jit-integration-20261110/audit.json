@@ -1,0 +1,54 @@
+{
+  "pass": true,
+  "scope": "preparation/hash/policy/reconstruction audit only; no native execution or speed acceptance",
+  "checks": 1775,
+  "compiled": false,
+  "nativeIntegrationReady": false,
+  "guestRuntimeAcceptance": false,
+  "fullReport": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-audit/report.json",
+    "bytes": 338323,
+    "sha256": "04ef2afbcb083a676ea553fe899eedfddf2e5f84d03a6a6226d75781ac4d888d"
+  },
+  "owner": {
+    "startedUtc": "2026-11-10T16:14:09.825996+00:00",
+    "finishedUtc": "2026-11-10T16:14:15.840009+00:00",
+    "durationSeconds": 6.014,
+    "argv": [
+      "python3",
+      "docs/evidence/firefox-jit-integration-20261110/audit-preparation.py",
+      "../linuxonweb-firefox-jit-20261110-native-build-2",
+      "../linuxonweb-firefox-jit-20261110-audit/report.json"
+    ],
+    "cwd": ".",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 19423232,
+    "ownedTreePeakRssBytes": 139116544,
+    "ownedTreePeakPssBytes": 201728,
+    "resourceSamples": 5,
+    "pssSamples": 1,
+    "quotaReadySeconds": 1.005,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "ownerReceipt": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-audit-owner/result.json",
+    "bytes": 1109,
+    "sha256": "34845ae719a231fadc603161a908d7a3233ceb24bb75909228a7f1ed10dd836e"
+  },
+  "resourceSamples": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-audit-owner/resources.jsonl",
+    "bytes": 7020,
+    "sha256": "771361369520b77574457ca3367ad22440a0b7c182a316c528c797cf31515979"
+  }
+}

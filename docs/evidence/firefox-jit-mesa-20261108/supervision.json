@@ -1,0 +1,147 @@
+{
+  "extract": {
+    "startedUtc": "2026-11-08T20:27:46.952968+00:00",
+    "finishedUtc": "2026-11-08T20:27:55.205313+00:00",
+    "durationSeconds": 8.252,
+    "argv": [
+      "python3",
+      "prepare-source.py"
+    ],
+    "cwd": "../linuxonweb-firefox-jit-20261108-mesa-build",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 39211008,
+    "ownedTreePeakRssBytes": 39211008,
+    "ownedTreePeakPssBytes": 24171520,
+    "resourceSamples": 8,
+    "pssSamples": 2,
+    "quotaReadySeconds": 0.251,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "bootstrap": {
+    "startedUtc": "2026-11-08T20:28:29.180156+00:00",
+    "finishedUtc": "2026-11-08T20:28:47.934884+00:00",
+    "durationSeconds": 18.755,
+    "argv": [
+      "python3",
+      "bootstrap.py"
+    ],
+    "cwd": "../linuxonweb-firefox-jit-20261108-mesa-build",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 18710528,
+    "ownedTreePeakRssBytes": 119488512,
+    "ownedTreePeakPssBytes": 49876992,
+    "resourceSamples": 18,
+    "pssSamples": 4,
+    "quotaReadySeconds": 0.752,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "configure": {
+    "startedUtc": "2026-11-08T20:29:05.161614+00:00",
+    "finishedUtc": "2026-11-08T20:29:20.166542+00:00",
+    "durationSeconds": 15.005,
+    "argv": [
+      "python3",
+      "configure.py"
+    ],
+    "cwd": "../linuxonweb-firefox-jit-20261108-mesa-build",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 18493440,
+    "ownedTreePeakRssBytes": 143831040,
+    "ownedTreePeakPssBytes": 53261312,
+    "resourceSamples": 14,
+    "pssSamples": 3,
+    "quotaReadySeconds": 1.002,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "build": {
+    "startedUtc": "2026-11-08T20:29:53.974141+00:00",
+    "finishedUtc": "2026-11-08T20:29:57.478524+00:00",
+    "durationSeconds": 3.504,
+    "argv": [
+      "python3",
+      "build-egl.py"
+    ],
+    "cwd": "../linuxonweb-firefox-jit-20261108-mesa-build",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 18751488,
+    "ownedTreePeakRssBytes": 95080448,
+    "ownedTreePeakPssBytes": 331776,
+    "resourceSamples": 3,
+    "pssSamples": 1,
+    "quotaReadySeconds": 0.502,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  },
+  "symbol-check": {
+    "startedUtc": "2026-11-08T20:31:27.429926+00:00",
+    "finishedUtc": "2026-11-08T20:31:31.435496+00:00",
+    "durationSeconds": 4.006,
+    "argv": [
+      "python3",
+      "symbol-check.py"
+    ],
+    "cwd": "../linuxonweb-firefox-jit-20261108-mesa-build",
+    "exitCode": 0,
+    "stopReason": null,
+    "ownedProcessesRemaining": 0,
+    "cleanupInventoryErrors": [],
+    "ownerPeakRssBytes": 47218688,
+    "ownedTreePeakRssBytes": 52838400,
+    "ownedTreePeakPssBytes": 351232,
+    "resourceSamples": 3,
+    "pssSamples": 1,
+    "quotaReadySeconds": 1.003,
+    "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+    "quotaFailure": null,
+    "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+    "sampling": {
+      "cpuRssAvailableRamQuotaSeconds": 1,
+      "pssSeconds": 5,
+      "pssPeakIsSampledLowerBound": true
+    },
+    "pass": true
+  }
+}

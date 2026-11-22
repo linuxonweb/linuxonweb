@@ -1,0 +1,29 @@
+{
+  "preparationComplete": true,
+  "compiled": false,
+  "sourceHead": "525176a870d4ec4329e7decdb2ef7fdd5b87fb22",
+  "trackedSourceFiles": 483357,
+  "output": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-4",
+  "nativeIntegrationReady": false,
+  "fullBuildReady": false,
+  "missingInputs": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++.a"
+    }
+  ]
+}

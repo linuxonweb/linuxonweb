@@ -235,6 +235,20 @@ Reclaim on demand (opt-in `?spawn_reclaim=1`, default off; worker.js allocate_us
 
 ---
 
+## Current guarded native JIT checkpoint — 2026-11-10, 45/100
+
+The integration branch `gpt-6-astra-pro_linuxonweb-jit_20261110` now closes the preparation input-pinning and helper-linkage receipt gaps. Read `docs/firefox-jit-integration-20261110.md` and `docs/evidence/firefox-jit-integration-20261110/input-closure-validation.json` first. The final fresh source/build are `../linuxonweb-firefox-jit-20261110-native-source-4` and `../linuxonweb-firefox-jit-20261110-native-build-4` at Firefox source HEAD525176a. Exact final-code preparation passed9.254s after77/77 focused checks (34.008s owner), followed by independent source/artifact review. All owners retained the unchanged guard and cleanup0. These are preparation/security checks, not a native build.
+
+The separately reviewed fixed closure `b0f250c47e5938dbf3d4728a2ba43541207eda270b7be4f23779cda3092d0d49` binds1,796 regular-file inputs and five exact consumed trees before source/output mutation. It retains unchanged **pre-array packet3a**, not the independent array candidate. Four existing source destinations have exact before-pins and six must be absent. Cached verified bytes preserve executable wrappers; repository read-only input modes are observations to permit normal Git checkout permissions. Original source2/build2, intermediate source3/build3, old recipe commit a03223f and every failure receipt remain intact.
+
+The helper reconstruction still has exact historical object/archive hashes, no compilation, and unchanged wrapped browser bytes. Its new read-only linkage check deliberately binds the fixed old source2/build2 preparation SHA9facb1ee3c8fc27af2d75d0954cbd342b8c1dd374900f3ae0494cf94d7a40a90, source-change receipt and both defs after-pins. It does not authorize arbitrary new preparation receipts.
+
+Only libc++.a is absent from the original six dependency archives; the separate helper is present. The current closure intentionally requires that absence. After legitimate dependency build+verify fills libc++ or changes maps, review the complete changed dependency closure and new identity, then use fresh source/build paths. Do not edit a single hash or reprepare/reconfigure the existing dependency runtime tree.2,634 Firefox objects and eight generated header/backend paths still remain.
+
+Do not repeat the blocked compiler launch. Existing same-identity70→80 leaf migration fails the intentional AGENTS continuity gate. Require an administrator-supported inherited scope honored by the host watcher, under shared<=3CPU and no greater than the current compiler1.8CPU cap; keep the monitor unchanged. After that unblock, libc++ resumes with unused build attempt4/fresh owner, then unused verify4. Attempt3 already finalized cxxabi/unwind. No native integration, guest execution, full JIT, new performance acceptance or deployment change is claimed.
+
+Separate array branch `gpt-6-astra-pro_linuxonweb-array-jit_20261110` ends at feb3459fd04478231b50d96d809e6e73ac08bbbf; read its `docs/firefox-jit-nested-arrays-20261110.md`. Final refactored core2e977217 remains unexecuted. Earlier12896/86-case results belong to earlier510906f, not that final source. Integrating it requires a newly complete host/preflight packet including the shared proof header, every runner/fixture, native and host overlays, plus a newly reviewed closure; current seven-member binding rejects a SHA-only upgrade.
+
 # LinuxOnWeb continuation —45/100, original target unfinished
 
 Session start2026-11-03T13:22:11Z; normal deadline18:22:11Z. The exact user request remains in agent/task.md. Active branch is gpt-6-astra-pro_builtin-agents_linuxonweb-20261103-1322; frozen parent81103b2ec04a8a4f8453617ca128448e831645bc and checkpoint tag remain intact. Read the final capturedHead from INCREMENT-MANIFEST.json rather than assuming the earlier runtime-capture commit is final source. Full historical notes are preserved under agent/archive and in Git.

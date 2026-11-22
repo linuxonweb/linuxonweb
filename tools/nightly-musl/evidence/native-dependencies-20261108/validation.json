@@ -1,0 +1,343 @@
+{
+  "passArtifactValidation": false,
+  "presentArtifactValidation": true,
+  "missingArtifacts": [
+    "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a"
+  ],
+  "validationDirectory": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/archive-validation-attempt-3",
+  "artifacts": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "bytes": 6134,
+      "sha256": "d83706cc69d4dc478930c1d73584dd9469547c29fb7ce0bbb70f70d4e2f683fa",
+      "members": [
+        {
+          "name": "mmap-shim.o",
+          "bytes": 5849,
+          "sha256": "d9109125a1b3cd0c0d4e0c42dfd0ba6c68f3b4fc4e4d0a5ff079cc93c885ff3a",
+          "wasmValidated": true
+        }
+      ],
+      "nativeMembers": 1,
+      "expectedHistoricalSHA256": null,
+      "historicalByteIdentity": null,
+      "requiredSymbols": [
+        "__wrap_shm_open",
+        "__wrap_shm_unlink",
+        "mmap",
+        "munmap"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725",
+      "members": [
+        {
+          "name": "runtime.o",
+          "bytes": 1671,
+          "sha256": "95c2623871e23e1cc7dcb38b1c78d93fc29b6619b978f8b52bb7e5c196ae90cd",
+          "wasmValidated": true
+        }
+      ],
+      "nativeMembers": 1,
+      "expectedHistoricalSHA256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725",
+      "historicalByteIdentity": true,
+      "requiredSymbols": [
+        "__cxa_thread_atexit_impl",
+        "__wrap_exit",
+        "__wrap___pthread_tsd_run_dtors",
+        "_Unwind_Backtrace"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-stack-accepted-run1/libnightly-native-stack.a",
+      "bytes": 1016,
+      "sha256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f",
+      "members": [
+        {
+          "name": "stack.o",
+          "bytes": 853,
+          "sha256": "46c762f103d7f09c899afccd9997a96e9da21db466fc75b58f5c10e0c4d00cda",
+          "wasmValidated": true
+        }
+      ],
+      "nativeMembers": 1,
+      "expectedHistoricalSHA256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f",
+      "historicalByteIdentity": true,
+      "requiredSymbols": [
+        "__wrap_pthread_getattr_np"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++abi.a",
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5",
+      "members": [
+        {
+          "name": "libunwind.cpp.o",
+          "bytes": 1281,
+          "sha256": "e30e371a017821109ec58d366335fd253f3402d3ffeb8ed59432608e7a9f8963",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-EHABI.cpp.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-seh.cpp.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindLevel1.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindLevel1-gcc-ext.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-sjlj.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-wasm.c.o",
+          "bytes": 2300,
+          "sha256": "8d1a768a29266bc32d3dcb39a5bde4eb080ae912aad2088b7fa9f7ee455c7abd",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindRegistersRestore.S.o",
+          "bytes": 53,
+          "sha256": "593df8b94ab3fff3fb001b56ad6a6e41cfccc486f37108f2a0d3c0b4beb4732e",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindRegistersSave.S.o",
+          "bytes": 53,
+          "sha256": "593df8b94ab3fff3fb001b56ad6a6e41cfccc486f37108f2a0d3c0b4beb4732e",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_aux_runtime.cpp.o",
+          "bytes": 952,
+          "sha256": "adfe2173c99a3fe4d4b2c69a41bd9e0a8179a6260282fb525ee11dd350f8e73e",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_default_handlers.cpp.o",
+          "bytes": 2153,
+          "sha256": "2b170d200624df7a80fa70ab628f7eb9797b43d19d2105ec52b6ab1eba015695",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_demangle.cpp.o",
+          "bytes": 308590,
+          "sha256": "e1140fddb318bff8fd59f14b24582a50466852956f4e9e3c48ef534e03e07019",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_exception_storage.cpp.o",
+          "bytes": 607,
+          "sha256": "0e6cd6af60f8ff3197d1adfefa80b9de2f746360614ad60fb3b4c4cf3fffd0ec",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_guard.cpp.o",
+          "bytes": 2777,
+          "sha256": "4d95270108ad36047a88c8c29fa3c3b857dd5990abb4059b146574846908e721",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_handlers.cpp.o",
+          "bytes": 1528,
+          "sha256": "fd3a51690b339f18c2f026f6ded1f39498936f36a96720e2cc802a163237d5de",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_vector.cpp.o",
+          "bytes": 4103,
+          "sha256": "8a493cf2ecb113963e5295c83f0d40de370bcfbae46b337cbd04a65334657636",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_virtual.cpp.o",
+          "bytes": 615,
+          "sha256": "f55f269a31558d8ddc37defd138523f40c644ebbeae1deb8e2cc9653cacce53a",
+          "wasmValidated": true
+        },
+        {
+          "name": "stdlib_exception.cpp.o",
+          "bytes": 2625,
+          "sha256": "b0090b0c52f0092a1bc0302bc5f9b71e1a31378a6e9667050121ba2ff1eb1a30",
+          "wasmValidated": true
+        },
+        {
+          "name": "stdlib_stdexcept.cpp.o",
+          "bytes": 4343,
+          "sha256": "5a123e3f0874fa134f71f6558e0f3ca5b9519bdf5502ecb37772258eca597434",
+          "wasmValidated": true
+        },
+        {
+          "name": "stdlib_typeinfo.cpp.o",
+          "bytes": 1950,
+          "sha256": "ee8dc2487db8df14c93743b9878dc3639c281f5f561b7b0328eebe588ee2a26b",
+          "wasmValidated": true
+        },
+        {
+          "name": "abort_message.cpp.o",
+          "bytes": 656,
+          "sha256": "dadb27645acda2c88601559f2f6b4cf3b4175a45731219526b22760b5173b37d",
+          "wasmValidated": true
+        },
+        {
+          "name": "fallback_malloc.cpp.o",
+          "bytes": 3420,
+          "sha256": "5b5941009711b7804fd96f3f134de9a8b429bba9ba13fca70407f5ef7e287796",
+          "wasmValidated": true
+        },
+        {
+          "name": "private_typeinfo.cpp.o",
+          "bytes": 25060,
+          "sha256": "dcdd64c31653349e0eaccb00bda2c7c001a17e8e6929da4eed722343ef732848",
+          "wasmValidated": true
+        },
+        {
+          "name": "stdlib_new_delete.cpp.o",
+          "bytes": 2246,
+          "sha256": "ac24e19955e7ba95f87b90cc43c3bf9d33a795e535e187b0152f3399661f586c",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_exception.cpp.o",
+          "bytes": 4484,
+          "sha256": "37c9fdc3017d51faec576f9f558eddf154df688d10d5f61b466c1d097e9babdd",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_personality.cpp.o",
+          "bytes": 6818,
+          "sha256": "dc7f95e772753e2ffb253504bea8f87b6c1b2b1c88fece89604c4147019d414d",
+          "wasmValidated": true
+        },
+        {
+          "name": "cxa_thread_atexit.cpp.o",
+          "bytes": 544,
+          "sha256": "90dfa36522fdfeb04d838e8f48cfed672486067f8c3397661cf876eea682f078",
+          "wasmValidated": true
+        }
+      ],
+      "nativeMembers": 27,
+      "expectedHistoricalSHA256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5",
+      "historicalByteIdentity": true,
+      "requiredSymbols": [
+        "__cxa_throw",
+        "__cxa_begin_catch",
+        "__cxa_end_catch"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libunwind.a",
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b",
+      "members": [
+        {
+          "name": "libunwind.cpp.o",
+          "bytes": 1281,
+          "sha256": "e30e371a017821109ec58d366335fd253f3402d3ffeb8ed59432608e7a9f8963",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-EHABI.cpp.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-seh.cpp.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindLevel1.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindLevel1-gcc-ext.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-sjlj.c.o",
+          "bytes": 280,
+          "sha256": "31f8dab86571e7c5311152146724a58f0806731d0b47bff1bf39cd1cad091fea",
+          "wasmValidated": true
+        },
+        {
+          "name": "Unwind-wasm.c.o",
+          "bytes": 2300,
+          "sha256": "8d1a768a29266bc32d3dcb39a5bde4eb080ae912aad2088b7fa9f7ee455c7abd",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindRegistersRestore.S.o",
+          "bytes": 53,
+          "sha256": "593df8b94ab3fff3fb001b56ad6a6e41cfccc486f37108f2a0d3c0b4beb4732e",
+          "wasmValidated": true
+        },
+        {
+          "name": "UnwindRegistersSave.S.o",
+          "bytes": 53,
+          "sha256": "593df8b94ab3fff3fb001b56ad6a6e41cfccc486f37108f2a0d3c0b4beb4732e",
+          "wasmValidated": true
+        }
+      ],
+      "nativeMembers": 9,
+      "expectedHistoricalSHA256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b",
+      "historicalByteIdentity": true,
+      "requiredSymbols": [
+        "_Unwind_RaiseException",
+        "_Unwind_DeleteException",
+        "_Unwind_CallPersonality"
+      ]
+    }
+  ],
+  "compileUnits": 168,
+  "sourceClosureFiles": 846,
+  "sourceClosure": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/source-closure.json",
+    "bytes": 215202,
+    "sha256": "75f17cf750132ffa1d731a5d0d1d754a667b2f2af46ee1c194cfe17e8036d962"
+  },
+  "inputs": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/inputs.json",
+    "bytes": 4109,
+    "sha256": "a8de8da4e71a884e322b46c20103ed191adaa59f5ad6359ba4915b742aecca86"
+  },
+  "replacementPaths": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/replacement-paths.json",
+    "bytes": 3583,
+    "sha256": "3fa0f9cc3048d888e02a5d6048c8cb9adae01b7b7967205cc4f06bf913005259"
+  },
+  "browserLinkAcceptance": false,
+  "guestRuntimeAcceptance": false,
+  "fullJitAcceptance": false,
+  "notes": [
+    "Historical receipts describe earlier runs only; this run validates rebuilt artifacts.",
+    "No Firefox link or guest execution occurred in this dependency task."
+  ]
+}

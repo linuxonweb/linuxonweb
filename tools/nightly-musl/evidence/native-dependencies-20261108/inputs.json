@@ -1,0 +1,95 @@
+{
+  "sourceExport": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src",
+  "packet": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/preflight.json",
+    "bytes": 3818553,
+    "sha256": "1c28693371cc897123e31a02c010a4af27b397b0f5e30e604642061ebf18ea01"
+  },
+  "llvmSource": "/nix/store/jkx0x4a4nlmnjm0kz9fiss33b7wh8z9k-source",
+  "muslSource": "/nix/store/drmrcqyqqvyngx2jv0wp6hisphs738j1-source",
+  "environmentInput": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/recipe/environment.sh",
+    "bytes": 48039,
+    "sha256": "3fd3c53365e9525f2ae09fb564fc0925bdff5efa653052180751fc07a78abcab"
+  },
+  "environmentOutput": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/recipe/environment.sh",
+    "bytes": 48054,
+    "sha256": "ab66bbe378789b97856e5bd2201ed33ae1e5604bf33ab2bc1dd9f7b50358075d"
+  },
+  "sourceFiles": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/inputs/runtime.c",
+      "bytes": 2676,
+      "sha256": "3ee136b2ee2154221e26d070703dbc3d988824cf99c399c62ba047e09956e7a3"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/inputs/stack.c",
+      "bytes": 1301,
+      "sha256": "7d1d0d85dacd408c3b94278be44d1ac00baf0d81a8c3b2ffa936416e1f0590d5"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/inputs/mmap-shim.c",
+      "bytes": 15049,
+      "sha256": "cf9f7592186c95dbe9589d8e86bd86fd724b8f06f9c539826ca3a3707c621e97"
+    }
+  ],
+  "libc": {
+    "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+    "bytes": 1329424,
+    "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b"
+  },
+  "recipes": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/linuxonweb-build/recipe/configure-cxx-runtime.py",
+      "bytes": 2602,
+      "sha256": "1930e822a3a169386db723b53a056347d5e65c162589924cd5e72890182727c4"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/linuxonweb-build/recipe/build-cxx-runtime.py",
+      "bytes": 2261,
+      "sha256": "cf7d6d460a51dca752f3b8eaad9a786c05a932dd87970a826216ee2ae1e07724"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/linuxonweb-build/recipe/build-native-mapping.py",
+      "bytes": 2023,
+      "sha256": "87667154b405883d5101f3ebc7223f4dc44fdd007d4988f03da64719a299ba52"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/linuxonweb-build/recipe/build-native-runtime.py",
+      "bytes": 2290,
+      "sha256": "11e66f41943a133cf55410cc203c6d2041d2f9470df775c0e4b5eed5ac464ae5"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-org-push/firefox-src/linuxonweb-build/recipe/build-native-stack.py",
+      "bytes": 3565,
+      "sha256": "55335c9d3b67a7cc7eb331b89aa130bb2d02966b45090845fa05ed0fa64ab897"
+    }
+  ],
+  "mappingGitCommit": "91c80e0570d94c3ead166f2ec91fce4c69b9d15e",
+  "mappingCurrentTreeUsed": false,
+  "tools": {
+    "CC": {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "bytes": 11930,
+      "sha256": "4437401f40386b51c438f83ae71d02c0d3b2007cfd399f84e1cec1044a40a285"
+    },
+    "CXX": {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+      "bytes": 11944,
+      "sha256": "7f2e34e5bc83eedffcf8d881493b85bc9162f3018c31ce2dfe1329b1da63b579"
+    },
+    "AR": {
+      "path": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar",
+      "bytes": 115000,
+      "sha256": "d6b9f113b4cbf607315291a0b29a9f1f51702bda904a3be2d0ac9a2aa116532b"
+    }
+  },
+  "replayAdjustments": [
+    "owned output/source paths",
+    "disk temp and caches",
+    "remove obsolete LD_LIBRARY_PATH in child only",
+    "ninja jobs limited to three"
+  ],
+  "historicalGuestReceiptsReusedAsCurrentAcceptance": false
+}

@@ -1,13 +1,15 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {rootForOutput,scopedPath} from '../../owned-paths.mjs';
 import { cases as integerCases, source } from './cases.mjs';
 import { broadCases } from './cases-broad.mjs';
 const [out,label,coverage='integer']=process.argv.slice(2);
 if(!['integer','broad'].includes(coverage))throw Error('coverage must be integer or broad');
 const cases=coverage==='broad'?broadCases:integerCases;
-if(!out||!['/mnt/p6/build/','/mnt/p6/project/build/'].some(root=>path.resolve(out).startsWith(root))||!label||!/^[a-zA-Z0-9_-]{1,64}$/.test(label))throw Error('usage: generate.mjs DISK_TASK_FRESH_DIR RUN_LABEL [integer|broad]');
-await fs.mkdir(out,{recursive:false});
+if(!out||!label||!/^[a-zA-Z0-9_-]{1,64}$/.test(label))throw Error('usage: generate.mjs DISK_TASK_FRESH_DIR RUN_LABEL [integer|broad]');
+await scopedPath(await rootForOutput(out),out,{fresh:true});
+await fs.mkdir(out,{recursive:false,mode:0o700});
 const files={};
 async function write(name,text){await fs.writeFile(path.join(out,name),text);files[name]=crypto.createHash('sha256').update(text).digest('hex');}
 const expectedUrl=`file:///home/admin/nightly-jit-safety/${label}/`;
