@@ -26,12 +26,35 @@ constexpr uint32_t INT = 0xFFFFFF81u, BOOL = 0xFFFFFF82u, UNDEF = 0xFFFFFF83u,
 static uint64_t gFrame[64], gArgs[8];
 // Compile-time array payloads and their element kinds (see MockArrayKind).
 constexpr uint32_t ARR_INT = 0x8000, ARR_NUM = 0x8100, ARR_OTHER = 0x8200, NOT_ARR = 0x8300;
-constexpr uint32_t ARR_ROWS = 0x8600;  // an Array of Int32 rows (see MockRowKind)
+constexpr uint32_t ARR_ROWS = 0xa600;  // an Array of Int32 rows (see MockRowKind)
 int MockArrayKind(uint32_t payload) {
-  return payload == ARR_INT ? 1 : payload == ARR_NUM ? 2 : (payload == ARR_OTHER || payload == ARR_ROWS) ? 0 : -1;
+  return payload == ARR_INT || payload == 0x8400 ? 1 : payload == ARR_NUM ? 2 : (payload == ARR_OTHER || payload == ARR_ROWS) ? 0 : -1;
+}
+// Raw facts for the dedicated nested-array fixtures. The production compiler's
+// InspectArrayForInit predicates/walker run unchanged; this reader does not
+// decide whether a receiver/prototype is eligible.
+constexpr uint32_t ARR_INIT = 0x8400;
+struct MockArrayNode { uint32_t pointer; ArrayInitNode node; bool readable = true; };
+static std::vector<MockArrayNode> gArrayNodes;
+template<class T> bool MockReadArrayInitNode(uint32_t p, T& node) {
+  for (const auto& entry : gArrayNodes) {
+    if (entry.pointer == p) { node = entry.node; return entry.readable; }
+  }
+  if (p != ARR_INIT && p != 0x8500 && p != 0x8600) return false;
+  node = T();
+  node.kind = p == 0x8600 ? ArrayInitNode::Kind::Plain : ArrayInitNode::Kind::Array;
+  node.shape = p == ARR_INIT ? 0x7600 : p == 0x8500 ? 0x7800 : 0x7900;
+  node.prototype = p == ARR_INIT ? 0x8500 : p == 0x8500 ? 0x8600 : 0;
+  node.extensible = node.lengthWritable = true;
+  node.tenured = p != ARR_INIT;  // the receiver may live in the nursery
+  node.watchesAdd = p != ARR_INIT;  // prototype status is not receiver status
+  return true;
+}
+static ArrayInitNode arrayNode(uint32_t pointer) {
+  ArrayInitNode node; if (!MockReadArrayInitNode(pointer, node)) abort(); return node;
 }
 // Compile-time fixed-length typed array payloads: 1 Int32Array, 2 Float64Array.
-constexpr uint32_t TA_INT = 0x8400, TA_F64 = 0x8500;
+constexpr uint32_t TA_INT = 0xa400, TA_F64 = 0xa500;
 int MockTypedKind(uint32_t payload) { return payload == TA_INT ? 1 : payload == TA_F64 ? 2 : 0; }
 // Compile-time Array of Int32 rows (MockArrayKind 0, row kind 1).
 int MockRowKind(uint32_t payload) { return payload == ARR_ROWS ? 1 : 0; }
@@ -90,6 +113,7 @@ static int gMark[2] = {-1, -1};
 static uint32_t gFormals;
 static bool gAliased, gFunction;
 static void reset() {
+  gArrayNodes.clear();
   for (auto& v : gFrame) v = uint64_t(INT) << 32;
   for (auto& v : gArgs) v = uint64_t(INT) << 32;
   gFormals = 0;
@@ -165,10 +189,13 @@ static void forTail(Code& c, size_t h, size_t jf, uint32_t ic) {
   c.here(jf); c.target(ic); c.op(JSOp::Return);
 }
 #include "nested-fixtures.h"
+#include "array-fixtures.h"
 
 int main(int argc, char** argv) {
   const char* dir = argv[1];
   emitNestedFixtures(dir);
+  if (!checkArrayInitProofs(dir)) return 1;
+  emitArrayFixtures(dir);
   reset();
   {  // int-loop: for (let i = 0; i < N; i++) sum = (sum + i) | 0;  sum=local0 i=local1
     Code c;

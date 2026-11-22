@@ -62,6 +62,7 @@ inline uint32_t rd(const jsbytecode* p, int n) {
 #define GET_ARGNO(pc) GET_UINT16(pc)
 #define GET_ARGC(pc) GET_UINT16(pc)
 template<class T> bool MockInspectObject(uint32_t, T&);
+template<class T> bool MockReadArrayInitNode(uint32_t, T&);
 template<class T> bool MockLookupSlot(uint32_t, uint32_t, T&);
 uint8_t MockIdentifyMath(uint32_t);
 // Mock arrays (see emit.cpp): class pointer, element kind per object, and
@@ -69,7 +70,7 @@ uint8_t MockIdentifyMath(uint32_t);
 constexpr uint32_t kMockArrayClasp = 0x5000;
 int MockArrayKind(uint32_t payload);
 inline bool MockAtomIsLength(const jsbytecode* pc) { return rd(pc + 1, 4) == 1; }
-enum JSWhyMagic { JS_UNINITIALIZED_LEXICAL = 10 };
+enum JSWhyMagic { JS_ELEMENTS_HOLE = 0, JS_UNINITIALIZED_LEXICAL = 10 };
 namespace js {
 enum class TryNoteKind { Catch, Finally };
 struct MockTryNote {

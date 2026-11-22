@@ -1,0 +1,173 @@
+{
+  "pass": false,
+  "startedUtc": "2026-11-10T16:10:02.823801+00:00",
+  "inputs": [
+    {
+      "path": "tools/pbl-jit/PblJit.cpp",
+      "bytes": 94679,
+      "sha256": "510906f035ed50da59f954f95ce799295292253caabc8f54776992babfffe3f6"
+    },
+    {
+      "path": "tools/pbl-jit/PblCacheObserve.h",
+      "bytes": 4635,
+      "sha256": "72df755ee48cfb5451d4f842774c06e4b74a50a73f78fe2fcb5cfc7766c1498a"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/mock.h",
+      "bytes": 4616,
+      "sha256": "458a03b50456c79cb2ee9e5da4cf46082b6dc1b757247687c5819a5f51f3f0a7"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/emit.cpp",
+      "bytes": 32265,
+      "sha256": "0dd41a71f8556d6988cfc2fc2e1af6e2056036ba82961497ca85b0365229ba6d"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/nested-fixtures.h",
+      "bytes": 9549,
+      "sha256": "387a1c5ccba2efdb5eeea6462b4b1278d9fe528aef63d5edcb70166422aa8757"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/array-fixtures.h",
+      "bytes": 6971,
+      "sha256": "ee180b3ee328498fe40c9de36d7e1fc3bdc8e8dcdd61b20308747c7c59aea1db"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run.mjs",
+      "bytes": 31810,
+      "sha256": "c0715c4ef697f52d22d4101f28145e004c0af39406040bc87e4963d5e201cf59"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run-nested.mjs",
+      "bytes": 15998,
+      "sha256": "222ea590342f11ce13744aed56b5cd78e43d00191ae3e9f2c5db672e077f4c86"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/run-array.mjs",
+      "bytes": 18443,
+      "sha256": "15df8bf4003235b5b3a9ffbaef1b6f7d35d26dcef80f9ad6ae90a7119f745654"
+    },
+    {
+      "path": "tools/pbl-jit/host-test/check-array.py",
+      "bytes": 3727,
+      "sha256": "7fc74d2b4f76db4e2395bc7d064424524673cd0910afa1cd0eda0dc38e7ec022"
+    },
+    {
+      "path": "tools/guest-rootfs/firefox-gpu-check/gpu-check.html",
+      "bytes": 31957,
+      "sha256": "19bc70f81ad4f6d56b5d1d30305dc73c4368160a36b2054871337505d05a0d4c"
+    },
+    {
+      "path": "tools/guest-packages/bounded.py",
+      "bytes": 21203,
+      "sha256": "a93fc2438959ca898a30d4fd2c34fd0f20aac180a137d9e3092e6cbfaa0875f4"
+    }
+  ],
+  "commands": [
+    {
+      "name": "compile",
+      "argv": [
+        "c++",
+        "-std=c++17",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "tools/pbl-jit/host-test/emit.cpp",
+        "-o",
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/emit"
+      ],
+      "startedUtc": "2026-11-10T16:10:02.828782+00:00",
+      "timeoutSeconds": 100,
+      "exitCode": 0,
+      "durationSeconds": 13.099963,
+      "finishedUtc": "2026-11-10T16:10:15.928751+00:00",
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "name": "emit",
+      "argv": [
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/emit",
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/fixtures"
+      ],
+      "startedUtc": "2026-11-10T16:10:15.928949+00:00",
+      "timeoutSeconds": 20,
+      "exitCode": 0,
+      "durationSeconds": 0.04279,
+      "finishedUtc": "2026-11-10T16:10:15.971748+00:00",
+      "stdoutBytes": 5125,
+      "stderrBytes": 0
+    },
+    {
+      "name": "baseline",
+      "argv": [
+        "node",
+        "tools/pbl-jit/host-test/run.mjs",
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/fixtures"
+      ],
+      "startedUtc": "2026-11-10T16:10:15.972082+00:00",
+      "timeoutSeconds": 20,
+      "exitCode": 0,
+      "durationSeconds": 0.186202,
+      "finishedUtc": "2026-11-10T16:10:16.158293+00:00",
+      "stdoutBytes": 41,
+      "stderrBytes": 0
+    },
+    {
+      "name": "nested",
+      "argv": [
+        "node",
+        "tools/pbl-jit/host-test/run-nested.mjs",
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/fixtures"
+      ],
+      "startedUtc": "2026-11-10T16:10:16.158629+00:00",
+      "timeoutSeconds": 20,
+      "exitCode": 0,
+      "durationSeconds": 0.242815,
+      "finishedUtc": "2026-11-10T16:10:16.401451+00:00",
+      "stdoutBytes": 139,
+      "stderrBytes": 0
+    },
+    {
+      "name": "array",
+      "argv": [
+        "node",
+        "tools/pbl-jit/host-test/run-array.mjs",
+        "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/fixtures"
+      ],
+      "startedUtc": "2026-11-10T16:10:16.401826+00:00",
+      "timeoutSeconds": 20
+    }
+  ],
+  "testResults": {
+    "baseline": {
+      "pass": true,
+      "checks": 1969,
+      "failures": 0
+    },
+    "nested": {
+      "pass": true,
+      "checks": 2702,
+      "failures": 0,
+      "cases": 184,
+      "compiledNestedModules": 9,
+      "hostEvidenceOnly": true,
+      "nativeFirefoxAcceptance": "not run"
+    }
+  },
+  "hostEvidenceOnly": true,
+  "nativeFirefoxAcceptance": false,
+  "performanceClaim": false,
+  "environment": {
+    "TMPDIR": "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/tmp",
+    "TMP": "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/tmp",
+    "TEMP": "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/tmp",
+    "XDG_CACHE_HOME": "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/cache",
+    "XDG_CONFIG_HOME": "/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/cache",
+    "ASAN_OPTIONS": "detect_leaks=1:abort_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "error": "Command '['node', 'tools/pbl-jit/host-test/run-array.mjs', '/mnt/p3/codex-build/linuxonweb-firefox-array-jit-20261110-host-1/fixtures']' timed out after 20 seconds",
+  "finishedUtc": "2026-11-10T16:10:36.428197+00:00"
+}

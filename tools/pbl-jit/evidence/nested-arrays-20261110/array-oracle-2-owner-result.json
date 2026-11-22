@@ -1,0 +1,32 @@
+{
+  "startedUtc": "2026-11-10T16:15:51.180862+00:00",
+  "finishedUtc": "2026-11-10T16:15:53.186296+00:00",
+  "durationSeconds": 2.005,
+  "argv": [
+    "env",
+    "XDG_CACHE_HOME=../linuxonweb-firefox-array-jit-20261110-array-oracle-2-owner/cache",
+    "node",
+    "tools/pbl-jit/host-test/run-array.mjs",
+    "../linuxonweb-firefox-array-jit-20261110-host-1/fixtures"
+  ],
+  "cwd": ".",
+  "exitCode": 0,
+  "stopReason": null,
+  "ownedProcessesRemaining": 0,
+  "cleanupInventoryErrors": [],
+  "ownerPeakRssBytes": 401408,
+  "ownedTreePeakRssBytes": 401408,
+  "ownedTreePeakPssBytes": 106496,
+  "resourceSamples": 1,
+  "pssSamples": 1,
+  "quotaReadySeconds": 1.004,
+  "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+  "quotaFailure": null,
+  "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+  "sampling": {
+    "cpuRssAvailableRamQuotaSeconds": 1,
+    "pssSeconds": 5,
+    "pssPeakIsSampledLowerBound": true
+  },
+  "pass": true
+}
