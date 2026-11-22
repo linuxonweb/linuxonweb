@@ -499,6 +499,10 @@ bool gVstack = true;
 // both through the in-memory stack. Entries below the operands are flushed
 // first, so nothing else is virtual across the IC (which can GC or throw).
 bool gVsIc = true;
+// PBLBC_VSF64 (candidate, default off; '1' enables): Add/Sub/Mul in the virtual stack get
+// an inline double arm (both operands numbers, not both int32 / int32
+// overflow): f64 op and NumberValue boxing instead of binaryArith.
+bool gVsF64 = false;
 // PBLBC_ENTRYSWITCH (default on; a value starting with '0' disables it): a
 // compiled callee whose op 0 is an exit op is pushed directly by
 // CallScripted and the interpreter continues in the callee frame at pc 0
@@ -737,6 +741,8 @@ MOZ_NEVER_INLINE bool EnabledSlow() {
     if (vsv && vsv[0] == '0') gVstack = false;
     const char* vsicv = getenv("PBLBC_VSIC");
     if (vsicv && vsicv[0] == '0') gVsIc = false;
+    const char* vsf64v = getenv("PBLBC_VSF64");
+    if (vsf64v && vsf64v[0] == '1') gVsF64 = true;
     const char* esv = getenv("PBLBC_ENTRYSWITCH");
     if (esv && esv[0] == '0') gEntrySwitch = false;
     const char* aov = getenv("PBLBC_ARGSOP");
@@ -2624,6 +2630,39 @@ bool MT::vsArith(JSOp jop) {
       end();
     }
     if (!known) end();
+  }
+  // PBLBC_VSF64: double arm. Constants must be numbers; bool/undefined/null
+  // entries never take it. f64 add/sub/mul of int32-converted operands equals
+  // the JS result (int32 overflow, -0), boxed as NumberValue.
+  auto numOk = [](const VEnt& e) {
+    if (e.type == VT_BOOL || e.type == VT_UNDNULL) return false;
+    return !e.isConst || Value::fromRawBits(e.bits).isNumber();
+  };
+  if (gVsF64 && !un && !cmp && !bit && numOk(lhs) && numOk(rhs)) {
+    const uint32_t la = vsLocalOf(lhs, L_A);
+    const uint32_t lb = vsLocalOf(rhs, L_B);
+    bool any = false;
+    if (!lhs.isConst && lhs.type != VT_I32) {
+      isNumber(la);
+      any = true;
+    }
+    if (!rhs.isConst && rhs.type != VT_I32) {
+      isNumber(lb);
+      if (any) op(OP_I32AND);
+      any = true;
+    }
+    if (any) ifThen();
+    toF64(la);
+    toF64(lb);
+    op(jop == JSOp::Add ? OP_F64ADD : jop == JSOp::Sub ? OP_F64SUB : OP_F64MUL);
+    boxNumber();
+    lset(rv);
+    br(lvl - done);
+    if (any) {
+      end();
+    } else {
+      needSlow = false;
+    }
   }
   if (needSlow) {
     vsEmitStore(nin);
