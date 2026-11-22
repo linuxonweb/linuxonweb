@@ -1,0 +1,3455 @@
+{
+  "scope": "exact GNU16 signatures and pinned source-only kernel capability plan",
+  "entries": [
+    {
+      "call": "mlock",
+      "kernel": "mlock",
+      "public": "mlock",
+      "return": "int",
+      "arguments": [
+        "const void *",
+        "size_t"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/mlock.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/421ddfc4c96f8910.c",
+          "bytes": 221,
+          "sha256": "3edc36f91bcdad835f87ce316ea136caa0793116d06dc5a286249b8bae52f259"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/3edc36f91bcdad835f87ce316ea136caa0793116d06dc5a286249b8bae52f259-421ddfc4c96f8910.c",
+          "bytes": 221,
+          "sha256": "3edc36f91bcdad835f87ce316ea136caa0793116d06dc5a286249b8bae52f259"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/commands.json",
+          "bytes": 3866,
+          "sha256": "b9da668de1014bf0b331450ce012bbd5fa7f9724c49874eb80e7c8f1e10b422c"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "mlock",
+          "SYSCALL_NARGS": "2",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "mlock",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlock.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlock.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/421ddfc4c96f8910.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-317c9cxl/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlock.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 3879,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:501: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlock.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 3873,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 228,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_mlock",
+            "functionIndex": 1269,
+            "elementIndices": [
+              288
+            ],
+            "bodyOffset": 341153,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "mlock",
+          "returnType": "int",
+          "arguments": [
+            "const void *",
+            "size_t"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "size_t"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mlock.c",
+            "bytes": 21415,
+            "sha256": "73386ceb96fca0fe1140e52e4bc946e9dc03516a13b1500334e15fb1cb1e986d"
+          },
+          "line": 665,
+          "declarationText": "SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "quotactl",
+      "kernel": "quotactl",
+      "public": "quotactl",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "int",
+        "caddr_t"
+      ],
+      "header": "sys/quota.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/quotactl.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/9b3351aad49a525b.c",
+          "bytes": 227,
+          "sha256": "f99ebcbba49649c8606183b3954bc3e4bd0b302fa3fc3b76d5aa4202bc8489e3"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/f99ebcbba49649c8606183b3954bc3e4bd0b302fa3fc3b76d5aa4202bc8489e3-9b3351aad49a525b.c",
+          "bytes": 227,
+          "sha256": "f99ebcbba49649c8606183b3954bc3e4bd0b302fa3fc3b76d5aa4202bc8489e3"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/commands.json",
+          "bytes": 3875,
+          "sha256": "177f111ecfaea2abb4ba7697743992a12684ecaf089cb34e59b98895f94cd46b"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "quotactl",
+          "SYSCALL_NARGS": "4",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "quotactl",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "layout/historical exports",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/quotactl.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/quotactl.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/9b3351aad49a525b.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-33afawsu/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/quotactl.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6458,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:841: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/quotactl.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6453,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 60,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_quotactl",
+            "functionIndex": 1157,
+            "elementIndices": [
+              125
+            ],
+            "bodyOffset": 340593,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "quotactl",
+          "returnType": "int",
+          "arguments": [
+            "int",
+            "const char *",
+            "int",
+            "caddr_t"
+          ],
+          "header": "sys/quota.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/sys/quota.h",
+            "bytes": 5173,
+            "sha256": "2699d27ae971449850a945f114257de6b4d46f765f479c3c5e717519782a770d"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned int",
+            "const char __user *",
+            "qid_t",
+            "void __user *"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/fs/quota/quota.c",
+            "bytes": 28249,
+            "sha256": "7c982b05c45d4096cb9966063cdabf28f2c12703df9bbbf074b14f7e52354642"
+          },
+          "line": 917,
+          "declarationText": "SYSCALL_DEFINE4(quotactl, unsigned int, cmd, const char __user *, special,\n\t\tqid_t, id, void __user *, addr)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "name_to_handle_at",
+      "kernel": "name_to_handle_at",
+      "public": "name_to_handle_at",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "struct file_handle *",
+        "int *",
+        "int"
+      ],
+      "header": "fcntl.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/name_to_handle_at.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/b6cc3c47df121704.c",
+          "bytes": 245,
+          "sha256": "f7e96b672f677ee90369adb4b5d9eeeac2a066c56400a1b6cea3ce0feaa3febe"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/f7e96b672f677ee90369adb4b5d9eeeac2a066c56400a1b6cea3ce0feaa3febe-b6cc3c47df121704.c",
+          "bytes": 245,
+          "sha256": "f7e96b672f677ee90369adb4b5d9eeeac2a066c56400a1b6cea3ce0feaa3febe"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/commands.json",
+          "bytes": 3902,
+          "sha256": "9f99915150c5626f410379bc6493ba444d7dbb2d2ac9fdb37ca24677b20a17f5"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "name_to_handle_at",
+          "SYSCALL_NARGS": "5",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "name_to_handle_at",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "layout/historical exports",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/name_to_handle_at.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/name_to_handle_at.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/b6cc3c47df121704.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-42ror3g0/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/name_to_handle_at.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6654,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:1508: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/name_to_handle_at.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6649,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 264,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_name_to_handle_at",
+            "functionIndex": 1306,
+            "elementIndices": [
+              317
+            ],
+            "bodyOffset": 341338,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "name_to_handle_at",
+          "returnType": "int",
+          "arguments": [
+            "int",
+            "const char *",
+            "struct file_handle *",
+            "int *",
+            "int"
+          ],
+          "header": "fcntl.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/fcntl-linux.h",
+            "bytes": 15952,
+            "sha256": "33ca5fffcf66a26c3c115c82ef3458f0147c86a4c6932645839d800a657222a3"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int",
+            "const char __user *",
+            "struct file_handle __user *",
+            "void __user *",
+            "int"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/fs/fhandle.c",
+            "bytes": 13488,
+            "sha256": "5a53082d90cee6b0307626fbc7fe9c0f2c44e27938377e6e0b660697c804d1e2"
+          },
+          "line": 129,
+          "declarationText": "SYSCALL_DEFINE5(name_to_handle_at, int, dfd, const char __user *, name,\n\t\tstruct file_handle __user *, handle, void __user *, mnt_id,\n\t\tint, flag)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "process_madvise",
+      "kernel": "process_madvise",
+      "public": "process_madvise",
+      "return": "ssize_t",
+      "arguments": [
+        "int",
+        "const struct iovec *",
+        "size_t",
+        "int",
+        "unsigned int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 5,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/process_madvise.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/e12a45bae0c31f77.c",
+          "bytes": 241,
+          "sha256": "606978caad6f90603098e6eb89ebb5fed279df3be6da9bd3e4066cfa8211b1ac"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/606978caad6f90603098e6eb89ebb5fed279df3be6da9bd3e4066cfa8211b1ac-e12a45bae0c31f77.c",
+          "bytes": 241,
+          "sha256": "606978caad6f90603098e6eb89ebb5fed279df3be6da9bd3e4066cfa8211b1ac"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/commands.json",
+          "bytes": 3896,
+          "sha256": "a817e2e533b8477a6c0900d3105876ad4cd53868e62df872724fe4d54e28ad86"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "process_madvise",
+          "SYSCALL_NARGS": "5",
+          "SYSCALL_ULONG_ARG_1": "5",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "process_madvise",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_madvise.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_madvise.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/e12a45bae0c31f77.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-7h845ueh/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_madvise.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6390,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:802: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_madvise.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6385,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 440,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_process_madvise",
+            "functionIndex": 1275,
+            "elementIndices": [
+              384
+            ],
+            "bodyOffset": 341183,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "process_madvise",
+          "returnType": "ssize_t",
+          "arguments": [
+            "int",
+            "const struct iovec *",
+            "size_t",
+            "int",
+            "unsigned int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/mman_ext.h",
+            "bytes": 1230,
+            "sha256": "6276988239dba1a3d70ecd553b0084303827294850f6549262e98991997b7409"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int",
+            "const struct iovec __user *",
+            "size_t",
+            "int",
+            "unsigned int"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/madvise.c",
+            "bytes": 60251,
+            "sha256": "e414737cf066262c0e10043a9cc8e53b2e2395f3e5b5690d01ac884308bb3ca7"
+          },
+          "line": 2100,
+          "declarationText": "SYSCALL_DEFINE5(process_madvise, int, pidfd, const struct iovec __user *, vec,\n\t\tsize_t, vlen, int, behavior, unsigned int, flags)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "mseal",
+      "kernel": "mseal",
+      "public": "mseal",
+      "return": "int",
+      "arguments": [
+        "void *",
+        "size_t",
+        "unsigned long"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 3,
+      "planRow": {
+        "unit": "misc/mseal.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/1d3819e8202e401d.c",
+          "bytes": 271,
+          "sha256": "dae79a19c53b06e31abcbe06d8f105d8ea419eb36654f9cf8b7dbdac40d20679"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/dae79a19c53b06e31abcbe06d8f105d8ea419eb36654f9cf8b7dbdac40d20679-1d3819e8202e401d.c",
+          "bytes": 271,
+          "sha256": "dae79a19c53b06e31abcbe06d8f105d8ea419eb36654f9cf8b7dbdac40d20679"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/commands.json",
+          "bytes": 3866,
+          "sha256": "a5f471d255d66024935448c655c44b8c8ef893e48f6a5bbb768c6432f865183c"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "mseal",
+          "SYSCALL_NARGS": "3",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "3",
+          "SYSCALL_SYMBOL": "__mseal",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__mseal, mseal)",
+          "hidden_weak (mseal)"
+        ],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mseal.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mseal.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/1d3819e8202e401d.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-a77ra3_u/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mseal.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6178,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:592: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mseal.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6169,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 462,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_mseal",
+            "functionIndex": 1285,
+            "elementIndices": [
+              405
+            ],
+            "bodyOffset": 341233,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "mseal",
+          "returnType": "int",
+          "arguments": [
+            "void *",
+            "size_t",
+            "unsigned long"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/mman-shared.h",
+            "bytes": 3480,
+            "sha256": "c4adc07904fd01652f225879d6134234d4bf63e5946e1303d630ed50191facd2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "size_t",
+            "unsigned long"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mseal.c",
+            "bytes": 5191,
+            "sha256": "c98c944e12024dd56de2a4a6b7e110869ec9f3bf2524ada92248bbfb2076c5d5"
+          },
+          "line": 190,
+          "declarationText": "SYSCALL_DEFINE3(mseal, unsigned long, start, size_t, len, unsigned long,\n\t\tflags)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "sysinfo",
+      "kernel": "sysinfo",
+      "public": "sysinfo",
+      "return": "int",
+      "arguments": [
+        "struct sysinfo *"
+      ],
+      "header": "sys/sysinfo.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/sysinfo.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/0c64b5be38dc88ad.c",
+          "bytes": 281,
+          "sha256": "5ac7044586700cf0c907de699c1063923525ff04737eb9762be9b0a2ebc2e767"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/5ac7044586700cf0c907de699c1063923525ff04737eb9762be9b0a2ebc2e767-0c64b5be38dc88ad.c",
+          "bytes": 281,
+          "sha256": "5ac7044586700cf0c907de699c1063923525ff04737eb9762be9b0a2ebc2e767"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/commands.json",
+          "bytes": 3872,
+          "sha256": "99744e011f5d7831607bf75a200c15b3d04e230d2fb208080957a111d1ca5841"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "sysinfo",
+          "SYSCALL_NARGS": "1",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "__sysinfo",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__sysinfo, sysinfo)",
+          "hidden_weak (sysinfo)"
+        ],
+        "remainingGroup": "layout/historical exports",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/sysinfo.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/sysinfo.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/0c64b5be38dc88ad.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-alaq7knf/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/sysinfo.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6508,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:1085: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/sysinfo.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6490,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 179,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_sysinfo",
+            "functionIndex": 782,
+            "elementIndices": [
+              243
+            ],
+            "bodyOffset": 272014,
+            "bodySize": 314,
+            "bodySha256": "755fe23932072ef2edba4fc976c91981277760ee29882d8437ce1fff8e27b015",
+            "bodyPrefixHex": "01067f23808080800041d0006b2201248080808000200041",
+            "boundEnosys": false
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "sysinfo",
+          "returnType": "int",
+          "arguments": [
+            "struct sysinfo *"
+          ],
+          "header": "sys/sysinfo.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/sys/sysinfo.h",
+            "bytes": 1518,
+            "sha256": "29a9a5bbcaf1611d0365428d503dda9e7973f1845619020847644e554ebdf28d"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "struct sysinfo __user *"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/kernel/sys.c",
+            "bytes": 74515,
+            "sha256": "418d0bd8929cb41497a73a23e6700412224b062ec6904145c0628d5225abcd5e"
+          },
+          "line": 2997,
+          "declarationText": "SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)",
+          "sourceImplementationEnabled": true,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "enabled; genuine success fixture required"
+      }
+    },
+    {
+      "call": "pkey_alloc",
+      "kernel": "pkey_alloc",
+      "public": "pkey_alloc",
+      "return": "int",
+      "arguments": [
+        "unsigned int",
+        "unsigned int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/pkey_alloc.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/ca8873022f615805.c",
+          "bytes": 296,
+          "sha256": "d0156a997aa7de1a04e99283e77116ce95b24745a75cab17b35b72410cc32dca"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/d0156a997aa7de1a04e99283e77116ce95b24745a75cab17b35b72410cc32dca-ca8873022f615805.c",
+          "bytes": 296,
+          "sha256": "d0156a997aa7de1a04e99283e77116ce95b24745a75cab17b35b72410cc32dca"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/commands.json",
+          "bytes": 3881,
+          "sha256": "bb478afd0f5ed3dd830f6b68a551507e63d9e66c31ee969f592a3a4e2bb12490"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "pkey_alloc",
+          "SYSCALL_NARGS": "2",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "__pkey_alloc",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__pkey_alloc, pkey_alloc)",
+          "hidden_weak (pkey_alloc)"
+        ],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_alloc.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_alloc.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/ca8873022f615805.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-fwxyf_jo/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_alloc.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6757,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:1562: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_alloc.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6749,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 289,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_pkey_alloc",
+            "functionIndex": 1326,
+            "elementIndices": [
+              342
+            ],
+            "bodyOffset": 341438,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "pkey_alloc",
+          "returnType": "int",
+          "arguments": [
+            "unsigned int",
+            "unsigned int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/mman-shared.h",
+            "bytes": 3480,
+            "sha256": "c4adc07904fd01652f225879d6134234d4bf63e5946e1303d630ed50191facd2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "unsigned long"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mprotect.c",
+            "bytes": 28372,
+            "sha256": "79083647ff1f763c7e131d3ceba4bd9b313f9106e8d9a6b8a519acbf2a984906"
+          },
+          "line": 999,
+          "declarationText": "SYSCALL_DEFINE2(pkey_alloc, unsigned long, flags, unsigned long, init_val)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "munlock",
+      "kernel": "munlock",
+      "public": "munlock",
+      "return": "int",
+      "arguments": [
+        "const void *",
+        "size_t"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/munlock.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/fd81c3419b84fef0.c",
+          "bytes": 225,
+          "sha256": "d03fec84ae023e30c951090e2ed513c177ee028326c5dfb28ff45599f3ddd1e4"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/d03fec84ae023e30c951090e2ed513c177ee028326c5dfb28ff45599f3ddd1e4-fd81c3419b84fef0.c",
+          "bytes": 225,
+          "sha256": "d03fec84ae023e30c951090e2ed513c177ee028326c5dfb28ff45599f3ddd1e4"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/commands.json",
+          "bytes": 3872,
+          "sha256": "858e53bf438bb4d8aa240cc372fdfa43f528881c26a4cea5e6b840dcaa5b45f6"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "munlock",
+          "SYSCALL_NARGS": "2",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "munlock",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlock.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlock.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/fd81c3419b84fef0.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-gn70672a/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlock.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 4068,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:611: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlock.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 4063,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 229,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_munlock",
+            "functionIndex": 1270,
+            "elementIndices": [
+              289
+            ],
+            "bodyOffset": 341158,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "munlock",
+          "returnType": "int",
+          "arguments": [
+            "const void *",
+            "size_t"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "size_t"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mlock.c",
+            "bytes": 21415,
+            "sha256": "73386ceb96fca0fe1140e52e4bc946e9dc03516a13b1500334e15fb1cb1e986d"
+          },
+          "line": 683,
+          "declarationText": "SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "uname",
+      "kernel": "uname",
+      "public": "uname",
+      "return": "int",
+      "arguments": [
+        "struct utsname *"
+      ],
+      "header": "sys/utsname.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "posix/uname.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/d779f59cbbb25ea6.c",
+          "bytes": 271,
+          "sha256": "1bc4bd71eb07170536e4ace33c2e0b29ac1cd798466e4b98bdddc795d43f950c"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/1bc4bd71eb07170536e4ace33c2e0b29ac1cd798466e4b98bdddc795d43f950c-d779f59cbbb25ea6.c",
+          "bytes": 271,
+          "sha256": "1bc4bd71eb07170536e4ace33c2e0b29ac1cd798466e4b98bdddc795d43f950c"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/commands.json",
+          "bytes": 3870,
+          "sha256": "28291b173f02c1cacdc59134f6a8ba2954428bb6ccca32f4dd00df034b0f32ff"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "uname",
+          "SYSCALL_NARGS": "1",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "__uname",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__uname, uname)",
+          "hidden_weak (uname)"
+        ],
+        "remainingGroup": "layout/historical exports",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/posix",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/posix/uname.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/posix/uname.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/d779f59cbbb25ea6.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-h75jrawj/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/posix/uname.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/posix",
+        "originalFailureDiagnostics": [
+          {
+            "line": 8779,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:2225: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/posix/uname.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 8759,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 160,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_newuname",
+            "functionIndex": 755,
+            "elementIndices": [
+              224
+            ],
+            "bodyOffset": 264229,
+            "bodySize": 337,
+            "bodySha256": "fea6a03273a26e3cde2946738c073686f3a6cadfb85a431d240e6f365bec71ed",
+            "bodyPrefixHex": "01057f23808080800041e0036b2201248080808000200041",
+            "boundEnosys": false
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "uname",
+          "returnType": "int",
+          "arguments": [
+            "struct utsname *"
+          ],
+          "header": "sys/utsname.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/posix/sys/utsname.h",
+            "bytes": 2481,
+            "sha256": "2d36f7823a395e8aa3339f3fcd795757b640c2343a762057ea27285b6c209dbf"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "struct new_utsname __user *"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/kernel/sys.c",
+            "bytes": 74515,
+            "sha256": "418d0bd8929cb41497a73a23e6700412224b062ec6904145c0628d5225abcd5e"
+          },
+          "line": 1351,
+          "declarationText": "SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)",
+          "sourceImplementationEnabled": true,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "enabled; genuine success fixture required"
+      }
+    },
+    {
+      "call": "remap_file_pages",
+      "kernel": "remap_file_pages",
+      "public": "remap_file_pages",
+      "return": "int",
+      "arguments": [
+        "void *",
+        "size_t",
+        "int",
+        "size_t",
+        "int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 4,
+      "planRow": {
+        "unit": "misc/remap_file_pages.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/05229e804281c9f2.c",
+          "bytes": 326,
+          "sha256": "96be483d654541c27896d6bc05a5592a0cc4ce80749ddf9e8c9d953c1c373423"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/96be483d654541c27896d6bc05a5592a0cc4ce80749ddf9e8c9d953c1c373423-05229e804281c9f2.c",
+          "bytes": 326,
+          "sha256": "96be483d654541c27896d6bc05a5592a0cc4ce80749ddf9e8c9d953c1c373423"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/commands.json",
+          "bytes": 3899,
+          "sha256": "855dbfd9d1acec5d7b6dcda06ea9be4706626f81e48b92b26722f346f7f4f9cc"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "remap_file_pages",
+          "SYSCALL_NARGS": "5",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "4",
+          "SYSCALL_SYMBOL": "__remap_file_pages",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__remap_file_pages, remap_file_pages)",
+          "hidden_weak (remap_file_pages)"
+        ],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/remap_file_pages.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/remap_file_pages.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/05229e804281c9f2.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-kqspzdbb/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/remap_file_pages.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 4303,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:858: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/remap_file_pages.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 4295,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 234,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_remap_file_pages",
+            "functionIndex": 1277,
+            "elementIndices": [
+              294
+            ],
+            "bodyOffset": 341193,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "remap_file_pages",
+          "returnType": "int",
+          "arguments": [
+            "void *",
+            "size_t",
+            "int",
+            "size_t",
+            "int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "unsigned long",
+            "unsigned long",
+            "unsigned long",
+            "unsigned long"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mmap.c",
+            "bytes": 51223,
+            "sha256": "449b858385c7ece0ff88a8b41893efadb70a437fb8585a296c4ef0461a4c1545"
+          },
+          "line": 1086,
+          "declarationText": "SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,\n\t\tunsigned long, prot, unsigned long, pgoff, unsigned long, flags)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "process_mrelease",
+      "kernel": "process_mrelease",
+      "public": "process_mrelease",
+      "return": "int",
+      "arguments": [
+        "int",
+        "unsigned int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/process_mrelease.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/454c1932657b20ee.c",
+          "bytes": 243,
+          "sha256": "c7ea1fdd8b700909103f4cd0f1d95717db50b6ca1b69d3eb6785076bcb86b27c"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/c7ea1fdd8b700909103f4cd0f1d95717db50b6ca1b69d3eb6785076bcb86b27c-454c1932657b20ee.c",
+          "bytes": 243,
+          "sha256": "c7ea1fdd8b700909103f4cd0f1d95717db50b6ca1b69d3eb6785076bcb86b27c"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/commands.json",
+          "bytes": 3899,
+          "sha256": "80949e111065c7201e527566212d83d54caa237e1b3b97248a36dccb9a998ff3"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "process_mrelease",
+          "SYSCALL_NARGS": "2",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "process_mrelease",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_mrelease.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_mrelease.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/454c1932657b20ee.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-l995dt_7/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_mrelease.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6422,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:820: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/process_mrelease.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6417,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 448,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_process_mrelease",
+            "functionIndex": 3945,
+            "elementIndices": [
+              391
+            ],
+            "bodyOffset": 886003,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "process_mrelease",
+          "returnType": "int",
+          "arguments": [
+            "int",
+            "unsigned int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/mman_ext.h",
+            "bytes": 1230,
+            "sha256": "6276988239dba1a3d70ecd553b0084303827294850f6549262e98991997b7409"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int",
+            "unsigned int"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/oom_kill.c",
+            "bytes": 34311,
+            "sha256": "452f1348e79c252ee89215d55fb104591412bbcea4a3ee965e873a401f756b4e"
+          },
+          "line": 1195,
+          "declarationText": "SYSCALL_DEFINE2(process_mrelease, int, pidfd, unsigned int, flags)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "munlockall",
+      "kernel": "munlockall",
+      "public": "munlockall",
+      "return": "int",
+      "arguments": [],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/munlockall.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/eff44624e2f6f850.c",
+          "bytes": 231,
+          "sha256": "0dd8fab8c9745cc6b12be433461eff87f00b20a05afba8e3e53727169d5589ed"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/0dd8fab8c9745cc6b12be433461eff87f00b20a05afba8e3e53727169d5589ed-eff44624e2f6f850.c",
+          "bytes": 231,
+          "sha256": "0dd8fab8c9745cc6b12be433461eff87f00b20a05afba8e3e53727169d5589ed"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/commands.json",
+          "bytes": 3881,
+          "sha256": "29d4fb103fe67bf36635e5b88b625435d60acd88c26810731cde789085d23075"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "munlockall",
+          "SYSCALL_NARGS": "0",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "munlockall",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlockall.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlockall.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/eff44624e2f6f850.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-le3f2tms/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlockall.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 4105,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:628: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/munlockall.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 4098,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 231,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_munlockall",
+            "functionIndex": 1272,
+            "elementIndices": [
+              291
+            ],
+            "bodyOffset": 341168,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "munlockall",
+          "returnType": "int",
+          "arguments": [],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mlock.c",
+            "bytes": 21415,
+            "sha256": "73386ceb96fca0fe1140e52e4bc946e9dc03516a13b1500334e15fb1cb1e986d"
+          },
+          "line": 780,
+          "declarationText": "SYSCALL_DEFINE0(munlockall)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "mlockall",
+      "kernel": "mlockall",
+      "public": "mlockall",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/mlockall.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/c26696143c0a1983.c",
+          "bytes": 227,
+          "sha256": "d4cabb49be96a92604b1d47ff260e4974ce51cb783b6e023afd751c6963c3ffb"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/d4cabb49be96a92604b1d47ff260e4974ce51cb783b6e023afd751c6963c3ffb-c26696143c0a1983.c",
+          "bytes": 227,
+          "sha256": "d4cabb49be96a92604b1d47ff260e4974ce51cb783b6e023afd751c6963c3ffb"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/commands.json",
+          "bytes": 3875,
+          "sha256": "20c25a6c50af993f6971619da5d3a7a38c22c59cf6c85020e0ddc86ad28dad52"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "mlockall",
+          "SYSCALL_NARGS": "1",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "mlockall",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlockall.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlockall.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/c26696143c0a1983.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz337urz/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlockall.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 3922,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:518: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mlockall.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 3917,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 230,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_mlockall",
+            "functionIndex": 1271,
+            "elementIndices": [
+              290
+            ],
+            "bodyOffset": 341163,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "mlockall",
+          "returnType": "int",
+          "arguments": [
+            "int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mlock.c",
+            "bytes": 21415,
+            "sha256": "73386ceb96fca0fe1140e52e4bc946e9dc03516a13b1500334e15fb1cb1e986d"
+          },
+          "line": 751,
+          "declarationText": "SYSCALL_DEFINE1(mlockall, int, flags)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "epoll_ctl",
+      "kernel": "epoll_ctl",
+      "public": "epoll_ctl",
+      "return": "int",
+      "arguments": [
+        "int",
+        "int",
+        "int",
+        "struct epoll_event *"
+      ],
+      "header": "sys/epoll.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/epoll_ctl.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/b1f47c9182471987.c",
+          "bytes": 229,
+          "sha256": "9dda0477b3479b07e70d875898baf1e4287a0504f87420654c5203b9edbee399"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/9dda0477b3479b07e70d875898baf1e4287a0504f87420654c5203b9edbee399-b1f47c9182471987.c",
+          "bytes": 229,
+          "sha256": "9dda0477b3479b07e70d875898baf1e4287a0504f87420654c5203b9edbee399"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/commands.json",
+          "bytes": 3878,
+          "sha256": "0fc2a3b09672512cb3198dcd3baa07e70c64359379cd0fb1f801d7f2de5dc2c0"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "epoll_ctl",
+          "SYSCALL_NARGS": "4",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "epoll_ctl",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "layout/historical exports",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/epoll_ctl.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/epoll_ctl.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/b1f47c9182471987.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-pz8x3gdx/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/epoll_ctl.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 5676,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:92: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/epoll_ctl.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 5671,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 21,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_epoll_ctl",
+            "functionIndex": 6518,
+            "elementIndices": [
+              87
+            ],
+            "bodyOffset": 1464446,
+            "bodySize": 147,
+            "bodySha256": "a650b4a80fc2edc90ce7010f1879d83114b4866d4e8fc52439f62940355f5e68",
+            "bodyPrefixHex": "01057f23808080800041106b220124808080800020004110",
+            "boundEnosys": false
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "epoll_ctl",
+          "returnType": "int",
+          "arguments": [
+            "int",
+            "int",
+            "int",
+            "struct epoll_event *"
+          ],
+          "header": "sys/epoll.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/sys/epoll.h",
+            "bytes": 5670,
+            "sha256": "3e26351246dedad6361331fa72d5a8625d9c33377bc051bb905a2f052ae2d9ec"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int",
+            "int",
+            "int",
+            "struct epoll_event __user *"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/fs/eventpoll.c",
+            "bytes": 78719,
+            "sha256": "10632759c4da34a2458d7505e0401d6847d72412d96eab5ad6ddeb1aa8c78825"
+          },
+          "line": 2628,
+          "declarationText": "SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,\n\t\tstruct epoll_event __user *, event)",
+          "sourceImplementationEnabled": true,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "enabled; genuine success fixture required"
+      }
+    },
+    {
+      "call": "pkey_free",
+      "kernel": "pkey_free",
+      "public": "pkey_free",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 0,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/pkey_free.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/dba0522faf8a370d.c",
+          "bytes": 291,
+          "sha256": "e0b91e450a311c29235e87aa76ee0fa1e14abfe615d0e9707d25d11d2aa51a68"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/e0b91e450a311c29235e87aa76ee0fa1e14abfe615d0e9707d25d11d2aa51a68-dba0522faf8a370d.c",
+          "bytes": 291,
+          "sha256": "e0b91e450a311c29235e87aa76ee0fa1e14abfe615d0e9707d25d11d2aa51a68"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/commands.json",
+          "bytes": 3878,
+          "sha256": "abc5e1ed4308cedc03a29332ad73e7e45e51b1567a6347f49dc381086a944fb5"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "pkey_free",
+          "SYSCALL_NARGS": "1",
+          "SYSCALL_ULONG_ARG_1": "0",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "__pkey_free",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [
+          "weak_alias (__pkey_free, pkey_free)",
+          "hidden_weak (pkey_free)"
+        ],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_free.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_free.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/dba0522faf8a370d.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-u1aroyzv/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_free.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 6793,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:1582: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/pkey_free.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 6785,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 290,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_pkey_free",
+            "functionIndex": 1327,
+            "elementIndices": [
+              343
+            ],
+            "bodyOffset": 341443,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "pkey_free",
+          "returnType": "int",
+          "arguments": [
+            "int"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/sysdeps/unix/sysv/linux/bits/mman-shared.h",
+            "bytes": 3480,
+            "sha256": "c4adc07904fd01652f225879d6134234d4bf63e5946e1303d630ed50191facd2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "int"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mprotect.c",
+            "bytes": 28372,
+            "sha256": "79083647ff1f763c7e131d3ceba4bd9b313f9106e8d9a6b8a519acbf2a984906"
+          },
+          "line": 1029,
+          "declarationText": "SYSCALL_DEFINE1(pkey_free, int, pkey)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    },
+    {
+      "call": "mincore",
+      "kernel": "mincore",
+      "public": "mincore",
+      "return": "int",
+      "arguments": [
+        "void *",
+        "size_t",
+        "unsigned char *"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0,
+      "ULONG_ARG_1": 2,
+      "ULONG_ARG_2": 0,
+      "planRow": {
+        "unit": "misc/mincore.o",
+        "originalClass": "unaudited generated syscall signature",
+        "source": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/87a88a9a04b53c75.c",
+          "bytes": 225,
+          "sha256": "c100614890964ba8b4eaf0b7f9678865982e2aaa0552b531319bab5bce57388f"
+        },
+        "sourceSnapshot": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source-snapshots/failed-sources/c100614890964ba8b4eaf0b7f9678865982e2aaa0552b531319bab5bce57388f-87a88a9a04b53c75.c",
+          "bytes": 225,
+          "sha256": "c100614890964ba8b4eaf0b7f9678865982e2aaa0552b531319bab5bce57388f"
+        },
+        "retainedDirectory": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp",
+        "retainedCommands": {
+          "path": "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/commands.json",
+          "bytes": 3872,
+          "sha256": "3d53d662822464b27e3f92c38669dc3a6fc74e408dc689c1e1e5b86a80e694b5"
+        },
+        "streamDefines": {
+          "SYSCALL_NAME": "mincore",
+          "SYSCALL_NARGS": "3",
+          "SYSCALL_ULONG_ARG_1": "2",
+          "SYSCALL_ULONG_ARG_2": "0",
+          "SYSCALL_SYMBOL": "mincore",
+          "SYSCALL_NOERRNO": "0",
+          "SYSCALL_ERRVAL": "0"
+        },
+        "streamAliases": [],
+        "remainingGroup": "memory",
+        "originalCommands": [
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/clang",
+            "--target=wasm32-unknown-linux-gnu",
+            "-nostdlib",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-std=gnu11",
+            "-fgnu89-inline",
+            "-O2",
+            "-matomics",
+            "-mbulk-memory",
+            "-Wall",
+            "-Wwrite-strings",
+            "-Wundef",
+            "-Wimplicit-fallthrough",
+            "-fmerge-all-constants",
+            "-frounding-math",
+            "-ftrapping-math",
+            "-fno-stack-protector",
+            "-fno-common",
+            "-U_FORTIFY_SOURCE",
+            "-Wstrict-prototypes",
+            "-Wold-style-definition",
+            "-fmath-errno",
+            "-fno-pie",
+            "-ftls-model=initial-exec",
+            "-I../include",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc",
+            "-I/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake",
+            "-I../sysdeps/unix/sysv/linux/wasm32",
+            "-I../sysdeps/unix/sysv/linux/include",
+            "-I../sysdeps/unix/sysv/linux",
+            "-I../sysdeps/nptl",
+            "-I../sysdeps/pthread",
+            "-I../sysdeps/gnu",
+            "-I../sysdeps/unix/inet",
+            "-I../sysdeps/unix/sysv",
+            "-I../sysdeps/unix",
+            "-I../sysdeps/posix",
+            "-I../sysdeps/wasm32",
+            "-I../sysdeps/wordsize-32",
+            "-I../sysdeps/ieee754/ldbl-128",
+            "-I../sysdeps/ieee754/dbl-64",
+            "-I../sysdeps/ieee754/flt-32",
+            "-I../sysdeps/ieee754",
+            "-I../sysdeps/generic",
+            "-I..",
+            "-I../libio",
+            "-I.",
+            "-nostdinc",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/include",
+            "-isystem",
+            "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ckv9mf7zan7434qdbfj6cv8dhqn228ab-linux-0.0.0-headers/include",
+            "-D_LIBC_REENTRANT",
+            "-include",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/libc-modules.h",
+            "-DMODULE_NAME=libc",
+            "-include",
+            "../include/libc-symbols.h",
+            "-DTOP_NAMESPACE=glibc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/front.ll",
+            "-MD",
+            "-MP",
+            "-MF",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mincore.o.dt",
+            "-MT",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mincore.o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/generated/87a88a9a04b53c75.c",
+            "-fwasm-exceptions",
+            "-Xclang",
+            "-disable-llvm-passes",
+            "-S",
+            "-emit-llvm"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/warnings",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/front.ll",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/warnings.bc"
+          ],
+          [
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/lower",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/warnings.bc",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/lower.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/opt",
+            "-passes=default<O2>",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/lower.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/opt.bc"
+          ],
+          [
+            "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin/llc",
+            "-mattr=+atomics,+bulk-memory,+exception-handling",
+            "-exception-model=wasm",
+            "-wasm-enable-eh",
+            "-wasm-enable-sjlj",
+            "-wasm-use-legacy-eh",
+            "-filetype=obj",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/tmp/fullmake-cc-zdzy9dfp/opt.bc",
+            "-o",
+            "/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mincore.o"
+          ]
+        ],
+        "originalGNUcwd": "/mnt/p6/build/glibc-fullmake-inventory-20261002/source/glibc-2.44/misc",
+        "originalFailureDiagnostics": [
+          {
+            "line": 3758,
+            "text": "make[2]: *** [/mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/sysd-syscalls:484: /mnt/p6/build/glibc-fullmake-inventory-20261002/objects/fullmake/misc/mincore.o] Error 1"
+          }
+        ],
+        "signatureGateDiagnostic": [
+          {
+            "line": 3753,
+            "text": "../sysdeps/unix/sysv/linux/wasm32/syscall-template.S:31:3: error: \"GNU generated syscall has no audited native Wasm public signature\""
+          }
+        ],
+        "syscallNumber": 232,
+        "selectedKernelFunctions": [
+          {
+            "name": "sys_mincore",
+            "functionIndex": 1273,
+            "elementIndices": [
+              292
+            ],
+            "bodyOffset": 341173,
+            "bodySize": 4,
+            "bodySha256": "5f51e5a7d8d201941dddaeaed4fc1773573d40a5a76554643c65f8cd7a8e9b2d",
+            "bodyPrefixHex": "00415a0b",
+            "boundEnosys": true
+          }
+        ],
+        "selected": true,
+        "publicType": {
+          "public": "mincore",
+          "returnType": "int",
+          "arguments": [
+            "void *",
+            "size_t",
+            "unsigned char *"
+          ],
+          "header": "sys/mman.h",
+          "declarationSource": {
+            "path": "/mnt/p6/build/glibc-wasm-bootstrap-20261002/source/glibc-2.44/misc/sys/mman.h",
+            "bytes": 5669,
+            "sha256": "aebf7874a8c61ef2b62d989ee437c0a10ef5b493b79bc711ca37365bee0ed7d2"
+          }
+        },
+        "kernelSignature": {
+          "returnType": "long",
+          "arguments": [
+            "unsigned long",
+            "size_t",
+            "unsigned char __user *"
+          ],
+          "declarationSource": {
+            "path": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/mm/mincore.c",
+            "bytes": 8645,
+            "sha256": "77bcb09658f6eabe9e581f5e985e4b45985adebe46ca9667c4ff431d6bb75aba"
+          },
+          "line": 291,
+          "declarationText": "SYSCALL_DEFINE3(mincore, unsigned long, start, size_t, len,\n\t\tunsigned char __user *, vec)",
+          "sourceImplementationEnabled": false,
+          "note": "Dormant source declaration does not imply support; selected code body is authoritative."
+        },
+        "capability": "exact ENOSYS"
+      }
+    }
+  ]
+}

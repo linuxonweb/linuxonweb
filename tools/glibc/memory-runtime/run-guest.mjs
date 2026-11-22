@@ -1,0 +1,15 @@
+import{spawn}from'node:child_process';
+import fs from'node:fs/promises';
+import path from'node:path';
+import{fileURLToPath}from'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),[,out]=process.argv.slice(2);
+const child=spawn(process.execPath,[path.join(here,'../syscalls-arity/run-guest.mjs'),...process.argv.slice(2)],{stdio:'inherit',env:process.env});
+const status=await new Promise(resolve=>child.once('exit',resolve));
+const base=JSON.parse(await fs.readFile(path.join(out,'arity-result.json')));
+const lines=(await fs.readFile(path.join(out,'guest-console.txt'),'utf8')).split(/\r?\n/);
+const count=x=>lines.filter(y=>x===y).length;
+const isolated=count('GNU_MEMORY_ISOLATED public=8 union=adjacent,partial-hole brk=owned arithmetic=preserved result=PASS')===1&&count('GNU_ABORT_EXIT mode=memory-isolated status=0')===1;
+const trim=count('GNU_MEMORY_TRIM GNU=mtrim interior=discarded neighbors=preserved metadata=reused result=PASS')===1;
+const threads=count('GNU_MEMORY_THREADS users=3 public=mmap,munmap,mremap errno=isolated payload=integrity result=PASS')===1;
+const report={pass:status===0&&base.pass&&isolated&&trim&&threads,isolated,trim,threads,base:base.pass,scope:'genuine GNU make memory providers, bounded anonymous RW logical authority; no physical decommit/protection/files/default NPTL'};
+await fs.writeFile(path.join(out,'memory-result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));if(!report.pass)process.exitCode=1;

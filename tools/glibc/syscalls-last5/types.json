@@ -1,0 +1,81 @@
+{
+  "entries": [
+    {
+      "call": "capget",
+      "kernel": "capget",
+      "result": "int",
+      "arguments": [
+        "cap_user_header_t",
+        "cap_user_data_t"
+      ],
+      "public": false,
+      "noerrno": 0,
+      "headers": [
+        "linux/capability.h"
+      ]
+    },
+    {
+      "call": "capset",
+      "kernel": "capset",
+      "result": "int",
+      "arguments": [
+        "cap_user_header_t",
+        "const struct __user_cap_data_struct *"
+      ],
+      "public": false,
+      "noerrno": 0,
+      "headers": [
+        "linux/capability.h"
+      ]
+    },
+    {
+      "call": "mount_setattr",
+      "kernel": "mount_setattr",
+      "result": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "unsigned int",
+        "struct mount_attr *",
+        "size_t"
+      ],
+      "public": true,
+      "noerrno": 0,
+      "headers": [
+        "sys/mount.h"
+      ]
+    },
+    {
+      "call": "pidfd_send_signal",
+      "kernel": "pidfd_send_signal",
+      "result": "int",
+      "arguments": [
+        "int",
+        "int",
+        "siginfo_t *",
+        "unsigned int"
+      ],
+      "public": true,
+      "noerrno": 0,
+      "headers": [
+        "sys/pidfd.h",
+        "signal.h"
+      ]
+    },
+    {
+      "call": "pivot_root",
+      "kernel": "pivot_root",
+      "result": "int",
+      "arguments": [
+        "const char *",
+        "const char *"
+      ],
+      "public": false,
+      "noerrno": 0,
+      "headers": [
+        "sys/mount.h"
+      ]
+    }
+  ],
+  "historicalExports": "capget/capset/pivot_root have genuine GNU abilist exports without a GNU public header"
+}

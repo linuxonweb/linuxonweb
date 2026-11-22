@@ -1,0 +1,42 @@
+{
+  "scope": "three genuine scheduler wrappers",
+  "entries": [
+    {
+      "call": "sched_setp",
+      "kernel": "sched_setparam",
+      "public": "sched_setparam",
+      "arguments": [
+        "pid_t",
+        "const struct sched_param *"
+      ],
+      "header": "sched.h",
+      "noerrno": 0,
+      "return": "int"
+    },
+    {
+      "call": "sched_getp",
+      "kernel": "sched_getparam",
+      "public": "sched_getparam",
+      "arguments": [
+        "pid_t",
+        "struct sched_param *"
+      ],
+      "header": "sched.h",
+      "noerrno": 0,
+      "return": "int"
+    },
+    {
+      "call": "sched_sets",
+      "kernel": "sched_setscheduler",
+      "public": "sched_setscheduler",
+      "arguments": [
+        "pid_t",
+        "int",
+        "const struct sched_param *"
+      ],
+      "header": "sched.h",
+      "noerrno": 0,
+      "return": "int"
+    }
+  ]
+}
