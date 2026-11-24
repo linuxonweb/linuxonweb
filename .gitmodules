@@ -2,3 +2,7 @@
 	path = firefox
 	url = https://github.com/linuxonweb/firefox
 	branch = main
+[submodule "web/sites"]
+	path = web/sites
+	url = https://github.com/linuxonweb/sites
+	branch = gpt-6-agent-persistent-linux-performance
