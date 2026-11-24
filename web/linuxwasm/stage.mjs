@@ -31,7 +31,9 @@ const released = new Set(Object.keys(RELEASE_FILES).map(p => p.slice(1)));
 function* walk(dir, rel = '') {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
     const r = rel ? `${rel}/${ent.name}` : ent.name;
-    if (skip.some(re => re.test(r))) continue;
+    // index.html loads xterm straight from web/linux/node_modules/@xterm.
+    const xterm = 'linux/node_modules/@xterm';
+    if (skip.some(re => re.test(r)) && !r.startsWith(xterm) && !xterm.startsWith(r)) continue;
     if (/(^|\/)tests(\/|$)/.test(r) && !r.startsWith('linux/tests')) continue;
     if (r.startsWith('linux/tests/') && !ent.isDirectory() && !testsKeep.test(r)) continue;
     const abs = path.join(dir, ent.name);
