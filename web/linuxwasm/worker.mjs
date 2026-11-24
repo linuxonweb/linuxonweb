@@ -251,7 +251,12 @@ async function handleAsset(request, env, pathname) {
   const headers = new Headers(response.headers);
   for (const [name, value] of Object.entries(isolation)) headers.set(name, value);
   headers.set('Content-Type', contentType(path));
-  headers.set('Cache-Control', 'no-cache');
+  // The emulator starts a Web Worker for every guest thread (dozens per boot),
+  // and each one imports ~10 modules from /linux/dist. With no-cache, every
+  // import is a revalidation round trip to the edge, which is free on localhost
+  // but adds seconds per thread here. Pages stay no-cache. Other files may be
+  // up to 10 minutes stale after a deploy.
+  headers.set('Cache-Control', path.endsWith('.html') ? 'no-cache' : 'public, max-age=600');
   return new Response(response.body, { status: response.status, headers });
 }
 
