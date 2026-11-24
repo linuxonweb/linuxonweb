@@ -6,9 +6,12 @@
 // beside a copy of it whose CASE(LoopHead) calls pbljit::OnLoopHead (see
 // tools/build-firefox-pbl-jit.py). Upstream SpiderMonkey files are unchanged.
 //
-// A hot innermost loop (LoopHead .. the last Goto/JumpIfTrue back to it, with
-// no nested loop) whose ops are all in the subset below is translated into one
-// wasm function (23 x i64) -> i64 and installed with the private jit_install
+// A hot loop (LoopHead .. its last backedge) whose ops are in the subset
+// below is translated into one wasm function. Properly nested numeric loops
+// up to depth three share that function; immutable numeric Array references and
+// frame-only lexical initialization are also supported. Other nested shapes
+// fail closed. The
+// function (23 x i64) -> i64 is installed with the private jit_install
 // syscall (docs/guest-jit-runtime-primitive-20260928.md). Values have static
 // types (Int32, Double, Boolean, undefined, null, the TDZ magic); frame locals
 // and unaliased formal arguments ("vars") and the PBL operand stack live in
@@ -19,8 +22,10 @@
 // (if/else, &&, ||, ??, continue) become nested wasm blocks; their joins must
 // agree on all types. A head-live var holding an Array (class-guarded at
 // entry, never written in the loop) supports dense in-bounds GetElem/SetElem
-// of numbers and `.length`; holes, out-of-bounds indices, frozen elements and
-// unexpected element types bail. The same var may instead hold a
+// of numbers and `.length`. Nested loops can initialize holes or append exactly
+// at initializedLength within existing capacity and array length only behind
+// receiver/prototype guards; other holes, bounds failures, frozen elements and
+// unexpected element types bail. In single loops the same var may hold a
 // fixed-length Int32Array/Float64Array (bounds-checked against its current
 // length slot; Int32 stores only; `.length` is not compiled because it is an
 // inherited, redefinable accessor, so such loops must bound by a number, e.g.
@@ -31,10 +36,10 @@
 // support hoisted identity guards and allocation-free Math operations.
 // Cache entries are invalidated on script/major-GC changes and skipped during
 // compacting incremental GCs (all incremental GCs with PBLJIT_INCRGC=0; see
-// OnLoopHead for the invariant). Vars read before
-// being written in an iteration are type-guarded at entry and must keep that
-// type around the loop; the others are reloaded from the frame each
-// iteration. The code leaves the loop at:
+// OnLoopHead for the invariant). Vars read before being written are type-guarded
+// at entry and must keep a converged type at every loop header. Other vars are
+// flushed before a backedge forgets their types and initialized before their
+// next use. The code leaves the loop at:
 //   - a jump out of the region (normal exit, e.g. the loop condition),
 //   - an int32 overflow / non-int result, or a double outside the int32 range
 //     of a bitwise op, *before* the op (PBL redoes it with exact semantics),
@@ -58,6 +63,7 @@
 
 #include <atomic>
 #include <new>
+#include <initializer_list>
 
 #ifdef PBLJIT_HOST_TEST
 #  include "host-test/mock.h"  // host emitter test (tools/pbl-jit/host-test)
@@ -141,6 +147,8 @@ constexpr uint32_t kMaxBails = 64;
 constexpr uint32_t kMaxRegion = 512;
 constexpr uint32_t kMaxVars = 32;  // locals + arguments
 constexpr uint32_t kMaxTargets = 32;
+constexpr uint32_t kMaxLoops = 8;
+constexpr uint32_t kMaxLoopNesting = 3;
 constexpr uint32_t kMaxDepth = 16;
 constexpr uint32_t kMaxInstalls = 4000;
 
@@ -383,6 +391,24 @@ struct ObjectInfo {
   uint32_t pointer = 0, shape = 0;
   bool plain = false, canWrite = false, tenured = false;
 };
+// A complete, bounded prototype-chain proof for an allocation-free dense add.
+// The receiver is reloaded from its rooted frame variable, never embedded.
+// Prototype constants are tenured and shapes are protected by the major epoch.
+constexpr uint32_t kMaxArrayProtos = 8;
+struct ArrayInitInfo {
+  uint32_t shape = 0, nprotos = 0;
+  ObjectInfo protos[kMaxArrayProtos];
+};
+// Raw object facts only. Host verification supplies independent object graphs;
+// the eligibility predicates and complete chain walk below are shared with the
+// native compiler. Reading native facts never invokes JS or allocates GC things.
+struct ArrayInitNode {
+  enum class Kind { Other, Array, Plain } kind = Kind::Other;
+  uint32_t shape = 0, prototype = 0, initializedLength = 0, flags = 0;
+  bool tenured = false, dictionary = false, indexed = false;
+  bool extensible = false, lengthWritable = false;
+  bool watchesAdd = false, watchesValue = false;
+};
 struct SlotInfo {
   uint32_t offset = 0;
   bool dynamic = false, writable = false;
@@ -499,8 +525,14 @@ int32_t OffClasp() { return 0; }
 int32_t OffElements() { return 8; }
 int32_t OffFlags() { return -16; }
 int32_t OffInitLen() { return -12; }
+int32_t OffCapacity() { return -8; }
 int32_t OffLength() { return -4; }
 uint32_t FrozenFlag() { return 0x40; }
+uint32_t InitForbiddenFlags() { return ~uint32_t(0x1 | 0x80); }
+uint64_t HoleBits() { return uint64_t(0xFFFFFF85u) << 32 | JS_ELEMENTS_HOLE; }
+bool ReadArrayInitNode(uint32_t pointer, ArrayInitNode& node) {
+  return MockReadArrayInitNode(pointer, node);
+}
 // -1: not an Array; 0: other element types; 1: Int32; 2: numbers.
 int ArrayKind(uint64_t bits) { return MockArrayKind(uint32_t(bits)); }
 bool AtomIsLength(JSScript*, jsbytecode* pc) { return MockAtomIsLength(pc); }
@@ -522,8 +554,36 @@ int32_t OffClasp() { return int32_t(BaseShape::offsetOfClasp()); }
 int32_t OffElements() { return int32_t(NativeObject::offsetOfElements()); }
 int32_t OffFlags() { return ObjectElements::offsetOfFlags(); }
 int32_t OffInitLen() { return ObjectElements::offsetOfInitializedLength(); }
+int32_t OffCapacity() { return ObjectElements::offsetOfCapacity(); }
 int32_t OffLength() { return ObjectElements::offsetOfLength(); }
 uint32_t FrozenFlag() { return ObjectElements::FROZEN; }
+// Permit only fixed storage and the non-packed marker. In particular, reject
+// non-writable length, non-extensible/sealed/frozen, shifted/shared elements,
+// active iteration and any future flag not explicitly reviewed here.
+uint32_t InitForbiddenFlags() {
+  return ~uint32_t(ObjectElements::FIXED | ObjectElements::NON_PACKED);
+}
+uint64_t HoleBits() { return MagicValue(JS_ELEMENTS_HOLE).asRawBits(); }
+bool ReadArrayInitNode(uint32_t pointer, ArrayInitNode& node) {
+  JSObject* obj = reinterpret_cast<JSObject*>(uintptr_t(pointer));
+  // This class restriction excludes proxies, resolve/set/add hooks, wrappers
+  // and typed arrays before using any NativeObject or static-prototype getter.
+  if (!obj->is<ArrayObject>() && !obj->is<PlainObject>()) return false;
+  NativeObject& native = obj->as<NativeObject>();
+  node.kind = obj->is<ArrayObject>() ? ArrayInitNode::Kind::Array : ArrayInitNode::Kind::Plain;
+  node.shape = uint32_t(uintptr_t(native.shape()));
+  node.prototype = uint32_t(uintptr_t(native.staticPrototype()));
+  node.initializedLength = native.getDenseInitializedLength();
+  node.flags = native.getElementsHeader()->getFlags();
+  node.tenured = native.isTenured();
+  node.dictionary = native.inDictionaryMode();
+  node.indexed = native.isIndexed();
+  node.extensible = native.isExtensible();
+  node.lengthWritable = obj->is<ArrayObject>() && obj->as<ArrayObject>().lengthIsWritable();
+  node.watchesAdd = Watchtower::watchesPropertyAdd(&native);
+  node.watchesValue = Watchtower::watchesPropertyValueChange(&native);
+  return true;
+}
 // Samples the first 64 dense elements (holes skipped) at compile time; the
 // generated code checks every element it reads.
 int ArrayKind(uint64_t bits) {
@@ -579,6 +639,31 @@ static_assert(sizeof(size_t) == 4 && sizeof(void*) == 4,
               "typed array PrivateValue low-word loads assume wasm32");
 #endif
 
+bool InspectArrayForInit(uint32_t pointer, ArrayInitInfo& info) {
+  info = ArrayInitInfo();
+  ArrayInitNode node;
+  if (!ReadArrayInitNode(pointer, node) || node.kind != ArrayInitNode::Kind::Array ||
+      node.dictionary || node.indexed || !node.extensible || !node.lengthWritable ||
+      node.watchesAdd || node.watchesValue || (node.flags & InitForbiddenFlags())) return false;
+  // Shape identity captures sparse properties, extensibility, prototype links
+  // and Watchtower flags. Dictionary maps can change in place and are excluded.
+  info.shape = node.shape;
+  // A stricter subset than CacheIR CanAttachAddElement: no indexed property of
+  // any kind on any prototype. Shape guards alone do not detect dense additions,
+  // so every prototype's initialized length is also checked on every entry.
+  for (uint32_t proto = node.prototype; proto; proto = node.prototype) {
+    if (info.nprotos == kMaxArrayProtos || !ReadArrayInitNode(proto, node) ||
+        (node.kind != ArrayInitNode::Kind::Array && node.kind != ArrayInitNode::Kind::Plain) ||
+        !node.tenured || node.dictionary || node.indexed || node.initializedLength != 0) return false;
+    ObjectInfo& stored = info.protos[info.nprotos++];
+    stored.pointer = proto;
+    stored.shape = node.shape;
+    stored.plain = node.kind == ArrayInitNode::Kind::Plain;
+    stored.tenured = true;
+  }
+  return true;
+}
+
 // Wasm local layout: params 0..22 (i64); i32 locals frame, sp, interrupt
 // bits, out, argv; the frame variables; the operand stack; one i32 and one
 // i64 temporary; then f64 locals mirroring the variables, the operand stack
@@ -600,6 +685,19 @@ struct State {
   uint32_t depth = 0;
   Ty stack[kMaxDepth];
   Ty var[kMaxVars];
+};
+
+// Lexically nested natural loops. The entry state is checked against every
+// compiled backedge, including a continue from a descendant loop.
+struct Loop {
+  jsbytecode* head = nullptr;
+  jsbytecode* end = nullptr;
+  uint32_t parent = 0, depth = 1, liveMask = 0, ic = 0;
+  State entry;
+};
+struct Label {
+  bool loop;
+  uint32_t index;
 };
 
 struct Compiler {
@@ -630,12 +728,19 @@ struct Compiler {
   Ty elemTy[kMaxVars];  // for Array vars: Int, Double or Unknown
   int typedKind[kMaxVars] = {};  // for Array vars: 0, kTypedInt32 or kTypedFloat64
   Ty rowTy[kMaxVars] = {};  // for Array vars of other elements: kRowInt/kRowNum or Unknown
+  ArrayInitInfo arrayInit[kMaxVars];
+  bool arrayCanInit[kMaxVars] = {}, arrayWrites[kMaxVars] = {};
   uint32_t maxArg = 0;  // 1 + highest argument index used
-  // Forward jump targets inside the region, ascending. Each one is the end
-  // of a wasm block opened at the top of the loop body (innermost first).
+  // Forward targets, ascending. Each block opens inside its owning loop;
+  // ancestor exit blocks surround all descendant loops.
   uint32_t ntargets = 0;
   jsbytecode* targetPc[kMaxTargets];
   State targetSt[kMaxTargets];
+  uint32_t targetOwner[kMaxTargets];
+  uint32_t nloops = 0;
+  Loop loops[kMaxLoops] = {};
+  Label labels[kMaxTargets + kMaxLoops];
+  uint32_t nlabels = 0, nactive = 0, active[kMaxLoops];
   uint32_t firstOpen = 0;  // first target not yet reached
   State st;
   uint32_t maxDepth = 0, nops = 0, icIndex = 0, headIc = 0;
@@ -755,28 +860,77 @@ struct Compiler {
     code.put(W_RETURN);
   }
 
-  // Head-live variables stay in wasm locals with their head type across the
-  // backedge; head-dead ones are stored to the frame so the next iteration
-  // starts with them in the Head state again.
-  bool checkBackedge(jsbytecode* pc) {
+  int findLoop(const jsbytecode* pc) const {
+    for (uint32_t i = 0; i < nloops; i++)
+      if (loops[i].head == pc) return int(i);
+    return -1;
+  }
+  // Every explicit Wasm label is tracked; temporary IFs are passed as extra.
+  int labelDepth(bool loop, uint32_t index, uint32_t extra = 0) const {
+    for (uint32_t i = nlabels; i > 0; i--)
+      if (labels[i - 1].loop == loop && labels[i - 1].index == index)
+        return int(nlabels - i + extra);
+    return -1;
+  }
+  bool beginLoop(uint32_t i, jsbytecode* pc) {
+    Loop& l = loops[i];
+    if (st.live) {
+      if (st.depth) return reject("loop entry depth", pc);
+      for (uint32_t v = 0; v < nvars; v++) {
+        if (st.var[v] == Ty::Head && (l.liveMask >> v & 1))
+          return reject("loop entry read", pc);
+        if (nloops > 1 && st.var[v] != Ty::Head && !IsNum(st.var[v]) &&
+            !IsArr(st.var[v]) &&
+            !(st.var[v] == Ty::Magic && !varLive[v] && !(l.liveMask >> v & 1)))
+          return reject("nested variable type", pc);
+      }
+    }
+    l.entry = st;
+    active[nactive++] = i;
+    code.put(W_LOOP), code.put(W_VOID);
+    labels[nlabels++] = {true, i};
+    // Latest target is outermost so the earliest one closes first.
+    for (uint32_t j = ntargets; j > 0; j--) {
+      if (targetOwner[j - 1] != i) continue;
+      code.put(W_BLOCK), code.put(W_VOID);
+      labels[nlabels++] = {false, j - 1};
+    }
+    return true;
+  }
+  bool closeLoops(jsbytecode* pc) {
+    while (nactive && loops[active[nactive - 1]].end == pc) {
+      uint32_t i = active[--nactive];
+      if (!nlabels || !labels[nlabels - 1].loop || labels[nlabels - 1].index != i)
+        return reject("loop label", pc);
+      code.put(W_END);
+      nlabels--;
+    }
+    return true;
+  }
+  // Concrete header types must converge on every incoming backedge. A Head
+  // variable is dead at that header; flush its value before forgetting it.
+  bool checkBackedge(jsbytecode* pc, uint32_t i) {
     if (st.depth != 0) return reject("backedge depth", pc);
+    const State& entry = loops[i].entry;
+    if (!entry.live) return reject("loop entry", pc);
     bool same = true;
     for (uint32_t v = 0; v < nvars; v++) {
-      if (!varLive[v] || st.var[v] == headTy[v]) continue;
+      Ty t = entry.var[v];
+      if (t == Ty::Head || st.var[v] == t) continue;
       same = false;
-      if (mixed(st.var[v], headTy[v])) want.vars |= 1u << v;
+      if (mixed(st.var[v], t)) want.vars |= 1u << v;
     }
     return same || reject("backedge type", pc);
   }
-  // `nest` = enclosing structured blocks between here and the `loop`.
-  void emitBackedge(uint32_t nest) {
+  void emitBackedge(uint32_t i, uint32_t nest) {
+    const Loop& l = loops[i];
     lget(P_INTR);
     code.put(W_ATOMIC), code.put(W_I32ATOMICLOAD), code.uleb(2), code.uleb(0);
     code.put(W_IF), code.put(W_VOID);
-    emitExit(Interrupt, head, headIc);
+    emitExit(Interrupt, l.head, l.ic);
     code.put(W_END);
     for (uint32_t v = 0; v < nvars; v++) {
-      if (!varLive[v] && st.var[v] != Ty::Head) {
+      if (l.entry.var[v] == Ty::Head && st.var[v] != Ty::Head) {
         varAddr(v);
         boxStore(varLocal(v), st.var[v]);
       }
@@ -821,30 +975,94 @@ struct Compiler {
     return same || reject("join type", pc);
   }
 
-  // Pass 1: find the region (up to the last backedge before any nested
-  // loop), its frame variables and its forward jump targets.
+  // Nested regions keep only numeric state and immutable head Array references.
+  // Formal arguments are unaliased/read-only; calls, object properties,
+  // allocations, environment creation and exception operations stay excluded.
+  // Frame-only TDZ sentinels may initialize dead locals, never flow into a read.
+  // Booleans may be temporary comparison/branch operands.
+  static bool nestedOp(JSOp op) {
+    switch (op) {
+      case JSOp::LoopHead: case JSOp::JumpTarget:
+      case JSOp::Nop: case JSOp::NopIsAssignOp: case JSOp::DebugLeaveLexicalEnv:
+      case JSOp::Zero: case JSOp::One: case JSOp::Int8: case JSOp::Uint16:
+      case JSOp::Uint24: case JSOp::Int32: case JSOp::Double:
+      case JSOp::True: case JSOp::False:
+      case JSOp::GetLocal: case JSOp::GetArg: case JSOp::SetLocal:
+      case JSOp::InitLexical: case JSOp::Uninitialized: case JSOp::CheckLexical:
+      case JSOp::GetElem: case JSOp::SetElem: case JSOp::StrictSetElem:
+      case JSOp::ToPropertyKey:
+      case JSOp::Pop: case JSOp::Dup: case JSOp::Dup2: case JSOp::Swap:
+      case JSOp::Add: case JSOp::Sub: case JSOp::Mul: case JSOp::Div: case JSOp::Mod:
+      case JSOp::BitOr: case JSOp::BitAnd: case JSOp::BitXor:
+      case JSOp::Lsh: case JSOp::Rsh: case JSOp::Ursh:
+      case JSOp::Eq: case JSOp::Ne: case JSOp::StrictEq: case JSOp::StrictNe:
+      case JSOp::Lt: case JSOp::Le: case JSOp::Gt: case JSOp::Ge:
+      case JSOp::Inc: case JSOp::Dec: case JSOp::Neg: case JSOp::BitNot:
+      case JSOp::Pos: case JSOp::ToNumeric: case JSOp::Not:
+      case JSOp::Goto: case JSOp::JumpIfFalse: case JSOp::JumpIfTrue:
+      case JSOp::And: case JSOp::Or:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  // Pass 1: discover the outer region, all natural-loop intervals and edges.
+  // Requiring laminar intervals and header-only entry makes the lexical Wasm
+  // structure faithful to the bytecode CFG. Unsupported shapes never install.
   bool scan() {
     jsbytecode* body = head + JSOpLength_LoopHead;
     jsbytecode* limit = script->codeEnd();
     if (limit - head > int32_t(kMaxRegion)) limit = head + kMaxRegion;
     end = nullptr;
-    const char* stop = "region size";
     for (jsbytecode* pc = body; pc < limit;) {
       JSOp op = JSOp(*pc);
-      if (op == JSOp::LoopHead) {
-        stop = "nested loop";
-        break;
-      }
       jsbytecode* next = pc + GetBytecodeLength(pc);
-      if ((op == JSOp::Goto || op == JSOp::JumpIfTrue) &&
+      if (next > limit) break;
+      if ((op == JSOp::Goto || op == JSOp::JumpIfTrue || op == JSOp::JumpIfFalse) &&
           pc + GET_JUMP_OFFSET(pc) == head)
         end = next;
-      if (next > limit) break;
       pc = next;
     }
-    if (!end) return reject(stop, body);
+    if (!end) return reject("region size", body);
+    bool boundary[kMaxRegion] = {};
+    for (jsbytecode* pc = head; pc < end; pc += GetBytecodeLength(pc)) {
+      boundary[pc - head] = true;
+      if (JSOp(*pc) != JSOp::LoopHead) continue;
+      if (nloops == kMaxLoops) return reject("loop count", pc);
+      loops[nloops].head = pc;
+      loops[nloops++].ic = uint32_t(GET_INT32(pc));
+    }
     for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {
       JSOp op = JSOp(*pc);
+      if (!isJump(op)) continue;
+      jsbytecode* t = pc + GET_JUMP_OFFSET(pc);
+      if (t < head || t >= end) continue;
+      if (!boundary[t - head]) return reject("jump target", pc);
+      if (t > pc) continue;
+      int i = findLoop(t);
+      if (i < 0 || (op != JSOp::Goto && op != JSOp::JumpIfTrue && op != JSOp::JumpIfFalse))
+        return reject("backward jump", pc);
+      loops[i].end = pc + GetBytecodeLength(pc);
+    }
+    for (uint32_t i = 0; i < nloops; i++) {
+      Loop& l = loops[i];
+      if (!l.end) return reject("loop without backedge", l.head);
+      if (!i) continue;
+      uint32_t parent = 0;
+      for (uint32_t j = 0; j < i; j++) {
+        const Loop& p = loops[j];
+        if (l.head >= p.end) continue;
+        if (l.end >= p.end) return reject("crossing loops", l.head);
+        parent = j;
+      }
+      l.parent = parent;
+      l.depth = loops[parent].depth + 1;
+      if (l.depth > kMaxLoopNesting) return reject("loop nesting", l.head);
+    }
+    for (jsbytecode* pc = body; pc < end; pc += GetBytecodeLength(pc)) {
+      JSOp op = JSOp(*pc);
+      if (nloops > 1 && !nestedOp(op)) return reject("nested opcode", pc);
       switch (op) {
         case JSOp::GetArg:
         case JSOp::SetArg:
@@ -869,8 +1087,17 @@ struct Compiler {
         default:
           if (isJump(op)) {
             jsbytecode* t = pc + GET_JUMP_OFFSET(pc);
-            if (t == head || t < head || t >= end) break;  // backedge / exit
-            if (t <= pc) return reject("backward jump", pc);
+            if (t < head || t >= end) break;
+            for (uint32_t i = 1; i < nloops; i++) {
+              const Loop& l = loops[i];
+              if (t > l.head && t < l.end && (pc < l.head || pc >= l.end))
+                return reject("loop side entry", pc);
+            }
+            if (t <= pc) {
+              int i = findLoop(t);
+              if (i < 0 || pc >= loops[i].end) return reject("backward jump", pc);
+              break;
+            }
             if (findTarget(t) >= 0) break;
             if (ntargets >= kMaxTargets) return reject("targets", pc);
             uint32_t i = ntargets++;
@@ -883,52 +1110,45 @@ struct Compiler {
           break;
       }
     }
+    for (uint32_t j = 0; j < ntargets; j++) {
+      uint32_t owner = 0;
+      for (uint32_t i = 1; i < nloops; i++)
+        if (loops[i].head < targetPc[j] && targetPc[j] < loops[i].end) owner = i;
+      targetOwner[j] = owner;
+    }
     return true;
   }
 
-  // Pass 2: which variables are read before being written on some path from
-  // the head (the region is a DAG apart from the backedge).
+  // Pass 2: backwards fixed-point liveness over the complete CFG, including
+  // each inner/outer backedge. The bitvector equation is use | (out & ~def).
+  // External edges leave the region and need no Wasm-local input state.
   bool liveness() {
-    uint32_t defw = 0;
-    bool live = true;
-    uint32_t tdef[kMaxTargets];
-    bool tlive[kMaxTargets] = {};
-    uint32_t nextT = 0;
-    auto jumpTo = [&](jsbytecode* t) {
-      int j = findTarget(t);
-      if (j < 0) return;
-      tdef[j] = tlive[j] ? (tdef[j] & defw) : defw;
-      tlive[j] = true;
-    };
-    for (jsbytecode* pc = head + JSOpLength_LoopHead; pc < end;
-         pc += GetBytecodeLength(pc)) {
-      if (nextT < ntargets && targetPc[nextT] == pc) {
-        if (tlive[nextT]) defw = live ? (defw & tdef[nextT]) : tdef[nextT];
-        live = live || tlive[nextT];
-        nextT++;
-      }
-      if (!live) continue;
-      JSOp op = JSOp(*pc);
-      switch (op) {
-        case JSOp::GetLocal:
-        case JSOp::GetArg: {
-          int v = findVar(keyOf(pc));
-          if (!(defw & (1u << v))) varLive[v] = true;
-          break;
+    uint32_t in[kMaxRegion] = {};
+    jsbytecode* pcs[kMaxRegion];
+    uint32_t count = 0;
+    for (jsbytecode* pc = head; pc < end; pc += GetBytecodeLength(pc)) pcs[count++] = pc;
+    bool changed = true;
+    for (uint32_t pass = 0; changed; pass++) {
+      if (pass > count) return reject("liveness convergence", head);
+      changed = false;
+      for (uint32_t n = count; n > 0; n--) {
+        jsbytecode* pc = pcs[n - 1];
+        JSOp op = JSOp(*pc);
+        jsbytecode* next = pc + GetBytecodeLength(pc);
+        uint32_t live = op != JSOp::Goto && next < end ? in[next - head] : 0;
+        if (isJump(op)) {
+          jsbytecode* t = pc + GET_JUMP_OFFSET(pc);
+          if (t >= head && t < end) live |= in[t - head];
         }
-        case JSOp::SetLocal:
-        case JSOp::InitLexical:
-        case JSOp::SetArg:
-          defw |= 1u << findVar(keyOf(pc));
-          break;
-        default:
-          if (isJump(op)) {
-            jumpTo(pc + GET_JUMP_OFFSET(pc));
-            if (op == JSOp::Goto) live = false;
-          }
-          break;
+        if (op == JSOp::SetLocal || op == JSOp::InitLexical || op == JSOp::SetArg)
+          live &= ~(1u << findVar(keyOf(pc)));
+        if (op == JSOp::GetLocal || op == JSOp::GetArg)
+          live |= 1u << findVar(keyOf(pc));
+        if (in[pc - head] != live) { in[pc - head] = live; changed = true; }
       }
     }
+    for (uint32_t i = 0; i < nloops; i++) loops[i].liveMask = in[loops[i].head - head];
+    for (uint32_t v = 0; v < nvars; v++) varLive[v] = (in[0] >> v & 1) != 0;
     // Speculate each head-live variable keeps the type it has right now.
     for (uint32_t v = 0; v < nvars; v++) {
       headTy[v] = Ty::Head;
@@ -945,6 +1165,7 @@ struct Compiler {
         int kind = ArrayKind(bits);
         typedKind[v] = kind < 0 ? TypedKind(bits) : 0;
         if (typedKind[v]) {
+          if (nloops > 1) return reject("nested typed array", head);
           // A fixed-length Int32Array/Float64Array the loop never replaces.
           if (varWritten[v]) return reject("array var written", head);
           headTy[v] = ArrTy(v);
@@ -952,6 +1173,7 @@ struct Compiler {
           continue;
         }
         if (kind < 0) {
+          if (nloops > 1) return reject("nested variable type", head);
           if (!InspectObject(uint32_t(bits), objects[v]) || !objects[v].plain)
             return reject("head type", head);
           if (varWritten[v]) return reject("object var written", head);
@@ -964,12 +1186,15 @@ struct Compiler {
         rowTy[v] = Ty::Unknown;
         if (kind == 0) {
           int rk = RowKind(bits);
+          if (rk && nloops > 1) return reject("nested row array", head);
           if (rk) rowTy[v] = rk == 2 ? kRowNum : kRowInt;
         }
         if (elemTy[v] == Ty::Int && (widen.elems >> v & 1)) elemTy[v] = Ty::Double;
+        if (nloops > 1) arrayCanInit[v] = InspectArrayForInit(uint32_t(bits), arrayInit[v]);
         continue;
       }
       headTy[v] = TyOfTag(uint32_t(bits >> 32));
+      if (nloops > 1 && !IsNum(headTy[v])) return reject("nested variable type", head);
       if (headTy[v] == Ty::Unknown) return reject("head type", head);
       if (headTy[v] == Ty::Int && (widen.vars >> v & 1)) headTy[v] = Ty::Double;
     }
@@ -1202,12 +1427,14 @@ struct Compiler {
 
   // A jump to `target`; with `cond` the i32 condition is on the wasm stack.
   bool branch(jsbytecode* pc, jsbytecode* target, jsbytecode* next, bool cond) {
-    uint32_t open = ntargets - firstOpen;
-    if (target == head) {
-      if (!checkBackedge(pc)) return false;
+    int loop = target <= pc ? findLoop(target) : -1;
+    if (loop >= 0) {
+      int nest = labelDepth(true, uint32_t(loop), cond ? 1 : 0);
+      if (nest < 0) return reject("loop label", pc);
+      if (!checkBackedge(pc, uint32_t(loop))) return false;
       if (cond) {
         code.put(W_IF), code.put(W_VOID);
-        emitBackedge(open + 1);
+        emitBackedge(uint32_t(loop), uint32_t(nest));
         code.put(W_END);
         if (next == end) {
           // Fallthrough of the final conditional backedge leaves the loop.
@@ -1215,7 +1442,7 @@ struct Compiler {
           st.live = false;
         }
       } else {
-        emitBackedge(open);
+        emitBackedge(uint32_t(loop), uint32_t(nest));
         st.live = false;
       }
       return true;
@@ -1224,7 +1451,9 @@ struct Compiler {
     if (j >= 0) {
       if (uint32_t(j) < firstOpen) return reject("backward jump", pc);
       if (!edge(uint32_t(j), pc)) return false;
-      code.put(cond ? W_BRIF : W_BR), code.uleb(uint32_t(j) - firstOpen);
+      int nest = labelDepth(false, uint32_t(j));
+      if (nest < 0) return reject("target label", pc);
+      code.put(cond ? W_BRIF : W_BR), code.uleb(uint32_t(nest));
       if (!cond) st.live = false;
       return true;
     }
@@ -1344,8 +1573,10 @@ struct Compiler {
     return true;
   }
 
-  // Dense element write of a number over a number: [arr, index, v] -> [v].
-  // Neither value is a GC thing, so no barriers are needed.
+  // Dense element write: [arr, index, v] -> [v]. Only numbers can be stored.
+  // An existing number or exact hole is not a GC thing, so no barriers are
+  // needed. New slots are never read before initialization. All failing guards
+  // precede the store and leave the original operands available for bailout.
   bool setElem(jsbytecode* pc) {
     if (st.depth < 3) return reject("underflow", pc);
     uint32_t s = st.depth - 3;
@@ -1370,19 +1601,52 @@ struct Compiler {
       st.stack[s] = t;
       return true;
     }
+    if (nloops > 1 && (row || (varKey[v] & kArgKey))) return reject("nested argument write", pc);
+    if (!row) arrayWrites[v] = true;
     if (!IsNum(et)) return reject("element type", pc);
     if (et == Ty::Int && t == Ty::Double) {
       if (!row) want.elems |= 1u << v;
       return reject("element widen", pc);
     }
-    denseIndex(pc, s, s + 1);
-    lget(tmp32()), load32(OffFlags()), i32c(int32_t(FrozenFlag())), code.put(W_I32AND);
-    bailIf(pc);
-    elemAddr(s + 1);
-    lget(tmp32()), load32(4), i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
-    bailIf(pc);  // the old element is a hole or not a number
-    lget(tmp32());
-    boxStore(slotLocal(s + 2), t);
+    if (!row && nloops > 1 && arrayCanInit[v]) {
+      lget(slotLocal(s)), load32(OffElements()), lset(tmp32());
+      lget(tmp32()), load32(OffFlags()), i32c(int32_t(InitForbiddenFlags())), code.put(W_I32AND);
+      bailIf(pc);
+      // Fixed-length initialization only: no growth, no length update and no
+      // skipped uninitialized slots. Unsigned comparisons reject negative keys.
+      for (int32_t off : {OffLength(), OffCapacity()}) {
+        lget(slotLocal(s + 1)), lget(tmp32()), load32(off), code.put(W_I32GEU);
+        bailIf(pc);
+      }
+      lget(slotLocal(s + 1)), lget(tmp32()), load32(OffInitLen()), code.put(W_I32GTU);
+      bailIf(pc);
+      lget(slotLocal(s + 1)), lget(tmp32()), load32(OffInitLen()), code.put(W_I32EQ);
+      code.put(W_IF), code.put(W_VOID);
+      elemAddr(s + 1);
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+      // Publish exactly one initialized element only after its numeric value is
+      // stored. There is no call, allocation, bailout or interrupt between them.
+      lget(slotLocal(s)), load32(OffElements()), i32c(OffInitLen()), code.put(W_I32ADD);
+      lget(slotLocal(s + 1)), i32c(1), code.put(W_I32ADD);
+      code.put(W_I32STORE), code.uleb(2), code.uleb(0);
+      code.put(W_ELSE);
+      elemAddr(s + 1);
+      lget(tmp32()), code.put(W_I64LOAD), code.uleb(3), code.uleb(0), lset(tmp64());
+      lget(tmp64()), i64c(32), code.put(W_I64SHRU), code.put(W_I32WRAP);
+      i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
+      lget(tmp64()), i64c(int64_t(HoleBits())), code.put(W_I64NE);
+      code.put(W_I32AND), bailIf(pc);  // old GC values and other magic bail
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+      code.put(W_END);
+    } else {
+      denseIndex(pc, s, s + 1);
+      lget(tmp32()), load32(OffFlags()), i32c(int32_t(FrozenFlag())), code.put(W_I32AND);
+      bailIf(pc);
+      elemAddr(s + 1);
+      lget(tmp32()), load32(4), i32c(int32_t(TagOf(Ty::Int))), code.put(W_I32GTU);
+      bailIf(pc);  // no initialization proof: old element must be a number
+      lget(tmp32()), boxStore(slotLocal(s + 2), t);
+    }
     move(slotLocal(s + 2), slotLocal(s), t);
     st.depth -= 2;
     st.stack[s] = t;
@@ -1466,6 +1730,30 @@ struct Compiler {
       code.put(W_I64LOAD), code.uleb(3), code.uleb(0);
       i64c(int64_t(g.slot.bits)), code.put(W_I64NE);
       noEntryIf();
+    }
+  }
+  void arrayEntryGuards() {
+    if (nloops <= 1) return;
+    for (uint32_t v = 0; v < nvars; v++) {
+      if (!arrayWrites[v]) continue;
+      // The new nested tier keeps formal/input arrays read-only. Reject an
+      // output alias before any loop work, including aliases of other outputs.
+      for (uint32_t other = 0; other < nvars; other++) {
+        if (other == v || !IsArr(headTy[other])) continue;
+        lget(varLocal(v)), lget(varLocal(other)), code.put(W_I32EQ), noEntryIf();
+      }
+      if (!arrayCanInit[v]) continue;
+      const ArrayInitInfo& info = arrayInit[v];
+      lget(varLocal(v)), load32(OffShape()), i32c(int32_t(info.shape));
+      code.put(W_I32NE), noEntryIf();
+      for (uint32_t i = 0; i < info.nprotos; i++) {
+        const ObjectInfo& proto = info.protos[i];
+        lget(varLocal(v)), i32c(int32_t(proto.pointer)), code.put(W_I32EQ), noEntryIf();
+        i32c(int32_t(proto.pointer)), load32(OffShape()), i32c(int32_t(proto.shape));
+        code.put(W_I32NE), noEntryIf();
+        i32c(int32_t(proto.pointer)), load32(OffElements()), load32(OffInitLen());
+        noEntryIf();
+      }
     }
   }
   bool getGlobal(jsbytecode* pc) {
@@ -1618,8 +1906,8 @@ struct Compiler {
     return true;
   }
 
-  // Pass 3: translate. Emits the entry guards, then the `loop` with one
-  // `block` per forward target.
+  // Pass 3: translate. Loop labels follow the natural-loop tree, and
+  // forward-target blocks open in the closest enclosing loop.
   bool translate() {
     for (uint32_t i = 0; i < kParams; i++) {
       lget(i), code.put(W_I32WRAP), lset(P_FRAME + i);
@@ -1676,21 +1964,28 @@ struct Compiler {
       lget(tmp64()), code.put(W_I32WRAP), lset(varLocal(v));
     }
     guardInsertion = code.n;
-    code.put(W_LOOP), code.put(W_VOID);
-    for (uint32_t j = 0; j < ntargets; j++) code.put(W_BLOCK), code.put(W_VOID);
+    if (!beginLoop(0, head)) return false;
 
     headIc = uint32_t(GET_INT32(head));
     icIndex = headIc;
     jsbytecode* pc = head + JSOpLength_LoopHead;
     while (pc < end) {
+      if (!closeLoops(pc)) return false;
       if (firstOpen < ntargets && targetPc[firstOpen] <= pc) {
         if (targetPc[firstOpen] != pc) return reject("jump target", pc);
         if (st.live && !edge(firstOpen, pc)) return false;  // fallthrough edge
+        if (!nlabels || labels[nlabels - 1].loop || labels[nlabels - 1].index != firstOpen)
+          return reject("target label", pc);
         code.put(W_END);
+        nlabels--;
         st = targetSt[firstOpen++];
       }
       JSOp op = JSOp(*pc);
       jsbytecode* next = pc + GetBytecodeLength(pc);
+      if (op == JSOp::LoopHead) {
+        int i = findLoop(pc);
+        if (i < 0 || !beginLoop(uint32_t(i), pc)) return false;
+      }
       if (!st.live) {  // unreachable from the head
         pc = next;
         continue;
@@ -1710,6 +2005,7 @@ struct Compiler {
           break;
         case JSOp::DebugLeaveLexicalEnv:  // no-op: OnLoopHead excludes debuggee frames
           break;
+        case JSOp::LoopHead:
         case JSOp::JumpTarget:
           icIndex = uint32_t(GET_INT32(pc));
           break;
@@ -1762,6 +2058,9 @@ struct Compiler {
           if (st.depth < 1) return reject("underflow", pc);
           uint32_t v = uint32_t(findVar(keyOf(pc)));
           Ty t = st.stack[top];
+          if (nloops > 1 && !IsNum(t) &&
+              !(t == Ty::Magic && op == JSOp::InitLexical && !varLive[v]))
+            return reject("nested variable type", pc);
           if (t == Ty::Int && (widen.vars >> v & 1)) {
             lget(slotLocal(top)), code.put(W_F64CONVI32S), lset(fl(varLocal(v)));
             t = Ty::Double;
@@ -1961,7 +2260,8 @@ struct Compiler {
     }
     if (firstOpen != ntargets) return reject("jump target", end);
     if (st.live) return reject("region end", end);
-    code.put(W_END);  // loop
+    if (!closeLoops(end)) return false;
+    if (nlabels || nactive) return reject("region labels", end);
     code.put(W_UNREACHABLE);
     return true;
   }
@@ -1979,6 +2279,7 @@ struct Compiler {
     saved.p = code.p; saved.n = code.n; saved.cap = code.cap;
     code.p = nullptr; code.n = code.cap = 0;
     constantEntryGuards();
+    arrayEntryGuards();
     if (code.oom) return reject("oom", head);
     body.putn(saved.p, guardInsertion);
     body.putn(code.p, code.n);
@@ -2034,7 +2335,10 @@ Compiler* TranslateLoop(Init init, Buf& m) {
       grown = grown || (c->want.slots[j] & ~w.slots[j]);
       w.slots[j] |= c->want.slots[j];
     }
-    if (!grown || attempt == 3) return c;
+    // Each retry adds a widening bit. Bound nested convergence as well as
+    // bytecode size; failure leaves interpretation in control.
+    uint32_t maxAttempts = c->nloops > 1 ? kMaxVars + kMaxLoops : 4;
+    if (!grown || uint32_t(attempt + 1) >= maxAttempts) return c;
     c->~Compiler();
     free(c);
   }

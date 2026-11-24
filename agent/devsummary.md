@@ -1,3 +1,9 @@
+# Guarded preparation follow-up — 2026-11-10, 45/100
+
+Closed independently identified input-closure and helper receipt-binding gaps without native compilation or monitor changes. A new fixed reviewed closure authenticates1,796 regular files/five consumed trees before mutation; copied/parsed bytes are cached and exact source-before/absence pins apply.77 focused checks passed under the unchanged owner in34.008s. Final fresh source4 checkout45.262s and final preparation4 replay9.254s passed; independent review checked all ten source outputs and final recipe/modules. Old packet3a, source/build2 and intermediate3 plus capture/test failures remain preserved. Native/fullJIT/guest/performance acceptance staysfalse and overall45/100.
+
+Exact evidence, timings, original recipe history and resume sequence are in docs/firefox-jit-integration-20261110.md and its input-closure-validation.json. The closure intentionally pins libc++ absent; a future successful dependency build requires a newly reviewed complete closure and fresh preparation. The external stable compiler scope remains required. The separately archived/refactored array candidate remains unexecuted and requires a new complete packet; do not substitute its hash into packet3a.
+
 # Development summary — fresh continuation
 
 Start: 2026-11-03T13:22:11Z. Deadline:18:22:11Z, important bugs only until19:22:11Z.

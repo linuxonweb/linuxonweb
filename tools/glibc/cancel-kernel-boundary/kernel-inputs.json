@@ -1,0 +1,6 @@
+{
+  "arch/wasm/kernel/signal.c": "603be601a31b5ce32132f39acaf9335a8d685b16311c0d4efa1b9e05a4b29ed8",
+  "arch/wasm/kernel/process.c": "9230c07e03a0833b386824e0b133c98d99aa153409affe74ac833636bd98a6c5",
+  "arch/wasm/include/asm/thread_info.h": "3704aa3cd2a3c79ec98946533066877980ff577ce7d6be9669f429656a2993ce",
+  "arch/wasm/include/asm/wasm_imports.h": "719c1feca0769d35239c834dc0d2f841f704280eb96142dd60a96954c57b6762"
+}

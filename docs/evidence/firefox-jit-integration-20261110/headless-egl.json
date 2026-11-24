@@ -1,0 +1,240 @@
+{
+  "scope": "isolated NVIDIA EGL-only headless WebGL2 smoke; no hardware WebGPU, guest boot or Firefox performance claim",
+  "launch": {
+    "binary": "/home/a/.local/archpkg/pacman/usr/lib/chromium/chromium",
+    "args": [
+      "--headless=new",
+      "--ignore-gpu-blocklist",
+      "--disable-features=Vulkan",
+      "--disable-extensions",
+      "--disable-component-extensions-with-background-pages",
+      "--use-gl=angle",
+      "--use-angle=gl-egl",
+      "--disable-software-rasterizer",
+      "--disable-dev-shm-usage",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
+      "--disable-sync",
+      "--disable-breakpad",
+      "--disable-crash-reporter",
+      "--remote-debugging-address=127.0.0.1",
+      "--remote-debugging-port=0",
+      "--window-size=800,600",
+      "--user-data-dir=/mnt/p3/codex-build/lwgpu3-20261110/profile",
+      "--disk-cache-dir=/mnt/p3/codex-build/lwgpu3-20261110/cache",
+      "about:blank"
+    ],
+    "gpuEnv": {
+      "__EGL_VENDOR_LIBRARY_FILENAMES": "/usr/share/glvnd/egl_vendor.d/10_nvidia.json",
+      "__NV_PRIME_RENDER_OFFLOAD": "1",
+      "__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+      "__VK_LAYER_NV_optimus": ""
+    },
+    "affinity": "0,1,2",
+    "privateDbus": true
+  },
+  "startedUtc": "2026-11-10T15:48:23.315Z",
+  "finishedUtc": "2026-11-10T15:48:30.090Z",
+  "probeDurationSeconds": 6.775106792,
+  "ownerDurationSeconds": 7.754,
+  "pass": true,
+  "ownerPass": true,
+  "hardwareWebglAcceptance": true,
+  "hardwareWebgpuAcceptance": false,
+  "probe": {
+    "cpus": 3,
+    "secureContext": true,
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "Google Inc. (NVIDIA Corporation)",
+      "renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL ES 3.2)",
+      "pixel": [
+        64,
+        127,
+        191,
+        255
+      ],
+      "error": 0,
+      "pass": true
+    },
+    "webgpu": {
+      "skipped": true,
+      "reason": "Explicit EGL-only route; no hardware WebGPU acceptance"
+    }
+  },
+  "initialTargets": [
+    {
+      "type": "page",
+      "url": "about:blank",
+      "title": "about:blank"
+    }
+  ],
+  "gpu": {
+    "devices": [
+      {
+        "vendorId": 4318,
+        "deviceId": 5966,
+        "vendorString": "",
+        "deviceString": "",
+        "driverVendor": "NVIDIA",
+        "driverVersion": "580.173.02"
+      },
+      {
+        "vendorId": 32902,
+        "deviceId": 22807,
+        "vendorString": "",
+        "deviceString": "",
+        "driverVendor": "",
+        "driverVersion": ""
+      }
+    ],
+    "displayType": "ANGLE_OPENGL_EGL",
+    "glImplementationParts": "(gl=egl-angle,angle=opengl)",
+    "glRenderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL ES 3.2 NVIDIA 580.173.02)",
+    "hardwareSupportsVulkan": false,
+    "skiaBackendType": "GaneshGL",
+    "featureStatus": {
+      "2d_canvas": "enabled",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "disabled_off",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "disabled_software",
+      "vulkan": "disabled_off",
+      "webgl": "enabled",
+      "webgpu": "enabled",
+      "webgpu_on_vk_via_gl_interop": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "browserExitCode": 0,
+  "ownedProcessesRemaining": 0,
+  "quotaFailure": null,
+  "cleanupInventoryErrors": [],
+  "resourceSamples": 7,
+  "pssSamples": 2,
+  "sampling": {
+    "cpuRssAvailableRamQuotaSeconds": 1,
+    "pssSeconds": 5,
+    "pssPeakIsSampledLowerBound": true
+  },
+  "ownedTreePeakRssBytes": 1036316672,
+  "ownedTreePeakPssBytes": 520412160,
+  "minimumAvailableRam": 23608389632,
+  "commonAncestors": [
+    {
+      "path": "/sys/fs/cgroup/cpulimit.slice",
+      "maximumObservedCpuLimit": 3.0
+    }
+  ],
+  "allQuotaSamplesValid": true,
+  "errors": [],
+  "browserVersion": {
+    "Browser": "Chrome/150.0.7871.114",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+    "V8-Version": "15.0.245.15"
+  },
+  "ownerStartedUtc": "2026-11-10T15:48:22.499529+00:00",
+  "ownerFinishedUtc": "2026-11-10T15:48:30.253163+00:00",
+  "rawEvidence": [
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/summary.json",
+      "bytes": 4198,
+      "sha256": "51de62227ee373d39eca7e7721dd34ee5c40167ee429d9988aa0f4b39a5bb80d"
+    },
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/probe-result.json",
+      "bytes": 16959,
+      "sha256": "af44d1026aad5682be80faf1722c0e5180901bcf51166662d099a97e1b88b03e"
+    },
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/owner/result.json",
+      "bytes": 1016,
+      "sha256": "e523fc6c7209084e0d3b1fe8ab5e78d9c06c1fa465f887b3ad1a0f90831c6c9c"
+    },
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/owner/resources.jsonl",
+      "bytes": 13282,
+      "sha256": "3821359b50bd1585548fead7ac78c517bf17212bf42e03d0ee415330b728b9c4"
+    },
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/probe.mjs",
+      "bytes": 7762,
+      "sha256": "3f9c982dd5e3ca90c36c4754b076c0c5a02bc655322e22063e4f39e4aa619639"
+    },
+    {
+      "path": "/mnt/p3/codex-build/lwgpu3-20261110/screenshot.png",
+      "bytes": 35595,
+      "sha256": "8008df8a4408021790f6269420df6c7e8a3b0ead71feecf1395051db4d10b108"
+    }
+  ],
+  "earlierRejectedHardwareWebgpu": {
+    "pass": false,
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "Google Inc. (NVIDIA Corporation)",
+      "renderer": "ANGLE (NVIDIA Corporation, NVIDIA GeForce MX110/PCIe/SSE2, OpenGL ES 3.2)",
+      "pixel": [
+        64,
+        127,
+        191,
+        255
+      ],
+      "error": 0,
+      "pass": true
+    },
+    "webgpu": {
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "",
+        "description": "",
+        "isFallbackAdapter": true
+      },
+      "features": [
+        "depth32float-stencil8",
+        "rg11b10ufloat-renderable",
+        "bgra8unorm-storage",
+        "texture-compression-bc",
+        "core-features-and-limits",
+        "chromium-experimental-timestamp-query-inside-passes",
+        "float32-filterable",
+        "indirect-first-instance",
+        "texture-compression-astc-sliced-3d",
+        "float32-blendable",
+        "subgroup-size-control",
+        "texture-compression-astc",
+        "texture-compression-etc2",
+        "depth-clip-control",
+        "texture-compression-bc-sliced-3d",
+        "clip-distances",
+        "timestamp-query",
+        "texture-component-swizzle",
+        "subgroups"
+      ],
+      "value": 42,
+      "errors": [],
+      "pass": true
+    },
+    "hardwareSupportsVulkan": false,
+    "driverMessages": [
+      "[1693250:1693250:1110/074652.596017:ERROR:gpu/vulkan/vulkan_instance.cc:200] vkCreateInstance() failed: -7"
+    ],
+    "rawResult": {
+      "path": "/mnt/p3/codex-build/lwgpu2-20261110/probe-result.json",
+      "bytes": 18235,
+      "sha256": "0ffc6964f5388df9007d779250831a7e90a4dc7e2b8ba1acec952c3ad0881cba"
+    }
+  },
+  "guestRuntimeAcceptance": false,
+  "firefoxAcceptance": false,
+  "fullJitAcceptance": false,
+  "performanceAcceptance": false
+}

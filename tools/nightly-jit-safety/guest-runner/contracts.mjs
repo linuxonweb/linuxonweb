@@ -1,13 +1,12 @@
 import fs from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import {ownedTaskRoot,ownedDirectory} from '../owned-paths.mjs';
 export const PREPARATION_TASK='/mnt/p6/project/build/nightly-broad-guest-runner-20261004';
 export const RUNTIME_CAP=4*1024**3;
-export async function taskRoot(args) {
-  const root=args['--task-root'];
-  require(typeof root==='string'&&(/^\/mnt\/p6\/(?:project\/)?build\/[^/]+$/.test(root))&&await fs.realpath(root)===root&&(await fs.stat(root)).isDirectory(),'explicit canonical disk task root required');
-  return root;
-}
+export async function taskRoot(args) {return ownedTaskRoot(args['--task-root']);}
+export async function repoRoot(args) {return ownedDirectory(args['--repo']??REPO);}
 export function allocationContract(launch, manifest, observedUsage) {
   require(['kernel','plain','firefox'].every(key=>Number.isSafeInteger(manifest.assets?.[key]?.bytes)&&manifest.assets[key].bytes>0),'actual positive current package sizes required');
   const a=launch.runtimeAllocation, images=['kernel','plain','firefox'].reduce((sum,key)=>sum+manifest.assets[key].bytes,0);
@@ -66,4 +65,14 @@ export function exactFirefoxExit(launch,exit,stat,terminal,limits,parent) {
   require(launch.kind==='actual-owned-firefox-launch-v1'&&parent.processID===pid&&launch.observerEnabled==='1'&&launch.logBudget==='0','actual parent/owned process differs');
   require(exit?.kind==='actual-owned-firefox-exit-v1'&&exit.pid===pid&&exit.status===0&&exit.reaped===true&&exit.naturalGroupEmpty===true&&exit.forced===false&&terminal==='','actual guest terminal/reap/physical group emptiness missing');
   require(/^Max file size\s+unlimited\s+unlimited\s+bytes[ \t]*$/m.test(limits)&&/^Max core file size\s+0\s+0\s+bytes[ \t]*$/m.test(limits),'actual inherited guest normal file/core limits differ');return true;
+}
+
+// Called only after launch, implementation and independent prelaunch review validation.
+export async function loadFrameObserver(record) {
+  await pinFile(record);
+  const url=pathToFileURL(record.path);url.searchParams.set('sha256',record.sha256);
+  const loaded=await import(url.href);
+  await pinFile(record);
+  require(typeof loaded.createStallFrameDiagnostics==='function','reviewed frame observer export missing');
+  return loaded.createStallFrameDiagnostics;
 }

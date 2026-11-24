@@ -1,0 +1,324 @@
+{
+  "scope": "26 GNU public fixed signatures; historical pivot_root deferred",
+  "entries": [
+    {
+      "call": "swapoff",
+      "kernel": "swapoff",
+      "public": "swapoff",
+      "return": "int",
+      "arguments": [
+        "const char *"
+      ],
+      "header": "sys/swap.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setfsgid",
+      "kernel": "setfsgid",
+      "public": "setfsgid",
+      "return": "int",
+      "arguments": [
+        "gid_t"
+      ],
+      "header": "sys/fsuid.h",
+      "noerrno": 0
+    },
+    {
+      "call": "chroot",
+      "kernel": "chroot",
+      "public": "chroot",
+      "return": "int",
+      "arguments": [
+        "const char *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "acct",
+      "kernel": "acct",
+      "public": "acct",
+      "return": "int",
+      "arguments": [
+        "const char *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fsmount",
+      "kernel": "fsmount",
+      "public": "fsmount",
+      "return": "int",
+      "arguments": [
+        "int",
+        "unsigned int",
+        "unsigned int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setsid",
+      "kernel": "setsid",
+      "public": "setsid",
+      "return": "pid_t",
+      "arguments": [],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "unshare",
+      "kernel": "unshare",
+      "public": "unshare",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "mount",
+      "kernel": "mount",
+      "public": "mount",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "const char *",
+        "const char *",
+        "unsigned long int",
+        "const void *"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "swapon",
+      "kernel": "swapon",
+      "public": "swapon",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "int"
+      ],
+      "header": "sys/swap.h",
+      "noerrno": 0
+    },
+    {
+      "call": "pidfd_open",
+      "kernel": "pidfd_open",
+      "public": "pidfd_open",
+      "return": "int",
+      "arguments": [
+        "pid_t",
+        "unsigned int"
+      ],
+      "header": "sys/pidfd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setdomain",
+      "kernel": "setdomainname",
+      "public": "setdomainname",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "size_t"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fsopen",
+      "kernel": "fsopen",
+      "public": "fsopen",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "unsigned int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "klogctl",
+      "kernel": "syslog",
+      "public": "klogctl",
+      "return": "int",
+      "arguments": [
+        "int",
+        "char *",
+        "int"
+      ],
+      "header": "sys/klog.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setpriority",
+      "kernel": "setpriority",
+      "public": "setpriority",
+      "return": "int",
+      "arguments": [
+        "__priority_which_t",
+        "id_t",
+        "int"
+      ],
+      "header": "sys/resource.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fsconfig",
+      "kernel": "fsconfig",
+      "public": "fsconfig",
+      "return": "int",
+      "arguments": [
+        "int",
+        "unsigned int",
+        "const char *",
+        "const void *",
+        "int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setns",
+      "kernel": "setns",
+      "public": "setns",
+      "return": "int",
+      "arguments": [
+        "int",
+        "int"
+      ],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "open_tree",
+      "kernel": "open_tree",
+      "public": "open_tree",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "unsigned int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "sched_gets",
+      "kernel": "sched_getscheduler",
+      "public": "sched_getscheduler",
+      "return": "int",
+      "arguments": [
+        "pid_t"
+      ],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setfsuid",
+      "kernel": "setfsuid",
+      "public": "setfsuid",
+      "return": "int",
+      "arguments": [
+        "uid_t"
+      ],
+      "header": "sys/fsuid.h",
+      "noerrno": 0
+    },
+    {
+      "call": "sethostname",
+      "kernel": "sethostname",
+      "public": "sethostname",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "size_t"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "pidfd_getfd",
+      "kernel": "pidfd_getfd",
+      "public": "pidfd_getfd",
+      "return": "int",
+      "arguments": [
+        "int",
+        "int",
+        "unsigned int"
+      ],
+      "header": "sys/pidfd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fanotify_init",
+      "kernel": "fanotify_init",
+      "public": "fanotify_init",
+      "return": "int",
+      "arguments": [
+        "unsigned int",
+        "unsigned int"
+      ],
+      "header": "sys/fanotify.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fspick",
+      "kernel": "fspick",
+      "public": "fspick",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "unsigned int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "move_mount",
+      "kernel": "move_mount",
+      "public": "move_mount",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "int",
+        "const char *",
+        "unsigned int"
+      ],
+      "header": "sys/mount.h",
+      "noerrno": 0
+    },
+    {
+      "call": "tgkill",
+      "kernel": "tgkill",
+      "public": "tgkill",
+      "return": "int",
+      "arguments": [
+        "pid_t",
+        "pid_t",
+        "int"
+      ],
+      "header": "signal.h",
+      "noerrno": 0
+    },
+    {
+      "call": "execve",
+      "kernel": "execve",
+      "public": "execve",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "char *const *",
+        "char *const *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    }
+  ]
+}

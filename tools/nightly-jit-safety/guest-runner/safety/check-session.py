@@ -6,6 +6,9 @@ requires caller-reviewed acquisition pins and rejects synthetic provenance.
 """
 import argparse, hashlib, importlib.util, json, re
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from owned_paths import root_for_output, scoped_path
 
 here = Path(__file__).resolve().parent
 def module(name, filename):
@@ -136,7 +139,8 @@ def production(acquisition, reviewed_hash):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--acquisition',type=Path,required=True);p.add_argument('--review-sha256',required=True);p.add_argument('--out',type=Path,required=True);a=p.parse_args()
-    require(any(a.out.resolve().is_relative_to(root) for root in ['/mnt/p6/build','/mnt/p6/project/build']),'disk task output required')
+    scoped_path(root_for_output(a.out), a.out, fresh=True)
     try: result=production(a.acquisition,a.review_sha256)
     except (ValueError,KeyError,TypeError,OSError,UnicodeError) as error: result={'pass':False,'status':'failed','guestAcceptance':False,'fullJITAcceptance':False,'errors':[str(error)]}
-    a.out.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result));raise SystemExit(0 if result['pass'] else 1)
+    with a.out.open('x') as output: output.write(json.dumps(result,indent=2)+'\n')
+    print(json.dumps(result));raise SystemExit(0 if result['pass'] else 1)

@@ -1,0 +1,111 @@
+{
+  "startedUtc": "2026-11-10T16:18:50.421137+00:00",
+  "finishedUtc": "2026-11-10T16:18:53.027831+00:00",
+  "durationSeconds": 2.607,
+  "argv": [
+    "python3",
+    "tools/pbl-jit/host-test/check-array.py",
+    "--output",
+    "../linuxonweb-firefox-array-jit-20261110-host-2"
+  ],
+  "cwd": ".",
+  "exitCode": -15,
+  "stopReason": "owned_process_shared_cpu_quota_policy_failed",
+  "ownedProcessesRemaining": 0,
+  "cleanupInventoryErrors": [],
+  "ownerPeakRssBytes": 19607552,
+  "ownedTreePeakRssBytes": 171098112,
+  "ownedTreePeakPssBytes": 344064,
+  "resourceSamples": 3,
+  "pssSamples": 1,
+  "quotaReadySeconds": 0.501,
+  "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+  "quotaFailure": {
+    "valid": false,
+    "groups": [
+      {
+        "membership": "/cpulimit.slice/cpulimit-70.slice",
+        "ancestors": [
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-70.slice",
+            "cpuMax": "560000 100000",
+            "cpus": 5.6
+          },
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice",
+            "cpuMax": "300000 100000",
+            "cpus": 3.0
+          },
+          {
+            "path": "/sys/fs/cgroup",
+            "cpuMax": null,
+            "cpus": null,
+            "readError": "FileNotFoundError"
+          }
+        ],
+        "ancestorCpuLimit": 3.0,
+        "processes": [
+          {
+            "pid": 2021338,
+            "startTicks": 104392783,
+            "affinityCpus": 3
+          },
+          {
+            "pid": 2021346,
+            "startTicks": 104392787,
+            "affinityCpus": 3
+          }
+        ]
+      },
+      {
+        "membership": "/cpulimit.slice/cpulimit-80.slice",
+        "ancestors": [
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice/cpulimit-80.slice",
+            "cpuMax": "180000 100000",
+            "cpus": 1.8
+          },
+          {
+            "path": "/sys/fs/cgroup/cpulimit.slice",
+            "cpuMax": "300000 100000",
+            "cpus": 3.0
+          },
+          {
+            "path": "/sys/fs/cgroup",
+            "cpuMax": null,
+            "cpus": null,
+            "readError": "FileNotFoundError"
+          }
+        ],
+        "ancestorCpuLimit": 1.8,
+        "processes": [
+          {
+            "pid": 2021345,
+            "startTicks": 104392787,
+            "affinityCpus": 3
+          }
+        ]
+      }
+    ],
+    "commonSharedAncestors": [
+      {
+        "path": "/sys/fs/cgroup/cpulimit.slice",
+        "maximumObservedCpuLimit": 3.0
+      }
+    ],
+    "violations": [
+      {
+        "pid": 2021345,
+        "startTicks": 104392787,
+        "reason": "owned_process_changed_cgroup"
+      }
+    ]
+  },
+  "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+  "sampling": {
+    "cpuRssAvailableRamQuotaSeconds": 1,
+    "pssSeconds": 5,
+    "pssPeakIsSampledLowerBound": true
+  },
+  "pass": false
+}

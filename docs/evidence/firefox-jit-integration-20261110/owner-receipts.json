@@ -1,0 +1,285 @@
+[
+  {
+    "label": "source-owner",
+    "receipt": {
+      "startedUtc": "2026-11-10T15:54:52.102382+00:00",
+      "finishedUtc": "2026-11-10T15:55:44.872877+00:00",
+      "durationSeconds": 52.771,
+      "argv": [
+        "git",
+        "-C",
+        "../linuxonweb-org-push/firefox-src",
+        "worktree",
+        "add",
+        "--detach",
+        "../../linuxonweb-firefox-jit-20261110-native-source",
+        "525176a870d4ec4329e7decdb2ef7fdd5b87fb22"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 7991296,
+      "ownedTreePeakRssBytes": 1379586048,
+      "ownedTreePeakPssBytes": 1341872128,
+      "resourceSamples": 52,
+      "pssSamples": 11,
+      "quotaReadySeconds": 0.752,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "receiptFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner/result.json",
+      "bytes": 1122,
+      "sha256": "9c0adb10cddad933b3a244e5d4076e8aa5ab10f6300e9d59356ba862b9797c3b"
+    },
+    "resourcesFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner/resources.jsonl",
+      "bytes": 74016,
+      "sha256": "bdc943d64aa0edb9e7522d54c2bba6002aba2e2286878e309a79e46a0f3bc6e6"
+    },
+    "logFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner/command.log",
+      "bytes": 5616,
+      "sha256": "4b4df9adb16f8d36247f5829cfa851f3abde17d7190229681210b741b043667a"
+    },
+    "allRecordedQuotaSamplesValid": true,
+    "sampleCount": 52
+  },
+  {
+    "label": "source-owner-2",
+    "receipt": {
+      "startedUtc": "2026-11-10T16:03:04.502376+00:00",
+      "finishedUtc": "2026-11-10T16:03:55.268048+00:00",
+      "durationSeconds": 50.766,
+      "argv": [
+        "git",
+        "-C",
+        "../linuxonweb-org-push/firefox-src",
+        "worktree",
+        "add",
+        "--detach",
+        "../../linuxonweb-firefox-jit-20261110-native-source-2",
+        "525176a870d4ec4329e7decdb2ef7fdd5b87fb22"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 7827456,
+      "ownedTreePeakRssBytes": 1387442176,
+      "ownedTreePeakPssBytes": 1291180032,
+      "resourceSamples": 50,
+      "pssSamples": 10,
+      "quotaReadySeconds": 0.752,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "receiptFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner-2/result.json",
+      "bytes": 1124,
+      "sha256": "aa42d37fa216d7d54b7647156814bc2b1c2e5698a5e864afdd8c9ab7d817df19"
+    },
+    "resourcesFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner-2/resources.jsonl",
+      "bytes": 71102,
+      "sha256": "1f83febff2bf697fec8c2c14f07c3272c6ec9fc33fc6da03cb3c10c2e2e895f2"
+    },
+    "logFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-source-owner-2/command.log",
+      "bytes": 5543,
+      "sha256": "af9425e2cf6ecc7ff5969458bd0a728afa216e82da8434bed9e44c3352dbba7c"
+    },
+    "allRecordedQuotaSamplesValid": true,
+    "sampleCount": 50
+  },
+  {
+    "label": "prepare-owner",
+    "receipt": {
+      "startedUtc": "2026-11-10T16:01:14.634186+00:00",
+      "finishedUtc": "2026-11-10T16:01:21.640330+00:00",
+      "durationSeconds": 7.006,
+      "argv": [
+        "python3",
+        "tools/nightly-jit-prep/prepare-owned-build.py",
+        "--packet",
+        "../linuxonweb-firefox-jit-20261108-preflight-3a",
+        "--source",
+        "../linuxonweb-firefox-jit-20261110-native-source",
+        "--dependencies",
+        "../linuxonweb-firefox-jit-20261108-native-deps-build",
+        "--egl",
+        "../linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+        "--output",
+        "../linuxonweb-firefox-jit-20261110-native-build"
+      ],
+      "cwd": ".",
+      "exitCode": 1,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 143319040,
+      "ownedTreePeakRssBytes": 145694720,
+      "ownedTreePeakPssBytes": 85586944,
+      "resourceSamples": 6,
+      "pssSamples": 2,
+      "quotaReadySeconds": 1.002,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": false
+    },
+    "receiptFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner/result.json",
+      "bytes": 1360,
+      "sha256": "f29da5e97120ae4f5c84027dc13695b894dff1e772da553195e40738344e73a6"
+    },
+    "resourcesFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner/resources.jsonl",
+      "bytes": 8340,
+      "sha256": "d5154b43e839bb1862660c3e12f1a759f4167d4f41cd341e5b469c73ff3fd5b8"
+    },
+    "logFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner/command.log",
+      "bytes": 178,
+      "sha256": "595724361c085c20dba17360eadd2de5966e48ebd22ceaa0c8b731bf1014ad0c"
+    },
+    "allRecordedQuotaSamplesValid": true,
+    "sampleCount": 6
+  },
+  {
+    "label": "prepare-owner-2",
+    "receipt": {
+      "startedUtc": "2026-11-10T16:04:11.356534+00:00",
+      "finishedUtc": "2026-11-10T16:04:18.360570+00:00",
+      "durationSeconds": 7.004,
+      "argv": [
+        "python3",
+        "tools/nightly-jit-prep/prepare-owned-build.py",
+        "--packet",
+        "../linuxonweb-firefox-jit-20261108-preflight-3a",
+        "--source",
+        "../linuxonweb-firefox-jit-20261110-native-source-2",
+        "--dependencies",
+        "../linuxonweb-firefox-jit-20261108-native-deps-build",
+        "--egl",
+        "../linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+        "--output",
+        "../linuxonweb-firefox-jit-20261110-native-build-2"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 96563200,
+      "ownedTreePeakRssBytes": 142569472,
+      "ownedTreePeakPssBytes": 84714496,
+      "resourceSamples": 6,
+      "pssSamples": 2,
+      "quotaReadySeconds": 1.002,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "receiptFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner-2/result.json",
+      "bytes": 1362,
+      "sha256": "39d4aad0a730c92eac98fd8f453281ac9864950372528c7234c1b79bbcbdc24f"
+    },
+    "resourcesFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner-2/resources.jsonl",
+      "bytes": 8322,
+      "sha256": "16b41e9413cb7526a3e615c479ce82c546f8a5e30654d47e4bc3e152cc25ea28"
+    },
+    "logFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-prepare-owner-2/command.log",
+      "bytes": 1397,
+      "sha256": "7048967d536d27fcc89e9f96cf649bbe49e5dd1fe61bf66dd2181c27ae7a81de"
+    },
+    "allRecordedQuotaSamplesValid": true,
+    "sampleCount": 6
+  },
+  {
+    "label": "helper-reconstruction-owner",
+    "receipt": {
+      "startedUtc": "2026-11-10T16:11:19.231899+00:00",
+      "finishedUtc": "2026-11-10T16:11:20.734297+00:00",
+      "durationSeconds": 1.502,
+      "argv": [
+        "python3",
+        "tools/nightly-musl/recipe/reconstruct-helper-mapping.py",
+        "--dependencies",
+        "../linuxonweb-firefox-jit-20261108-native-deps-build",
+        "--prepared-build",
+        "../linuxonweb-firefox-jit-20261110-native-build-2",
+        "--historical-receipt",
+        "tools/nightly-musl/evidence/native-mapping-link.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "stopReason": null,
+      "ownedProcessesRemaining": 0,
+      "cleanupInventoryErrors": [],
+      "ownerPeakRssBytes": 454656,
+      "ownedTreePeakRssBytes": 454656,
+      "ownedTreePeakPssBytes": 327680,
+      "resourceSamples": 1,
+      "pssSamples": 1,
+      "quotaReadySeconds": 0.501,
+      "quotaPolicy": "all observed live owned processes must retain one common shared ancestor capped at most three CPUs; membership changes fail closed",
+      "quotaFailure": null,
+      "resourceScope": "owned descendant tree; RSS may count shared pages repeatedly; CPU deltas omit work after an exited process last sample",
+      "sampling": {
+        "cpuRssAvailableRamQuotaSeconds": 1,
+        "pssSeconds": 5,
+        "pssPeakIsSampledLowerBound": true
+      },
+      "pass": true
+    },
+    "receiptFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-helper-reconstruction-owner/result.json",
+      "bytes": 1226,
+      "sha256": "200cc18951e549be39dbb6d2ea587929b76a0ad92fc3f8b503e8594889b0ad55"
+    },
+    "resourcesFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-helper-reconstruction-owner/resources.jsonl",
+      "bytes": 1405,
+      "sha256": "b4c28237349bf8b67bb33b6380a63df58c023c39b1cc18fef3b2c8260922b339"
+    },
+    "logFile": {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-helper-reconstruction-owner/command.log",
+      "bytes": 650,
+      "sha256": "2e07c155ddaae545992cdb28e491760cacb63c0823c8c74f877743a2f76130fb"
+    },
+    "allRecordedQuotaSamplesValid": true,
+    "sampleCount": 1
+  }
+]

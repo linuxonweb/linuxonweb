@@ -1,0 +1,2362 @@
+{
+  "kind": "owned-final159-build-preparation-v2",
+  "inputClosure": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/final159-preparation-inputs-20261110.json",
+    "bytes": 481428,
+    "sha256": "b0f250c47e5938dbf3d4728a2ba43541207eda270b7be4f23779cda3092d0d49"
+  },
+  "inputClosureFiles": 1796,
+  "inputClosureVerifiedBeforeMutation": true,
+  "preparationComplete": true,
+  "compiled": false,
+  "nativeIntegrationReady": false,
+  "fullBuildReady": false,
+  "guestRuntimeAcceptance": false,
+  "source": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-source-3",
+  "sourceHead": "525176a870d4ec4329e7decdb2ef7fdd5b87fb22",
+  "trackedSourceFiles": 483357,
+  "output": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3",
+  "packet": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/preflight.json",
+    "bytes": 3818553,
+    "sha256": "1c28693371cc897123e31a02c010a4af27b397b0f5e30e604642061ebf18ea01"
+  },
+  "hostPacket": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-preflight-3a/host-packet/manifest.json",
+    "bytes": 3731,
+    "sha256": "ecfdf31d835d06979884908250f643b77796ff070e0f5d56d69861dc7d2db3f0"
+  },
+  "candidate": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/pbl-jit/PblJit.cpp",
+    "bytes": 87804,
+    "sha256": "ecfbb9d379893a7f8eb997b191d6d8488ff64449c8e13d6af2a05c0f3171fbb4"
+  },
+  "recipe": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/prepare-owned-build.py",
+    "bytes": 19019,
+    "sha256": "cf5f6c89e0bf0f6b96d999291a541d61b507f1bfd22795f8eddf1014e96f3d41"
+  },
+  "storage": {
+    "mount": {
+      "target": "/mnt/p3",
+      "fstype": "btrfs",
+      "source": "/dev/nvme0n1p3"
+    },
+    "freeBytes": 241647316992,
+    "reserveBytes": 21474836480
+  },
+  "dependencyArchives": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "bytes": 6134,
+      "sha256": "d83706cc69d4dc478930c1d73584dd9469547c29fb7ce0bbb70f70d4e2f683fa"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-stack-accepted-run1/libnightly-native-stack.a",
+      "bytes": 1016,
+      "sha256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++abi.a",
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libunwind.a",
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b"
+    }
+  ],
+  "egl": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+    "bytes": 152038,
+    "sha256": "b87506ed6dcb83778bf7ba53d1bc56587b330d68dff54b0838bc97e281f6efc8"
+  },
+  "dependencyHeaders": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/dependency-headers.json",
+    "bytes": 447339,
+    "sha256": "792981642aaa50b965b8bc96106216cff3c9d2ff998d59597149703fc63c49b8"
+  },
+  "sourceChanges": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/source-changes.json",
+    "bytes": 5268,
+    "sha256": "7a48a14cabf94c8bd5d21d73a0285307c386b7c604c48f8bdad1a9536ffe21d2"
+  },
+  "environment": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/recipe/environment.sh",
+    "bytes": 48202,
+    "sha256": "27d9cbe895f018101d6d9a17be8bd2e05c135c47d6af44be8cefef743df06b47"
+  },
+  "removedOwnedChildEnvironment": {
+    "LD_LIBRARY_PATH": "/nix/store/qydyl7bhhvbiziz9zpzkjf49ggkns1aa-gcc-15.2.0-lib/lib"
+  },
+  "nativeCompileCommands": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/native-compile-commands.json",
+    "bytes": 8093,
+    "sha256": "aade524251eb6d7f6df915248a75f0ebb56605bebe370322ab457175bcb14081"
+  },
+  "linkArguments": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/link/link.args",
+    "bytes": 16507,
+    "sha256": "b6f4e59d4fcc190f3281feb11ebbbdee2060393a4197ca60cb2ce245cb4b121a"
+  },
+  "phaseCommands": {
+    "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-native-build-3/phase-commands.json",
+    "bytes": 2088,
+    "sha256": "f00519eaef9499a4305ed0b509d20590d6217f1cf0bc478ae2f82ff53b9ae5de"
+  },
+  "requiredExternalInputs": [
+    {
+      "path": "/bin",
+      "directory": true,
+      "resolvedPath": "/usr/bin",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "WASM_MUSL_CXX_RUNTIME_LIBDIR"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++abi.a",
+      "directory": false,
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libunwind.a",
+      "directory": false,
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/04h8gzbdmlycbip6mfs3mhh3h9xw724g-autoconf-2.73/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/1k05xwhd5wjciwrr6zd54mfw8za5lqnz-glibc-2.42-67-bin/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/28wlfb25i3q4wq06ap0n9gb04qkjdjyn-python3-3.11.15/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/3787a1nqwp1n8wp9qg9k6ys8n48ri99s-which-2.25/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/548lwpnrqqf5n7qf5q4aybs17jwcl811-wasm-config.site",
+      "directory": false,
+      "bytes": 493,
+      "sha256": "836d20440af391747232ac44a2b7d8e9b58aac2cc6fe172ae8d5682751063b63",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/548lwpnrqqf5n7qf5q4aybs17jwcl811-wasm-config.site",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "CONFIG_SITE"
+      ]
+    },
+    {
+      "path": "/nix/store/5hndr36f8c9d9z305r27z6dxkhysng95-gnumake-4.4.1/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/68d86idclxs6bfaqprmdx052xqy9qlv9-gnused-4.10/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/68hf1657rfhnzi3s0l3gmqjjh1pr54dy-xz-5.8.3-bin/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/7fl11iw0s4srx2300pnb28wwpibky6wh-xorgproto-static-wasm32-unknown-linux-musl-2024.1/share/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/7hx2lqdpdaz7hprc97p1zalqbygznffb-llvm-binutils-21.1.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/8wn6rsgn53csybzs905al73f3q7j67nx-openssl-static-wasm32-unknown-linux-musl-3.5.7/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bnjhp47nmncm9jlrv6q77hpqwbzxmafr-bzip2-1.0.8-bin/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "WASM_MUSL_SYSROOT",
+        "BINDGEN_CFLAGS"
+      ]
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/c++/v1",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "BINDGEN_CFLAGS",
+        "NIX_CXXSTDLIB_COMPILE",
+        "NIX_CXXSTDLIB_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/include/wasm32-linux-musl/c++/v1",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "BINDGEN_CFLAGS",
+        "NIX_CXXSTDLIB_COMPILE",
+        "NIX_CXXSTDLIB_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/bx13mhzpi1va0gccy86ycpbdj9agaw46-patch-2.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/cb4h2p8j9m45riqawxlfndpz4arlv4rs-gawk-5.4.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/cc9zsahxyx5my7bqid4dzkljw2dd9ygm-perl-5.42.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/cdk6xsz7llq3vvk8dgg0fzp4nk5mkcik-xcb-proto-static-wasm32-unknown-linux-musl-1.17.0/share/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/cp7wjv1pl4wapfk48svvizxd089v9h0a-coreutils-9.11/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH",
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/cqzmdgzwvi3xv3pfl4zymj7yaprkp7c8-file-5.48/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/f4bixss3h2i80asiz45aj4qmplvmam4k-findutils-4.10.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/fq62mc3s8ddxgk1nvlbzly2zmr7v2cax-gnutar-1.35/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/hmx43mjz8dsj03spqpc8j3rp1s9xmj2s-unzip-6.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/inawdy1i2n35ns90cy5664q952wmqz02-rustc/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CC"
+      ]
+    },
+    {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "directory": false,
+      "bytes": 11930,
+      "sha256": "4437401f40386b51c438f83ae71d02c0d3b2007cfd399f84e1cec1044a40a285",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "CC"
+      ]
+    },
+    {
+      "path": "/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+      "directory": false,
+      "bytes": 11944,
+      "sha256": "7f2e34e5bc83eedffcf8d881493b85bc9162f3018c31ce2dfe1329b1da63b579",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/j8mdl69qafyijllv7s703219nb5fnrdp-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin/wasm32-unknown-linux-musl-clang++",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "CXX"
+      ]
+    },
+    {
+      "path": "/nix/store/jv5w31y9ixqbi2dccfssbc2jnkmyridn-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_BINTOOLS"
+      ]
+    },
+    {
+      "path": "/nix/store/jv5w31y9ixqbi2dccfssbc2jnkmyridn-wasm32-unknown-linux-musl-llvm-toolchain-wrapper-22.1.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/kj3fz1nbbmgpjsrxv5f2w6izcwbs75nb-gnum4-1.4.21/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/l0bl4lfhhbdvgyn53b80nams7wicw8c9-zip-3.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/l56920apsf6c40hylrqladab7npy8pfv-llvm-binutils-wrapper-21.1.8/bin/ar",
+      "directory": false,
+      "bytes": 115000,
+      "sha256": "d6b9f113b4cbf607315291a0b29a9f1f51702bda904a3be2d0ac9a2aa116532b",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/l25n688gmqircnpypip13wy99ndycwbj-llvm-21.1.8/bin/llvm-ar",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "AR"
+      ]
+    },
+    {
+      "path": "/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/ljxnca2bb04vlrhivnl7j7p1ph9xz4sg-gzip-1.14/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/lnfxdsvvm1srsa9kk94s7jqw06yq1h2d-nodejs-24.18.0/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/mmjy07fhyvyin7hxyn1qswkq9zkky1sg-cargo-nightly-complete-2026-07-22/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/p48bl1kiw42fakak404srawmlr730b7j-gnugrep-3.12/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/p6gfxz8vixg3kkzlqvv7jkhl5n4kymvl-rust-cbindgen-0.29.4/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/p7j7pwaj6izvwkzqahz3l85lfm19ls95-binaryen-129/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/r13b65c4s5d7ni9xhy9a5v76yr11z3az-libSM-static-wasm32-unknown-linux-musl-1.2.6/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rpw6i3v8akldxx0hd6if9lj6vvrilgxk-libICE-static-wasm32-unknown-linux-musl-1.1.2/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/rvhmy0c6hc83q1vd6y434vadsd9vpdqd-curl-static-wasm32-unknown-linux-musl-8.21.0/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/sn8r7j6q1js540y5briylnb62203zxq5-pkg-config-wrapper-0.29.2/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/v8llyqw71lygr2llhmcc8ya5bdlzq45v-bash-5.3p9/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/c++",
+      "directory": false,
+      "bytes": 11487,
+      "sha256": "b4fdd90c4033628492ecdc3f7e02c8200ae00b0bf4c561ea2a6656d3a6c849ae",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/g++",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "HOST_CXX"
+      ]
+    },
+    {
+      "path": "/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/cc",
+      "directory": false,
+      "bytes": 11487,
+      "sha256": "7d5b8a9041b43a4dcb3b887c523b3a88c3557fecf989cef092f09d7b986b9de9",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/vdaz6sk455r8sbpi7wzaf9vlz5i9yyvx-gcc-wrapper-15.2.0/bin/gcc",
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "HOST_CC"
+      ]
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/x90w8bcl58l9va6xhvfjgwmwl45vjf0n-diffutils-3.12/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "LIBCLANG_PATH"
+      ]
+    },
+    {
+      "path": "/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/include",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_CFLAGS_COMPILE",
+        "NIX_CFLAGS_COMPILE_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl",
+        "NIX_LDFLAGS_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/pkgconfig",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PKG_CONFIG_PATH",
+        "PKG_CONFIG_PATH_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/usr/bin",
+      "directory": true,
+      "status": "available",
+      "family": "environment",
+      "roles": [
+        "PATH"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "directory": false,
+      "bytes": 30627728,
+      "sha256": "537032e4a044350cb4d07005e9f4a415c110f4cb8398def39a6416025ded64c3",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/mesa-11.o",
+      "directory": false,
+      "bytes": 509852,
+      "sha256": "3dd69b2f4d3544bedd2ab369b8e95c5cd9e4e31d95d0fad7492e822b6c05dbc0",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/mesa-11.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/zink_static_vk.o",
+      "directory": false,
+      "bytes": 2488,
+      "sha256": "da6cb895e64e0279ed7be112576c83cc5b1e98c6dee585d3ead507a03715facf",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/zink_static_vk.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpt6-jit20-observe-native/lib/libjs_static.a",
+      "directory": false,
+      "bytes": 52402690,
+      "sha256": "02c9d3b9ee844c16a32174f96c6ace7d7c9bd99becd35520b26c0b6766b4e900",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p3/codex-build/gpt6-jit20-observe-native/lib/libjs_static.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/gpu-transport.o",
+      "directory": false,
+      "bytes": 4514,
+      "sha256": "e7495674d9f3d9b7cf17f32b17288180657e9a8666bfd8a39bba9129df9d8198",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/gpu-transport.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/guest-icd-trace.o",
+      "directory": false,
+      "bytes": 6465634,
+      "sha256": "95cb6e0190fa916f370c6c9bfd7786573c315a31708139d697cb7d7b08ed4e4c",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/guest-icd-trace.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a19/obj/Unified_cpp_dom_canvas1.o",
+      "directory": false,
+      "bytes": 371831,
+      "sha256": "b66868cc33b641da9924a06573db3252f2c353b6d8b27604715425b28242c36c",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/a19/obj/Unified_cpp_dom_canvas1.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/static-dlsym.o",
+      "directory": false,
+      "bytes": 528,
+      "sha256": "eb90562c695812e87819dd958c2f0a4caa9de072034fa8f1c4c26b22b69bb123",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/static-dlsym.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/zink-egl-static.o",
+      "directory": false,
+      "bytes": 12460,
+      "sha256": "56074abfa55bd8018fa3e891e25390cd5a38d589aa893f8b72a1fa56edcea56c",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/zink-egl-static.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/r2/obj/glremote.o",
+      "directory": false,
+      "bytes": 145076,
+      "sha256": "0d5cb077959c5ad3f72aecbccf2a342707a02db2c5c405e7e94704e70b85bc11",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p3/codex-build/opus-ffgpu/r2/obj/glremote.o"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "directory": false,
+      "bytes": 6134,
+      "sha256": "d83706cc69d4dc478930c1d73584dd9469547c29fb7ce0bbb70f70d4e2f683fa",
+      "status": "available",
+      "family": "native-adapter",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-mapping-wrapped-shm/libnightly-native-mapping.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "directory": false,
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725",
+      "status": "available",
+      "family": "native-adapter",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-runtime-accepted-run1/libnightly-native-runtime.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-stack-accepted-run1/libnightly-native-stack.a",
+      "directory": false,
+      "bytes": 1016,
+      "sha256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f",
+      "status": "available",
+      "family": "native-adapter",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-stack-accepted-run1/libnightly-native-stack.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++abi.a",
+      "directory": false,
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5",
+      "status": "available",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++abi.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libunwind.a",
+      "directory": false,
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b",
+      "status": "available",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libunwind.a"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+      "directory": false,
+      "bytes": 152038,
+      "sha256": "b87506ed6dcb83778bf7ba53d1bc56587b330d68dff54b0838bc97e281f6efc8",
+      "status": "available",
+      "family": "mesa-egl-gpu",
+      "historicalPath": "/mnt/p6/build/glgears-zink-20261001/link/egl2/lib/libEGL_mesa.a"
+    },
+    {
+      "path": "/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/libatk-1.0.a",
+      "directory": false,
+      "bytes": 274118,
+      "sha256": "9d0a781f03d977f408876e89079d1006ea34c84fd6d7c5ef62dd10d289f5cf1f",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/libatk-1.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/libatk-1.0.a"
+    },
+    {
+      "path": "/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/libpixman-1.a",
+      "directory": false,
+      "bytes": 539372,
+      "sha256": "0dfcea8042fd588e47f8ef0104a3c2ce6771e280b902e4dee527af1eec97a419",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/libpixman-1.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/libpixman-1.a"
+    },
+    {
+      "path": "/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/libffi.a",
+      "directory": false,
+      "bytes": 14122,
+      "sha256": "3572e746f17209d78e84ee2018e90341a05addffc6201e7d47acde96a05d5e92",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/libffi.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/libffi.a"
+    },
+    {
+      "path": "/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/libexpat.a",
+      "directory": false,
+      "bytes": 199868,
+      "sha256": "1fdccd720ebbf84631dc8f0953f0ceec2a582e9033c3f100f18f3cfd1feb9344",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/libexpat.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/libexpat.a"
+    },
+    {
+      "path": "/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/libXi.a",
+      "directory": false,
+      "bytes": 105548,
+      "sha256": "cbe94c67d0c562067f30b6e1e984c3a3045e683a5b0b547b6fa066b0e2420798",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/libXi.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/libXi.a"
+    },
+    {
+      "path": "/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/libXcomposite.a",
+      "directory": false,
+      "bytes": 5314,
+      "sha256": "a3e8cb6212f3379fe62d9c300933f8f183d819d725cf6baf2255bfa48783c533",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/libXcomposite.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/libXcomposite.a"
+    },
+    {
+      "path": "/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/libXinerama.a",
+      "directory": false,
+      "bytes": 5104,
+      "sha256": "55342996de97aa9263b6257c61da33fbed3e493fc77660add16a819540087465",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/libXinerama.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/libXinerama.a"
+    },
+    {
+      "path": "/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/libepoxy.a",
+      "directory": false,
+      "bytes": 1666724,
+      "sha256": "05e415f5c5736ced34e902b99c3b2c4a53d75b34fd3f5020642fb149018e4f55",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/libepoxy.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/libepoxy.a"
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgdk-3.a",
+      "directory": false,
+      "bytes": 1072164,
+      "sha256": "14a23ff74f7d70585b8d62ad64c753b9b92572f8b339436d0f99665947193aee",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgdk-3.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgdk-3.a"
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgtk-3.a",
+      "directory": false,
+      "bytes": 11833832,
+      "sha256": "e0c6fe3707a0591e0ea5d4c23b7cb9845ebee0b2a6a63e37430eef7f8bf26437",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgtk-3.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgtk-3.a"
+    },
+    {
+      "path": "/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/libXfixes.a",
+      "directory": false,
+      "bytes": 19118,
+      "sha256": "9782e2acff5fc6592299dae3aa08d8534f1b5b50a1e08ee7ab94a8da42a4cb57",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/libXfixes.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/libXfixes.a"
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo-gobject.a",
+      "directory": false,
+      "bytes": 43978,
+      "sha256": "433b33e7a9b82ed7a2435e901e4b326397f6d37d5578c92d1b2110d4f5acd17f",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo-gobject.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo-gobject.a"
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo.a",
+      "directory": false,
+      "bytes": 1636428,
+      "sha256": "447b1fa6639455a345a715bc67ae0920c81132a864e3c0e2d549284fcd085029",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo.a"
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgio-2.0.a",
+      "directory": false,
+      "bytes": 3463660,
+      "sha256": "9e8cfb83c45779826114b9b0fd448c93dfa838b42f085bb1368078866787b3cc",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgio-2.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgio-2.0.a"
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libglib-2.0.a",
+      "directory": false,
+      "bytes": 1806174,
+      "sha256": "ed8c8c9ce2653a2c3e9e89f58827537469c94210afbd42ef5dc674682683c3a2",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libglib-2.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libglib-2.0.a"
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgmodule-2.0.a",
+      "directory": false,
+      "bytes": 12210,
+      "sha256": "52f7764e8a2eb8335c4b356a28b5087cc3b957e27c23130abb16978c708603c8",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgmodule-2.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgmodule-2.0.a"
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgobject-2.0.a",
+      "directory": false,
+      "bytes": 560692,
+      "sha256": "300b3b87eb736596514a5996c6ade2fd4e2ac24414261e42acc33f3efadd229a",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgobject-2.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgobject-2.0.a"
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libintl.a",
+      "directory": false,
+      "bytes": 2154,
+      "sha256": "e099940c2f22d3dcfdff2d89cba9f3e1a785c9e5836eae5244857dab54a1cc93",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libintl.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libintl.a"
+    },
+    {
+      "path": "/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/libXcursor.a",
+      "directory": false,
+      "bytes": 42014,
+      "sha256": "f0856096dbe7a03048f34c74862f2ef432e89f3e769047cc41db144bac270bfd",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/libXcursor.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/libXcursor.a"
+    },
+    {
+      "path": "/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/libXext.a",
+      "directory": false,
+      "bytes": 83300,
+      "sha256": "d0866a9aaa5c934e37be6a4ac1216e2c6974bb2dc1488110e83b4eb9eb236f7f",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/libXext.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/libXext.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/crt1.o",
+      "directory": false,
+      "bytes": 263112,
+      "sha256": "5ef82d8b1da47ddcca3507cb3191be332349f624eaf521a71d54421b712f6322",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/crt1.o",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/crt1.o"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+      "directory": false,
+      "bytes": 1329424,
+      "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libdl.a",
+      "directory": false,
+      "bytes": 8,
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libdl.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libdl.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libm.a",
+      "directory": false,
+      "bytes": 8,
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libm.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libm.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libpthread.a",
+      "directory": false,
+      "bytes": 8,
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libpthread.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libpthread.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libresolv.a",
+      "directory": false,
+      "bytes": 8,
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libresolv.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libresolv.a"
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/librt.a",
+      "directory": false,
+      "bytes": 8,
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/librt.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/librt.a"
+    },
+    {
+      "path": "/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/libfribidi.a",
+      "directory": false,
+      "bytes": 131336,
+      "sha256": "24f8f48df1ba6fc92947a4787a44d762a121180455b9bccb6864fbb796fae058",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/libfribidi.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/libfribidi.a"
+    },
+    {
+      "path": "/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/libXdamage.a",
+      "directory": false,
+      "bytes": 4530,
+      "sha256": "fe0fc4e9296e9244e834585ce9c16a965d5909d6cb420b061be45c13bf028fb0",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/libXdamage.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/libXdamage.a"
+    },
+    {
+      "path": "/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/libpcre2-8.a",
+      "directory": false,
+      "bytes": 409816,
+      "sha256": "b81f45dcd1e280443a580bfc065a966a8e272f796d766fe8f6bea195ac73525e",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/libpcre2-8.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/libpcre2-8.a"
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11-xcb.a",
+      "directory": false,
+      "bytes": 806,
+      "sha256": "e81c3a6e3277beae78d5affa4e87d9aedbc5463bf63b077544b5f64c6c8a5724",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11-xcb.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11-xcb.a"
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11.a",
+      "directory": false,
+      "bytes": 1601148,
+      "sha256": "d6bf79c42ae5211c1cef4545eae45657c03859bb22fba43f8db827e6e7747359",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11.a"
+    },
+    {
+      "path": "/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/libfontconfig.a",
+      "directory": false,
+      "bytes": 383818,
+      "sha256": "385617d9601c344a6e82e0c53fb2a7743c366ad8ac5c7316b0dbd4cec1e9171b",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/libfontconfig.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/libfontconfig.a"
+    },
+    {
+      "path": "/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/libharfbuzz.a",
+      "directory": false,
+      "bytes": 2378246,
+      "sha256": "d3524c5dc4dcf63d0d5159a85962fdf26572198357d5ace04f4dac6380324e5c",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/libharfbuzz.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/libharfbuzz.a"
+    },
+    {
+      "path": "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/libXau.a",
+      "directory": false,
+      "bytes": 10454,
+      "sha256": "c7a81d9dc7303694fd23b7fdb9d0e9f853e1680a0a6c1701ad43822f7226a6f5",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/libXau.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/libXau.a"
+    },
+    {
+      "path": "/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/libXrender.a",
+      "directory": false,
+      "bytes": 41972,
+      "sha256": "67b028cf2b0fcb8cf2df255b68af942f4867e549d8976588c511bd5a6ccea348",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/libXrender.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/libXrender.a"
+    },
+    {
+      "path": "/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/libgdk_pixbuf-2.0.a",
+      "directory": false,
+      "bytes": 212510,
+      "sha256": "e86166c216341d523c8a1db1a9af88497625717782def5720c5c4b0d9b2e001e",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/libgdk_pixbuf-2.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/libgdk_pixbuf-2.0.a"
+    },
+    {
+      "path": "/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/libpng16.a",
+      "directory": false,
+      "bytes": 245816,
+      "sha256": "2b9a88197003923dedff911e0581e8cef7c7c3fb521bcd7a411a3c10a6dd4cf2",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/libpng16.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/libpng16.a"
+    },
+    {
+      "path": "/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/libz.a",
+      "directory": false,
+      "bytes": 102414,
+      "sha256": "06c6fcea019e393b420f0189108ce6fc371a516d85bfe482e4d38b9fb46d18a8",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/libz.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/libz.a"
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb-shm.a",
+      "directory": false,
+      "bytes": 6470,
+      "sha256": "c918eedf404fc973309ecffc8fd9c113c1b7c9db138221e9dd722cfd8454ea5d",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb-shm.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb-shm.a"
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb.a",
+      "directory": false,
+      "bytes": 166018,
+      "sha256": "9d07d4705501e80b9e59817c5cb036cb467af3ba2fc50784233801a909b68a5d",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb.a"
+    },
+    {
+      "path": "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl/libclang_rt.builtins.a",
+      "directory": false,
+      "bytes": 114300,
+      "sha256": "9a0ddd7fad242fd942b251191a1a9910cd4dd46968f32d5f52a8694829c43afb",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl/libclang_rt.builtins.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl/libclang_rt.builtins.a"
+    },
+    {
+      "path": "/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/libXrandr.a",
+      "directory": false,
+      "bytes": 46776,
+      "sha256": "d07d883e069958b448f940cb8520a3b483e9fd5993c6fd2adc13bf1439b72697",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/libXrandr.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/libXrandr.a"
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpango-1.0.a",
+      "directory": false,
+      "bytes": 599960,
+      "sha256": "394498ed7a44e4ec267306aed1a05cfa06736aeec519124d151775308b840f8f",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpango-1.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpango-1.0.a"
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangocairo-1.0.a",
+      "directory": false,
+      "bytes": 59064,
+      "sha256": "3d10de147a09b8f0f65748433064806d2c101463efafe38d657f82bacbf5cfcd",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangocairo-1.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangocairo-1.0.a"
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangoft2-1.0.a",
+      "directory": false,
+      "bytes": 106712,
+      "sha256": "dee2e6e9d5fcfc2b4dd9318464636eeb0c565d0d056d02d2bf8022fef6c05aa2",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangoft2-1.0.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangoft2-1.0.a"
+    },
+    {
+      "path": "/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/libfreetype.a",
+      "directory": false,
+      "bytes": 864910,
+      "sha256": "242b3f059e6bfeca353190f8367d41901b9b55ee1c4fa394453bb65260ba93a2",
+      "resolvedPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/libfreetype.a",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/libfreetype.a"
+    },
+    {
+      "path": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/release/firefox-objects.list",
+      "directory": false,
+      "bytes": 121392,
+      "sha256": "23f4f6af02b8684758a7aa48d0649c7e13e8b9e3c12d21817a5fb8ade96a1e43",
+      "status": "available",
+      "family": "link-input",
+      "historicalPath": "/mnt/p6/project/linux/linuxonweb/tools/nightly-musl/release/firefox-objects.list"
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-mapping-link/libnightly-native-mapping.a",
+      "directory": false,
+      "bytes": 6106,
+      "sha256": "ce9bde472373b4d7d09555954006b94b3c0a8137d341d51d689371fb8e2c7561",
+      "status": "available",
+      "family": "generated-graph-helper-mapping",
+      "reason": "unwrapped helpers in source defs.mk"
+    }
+  ],
+  "missingInputs": [
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "environment",
+      "roles": [
+        "NIX_CXXSTDLIB_LINK_wasm32_unknown_linux_musl"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-native-deps-build/native-unwind/runtimes-build/lib/libc++.a",
+      "directory": false,
+      "status": "unavailable",
+      "error": "FileNotFoundError",
+      "family": "cxx-abi-unwind",
+      "historicalPath": "/mnt/p6/build/firefox-nightly-musl-jit-full-20261002/native-unwind/runtimes-build/lib/libc++.a"
+    }
+  ],
+  "missingConfiguredObjects": 2634,
+  "configuredHeadersAndBackendMustBeGenerated": 8,
+  "processRouteBlocker": "name-based host policy changes live compiler leaf membership; strict owner must remain unchanged",
+  "remainingSteps": [
+    "resolve a supported stable inherited process route",
+    "complete and verify libc++; retain the separately verified exact helper archive",
+    "configure and regenerate the exact owned graph and headers",
+    "build all native Firefox inputs",
+    "compile both recorded native translation units and replace exactly those JS archive members",
+    "final link, complete O2 and fpcast ABI pass, Wasm validation and native-only package",
+    "independent exact source/build binding and real guest safety/performance acceptance"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "readOnly": true,
+  "exactFivePresentArchiveSet": true,
+  "dependencyResults": [
+    {
+      "relativePath": "native-mapping-wrapped-shm/libnightly-native-mapping.a",
+      "matchExpectedAndValidation": true,
+      "bytes": 6134,
+      "sha256": "d83706cc69d4dc478930c1d73584dd9469547c29fb7ce0bbb70f70d4e2f683fa"
+    },
+    {
+      "relativePath": "native-runtime-accepted-run1/libnightly-native-runtime.a",
+      "matchExpectedAndValidation": true,
+      "bytes": 1960,
+      "sha256": "f5dd22ed404f36a9be25b9bb87665e3d9601dd49969cea23dec5b25a4c58d725"
+    },
+    {
+      "relativePath": "native-stack-accepted-run1/libnightly-native-stack.a",
+      "matchExpectedAndValidation": true,
+      "bytes": 1016,
+      "sha256": "9a4fc27adfbc60dd1bf3752a36e46a1f6655fb000c0f240a63f65bb70fa7285f"
+    },
+    {
+      "relativePath": "native-unwind/runtimes-build/lib/libc++.a",
+      "available": false,
+      "expectedHistoricalSha256": "5265c4a1fec02eeb62648d21479c9b06a1d5e5e3599fea4aea89534963f7463c"
+    },
+    {
+      "relativePath": "native-unwind/runtimes-build/lib/libc++abi.a",
+      "matchExpectedAndValidation": true,
+      "bytes": 393478,
+      "sha256": "5019f48eb0ac1c57f3ac94d1ba1f03f8f6b0d1363f54b565d4c06d7fd93af1f5"
+    },
+    {
+      "relativePath": "native-unwind/runtimes-build/lib/libunwind.a",
+      "matchExpectedAndValidation": true,
+      "bytes": 6164,
+      "sha256": "39003fecea73e2fc9c810026f80b6b1cb3171e0d259fb801ed365e3cdb0d4d4b"
+    }
+  ],
+  "separateHelperPresent": true,
+  "nativeAcceptance": false
+}
+exit_code: 0
+running: false
+terminal_id: 41307
+workspace_id: /mnt/p3/project/linux/linuxonweb
+chars: 1536
+snapshot: b865c4aaa242f3fe

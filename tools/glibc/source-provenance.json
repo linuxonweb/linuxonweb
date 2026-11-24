@@ -1,0 +1,28 @@
+{
+  "scope": "Owned static Wasm/Linux architecture port and curated unchanged GNU implementation closure; not a complete libc or sysroot",
+  "upstream": {
+    "project": "GNU glibc",
+    "version": "2.44",
+    "archiveUrl": "https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz",
+    "archiveSha256": "37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667",
+    "signatureVerification": "Bootstrap packet verified GOODSIG/VALIDSIG with refreshed metadata for the same pinned primary/signing fingerprints; replay enforces the exact previously verified archive hash",
+    "primaryFingerprint": "35B17DF5752577CA0C541CEB94BFDF4484AD142F",
+    "signingSubkeyFingerprint": "FD19E6D31B192EE4DC63EAD3DC2B16215ED5412A"
+  },
+  "ownedCumulativePatchSha256": "c0238052c8c42006cb724a9363c73f7e5d34bf86d79faa015a922971528ef14f",
+  "inheritedPackets": {
+    "glibc-abort-signal-final-20261002": {
+      "manifestSha256": "046d4954a351d9d499e4896dc4f4562976acd7dcaf1b5bb05c3fa31b286c312d",
+      "contribution": "Cumulative port patch, genuine unwrapped allocator/abort/signal/time64 closure, memory/basic syscall providers, host fixture and negative cancellation link gate"
+    },
+    "glibc-allocator-guest-gate-20261002": {
+      "inputManifestSha256": "1eec6d77fa2d86918d6434365f029aaf4a07f659ae9569059d73f5269708f813",
+      "contribution": "Owned static GNU-header startup, private descriptors/DTV/compiler TLS/stacks, three-user allocator stress, held-main-arena mutex gate, task-local worker observer"
+    }
+  },
+  "combinedFixture": "Concurrent startup fixture plus unwrapped packet's signal/time64 checks and five abort modes, resetting signal dispositions and errno before concurrency",
+  "toolchainAcceptance": "Raw LLVM 22.1.8 wasm32-unknown-linux-gnu, WABT validation and Binaryen FPCAST23i64; alternative toolchains need independent acceptance",
+  "kernelAbi": "Retained arch/wasm: asm-generic syscall numbers, custom clone220 fn/fnarg/flags/parent_tid/child_tid/tls, raw-pointer set_thread_area244, get_args245, time64 clock403/futex422",
+  "providers": "Owned port/wasm-memory.c and port/wasm-basic-syscalls.c; signal adapter is byte-checked against the cumulative patch's replayed sysdeps adapter before every build",
+  "excluded": ["musl/WASI headers, archives and CRT from newly built modules", "test-only abort wrapper", "cancellation stub", "unresolved-symbol suppression", "full libc.a/sysroot acceptance", "general ELF CRT", "full NPTL", "Firefox Nightly build", "JIT/GPU/release acceptance"]
+}

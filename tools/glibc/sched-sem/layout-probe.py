@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+import pathlib,os,re,json,hashlib,subprocess
+T=pathlib.Path(os.environ['GLIBC_TASK']);S=T/'source/glibc-2.44';K=pathlib.Path('/mnt/p6/project/linux/.tmp-firefox-build/nix-local-store/nix/store/s6qc0any0wby0f4nnivpaanvqb9hl130-source/include/linux/sched.h')
+b=K.read_bytes();matches=list(re.finditer(rb'struct sched_param \{\n\tint sched_priority;\n\};',b));assert len(matches)==1;m=matches[0]
+p=T/'source/kernel-sched-param-layout.c';p.write_bytes(b'/* Exact declaration extraction from retained kernel header; not complete kernel-header compilation. */\n'+m.group()+b'\n_Static_assert(sizeof(struct sched_param)==4 && _Alignof(struct sched_param)==4 && __builtin_offsetof(struct sched_param,sched_priority)==0,"actual kernel declaration ABI");\nconst unsigned kernel_sched_layout[]={sizeof(struct sched_param),_Alignof(struct sched_param),__builtin_offsetof(struct sched_param,sched_priority)};\n')
+L=pathlib.Path(os.environ['GLIBC_TOOLCHAIN']);cmd=[str(L/'bin/clang'),'--target=wasm32-unknown-linux-gnu','-nostdlib','-nostdinc','-O2','-S','-emit-llvm',str(p),'-o',str(T/'logs/kernel-sched-layout.ll')];subprocess.run(cmd,check=True)
+ir=(T/'logs/kernel-sched-layout.ll').read_text();assert '[i32 4, i32 4, i32 0]' in ir
+(T/'logs/layout-probe.json').write_text(json.dumps({'pass':True,'kernelHeader':str(K),'kernelHeaderSha256':hashlib.sha256(b).hexdigest(),'declarationOffsets':[m.start(),m.end()],'declarationSha256':hashlib.sha256(m.group()).hexdigest(),'kernelLayout':[4,4,0],'gnuLayout':[4,4,0],'scope':'actual kernel declaration extracted byte-for-byte under its true struct name in separate translation unit; full kernel header not compiled','argv':cmd},indent=2)+'\n')

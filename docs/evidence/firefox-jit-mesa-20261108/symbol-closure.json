@@ -1,0 +1,958 @@
+{
+  "archive": "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-mesa-build/artifacts/libEGL_mesa.a",
+  "sha256": "b87506ed6dcb83778bf7ba53d1bc56587b330d68dff54b0838bc97e281f6efc8",
+  "historical_sha256": "b87506ed6dcb83778bf7ba53d1bc56587b330d68dff54b0838bc97e281f6efc8",
+  "matches_historical_archive": true,
+  "exportedEglSymbols": [
+    "eglBindAPI",
+    "eglBindTexImage",
+    "eglChooseConfig",
+    "eglClientWaitSync",
+    "eglCopyBuffers",
+    "eglCreateContext",
+    "eglCreateImage",
+    "eglCreatePbufferFromClientBuffer",
+    "eglCreatePbufferSurface",
+    "eglCreatePixmapSurface",
+    "eglCreatePlatformPixmapSurface",
+    "eglCreatePlatformWindowSurface",
+    "eglCreateSync",
+    "eglCreateWindowSurface",
+    "eglDestroyContext",
+    "eglDestroyImage",
+    "eglDestroySurface",
+    "eglDestroySync",
+    "eglGetConfigAttrib",
+    "eglGetConfigs",
+    "eglGetCurrentContext",
+    "eglGetCurrentDisplay",
+    "eglGetCurrentSurface",
+    "eglGetDisplay",
+    "eglGetError",
+    "eglGetPlatformDisplay",
+    "eglGetProcAddress",
+    "eglGetSyncAttrib",
+    "eglInitialize",
+    "eglMakeCurrent",
+    "eglPrintConfigDebug",
+    "eglQueryAPI",
+    "eglQueryContext",
+    "eglQueryString",
+    "eglQuerySurface",
+    "eglReleaseTexImage",
+    "eglReleaseThread",
+    "eglSurfaceAttrib",
+    "eglSwapBuffers",
+    "eglSwapInterval",
+    "eglTerminate",
+    "eglWaitClient",
+    "eglWaitGL",
+    "eglWaitNative",
+    "eglWaitSync"
+  ],
+  "requiredEglSymbols": [
+    "eglBindAPI",
+    "eglBindTexImage",
+    "eglChooseConfig",
+    "eglClientWaitSync",
+    "eglCopyBuffers",
+    "eglCreateContext",
+    "eglCreateImage",
+    "eglCreatePbufferFromClientBuffer",
+    "eglCreatePbufferSurface",
+    "eglCreatePixmapSurface",
+    "eglCreatePlatformPixmapSurface",
+    "eglCreatePlatformWindowSurface",
+    "eglCreateSync",
+    "eglCreateWindowSurface",
+    "eglDestroyContext",
+    "eglDestroyImage",
+    "eglDestroySurface",
+    "eglDestroySync",
+    "eglGetConfigAttrib",
+    "eglGetConfigs",
+    "eglGetCurrentContext",
+    "eglGetCurrentDisplay",
+    "eglGetCurrentSurface",
+    "eglGetDisplay",
+    "eglGetError",
+    "eglGetPlatformDisplay",
+    "eglGetProcAddress",
+    "eglGetSyncAttrib",
+    "eglInitialize",
+    "eglMakeCurrent",
+    "eglQueryAPI",
+    "eglQueryContext",
+    "eglQueryString",
+    "eglQuerySurface",
+    "eglReleaseTexImage",
+    "eglReleaseThread",
+    "eglSurfaceAttrib",
+    "eglSwapBuffers",
+    "eglSwapInterval",
+    "eglTerminate",
+    "eglWaitClient",
+    "eglWaitGL",
+    "eglWaitNative",
+    "eglWaitSync"
+  ],
+  "missingRequiredEglSymbols": [],
+  "externalImports": [
+    "__indirect_function_table",
+    "__memory_base",
+    "__stack_pointer",
+    "__table_base",
+    "__tls_base",
+    "_mesa_glapi_get_proc_address",
+    "_mesa_glapi_tls_Dispatch",
+    "asprintf",
+    "atexit",
+    "bcmp",
+    "bsearch",
+    "calloc",
+    "clock_gettime",
+    "close",
+    "cnd_broadcast",
+    "cnd_destroy",
+    "cnd_timedwait",
+    "cnd_wait",
+    "debug_get_bool_option",
+    "dri2GalliumConfigQueryi",
+    "dri2_create_from_texture",
+    "dri2_destroy_image",
+    "dri2_from_dma_bufs",
+    "dri2_from_planar",
+    "dri2_query_compression_rates",
+    "dri2_query_image",
+    "driBindContext",
+    "driCreateContextAttribs",
+    "driCreateNewScreen3",
+    "driDestroyContext",
+    "driDestroyDrawable",
+    "driDestroyScreen",
+    "driGetConfigAttrib",
+    "driGetDriInfoXML",
+    "driIndexConfigAttrib",
+    "driUnbindContext",
+    "dri_client_wait_sync",
+    "dri_create_drawable",
+    "dri_create_fence",
+    "dri_create_fence_fd",
+    "dri_create_image",
+    "dri_create_image_from_renderbuffer",
+    "dri_destroy_fence",
+    "dri_fence_get_caps",
+    "dri_flush",
+    "dri_flush_drawable",
+    "dri_get_drm_device_info",
+    "dri_get_fence_fd",
+    "dri_get_fence_from_cl_event",
+    "dri_get_pipe_screen",
+    "dri_interop_export_object",
+    "dri_interop_flush_objects",
+    "dri_interop_query_device_info",
+    "dri_query_compatible_render_only_device_fd",
+    "dri_query_dma_buf_formats",
+    "dri_query_dma_buf_modifiers",
+    "dri_server_wait_sync",
+    "dri_set_blob_cache_funcs",
+    "dri_set_damage_region",
+    "dri_set_tex_buffer2",
+    "drmDevicesEqual",
+    "drmFreeDevice",
+    "drmGetDevice2",
+    "drmGetDevices2",
+    "drmGetPrimaryDeviceNameFromFd",
+    "drmGetRenderDeviceNameFromFd",
+    "exit",
+    "free",
+    "futex_wait",
+    "futex_wake",
+    "loader_get_driver_for_fd",
+    "loader_is_device_render_capable",
+    "loader_open_device",
+    "loader_set_logger",
+    "malloc",
+    "mesa_log",
+    "mtx_init",
+    "mtx_lock",
+    "mtx_unlock",
+    "os_dupfd_cloexec",
+    "os_get_option",
+    "os_get_page_size",
+    "pthread_cond_init",
+    "pthread_condattr_init",
+    "pthread_condattr_setclock",
+    "realloc",
+    "snprintf",
+    "strcasecmp",
+    "strcmp",
+    "strdup",
+    "strlen",
+    "strstr",
+    "u_rwlock_init",
+    "u_rwlock_rdlock",
+    "u_rwlock_rdunlock",
+    "u_rwlock_wrlock",
+    "u_rwlock_wrunlock",
+    "util_format_description",
+    "vasprintf",
+    "vsnprintf"
+  ],
+  "providers": {
+    "mtx_unlock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_create_fence_fd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2_create_from_texture": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "drmDevicesEqual": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_get_pipe_screen": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "pthread_condattr_setclock": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "driUnbindContext": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "strcasecmp": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "vsnprintf": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "util_format_description": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "strdup": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "__memory_base": [],
+    "dri_get_drm_device_info": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "os_dupfd_cloexec": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "u_rwlock_init": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "drmFreeDevice": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "loader_set_logger": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "close": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_interop_export_object": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "u_rwlock_rdunlock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "os_get_option": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driBindContext": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "futex_wait": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "clock_gettime": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "asprintf": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "_mesa_glapi_get_proc_address": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "bcmp": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "cnd_timedwait": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "os_get_page_size": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_destroy_fence": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_flush_drawable": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2_from_dma_bufs": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driDestroyScreen": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_query_dma_buf_modifiers": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "strcmp": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "mesa_log": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_interop_flush_objects": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driIndexConfigAttrib": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driGetDriInfoXML": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "realloc": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "drmGetRenderDeviceNameFromFd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_fence_get_caps": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "mtx_init": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_create_image_from_renderbuffer": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "u_rwlock_wrunlock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driCreateContextAttribs": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_get_fence_from_cl_event": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_query_dma_buf_formats": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "drmGetDevice2": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "vasprintf": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_set_tex_buffer2": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "loader_is_device_render_capable": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2_destroy_image": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "pthread_cond_init": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "u_rwlock_wrlock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "__table_base": [],
+    "loader_open_device": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "cnd_broadcast": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_create_image": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_get_fence_fd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "u_rwlock_rdlock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_create_fence": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "debug_get_bool_option": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2GalliumConfigQueryi": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_server_wait_sync": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_query_compatible_render_only_device_fd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "__stack_pointer": [],
+    "dri_interop_query_device_info": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driDestroyDrawable": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "drmGetDevices2": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "strstr": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "atexit": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_set_blob_cache_funcs": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_set_damage_region": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "driGetConfigAttrib": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "mtx_lock": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "cnd_wait": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri_create_drawable": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri_client_wait_sync": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2_query_compression_rates": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "drmGetPrimaryDeviceNameFromFd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "loader_get_driver_for_fd": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "calloc": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "futex_wake": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "pthread_condattr_init": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "dri2_query_image": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "__tls_base": [],
+    "driDestroyContext": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "cnd_destroy": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "malloc": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "__indirect_function_table": [],
+    "dri_flush": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "exit": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "bsearch": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "strlen": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "driCreateNewScreen3": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "_mesa_glapi_tls_Dispatch": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "dri2_from_planar": [
+      "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a"
+    ],
+    "free": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ],
+    "snprintf": [
+      "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a"
+    ]
+  },
+  "linkerSynthesized": [
+    "__indirect_function_table",
+    "__memory_base",
+    "__stack_pointer",
+    "__table_base",
+    "__tls_base"
+  ],
+  "missingExternalProviders": [],
+  "providerInputs": [
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/libgallium_zink.native-cxx.a",
+      "sha256": "537032e4a044350cb4d07005e9f4a415c110f4cb8398def39a6416025ded64c3",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": [
+        "_mesa_glapi_get_proc_address",
+        "_mesa_glapi_tls_Dispatch",
+        "cnd_broadcast",
+        "cnd_destroy",
+        "cnd_timedwait",
+        "cnd_wait",
+        "debug_get_bool_option",
+        "dri2GalliumConfigQueryi",
+        "dri2_create_from_texture",
+        "dri2_destroy_image",
+        "dri2_from_dma_bufs",
+        "dri2_from_planar",
+        "dri2_query_compression_rates",
+        "dri2_query_image",
+        "driBindContext",
+        "driCreateContextAttribs",
+        "driCreateNewScreen3",
+        "driDestroyContext",
+        "driDestroyDrawable",
+        "driDestroyScreen",
+        "driGetConfigAttrib",
+        "driGetDriInfoXML",
+        "driIndexConfigAttrib",
+        "driUnbindContext",
+        "dri_client_wait_sync",
+        "dri_create_drawable",
+        "dri_create_fence",
+        "dri_create_fence_fd",
+        "dri_create_image",
+        "dri_create_image_from_renderbuffer",
+        "dri_destroy_fence",
+        "dri_fence_get_caps",
+        "dri_flush",
+        "dri_flush_drawable",
+        "dri_get_drm_device_info",
+        "dri_get_fence_fd",
+        "dri_get_fence_from_cl_event",
+        "dri_get_pipe_screen",
+        "dri_interop_export_object",
+        "dri_interop_flush_objects",
+        "dri_interop_query_device_info",
+        "dri_query_compatible_render_only_device_fd",
+        "dri_query_dma_buf_formats",
+        "dri_query_dma_buf_modifiers",
+        "dri_server_wait_sync",
+        "dri_set_blob_cache_funcs",
+        "dri_set_damage_region",
+        "dri_set_tex_buffer2",
+        "drmDevicesEqual",
+        "drmFreeDevice",
+        "drmGetDevice2",
+        "drmGetDevices2",
+        "drmGetPrimaryDeviceNameFromFd",
+        "drmGetRenderDeviceNameFromFd",
+        "futex_wait",
+        "futex_wake",
+        "loader_get_driver_for_fd",
+        "loader_is_device_render_capable",
+        "loader_open_device",
+        "loader_set_logger",
+        "mesa_log",
+        "mtx_init",
+        "mtx_lock",
+        "mtx_unlock",
+        "os_dupfd_cloexec",
+        "os_get_option",
+        "os_get_page_size",
+        "u_rwlock_init",
+        "u_rwlock_rdlock",
+        "u_rwlock_rdunlock",
+        "u_rwlock_wrlock",
+        "u_rwlock_wrunlock",
+        "util_format_description"
+      ]
+    },
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/mesa-11.o",
+      "sha256": "3dd69b2f4d3544bedd2ab369b8e95c5cd9e4e31d95d0fad7492e822b6c05dbc0",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/firefox-gpu-oct06/build4/obj/zink_static_vk.o",
+      "sha256": "da6cb895e64e0279ed7be112576c83cc5b1e98c6dee585d3ead507a03715facf",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/gpt6-jit20-observe-native/lib/libjs_static.a",
+      "sha256": "02c9d3b9ee844c16a32174f96c6ace7d7c9bd99becd35520b26c0b6766b4e900",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/gpu-transport.o",
+      "sha256": "e7495674d9f3d9b7cf17f32b17288180657e9a8666bfd8a39bba9129df9d8198",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a15/obj/guest-icd-trace.o",
+      "sha256": "95cb6e0190fa916f370c6c9bfd7786573c315a31708139d697cb7d7b08ed4e4c",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a19/obj/Unified_cpp_dom_canvas1.o",
+      "sha256": "b66868cc33b641da9924a06573db3252f2c353b6d8b27604715425b28242c36c",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/static-dlsym.o",
+      "sha256": "eb90562c695812e87819dd958c2f0a4caa9de072034fa8f1c4c26b22b69bb123",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/a41/obj/zink-egl-static.o",
+      "sha256": "56074abfa55bd8018fa3e891e25390cd5a38d589aa893f8b72a1fa56edcea56c",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/mnt/p3/codex-build/opus-ffgpu/r2/obj/glremote.o",
+      "sha256": "0d5cb077959c5ad3f72aecbccf2a342707a02db2c5c405e7e94704e70b85bc11",
+      "family": "mesa-egl-gpu",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/2l142yk9l5p69b3ih7j9n86pixw0q6r5-atk-static-wasm32-unknown-linux-musl-2.38.0/lib/libatk-1.0.a",
+      "sha256": "9d0a781f03d977f408876e89079d1006ea34c84fd6d7c5ef62dd10d289f5cf1f",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/2pjiaf7i8mw43i1ywz01aj7w7qb0q8kk-pixman-static-wasm32-unknown-linux-musl-0.46.4/lib/libpixman-1.a",
+      "sha256": "0dfcea8042fd588e47f8ef0104a3c2ce6771e280b902e4dee527af1eec97a419",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/2vwga6h7pl1fnd4qyrs4vs746asgp3l1-libffi-static-wasm32-unknown-linux-musl-3.4.8/lib/libffi.a",
+      "sha256": "3572e746f17209d78e84ee2018e90341a05addffc6201e7d47acde96a05d5e92",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/2x6m4f9q5rcwdi3a2nv6q2qn6am9kac6-expat-static-wasm32-unknown-linux-musl-2.8.2/lib/libexpat.a",
+      "sha256": "1fdccd720ebbf84631dc8f0953f0ceec2a582e9033c3f100f18f3cfd1feb9344",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/3ycrm23cp6acgk0p6qw0m7x8qwfrnpqr-libXi-static-wasm32-unknown-linux-musl-1.8.3/lib/libXi.a",
+      "sha256": "cbe94c67d0c562067f30b6e1e984c3a3045e683a5b0b547b6fa066b0e2420798",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/4h38l2va3179dlbxhdbzhwsq8kcl5zjp-libXcomposite-static-wasm32-unknown-linux-musl-0.4.7/lib/libXcomposite.a",
+      "sha256": "a3e8cb6212f3379fe62d9c300933f8f183d819d725cf6baf2255bfa48783c533",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/4w2wy7byv6h8wsd1d3hypmzwqdk3mfp7-libXinerama-static-wasm32-unknown-linux-musl-1.1.6/lib/libXinerama.a",
+      "sha256": "55342996de97aa9263b6257c61da33fbed3e493fc77660add16a819540087465",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/96yl54fvgr6ssz0h6blpqkwwzyc70i4q-libepoxy-static-wasm32-unknown-linux-musl-1.5.10/lib/libepoxy.a",
+      "sha256": "05e415f5c5736ced34e902b99c3b2c4a53d75b34fd3f5020642fb149018e4f55",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgdk-3.a",
+      "sha256": "14a23ff74f7d70585b8d62ad64c753b9b92572f8b339436d0f99665947193aee",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/9rsiiljx9dyr7l9dhfn56jy5qhxr1f6r-gtk+3-static-wasm32-unknown-linux-musl-3.24.52/lib/libgtk-3.a",
+      "sha256": "e0c6fe3707a0591e0ea5d4c23b7cb9845ebee0b2a6a63e37430eef7f8bf26437",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/9zsmj3qdschqh18s6r3xp7yhcxan17hc-libXfixes-static-wasm32-unknown-linux-musl-6.0.2/lib/libXfixes.a",
+      "sha256": "9782e2acff5fc6592299dae3aa08d8534f1b5b50a1e08ee7ab94a8da42a4cb57",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo-gobject.a",
+      "sha256": "433b33e7a9b82ed7a2435e901e4b326397f6d37d5578c92d1b2110d4f5acd17f",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/ajpzkikh7q371p0rs355gnpygzmzifgd-cairo-static-wasm32-unknown-linux-musl-1.18.4/lib/libcairo.a",
+      "sha256": "447b1fa6639455a345a715bc67ae0920c81132a864e3c0e2d549284fcd085029",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgio-2.0.a",
+      "sha256": "9e8cfb83c45779826114b9b0fd448c93dfa838b42f085bb1368078866787b3cc",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libglib-2.0.a",
+      "sha256": "ed8c8c9ce2653a2c3e9e89f58827537469c94210afbd42ef5dc674682683c3a2",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgmodule-2.0.a",
+      "sha256": "52f7764e8a2eb8335c4b356a28b5087cc3b957e27c23130abb16978c708603c8",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libgobject-2.0.a",
+      "sha256": "300b3b87eb736596514a5996c6ade2fd4e2ac24414261e42acc33f3efadd229a",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b16v4p6sqas141a5y8sgn69gbfyrqg6v-glib-static-wasm32-unknown-linux-musl-2.82.1/lib/libintl.a",
+      "sha256": "e099940c2f22d3dcfdff2d89cba9f3e1a785c9e5836eae5244857dab54a1cc93",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/b7bsb9dajmrxl7j8wc37v04ay897vj66-libXcursor-static-wasm32-unknown-linux-musl-1.2.3/lib/libXcursor.a",
+      "sha256": "f0856096dbe7a03048f34c74862f2ef432e89f3e769047cc41db144bac270bfd",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bd5ri98g5rcs7ch5lzvb9gfj6b4kv1ya-libXext-static-wasm32-unknown-linux-musl-1.3.7/lib/libXext.a",
+      "sha256": "d0866a9aaa5c934e37be6a4ac1216e2c6974bb2dc1488110e83b4eb9eb236f7f",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/crt1.o",
+      "sha256": "5ef82d8b1da47ddcca3507cb3191be332349f624eaf521a71d54421b712f6322",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libc.a",
+      "sha256": "f2636fe6df25bd50e23a1726d9e28e6cdc82a03a4f000c693e569b6a65d5608b",
+      "family": "target-musl-runtime",
+      "providedEglImports": [
+        "asprintf",
+        "atexit",
+        "bcmp",
+        "bsearch",
+        "calloc",
+        "clock_gettime",
+        "close",
+        "cnd_broadcast",
+        "cnd_destroy",
+        "cnd_timedwait",
+        "cnd_wait",
+        "exit",
+        "free",
+        "malloc",
+        "mtx_init",
+        "mtx_lock",
+        "mtx_unlock",
+        "pthread_cond_init",
+        "pthread_condattr_init",
+        "pthread_condattr_setclock",
+        "realloc",
+        "snprintf",
+        "strcasecmp",
+        "strcmp",
+        "strdup",
+        "strlen",
+        "strstr",
+        "vasprintf",
+        "vsnprintf"
+      ]
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libdl.a",
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libm.a",
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libpthread.a",
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/libresolv.a",
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/bp3in3ifwgps003464g4ncrd6yzp9fn9-sysroot/lib/librt.a",
+      "sha256": "f0a17a43c74d2fe5474fa2fd29c8f14799e777d7d75a2cc4d11c20a6e7b161c5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/d4sggz3wj7vg9zjpna9cmq4s192qbrqh-fribidi-static-wasm32-unknown-linux-musl-1.0.16/lib/libfribidi.a",
+      "sha256": "24f8f48df1ba6fc92947a4787a44d762a121180455b9bccb6864fbb796fae058",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/djnz3mf2xg89fr0bspbnn639jl5ksc1n-libXdamage-static-wasm32-unknown-linux-musl-1.1.7/lib/libXdamage.a",
+      "sha256": "fe0fc4e9296e9244e834585ce9c16a965d5909d6cb420b061be45c13bf028fb0",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/dq4zhpvfqcs5s101f7sn12m6nwffzw04-pcre2-static-wasm32-unknown-linux-musl-10.46/lib/libpcre2-8.a",
+      "sha256": "b81f45dcd1e280443a580bfc065a966a8e272f796d766fe8f6bea195ac73525e",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11-xcb.a",
+      "sha256": "e81c3a6e3277beae78d5affa4e87d9aedbc5463bf63b077544b5f64c6c8a5724",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/gqaysz4gcpwh3hjpj55k8j9mf7lya7xs-libX11-static-wasm32-unknown-linux-musl-1.8.13/lib/libX11.a",
+      "sha256": "d6bf79c42ae5211c1cef4545eae45657c03859bb22fba43f8db827e6e7747359",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/l8npmcpwv9v9qk02vy3li3k8f1zzya16-fontconfig-static-wasm32-unknown-linux-musl-2.18.1/lib/libfontconfig.a",
+      "sha256": "385617d9601c344a6e82e0c53fb2a7743c366ad8ac5c7316b0dbd4cec1e9171b",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/m0fzr3s7p0md5swm5f3w9pn7nj8r9qa4-harfbuzz-static-wasm32-unknown-linux-musl-13.2.1/lib/libharfbuzz.a",
+      "sha256": "d3524c5dc4dcf63d0d5159a85962fdf26572198357d5ace04f4dac6380324e5c",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/r79l4jh7kmlcz6vmfiv02gw1p1iqb4m5-libXau-static-wasm32-unknown-linux-musl-1.0.12/lib/libXau.a",
+      "sha256": "c7a81d9dc7303694fd23b7fdb9d0e9f853e1680a0a6c1701ad43822f7226a6f5",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/rbl945vzbkqrp0pmsn2inkbz2w1j03lm-libXrender-static-wasm32-unknown-linux-musl-0.9.12/lib/libXrender.a",
+      "sha256": "67b028cf2b0fcb8cf2df255b68af942f4867e549d8976588c511bd5a6ccea348",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/sdyz7s4z90d60ahbhzcv2ixl0bnrfbxv-gdk-pixbuf-static-wasm32-unknown-linux-musl-2.42.12/lib/libgdk_pixbuf-2.0.a",
+      "sha256": "e86166c216341d523c8a1db1a9af88497625717782def5720c5c4b0d9b2e001e",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/sg5s1lxvhygasj5gysm1hvybmfar6282-libpng-static-wasm32-unknown-linux-musl-1.6.58/lib/libpng16.a",
+      "sha256": "2b9a88197003923dedff911e0581e8cef7c7c3fb521bcd7a411a3c10a6dd4cf2",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/sjhvjggjz2czv2nhyncnp6xs4fapjidh-zlib-static-wasm32-unknown-linux-musl-1.3.1/lib/libz.a",
+      "sha256": "06c6fcea019e393b420f0189108ce6fc371a516d85bfe482e4d38b9fb46d18a8",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb-shm.a",
+      "sha256": "c918eedf404fc973309ecffc8fd9c113c1b7c9db138221e9dd722cfd8454ea5d",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/wlbxw5w935lipm9imsz9jvsyk0mm322x-libxcb-static-wasm32-unknown-linux-musl-1.17.0/lib/libxcb.a",
+      "sha256": "9d07d4705501e80b9e59817c5cb036cb467af3ba2fc50784233801a909b68a5d",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/xwpycnlb71djqs4gyxhbkxhzb3pw1ib4-llvm-toolchain-22.1.8/lib/clang/22/lib/wasm32-unknown-linux-musl/libclang_rt.builtins.a",
+      "sha256": "9a0ddd7fad242fd942b251191a1a9910cd4dd46968f32d5f52a8694829c43afb",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/yvn7cnhxb39l2gl1k4zd6sl6l33rd2ls-libXrandr-static-wasm32-unknown-linux-musl-1.5.5/lib/libXrandr.a",
+      "sha256": "d07d883e069958b448f940cb8520a3b483e9fd5993c6fd2adc13bf1439b72697",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpango-1.0.a",
+      "sha256": "394498ed7a44e4ec267306aed1a05cfa06736aeec519124d151775308b840f8f",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangocairo-1.0.a",
+      "sha256": "3d10de147a09b8f0f65748433064806d2c101463efafe38d657f82bacbf5cfcd",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/z5gbfdyxqxwswvi0ji5wpjiadyg94qh5-pango-static-wasm32-unknown-linux-musl-1.54.0/lib/libpangoft2-1.0.a",
+      "sha256": "dee2e6e9d5fcfc2b4dd9318464636eeb0c565d0d056d02d2bf8022fef6c05aa2",
+      "family": "link-input",
+      "providedEglImports": []
+    },
+    {
+      "path": "/nix/store/zzsmmp8806m0nap2cyr8vlji37y6v030-freetype-static-wasm32-unknown-linux-musl-2.14.3/lib/libfreetype.a",
+      "sha256": "242b3f059e6bfeca353190f8367d41901b9b55ee1c4fa394453bb65260ba93a2",
+      "family": "link-input",
+      "providedEglImports": []
+    }
+  ],
+  "scope": "Direct EGL symbol closure against readable retained final159 link inputs and target musl; final Firefox link and guest execution not performed."
+}

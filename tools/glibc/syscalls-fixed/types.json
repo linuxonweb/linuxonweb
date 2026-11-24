@@ -1,0 +1,455 @@
+{
+  "scope": "36 audited fixed i32/pointer GNU generated syscall signatures",
+  "entries": [
+    {
+      "call": "setxattr",
+      "kernel": "setxattr",
+      "public": "setxattr",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "const char *",
+        "const void *",
+        "size_t",
+        "int"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "lsetxattr",
+      "kernel": "lsetxattr",
+      "public": "lsetxattr",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "const char *",
+        "const void *",
+        "size_t",
+        "int"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fsetxattr",
+      "kernel": "fsetxattr",
+      "public": "fsetxattr",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "const void *",
+        "size_t",
+        "int"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getxattr",
+      "kernel": "getxattr",
+      "public": "getxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "const char *",
+        "const char *",
+        "void *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "lgetxattr",
+      "kernel": "lgetxattr",
+      "public": "lgetxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "const char *",
+        "const char *",
+        "void *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fgetxattr",
+      "kernel": "fgetxattr",
+      "public": "fgetxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "int",
+        "const char *",
+        "void *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "listxattr",
+      "kernel": "listxattr",
+      "public": "listxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "const char *",
+        "char *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "llistxattr",
+      "kernel": "llistxattr",
+      "public": "llistxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "const char *",
+        "char *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "flistxattr",
+      "kernel": "flistxattr",
+      "public": "flistxattr",
+      "return": "ssize_t",
+      "arguments": [
+        "int",
+        "char *",
+        "size_t"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "removexattr",
+      "kernel": "removexattr",
+      "public": "removexattr",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "const char *"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "lremovexattr",
+      "kernel": "lremovexattr",
+      "public": "lremovexattr",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "const char *"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fremovexattr",
+      "kernel": "fremovexattr",
+      "public": "fremovexattr",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *"
+      ],
+      "header": "sys/xattr.h",
+      "noerrno": 0
+    },
+    {
+      "call": "linkat",
+      "kernel": "linkat",
+      "public": "linkat",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "int",
+        "const char *",
+        "int"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "symlinkat",
+      "kernel": "symlinkat",
+      "public": "symlinkat",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "int",
+        "const char *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "fchownat",
+      "kernel": "fchownat",
+      "public": "fchownat",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "uid_t",
+        "gid_t",
+        "int"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "umask",
+      "kernel": "umask",
+      "public": "umask",
+      "return": "mode_t",
+      "arguments": [
+        "mode_t"
+      ],
+      "header": "sys/stat.h",
+      "noerrno": 1
+    },
+    {
+      "call": "pipe2",
+      "kernel": "pipe2",
+      "public": "pipe2",
+      "return": "int",
+      "arguments": [
+        "int *",
+        "int"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "flock",
+      "kernel": "flock",
+      "public": "flock",
+      "return": "int",
+      "arguments": [
+        "int",
+        "int"
+      ],
+      "header": "sys/file.h",
+      "noerrno": 0
+    },
+    {
+      "call": "syncfs",
+      "kernel": "syncfs",
+      "public": "syncfs",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "close_range",
+      "kernel": "close_range",
+      "public": "close_range",
+      "return": "int",
+      "arguments": [
+        "unsigned int",
+        "unsigned int",
+        "int"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "eventfd",
+      "kernel": "eventfd2",
+      "public": "eventfd",
+      "return": "int",
+      "arguments": [
+        "unsigned int",
+        "int"
+      ],
+      "header": "sys/eventfd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "epoll_create1",
+      "kernel": "epoll_create1",
+      "public": "epoll_create1",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sys/epoll.h",
+      "noerrno": 0
+    },
+    {
+      "call": "inotify_init1",
+      "kernel": "inotify_init1",
+      "public": "inotify_init1",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sys/inotify.h",
+      "noerrno": 0
+    },
+    {
+      "call": "inotify_add_watch",
+      "kernel": "inotify_add_watch",
+      "public": "inotify_add_watch",
+      "return": "int",
+      "arguments": [
+        "int",
+        "const char *",
+        "uint32_t"
+      ],
+      "header": "sys/inotify.h",
+      "noerrno": 0
+    },
+    {
+      "call": "inotify_rm_watch",
+      "kernel": "inotify_rm_watch",
+      "public": "inotify_rm_watch",
+      "return": "int",
+      "arguments": [
+        "int",
+        "int"
+      ],
+      "header": "sys/inotify.h",
+      "noerrno": 0
+    },
+    {
+      "call": "timerfd_create",
+      "kernel": "timerfd_create",
+      "public": "timerfd_create",
+      "return": "int",
+      "arguments": [
+        "clockid_t",
+        "int"
+      ],
+      "header": "sys/timerfd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "memfd_create",
+      "kernel": "memfd_create",
+      "public": "memfd_create",
+      "return": "int",
+      "arguments": [
+        "const char *",
+        "unsigned int"
+      ],
+      "header": "sys/mman.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getpgid",
+      "kernel": "getpgid",
+      "public": "getpgid",
+      "return": "pid_t",
+      "arguments": [
+        "pid_t"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getsid",
+      "kernel": "getsid",
+      "public": "getsid",
+      "return": "pid_t",
+      "arguments": [
+        "pid_t"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "sched_yield",
+      "kernel": "sched_yield",
+      "public": "sched_yield",
+      "return": "int",
+      "arguments": [],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "sched_primax",
+      "kernel": "sched_get_priority_max",
+      "public": "sched_get_priority_max",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "sched_primin",
+      "kernel": "sched_get_priority_min",
+      "public": "sched_get_priority_min",
+      "return": "int",
+      "arguments": [
+        "int"
+      ],
+      "header": "sched.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getgroups",
+      "kernel": "getgroups",
+      "public": "getgroups",
+      "return": "int",
+      "arguments": [
+        "int",
+        "gid_t *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getresuid",
+      "kernel": "getresuid",
+      "public": "getresuid",
+      "return": "int",
+      "arguments": [
+        "uid_t *",
+        "uid_t *",
+        "uid_t *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "getresgid",
+      "kernel": "getresgid",
+      "public": "getresgid",
+      "return": "int",
+      "arguments": [
+        "gid_t *",
+        "gid_t *",
+        "gid_t *"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    },
+    {
+      "call": "setpgid",
+      "kernel": "setpgid",
+      "public": "setpgid",
+      "return": "int",
+      "arguments": [
+        "pid_t",
+        "pid_t"
+      ],
+      "header": "unistd.h",
+      "noerrno": 0
+    }
+  ]
+}

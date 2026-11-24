@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/docs/evidence/firefox-jit-integration-20261110/capture-input-closure.py", line 126, in <module>
+    need(len(manifest['sourceOriginals']) == 9, 'source change input set changed')
+  File "/mnt/p3/codex-build/linuxonweb-firefox-jit-20261110-integration/tools/nightly-jit-prep/input_closure.py", line 11, in need
+    raise ValueError(message)
+ValueError: source change input set changed

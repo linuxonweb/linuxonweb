@@ -1,0 +1,14 @@
+import {spawn} from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const [,out]=process.argv.slice(2);
+const child=spawn(process.execPath,[path.join(here,'../jumps/run-guest.mjs'),...process.argv.slice(2)],{stdio:'inherit',env:process.env});
+const status=await new Promise(resolve=>child.once('exit',resolve));
+const lines=(await fs.readFile(path.join(out,'guest-console.txt'),'utf8')).split(/\r?\n/);
+const jump=JSON.parse(await fs.readFile(path.join(out,'jumps-result.json')));
+const runs=lines.filter(x=>x==='GNU_GENERATED_SYSCALLS tested=typed errno=regular,NOERRNO,ERRVAL result=PASS').length;
+const report={pass:status===0&&jump.pass&&runs===6,runs,privateCloseConventionProbes:true,baseResult:'result.json',jumpResult:'jumps-result.json'};
+await fs.writeFile(path.join(out,'syscalls-result.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report));if(!report.pass)process.exitCode=1;

@@ -1,0 +1,21 @@
+ninja: Entering directory `/mnt/p3/codex-build/linuxonweb-firefox-jit-20261108-mesa-build/build/headless'
+[1/20] Generating src/util/shader_stats.h with a custom command (wrapped by meson to capture output)
+[2/20] Generating src/util/format/u_format_gen.h with a custom command (wrapped by meson to capture output)
+[3/20] Generating src/git_sha1.h with a custom command
+[4/20] Generating src/mesa/glapi/glapi/gen/dispatch.h with a custom command (wrapped by meson to capture output)
+[5/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglapi.c.o
+[6/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglarray.c.o
+[7/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglconfigdebug.c.o
+[8/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglconfig.c.o
+[9/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglcontext.c.o
+[10/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglcurrent.c.o
+[11/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_egldevice.c.o
+[12/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_egldisplay.c.o
+[13/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglglobals.c.o
+[14/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglimage.c.o
+[15/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_egllog.c.o
+[16/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglsurface.c.o
+[17/20] Compiling C object src/egl/libEGL.so.1.0.0.p/main_eglsync.c.o
+[18/20] Compiling C object src/egl/libEGL.so.1.0.0.p/drivers_dri2_egl_dri2.c.o
+[19/20] Compiling C object src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_device.c.o
+[20/20] Compiling C object src/egl/libEGL.so.1.0.0.p/drivers_dri2_platform_surfaceless.c.o

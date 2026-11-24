@@ -118,7 +118,7 @@ for (const b of [1, 0]) {
 }
 r = run('coalesce', () => { setLocal(0, 0); setLocal(1, 0); setLocal(2, 0); setLocal(3, 1, BOOL); setLocal(4, 9); });
 check('coalesce guard', r.kind, 0);
-for (const [name, why] of [['reject-headtype', 'head type'], ['reject-nested', 'nested loop']]) {
+for (const [name, why] of [['reject-headtype', 'head type'], ['reject-nested', 'loop without backedge']]) {
   rej = JSON.parse(fs.readFileSync(`${dir}/${name}.json`)); check(name, rej.ok === false && rej.reason === why, true); }
 // JIT 7a: doubles.
 r = run('divsum', () => { setLocal(0, 0); setLocal(1, 0); });
